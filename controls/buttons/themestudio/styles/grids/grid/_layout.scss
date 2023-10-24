@@ -157,6 +157,10 @@
       padding: $grid-bigger-content-padding $grid-bigger-content-right-padding;
     }
 
+    .e-summarycell.e-lastrowcell {
+      border-bottom-width: 1px;
+    }
+
     .e-rowcell .e-checkbox-wrapper,
     .e-rowcell .e-css.e-checkbox-wrapper {
       @if $grid-skin == 'material3' {
@@ -682,12 +686,7 @@
       margin-right: $grid-bigger-grouptext-marign;
       width: $grid-bigger-grouptext-width;
     }
-
-    .e-gridheader table th[rowspan],
-    &.e-device .e-gridheader table th[rowspan] {
-      padding-bottom: $grid-device-gridheader-row-span-padding;
-    }
-
+    
     .e-groupsort,
     span.e-ungroupbutton,
     .e-toggleungroup {
@@ -927,6 +926,14 @@
           margin-left: -3px;
         }
       }
+    }
+  }
+   
+  .e-bigger #{&}.e-grid:not(.sf-grid),
+  #{&}.e-grid:not(.sf-grid).e-bigger {
+    .e-gridheader table th[rowspan],
+    &.e-device .e-gridheader table th[rowspan] {
+      padding-bottom: $grid-device-gridheader-row-span-padding;
     }
   }
 
@@ -1852,6 +1859,9 @@
       }
       white-space: normal;
       word-wrap: break-word;
+      &.e-lastrowcell {
+        border-bottom-width: 1px;
+      }
     }
 
     .e-summarycontent {
@@ -1928,8 +1938,8 @@
       border-width: $grid-rowcell-both-border-width;
     }
 
-    .e-gridheader table th[rowspan],
-    &.e-device .e-gridheader table th[rowspan] {
+    &:not(.sf-grid).e-gridheader table th[rowspan],
+    &:not(.sf-grid).e-device .e-gridheader table th[rowspan] {
       padding-bottom: $grid-stackedheadercell-botttom-padding;
       vertical-align: bottom;
     }
@@ -1999,23 +2009,23 @@
       border-width: $grid-headercell-both-border-width;
     }
 
-    &.e-default table th[rowspan]  {
+    &:not(.sf-grid).e-default table th[rowspan]  {
       border-width: $grid-headercell-both-border-width;
     }
 
-    &.e-default table th[rowspan].e-leftfreeze.e-freezeleftborder {
+    &:not(.sf-grid).e-default table th[rowspan].e-leftfreeze.e-freezeleftborder {
       border-right-width: 2px;
     }
   
-    &.e-default table th[rowspan].e-rightfreeze.e-freezerightborder {
+    &:not(.sf-grid).e-default table th[rowspan].e-rightfreeze.e-freezerightborder {
       border-left-width: 2px;
     }
   
-    &.e-default table th[rowspan].e-fixedfreeze.e-freezeleftborder {
+    &:not(.sf-grid).e-default table th[rowspan].e-fixedfreeze.e-freezeleftborder {
       border-left-width: 1px;
     }
       
-    &.e-default table th[rowspan].e-fixedfreeze.e-freezerightborder {
+    &:not(.sf-grid).e-default table th[rowspan].e-fixedfreeze.e-freezerightborder {
       border-right-width: 1px;
     }
   
@@ -3997,26 +4007,6 @@
         position: relative;
       }
 
-      &.e-default table th[rowspan]  {
-        border-width: $grid-rtl-headercell-both-border-width;
-      }
-
-      &.e-default table th[rowspan].e-leftfreeze.e-freezeleftborder {
-        border-left-width: 2px;
-      }
-    
-      &.e-default table th[rowspan].e-rightfreeze.e-freezerightborder {
-        border-right-width: 2px;
-      }
-    
-      &.e-default table th[rowspan].e-fixedfreeze.e-freezeleftborder {
-        border-right-width: 1px;
-      }
-        
-      &.e-default table th[rowspan].e-fixedfreeze.e-freezerightborder {
-        border-left-width: 1px;
-      }
-
       &.e-default.e-bothlines .e-gridheader .e-headercell.e-firstheader,
       &.e-default.e-bothlines .e-gridheader th.e-grouptopleftcell.e-lastgrouptopleftcell {
         border-left: 1px solid;
@@ -4127,6 +4117,28 @@
         float: $grid-rtlfltrdiv-float;
         margin: $grid-rtl-fltrdiv-margin;
         padding: $grid-rtl-fltrdiv-padding;
+      }
+    }
+
+    &:not(.sf-grid).e-rtl{
+      &.e-default table th[rowspan]  {
+        border-width: $grid-rtl-headercell-both-border-width;
+      }
+
+      &.e-default table th[rowspan].e-leftfreeze.e-freezeleftborder {
+        border-left-width: 2px;
+      }
+    
+      &.e-default table th[rowspan].e-rightfreeze.e-freezerightborder {
+        border-right-width: 2px;
+      }
+    
+      &.e-default table th[rowspan].e-fixedfreeze.e-freezeleftborder {
+        border-right-width: 1px;
+      }
+        
+      &.e-default table th[rowspan].e-fixedfreeze.e-freezerightborder {
+        border-left-width: 1px;
       }
     }
 
@@ -4249,7 +4261,10 @@
       & tr.e-columnheader th:last-child.e-stackedheadercell .e-rhandler.e-rcursor :not(.e-laststackcell, .e-freezerightborder, .e-freezeleftborder) {
         border-right: 0;
       }
+    }
 
+    &:not(.sf-grid).e-resize-lines,
+    &:not(.sf-grid).e-resize-lines.e-rtl {
       &.e-default table th[rowspan]:not(.e-freezerightborder, .e-freezeleftborder) {
         border-left: 0;
       }
@@ -4262,7 +4277,9 @@
       & tr.e-columnheader th.e-laststackcell .e-rhandler.e-rcursor {
         border-left: 0;
       }
+    }
 
+    &:not(.sf-grid).e-resize-lines.e-rtl {
       &.e-default table th[rowspan] {
         border-right: 0;
       }
@@ -4442,6 +4459,73 @@
       .e-filterdiv .e-multiselect.e-input-group:not(.e-rtl),
       .e-fltrtempdiv .e-multiselect.e-input-group:not(.e-rtl){
         text-align: left;
+      }
+      
+      &.e-default table th:not([rowspan = '1'])  {
+        border-width: $grid-headercell-both-border-width;
+      }
+
+      .e-gridheader table th:not([rowspan = '1']),
+      .e-device .e-gridheader table th:not([rowspan = '1']) {
+        padding-bottom: $grid-stackedheadercell-botttom-padding;
+        vertical-align: bottom;
+      }
+
+      &.e-default table th:not([rowspan = '1']).e-leftfreeze.e-freezeleftborder {
+        border-right-width: 2px;
+      }
+    
+      &.e-default table th:not([rowspan = '1']).e-rightfreeze.e-freezerightborder {
+        border-left-width: 2px;
+      }
+    
+      &.e-default table th:not([rowspan = '1']).e-fixedfreeze.e-freezeleftborder {
+        border-left-width: 1px;
+      }
+        
+      &.e-default table th:not([rowspan = '1']).e-fixedfreeze.e-freezerightborder {
+        border-right-width: 1px;
+      }
+      
+      &.e-rtl.e-default table th:not([rowspan = '1'])  {
+        border-width: $grid-rtl-headercell-both-border-width;
+      }
+
+      &.e-rtl.e-default table th:not([rowspan = '1']).e-leftfreeze.e-freezeleftborder {
+        border-left-width: 2px;
+      }
+    
+      &.e-rtl.e-default table th:not([rowspan = '1']).e-rightfreeze.e-freezerightborder {
+        border-right-width: 2px;
+      }
+    
+      &.e-rtl.e-default table th:not([rowspan = '1']).e-fixedfreeze.e-freezeleftborder {
+        border-right-width: 1px;
+      }
+        
+      &.e-rtl.e-default table th:not([rowspan = '1']).e-fixedfreeze.e-freezerightborder {
+        border-left-width: 1px;
+      }
+
+      &.e-resize-lines,
+      &.e-resize-lines.e-rtl {
+        &.e-default table th:not([rowspan = '1']):not(.e-freezerightborder, .e-freezeleftborder) {
+          border-left: 0;
+        }
+      }
+      
+      &.e-resize-lines.e-rtl {
+        &.e-default table th:not([rowspan = '1']) {
+          border-right: 0;
+        }
+      }
+
+      .e-bigger #{&}.e-grid.sf-grid,
+      #{&}.e-grid.sf-grid.e-bigger {
+        .e-gridheader table th:not([rowspan = '1']),
+        &.e-device .e-gridheader table th:not([rowspan = '1']) {
+          padding-bottom: $grid-device-gridheader-row-span-padding;
+        }
       }
     }
   }

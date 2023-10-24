@@ -66,6 +66,7 @@ import { ConnectorFixedUserHandleModel, NodeFixedUserHandleModel } from '../obje
 import { ConnectorFixedUserHandle } from '../objects/fixed-user-handle';
 import { SymbolPaletteModel } from '../../symbol-palette';
 import { LayerModel } from '../diagram/layer-model';
+import { Overview } from '../../overview/overview';
 
 
 
@@ -1598,10 +1599,12 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
     for (let i: number = 0; i < diagram.views.length; i++) {
         component = diagram.views[diagram.views[i]] as Diagram;
         diagram.blazorActions = diagram.addConstraints(blazorAction, BlazorAction.ClearObject);
-        // EJ2-69580 - When we load the diagram, we can refresh diagram component alone, does not need to refresh overview seperately. 
-        // While refresh diagram, nodes added in both the diagram and overview.
-        if (component instanceof Diagram) {
             component.refresh();
+        // Bug 849892: The Overview does not update properly When loading the diagram with the loadDiagram API.
+        // For this -> EJ2-69580  issue the overview refresh got prevented which leads to this Bug 849892, so added below condition to reset 
+        // the overview.
+        if(component instanceof Overview){
+            (component as Overview).onPropertyChanged({sourceID: (component as Overview).sourceID},{});
         }
         diagram.blazorActions = diagram.removeConstraints(blazorAction, BlazorAction.ClearObject);
         if (component instanceof Diagram) {

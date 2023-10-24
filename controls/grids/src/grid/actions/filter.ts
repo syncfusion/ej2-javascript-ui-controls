@@ -854,10 +854,12 @@ export class Filter implements IAction {
         }
         const colUid: string[] = cols.map((f: Column) => f.uid);
         const filteredColsUid: string[] = colUid.filter((item: string, pos: number) => colUid.indexOf(item) === pos);
-        const col: Column = this.column.isForeignColumn() ? this.parent.getColumnByUid(this.column.uid) :
-            this.parent.getColumnByField(this.fieldName);
-        this.filterObjIndex =  this.getFilteredColsIndexByField(col);
-        this.prevFilterObject = this.filterSettings.columns[this.filterObjIndex];
+        if (!isNullOrUndefined(this.column)){
+            const col: Column = this.column.isForeignColumn() ? this.parent.getColumnByUid(this.column.uid) :
+                this.parent.getColumnByField(field);
+            this.filterObjIndex =  this.getFilteredColsIndexByField(col);
+            this.prevFilterObject = this.filterSettings.columns[this.filterObjIndex];
+        }
         for (let i: number = 0, len: number = filteredColsUid.length; i < len; i++) {
             cols[parseInt(i.toString(), 10)].uid = cols[parseInt(i.toString(), 10)].uid
             || this.parent.getColumnByField(cols[parseInt(i.toString(), 10)].field).uid;

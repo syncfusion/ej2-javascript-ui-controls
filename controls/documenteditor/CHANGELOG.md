@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 23.1.42 (2023-10-24)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#FB47474` -  Resolved the serialize API returns hyperlink to number
+- `#I508875` -  Resolved the cell content control check box alignment issue in table.
+- `#I494044` -  Resolved the Issue in bullet and numbering list
+- `#I509697` -  Resolved script error throws while opening a document
+- `#I507568` -  Word Processor now loads the  RTF file with margin properly.
+- `#I505872` -  Resolved the issue with respect to page break and section break continuous.
+
 ## 23.1.41 (2023-10-17)
 
 ### Document Editor

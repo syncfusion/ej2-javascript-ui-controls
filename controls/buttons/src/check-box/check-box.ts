@@ -631,8 +631,8 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     protected updateHtmlAttributeToWrapper(): void {
         if (!isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
+                const wrapper: Element = this.getWrapper();
                 if (containerAttr.indexOf(key) > -1) {
-                    const wrapper: Element = this.getWrapper();
                     if (key === 'class') {
                         addClass([wrapper], this.htmlAttributes[`${key}`].split(' '));
                     } else if (key === 'title') {
@@ -649,6 +649,9 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                     else {
                         this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
                     }
+                }
+                else {
+                    wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
                 }
             }
         }

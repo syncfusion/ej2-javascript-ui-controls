@@ -1374,13 +1374,13 @@ export class WorkbookNumberFormat {
         return { val: val, format: format };
     }
 
-    private formattedBarText(args: { cell: CellModel, value: string }): void {
+    private formattedBarText(args: { cell: CellModel, value: string, type?: string }): void {
         if (args.value === '' || isNullOrUndefined(args.value)) {
             return;
         }
         const option: { type?: string } = {};
         const format: string = (args.cell && args.cell.format) || '';
-        let type: string = format && isCustomDateTime(format, true, option, true) ? option.type : '';
+        let type: string = args.type || (format && isCustomDateTime(format, true, option, true) ? option.type : '');
         const intl: Internationalization = new Internationalization();
         const beforeText: string = args.value;
         const date: string = getFormatFromType('ShortDate');

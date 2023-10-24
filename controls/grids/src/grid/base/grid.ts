@@ -6849,7 +6849,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const width: number = table.querySelector(ele).getBoundingClientRect().width;
         document.body.removeChild(htable);
         document.body.removeChild(ctable);
-        if (width > element.getBoundingClientRect().width) {
+        if (width > element.getBoundingClientRect().width && !element.classList.contains('e-editedbatchcell')) {
             return true;
         }
         return false;

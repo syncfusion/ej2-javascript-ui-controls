@@ -185,11 +185,15 @@
         }
 
         & .e-ripple-container {
-          background-color: $switch-checked-ripple-bg-color;
+          @if $skin-name == 'Material3' {
+            background-color: $switch-checked-ripple-bg-color;
+          }
         }
   
         & .e-ripple-check.e-ripple-container {
-          background-color: $switch-ripple-bg-color;
+          @if $skin-name == 'Material3' {
+            background-color: $switch-ripple-bg-color;
+          }
         }
       }
     }

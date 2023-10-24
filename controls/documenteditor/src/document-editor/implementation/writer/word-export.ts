@@ -1690,19 +1690,10 @@ export class WordExport {
             } else if (item.hasOwnProperty(footnoteTypeProperty[this.keywordIndex])) {
                 this.serializeEFReference(writer, item);
             } else {
-                if(!isNullOrUndefined(this.isSerializeFootEndNote) && i == 0 && HelperMethods.checkTextFormat(item.text)) {
-                    writer.writeStartElement(undefined, 'r', this.wNamespace);
-                    if(this.isSerializeFootEndNote === "Footnote") {
-                        writer.writeStartElement(undefined, 'footnoteRef', this.wNamespace);
-                        writer.writeEndElement();
-                    } else {
-                        writer.writeStartElement(undefined, 'endnoteRef', this.wNamespace);
-                        writer.writeEndElement();
-                    }
-                    writer.writeEndElement();
-                } else {
-                    this.serializeTextRange(writer, item, previousNode);
+                if(!isNullOrUndefined(this.isSerializeFootEndNote) && i == 0 && HelperMethods.checkTextFormat(item[textProperty[this.keywordIndex]])) {
+                    item[textProperty[this.keywordIndex]] = "\u0002";
                 }
+                this.serializeTextRange(writer, item, previousNode);
             }
             //Serialize revision end
             this.serializeRevisionEnd(writer, item, previousNode);

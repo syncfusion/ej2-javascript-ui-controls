@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 23.1.42 (2023-10-24)
+
+### GanttChart
+
+#### Bug Fixes
+
+- `#I508297` - Progress tooltip is misaligned after editing issue has been fixed.
+- `#I509023` - Duration changes to zero while giving input as decimal in remote data issue has been fixed.
+- `#I510092` - Taskbar not rendered in proper alignment in exported page issue has been fixed.
+- `#I512556` - Background color issue with dependency connector line has been fixed.
+- `#I502236` - Taskbar drag and drop issue in virtual scroll resource view issue been fixed.
+
 ## 23.1.41 (2023-10-17)
 
 ### GanttChart
@@ -19,6 +31,7 @@
 #### Bug Fixes
 
 - `#I502041` - Error throw while adding the record issue has been fixed.
+- `#I493515` - Style is not applied to the second segment issue has been fixed.
 
 ## 23.1.38 (2023-09-26)
 

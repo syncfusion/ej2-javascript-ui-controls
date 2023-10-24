@@ -294,7 +294,13 @@ export class Marker {
      * @private
      */
     public markerClick(e: PointerEvent): void {
-        const target: string = (e.target as Element).id;
+        let target: string = (e.target as Element).id;
+        if (target.indexOf(this.maps.element.id) === -1) {
+            const ancestor: Element = (e.target as Element).closest('.' + this.maps.element.id + '_marker_template_element');
+            if (!isNullOrUndefined(ancestor) && ancestor.id.indexOf('_MarkerIndex_') > -1) {
+                target = ancestor.id;
+            } 
+        }
         if (target.indexOf('_LayerIndex_') === -1 || target.indexOf('_cluster_') > 0) {
             return;
         }

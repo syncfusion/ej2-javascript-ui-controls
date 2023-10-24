@@ -1343,7 +1343,7 @@ export class Edit {
                 this.parent.editedRecords[parseInt(i.toString(), 10)].ganttProperties['endDate'] = rec[this.parent.taskFields.endDate];
             }
             if (this.parent.taskFields.duration !== null) {
-                this.parent.editedRecords[parseInt(i.toString(), 10)].ganttProperties['duration'] = parseInt(rec[this.parent.taskFields.duration]);
+                this.parent.editedRecords[parseInt(i.toString(), 10)].ganttProperties['duration'] = parseFloat(rec[this.parent.taskFields.duration]);
             }
             if (this.parent.taskFields.durationUnit !== null) {
                 this.parent.editedRecords[parseInt(i.toString(), 10)].ganttProperties['durationUnit'] = rec[this.parent.taskFields.durationUnit];
@@ -1432,6 +1432,9 @@ export class Edit {
             this.parent.editModule.dialogModule.previousResource = [];
         }
         if (!this.isTreeGridRefresh) {
+            if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
+                this.parent.treeGrid.endEdit();
+            }
             this.parent.chartRowsModule.refreshRecords(this.parent.editedRecords);
             if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && this.parent.showOverAllocation) {
                 this.parent.contentHeight = this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
@@ -2943,7 +2946,7 @@ export class Edit {
             (args.data as IGanttData).ganttProperties['endDate'] = serverReturnedValue[this.parent.taskFields.endDate];
         }
         if (this.parent.taskFields.duration !== null) {
-            (args.data as IGanttData).ganttProperties['duration'] = parseInt(serverReturnedValue[this.parent.taskFields.duration]);
+            (args.data as IGanttData).ganttProperties['duration'] = parseFloat(serverReturnedValue[this.parent.taskFields.duration]);
         }
         if (this.parent.taskFields.durationUnit !== null) {
             (args.data as IGanttData).ganttProperties['durationUnit'] = serverReturnedValue[this.parent.taskFields.durationUnit];

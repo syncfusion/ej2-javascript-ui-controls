@@ -3434,6 +3434,17 @@ export class Editor {
      */
     public insertSection(selection: Selection, selectFirstBlock: boolean, isUndoing?: boolean, sectionBreakContinuous?: boolean, sectionBreakNewPage?:boolean, sectionFormat?: WSectionFormat): BlockWidget {
         let newSectionFormat: WSectionFormat;
+        let startPara: ParagraphWidget = this.selection.start.paragraph;
+        if (sectionBreakContinuous && !isUndoing && !startPara.isInsideTable && selection.start.offset === 0 && selection.start.currentWidget === startPara.firstChild && !isNullOrUndefined(startPara.previousRenderedWidget) && startPara.previousRenderedWidget instanceof ParagraphWidget && startPara.previousRenderedWidget.isEndsWithPageBreak) {
+            this.selection.start.paragraph.bodyWidget.sectionFormat.breakCode = 'NoBreak';
+            this.selection.start.paragraph.index = 0;
+            this.updateNextBlocksIndex(this.selection.start.paragraph, true);
+            this.updateSectionIndex(this.selection.start.paragraph.bodyWidget.sectionFormat, this.selection.start.paragraph.bodyWidget, true);
+            this.selection.moveToNextParagraph();
+            this.editorHistory.currentBaseHistoryInfo.insertPosition = undefined;
+            this.updateInsertPosition();
+            return undefined;
+        }
         if (!isNullOrUndefined(sectionFormat)) {
             newSectionFormat = sectionFormat;
         } else {
@@ -12667,7 +12678,12 @@ export class Editor {
             section.sectionFormat.copyFormat(nextSection.sectionFormat);
         }
     }
-    private combineSectionInternal(selection: Selection, section: BodyWidget, nextSection: BodyWidget): void {
+
+    /**
+     * 
+     * @private
+     */
+    public combineSectionInternal(selection: Selection, section: BodyWidget, nextSection: BodyWidget): void {
         // if (section.sectionFormat.isEqualFormat(nextSection.sectionFormat)) {
 
         // } else {
@@ -14211,7 +14227,15 @@ export class Editor {
             }
             if (currentParagraph.previousWidget && currentParagraph.previousWidget instanceof ParagraphWidget
                 && currentParagraph.previousWidget.paragraphFormat.listFormat.listId !== -1) {
-                currentParagraph = currentParagraph.previousWidget;
+                let isUpdated: boolean = false;
+                while (!isNullOrUndefined(currentParagraph.previousWidget) && currentParagraph.previousWidget instanceof ParagraphWidget
+                    && currentParagraph.previousWidget.paragraphFormat.listFormat.listId !== -1 && start.paragraph.paragraphFormat.firstLineIndent < Math.abs(currentParagraph.previousWidget.paragraphFormat.firstLineIndent)) {
+                    currentParagraph = currentParagraph.previousWidget;
+                    isUpdated = true;
+                }
+                if (!isUpdated) {
+                    currentParagraph = currentParagraph.previousWidget as ParagraphWidget;
+                }
                 list = this.documentHelper.getListById(currentParagraph.paragraphFormat.listFormat.listId);
                 isUpdate = true;
             }
@@ -20326,7 +20350,7 @@ export class Editor {
         this.separator('footnote');
         this.continuationSeparator('footnote');
         this.isFootNote = false;
-
+        this.isFootNoteInsert = false;
     }
     private updateFootnoteCollection(footnote: FootnoteElementBox): void {
         if (this.documentHelper.footnoteCollection.indexOf(footnote) === -1) {

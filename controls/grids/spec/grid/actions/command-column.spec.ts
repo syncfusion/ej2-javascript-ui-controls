@@ -760,4 +760,39 @@ describe('Command Column ', () => {
             gridObj = commandClick = null;
         });
     });
+
+    describe('851553 - Column freeze is not working properly for the command columns', () => {
+        let row: HTMLTableRowElement;
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data,
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity' },
+                    {
+                        field: 'commandcolumn', freeze: 'Right', commands: [{ type: 'Edit', buttonOption: { content: 'edit' } },
+                        { type: 'Delete', buttonOption: { content: 'delete' } },
+                        { type: 'Cancel', buttonOption: { content: 'cancel' } },
+                        { type: 'Save', buttonOption: { content: 'save' } },
+                        { buttonOption: { content: 'Details' } }
+                        ], headerText: 'Command Column'
+                    }],
+                }, done);
+        });
+
+        it('checking for frozen command column row and header cells', () => {
+            expect((grid.getRows()[0] as any).cells[5].classList.contains('e-rightfreeze')).toBe(true);
+            expect(grid.getHeaderContent().querySelector('tr').cells[5].classList.contains('e-rightfreeze')).toBe(true);
+        });
+
+        afterAll((done) => {
+            destroy(grid);
+            setTimeout(function () {
+                done();
+            }, 1000);
+            grid = row = null;
+
+        });
+    });
 });

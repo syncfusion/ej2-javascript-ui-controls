@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 23.1.42 (2023-10-24)
+
+### Button
+
+#### Bug Fixes
+
+- `#I512179` - The issue with "Duplicate Icon Span while using the `onPropertyChange` of button" has been resolved.
+
+## 23.1.41 (2023-10-17)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#I509029` - The issue with "`HtmlAttributes` property not working properly in checkBox component" has been resolved.
+
 ## 23.1.39 (2023-10-04)
 
 ### Checkbox

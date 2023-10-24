@@ -6,7 +6,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { IGrid, ICellRenderer, CommandModel } from '../base/interface';
 import { CommandButtonType } from '../base/enum';
 import { CellRenderer } from './cell-renderer';
-import { appendChildren } from '../base/util';
+import { addStickyColumnPosition, appendChildren } from '../base/util';
 import { destroy, commandColumnDestroy  } from '../base/constant';
 
 /**
@@ -94,6 +94,9 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
         } else {
             addClass([].slice.call(node.getElementsByClassName('e-save-cancel')), 'e-hide');
             removeClass([].slice.call(node.getElementsByClassName('e-edit-delete')), 'e-hide');
+        }
+        if (this.parent.isFrozenGrid()) {
+            addStickyColumnPosition(this.parent, cell.column, node);
         }
         return node;
     }

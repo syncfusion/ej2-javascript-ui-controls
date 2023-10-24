@@ -412,6 +412,12 @@ export class BaseHistoryInfo {
                         }
                     }
                 }
+            } else if(this.action === 'SectionBreakContinuous' && insertTextPosition && this.editorHistory.isUndoing) {
+                if (insertTextPosition.offset === 0 && !isNullOrUndefined(insertTextPosition.paragraph.previousRenderedWidget) && insertTextPosition.paragraph.previousRenderedWidget instanceof ParagraphWidget && insertTextPosition.paragraph.previousRenderedWidget.isEndsWithPageBreak && insertTextPosition.paragraph.containerWidget instanceof BodyWidget && insertTextPosition.currentWidget === insertTextPosition.currentWidget.paragraph.firstChild && insertTextPosition.paragraph.containerWidget.sectionFormat.breakCode === 'NoBreak') {
+                    let section: BodyWidget = (insertTextPosition.paragraph.previousRenderedWidget as ParagraphWidget).containerWidget as BodyWidget;
+                    this.owner.editor.combineSectionInternal(this.owner.selection, section, insertTextPosition.paragraph.containerWidget);
+                    this.owner.editorModule.layoutWholeDocument();
+                }
             }
             let isRedoAction: boolean = (this.editorHistory.isRedoing && !isRemoveContent);
             isRemoveContent = this.lastElementRevision ? false : isRemoveContent;

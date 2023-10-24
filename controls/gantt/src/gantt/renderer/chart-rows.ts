@@ -1921,7 +1921,12 @@ export class ChartRows extends DateProcessor {
         if (!tr) {
             tr = this.ganttChartTableBody.childNodes[rowIndex as number];
         }
-        tr['style'].height = this.parent.treeGrid.getRowByIndex(rowIndex as number)['style'].height = this.parent.rowHeight + 'px';
+        if (this.parent.ganttChartModule.isExpandAll || this.parent.ganttChartModule.isCollapseAll) {
+            tr['style'].height = this.parent.treeGrid.getRowByIndex(rowIndex as number)['style'].height = this.parent.rowHeight + 'px';
+        }
+        else {
+           tr['style'].height = this.parent.treeGrid.getRows()[rowIndex as number]['style'].height = this.parent.rowHeight + 'px';
+        }
         this.parent.contentHeight = treeGridContentHeight;
         let rowIDs: string[] = [];
         let rowCounts: number = 0;
@@ -1938,7 +1943,12 @@ export class ChartRows extends DateProcessor {
                                 rowCounts++;
                                 (tr as HTMLElement).children[0]['style'].verticalAlign = 'baseline';
                                 (tr as HTMLElement).getElementsByClassName('e-taskbar-main-container')[k as number]['style'].marginTop = ((rowCounts as number) * this.parent.rowHeight) + this.taskBarMarginTop + 'px';
-                                tr['style'].height = this.parent.treeGrid.getRowByIndex(rowIndex as number)['style'].height = parseInt(tr['style'].height) + this.parent.rowHeight + 'px';
+                                if (this.parent.ganttChartModule.isExpandAll || this.parent.ganttChartModule.isCollapseAll) {
+                                    tr['style'].height = this.parent.treeGrid.getRowByIndex(rowIndex as number)['style'].height = parseInt(tr['style'].height) + this.parent.rowHeight + 'px';
+                                }
+                                else {
+                                    tr['style'].height = this.parent.treeGrid.getRows()[rowIndex as number]['style'].height = parseInt(tr['style'].height) + this.parent.rowHeight + 'px';
+                                }
                             }
                         }
                         else {
@@ -1972,7 +1982,12 @@ export class ChartRows extends DateProcessor {
         if (index !== -1 && selectedItem) {
             const data: IGanttData = selectedItem;
             if (!this.parent.allowTaskbarOverlap && this.parent.viewType === 'ResourceView' && data.expanded) {
-                tr['style'].height = this.parent.treeGrid.getRowByIndex(index as number)['style'].height = this.parent.rowHeight + 'px';
+                if (this.parent.ganttChartModule.isExpandAll || this.parent.ganttChartModule.isCollapseAll) {
+                    tr['style'].height = this.parent.treeGrid.getRowByIndex(index as number)['style'].height = this.parent.rowHeight + 'px';
+                }
+                else {
+                    tr['style'].height = this.parent.treeGrid.getRows()[index as number]['style'].height = this.parent.rowHeight + 'px';
+                }
             }
             if (this.parent.viewType === 'ResourceView' && data.hasChildRecords && !data.expanded && this.parent.enableMultiTaskbar) {
                 tr.replaceChild(this.getResourceParent(data).childNodes[0], tr.childNodes[0]);
@@ -2033,8 +2048,15 @@ export class ChartRows extends DateProcessor {
         addClass([cloneElement], 'collpse-parent-border');
         const id: string = (tRow as Element).querySelector('.' + cls.taskBarMainContainer).getAttribute('rowUniqueId');
         const ganttData: IGanttData = this.parent.getRecordByID(id);
-        const mainTaskbar: HTMLElement = (cloneElement.querySelector('.e-gantt-child-taskbar'));
-        if (this.parent.queryTaskbarInfo) {
+        if (!(isNullOrUndefined(ganttData)) && ganttData.ganttProperties.segments && ganttData.ganttProperties.segments.length > 0) {
+            const segmentedTasks: HTMLCollectionOf<HTMLElement> =
+                cloneElement.getElementsByClassName('e-segmented-taskbar') as HTMLCollectionOf<HTMLElement>
+            for (var i = 0; i < segmentedTasks.length; i++) {
+                this.triggerQueryTaskbarInfoByIndex(segmentedTasks[i as number], ganttData);
+            }
+        }
+        else if (this.parent.queryTaskbarInfo) {
+            const mainTaskbar: HTMLElement = (cloneElement.querySelector('.e-gantt-child-taskbar'));
             this.triggerQueryTaskbarInfoByIndex(mainTaskbar, ganttData);
         }
         let zIndex: string = "";

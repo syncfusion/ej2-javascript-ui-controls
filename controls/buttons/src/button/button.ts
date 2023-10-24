@@ -324,6 +324,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
                 this.controlStatus(newProp.disabled);
                 break;
             case 'iconCss': {
+                span = this.element.querySelector('span.e-btn-icon');
                 if (span) {
                     if (newProp.iconCss) {
                         span.className = 'e-btn-icon ' + newProp.iconCss;

@@ -32,6 +32,16 @@
       }
     }
 
+    &.e-device {
+      .e-pivotcell-container {
+        .e-stackedheadertext {
+          &.e-cellvalue {
+            align-self: center;
+          }
+        }
+      }
+    }
+
     .e-nextspan {
       display: inline-block;
       width: $pivotview-indent-space-size;

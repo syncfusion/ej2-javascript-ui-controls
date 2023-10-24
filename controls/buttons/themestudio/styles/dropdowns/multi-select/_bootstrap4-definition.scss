@@ -196,6 +196,25 @@ $multiselect-dropicon-closer-bigger-width: 34px !default;
     border-right-width: 0;
   }
 
+  .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
+    font-size: 12px;
+  }
+
+  .e-bigger .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-bigger.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
+    font-size: 14px;
+  }
+
+  .e-small .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-small.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
+    font-size: 10px;
+  }
+
+  .e-small.e-bigger .e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before,
+  .e-small.e-bigger.e-input-group.e-multiselect.e-control-wrapper .e-input-group-icon.e-ddl-icon::before {
+    font-size: 12px;
+  }
+
   .e-multiselect.e-rtl .e-input-group-icon.e-ddl-icon {
     border-left-width: 0;
     border-radius: 4px 0 0 4px;

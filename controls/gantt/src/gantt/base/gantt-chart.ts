@@ -380,8 +380,14 @@ export class GanttChart {
             this.parent.notify('chartMouseDown', e);
             this.parent.element.tabIndex = 0;
         }
-        if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
-            this.parent.treeGrid.endEdit();
+        let isTaskbarEdited: boolean = false;
+        if (this.parent.editSettings.allowTaskbarEditing && this.parent.element.querySelector('.e-left-resize-gripper')) {
+            isTaskbarEdited = true;
+        }
+        if (!isTaskbarEdited) {
+            if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
+                this.parent.treeGrid.endEdit();
+            }
         }
     }
 
@@ -393,6 +399,22 @@ export class GanttChart {
         }
 
     private ganttChartMouseUp(e: PointerEvent): void {
+        if (e.type === "touchend") {
+            var resizeCheck = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
+            if (!isNullOrUndefined(resizeCheck)) {
+                resizeCheck.remove()
+            }
+            var Check: HTMLElement = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar') || this.parent.chartPane.querySelector('.e-clone-taskbar');
+            if (!isNullOrUndefined(Check)) {
+                var clonetbody: HTMLElement = Check.parentElement;
+                var cloneTable: HTMLElement = clonetbody.parentElement;
+                cloneTable.remove()
+            }   
+            var falseline = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-gantt-false-line');
+            if (!isNullOrUndefined(falseline)) {
+                this.parent.editModule.taskbarEditModule.removeFalseLine(true)
+            }
+        }
         if (this.parent.editSettings.allowTaskbarEditing) { 
             this.parent.notify('chartMouseUp', e);
         }
@@ -413,22 +435,6 @@ export class GanttChart {
                 } else if (!isOnTaskbarElement && this.parent.autoFocusTasks) {
                     this.scrollToTarget(e); /** Scroll to task */
                 }
-            }
-        }
-        if (e.type === "touchend") {
-            var resizeCheck = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
-            if (!isNullOrUndefined(resizeCheck)) {
-                resizeCheck.remove()
-            }
-            var Check: HTMLElement = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
-            if (!isNullOrUndefined(Check)) {
-                var clonetbody: HTMLElement = Check.parentElement;
-                var cloneTable: HTMLElement = clonetbody.parentElement;
-                cloneTable.remove()
-            }   
-            var falseline = this.parent.ganttChartModule.chartBodyContainer.querySelector('.e-gantt-false-line');
-            if (!isNullOrUndefined(falseline)) {
-                this.parent.editModule.taskbarEditModule.removeFalseLine(true)
             }
         }
     }
@@ -485,6 +491,9 @@ export class GanttChart {
         var resizeCheck = this.parent.element.querySelector(".e-taskbar-resize-div")
         if(!isNullOrUndefined(resizeCheck)){
             resizeCheck.remove()
+        }
+        if (this.parent.allowTaskbarDragAndDrop && this.parent.editModule && this.parent.editModule.taskbarEditModule) {
+            this.parent.editModule.taskbarEditModule['previousLeftValue'] = 0;
         }
         if (this.parent.allowRowDragAndDrop) {
             const ganttDragElemet: HTMLElement = this.parent.element.querySelector('.e-ganttdrag');
@@ -634,6 +643,14 @@ export class GanttChart {
     private contextClick(e: PointerEvent): void {
         if (this.parent.allowFiltering && this.parent.filterModule) {
             this.parent.filterModule.closeFilterOnContextClick(e.srcElement as Element);
+        }
+        if (this.parent.allowTaskbarDragAndDrop) {
+            let Check: HTMLElement = this.parent.chartPane.querySelector('.e-clone-taskbar')
+            if (!isNullOrUndefined(Check)) {
+                let clonetbody: HTMLElement = Check.parentElement;
+                let cloneTable: HTMLElement = clonetbody.parentElement;
+                cloneTable.remove()
+            } 
         }
     }
 

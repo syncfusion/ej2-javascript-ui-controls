@@ -80,6 +80,7 @@ export class FormDesigner {
     private formFieldListItemDataSource: object[] = [];
     private isInitialField: boolean = false;
     private isSetFormFieldMode: boolean = false;
+    private isAddFormFieldProgrammatically: boolean = false;
     private increasedSize: number = 5;
     private defaultZoomValue: number = 1;
     private signatureFieldPropertyChanged: any =
@@ -2421,6 +2422,7 @@ export class FormDesigner {
     public updateFormField(formFieldId: string | object,
         options: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings | DropdownFieldSettings | RadioButtonFieldSettings | SignatureFieldSettings | InitialFieldSettings): void {
         let formField: PdfFormFieldBaseModel = this.getFormField(formFieldId);
+        let selectedItem:any = this.pdfViewer.selectedItems.formFields[0];
         this.isFormFieldUpdated = true;
         if (formField) {
             if (!formField.isReadonly || (!isNullOrUndefined(options.isReadOnly) && !options.isReadOnly)) {
@@ -2434,7 +2436,8 @@ export class FormDesigner {
                     let inputElement: Element = document.getElementById(formField.id + "_content_html_element");
                     if (inputElement) {
                         inputElement = inputElement.firstElementChild.firstElementChild;
-                        this.formFieldPropertyChange(formField, options, inputElement as HTMLElement);
+                        this.isAddFormFieldProgrammatically = true;
+                        this.formFieldPropertyChange(formField, options, inputElement as HTMLElement, selectedItem);
                     }
                     else {
                         this.updateFormFieldsInCollections(formFieldId, options);
@@ -2586,7 +2589,7 @@ export class FormDesigner {
         return color;
     }
     private formFieldPropertyChange(formFieldObject: PdfFormFieldBaseModel,
-        options: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings | DropdownFieldSettings | RadioButtonFieldSettings | SignatureFieldSettings | InitialFieldSettings, htmlElement: HTMLElement): void {
+        options: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings | DropdownFieldSettings | RadioButtonFieldSettings | SignatureFieldSettings | InitialFieldSettings, htmlElement: HTMLElement, selectedItem ?: any): void {
         let isValueChanged: boolean = false, isFontFamilyChanged: boolean = false, isFontSizeChanged: boolean = false, isFontStyleChanged: boolean = false, isColorChanged: boolean = false,
             isBackgroundColorChanged: boolean = false, isBorderColorChanged: boolean = false, isBorderWidthChanged: boolean = false, isAlignmentChanged: boolean = false, isReadOnlyChanged: boolean = false,
             isVisibilityChanged: boolean = false, isMaxLengthChanged: boolean = false, isRequiredChanged: boolean = false, isPrintChanged: boolean = false, isToolTipChanged: boolean = false, isNameChanged: boolean = false;
@@ -2851,12 +2854,17 @@ export class FormDesigner {
                     oldValue = formFieldObject.value;
                     newValue = (options as TextFieldSettings).value;
                 }
-                formFieldObject.value = (options as TextFieldSettings).value;
+                if (formFieldObject.formFieldAnnotationType === "Textbox" && (options as TextFieldSettings).isMultiline) {
+                    this.addMultilineTextbox(selectedItem, "e-pv-formfield-input", true);
+                    this.multilineCheckboxCheckedState = true;
+                    document.getElementById(selectedItem.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(selectedItem) : this.updateFormFieldPropertiesInCollections(selectedItem);
+                }
+                formFieldObject.value = (options as TextFieldSettings).value ? (options as TextFieldSettings).value : formFieldObject.value;
                 if (!isNullOrUndefined((options as TextFieldSettings).isMultiline) && formFieldObject.isMultiline != (options as TextFieldSettings).isMultiline) {
                     isValueChanged = true;
                     formFieldObject.isMultiline = (options as TextFieldSettings).isMultiline;
                 }
-                if (!(formFieldObject.formFieldAnnotationType === 'DropdownList' || formFieldObject.formFieldAnnotationType === 'ListBox')) {
+                if (!(formFieldObject.formFieldAnnotationType === 'DropdownList' || formFieldObject.formFieldAnnotationType === 'ListBox') && !isNullOrUndefined((options as TextFieldSettings).value)) {
                     (htmlElement as IElement).value = (options as TextFieldSettings).value;
                 }
                 else if( formFieldObject.formFieldAnnotationType === "DropdownList" || formFieldObject.formFieldAnnotationType === "ListBox")
@@ -2872,11 +2880,16 @@ export class FormDesigner {
                         (htmlElement as IElement).options.selectedIndex = (options as any).selectedIndex;
                     }
                 }
-                (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].value = (options as TextFieldSettings).value;
+                (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].value = (options as TextFieldSettings).value ? (options as TextFieldSettings).value : formFieldObject.value;
                 if (isValueChanged) {
                     this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, isValueChanged, false, false,
                         false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
                 }
+            }
+            else if (!(options as TextFieldSettings).isMultiline) {
+                this.renderTextbox(selectedItem);
+                this.multilineCheckboxCheckedState = true;
+                document.getElementById(selectedItem.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(selectedItem) : this.updateFormFieldPropertiesInCollections(selectedItem);
             }
             if ((options as any).fontSize) {
                 if (formFieldObject.fontSize !== (options as any).fontSize) {
@@ -4680,7 +4693,7 @@ export class FormDesigner {
             if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) {
                 this.updateNamePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
-            if (this.formFieldValue || isUndoRedo) {
+            if (this.isAddFormFieldProgrammatically ? selectedItem.value : this.formFieldValue || isUndoRedo) {
                 this.updateValuePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
             if (this.formFieldPrinting || isUndoRedo) {
@@ -4692,10 +4705,10 @@ export class FormDesigner {
             if (this.formFieldVisibility || isUndoRedo) {
                 this.updateVisibilityPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
-            if ((this.formFieldFontFamily && this.formFieldFontFamily.value) || isUndoRedo) {
+            if ((this.isAddFormFieldProgrammatically ? selectedItem.fontFamily : this.formFieldFontFamily && this.formFieldFontFamily.value) || isUndoRedo) {
                 this.updateFontFamilyPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
-            if ((this.formFieldFontSize && this.formFieldFontSize.value) || isUndoRedo) {
+            if ((this.isAddFormFieldProgrammatically ? selectedItem.fontSize : this.formFieldFontSize && this.formFieldFontSize.value) || isUndoRedo) {
                 this.updateFontSizePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
 
@@ -4742,7 +4755,7 @@ export class FormDesigner {
             if (this.formFieldReadOnly || isUndoRedo) {
                 this.updateIsReadOnlyPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
-            if (this.formFieldRequired || isUndoRedo) {
+            if (this.isAddFormFieldProgrammatically || this.formFieldRequired || isUndoRedo) {
                 this.updateIsRequiredPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
         }
@@ -4869,8 +4882,8 @@ export class FormDesigner {
             if (updateValue) {
                 isValueChanged = false;
             } else {
-                selectedItem.formFieldAnnotationType === "DropdownList" ? selectedItem.value = formFieldsData[index].FormField.value : selectedItem.value = this.formFieldValue.value;
-                selectedItem.formFieldAnnotationType === "DropdownList" ? element.value = formFieldsData[index].FormField.value : element.value = this.formFieldValue.value;
+                selectedItem.formFieldAnnotationType === "DropdownList" ? selectedItem.value = formFieldsData[index].FormField.value : selectedItem.value = this.formFieldValue ? this.formFieldValue.value : selectedItem.value;
+                selectedItem.formFieldAnnotationType === "DropdownList" ? element.value = formFieldsData[index].FormField.value : element.value = this.formFieldValue ? this.formFieldValue.value : selectedItem.value;
             }
         }
         if (index > -1) {
@@ -5057,7 +5070,7 @@ export class FormDesigner {
         let isFontSizeChanged: boolean = false
         let oldValue: any, newValue: any;
         let zoomValue: number = this.pdfViewerBase.getZoomFactor();
-        let fontSize = this.formFieldFontSize ? parseInt(this.formFieldFontSize.value.toString()) : null;
+        let fontSize = this.formFieldFontSize ? parseInt(this.formFieldFontSize.value.toString()) : (selectedItem && selectedItem.fontSize) ? parseInt(selectedItem.fontSize.toString()) : 10;
         let selectedFontSize: number = parseInt(selectedItem.fontSize);
         if (selectedFontSize !== fontSize) {
             isFontSizeChanged = true;
@@ -5068,7 +5081,7 @@ export class FormDesigner {
             element.style.fontSize = (selectedItem.fontSize * zoomValue) + 'px'.toString();
         } else {
             selectedItem.fontSize = fontSize;
-            element.style.fontSize = parseInt(this.formFieldFontSize.value.toString()) * zoomValue + 'px';
+            element.style.fontSize = this.formFieldFontSize ? (parseInt(this.formFieldFontSize.value.toString()) * zoomValue + 'px') : parseInt(selectedItem.fontSize.toString()) * zoomValue + 'px';
         }
         if (index > -1) {
             formFieldsData[index].FormField.fontSize = selectedItem.fontSize;
@@ -5302,7 +5315,7 @@ export class FormDesigner {
             this.formFieldRequired = new CheckBox();
             this.formFieldRequired.checked = selectedItem.isRequired;
         } else {
-            selectedItem.isRequired = this.formFieldRequired.checked;
+            selectedItem.isRequired = this.formFieldRequired ? this.formFieldRequired.checked : selectedItem.isRequired;
         }
         if (index > -1) {
             formFieldsData[index].FormField.isRequired = selectedItem.isRequired;

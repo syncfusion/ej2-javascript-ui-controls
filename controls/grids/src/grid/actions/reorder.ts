@@ -482,9 +482,6 @@ export class Reorder implements IAction {
     private drag(e: { target: Element, column: Column, event: MouseEvent }): void {
         const gObj: IGrid = this.parent;
         let target: Element = e.target as Element;
-        if (!e.column.allowReordering || e.column.lockColumn) {
-            return;
-        }
         const closest: Element = closestElement(target, '.e-headercell:not(.e-stackedHeaderCell)');
         const cloneElement: HTMLElement = gObj.element.querySelector('.e-cloneproperties') as HTMLElement;
         const content: Element = gObj.getContent().firstElementChild;
@@ -497,12 +494,17 @@ export class Reorder implements IAction {
         if (closest && !closest.isEqualNode(this.element)) {
             target = closest;
             //consider stacked, detail header cell
-            if (!(!this.chkDropPosition(this.element, target) || !this.chkDropAllCols(this.element, target))) {
+            const uid: string = target.querySelector('.e-headercelldiv, .e-stackedheadercelldiv').getAttribute('e-mappinguid');
+            if (!(!this.chkDropPosition(this.element, target) || !this.chkDropAllCols(this.element, target)) &&
+                gObj.getColumnByUid(uid).allowReordering && e.column.allowReordering) {
                 this.updateArrowPosition(target, isLeft);
                 classList(target, ['e-allowDrop', 'e-reorderindicate'], []);
             } else if (!(gObj.allowGrouping && parentsUntil(e.target as Element, 'e-groupdroparea'))) {
                 classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
             }
+        }
+        if (!e.column.allowReordering || e.column.lockColumn) {
+            return;
         }
         gObj.trigger(events.columnDrag, { target: target, draggableType: 'headercell', column: e.column });
     }

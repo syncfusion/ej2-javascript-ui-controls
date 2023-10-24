@@ -482,7 +482,9 @@ export class ConnectorLine {
                     }
                 }
             }
-            heightValue = Math.abs(parentOverlapTopValue - childOverlapTopValue);
+            if (!this.parent.enableVirtualization) {
+               heightValue = Math.abs(parentOverlapTopValue - childOverlapTopValue);
+            }
         }
         if (this.parent.currentViewData[data.parentIndex] && this.parent.currentViewData[data.childIndex] && this.parent.allowParentDependency) {
             let fromRecordIsParent: boolean = this.parent.currentViewData[data.parentIndex].hasChildRecords;
@@ -573,6 +575,9 @@ export class ConnectorLine {
                 d: this.arrowPath,
                 class: cls.connectorLineArrow
             });
+            let outlineColor = (this.lineColor) && !(this.parent.enableCriticalPath) ? this.lineColor : '';
+            this.connectorPath.setAttribute('style', `stroke: ${outlineColor}`);
+            this.arrowlinePath.setAttribute('style', `fill: ${outlineColor}`)
             // Append the path element to the group element
             this.groupObject.appendChild(this.connectorPath);
             this.groupObject.appendChild(this.arrowlinePath);

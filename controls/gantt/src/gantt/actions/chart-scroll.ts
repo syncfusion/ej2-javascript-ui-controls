@@ -97,7 +97,12 @@ export class ChartScroll {
                 for (let i: number = 0; i < parent.currentViewData.length; i++) {
                     const tr: Element = parent.chartRowsModule.ganttChartTableBody.childNodes[i as number];
                     if (tr['style'].display !== 'none' && parent.currentViewData[i as number].hasChildRecords && !parent.currentViewData[i as number].expanded) {
-                        parent.treeGrid.getRowByIndex(i as number)['style'].height = tr['style'].height;
+                        if (parent.ganttChartModule.isExpandAll || parent.ganttChartModule.isCollapseAll) {
+                           parent.treeGrid.getRowByIndex(i as number)['style'].height = tr['style'].height;
+                        }
+                        else {
+                            parent.treeGrid.getRows()[i as number]['style'].height = tr['style'].height;
+                        }
                     }
                 }
                 parent.contentHeight = parent.enableRtl ? parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :

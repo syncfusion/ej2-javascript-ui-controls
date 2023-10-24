@@ -157,6 +157,10 @@
       padding: $grid-bigger-content-padding $grid-bigger-content-right-padding;
     }
 
+    .e-summarycell.e-lastrowcell {
+      border-bottom-width: 1px;
+    }
+
     .e-rowcell .e-checkbox-wrapper,
     .e-rowcell .e-css.e-checkbox-wrapper {
       @if $grid-skin == 'material3' {
@@ -1855,6 +1859,9 @@
       }
       white-space: normal;
       word-wrap: break-word;
+      &.e-lastrowcell {
+        border-bottom-width: 1px;
+      }
     }
 
     .e-summarycontent {

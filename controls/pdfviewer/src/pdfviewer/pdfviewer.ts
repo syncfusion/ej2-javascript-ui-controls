@@ -8174,7 +8174,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             } else {
                 if (this.signatureFitMode === 'Default') {
                     // eslint-disable-next-line
-                    let signBounds: any = this.formFieldsModule.updateSignatureAspectRatio(currentData.Value, false, null, currentData);
+                    let signBounds: any = this.viewerBase.signatureModule.updateSignatureAspectRatio(currentData.Value, false, null, currentData);
                     // eslint-disable-next-line
                     bounds = this.formFieldsModule.getSignBounds(currentData.pageIndex, currentData.RotationAngle, currentData.pageIndex, this.viewerBase.getZoomFactor(), left, top, signBounds.width, signBounds.height, true);
                     bounds.x = bounds.x + signBounds.left;

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 23.1.42 (2023-10-24)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I509234` - Now, the multiline property is properly updated when the `updateformfields` API is called programmatically.
+- `#I509208` - Now, the script error no longer occurs when adding the signature event without injecting the form fields.
+
 ## 23.1.41 (2023-10-17)
 
 ### PDF Viewer

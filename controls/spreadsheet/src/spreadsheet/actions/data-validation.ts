@@ -1,6 +1,6 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, IOffset, IViewport, completeAction } from '../index';
 import { isValidation, checkDateFormat, applyCellFormat, activeCellChanged, NumberFormatArgs } from '../../workbook/common/index';
-import { getCell, setCell, getFormattedCellObject, getColorCode } from '../../workbook/index';
+import { getCell, setCell, getFormattedCellObject, getColorCode, getFormattedBarText } from '../../workbook/index';
 import { CellModel } from '../../workbook/base/cell-model';
 import { FormValidatorModel, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { L10n, EventHandler, remove, closest, isNullOrUndefined, select, Browser, Internationalization } from '@syncfusion/ej2-base';
@@ -373,7 +373,7 @@ export class DataValidation {
 
     private initiateDataValidationHandler(okClick?: boolean, noClick?: boolean): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let type: string;
+        let type: ValidationType;
         let operator: string;
         let value1: string;
         let value2: string;
@@ -472,11 +472,26 @@ export class DataValidation {
     }
 
     private dataValidationContent(
-        isNew: boolean, type: string, operator: string, val1: string, val2: string, ignoreBlank: boolean,
+        isNew: boolean, type: ValidationType, operator: string, val1: string, val2: string, ignoreBlank: boolean,
         inCellDropDown: boolean, range: string): HTMLElement {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const value1: string = isNew ? '0' : val1;
-        const value2: string = isNew ? '0' : val2;
+        let value1: string; let value2: string;
+        if (isNew) {
+            value1 = value2 = '0';
+        } else {
+            value1 = val1; value2 = val2;
+            if (type === 'Date') {
+                const getFormattedDate: (val: string) => string = (val: string): string => {
+                    if (isNumber(val)) {
+                        const args: { cell: CellModel, type: string, value: string } = { cell: { value: val }, type: 'date', value: val };
+                        this.parent.notify(getFormattedBarText, args);
+                        return args.value;
+                    }
+                    return val;
+                }
+                value1 = getFormattedDate(value1); value2 = getFormattedDate(value2);
+            }
+        }
         const dlgContent: HTMLElement = this.parent.createElement('div', { className: 'e-validation-dlg' });
         const cellRangeCont: HTMLElement = this.parent.createElement('div', { className: 'e-cellrange' });
         const allowDataCont: HTMLElement = this.parent.createElement('div', { className: 'e-allowdata' });
@@ -520,12 +535,12 @@ export class DataValidation {
         ];
         const allowSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
         if (type) {
-            type = this.FormattedType(type);
+            type = this.formattedType(type);
         }
         let allowIdx: number = 0;
         if (!isNew) {
             for (let idx: number = 0; idx < this.typeData.length; idx++) {
-                if (type === this.FormattedType(this.typeData[idx as number].text as string)) {
+                if (type === this.formattedType(this.typeData[idx as number].text as string)) {
                     allowIdx = idx;
                     break;
                 }
@@ -538,7 +553,7 @@ export class DataValidation {
             const dataSelectEle: HTMLElement = this.parent.createElement('input', { className: 'e-select' });
             if (!isNew) {
                 for (let idx: number = 0; idx < this.operatorData.length; idx++) {
-                    if (operator === this.FormattedValue(this.operatorData[idx as number].text as string)) {
+                    if (operator === this.formattedValue(this.operatorData[idx as number].text as string)) {
                         dataIdx = idx;
                         break;
                     }
@@ -888,11 +903,10 @@ export class DataValidation {
             allowData.querySelector('.e-data').querySelector('.e-checkbox-wrapper').querySelector('.e-check') ? true : false : null;
         const range: string = (dlgContEle.querySelector('.e-cellrange').getElementsByTagName('input')[0] as HTMLInputElement).value;
         let operator: string;
-        let type: string = (allowEle as HTMLInputElement).value;
-        type = this.FormattedType(type);
+        const type: ValidationType = this.formattedType((allowEle as HTMLInputElement).value);
         if (dataEle) {
             operator = (dataEle as HTMLInputElement).value;
-            operator = this.FormattedValue(operator);
+            operator = this.formattedValue(operator);
         }
         let rangeAdd: string[] = [];
         const valArr: string[] = [];
@@ -926,14 +940,11 @@ export class DataValidation {
         }
         if (isValid) {
             const sheet: SheetModel = this.parent.getActiveSheet();
-            const format: string = type;
-            const validDlg: { isValidate: boolean, errorMsg: string } = this.isDialogValidator(valArr, format, operator);
-            if (operator === 'Between') {
-                if (!isNaN(parseFloat(valueArr[0])) && !isNaN(parseFloat(valueArr[1])) &&
-                    parseFloat(valueArr[0]) > parseFloat(valueArr[1])) {
-                    validDlg.isValidate = false;
-                    validDlg.errorMsg = l10n.getConstant('MinMaxError');
-                }
+            const validDlg: { isValidate: boolean, errorMsg: string } = this.isDialogValidator(valArr, type, operator);
+            if (operator === 'Between' && validDlg.isValidate && !isNaN(parseFloat(valArr[0])) && !isNaN(parseFloat(valArr[1])) &&
+                parseFloat(valArr[0]) > parseFloat(valArr[1])) {
+                validDlg.isValidate = false;
+                validDlg.errorMsg = l10n.getConstant('MinMaxError');
             }
             errorMsg = validDlg.errorMsg;
             isValid = validDlg.isValidate;
@@ -941,7 +952,7 @@ export class DataValidation {
                 const indexes: number[] = getCellIndexes(sheet.activeCell);
                 let cell: CellModel = getCell(indexes[0], indexes[1], sheet, false, true);
                 const isListValidationApplied: boolean = cell.validation && cell.validation.type === 'List';
-                const args: CellValidationEventArgs = { range: sheet.name + '!' + range, value1: valueArr[0], value2: valueArr[1],
+                const args: CellValidationEventArgs = { range: sheet.name + '!' + range, value1: valArr[0], value2: valArr[1] || '',
                     ignoreBlank: ignoreBlank, type: <ValidationType>type, operator: <ValidationOperator>operator, inCellDropDown:
                     inCellDropDown, cancel: false };
                 this.parent.notify(beginAction, { eventArgs: args, action: 'validation' });
@@ -982,7 +993,7 @@ export class DataValidation {
         }
     }
 
-    private FormattedValue(value: string): string {
+    private formattedValue(value: string): string {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         switch (value) {
         case l10n.getConstant('Between'):
@@ -1016,7 +1027,7 @@ export class DataValidation {
         return value;
     }
 
-    private FormattedType(value: string): string {
+    private formattedType(value: string): ValidationType {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         switch (value) {
         case l10n.getConstant('WholeNumber'):
@@ -1040,10 +1051,10 @@ export class DataValidation {
         default:
             break;
         }
-        return value;
+        return <ValidationType>value;
     }
 
-    private isDialogValidator(values: string[], type: string, operator: string): { isValidate: boolean, errorMsg: string } {
+    private isDialogValidator(values: string[], type: ValidationType, operator: string): { isValidate: boolean, errorMsg: string } {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         let count: number = 0;
         let isEmpty: boolean = false;
@@ -1058,9 +1069,20 @@ export class DataValidation {
             }
         }
         if (!isEmpty) {
+            let value: string;
             for (let idx: number = 0; idx < values.length; idx++) {
-                const value: string = checkIsFormula(values[idx as number]) ? this.parent.computeExpression(
-                    values[idx as number]).toString() : values[idx as number];
+                if (checkIsFormula(values[idx as number])) {
+                    value = this.parent.computeExpression(values[idx as number]).toString();
+                } else {
+                    if (type === 'Date' || type === 'Time') {
+                        value = this.getDateAsNumber({ range: [], cell: { value: values[idx as number] } }, values[idx as number]);
+                        if (type === 'Date') {
+                            values[idx as number] = value;
+                        }
+                    } else {
+                        value = values[idx as number];
+                    }
+                }
                 formValidation = this.formatValidation(value, type, true);
                 if (formValidation.isValidate) {
                     count = count + 1;
@@ -1073,6 +1095,13 @@ export class DataValidation {
             formValidation = { isValidate: false, errorMsg: l10n.getConstant('EmptyError') };
         }
         return { isValidate: formValidation.isValidate, errorMsg: formValidation.errorMsg };
+    }
+
+    private getDateAsNumber(args: { range: number[], cell?: CellModel, sheetIdx?: number }, cellValue: string): string {
+        const dateEventArgs: { [key: string]: string | number | CellModel } = { value: cellValue, rowIndex: args.range[0], cell: args.cell,
+            colIndex: args.range[1], sheetIndex: args.sheetIdx, updatedVal: '' };
+        this.parent.notify(checkDateFormat, dateEventArgs);
+        return <string>dateEventArgs.updatedVal || cellValue;
     }
 
     private isValidationHandler(
@@ -1111,42 +1140,48 @@ export class DataValidation {
                 isValidate = true;
             } else {
                 const isDateTimeType: boolean = type === 'Date' || type === 'Time';
-                if (args.value && !isDateTimeType && !isNumber(args.value)) {
-                    let format: string = cell && cell.format; let numVal: string | number;
-                    if (format) {
-                        if (format !== '@') {
-                            try {
-                                let colorCode: string = getColorCode(format);
-                                while (colorCode) {
-                                    format = format.split(`[${colorCode}]`).join('');
-                                    colorCode = getColorCode(format);
-                                }
-                                const intl: Internationalization = new Internationalization(this.parent.locale);
-                                const curSymbol: string = getNumberDependable(locale, defaultCurrencyCode);
-                                if (curSymbol !== '$' && format.includes('$') && args.value.includes(curSymbol)) {
-                                    format = format.split('$').join(curSymbol);
-                                }
-                                if (format.includes('%') && args.value.indexOf('%') > 0) {
-                                    numVal = <number>intl.getNumberParser({ format: 'n' })(args.value);
-                                    const idx: number = format.indexOf('%');
-                                    if (format[idx - 1] !== '"') {
-                                        numVal /= 100;
-                                    }
-                                } else {
-                                    numVal = intl.getNumberParser({ format: format })(args.value);
-                                }
-                            } catch (error) {
-                                numVal = args.value;
-                            }
-                        }
+                if (args.value && !isNumber(args.value)) {
+                    if (isDateTimeType || validation.type === 'TextLength') {
+                        value = args.value = this.getDateAsNumber(args, args.value);
                     } else {
-                        const formatArgs: NumberFormatArgs = { formattedText: args.value, value: args.value, format: 'General',
-                            cell: { value: args.value, format: 'General' } };
-                        this.parent.notify(getFormattedCellObject, formatArgs);
-                        numVal = formatArgs.value;
-                    }
-                    if (numVal !== args.value && isNumber(numVal)) {
-                        value = args.value = numVal.toString();
+                        let format: string = cell && cell.format; let numVal: string | number;
+                        if (format) {
+                            if (format !== '@') {
+                                try {
+                                    let colorCode: string = getColorCode(format);
+                                    while (colorCode) {
+                                        format = format.split(`[${colorCode}]`).join('');
+                                        colorCode = getColorCode(format);
+                                    }
+                                    const intl: Internationalization = new Internationalization(this.parent.locale);
+                                    const curSymbol: string = getNumberDependable(locale, defaultCurrencyCode);
+                                    if (curSymbol !== '$' && format.includes('$') && args.value.includes(curSymbol)) {
+                                        format = format.split('$').join(curSymbol);
+                                    }
+                                    if (format.includes('%') && args.value.indexOf('%') > 0) {
+                                        numVal = <number>intl.getNumberParser({ format: 'n' })(args.value);
+                                        const idx: number = format.indexOf('%');
+                                        if (format[idx - 1] !== '"') {
+                                            numVal /= 100;
+                                        }
+                                    } else {
+                                        numVal = intl.getNumberParser({ format: format })(args.value);
+                                    }
+                                } catch (error) {
+                                    numVal = args.value;
+                                }
+                            }
+                        } else {
+                            const formatArgs: NumberFormatArgs = {
+                                formattedText: args.value, value: args.value, format: 'General',
+                                cell: { value: args.value, format: 'General' }
+                            };
+                            this.parent.notify(getFormattedCellObject, formatArgs);
+                            numVal = formatArgs.value;
+                        }
+                        if (numVal !== args.value && isNumber(numVal)) {
+                            value = args.value = numVal.toString();
+                        }
                     }
                 }
                 const formValidation: { isValidate: boolean, errorMsg: string } = this.formatValidation(args.value, type);
@@ -1155,44 +1190,14 @@ export class DataValidation {
                 if (isValidate) {
                     isValidate = false;
                     if (isDateTimeType) {
-                        args.value = args.value.toString().slice(args.value.toString().indexOf(' ') + 1, args.value.length);
-                        for (let idx: number = 0; idx < 3; idx++) {
-                            args.value = idx === 0 ? args.value : idx === 1 ? value1 : value2;
-                            const dateEventArgs: { [key: string]: string | number } = {
-                                value: args.value,
-                                rowIndex: args.range[0],
-                                colIndex: args.range[1],
-                                sheetIndex: args.sheetIdx,
-                                updatedVal: ''
-                            };
-                            if (args.value !== '') {
-                                this.parent.notify(checkDateFormat, dateEventArgs);
-                            }
-                            let updatedVal: string = dateEventArgs.updatedVal as string;
-                            updatedVal = updatedVal === '' ? args.value : updatedVal;
-                            if (idx === 0) {
-                                value = updatedVal;
-                            } else if (idx === 1) {
-                                value1 = updatedVal;
-                            } else {
-                                value2 = updatedVal;
-                            }
+                        if (value1 && !isNumber(value1)) {
+                            value1 = this.getDateAsNumber(args, value1);
+                        }
+                        if (value2 && !isNumber(value2)) {
+                            value2 = this.getDateAsNumber(args, value2);
                         }
                     } else if (validation.type === 'TextLength') {
-                        const dateEventArgs: { [key: string]: string | number } = {
-                            value: args.value,
-                            rowIndex: args.range[0],
-                            colIndex: args.range[1],
-                            sheetIndex: args.sheetIdx,
-                            updatedVal: ''
-                        };
-                        this.parent.notify(checkDateFormat, dateEventArgs);
-                        const updatedVal: string = dateEventArgs.updatedVal as string;
-                        if (updatedVal !== '') {
-                            value = updatedVal.toString().length.toString();
-                        } else {
-                            value = args.value.toString().length.toString();
-                        }
+                        value = args.value.toString().length.toString();
                     }
                     if (type === 'List') {
                         if (value1.indexOf('=') !== -1) {
@@ -1347,18 +1352,22 @@ export class DataValidation {
         }
     }
 
-    private formatValidation(value: string, type: string, isDialogValidator?: boolean): { isValidate: boolean, errorMsg: string } {
+    private formatValidation(value: string, type: ValidationType, isDialogValidator?: boolean): { isValidate: boolean, errorMsg: string } {
         const sheetPanel: HTMLElement = this.parent.element.getElementsByClassName('e-sheet-panel')[0] as HTMLElement;
         let errorMsg: string;
         const formEle: HTMLElement = this.parent.createElement('form', { id: 'formId', className: 'form-horizontal' });
         const inputEle: HTMLElement = this.parent.createElement('input', { id: 'e-validation' });
         inputEle.setAttribute('name', 'validation');
         inputEle.setAttribute('type', 'text');
+        if (type === 'Date' && isNumber(value)) {
+            const valArr: string[] = value.toString().split('.');
+            if (valArr.length == 2) {
+                value = valArr[0];
+            }
+        }
         inputEle.setAttribute('value', value);
-
         formEle.appendChild(inputEle);
         sheetPanel.appendChild(formEle);
-
         let options: FormValidatorModel;
         switch (type) {
         case 'Date':

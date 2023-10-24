@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 23.1.42 (2023-10-24)
+
+### Mention
+
+#### Bug Fixes
+
+- `#I506552` - Resolved issue with "Full popup is not visible when we open it at the edge of the screen".
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I498924` - Issue with the locale property in the Dropdown Tree component has been resolved.
+
 ## 23.1.41 (2023-10-17)
 
 ### MultiSelect
@@ -22,7 +36,6 @@
 
 #### Bug Fixes
 
-- `#I498924` - Issue with the locale property in the Dropdown Tree component has been resolved.
 - `#F184672` - Issue with the `checkAll` and `uncheckAll` status not updated properly has been resolved.
 
 ## 23.1.38 (2023-09-26)

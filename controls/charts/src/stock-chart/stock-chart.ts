@@ -682,7 +682,9 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         for (const property of Object.keys(newProp)) {
             switch (property) {
             case 'series':
-                this.render();
+                this.storeDataSource();
+                this.chartRender();
+                this.stockChartDataManagerSuccess();
                 break;
             }
         }
@@ -820,10 +822,9 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             }
             this.renderComplete();
             this.allowServerDataBinding = true;
-            this.isProtectedOnChange = false;
             this.isStockChartRendered = true;
         });
-
+        this.isProtectedOnChange = false;
     }
 
     /**

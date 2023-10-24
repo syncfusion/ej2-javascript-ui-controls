@@ -166,7 +166,7 @@ export class Group implements IAction {
         if (isNullOrUndefined(column) || column.allowGrouping === false ||
             parentsUntil(gObj.getColumnHeaderByUid(column.uid), 'e-grid').getAttribute('id') !==
             gObj.element.getAttribute('id')) {
-            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), columnName: column.headerText });
+            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), columnName: column ? column.headerText : undefined });
             return;
         }
         this.groupColumn(column.field);

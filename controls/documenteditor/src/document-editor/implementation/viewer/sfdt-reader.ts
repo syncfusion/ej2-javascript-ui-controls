@@ -1260,7 +1260,7 @@ export class SfdtReader {
                         if (lineWidgetCount >= 2) {
                             let fieldTextElement: ElementBox = this.containsFieldBegin(lineWidget);
                             if (!isNullOrUndefined(fieldTextElement) && fieldTextElement instanceof TextElementBox && (fieldTextElement.text.match('PAGE') || fieldTextElement.text.match('page'))) {
-                                const textField: any = fieldTextElement.text;
+                                const textField: any = fieldTextElement.text.replace(/^\s+/g, '');
                                 if (!textField.startsWith('HYPERLINK')) {
                                     this.documentHelper.isPageField = true;
                                 }

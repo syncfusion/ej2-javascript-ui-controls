@@ -3616,10 +3616,15 @@ export class Layout {
 
     private splitByCharacter(lineWidget: LineWidget, textElement: TextElementBox, text: string, width: number, characterFormat: WCharacterFormat): void {
         const paragraph: ParagraphWidget = lineWidget.paragraph;
-        const index: number = this.getTextSplitIndexByCharacter(this.viewer.clientArea.width, this.viewer.clientActiveArea.width, text, width, characterFormat, textElement.scriptType);
+        let atleastSpacing: number = paragraph.paragraphFormat.lineSpacingType === 'AtLeast' ? paragraph.paragraphFormat.afterSpacing : 0;
+        let index: number = this.getTextSplitIndexByCharacter(this.viewer.clientArea.width, this.viewer.clientActiveArea.width, text, width, characterFormat, textElement.scriptType);
         // if the index is zero, no need to split text by character. so, we can avoid the empty text element creation.
         if (index === 0 && textElement.previousNode instanceof ImageElementBox && textElement.previousNode.textWrappingType === "Right") {
             return;
+        } else if (index === 0 && !isNullOrUndefined(textElement) && textElement.length > 0 && (Math.max(textElement.height, atleastSpacing) <= this.viewer.clientArea.height)
+            && this.viewer.clientActiveArea.width === 0 && lineWidget.children.indexOf(textElement) === 0) {
+            //Eventhough, there is zero remaining client area width and fit atleast one character of word in a line only if there is no item fitted in same line.
+            index = 1;
         }
         let splitWidth: number = 0;
         if (index < textElement.length) {
@@ -4172,10 +4177,14 @@ export class Layout {
             if (element instanceof TextElementBox || element instanceof ListTextElementBox) {
                 let elementHeight: number = element.height;
                 let baselineOffset: number = element.baselineOffset;
+                let isCellContentControl: boolean = false;
                 //We have increased the checkbox form field font size using a constant factor `CHECK_BOX_FACTOR`
                 //To match the MS Word check box rendering size.
                 //Due to it line height also get increased. So, handled adjusting height while updating line height.
-                if (element instanceof TextElementBox && element.isCheckBoxElement) {
+                if (element instanceof TextElementBox && element.isCheckBoxElement && !isNullOrUndefined(element.previousNode) && element.previousNode instanceof ContentControl && element.previousNode.contentControlWidgetType === 'Cell') {
+                    isCellContentControl = true;
+                }
+                if (element instanceof TextElementBox && element.isCheckBoxElement && !isCellContentControl) {
                     elementHeight = elementHeight / CHECK_BOX_FACTOR;
                     baselineOffset = baselineOffset / CHECK_BOX_FACTOR;
                 }
@@ -10162,6 +10171,7 @@ export class Layout {
             this.viewer.cutFromTop(y);
             this.documentHelper.owner.editor.isFootNoteInsert = true;
             this.layoutfootNote(paragraph.containerWidget.containerWidget);
+            this.documentHelper.owner.editor.isFootNoteInsert = false;
             return;
         } else if (lineToLayout.paragraph.isEmpty()) {
             this.viewer.cutFromTop(paragraph.y);

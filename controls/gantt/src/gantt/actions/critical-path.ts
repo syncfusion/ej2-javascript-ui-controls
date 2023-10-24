@@ -651,6 +651,7 @@ export class CriticalPath {
                     fromRecord.isCritical = record.ganttProperties.isCritical;
                     fromRecord.ganttProperties.isCritical = record.ganttProperties.isCritical;
                     if (criticalPathIds.indexOf(fromRecord.ganttProperties.taskId) === -1 && fromRecord.ganttProperties.isCritical && fromRecord.ganttProperties.progress < 100) {
+                        criticalPathIds.push(fromRecord.ganttProperties.taskId);
                         this.validatedids.push(parseInt(fromRecord.ganttProperties.taskId));
                         if (this.criticalTasks.indexOf(fromRecord) === -1) {
                            this.criticalTasks.push(fromRecord);

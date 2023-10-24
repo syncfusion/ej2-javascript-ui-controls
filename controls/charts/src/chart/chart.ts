@@ -4191,7 +4191,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             series.trendlines.map((trendline: Trendline) => {
                 markerEnable = markerEnable || trendline.marker.visible;
                 isLine = isLine || (trendline.type === 'Linear' || trendline.type === 'MovingAverage') ? true : false;
-                isSpline = isSpline || !isLine ? true : false;
+                isSpline = isSpline || (!isLine || (trendline.type === 'Exponential' || trendline.type === 'Logarithmic' || trendline.type === 'Power')) ? true : false;
             });
             if (markerEnable) {
                 modules.push({

@@ -59,7 +59,7 @@ export class DataLabel {
             transform = 'translate(' + series.clipRect.x + ',' + (series.clipRect.y) + ')';
             clipPath = 'url(#' + this.chart.element.id + '_ChartSeriesClipRect_' + index + ')';
         }
-        if (marker.dataLabel.visible) {
+        if (marker.dataLabel.visible && !this.chart.enableCanvas) {
             series.shapeElement = render.createGroup({
                 'id': this.chart.element.id + 'ShapeGroup' + index,
                 'transform': transform,

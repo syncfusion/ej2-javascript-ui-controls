@@ -111,8 +111,8 @@
           #{if(&, '&', '*')} .e-title {
             cursor: $range-cursor-pointer-style;
             line-height: $range-normal-nav-icon-height;
-            width: $range-control-header-width;
             @if ($skin-name != 'FluentUI') {
+              width: $range-control-header-width;
               float: $range-float-none;
               font-weight: $range-font-weight-normal;
               margin-left: $range-value-zero;
@@ -126,12 +126,13 @@
             }
           }
           #{if(&, '&', '*')} .e-next {
-            float: $range-float-right;
+            @if ($skin-name != 'FluentUI') {
+              float: $range-float-right;
+            }
           }
           #{if(&, '&', '*')} .e-prev {
-            float: $range-float-left;
-            @if ($skin-name == 'FluentUI') {
-              float: $range-float-right;
+            @if ($skin-name != 'FluentUI') {
+              float: $range-float-left;
             }
           }
           #{if(&, '&', '*')} .e-next,
@@ -275,7 +276,9 @@
             float: $range-float-left;
           }
           #{if(&, '&', '*')} .e-prev {
-            float: $range-float-right;
+            @if ($skin-name != 'FluentUI') {
+              float: $range-float-right;
+            }
           }
           #{if(&, '&', '*')} .e-start-date.e-selected.e-range-hover {
             border-radius: $range-hover-end-radius;

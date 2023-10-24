@@ -2220,8 +2220,28 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 }
                 node = wrapContent.lastChild;
             }
-            if (node && (node.nodeType === 3 || node.nodeType === 1 || node.nodeType === 8)) {
-                if (!args.isRowFill && node.nodeType !== 8) {
+            if (((this as { isAngular?: boolean }).isAngular || (this as { isVue?: boolean }).isVue) &&
+                td.classList.contains('e-cell-template') && node && (node.nodeType === 8 || node.nodeType === 3)) {
+                if (node.nodeType === 3 || value !== '') {
+                    const checkNodeFn: Function = () => {
+                        if (!td.childElementCount) {
+                            if (node.nodeType === 3) {
+                                if (!args.isRowFill) {
+                                    node.nodeValue = value;
+                                }
+                            } else {
+                                td.appendChild(document.createTextNode(value));
+                            }
+                        }
+                    };
+                    if ((this as { isAngular?: boolean }).isAngular) {
+                        getUpdateUsingRaf(checkNodeFn);
+                    } else {
+                        checkNodeFn();
+                    }
+                }
+            } else if (node && (node.nodeType === 3 || node.nodeType === 1)) {
+                if (!args.isRowFill) {
                     node.nodeValue = value;
                 }
             } else {

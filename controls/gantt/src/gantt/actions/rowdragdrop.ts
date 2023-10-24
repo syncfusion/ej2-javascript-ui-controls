@@ -456,12 +456,12 @@ export class RowDD {
     private deleteSharedResourceTask(): void {
         for (let i: number = 0; i < this.parent.getTaskIds().length; i++) {
             if (this.parent.getTaskIds()[i as number] === 'T' + this.draggedRecord.ganttProperties.taskId) {
-                if (this.parent.getTaskByUniqueID(this.parent.currentViewData[i as number].parentItem.uniqueID).ganttProperties.taskName !== 'Unassigned Task') {
-                    this.removeRecords(this.parent.currentViewData[i as number]);
+                if (this.parent.getTaskByUniqueID(this.parent.flatData[i as number].parentItem.uniqueID).ganttProperties.taskName !== 'Unassigned Task') {
+                    this.removeRecords(this.parent.flatData[i as number]);
                 }
                 /* eslint-disable-next-line */
-                if (!isNullOrUndefined(this.parent.currentViewData[i].parentItem && this.updateParentRecords.indexOf(this.parent.currentViewData[i].parentItem) !== -1)) {
-                    this.updateParentRecords.push(this.parent.currentViewData[i as number].parentItem);
+                if (!isNullOrUndefined(this.parent.flatData[i].parentItem && this.updateParentRecords.indexOf(this.parent.flatData[i].parentItem) !== -1)) {
+                    this.updateParentRecords.push(this.parent.flatData[i as number].parentItem);
                 }
             }
         }
@@ -485,7 +485,7 @@ export class RowDD {
                 this.parent.editModule.updateGanttProperties(this.draggedRecord, this.parent.flatData[i as number]);
                 this.parent.dataOperation.updateTaskData(this.parent.flatData[i as number]);
                 /* eslint-disable-next-line */
-                if (!isNullOrUndefined(this.parent.flatData[i].parentItem && this.updateParentRecords.indexOf(this.parent.currentViewData[i].parentItem) !== -1)) {
+                if (!isNullOrUndefined(this.parent.flatData[i].parentItem && this.updateParentRecords.indexOf(this.parent.flatData[i].parentItem) !== -1)) {
                     this.updateParentRecords.push(this.parent.flatData[i as number].parentItem);
                 }
             }
@@ -908,7 +908,7 @@ export class RowDD {
                 }
                 const data: IGanttData[] = [];
                 for (let i: number = 0; i < fromIndexes.length; i++) {
-                    data[i as number] = this.parent.updatedRecords[fromIndexes[i as number]];
+                    data[i as number] = this.parent.flatData[fromIndexes[i as number]];
                 }
                 const isByMethod: boolean = true;
                 const args: RowDropEventArgs = {

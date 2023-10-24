@@ -54,6 +54,7 @@ export class Mention extends DropDownBase {
     private range: Range;
     private displayTempElement: HTMLElement;
     private isCollided: boolean;
+    private collision: string[];
     private spinnerElement: HTMLElement;
     private spinnerTemplateElement: HTMLElement;
     private lineBreak: boolean;
@@ -1048,6 +1049,8 @@ export class Mention extends DropDownBase {
                 this.initializePopup(popupEle, offsetValue, left);
                 this.checkCollision(popupEle);
                 popupEle.style.visibility = 'visible';
+                let popupLeft: number = popupEle.parentElement.offsetWidth - popupEle.offsetWidth;
+                let popupHeight: number = popupEle.offsetHeight;
                 addClass([popupEle], ['e-mention' , 'e-popup',  'e-popup-close']);
                 if (!isNullOrUndefined(this.list)) {
                     this.unWireListEvents(); this.wireListEvents();
@@ -1073,9 +1076,23 @@ export class Mention extends DropDownBase {
                         if (!this.isCollided) {
                             popupEle.style.cssText = 'top: '.concat(coordinates.top.toString(), 'px;\n left: ').concat(coordinates.left.toString(), 'px;\nposition: absolute;\n display: block;');
                         } else {
-                            popupEle.style.left = formatUnit(coordinates.left);
-                            popupEle.style.top = formatUnit(coordinates.top - parseInt(this.popupHeight.toString()));
+                            if(this.collision.length > 0 && this.collision.indexOf('right') > -1 && this.collision.indexOf('bottom') === -1) {
+                                popupEle.style.cssText = 'top: '.concat(coordinates.top.toString(), 'px;\n left: ').concat(popupLeft.toString(), 'px;\nposition: absolute;\n display: block;');
+                            }
+                            else if(this.collision && this.collision.length > 0 && this.collision.indexOf('bottom') > -1 && this.collision.indexOf('right') === -1) {
+                                popupEle.style.left = formatUnit(coordinates.left);
+                                popupEle.style.top = formatUnit(coordinates.top - parseInt(popupHeight.toString()));
+                            }
+                            else if(this.collision && this.collision.length > 0 && this.collision.indexOf('bottom') > -1 && this.collision.indexOf('right') > -1) {
+                                popupEle.style.left = formatUnit(popupLeft);
+                                popupEle.style.top = formatUnit(coordinates.top - parseInt(popupHeight.toString()));
+                            }
+                            else {
+                                popupEle.style.left = formatUnit(coordinates.left);
+                                popupEle.style.top = formatUnit(coordinates.top - parseInt(this.popupHeight.toString()));
+                            }
                             this.isCollided = false;
+                            this.collision = [];
                         }
                         popupEle.style.width = this.popupWidth !== '100%' && !isNullOrUndefined(this.popupWidth) ? formatUnit(this.popupWidth) : 'auto';
                         this.setHeight(popupEle);
@@ -1103,8 +1120,8 @@ export class Mention extends DropDownBase {
     private checkCollision(popupEle: HTMLElement): void {
         if (!Browser.isDevice || (Browser.isDevice && !(this.getModuleName() === 'mention'))) {
             let coordinates: { [key: string]: number } = this.getCoordinates(this.inputElement, this.getTriggerCharPosition());
-            const collision: string[] = isCollide(popupEle, null, coordinates.left, coordinates.top);
-            if (collision.length > 0) {
+            this.collision = isCollide(popupEle, null, coordinates.left, coordinates.top);
+            if (this.collision.length > 0) {
                 popupEle.style.marginTop = -parseInt(getComputedStyle(popupEle).marginTop, 10) + 'px';
                 this.isCollided = true;
             }
@@ -1241,10 +1258,18 @@ export class Mention extends DropDownBase {
             };
             document.body.removeChild(div);
         } else {
-            coordinates = {
-                top: rect.top + windowTop + parseInt(getComputedStyle(this.inputElement).fontSize, 10) - (this.isCollided ? 10 : 0),
-                left: rect.left + windowLeft + width
-            };
+            if (this.collision && this.collision.length > 0 && this.collision.indexOf('right') > -1  && this.collision.indexOf('bottom') === -1) {
+                coordinates = {
+                    top: rect.top + windowTop + parseInt(getComputedStyle(this.inputElement).fontSize, 10),
+                    left: rect.left + windowLeft + width
+                };
+            }
+            else {
+                coordinates = {
+                    top: rect.top + windowTop + parseInt(getComputedStyle(this.inputElement).fontSize, 10) - (this.isCollided ? 10 : 0),
+                    left: rect.left + windowLeft + width
+                };
+            }
         }
         return coordinates;
     }

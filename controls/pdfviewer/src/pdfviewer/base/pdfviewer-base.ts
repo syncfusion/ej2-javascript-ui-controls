@@ -3584,7 +3584,7 @@ export class PdfViewerBase {
                     // eslint-disable-next-line
                     this.pdfViewer.firePageClick(offsetX, offsetY, pageIndex + 1);
                     if (this.pdfViewer.formFieldsModule && !this.pdfViewer.formDesignerModule) {
-                        this.pdfViewer.formFieldsModule.removeFocus();
+                        this.signatureModule.removeFocus();
                     }
                 }
                 if (this.isTextMarkupAnnotationModule() && !this.isToolbarInkClicked) {
@@ -5539,7 +5539,7 @@ export class PdfViewerBase {
         if (this.pdfViewer.formFieldsModule && !this.isDocumentLoaded && !this.pdfViewer.formDesignerModule) {
             this.pdfViewer.formFieldsModule.renderFormFields(pageIndex, false);
         }
-        if (this.pdfViewer.formDesignerModule && this.isDocumentLoaded && (this.pdfViewer.magnificationModule ? this.pdfViewer.magnificationModule.isFormFieldPageZoomed : true)) {
+        if (this.pdfViewer.formDesignerModule && this.isDocumentLoaded && (this.pdfViewer.magnificationModule ? this.pdfViewer.magnificationModule.isFormFieldPageZoomed : true) && this.pdfViewer.formFieldsModule) {
             this.pdfViewer.formFieldsModule.renderFormFields(pageIndex, false);
             if (this.pdfViewer.magnificationModule) {
                 this.pdfViewer.magnificationModule.isFormFieldPageZoomed = false;

@@ -2277,6 +2277,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     }
                 } else {
                     this.internalCreateFileList(fileData);
+                    if (this.autoUpload && this.sequenceUpload && this.filesData.length > 0 && this.filesData[this.filesData.length - 1 as number].statusCode !== '2') {
+                        this.filesData = this.filesData.concat(fileData);
+                        return;
+                    }
                     this.filesData = this.filesData.concat(fileData);
                     if (!this.isForm || this.allowUpload()) {
                         this.checkAutoUpload(fileData);

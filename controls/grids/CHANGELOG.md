@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## 23.1.42 (2023-10-24)
+
+### Grid
+
+#### Bug fixes
+
+- `#I507214` - The problem of displaying an empty tooltip with batch-edited cells has been resolved.
+- `#I504365` - Fixed an issue where the request for aggregate was not sent when the `disablePageWiseAggregate` property was enabled in custom binding.
+- `#I507080` - The issue related to the styling of the Lazy Load Group with a `groupCaptionTemplate` has been resolved.
+- `#I501881` - Fixed an issue where the drop indicator for the column should be displayed when dragging a column into another column.
+- `#I511484` - The issue where the Grid did not render properly when the `editSetting` property was defined without injecting the `editModule` has been resolved.
+
+## 23.1.41 (2023-10-17)
+
+### Grid
+
+#### Bug fixes
+
+- `#I510239` - Error occurs when changing the State through clicking the button rendered in the Column Template has been fixed.
+- `#I494272` - In mobile view unable to interact with the page after double-clicking on the filter date icon issue has been fixed.
+- `#I423460` - Fixed an issue where the grid froze with a loading spinner when collapsing grouped items in an infinite scroll enabled grid.
+- `#I503487` - In the `actionFailure` event, the failure message argument is now sent correctly.
+- `#I509249` - The script error that occurred when saving the edited row at the bottom in the presence of grouping has been fixed.
+- `#I508136` - Row reorder occurs while editing with inline mode with grouping in complex data has been fixed.
+- `#I490262` - The problem where checkbox filtering was not working properly when cancelling the filtering has been fixed.
+- `#I504493` - The pager elements are now rendered correctly when the grid is hidden and then shown again.
+- `#I511064` - The problem with `frozenColumns` are not working when declared in the `dataBound` event has been resolved.
+
 ## 23.1.40 (2023-10-10)
 
 ### Grid

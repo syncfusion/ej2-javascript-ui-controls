@@ -356,7 +356,8 @@ export class LineDistribution {
             }
             /* tslint:enable */
             //EJ2-70198 - The layout ConnectionPointOrigin DifferentPoint property is not working for bezier connector
-            if(connectorObstacle.wrapper === "Orthogonal"){
+            //Bug 851920: Connector overlaps the node in complex hierarchical tree layout. Here the below condition is modified to check connector type.
+            if(connectorObstacle.wrapper.type === "Orthogonal"){
                 this.resetConnectorPoints(connectorObstacle.wrapper, diagram);
             }
         }

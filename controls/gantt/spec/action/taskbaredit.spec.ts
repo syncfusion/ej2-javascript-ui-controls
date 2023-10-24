@@ -2868,7 +2868,7 @@ describe("cloneTaskbar drag drop", () => {
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1)').getElementsByClassName('e-taskbar-main-container')[1] as HTMLElement;
         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mousemove', 70, 150);
-        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        var cloneElement = ganttObj.element.getElementsByClassName('e-clone-taskbar');
         expect(! isNullOrUndefined(cloneElement)).toBe(true);
         var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
         expect(! isNullOrUndefined(resizeCheck)).toBe(true);
@@ -2961,7 +2961,7 @@ describe(" cloneTaskbar drag drop without overallocation", () => {
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1)').getElementsByClassName('e-taskbar-main-container')[1] as HTMLElement;
         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mousemove', 70, 200);
-        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+        var cloneElement = ganttObj.element.getElementsByClassName('e-clone-taskbar');
         expect(! isNullOrUndefined(cloneElement)).toBe(true);
         var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
         expect(! isNullOrUndefined(resizeCheck)).toBe(true);
@@ -2979,7 +2979,7 @@ describe(" cloneTaskbar drag drop without overallocation", () => {
     let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1)').getElementsByClassName('e-taskbar-main-container')[1] as HTMLElement;
     triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
     triggerMouseEvent(dragElement, 'mousemove', 70, 300);
-    var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
+    var cloneElement = ganttObj.element.getElementsByClassName('e-clone-taskbar');
     expect(! isNullOrUndefined(cloneElement)).toBe(true);
     var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
     expect(! isNullOrUndefined(resizeCheck)).toBe(true);

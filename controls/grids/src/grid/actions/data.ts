@@ -594,7 +594,8 @@ export class Data implements IDataProcessor {
         const state: DataStateChangeEventArgs = this.getStateEventArgument(query);
         const def: Deferred = new Deferred();
         const deff: Deferred = new Deferred();
-        if (args.requestType !== undefined && this.dataState.isDataChanged !== false) {
+        if ((args.requestType !== undefined || (this.parent.groupSettings.disablePageWiseAggregates && query.queries.some((query: { fn: string; }) => query.fn === 'onGroup')))
+         && this.dataState.isDataChanged !== false) {
             state.action = <{}>args;
             if (args.requestType === 'save' || args.requestType === 'delete') {
                 const editArgs: DataSourceChangedEventArgs = args;
