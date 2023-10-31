@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.43 (2023-10-31)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I503129` - The issue with the `Details` view header alignment in the File Manager component has been resolved.
+
 ## 23.1.40 (2023-10-10)
 
 ### FileManager

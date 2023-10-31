@@ -740,11 +740,11 @@ export class Virtualization {
         }
     }
 
-    public addItem(data: DataSource[], fields: Fields, dataSource: DataSource[]): void {
+    public addItem(data: DataSource[], fields: Fields, dataSource: DataSource[], index: number): void {
         for (let i: number = 0; i < data.length; i++) {
             const currentItem: { [key: string]: object; } = data[i as number];
             // push the given data to main data array
-            dataSource.push(currentItem);
+            dataSource = this.listViewInstance.addItemAtIndex(index, dataSource, currentItem);
             // recalculate all the group data or other datasource related things
             this.listViewInstance.setViewDataSource(dataSource);
             // render list items for first time due to no datasource present earlier

@@ -127,20 +127,21 @@ export class ScatterSeries {
         const imageURL : string = argsData.point.marker.imageUrl || marker.imageUrl;
         const shapeOption: PathOption = new PathOption(
             chart.element.id + '_Series_' + series.index + '_Point_' + point.index, argsData.fill,
-            argsData.border.width, argsData.border.color, series.opacity, null
+            argsData.border.width, (series.chart.enableCanvas && !argsData.border.color) ? argsData.fill : argsData.border.color, series.opacity, null
         );
         if (chart.redraw && getElement(shapeOption.id)) {
             circlePath = argsData.shape === 'Circle' ? 'c' : '';
             previousPath = getElement(shapeOption.id).getAttribute('d');
         }
+        let element: Element = drawSymbol(
+            point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height),
+            imageURL, shapeOption, point.x.toString() + ':' + point.yValue.toString(),
+            series.chart.renderer, series.clipRect
+        );
         appendChildElement(
-            series.chart.enableCanvas, series.seriesElement, drawSymbol(
-                point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height),
-                imageURL, shapeOption, point.x.toString() + ':' + point.yValue.toString(),
-                series.chart.svgRenderer, series.clipRect
-            ),
+            series.chart.enableCanvas, series.seriesElement, element,
             chart.redraw, true, circlePath + 'x', circlePath + 'y',
-            startLocation, previousPath
+            startLocation, previousPath, false, false, null, null, true
         );
         point.regions.push(new Rect(
             point.symbolLocations[0].x - marker.width, point.symbolLocations[0].y - marker.height,
@@ -151,9 +152,6 @@ export class ScatterSeries {
             height: argsData.height, visible: true,
             width: argsData.width, shape: argsData.shape, imageUrl: imageURL
         };
-        if (series.chart.enableCanvas) {
-            series.chart.markerRender.render(series);
-        }
     }
     /**
      * Animates the series.

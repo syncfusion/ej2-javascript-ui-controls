@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 23.1.43 (2023-10-31)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I506971` - Now, Overview with html node is updated properly when we zoom-out the diagram.
+- `#I505963` - Now, Exception occurs due to line routing constraints enabled is resolved.
+
+## 23.1.42 (2023-10-24)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I503100` - Now, Property Change Event triggers while Z-index value get changed.
+- `#F184671` - Now, the overview updated properly after loading the diagram.
+- `#I502515` – Now, the connector overlapping is resolved when enable routing is set to true.
+
 ## 23.1.40 (2023-10-10)
 
 ### Diagram

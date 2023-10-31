@@ -4541,7 +4541,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             }
                             if (series && (series.dataSource || series.query || series.errorBar || series.xName ||
                                 series.yName || series.size || series.high || series.low || series.open || series.close || series.trendlines ||
-                                series.fill || series.name || series.marker || series.width || series.binInterval || blazorProp)) {
+                                series.fill || series.name || series.marker || series.width || series.binInterval || series.type || blazorProp)) {
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }

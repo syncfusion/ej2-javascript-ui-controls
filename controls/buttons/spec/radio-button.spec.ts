@@ -307,6 +307,11 @@ describe('RadioButton', () => {
             radio.click();
             radio.focusIn();
         });
+        it('HtmlAttributes property not working properly in RadioButton', () => {
+            radio = new RadioButton({htmlAttributes: { 'data-containerid': 'error-agreement', 'test': 'test' }}, '#radio');
+            expect(radio.element.parentElement.getAttribute('data-containerid').indexOf('error-agreement')).toEqual(0);
+            expect(radio.element.parentElement.getAttribute('test').indexOf('test')).toEqual(0);
+        });
     });
 
     describe('RadioButton in HTML5 forms', () => {

@@ -6689,3 +6689,40 @@ describe('846696 - Ctrl+Z undo doesn’t works in smart suggestion sample', () =
         destroy(rteObj);
     });
 });
+describe("852045 - Not able to resize the table when having saveInterval as 1.", function () {
+    var rteObj: RichTextEditor;
+    beforeAll(function () {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['CreateTable']
+            },
+            saveInterval:1,
+            value: `<table class=\"e-rte-table\" style=\"width: 100%; min-width: 0px;\"><tbody><tr><td class=\"\" style=\"width: 14.687%;\"><br></td><td style=\"width: 51.9262%;\"><br></td><td style=\"width: 33.3333%;\"><br></td></tr><tr><td style=\"width: 14.687%;\"><br></td><td style=\"width: 51.9262%;\"><br></td><td style=\"width: 33.3333%;\"><br></td></tr></tbody></table><p>RTE</p><div class=\"e-table-rhelper null e-column-helper\" style=\"height: 50px; top: 16px; left: 198px;\"></div>`
+        });
+        rteObj.saveInterval = 10;
+        rteObj.dataBind();
+    });
+    afterAll(function () {
+        destroy(rteObj);
+    });
+    it("Table resize gripper element", function (done) {
+        let table :any =  (rteObj.tableModule as any).contentModule.getEditPanel().querySelector('table');
+        (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+        expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-table-box') !== null).toBe(true);
+        rteObj.focusIn();
+        setTimeout(function () {
+            var resizeElement = document.createElement("div");
+            resizeElement.innerHTML = rteObj.value;
+            expect(resizeElement.querySelectorAll(".e-table-box").length == 0).toBe(true);
+            done();
+        }, 400);
+    });
+    it("Table resize gripper element in getHtml method", function (done) {
+        let table :any =  (rteObj.tableModule as any).contentModule.getEditPanel().querySelector('table');
+        (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+        var resizeElement = document.createElement("div");
+        resizeElement.innerHTML = rteObj.getHtml();
+        expect(resizeElement.querySelectorAll(".e-table-box").length == 0).toBe(true);
+        done();
+    });
+});

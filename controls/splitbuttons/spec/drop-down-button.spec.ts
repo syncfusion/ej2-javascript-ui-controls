@@ -634,6 +634,7 @@ describe('DropDownButton', () => {
                     expect(args.name).toBe('select');
                     expect(args.element).toBe(li[2] as HTMLElement);
                     expect(args.item.text).toBe('Paste');
+                    expect(args.event).not.toBeNull();
                 }
             });
             drpButton.appendTo('#drp-button');

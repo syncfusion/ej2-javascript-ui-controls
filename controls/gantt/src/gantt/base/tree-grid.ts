@@ -897,8 +897,8 @@ export class GanttTreeGrid {
         }
     }// eslint-disable-next-line
     private durationValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string { 
+        if (!isNullOrUndefined(data) && !isNullOrUndefined(data.ganttProperties))  {
         const ganttProp: ITaskData = data.ganttProperties;
-        if (!isNullOrUndefined(ganttProp)) {
             return this.parent.dataOperation.getDurationString(ganttProp.duration, ganttProp.durationUnit);
         }
 	else if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {

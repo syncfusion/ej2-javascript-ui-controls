@@ -2855,6 +2855,63 @@ describe("EJ2-833425 - Collapsed event triggered multiple times in virtualizatio
   });
 });
 
+describe("852080- External data source filter not working with virtualization after scrolling", () => {
+  let treegrid: TreeGrid;
+  let searchText: string = "";
+  function getDataSource() {
+    let counter = 0;
+    let rowId = 0;
+    let _items = [];
+  
+    while (counter < 10000) {
+      counter++;
+      _items.push({
+        Id: counter,
+        Name: 'ABC ' + counter,
+        Version: Math.random() * 10,
+        Children: [],
+      });
+      rowId++;
+    }
+  
+    if (searchText) {
+      _items = _items.filter((x) => x.Name.includes(searchText));
+    }
+  
+    return _items;
+  }
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: getDataSource(),
+            enableVirtualization: true,
+            treeColumnIndex: 1,
+            childMapping: 'Children',
+            height: 317,
+        columns: [
+          { field: 'Id', headerText: 'Player Jersey', width: 140, textAlign: 'Right' },
+          { field: 'Name', headerText: 'Player Name', width: 140 },
+          { field: 'Version', headerText: 'Year', width: 120, textAlign: 'Right' }
+        ],
+      },
+      done
+    );
+  });
+  it("search after scroll", (done: Function) => {
+    (<HTMLElement>treegrid.getContent().firstChild).scrollTop = 4000;
+    searchText = "ABC 9999";
+    treegrid.dataSource = getDataSource();
+    done();
+  });
+  it("data check after search", (done: Function) => {
+    expect(treegrid.getCurrentViewRecords().length == 1).toBe(true);
+    done();
+  });
+  afterAll(() => {
+    destroy(treegrid);
+  });
+});
+
 describe("Cell Editing with Virtual Scrolling", () => {
   let gridObj: TreeGrid;
   beforeAll((done: Function) => {

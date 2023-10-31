@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 23.1.42 (2023-10-24)
+## 23.1.43 (2023-10-31)
+
+### ListView
+
+#### Bug Fixes
+
+- `#I494960` - Provided support to add list item in corresponding index position of ListView without adjusting scroll current position.
+
+## 23.1.36 (2023-09-15)
 
 ### ListView
 

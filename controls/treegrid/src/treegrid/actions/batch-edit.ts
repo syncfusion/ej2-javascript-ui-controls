@@ -213,11 +213,6 @@ export class BatchEdit {
                 this.parent.grid.getRowsObject()[parseInt(rowObjectIndex.toString(), 10)].data = added;
                 this.newBatchRowAdded = false;
             }
-            if (this.parent.frozenColumns || this.parent.getFrozenColumns()
-                && this.parent.grid.getRowsObject()[parseInt(rowObjectIndex.toString(), 10)].edit === 'add') {
-                merge(this.currentViewRecords[parseInt(rowObjectIndex.toString(), 10)],
-                      this.parent.grid.getRowsObject()[parseInt(rowObjectIndex.toString(), 10)].changes);
-            }
         }
     }
 

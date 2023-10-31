@@ -1943,7 +1943,8 @@ export class DataUtil {
                 if (typeof array[i] === 'object' && array[i] !== null) {
                     DataUtil.parse.iterateAndReviveJson(array[i]);
                 // eslint-disable-next-line no-useless-escape
-                } else if (typeof array[i] === 'string' && !/^[\s]*\[|^[\s]*\{(.)+:|\"/g.test(<string>array[i])) {
+                } else if (typeof array[i] === 'string' && (!/^[\s]*\[|^[\s]*\{(.)+:|\"/g.test(<string>array[i]) ||
+                    array[i].toString().indexOf('"') === -1)) {
                     array[i] = DataUtil.parse.jsonReviver('', array[i]);
                 } else {
                     array[i] = DataUtil.parse.parseJson(array[i]);

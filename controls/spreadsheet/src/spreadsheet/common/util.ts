@@ -13,6 +13,7 @@ import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeig
 import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, setCellFormat, updateCFModel } from '../../workbook/index';
 import { checkUniqueRange, applyCF, ActionEventArgs, skipHiddenIdx, isFilterHidden, ConditionalFormat } from '../../workbook/index';
 import { applyProtect, chartDesignTab, copy, cut, goToSheet, hideSheet, paste, performUndoRedo, refreshChartCellObj, removeHyperlink, removeWorkbookProtection, setProtectWorkbook, sheetNameUpdate, showSheet } from './event';
+import { keyCodes } from './constant';
 
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -698,6 +699,12 @@ export function isMouseMove(e: MouseEvent): boolean {
  */
 export function isMouseUp(e: MouseEvent): boolean {
     return e && (e.type === 'mouseup' || e.type === 'pointerup');
+}
+
+/** @hidden */
+export function isNavigationKey(keyCode: number): boolean {
+    return (keyCode === keyCodes.UP) || (keyCode === keyCodes.DOWN) || (keyCode === keyCodes.LEFT)
+        || (keyCode === keyCodes.RIGHT);
 }
 
 /**

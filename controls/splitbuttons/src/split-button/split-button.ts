@@ -346,7 +346,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     private setAria(): void {
         attributes(this.element, {
             'aria-expanded': 'false', 'aria-haspopup': 'true',
-            'aria-label': this.element.textContent + ' splitbutton', 'aria-owns': this.element.id + '_dropdownbtn-popup'
+            'aria-label': this.element.textContent ? this.element.textContent + ' splitbutton' : 'splitbutton', 'aria-owns': this.element.id + '_dropdownbtn-popup'
         });
     }
 

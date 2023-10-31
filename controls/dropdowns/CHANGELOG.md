@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 23.1.43 (2023-10-31)
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I509217` - Resolved the issue where an empty space was created after clearing the values from the comboBox.
+
+### Mention
+
+#### Bug Fixes
+
+- `#F182215` - Fixed "In Android, unable to remove a selected value from Mention using backspace key and also keyboard hides".
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I508339` - The persistence issue during page navigation has been resolved.
+- `#I498924` - Issue with the locale property in the Dropdown Tree component has been resolved.
+
 ## 23.1.42 (2023-10-24)
 
 ### Mention
@@ -9,12 +30,6 @@
 #### Bug Fixes
 
 - `#I506552` - Resolved issue with "Full popup is not visible when we open it at the edge of the screen".
-
-### DropDownTree
-
-#### Bug Fixes
-
-- `#I498924` - Issue with the locale property in the Dropdown Tree component has been resolved.
 
 ## 23.1.41 (2023-10-17)
 
@@ -29,7 +44,6 @@
 #### Bug Fixes
 
 - `#I498409` - Fixed an issue where the preselected `value` was getting cleared when updating the data source.
-
 - `#I500431` - Fixed issue where the preselected `value` through `index` property was not updated when updating the data source.
 
 ### DropDownTree

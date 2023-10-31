@@ -217,7 +217,7 @@ export class Filter {
             const ganttElement: Element = closest(element, '#' + this.parent.element.id)
                 || element.querySelector('#' + this.parent.element.id);
             if ((!(this.filterMenuElement.contains(element)) && !isNullOrUndefined(ganttElement)) || (!(this.filterMenuElement.contains(element)) && (isNullOrUndefined(datePickerElement)) 
-            && (isNullOrUndefined(dateTimePickerElement)) && ((element.nodeName === 'DIV') || (element.nodeName === 'HTML') || (element.nodeName === 'SPAN') || (element.nodeName === 'BUTTON')))) {
+            && (isNullOrUndefined(dateTimePickerElement)) && ((element.nodeName === 'DIV') || (element.nodeName === 'HTML') || (element.nodeName === 'SPAN') || (element.nodeName === 'BUTTON'))) && !element.classList.contains('e-dropdownbase')) {
                 remove(this.filterMenuElement);
                 this.parent.treeGrid.grid.notify('filter-menu-close', { isOpen: false });
                 this.filterMenuElement = null;

@@ -2399,9 +2399,6 @@ export class Series extends SeriesBase {
                     appendChildElement(chart.enableCanvas, chart.seriesElements, this.errorBarElement, redraw);
                 }
             }
-            if (this.type === 'Scatter' || this.type === 'Bubble' || this.drawType === 'Scatter') {
-                appendChildElement(chart.enableCanvas, chart.seriesElements, this.seriesElement, redraw);
-            }
         }
         if (
             marker.visible && (chart.chartAreaType === 'Cartesian' ||

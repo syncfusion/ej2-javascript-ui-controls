@@ -1894,7 +1894,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         const notFormatPainterCopy: boolean = isNOU((e as KeyboardEventArgs).action) ? true : ((e as KeyboardEventArgs).action !== 'format-copy' ? true : false);
-        if (this.formatter.getUndoRedoStack().length === 0 && notFormatPainterCopy && !(e.altKey || e.shiftKey || (e.altKey && e.shiftKey && e.which == 67))) {
+        if (this.formatter.getUndoRedoStack().length === 0 && notFormatPainterCopy &&
+            !(e.altKey || e.shiftKey || (e.altKey && e.shiftKey && e.which === 67))) {
             this.formatter.saveData();
         }
         if ((e as KeyboardEventArgs).action !== 'insert-link' &&
@@ -2999,9 +3000,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });
                 }
             } else {
-                if(target === 'windowResize' && heightPercent){
-                    // cntEle hide the borderBottom of RichTextEditor. so removed the 2px of cntEle height. 
-                    heightValue = parseInt(heightValue) - 2 + 'px';
+                if (target === 'windowResize' && heightPercent){
+                    //cntEle hide the borderBottom of RichTextEditor. so removed the 2px of cntEle height.
+                    heightValue = parseInt(heightValue, 10) - 2 + 'px';
                 }
                 setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });
             }
@@ -3025,7 +3026,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @public
      */
     public getHtml(): string {
-        const htmlValue: string = this.contentModule.getEditPanel().innerHTML;
+        const htmlValue: string = this.removeResizeElement(this.contentModule.getEditPanel().innerHTML);
         return (this.enableXhtml && (htmlValue === '<p><br></p>' || htmlValue === '<div><br></div>' ||
         htmlValue === '<br>') ? null : this.serializeValue(htmlValue));
     }
@@ -3037,7 +3038,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @public
      */
     public getXhtml(): string {
-        let currentValue: string = this.value;
+        let currentValue: string = this.removeResizeElement(this.value);
         if (!isNOU(currentValue) && this.enableXhtml) {
             currentValue = this.htmlEditorModule.xhtmlValidation.selfEncloseValidation(currentValue);
         }
@@ -3282,20 +3283,20 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private getUpdatedValue(): string {
         let value: string;
-        if (!isNOU(this.tableModule)) {
-            this.tableModule.removeResizeElement();
-        }
         const getTextArea: HTMLInputElement = this.element.querySelector('.e-rte-srctextarea') ;
         if (this.editorMode === 'HTML') {
             value = (this.inputElement.innerHTML === '<p><br></p>' || this.inputElement.innerHTML === '<div><br></div>' ||
             this.inputElement.innerHTML === '<br>') ? null : this.enableHtmlEncode ?
-                    this.encode(decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
+                    this.encode(decode(this.removeResizeElement(this.inputElement.innerHTML))) : this.inputElement.innerHTML;
             if (getTextArea && getTextArea.style.display === 'block') {
                 value = getTextArea.value;
             }
         } else {
             value = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
                 (this.inputElement as HTMLTextAreaElement).value;
+        }
+        if (value != null && !this.enableHtmlEncode) {
+            value = this.removeResizeElement(value);
         }
         return value;
     }
@@ -3311,7 +3312,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         clearTimeout(this.idleInterval);
         this.idleInterval = setTimeout(this.updateValueOnIdle.bind(this), 0);
     }
-
+    private removeResizeElement(value: string): string {
+        let valueElementWrapper: HTMLElement = document.createElement("div");
+        valueElementWrapper.innerHTML = value;
+        let item = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize');
+        if (item.length > 0) {
+            for (let i: number = 0; i < item.length; i++) {
+                detach(item[i as number]);
+            }
+        }
+        return valueElementWrapper.innerHTML;
+    }
     private updateStatus(e: StatusArgs): void {
         if (!isNOU(e.html) || !isNOU(e.markdown)) {
             const status: { [key: string]: boolean } = this.formatter.editorManager.undoRedoManager.getUndoStatus();
@@ -3360,6 +3371,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.notify(events.focusChange, {});
             const value: string = this.getUpdatedValue();
             this.setProperties({ value: value });
+            this.valueContainer.value = this.value;
             this.notify(events.toolbarRefresh, { args: e, documentNode: document });
             this.isValueChangeBlurhandler = true;
             this.invokeChangeEvent();

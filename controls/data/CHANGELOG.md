@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.43 (2023-10-31)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#I508715` - Script error throws while server data has double quotes is fixed.
+
 ## 23.1.36 (2023-09-15)
 
 ### DataManager

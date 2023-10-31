@@ -1728,12 +1728,15 @@ export class NodeDrawingTool extends ToolBase {
                 let left: any = page.offsetLeft;
                 let offsetX: number;
                 // eslint-disable-next-line
-                if (this.currentPosition.y >= pageHeight && event.target && (event.target as any).parentElement && (event.target as any).parentElement.classList.contains('foreign-object')) {
+                if (this.currentPosition.y >= pageHeight && event.target && (event.target as any).parentElement && (event.target as any).parentElement.classList.contains('foreign-object') && (event as any).path) {
                     // eslint-disable-next-line
                     var targetParentRect = (event as any).path[3].getBoundingClientRect();
                     // eslint-disable-next-line
                     offsetX = (event as any).clientX - targetParentRect.left;
-                } else {
+                } else if (isNullOrUndefined((event as any).path) && (this.drawingObject.formFieldAnnotationType === 'SignatureField' || this.drawingObject.formFieldAnnotationType === 'InitialField')) {
+                    offsetX = this.currentPosition.x;
+                }
+                else {
                     offsetX = this.currentPosition.x - left;
                 }
                 // eslint-disable-next-line

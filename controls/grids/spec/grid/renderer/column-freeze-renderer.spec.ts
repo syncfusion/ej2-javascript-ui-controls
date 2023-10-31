@@ -448,4 +448,28 @@ describe('Column freeze render module', () => {
             destroy(gridObj as any);
         });
     });
+
+    describe('EJ2-851714 - When the column field value is not defined, freeze property is not working properly', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [
+                        { headerText: 'CustomerID', width: 130, freeze: 'Left' },
+                        { headerText: 'OrderID', field: 'OrderID', width: 120, isPrimaryKey: true },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 100 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 150 },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 160 },
+                    ]
+                }, done);
+        });
+        it('Ensure 1st Column freeze ', () => {
+            expect((gridObj.getRows()[0] as any).cells[0].classList.contains('e-freezeleftborder')).toBeTruthy();
+        });
+        afterAll(() => {
+            gridObj['freezeModule'].destroy();
+            destroy(gridObj as any);
+        });
+    });
 });

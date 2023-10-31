@@ -418,6 +418,11 @@
           .e-rcursor {
             border: 0;
           }
+          
+          @if $fm-skin-name == 'fabric' or $fm-skin-name == 'fabric-dark' {
+            padding: 5px 8px;
+            line-height: 16px;
+          }
         }
 
         @include visibility(hidden);
@@ -467,6 +472,11 @@
               font-size: $fe-grid-content-name-font-size;
               line-height: 20px;
             }
+          }
+          
+          @if $fm-skin-name == 'fabric' or $fm-skin-name == 'fabric-dark' {
+            padding: 10px 8px;
+            line-height: 16px;
           }
         }
 

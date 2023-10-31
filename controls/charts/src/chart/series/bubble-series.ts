@@ -84,7 +84,7 @@ export class BubbleSeries {
                         marker.imageUrl, shapeOption, bubblePoint.x.toString() + ':' + bubblePoint.yValue.toString(),
                         series.chart.svgRenderer, series.clipRect
                     );
-                    appendChildElement(series.chart.enableCanvas, series.seriesElement, element, redraw);
+                    appendChildElement(series.chart.enableCanvas, series.seriesElement, element, redraw, false, '', '', null, '', false, false, null, null, true);
                     bubblePoint.regions.push(
                         new Rect(
                             bubblePoint.symbolLocations[0].x - segmentRadius,

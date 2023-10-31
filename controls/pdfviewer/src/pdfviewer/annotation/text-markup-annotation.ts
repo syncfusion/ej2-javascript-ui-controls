@@ -1105,9 +1105,9 @@ export class TextMarkupAnnotation {
         let subject: string;
         const context: CanvasRenderingContext2D = this.getPageContext(pageNumber);
         const modifiedDate: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
-        this.highlightColor = this.highlightColor? this.highlightColor : this.pdfViewer.highlightSettings.color;
-        this.underlineColor = this.underlineColor? this.underlineColor : this.pdfViewer.underlineSettings.color;
-        this.strikethroughColor = this.strikethroughColor? this.strikethroughColor : this.pdfViewer.strikethroughSettings.color;
+        this.highlightColor = this.highlightColor? this.highlightColor : this.pdfViewer.highlightSettings.color ? this.pdfViewer.highlightSettings.color : '#FFDF56';
+        this.underlineColor = this.underlineColor? this.underlineColor : this.pdfViewer.underlineSettings.color ? this.pdfViewer.underlineSettings.color : '#00ff00';
+        this.strikethroughColor = this.strikethroughColor? this.strikethroughColor : this.pdfViewer.strikethroughSettings.color ? this.pdfViewer.strikethroughSettings.color : '#ff0000';
         this.highlightOpacity = this.pdfViewer.highlightSettings.opacity;
         this.underlineOpacity = this.pdfViewer.underlineSettings.opacity;
         this.strikethroughOpacity = this.pdfViewer.strikethroughSettings.opacity;
@@ -1122,7 +1122,7 @@ export class TextMarkupAnnotation {
             switch (type) {
             case 'Highlight':
                 this.isNewAnnotation = true;
-                subject = 'Highlight';
+                subject = (this.pdfViewer.highlightSettings.subject !== "" && this.pdfViewer.highlightSettings.subject) ? this.pdfViewer.highlightSettings.subject : this.pdfViewer.annotationSettings.subject ? this.pdfViewer.annotationSettings.subject : 'Highlight';
                 // eslint-disable-next-line max-len
                 author = (this.pdfViewer.highlightSettings.author !== 'Guest' && this.pdfViewer.highlightSettings.author) ? this.pdfViewer.highlightSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
                 allowedInteractions = this.pdfViewer.highlightSettings.allowedInteractions ? this.pdfViewer.highlightSettings.allowedInteractions : ['None'];
@@ -1138,7 +1138,7 @@ export class TextMarkupAnnotation {
                 break;
             case 'Strikethrough':
                 this.isNewAnnotation = true;
-                subject = 'Strikethrough';
+                subject = (this.pdfViewer.strikethroughSettings.subject !== "" &&  this.pdfViewer.strikethroughSettings.subject) ? this.pdfViewer.strikethroughSettings.subject : this.pdfViewer.annotationSettings.subject ? this.pdfViewer.annotationSettings.subject : 'Strikethrough';
                 // eslint-disable-next-line max-len
                 author = (this.pdfViewer.strikethroughSettings.author !== 'Guest' &&  this.pdfViewer.strikethroughSettings.author) ? this.pdfViewer.strikethroughSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
                 allowedInteractions = this.pdfViewer.strikethroughSettings.allowedInteractions ? this.pdfViewer.strikethroughSettings.allowedInteractions : ['None'];
@@ -1168,7 +1168,7 @@ export class TextMarkupAnnotation {
                 break;
             case 'Underline':
                 this.isNewAnnotation = true;
-                subject = 'Underline';
+                subject = (this.pdfViewer.underlineSettings.subject !== "" && this.pdfViewer.underlineSettings.subject) ? this.pdfViewer.underlineSettings.subject : this.pdfViewer.annotationSettings.subject ? this.pdfViewer.annotationSettings.subject : 'Underline';
                 // eslint-disable-next-line max-len
                 author = (this.pdfViewer.underlineSettings.author !== 'Guest' && this.pdfViewer.underlineSettings.author) ? this.pdfViewer.underlineSettings.author : this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
                 allowedInteractions = this.pdfViewer.underlineSettings.allowedInteractions ? this.pdfViewer.underlineSettings.allowedInteractions : ['None'];
@@ -3108,7 +3108,7 @@ export class TextMarkupAnnotation {
             Rect: {},
             State: '',
             StateModel: '',
-            Subject: textMarkupAnnotationType,
+            Subject: annotationObject.subject ? annotationObject.subject : textMarkupAnnotationType,
             TextMarkupAnnotationType: textMarkupAnnotationType,
         }
         

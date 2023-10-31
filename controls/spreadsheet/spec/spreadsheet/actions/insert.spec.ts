@@ -2602,5 +2602,34 @@ describe('Insert & Delete ->', () => {
                 });
             });
         });
+        describe('EJ2-851942->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                    created: (): void => {
+                        const spreadsheet: Spreadsheet = helper.getInstance();
+                        for (var i = 0; i < 3; i++) {
+                            spreadsheet.insertSheet([{
+                                index: i + 1,
+                                ranges: [{ dataSource: defaultData }]
+                            }]);
+                        }
+                    }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Row model is not updated while inserting the new sheet using insertSheet Method->', (done: Function) => {
+                setTimeout(() => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[1].rows).not.toBeUndefined();
+                    expect(spreadsheet.sheets[1].rows.length).not.toEqual(0);
+                    expect(spreadsheet.sheets[3].rows).not.toBeUndefined();
+                    expect(spreadsheet.sheets[3].rows.length).not.toEqual(0);
+                    done();
+                });
+            });
+        });
     });
 });

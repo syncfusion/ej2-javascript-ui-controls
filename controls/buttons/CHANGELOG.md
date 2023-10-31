@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.43 (2023-10-31)
+
+### RadioButton
+
+#### Bug Fixes
+
+- `#F513731` - The issue with "`HtmlAttributes` property not working properly in RadioButton component" has been resolved.
+
 ## 23.1.42 (2023-10-24)
 
 ### Button

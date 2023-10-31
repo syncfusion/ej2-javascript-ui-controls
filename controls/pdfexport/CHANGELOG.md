@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 23.1.42 (2023-10-24)
+## 23.1.43 (2023-10-31)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- The issue with the missing `PdfPageNumberField` on the minified file has been resolved.
+
+## 23.1.39 (2023-10-04)
 
 ### Pdf Export
 

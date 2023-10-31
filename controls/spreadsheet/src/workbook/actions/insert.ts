@@ -1,8 +1,9 @@
-import { RangeModel, Workbook, getCell, SheetModel, RowModel, CellModel, getSheetIndex, getSheetName } from '../base/index';
-import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, checkUniqueRange, ConditionalFormatModel } from '../../workbook/common/index';
+import { RangeModel, Workbook, getCell, SheetModel, RowModel, CellModel, getSheetIndex, getSheetName, Cell } from '../base/index';
+import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, checkUniqueRange, ConditionalFormatModel, updateSheetFromDataSource } from '../../workbook/common/index';
 import { insert, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard, refreshInsertDelete } from '../../workbook/common/index';
 import { ModelType, CellStyleModel, updateRowColCount, beginAction, ActionEventArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { insertFormatRange } from '../../workbook/index';
+import { Spreadsheet } from '../../spreadsheet';
 
 /**
  * The `WorkbookInsert` module is used to insert cells, rows, columns and sheets in to workbook.
@@ -235,6 +236,13 @@ export class WorkbookInsert {
             }
             model.forEach((sheet: SheetModel): void => {
                 if (isModel) { this.updateRangeModel(sheet.ranges); }
+                const viewport: any = (this.parent as Spreadsheet).viewport;
+                const refreshRange: number[] = [viewport.topIndex, viewport.leftIndex, viewport.bottomIndex, viewport.rightIndex];
+                const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, resolveAfterFullDataLoaded?: boolean } = {
+                    sheet: sheet, resolveAfterFullDataLoaded: true,
+                    indexes: refreshRange, promise: new Promise((resolve: Function) => { resolve((() => { /** */ })()); })
+                };
+                this.parent.notify(updateSheetFromDataSource, args);
                 id = sheet.id;
                 this.parent.notify(workbookFormulaOperation, {
                     action: 'addSheet', visibleName: sheet.name, sheetName: 'Sheet' + id, sheetId: id });

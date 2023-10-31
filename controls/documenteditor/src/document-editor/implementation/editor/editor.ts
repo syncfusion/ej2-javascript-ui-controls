@@ -2165,7 +2165,7 @@ export class Editor {
         if (isNullOrUndefined(text) || text === ''
             || this.owner.isReadOnly
             || this.documentHelper.protectionType === 'ReadOnly' && !this.selection.isSelectionInEditRegion()
-            || this.documentHelper.protectionType === 'CommentsOnly') {
+            || this.documentHelper.protectionType === 'CommentsOnly' && this.owner.isReadOnly) {
             return;
         }
         text = HelperMethods.sanitizeString(text);
@@ -5973,7 +5973,10 @@ export class Editor {
                     let insertFormat: WCharacterFormat = this.copyInsertFormat(this.selection.start.paragraph.characterFormat, false);
                     widget.characterFormat.mergeFormat(insertFormat);
                 }
-                if (j === widgets.length - 1 && widget instanceof ParagraphWidget) {
+                if (j === widgets.length - 1 && widget instanceof ParagraphWidget
+                    && (!isNullOrUndefined(widget.paragraphFormat.listFormat)
+                        && isNullOrUndefined(widget.paragraphFormat.listFormat.list)
+                        && widget.paragraphFormat.listFormat.listId === -1)) {
                     let newParagraph: ParagraphWidget = widget as ParagraphWidget;
                     if (newParagraph.childWidgets.length > 0
                         && (newParagraph.childWidgets[0] as LineWidget).children.length > 0) {
@@ -17064,12 +17067,12 @@ export class Editor {
         for (let j: number = 0; j < this.documentHelper.pages.length; j++) {
             const page: Page = this.documentHelper.pages[j];
             for (let i: number = 0; i < page.bodyWidgets.length; i++) {
-                if (page.bodyWidgets[i].index === sectionIndex) {
+                //if (page.bodyWidgets[i].index === sectionIndex) {
                     currentBlock = this.getNextBlockForList(page.bodyWidgets[i].firstChild as BlockWidget);
                     if (!isNullOrUndefined(currentBlock)) {
                         break;
                     }
-                }
+                //}
             }
             if (!isNullOrUndefined(currentBlock)) {
                 break;

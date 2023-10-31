@@ -1169,6 +1169,13 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     private updateUpDownAction(e: KeyboardEventArgs, isVirtualKeyAction?: boolean): void {
+        if (this.allowFiltering && !this.enableVirtualization && this.getModuleName() !== 'autocomplete') {
+            let value = this.getItemData().value;
+            let filterIndex: number = this.getIndexByValue(value);
+            if (!isNullOrUndefined(filterIndex)) {
+                this.activeIndex = filterIndex;
+            }
+        }
         const focusEle: Element = this.list.querySelector('.' + dropDownListClasses.focus);
         if (this.isSelectFocusItem(focusEle) && !isVirtualKeyAction) {
             this.setSelection(focusEle, e);
@@ -1209,6 +1216,13 @@ export class DropDownList extends DropDownBase implements IInput {
             }
             if (!isNullOrUndefined(nextItem)) {
                 this.setSelection(nextItem, e);
+            }
+        }
+        if (this.allowFiltering && !this.enableVirtualization && this.getModuleName() !== 'autocomplete') {
+            let value = this.getItemData().value;
+            let filterIndex: number = this.getIndexByValueFilter(value);
+            if (!isNullOrUndefined(filterIndex)) {
+                this.activeIndex = filterIndex;
             }
         }
         e.preventDefault();
@@ -1529,7 +1543,18 @@ export class DropDownList extends DropDownBase implements IInput {
         if (isNullOrUndefined(value)) {
             value = 'null';
         }
-        this.activeIndex = this.getIndexByValue(value);
+        if (this.allowFiltering && !this.enableVirtualization && this.getModuleName() !== 'autocomplete') {
+            let filterIndex = this.getIndexByValueFilter(value);
+            if (!isNullOrUndefined(filterIndex)) {
+                this.activeIndex = filterIndex;
+            }
+            else {
+                this.activeIndex = this.getIndexByValue(value);
+            }
+        }
+        else {
+            this.activeIndex = this.getIndexByValue(value);
+        }
     }
 
     protected activeItem(li: Element): void {
@@ -1554,6 +1579,9 @@ export class DropDownList extends DropDownBase implements IInput {
         } else if (!isNullOrUndefined(this.valueTempElement) && this.inputElement.previousSibling === this.valueTempElement) {
             detach(this.valueTempElement);
             this.inputElement.style.display = 'block';
+        }
+        if (!isNullOrUndefined(dataItem.value) && !this.enableVirtualization && this.allowFiltering) {
+            this.activeIndex = this.getIndexByValueFilter(dataItem.value);
         }
         const clearIcon: string = dropDownListClasses.clearIcon;
         const isFilterElement: boolean = this.isFiltering() && this.filterInput && (this.getModuleName() === 'combobox');
@@ -3065,7 +3093,9 @@ export class DropDownList extends DropDownBase implements IInput {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.list.getElementsByClassName('e-virtual-ddl')[0] as any).style = this.GetVirtualTrackHeight();
         }
-        this.getSkeletonCount();
+        if(this.getModuleName() !== 'autocomplete' && this.totalItemCount != 0 && this.totalItemCount > (this.itemCount * 2)){
+            this.getSkeletonCount();
+        }
         this.UpdateSkeleton();
         this.listData = currentData;
         this.updateActionCompleteDataValues(ulElement, currentData);

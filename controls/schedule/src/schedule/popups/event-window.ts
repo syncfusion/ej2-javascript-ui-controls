@@ -400,6 +400,10 @@ export class EventWindow {
             this.parent.renderTemplates(() => {
                 if (this.element) {
                     this.applyFormValidation();
+                    if (this.eventCrudData) {
+                        this.showDetails(this.eventCrudData);
+                        this.eventCrudData = null;
+                    }
                 }
             });
         } else {
@@ -1020,13 +1024,17 @@ export class EventWindow {
     }
 
     private showDetails(eventData: Record<string, any>): void {
-        this.eventData = eventData;
+        this.eventData = this.eventCrudData ? this.eventData : eventData;
         const eventObj: Record<string, any> = <Record<string, any>>extend({}, eventData, null, true);
+        const formElements: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
+        if ((this.parent as Record<string, any>).isReact && formElements.length < 1) {
+            this.eventCrudData = eventObj;
+            return;
+        }
         if ((!this.cellClickAction || this.cellClickAction && !isNullOrUndefined(this.parent.editorTemplate)) &&
             (<Date>eventObj[this.fields.endTime]).getHours() === 0 && (<Date>eventObj[this.fields.endTime]).getMinutes() === 0) {
             this.trimAllDay(eventObj);
         }
-        const formElements: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
         const keyNames: string[] = Object.keys(eventObj);
         for (const curElement of formElements) {
             const columnName: string = curElement.name || this.getColumnName(curElement);

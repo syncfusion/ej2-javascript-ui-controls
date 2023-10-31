@@ -14,6 +14,7 @@ import { createGrid, destroy } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { IGrid } from '../../../src/grid/base/interface'; 
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { select } from '@syncfusion/ej2-base';
 
 Grid.Inject(Sort, Page, Filter, Print, Group, Toolbar, DetailRow);
 
@@ -517,5 +518,56 @@ describe('Print module', () => {
             destroy(gridObj);
             gridObj = null;
         });
+    });
+});
+
+describe('EJ2-852222, EJ2-853086 - script error on Export and print hierarchy grid => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: employeeData.slice(0, 5),
+                allowGrouping: true,
+                groupSettings: { columns: ['City'] },
+                toolbar: ['Print'],
+                columns: [
+                    {
+                    field: 'EmployeeID',
+                    headerText: 'Employee ID',
+                    textAlign: 'Right',
+                    width: 125,
+                    },
+                    { field: 'FirstName', headerText: 'Name', width: 125 },
+                    { field: 'Title', headerText: 'Title', width: 180 },
+                    { field: 'City', headerText: 'City', width: 110 },
+                ],
+                childGrid: {
+                    dataSource: data.slice(0, 20),
+                    queryString: 'EmployeeID',
+                    columns: [
+                    {
+                        field: 'OrderID',
+                        headerText: 'Order ID',
+                        textAlign: 'Right',
+                        width: 120,
+                    },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 120 },
+                    { field: 'Freight', headerText: 'Freight', width: 120, format: 'C2' },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 150 },
+                    ],
+                }
+            }, done);
+    });
+
+    it('print success check', (done: Function) => {
+        gridObj.beforePrint = (args) => {
+            done();
+        }
+        select('#' + gridObj.element.id + '_print', gridObj.toolbarModule.getToolbar()).click();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

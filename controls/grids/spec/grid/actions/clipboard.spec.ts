@@ -163,6 +163,38 @@ describe('Grid clipboard copy testing - cells type selection => ', () => {
     });
 });
 
+describe('EJ2-851516 - Grid clipboard copy testing with hidden columns => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: employeeData,
+                columns: [
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 135, },
+                    { field: 'FirstName', headerText: 'Name', visible: false, width: 125 },
+                    { field: 'Title', headerText: 'Title', width: 180 },
+                ],
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'Box', },
+            }, done);
+    });
+
+    it('copy cells without header', () => {
+        gridObj.selectionModule.selectCells([{
+            rowIndex: 0,
+            cellIndexes: [0, 1, 2]
+        }]);
+        gridObj.copy();
+        expect((document.querySelector('.e-clipboard') as HTMLInputElement).value
+            === '1\tSales Representative').toBeTruthy();
+    });
+
+    afterAll(() => {
+       destroy(gridObj);
+       gridObj = null;
+    });
+});
+
 describe('Clipboard copy testing while Freezing columns => ', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {

@@ -3443,6 +3443,22 @@ describe('ListView', () => {
             listObj.addItem([{ id: '02_10', text: 'subText10' }], { id: '02' });
             expect((listObj.dataSource as any)[1].child[3].text).toBe("subText10");
         });
+
+        it('adding data at index position greater than length of the data source', () => {
+            listObj.selectItem({ id: '01' });
+            listObj.addItem([{ id: '04', text: 'Text4' }], null, 10);
+            let listElements = listObj.element.querySelectorAll('.e-list-item');
+            expect(listElements[3].getAttribute('data-uid')).toBe('04');
+            expect(listObj.element.querySelector(`[data-uid = "04"]`) instanceof Node).toBe(true);
+        });
+
+        it('adding data at index position lesser than length of the data source', () => {
+            listObj.selectItem({ id: '01' });
+            listObj.addItem([{ id: '04', text: 'Text4' }], null, 1);
+            let listElements = listObj.element.querySelectorAll('.e-list-item');
+            expect(listElements[1].getAttribute('data-uid')).toBe('04');
+            expect(listObj.element.querySelector(`[data-uid = "04"]`) instanceof Node).toBe(true);
+        });
     });
 
     describe('removeItem testing', () => {

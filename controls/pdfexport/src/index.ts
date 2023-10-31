@@ -114,4 +114,3 @@ export * from './implementation/structured-elements/grid/pdf-grid';
 export * from './implementation/structured-elements/grid/pdf-grid-column';
 export * from './implementation/structured-elements/grid/pdf-grid-row';
 export * from './implementation/structured-elements/grid/pdf-grid-cell';
-export * from './implementation/document/automatic-fields/pdf-page-number-field';

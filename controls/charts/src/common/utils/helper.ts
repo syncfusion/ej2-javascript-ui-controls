@@ -1354,12 +1354,12 @@ export function appendChildElement(
     parent: Element | HTMLElement, childElement: Element | HTMLElement,
     redraw?: boolean, isAnimate: boolean = false, x: string = 'x', y: string = 'y',
     start?: ChartLocation, direction?: string, forceAnimate: boolean = false,
-    isRect: boolean = false, previousRect: Rect = null, animateDuration?: number
+    isRect: boolean = false, previousRect: Rect = null, animateDuration?: number, scatterElement: boolean = false
 ): void {
     if (isCanvas) {
         return null;
     }
-    const existChild: HTMLElement = parent.querySelector('#' + childElement.id);
+    const existChild: HTMLElement = scatterElement ? null : parent.querySelector('#' + childElement.id);
     const element: HTMLElement = <HTMLElement>(existChild || getElement(childElement.id));
     const child: HTMLElement = <HTMLElement>childElement;
     const duration: number = animateDuration ? animateDuration : 300;

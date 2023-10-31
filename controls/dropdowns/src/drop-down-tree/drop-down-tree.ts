@@ -2707,11 +2707,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             const nodes: NodeList = this.treeObj.element.querySelectorAll('li');
             const checkedNodes: NodeList = this.treeObj.element.querySelectorAll('li .e-checkbox-wrapper[aria-checked=true]');
             const wrap: HTMLElement = closest((this.checkBoxElement as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
-            if (wrap && args.action === 'uncheck' && (args.isInteracted || checkedNodes.length === 0 || args.data[0].isChecked == "false")) {
+            if (wrap && args.action === 'uncheck' && (args.isInteracted || checkedNodes.length === 0  || (!isNOU(args.data[0]) && args.data[0].isChecked === 'false'))) {
                 this.isReverseUpdate = true;
                 this.changeState(wrap, 'uncheck');
                 this.isReverseUpdate = false;
-            } else if (wrap && args.action === 'check' && checkedNodes.length === nodes.length && (args.isInteracted || this.isCheckAllCalled || args.data[0].isChecked == "true")) {
+            } else if (wrap && args.action === 'check' && checkedNodes.length === nodes.length && (args.isInteracted || this.isCheckAllCalled  || (!isNOU(args.data[0]) && args.data[0].isChecked === 'true'))) {
                 this.isReverseUpdate = true;
                 this.isCheckAllCalled = false;
                 this.changeState(wrap, 'check');
@@ -3613,7 +3613,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.clearTemplate();
         this.unWireEvents();
         this.setCssClass(null, this.cssClass);
-        this.setProperties({ value: [] }, true);
         this.setProperties({ text: null }, true);
         this.treeObj.destroy();
         this.destroyFilter();
@@ -3656,6 +3655,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.overFlowWrapper = null;
         this.keyboardModule = null;
         super.destroy();
+        this.setProperties({ value: [] }, true);
     }
 
     private destroyFilter(): void {

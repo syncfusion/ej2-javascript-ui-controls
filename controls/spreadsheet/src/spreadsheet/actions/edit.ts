@@ -2,7 +2,7 @@ import { Spreadsheet } from '../index';
 import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined, select, detach } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, enableToolbarItems, completeAction } from '../common/event';
-import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells } from '../common/index';
+import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition, deleteImage, focus, isLockedCells, isNavigationKey } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation, activeCellMergedRange, activeCellChanged, getUniqueRange, removeUniquecol, checkUniqueRange, reApplyFormula, refreshChart } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell, getColumn, ColumnModel, getRowsHeight, getColumnsWidth, Workbook, checkColumnValidation, skipDefaultValue } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getSheet, selectionComplete, isHiddenRow, isHiddenCol, applyCF, ApplyCFArgs, setVisibleMergeIndex } from '../../workbook/index';
@@ -226,11 +226,11 @@ export class Edit {
                 editElement.focus();
                 this.altEnter();
                 this.isAltEnter = true;
-            } else if (this.isCellEdit && this.editCellData.value !== editElement.textContent && e.keyCode !== 16) {
+            } else if (this.isCellEdit && this.editCellData.value !== editElement.textContent && e.keyCode !== 16 && (!e.shiftKey || (e.shiftKey && !isNavigationKey(e.keyCode)))) {
                 this.refreshEditor(editElement.textContent, this.isCellEdit);
             }
             const isFormulaEdit: boolean = checkIsFormula(this.editCellData.value, true);
-            if (isFormulaEdit && (!e || e.keyCode !== 16)) {
+            if (isFormulaEdit && (!e || (e.keyCode !== 16 && (!e.shiftKey || (e.shiftKey && !isNavigationKey(e.keyCode)))))) {
                 this.updateFormulaReference(editElement);
                 if (this.endFormulaRef) {
                     const curOffset: { start?: number, end?: number } = this.getCurPosition();
@@ -278,7 +278,9 @@ export class Edit {
                             editorElem.textContent, cell.style, this.parent.cellStyle) > parseInt(editorElem.style.maxWidth, 10)) {
                             editorElem.style.overflow = 'auto';
                         }
-                        this.refreshEditor(editorElem.textContent, this.isCellEdit, false, false, false);
+                        if (!e.shiftKey || (e.shiftKey && !isNavigationKey(e.keyCode))) {
+                            this.refreshEditor(editorElem.textContent, this.isCellEdit, false, false, false);
+                        }
                     }
                     if (!e.altKey) {
                         switch (keyCode) {

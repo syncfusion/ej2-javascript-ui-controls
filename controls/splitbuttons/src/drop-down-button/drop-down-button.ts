@@ -306,7 +306,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         this.dropDown.hide();
         attributes(this.element, {
             ['aria-haspopup']: this.items.length || this.target ? 'true' : 'false', ['aria-expanded']: 'false',
-            ['type']: 'button', ['aria-label']: this.element.textContent ? this.element.textContent : 'dropdownbutton'
+            ['type']: 'button'
         });
         if (this.cssClass) { addClass([div], this.cssClass.replace(/\s+/g, ' ').trim().split(' ')); }
         this.isPopupCreated = true;
@@ -399,6 +399,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         }
         this.appendArrowSpan();
         this.setActiveElem([this.element]);
+        this.element.setAttribute('aria-label', this.element.textContent ? this.element.textContent : 'dropdownbutton');
         if ((this.target && !this.isColorPicker() && !this.createPopupOnClick) || !this.createPopupOnClick) {
             this.createPopup();
         } else {
@@ -649,7 +650,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                     const liIdx: number = Array.prototype.indexOf.call(this.getULElement().children, li);
                     const item: ItemModel = this.items[liIdx as number];
                     if (item) {
-                        const selectEventArgs: MenuEventArgs = { element: li as HTMLElement, item: item };
+                        const selectEventArgs: MenuEventArgs = { element: li as HTMLElement, item: item, event: e };
                         this.trigger('select', selectEventArgs);
                     }
                 }
@@ -683,7 +684,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                     liIdx = Array.prototype.indexOf.call(this.getULElement().children, li);
                     item = this.items[liIdx as number];
                     if (item) {
-                        eventArgs = { element: li as HTMLElement, item: item };
+                        eventArgs = { element: li as HTMLElement, item: item, event: e };
                         this.trigger('select', eventArgs);
                     }
                     this.closePopup(e, this.activeElem[0]);

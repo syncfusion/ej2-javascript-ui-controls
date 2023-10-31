@@ -68,6 +68,8 @@ export const tabSwitch: string = 'tabSwitch';
 /** @hidden */
 export const selectRange: string = 'selectRange';
 /** @hidden */
+export const rangeSelectionByKeydown: string = 'rangeSelectionByKeydown';
+/** @hidden */
 export const cut: string = 'cut';
 /** @hidden */
 export const copy: string = 'copy';

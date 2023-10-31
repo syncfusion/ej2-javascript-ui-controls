@@ -155,7 +155,7 @@ export class Dependency {
                elSplit[4] = elSplit[4] + '-' + elSplit[5];
                elSplit.pop();
             }
-            if (elSplit.length === 5 && elSplit[4].length > 12) {
+            if (elSplit.length === 5 && elSplit[4].length >= 12) {
                 id = el.substring(0, 36);
                 if (regex.test(id)) {
                     isGUId = true;

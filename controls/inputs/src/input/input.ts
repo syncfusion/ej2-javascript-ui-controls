@@ -39,6 +39,7 @@ export namespace Input {
     };
     let floatType: string;
     let isBindClearAction: boolean = true;
+    let floatLabelElement: HTMLElement;
 
     /**
      * Create a wrapper to input element with multiple span elements and set the basic properties to input based components.
@@ -186,7 +187,7 @@ export namespace Input {
             inputObject.container.classList.add(CLASSNAMES.FLOATINPUT);
         }
         const floatLinelement: HTMLElement = makeElement('span', { className: CLASSNAMES.FLOATLINE });
-        const floatLabelElement: HTMLElement = makeElement('label', { className: CLASSNAMES.FLOATTEXT });
+        floatLabelElement = makeElement('label', { className: CLASSNAMES.FLOATTEXT });
         if (!isNullOrUndefined(args.element.id) && args.element.id !== '') {
             floatLabelElement.id = 'label_' + args.element.id.replace(/ /g, '_');
             attributes(args.element, { 'aria-labelledby': floatLabelElement.id });
@@ -358,6 +359,7 @@ export namespace Input {
         });
     }
     export function destroy(): void {
+        floatLabelElement = null;
         privateInputObj = null;
     }
     function validateLabel(element: HTMLInputElement | HTMLTextAreaElement, floatLabelType: string) : void {

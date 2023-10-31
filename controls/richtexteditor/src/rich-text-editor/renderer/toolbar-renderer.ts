@@ -85,10 +85,10 @@ export class ToolbarRenderer implements IRenderer {
         if ( !this.parent.enabled) {
             return;
         }
+        this.parent.trigger('toolbarClick', args);
         if (!this.parent.readonly || isNullOrUndefined(args.item)) {
             this.parent.notify(events.toolbarClick, args);
         }
-        this.parent.trigger('toolbarClick', args);
     }
 
     private dropDownSelected(args: MenuEventArgs): void {

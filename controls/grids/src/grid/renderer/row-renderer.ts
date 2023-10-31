@@ -147,8 +147,10 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                         // eslint-disable-next-line @typescript-eslint/no-this-alias
                         const thisRef: RowRenderer<T> = this;
                         thisRef.parent.renderTemplates(function(): void {
-                            const ariaAttr: string = td.getAttribute('aria-label');
-                            td.setAttribute('aria-label', (td as HTMLElement).innerText + ariaAttr);
+                            if (typeof ((<{ template?: string | Function }>cell.column).template) !== 'string') {
+                                const ariaAttr: string = td.getAttribute('aria-label');
+                                td.setAttribute('aria-label', (td as HTMLElement).innerText + ariaAttr);
+                            }
                             thisRef.parent.trigger(queryCellInfo, extend(
                                 cellArgs, <QueryCellInfoEventArgs>{
                                     cell: td, column: <{}>cell.column, colSpan: 1,

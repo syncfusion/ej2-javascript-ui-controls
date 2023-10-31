@@ -386,6 +386,7 @@ export class LargeIconsView {
         this.selectItems([getValue(this.parent.hasId ? 'id' : 'name', this.parent.createdItem)]);
         this.parent.createdItem = null;
         this.parent.largeiconsviewModule.element.focus();
+        this.parent.activeModule = 'largeiconsview';
     }
 
     private onSelectedData(): void {

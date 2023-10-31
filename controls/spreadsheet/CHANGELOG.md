@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.42 (2023-10-24)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I509149` - Issue with "row model is not properly updated when the sheet model is constructed with the range property and provided as an argument to the `insertSheet` method for new sheet creation" has been resolved.
+
 ## 23.1.38 (2023-09-26)
 
 ### Spreadsheet

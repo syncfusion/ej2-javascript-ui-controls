@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 23.1.42 (2023-10-24)
+## 23.1.43 (2023-10-31)
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I514442` - An issue with tab index attribute set wrongly for Toolbar templated items has been fixed.
+
+## 23.1.41 (2023-10-17)
 
 ### Menu
 

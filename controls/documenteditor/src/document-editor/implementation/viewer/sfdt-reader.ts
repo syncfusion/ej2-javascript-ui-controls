@@ -1004,6 +1004,7 @@ export class SfdtReader {
         let trackChange: boolean = this.viewer.owner.enableTrackChanges;
         let count: number = 0;
         let isCreateTextEleBox: boolean = false;
+        let isCreateField: boolean = false;
         for (let i: number = 0; i < data.length; i++) {
             let inline: any = data[i];
             isCreateTextEleBox = false;
@@ -1229,6 +1230,7 @@ export class SfdtReader {
                 this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], image.characterFormat);
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty(hasFieldEndProperty[this.keywordIndex]) || (inline.hasOwnProperty(fieldTypeProperty[this.keywordIndex]) && inline[fieldTypeProperty[this.keywordIndex]] === 0)) {
+                isCreateField = true;
                 let fieldBegin: FieldElementBox = new FieldElementBox(0);
                 this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], fieldBegin.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, fieldBegin);
@@ -1247,7 +1249,7 @@ export class SfdtReader {
                 lineWidget.children.push(fieldBegin);
             } else if (inline.hasOwnProperty([fieldTypeProperty[this.keywordIndex]])) {
                 let field: FieldElementBox = undefined;
-                if (inline[fieldTypeProperty[this.keywordIndex]] === 2) {
+                if (inline[fieldTypeProperty[this.keywordIndex]] === 2 || (inline[fieldTypeProperty[this.keywordIndex]] === 1 && isCreateField)) {
                     field = new FieldElementBox(2);
                     this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], field.characterFormat, writeInlineFormat);
                     this.checkAndApplyRevision(this.keywordIndex, inline, field);
@@ -1267,6 +1269,11 @@ export class SfdtReader {
                             }
                         }
                     }
+                    if (inline[fieldTypeProperty[this.keywordIndex]] === 1 && isCreateField) {
+                        i--;
+                        count = i;
+                    }
+                    isCreateField = false;
                 } else if (inline[fieldTypeProperty[this.keywordIndex]] === 1) {
                     field = new FieldElementBox(1);
                     this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], field.characterFormat, writeInlineFormat);

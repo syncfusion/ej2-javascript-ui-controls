@@ -1,4 +1,4 @@
-import { isNullOrUndefined, setValue, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, setValue, getValue, defaultCurrencyCode } from '@syncfusion/ej2-base';
 import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend, TouchEventArgs } from '@syncfusion/ej2-base';
 import { addClass, removeClass, append, remove, classList, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';
@@ -5698,13 +5698,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             for (let i: number = 0; i < column.columns.length; i++) {
                 this.isVisibleColumns(column.columns[parseInt(i.toString(), 10)] as Column, arr);
                 if ((column.columns[parseInt(i.toString(), 10)] as Column).visible &&
-                    ((column.columns[parseInt(i.toString(), 10)] as Column).field ||
-                    !isNullOrUndefined(column.commands) || column.type === 'checkbox')) {
+                    isNullOrUndefined((column.columns[parseInt(i.toString(), 10)] as Column).columns) &&
+                    !isNullOrUndefined((column.columns[parseInt(i.toString(), 10)] as Column).freeze)) {
                     arr.push('true');
                 }
             }
         } else {
-            if (column.visible && (column.field || !isNullOrUndefined(column.commands) || column.type === 'checkbox')) {
+            if (column.visible && !isNullOrUndefined(column.freeze)) {
                 arr.push('true');
             }
         }
@@ -7733,15 +7733,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @hidden
      */
     // Need to have all columns while filtering with ColumnVirtualization.
-    public grabColumnByFieldFromAllCols(field: string): Column {
+    public grabColumnByFieldFromAllCols(field: string, isForeignKey?: boolean): Column {
         let column: Column;
         this.columnModel = [];
         this.updateColumnModel(this.columns as Column[]);
         const gCols: Column[] = this.columnModel;
         for (let i: number = 0; i < gCols.length; i++) {
-            if (field === gCols[parseInt(i.toString(), 10)].field || (gCols[parseInt(i.toString(), 10)].isForeignColumn() &&
-                field === gCols[parseInt(i.toString(), 10)].foreignKeyValue)) {
+            if ((!isForeignKey && field === gCols[parseInt(i.toString(), 10)].field) ||
+                (isForeignKey && gCols[parseInt(i.toString(), 10)].isForeignColumn() &&
+                    field === gCols[parseInt(i.toString(), 10)].foreignKeyValue)) {
                 column = gCols[parseInt(i.toString(), 10)];
+                break;
             }
         }
         return column;
@@ -8005,7 +8007,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (columns[parseInt(i.toString(), 10)].format) {
                 columns[parseInt(i.toString(), 10)].format = getNumberFormat(
                     this.getFormat(columns[parseInt(i.toString(), 10)].format),
-                    columns[parseInt(i.toString(), 10)].type, this.isExcel, this.currencyCode);
+                    columns[parseInt(i.toString(), 10)].type, this.isExcel, defaultCurrencyCode);
             }
             if (columns[parseInt(i.toString(), 10)].columns) {
                 this.setHeaderText(columns[parseInt(i.toString(), 10)].columns as Column[], include);

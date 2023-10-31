@@ -1,5 +1,5 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
-import { formulaOperation, keyUp, keyDown, click, refreshFormulaDatasource, formulaBarOperation, keyCodes } from '../common/index';
+import { formulaOperation, keyUp, keyDown, click, refreshFormulaDatasource, formulaBarOperation, keyCodes, isNavigationKey } from '../common/index';
 import { editOperation, dialog, locale, focus } from '../common/index';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
@@ -292,7 +292,7 @@ export class Formula {
             const autoCompleteElem: HTMLInputElement = <HTMLInputElement>this.autocompleteInstance.element;
             const keyCode: number = e.keyCode;
             const isSuggestionAlreadyOpened: boolean = this.isPopupOpened;
-            if (!this.isNavigationKey(keyCode)) {
+            if (!isNavigationKey(keyCode)) {
                 autoCompleteElem.value = formula;
                 autoCompleteElem.dispatchEvent(new Event('input'));
                 autoCompleteElem.dispatchEvent(new Event('keyup'));
@@ -363,11 +363,6 @@ export class Formula {
         const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
         this.parent.notify(editOperation, eventArgs);
         return eventArgs.editedValue;
-    }
-
-    private isNavigationKey(keyCode: number): boolean {
-        return (keyCode === keyCodes.UP) || (keyCode === keyCodes.DOWN) || (keyCode === keyCodes.LEFT)
-            || (keyCode === keyCodes.RIGHT);
     }
 
     private triggerKeyDownEvent(keyCode: number): void {

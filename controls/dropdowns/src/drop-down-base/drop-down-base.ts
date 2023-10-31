@@ -1355,6 +1355,23 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @param {string | number | boolean} value - Specifies given value.
      * @returns {number} Returns the index of the item.
      */
+    protected getIndexByValueFilter(value: string | number | boolean): number {
+        let index: number;
+        const listItems: HTMLElement = this.renderItems(this.selectData as { [key: string]: Object }[], this.fields);
+        for (let i: number = 0; i < listItems.children.length; i++) {
+            if (!isNullOrUndefined(value) && listItems.children[i as number].getAttribute('data-value') === value.toString()) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+    /**
+     * Return the index of item which matched with given value in data source
+     *
+     * @param {string | number | boolean} value - Specifies given value.
+     * @returns {number} Returns the index of the item.
+     */
     protected getIndexByValue(value: string | number | boolean): number {
         let index: number;
         const listItems: Element[] = this.getItems();

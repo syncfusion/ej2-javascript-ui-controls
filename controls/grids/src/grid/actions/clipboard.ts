@@ -214,7 +214,10 @@ export class Clipboard implements IAction {
                     if (withHeader) {
                         const headers: HTMLElement[] = [];
                         for (let i: number = 0; i < obj.colIndexes.length; i++) {
-                            headers.push(this.parent.getColumnHeaderByIndex(obj.colIndexes[parseInt(i.toString(), 10)]) as HTMLElement);
+                            const colHeader: HTMLElement = this.parent.getColumnHeaderByIndex(obj.colIndexes[parseInt(i.toString(), 10)]) as HTMLElement;
+                            if (!colHeader.classList.contains('e-hide')) {
+                                headers.push(colHeader);
+                            }
                         }
                         this.getCopyData(headers, false, '\t', withHeader);
                         this.copyContent += '\n';
@@ -224,7 +227,7 @@ export class Clipboard implements IAction {
                             this.copyContent += '\n';
                         }
                         const cells: HTMLElement[] = [].slice.call(rows[obj.rowIndexes[parseInt(i.toString(), 10)] as number].
-                            getElementsByClassName('e-cellselectionbackground'));
+                            querySelectorAll('.e-cellselectionbackground:not(.e-hide)'));
                         this.getCopyData(cells, false, '\t', withHeader);
                     }
                 } else {

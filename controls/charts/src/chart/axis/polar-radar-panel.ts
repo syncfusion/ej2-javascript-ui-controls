@@ -260,9 +260,9 @@ export class PolarRadarPanel extends LineBase {
             elementSize = axis.visibleLabels[i as number].size;
             radius = chart.radius * valueToCoefficient(axis.visibleLabels[i as number].value, axis);
             pointX = (this.centerX + radius * vector.x) + ((axis.majorTickLines.height + elementSize.width / 2 + padding / 2)
-              * (Math.cos(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' ? 1 : -1));
+              * (Math.cos(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' && chart.enableRtl ? - 1 : axis.labelPosition === 'Inside' ? 1 : axis.labelPosition === 'Outside' && chart.enableRtl ? 1 : -1));
             pointY = (this.centerY + radius * vector.y) + ((axis.majorTickLines.height + elementSize.height / 2)
-              * (Math.sin(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' ? 1 : -1));
+              * (Math.sin(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' && chart.enableRtl ? - 1 : axis.labelPosition === 'Inside' ? 1 : axis.labelPosition === 'Outside' && chart.enableRtl ? 1 : -1));
             pointY += (elementSize.height / 4);
             labelRegions[i as number] = this.getLabelRegion(pointX, pointY, axis.visibleLabels[i as number], anchor);
             if (i !== 0 && intersectType === 'Hide') {
@@ -385,8 +385,8 @@ export class PolarRadarPanel extends LineBase {
                 radius = chart.radius * valueToCoefficient(axis.visibleLabels[i as number].value, axis);
                 x1 = this.centerX + radius * vector.x;
                 y1 = this.centerY + radius * vector.y;
-                x2 = x1 + (axis.majorTickLines.height * (Math.cos(angle * Math.PI / 180)) * (axis.tickPosition === 'Inside' ? 1 : -1));
-                y2 = y1 + (axis.majorTickLines.height * (Math.sin(angle * Math.PI / 180)) * (axis.tickPosition === 'Inside' ? 1 : -1));
+                x2 = x1 + (axis.majorTickLines.height * (Math.cos(angle * Math.PI / 180)) * (axis.tickPosition === 'Inside' && chart.enableRtl ? - 1 : axis.tickPosition === 'Inside' ? 1 : axis.tickPosition === 'Outside' && chart.enableRtl ? 1 : -1));
+                y2 = y1 + (axis.majorTickLines.height * (Math.sin(angle * Math.PI / 180)) * (axis.tickPosition === 'Inside' && chart.enableRtl ? - 1 : axis.tickPosition === 'Inside' ? 1 : axis.tickPosition === 'Outside' && chart.enableRtl ? 1 : -1));
                 majorTick = 'M ' + x1 + ' ' + y1 + ' L ' + x2 + ' ' + y2;
                 this.renderTickLine(axis, index, majorTick, '', i);
             }

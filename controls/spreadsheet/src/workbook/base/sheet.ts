@@ -518,7 +518,7 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
         sheet.colCount = isUndefined(sheet.colCount) ? 100 : sheet.colCount;
         sheet.topLeftCell = sheet.topLeftCell || 'A1';
         sheet.activeCell = sheet.activeCell || 'A1';
-        sheet.selectedRange = sheet.selectedRange || 'A1:A1';
+        sheet.selectedRange = sheet.selectedRange || sheet.activeCell + ':' + sheet.activeCell;
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
         context.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges ? sheet.ranges : []);
         context.setSheetPropertyOnMute(sheet, 'rows', (sheet.rows && extend([], sheet.rows, null, true)) || []);

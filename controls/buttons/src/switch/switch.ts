@@ -382,8 +382,8 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     private updateHtmlAttribute(): void {
         if (!isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
+                const wrapper: Element = this.getWrapper();
                 if (ATTRIBUTES.indexOf(key) > -1) {
-                    const wrapper: Element = this.getWrapper();
                     if (key === 'class') {
                         addClass([wrapper], this.htmlAttributes[`${key}`].split(' '));
                     } else if (key === 'title') {
@@ -398,6 +398,8 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
                     } else {
                         this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
                     }
+                } else {
+                    wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
                 }
             }
         }

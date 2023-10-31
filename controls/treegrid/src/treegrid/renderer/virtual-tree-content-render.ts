@@ -224,8 +224,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         if (isNullOrUndefined(this.observer[`${containerRect}`])) {
             this.observer[`${containerRect}`] = this.observers[`${containerRect}`];
         }
-        if (isNullOrUndefined (this.parent['clipboardModule'].treeGridParent.editModule) || args.selectedIndex !== 0 ||
-        isNullOrUndefined(this.parent['clipboardModule'].treeGridParent.editModule['addRowIndex'])) {
+        if (isNullOrUndefined (this.parent.clipboardModule['treeGridParent'].editModule) || args.selectedIndex !== 0 ||
+        isNullOrUndefined(this.parent.clipboardModule['treeGridParent'].editModule['addRowIndex'])) {
             super[`${selectVirtualRow}`](args);
         }
     }

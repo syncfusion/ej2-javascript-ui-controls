@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 23.1.43 (2023-10-31)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#I510262` - Resolved the edit issue of Restrict Editing with comments only.
+- `#I508928` - Resolved the exception when update field the attached document.
+- `#I510261` - Resolved the duplicate last page on save when using external styles.
+
 ## 23.1.42 (2023-10-24)
 
 ### Document Editor

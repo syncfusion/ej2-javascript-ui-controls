@@ -399,7 +399,7 @@ export class Filter implements IAction {
             for (const col of gObj.filterSettings.columns) {
                 this.filterByColumn(
                     col.field, col.operator, col.value as string, col.predicate, col.matchCase,
-                    col.ignoreAccent, col.actualFilterValue, col.actualOperator
+                    col.ignoreAccent, col.actualFilterValue, col.actualOperator, col.isForeignKey
                 );
             }
             this.initialLoad = false;
@@ -485,15 +485,16 @@ export class Filter implements IAction {
      * @param {boolean} ignoreAccent - If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      * @param  {string} actualFilterValue - Defines the actual filter value for the filter column.
      * @param  {string} actualOperator - Defines the actual filter operator for the filter column.
+     * @param  {boolean} isForeignColumn - Defines whether it is a foreign key column.
      * @returns {void}
      */
     public filterByColumn(
         fieldName: string, filterOperator: string, filterValue: string | number | Date | boolean| number[]| string[]| Date[]| boolean[],
         predicate?: string, matchCase?: boolean,
-        ignoreAccent?: boolean, actualFilterValue?: Object, actualOperator?: Object): void {
+        ignoreAccent?: boolean, actualFilterValue?: Object, actualOperator?: Object, isForeignColumn?: boolean): void {
         const gObj: IGrid = this.parent;
         let filterCell: HTMLInputElement;
-        this.column = gObj.grabColumnByFieldFromAllCols(fieldName);
+        this.column = gObj.grabColumnByFieldFromAllCols(fieldName, isForeignColumn);
         if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator
             && isNullOrUndefined(this.column.filterBarTemplate) && isNullOrUndefined(this.column.filterTemplate)) {
             filterOperator = this.getOperatorName(fieldName);
@@ -979,7 +980,7 @@ export class Filter implements IAction {
                 this.filterStatusMsg = '';
                 for (let index: number = 0; index < columns.length; index++) {
                     column = gObj.grabColumnByUidFromAllCols(columns[parseInt(index.toString(), 10)].uid)
-                    || gObj.grabColumnByFieldFromAllCols(columns[parseInt(index.toString(), 10)].field);
+                    || gObj.grabColumnByFieldFromAllCols(columns[parseInt(index.toString(), 10)].field, columns[parseInt(index.toString(), 10)].isForeignKey);
                     if (index) {
                         this.filterStatusMsg += ' && ';
                     }
@@ -1072,7 +1073,7 @@ export class Filter implements IAction {
         this.filterByMethod = false;
         this.filterByColumn(
             this.column.field, this.operator, this.value as string, this.predicate,
-            this.filterSettings.enableCaseSensitivity, this.ignoreAccent);
+            this.filterSettings.enableCaseSensitivity, this.ignoreAccent, this.column.isForeignColumn());
         this.filterByMethod = true;
         filterElement.value = filterValue;
         this.updateFilterMsg();

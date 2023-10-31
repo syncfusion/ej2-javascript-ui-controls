@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { formulaBar, locale, enableFormulaInput, DialogBeforeOpenEventArgs, focus, getUpdateUsingRaf, dialog } from '../common/index';
+import { formulaBar, locale, enableFormulaInput, DialogBeforeOpenEventArgs, focus, getUpdateUsingRaf, dialog, isNavigationKey } from '../common/index';
 import { mouseUpAfterSelection, click } from '../common/index';
 import { getRangeIndexes, getRangeFromAddress, getCellAddress, getCellIndexes } from './../../workbook/common/address';
 import { CellModel, getSheetName, getSheet, SheetModel, checkIsFormula, Workbook, getCell, isCustomDateTime } from '../../workbook/index';
@@ -110,7 +110,7 @@ export class FormulaBar {
                 e.keyCode === 16) {
                 return;
             }
-            if (trgtElem.classList.contains('e-formula-bar')) {
+            if (trgtElem.classList.contains('e-formula-bar') && (!e.shiftKey || (e.shiftKey && !isNavigationKey(e.keyCode)))) {
                 this.parent.notify(
                     editOperation, { action: 'refreshEditor', value: trgtElem.value, refreshEditorElem: true });
             }
@@ -123,7 +123,7 @@ export class FormulaBar {
                 const eventArg: { editedValue: string, action: string } = { action: 'getCurrentEditValue', editedValue: '' };
                 this.parent.notify(
                     editOperation, eventArg);
-                if (eventArg.editedValue !== trgtElem.value && e.keyCode !== 16) {
+                if (eventArg.editedValue !== trgtElem.value && e.keyCode !== 16 && (!e.shiftKey || (e.shiftKey && !isNavigationKey(e.keyCode)))) {
                     this.parent.notify(
                         editOperation, { action: 'refreshEditor', value: trgtElem.value, refreshEditorElem: true });
                 }

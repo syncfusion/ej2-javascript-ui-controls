@@ -2499,8 +2499,10 @@ export class CommandHandler {
                                 delete zIndexTable[parseInt(i.toString(), 10)];
                             } else {
                                 //bringing the objects forward
+                                let clonedNode = cloneObject( this.diagram.nameTable[zIndexTable[parseInt((i-1).toString(), 10)]]);
                                 zIndexTable[parseInt(i.toString(), 10)] = zIndexTable[i - 1];
                                 this.diagram.nameTable[zIndexTable[parseInt(i.toString(), 10)]].zIndex = i;
+                                this.triggerOrderCommand(clonedNode, this.diagram.nameTable[zIndexTable[parseInt((i-1).toString(), 10)]], this.diagram.nameTable[zIndexTable[parseInt(i.toString(), 10)]]);
                             }
                         }
                     }
@@ -2512,6 +2514,7 @@ export class CommandHandler {
                     if (obj.shape.type !== 'SwimLane') {
                         zIndexTable[0] = this.diagram.nameTable[`${objectId}`].id;
                         this.diagram.nameTable[`${objectId}`].zIndex = 0;
+                        this.triggerOrderCommand(clonedObject, objects[parseInt(i.toString(), 10)], objects[parseInt(i.toString(), 10)]);
                     } else {
                         tempIndex = this.swapZIndexObjects(index, zIndexTable, objectId, tempTable);
                     }
@@ -2543,7 +2546,6 @@ export class CommandHandler {
                         this.addHistoryEntry(entry);
                     }
                 }
-                this.triggerOrderCommand(clonedObject, objects[parseInt(i.toString(), 10)], objects[parseInt(i.toString(), 10)]);
             }
         }
         this.diagram.protectPropertyChange(false);
@@ -2748,8 +2750,10 @@ export class CommandHandler {
                             delete zIndexTable[parseInt(i.toString(), 10)];
                         } else {
                             //bringing the objects backward
+                            let clonedNode = cloneObject(this.diagram.nameTable[zIndexTable[parseInt((i+1).toString(), 10)]]);
                             zIndexTable[parseInt(i.toString(), 10)] = zIndexTable[i + 1];
                             this.diagram.nameTable[zIndexTable[parseInt(i.toString(), 10)]].zIndex = i;
+                            this.triggerOrderCommand(clonedNode, this.diagram.nameTable[zIndexTable[parseInt((i+1).toString(), 10)]], this.diagram.nameTable[zIndexTable[parseInt(i.toString(), 10)]]);
                         }
                     }
                 }
@@ -2761,6 +2765,7 @@ export class CommandHandler {
                 if (object.shape.type !== 'SwimLane') {
                     zIndexTable[parseInt(tabelLength.toString(), 10)] = this.diagram.nameTable[`${objectName}`].id;
                     this.diagram.nameTable[`${objectName}`].zIndex = tabelLength;
+                    this.triggerOrderCommand(clonedObject, objects[parseInt(i.toString(), 10)], objects[parseInt(i.toString(), 10)]);
                 }
                 else {
                     let childCount: number = 0;
@@ -2874,7 +2879,6 @@ export class CommandHandler {
                 if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
                     this.addHistoryEntry(entry);
                 }
-                this.triggerOrderCommand(clonedObject, objects[parseInt(i.toString(), 10)], objects[parseInt(i.toString(), 10)]);
             }
         }
         this.diagram.protectPropertyChange(false);
@@ -3084,11 +3088,13 @@ export class CommandHandler {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 (this.diagram.nameTable[`${temp}`] instanceof Node) ? undoObject.nodes.push(cloneObject(this.diagram.nameTable[`${temp}`])) :
                     undoObject.connectors.push(cloneObject(this.diagram.nameTable[`${temp}`]));
-
+                let clonedNode = cloneObject( this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]]);
                 (this.diagram.layers[0] as Layer).zIndexTable[parseInt(overlapObject.toString(), 10)] = index.id;
                 this.diagram.nameTable[zIndexTable[parseInt(overlapObject.toString(), 10)]].zIndex = overlapObject;
+                this.triggerOrderCommand(clonedObjects, elements, elements);
                 (this.diagram.layers[0] as Layer).zIndexTable[parseInt(currentObject.toString(), 10)] = intersectArray[0].id;
                 this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]].zIndex = currentObject;
+                this.triggerOrderCommand(clonedNode, this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]], this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]]);
                 if (this.diagram.mode === 'SVG') {
                     this.moveSvgNode(zIndexTable[Number(intersectArray[0].zIndex)], nodeId);
                     this.updateNativeNodeIndex(zIndexTable[Number(intersectArray[0].zIndex)], nodeId);
@@ -3114,7 +3120,6 @@ export class CommandHandler {
                 elements.push(intersectArray[intersectArray.length - 1]);
                 this.updateBlazorZIndex(elements);
             }
-            this.triggerOrderCommand(clonedObjects, elements, elements);
         }
         this.diagram.protectPropertyChange(false);
 
@@ -3180,10 +3185,13 @@ export class CommandHandler {
                     undoObject.connectors.push(cloneObject(this.diagram.nameTable[`${temp}`]));
 
                 //swap the nodes
+                let clonedNode = cloneObject( this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]]);
                 zIndexTable[parseInt(overlapObject.toString(), 10)] = node.id;
                 this.diagram.nameTable[zIndexTable[parseInt(overlapObject.toString(), 10)]].zIndex = overlapObject;
+                this.triggerOrderCommand(clonedObject, element, element);
                 zIndexTable[parseInt(currentObject.toString(), 10)] = intersectArray[intersectArray.length - 1].id;
                 this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]].zIndex = currentObject;
+                this.triggerOrderCommand(clonedNode, this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]], this.diagram.nameTable[zIndexTable[parseInt(overlapObject.toString(), 10)]]);
                 if (this.diagram.mode === 'SVG') {
                     this.moveSvgNode(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
                     const node: NodeModel = this.diagram.nameTable[zIndexTable[intersectArray[intersectArray.length - 1].zIndex]];
@@ -3212,7 +3220,6 @@ export class CommandHandler {
                 }
                 //swap the nodes
             }
-            this.triggerOrderCommand(clonedObject, element, element);
         }
         this.diagram.protectPropertyChange(false);
 
@@ -5834,7 +5841,8 @@ Remove terinal segment in initial
                         previousConnectorObject.push(cloneObject(connector, undefined, undefined, true));
                     }
                     // EJ2-65876 - Exception occurs on line routing injection module
-                    if(connector.sourceID != connector.targetID){
+                    //Bug 850195: Exception occurs due to line routing constraints enabled
+                    if(connector.sourceID && connector.targetID && connector.sourceID != connector.targetID){
                         //EJ2-69573 - Excecption occurs when calling doLayout method with the lineRouting module 
                         let sourceNode:NodeModel= this.diagram.getObject(connector.sourceID);
                         let targetNode:NodeModel = this.diagram.getObject(connector.targetID);

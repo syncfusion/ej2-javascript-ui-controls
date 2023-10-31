@@ -32,6 +32,16 @@
       }
     }
 
+    &.e-device {
+      .e-pivotcell-container {
+        .e-stackedheadertext {
+          &.e-cellvalue {
+            align-self: center;
+          }
+        }
+      }
+    }
+
     .e-nextspan {
       display: inline-block;
       width: $pivotview-indent-space-size;
@@ -93,9 +103,10 @@
         border-bottom-color: $border-light;
       }
 
-      table th[rowspan = '1'] {
-        padding-bottom: 0;
-        padding-top: 0;
+      table th[rowspan = '1'],
+      table th:not([rowspan]) {
+        padding-bottom: 0 !important;
+        padding-top: 0 !important;
         vertical-align: middle;
       }
     }

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 23.1.42 (2023-10-24)
+## 23.1.43 (2023-10-31)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I490793` - Provided support to open or close the `Tooltip` for the default focusable element through keyboard interaction.
+
+## 23.1.38 (2023-09-26)
 
 ### Tooltip
 

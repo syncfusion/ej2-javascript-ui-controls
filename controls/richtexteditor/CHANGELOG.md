@@ -2,15 +2,33 @@
 
 ## [Unreleased]
 
-## 23.1.42 (2023-10-24)
+## 23.1.43 (2023-10-31)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
-- `#I499852` - Now, pressing the enter key when the cursor is placed next to the image after pasting the image works properly.
-
 - `#I456729` - Now, pasting the cropped images from MS Word into the Rich Text Editor works properly.
+
+- `#I500444` - Now, when pasting the list content from MS Word, the margin bottom style will be set properly.
+
+- Now, the toolbar's preview button function works properly when the Rich Text Editor `itemConfigs` property is set with `toolbarSettings`.
+
+- `#I509912` - Now, the `toolbarClick` event is triggered when the emoji picker toolbar item is clicked before the opening of the emoji picker popup.
+
+- `#I513543` - Now, pasting the content from the online MS Excel works properly without pasting any additional style content.
+
+## 23.1.41 (2023-10-17)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I501441` - Now, entering more than one character works without any console error.
+
+- `#I502504` - Now, cancelling undo and redo actions using the `actionBegin` event's cancel argument works properly.
+
+- `#I499852` - Now, pressing the enter key when the cursor is placed next to the image after pasting the image works properly.
 
 - `#I501846` - Now the Format Painter will copy and paste the list with paragraph elements.
 

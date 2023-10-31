@@ -385,8 +385,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.type === 'Auto' && !Browser.isDevice) {
             this.show();
         } else if (!this.isOpen) {
-            addClass([this.element], [CLOSE,DISABLEANIMATION]);
-            removeClass([this.element], DISABLEANIMATION);
+            addClass([this.element], [CLOSE, DISABLEANIMATION]);
         }
     }
     private checkType(val: boolean): void {
@@ -821,7 +820,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.destroyBackDrop();
         if (this.element) {
-            removeClass([this.element], [OPEN, CLOSE, PUSH, SLIDE, OVER, LEFT, RIGHT, TRASITION]);
+            removeClass([this.element], [OPEN, CLOSE, PUSH, SLIDE, OVER, LEFT, RIGHT, TRASITION, DISABLEANIMATION]);
             removeClass([this.element], SIDEBARABSOLUTE);
             this.element.style.width = '';
             this.element.style.zIndex = '';

@@ -421,6 +421,11 @@ export interface StrikethroughSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
 }
 
 /**
@@ -490,6 +495,11 @@ export interface UnderlineSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
 }
 
 /**
@@ -558,6 +568,11 @@ export interface HighlightSettingsModel {
      * specifies whether the individual annotations are included or not in print actions.
      */
     isPrint?: boolean;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
 
 }
 
@@ -664,6 +679,11 @@ export interface LineSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
 }
 
 /**
@@ -769,6 +789,11 @@ export interface ArrowSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
 }
 
 /**
@@ -869,6 +894,11 @@ export interface RectangleSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
 }
 
 /**
@@ -968,6 +998,11 @@ export interface CircleSettingsModel {
      * specifies whether the individual annotations are included or not in print actions.
      */
     isPrint?: boolean;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
 
 }
 
@@ -1101,6 +1136,11 @@ export interface PolygonSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
 }
 
 /**
@@ -1201,6 +1241,11 @@ export interface StampSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
 }
 
 /**
@@ -1300,6 +1345,11 @@ export interface CustomStampSettingsModel {
      * specifies whether the individual annotations are included or not in print actions.
      */
     isPrint?: boolean;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
 
 }
 
@@ -1416,6 +1466,11 @@ export interface DistanceSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
 }
 
 /**
@@ -1516,6 +1571,11 @@ export interface PerimeterSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
 }
 
 /**
@@ -1600,6 +1660,11 @@ export interface AreaSettingsModel {
      * specifies whether the individual annotations are included or not in print actions.
      */
     isPrint?: boolean;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
 
 }
 
@@ -1701,6 +1766,11 @@ export interface RadiusSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
 }
 
 /**
@@ -1786,6 +1856,11 @@ export interface VolumeSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
 }
 
 /**
@@ -1866,6 +1941,11 @@ export interface InkAnnotationSettingsModel {
      */
     isPrint?: boolean;
 
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
 }
 
 /**
@@ -1920,6 +2000,11 @@ export interface StickyNotesSettingsModel {
      * specifies whether the individual annotations are included or not in print actions.
      */
     isPrint?: boolean;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
 
 }
 
@@ -2097,6 +2182,11 @@ export interface FreeTextSettingsModel {
      * Enable or disable auto fit mode for FreeText annotation in the Pdfviewer. FALSE by default.
      */
     enableAutoFit?: boolean;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
 
 }
 
@@ -2299,6 +2389,11 @@ export interface AnnotationSettingsModel {
      * @default ['None']
      */
     allowedInteractions?: AllowedInteraction[];
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
 
 }
 

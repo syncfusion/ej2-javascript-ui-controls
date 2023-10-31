@@ -153,7 +153,7 @@ export class DataMatrix {
 
 
     private DataMatrixEncoder(dataCodeword: number[]): number[] {
-        const result: number[] = dataCodeword;
+        const result: number[] = new Array(dataCodeword.length);
         let index: number = 0;
         for (let i: number = 0; i < dataCodeword.length; i++) {
             //checks the codeword is digit or not.
@@ -174,21 +174,30 @@ export class DataMatrix {
                 //Check the prevValue is digit or non convertable value
                 //if it is true ,then combine the 2 digits
                 if (priorValue !== 235 && prevValue >= 48 && prevValue <= 57) {
-                    result[parseInt(prevIndex.toString(), 10)] = (10 * (prevValue - 0) + (dataCodeword[parseInt(i.toString(), 10)] - 0) + 130);
+                    //Bug 851922: DataMatrix barcode not working for alphanumeric value
+                    // Modified (prevValue - 0) into (prevValue - 48) for proper calculation as the '0' corresponds to the decimal value 48 in the ASCII table.
+                    result[parseInt(prevIndex.toString(), 10)] = (10 * (prevValue - 48) + (dataCodeword[parseInt(i.toString(), 10)] - 48) + 130);
 
                 } else {
-                    result[index++] = (dataCodeword[parseInt(i.toString(), 10)] + 1);
+                    result[parseInt(index.toString(), 10)] = (dataCodeword[parseInt(i.toString(), 10)] + 1);
+                    index++;
                 }
             } else if (dataCodeword[parseInt(i.toString(), 10)] < 127) {
-                result[index++] = (dataCodeword[parseInt(i.toString(), 10)] + 1);
+                result[parseInt(index.toString(), 10)] = (dataCodeword[parseInt(i.toString(), 10)] + 1);
+                index++;
             } else {
                 result[parseInt(index.toString(), 10)] = 235;
-                result[index++] = (((dataCodeword[parseInt(i.toString(), 10)] - 127)));
+                result[parseInt(index.toString(), 10)] = (((dataCodeword[parseInt(i.toString(), 10)] - 127)));
+                index++;
             }
         }
         let encodedData: number[] = Array(index);
         encodedData = this.fillZero(encodedData);
-        encodedData = result;
+        //Bug 851922: DataMatrix barcode not working for alphanumeric value
+        // Modified the "encodedData = result" code into below for proper assignement of value from result to encodedData.
+        for (let i :number = 0; i < index; i++) {
+            encodedData[parseInt(i.toString(), 10)] = result[parseInt(i.toString(), 10)];
+        }
         return encodedData;
     }
 

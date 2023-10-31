@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, addDPRValue, focus } from '../common/index';
+import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, addDPRValue, rangeSelectionByKeydown } from '../common/index';
 import { showAggregate, refreshImgElem, getRowIdxFromClientY, getColIdxFromClientX, clearChartBorder, hideAutoFillElement } from '../common/index';
 import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook, getSelectedRange } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
@@ -75,6 +75,7 @@ export class Selection {
         this.parent.on(getColIdxFromClientX, this.getColIdxFromClientX, this);
         this.parent.on(focusBorder, this.chartBorderHandler, this);
         this.parent.on(selectionStatus, this.isTouchSelectionStarted, this);
+        this.parent.on(rangeSelectionByKeydown, this.selectionByKeydown, this);
     }
 
     private removeEventListener(): void {
@@ -93,11 +94,16 @@ export class Selection {
             this.parent.off(getColIdxFromClientX, this.getColIdxFromClientX);
             this.parent.off(focusBorder, this.chartBorderHandler);
             this.parent.off(selectionStatus, this.isTouchSelectionStarted);
+            this.parent.off(rangeSelectionByKeydown, this.selectionByKeydown);
         }
     }
 
     private isTouchSelectionStarted(args: { touchSelectionStarted: boolean }): void {
         args.touchSelectionStarted = this.touchSelectionStarted;
+    }
+
+    private selectionByKeydown(args: { range: number[], e: KeyboardEvent }): void {
+        this.selectRangeByIdx(args.range, args.e, false, false, false, false, undefined, false);
     }
 
     private rowHeightChanged(args: { threshold: number, rowIdx: number }): void {
@@ -641,20 +647,25 @@ export class Selection {
         }
     }
 
+    private isMouseEvent(e: MouseEvent): boolean {
+        return isMouseDown(e) || isMouseUp(e) || isMouseMove(e);
+    }
+
     private selectRangeByIdx(
-        range: number[], e?: MouseEvent, isScrollRefresh?: boolean,
+        range: number[], e?: MouseEvent | KeyboardEvent, isScrollRefresh?: boolean,
         isActCellChanged?: boolean, isInit?: boolean, skipChecking?: boolean, selectedRowColIdx?: number,
         preventAnimation?: boolean): void {
-        if (e && e.target && closest(e.target as Element, '#' + this.parent.element.id + '_edit')) { return; }
+        const isMouseEvent: boolean = e && this.isMouseEvent(e as MouseEvent);
+        if (e && e.target && isMouseEvent && closest(e.target as Element, '#' + this.parent.element.id + '_edit')) { return; }
         const eventArgs: { action: string, editedValue: string, endFormulaRef: boolean } = { action: 'getCurrentEditValue', editedValue: '',
             endFormulaRef: false };
         this.parent.notify(editOperation, eventArgs);
         const isFormulaEdit: boolean = (this.parent.isEdit ? checkIsFormula(eventArgs.editedValue, true) : false) &&
             !eventArgs.endFormulaRef;
-        const isMultiRange: boolean = e && e.ctrlKey && isMouseDown(e);
+        const isMultiRange: boolean = e && e.ctrlKey && isMouseDown(e as MouseEvent);
         let ele: HTMLElement;
         if (!isMultiRange) {
-            ele = this.getSelectionElement(e, selectedRowColIdx);
+            ele = this.getSelectionElement(e as MouseEvent, selectedRowColIdx);
         }
         const sheet: SheetModel = this.parent.getActiveSheet();
         const topLeftIdx: number[] = getRangeIndexes(sheet.topLeftCell);
@@ -701,7 +712,7 @@ export class Selection {
                     ele.classList.add('e-hide');
                 }
                 if (sheet.frozenRows || sheet.frozenColumns) {
-                    const clsName: string = isMouseMove(e) ? 'e-cur-selection' : 'e-selection';
+                    const clsName: string = isMouseMove(e as MouseEvent) ? 'e-cur-selection' : 'e-selection';
                     removeRangeEle(this.parent.getSelectAllContent(), null, clsName, true);
                     removeRangeEle(this.parent.getColumnHeaderContent(), null, clsName, true);
                     removeRangeEle(this.parent.getRowHeaderContent(), null, clsName, true);
@@ -710,7 +721,7 @@ export class Selection {
             if (!sheet.frozenColumns && !sheet.frozenRows && ele) {
                 setPosition(this.parent, ele, range);
             }
-            if (isFormulaEdit && e && e.target && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit')
+            if (isFormulaEdit && e && e.target && (!isMouseEvent || !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit'))
                 && this.parent.isEdit) {
                 const addRefArgs: { range: string, isSelect: boolean, isAlertDlgOpen?: boolean } = {
                     range: getRangeAddress(range).split(':')[0], isSelect: true
@@ -735,14 +746,14 @@ export class Selection {
                         this.selectRange({ address: selRange });
                         return;
                     } else {
-                        ele = this.getSelectionElement(e, selectedRowColIdx);
+                        ele = this.getSelectionElement(e as MouseEvent, selectedRowColIdx);
                     }
                 } else {
-                    ele = this.getSelectionElement(e, selectedRowColIdx);
+                    ele = this.getSelectionElement(e as MouseEvent, selectedRowColIdx);
                 }
             }
             if (isFormulaEdit && this.parent.isEdit) {
-                if (e && e.target && !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit') && this.parent.isEdit) {
+                if (e && e.target && (!isMouseEvent || !(e.target as HTMLElement).classList.contains('e-spreadsheet-edit')) && this.parent.isEdit) {
                     const addRefArgs: { range: string, isSelect: boolean, isAlertDlgOpen?: boolean } = {
                         range: getRangeAddress(range), isSelect: true
                     };
@@ -759,13 +770,13 @@ export class Selection {
                     if (sheet.frozenRows || sheet.frozenColumns) {
                         if (e && e.target || isMultiRange) {
                             clsName = 'e-cur-selection';
-                            if (isMouseMove(e) && ele.classList.contains('e-cur-selection')) {
+                            if (isMouseMove(e as MouseEvent) && ele.classList.contains('e-cur-selection')) {
                                 ele.classList.add('e-hide');
                             } else {
                                 ele.classList.add(clsName);
                             }
                         }
-                        if (!isMultiRange && (this.isColSelected || this.isRowSelected) && isMouseDown(e)) {
+                        if (!isMultiRange && (this.isColSelected || this.isRowSelected) && isMouseDown(e as MouseEvent)) {
                             removeRangeEle(this.parent.getSelectAllContent(), null, 'e-selection');
                             removeRangeEle(this.parent.getColumnHeaderContent(), null, 'e-selection');
                             removeRangeEle(this.parent.getRowHeaderContent(), null, 'e-selection');
@@ -791,7 +802,7 @@ export class Selection {
             range[0] = 0;
         }
         let selRange: string = getRangeAddress(range);
-        if (e && e.ctrlKey && (isMouseMove(e) || isMouseUp(e))) {
+        if (e && e.ctrlKey && (isMouseMove(e as MouseEvent) || isMouseUp(e as MouseEvent))) {
             selRange = sheet.selectedRange.slice(0, sheet.selectedRange.lastIndexOf(' ')) + ' ' + selRange;
         } else if (selectedRowColIdx > -1) {
             const selRanges: string[] = sheet.selectedRange.split(' ');

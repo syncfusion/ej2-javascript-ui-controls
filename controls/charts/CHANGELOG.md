@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## 23.1.43 (2023-10-31)
+
+### Chart
+
+- `#F184961` - The enable RTL property is now working correctly in polar chart.
+- `#I512713` - Now the chart series type can be updated using react hooks.
+
 ## 23.1.42 (2023-10-24)
 
 ### Chart

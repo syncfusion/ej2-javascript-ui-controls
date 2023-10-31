@@ -82,6 +82,9 @@ export class HeaderRender implements IRenderer {
             } else {
                 visualElement.innerHTML = col.headerTemplate as string;
             }
+            if (!isNullOrUndefined(visualElement.firstChild) && visualElement.firstChild.nodeType === 1) {
+                (visualElement.firstChild as HTMLElement).style.pointerEvents = 'none';
+            }
         } else {
             visualElement.innerHTML = headercelldiv ?
                 col.headerText : element.firstElementChild.innerHTML;

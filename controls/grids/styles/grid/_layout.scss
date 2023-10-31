@@ -1315,7 +1315,7 @@
 
     .e-bigger & .e-group-animator .e-groupheadercell,
     .e-bigger & .e-group-animator .e-groupheadercell:hover {
-        margin: $grid-group-animator-bigger-cell-margin;
+margin: $grid-group-animator-bigger-cell-margin;
         border-bottom-width: $grid-animtor-border-bottom-width;
     }
 
@@ -1335,7 +1335,7 @@
 
     & .e-group-animator .e-groupheadercell,
     & .e-group-animator .e-groupheadercell:hover {
-        margin: $grid-group-animator-cell-margin;
+margin: $grid-group-animator-cell-margin;
         border-bottom-width: $grid-animtor-border-bottom-width;
     }
 
@@ -1344,9 +1344,8 @@
     }
 
     & .e-groupdroparea.e-group-animate.e-grouped {
-        overflow: hidden;
         padding: $grid-animator-area-padding;
-        height: $grid-group-animator-drop-height;
+        height: auto;
         border-bottom-width: $grid-animator-area-border;
     }
 
@@ -1362,14 +1361,6 @@
     &.e-rtl .e-group-animate.e-groupdroparea .e-nextgroup {
         transform: rotate(180deg);
         margin-top: $grid-animator-margin-top-rtl;
-    }
-
-    &.e-rtl .e-group-animator:first-child .e-groupheadercell {
-        margin: $grid-animator-rtl-first-group;
-    }
-
-    & .e-group-animator:first-child .e-groupheadercell {
-        margin: $grid-animator-first-group;
     }
 
     .e-group-animate.e-groupdroparea .e-nextgroup {

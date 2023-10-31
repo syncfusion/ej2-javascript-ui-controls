@@ -410,6 +410,7 @@ export class MeasureAnnotation {
      */
     public setAnnotationType(type: AnnotType): void {
         let author: string = 'Guest';
+        let subject: string = "";
         this.updateMeasureproperties();
         this.pdfViewerBase.disableTextSelectionMode();
         switch (type) {
@@ -418,13 +419,14 @@ export class MeasureAnnotation {
             const modifiedDateDist: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.distanceSettings.author ? this.pdfViewer.distanceSettings.author : 'Guest';
+            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.distanceSettings.subject ? this.pdfViewer.distanceSettings.subject : 'Distance calculation';
             this.pdfViewer.drawingObject = {
                 sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.distanceStartHead),
                 taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.distanceEndHead), measureType: 'Distance',
                 fillColor: this.distanceFillColor, notes: '', strokeColor: this.distanceStrokeColor, leaderHeight: this.leaderLength,
                 opacity: this.distanceOpacity, thickness: this.distanceThickness, borderDashArray: this.distanceDashArray.toString(),
                 // eslint-disable-next-line max-len
-                shapeAnnotationType: 'Distance', author: author, subject: 'Distance calculation', isCommentLock: false
+                shapeAnnotationType: 'Distance', author: author, subject: subject, isCommentLock: false
             };
             this.pdfViewer.tool = 'Distance';
             break;
@@ -433,13 +435,14 @@ export class MeasureAnnotation {
             const modifiedDatePeri: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.perimeterSettings.author ? this.pdfViewer.perimeterSettings.author : 'Guest';
+            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.perimeterSettings.subject ? this.pdfViewer.perimeterSettings.subject : 'Perimeter calculation';
             this.pdfViewer.drawingObject = {
                 // eslint-disable-next-line max-len
                 shapeAnnotationType: 'LineWidthArrowHead', fillColor: this.perimeterFillColor, notes: '', strokeColor: this.perimeterStrokeColor, opacity: this.perimeterOpacity,
                 thickness: this.perimeterThickness, sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.perimeterStartHead),
                 // eslint-disable-next-line max-len
                 taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.perimeterEndHead), measureType: 'Perimeter', borderDashArray: this.perimeterDashArray.toString(),
-                author: author, subject: 'Perimeter calculation', isCommentLock: false
+                author: author, subject: subject, isCommentLock: false
             };
             this.pdfViewer.tool = 'Perimeter';
             break;
@@ -448,12 +451,13 @@ export class MeasureAnnotation {
             const modifiedDateArea: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.areaSettings.author ? this.pdfViewer.areaSettings.author : 'Guest';
+            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.areaSettings.subject ? this.pdfViewer.areaSettings.subject : 'Area calculation';
             this.pdfViewer.drawingObject = {
                 // eslint-disable-next-line max-len
                 shapeAnnotationType: 'Polygon', fillColor: this.areaFillColor, notes: '', strokeColor: this.areaStrokeColor,
                 thickness: this.areaThickness, opacity: this.areaOpacity, measureType: 'Area',
                 modifiedDate: modifiedDateArea, borderStyle: '', borderDashArray: '0',
-                author: author, subject: 'Area calculation', isCommentLock: false
+                author: author, subject: subject, isCommentLock: false
             };
             this.pdfViewer.tool = 'Polygon';
             break;
@@ -462,11 +466,12 @@ export class MeasureAnnotation {
             const modifiedDateRad: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.radiusSettings.author ? this.pdfViewer.radiusSettings.author : 'Guest';
+            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.radiusSettings.subject ? this.pdfViewer.radiusSettings.subject : 'Radius calculation';
             this.pdfViewer.drawingObject = {
                 // eslint-disable-next-line max-len
                 shapeAnnotationType: 'Radius', fillColor: this.radiusFillColor, notes: '', strokeColor: this.radiusStrokeColor, opacity: this.radiusOpacity,
                 thickness: this.radiusThickness, measureType: 'Radius', modifiedDate: modifiedDateRad, borderStyle: '', borderDashArray: '0',
-                author: author, subject: 'Radius calculation', isCommentLock: false
+                author: author, subject: subject, isCommentLock: false
             };
             this.pdfViewer.tool = 'DrawTool';
             break;
@@ -475,12 +480,13 @@ export class MeasureAnnotation {
             const modifiedDateVol: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.volumeSettings.author ? this.pdfViewer.volumeSettings.author : 'Guest';
+            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.volumeSettings.subject ? this.pdfViewer.volumeSettings.subject : 'Volume calculation';
             this.pdfViewer.drawingObject = {
                 // eslint-disable-next-line max-len
                 shapeAnnotationType: 'Polygon', notes: '', fillColor: this.volumeFillColor, strokeColor: this.volumeStrokeColor,
                 opacity: this.volumeOpacity, thickness: this.volumeThickness, measureType: 'Volume',
                 modifiedDate: modifiedDateVol, borderStyle: '', borderDashArray: '0',
-                author: author, subject: 'Volume calculation', isCommentLock: false
+                author: author, subject: subject, isCommentLock: false
             };
             this.pdfViewer.tool = 'Polygon';
             break;
@@ -1678,7 +1684,7 @@ export class MeasureAnnotation {
             allowedInteractions = this.pdfViewer.lineSettings.allowedInteractions ? this.pdfViewer.lineSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             measureAnnotationType = 'LineDimension';
             shapeAnnotationType = 'Line';
-            subject = 'Distance calculation';
+            subject = this.pdfViewer.lineSettings.subject !== "" ? this.pdfViewer.lineSettings.subject : this.pdfViewer.annotationSettings.subject !== "" ? this.pdfViewer.annotationSettings.subject : 'Distance calculation';
             isArrow=true;
             if(annotationObject.vertexPoints)
                 vertexPoints = annotationObject.vertexPoints;
@@ -1696,7 +1702,7 @@ export class MeasureAnnotation {
             allowedInteractions = this.pdfViewer.arrowSettings.allowedInteractions ? this.pdfViewer.arrowSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             measureAnnotationType = 'PolyLineDimension';
             shapeAnnotationType = 'Polyline';
-            subject ='Perimeter calculation';
+            subject = this.pdfViewer.arrowSettings.subject !== "" ? this.pdfViewer.arrowSettings.subject : this.pdfViewer.annotationSettings.subject !== "" ? this.pdfViewer.annotationSettings.subject : 'Perimeter calculation';
             isArrow=true;
             if(annotationObject.vertexPoints)
                 vertexPoints = annotationObject.vertexPoints;
@@ -1716,7 +1722,7 @@ export class MeasureAnnotation {
             allowedInteractions = this.pdfViewer.rectangleSettings.allowedInteractions ? this.pdfViewer.rectangleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             measureAnnotationType = 'PolygonDimension';
             shapeAnnotationType = 'Polygon';
-            subject ='Area calculation';
+            subject =  this.pdfViewer.rectangleSettings.subject !== "" ? this.pdfViewer.rectangleSettings.subject : this.pdfViewer.annotationSettings.subject !== "" ? this.pdfViewer.annotationSettings.subject : 'Area calculation';
             if(annotationObject.vertexPoints)
                 vertexPoints = annotationObject.vertexPoints;
             else            
@@ -1736,7 +1742,7 @@ export class MeasureAnnotation {
             allowedInteractions = this.pdfViewer.circleSettings.allowedInteractions ? this.pdfViewer.circleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             measureAnnotationType = 'PolygonRadius';
             shapeAnnotationType = 'Circle';
-            subject ='Radius calculation';
+            subject = this.pdfViewer.circleSettings.subject !== "" ? this.pdfViewer.circleSettings.subject : this.pdfViewer.annotationSettings.subject !== "" ? this.pdfViewer.annotationSettings.subject : 'Radius calculation';
             annotationObject.width =annotationObject.width?annotationObject.width :100;
             annotationObject.height = annotationObject.height?annotationObject.height :100;
             vertexPoints = null;
@@ -1750,7 +1756,7 @@ export class MeasureAnnotation {
             allowedInteractions = this.pdfViewer.polygonSettings.allowedInteractions ? this.pdfViewer.polygonSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             measureAnnotationType = 'PolygonVolume';
             shapeAnnotationType = 'Polygon';
-            subject ='Volume calculation';
+            subject = this.pdfViewer.polygonSettings.subject !== "" ? this.pdfViewer.polygonSettings.subject : this.pdfViewer.annotationSettings.subject !== "" ? this.pdfViewer.annotationSettings.subject : 'Volume calculation';
             if(annotationObject.vertexPoints)
                 vertexPoints = annotationObject.vertexPoints;
             else                   
@@ -1873,7 +1879,7 @@ export class MeasureAnnotation {
             State: '',
             StateModel: '',
             StrokeColor: annotationObject.strokeColor?annotationObject.strokeColor:'#ff0000',
-            Subject: subject,
+            Subject: annotationObject.subject ? annotationObject.subject : subject,
             Thickness: annotationObject.thickness?annotationObject.thickness:1,
             VertexPoints : vertexPoints
         }

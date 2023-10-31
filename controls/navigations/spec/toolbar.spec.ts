@@ -12886,6 +12886,44 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
         });
     });
 
+    describe('Keyboard Interaction testing with toolbar template', () => {
+        let toolbar: any;
+        let keyEventArgs: any;
+        document.body.innerHTML = '';
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            setStyleAttribute(ele, { 'display': 'block', 'white-space': 'nowrap', 'position': 'relative' });
+            ele.style.display = 'block';
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.removeAttribute('style');
+            document.body.innerHTML = '';
+        });
+        it('keyboard interaction toolbar template testing ', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                items: [
+                    { type: 'Button', text: 'new', align: 'Left' },
+                    { template: "<button id='Template1'>Button</button>", type: 'Button', text: 'Underline', tooltipText: 'Bold', }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            toolbar.element.querySelector('.e-toolbar-item').children[0].focus();
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveRight',
+                target: toolbar.element.querySelector('.e-toolbar-item').children[0],
+            };
+            expect(element.classList.contains('e-keyboard')).toEqual(true);
+            toolbar.keyActionHandler(keyEventArgs);
+            expect(document.activeElement.getAttribute('tabindex') === null).toEqual(true);
+        });
+    });
+
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

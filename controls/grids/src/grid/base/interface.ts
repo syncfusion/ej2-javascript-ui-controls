@@ -38,6 +38,7 @@ import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { Render } from '../renderer/render';
 import { DetailRow } from '../actions/detail-row';
 import { Print } from '../actions/print';
+import { Clipboard } from '../actions/clipboard';
 import { PdfPaddings } from '@syncfusion/ej2-pdf-export';
 import { AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
 import { Page } from '../actions/page';
@@ -617,6 +618,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     printModule?: Print;
 
+    clipboardModule?: Clipboard;
+
     filterModule?: Filter;
 
     requestTypeAction?: string;
@@ -808,7 +811,7 @@ export interface IGrid extends Component<HTMLElement> {
     isDetail?(): boolean;
     updateMediaColumns?(col: Column): void;
     hideScroll?(): void;
-    grabColumnByFieldFromAllCols(field: string): Column;
+    grabColumnByFieldFromAllCols(field: string, isForeignKey?: boolean): Column;
     grabColumnByUidFromAllCols(uid: string): Column;
     getRowUid(prefix: string): string;
     getFilteredRecords(): Object[] | Promise<Object>;

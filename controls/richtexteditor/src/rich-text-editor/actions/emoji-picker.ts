@@ -103,14 +103,14 @@ export class EmojiPicker {
         }
         else if (isNOU(args.x) && isNOU(args.y) && !this.parent.inlineMode.enable && isNOU(this.parent.quickToolbarSettings.text)) {
             target = this.parent.inputElement;
-            if (window.getSelection().rangeCount > 0) {
+            if (this.parent.contentModule.getDocument().getSelection().rangeCount > 0) {
                 const coordinates: { [key: string]: number } = this.getCoordinates();
                 xValue = coordinates.left;
                 yValue = coordinates.top;
             }
         } else if (isNOU(args.x) && isNOU(args.y) && (this.parent.inlineMode.enable || !isNOU(this.parent.quickToolbarSettings.text))) {
             this.parent.notify(events.hidePopup, {});
-            if (window.getSelection().rangeCount > 0) {
+            if (this.parent.contentModule.getDocument().getSelection().rangeCount > 0) {
                 const coordinates: { [key: string]: number } = this.getCoordinates();
                 xValue = coordinates.left;
                 yValue = coordinates.top;
@@ -705,7 +705,7 @@ export class EmojiPicker {
 
     private onkeyPress(e: NotifyArgs): void {
         const originalEvent: KeyboardEventArgs = e.args as KeyboardEventArgs;
-        const selection: Selection = window.getSelection();
+        const selection: Selection = this.parent.contentModule.getDocument().getSelection();
         if (selection.rangeCount <= 0) { return; }
         const range: Range = selection.getRangeAt(0);
         const cursorPos: number = range.startOffset;
@@ -734,7 +734,8 @@ export class EmojiPicker {
 
     private onkeyUp(e: NotifyArgs): void {
         const originalEvent: KeyboardEventArgs = e.args as KeyboardEventArgs;
-        const selection: Selection = window.getSelection();
+        const selection: Selection = this.parent.contentModule.getDocument().getSelection();
+        if (selection.rangeCount <= 0) { return; }
         const range: Range = selection.getRangeAt(0);
         const cursorPos: number = range.startOffset;
         // eslint-disable-next-line
@@ -758,7 +759,7 @@ export class EmojiPicker {
 
     private getCoordinates(): { [key: string]: number } {
         let coordinates: { [key: string]: number };
-        const selection: Selection = window.getSelection();
+        const selection: Selection = this.parent.contentModule.getDocument().getSelection();
         const range: Range = selection.getRangeAt(0);
         let firstChild: HTMLElement;
         if (range.startContainer.nodeName === 'P' || range.startContainer.nodeName === 'DIV') {

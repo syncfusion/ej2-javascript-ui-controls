@@ -1367,7 +1367,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         } else {
-            EventHandler.add(this.element, 'focus', this.targetHover, this);
+            EventHandler.add(this.element, 'focusin', this.targetHover, this);
         }
     }
     private wireMouseEvents(e: Event, target: Element): void {

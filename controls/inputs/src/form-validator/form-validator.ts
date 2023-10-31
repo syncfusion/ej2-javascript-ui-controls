@@ -296,6 +296,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             detach(element);
         }
         super.destroy();
+        this.infoElement = null;
         onIntlChange.off('notifyExternalChange', this.afterLocalization);
     }
 
@@ -360,7 +361,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
      * @returns {string} - Returns the component name.
      */
     public getModuleName(): string {
-        return 'formValidator';
+        return 'formvalidator';
     }
     /**
      * @param {any} args - Specifies the culture name.

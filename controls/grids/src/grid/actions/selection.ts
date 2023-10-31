@@ -3381,6 +3381,9 @@ export class Selection implements IAction {
             break;
         case 'escape':
             this.clearSelection();
+            if(this.parent.clipboardModule) {
+                window.navigator['clipboard'].writeText('');
+            }
             break;
         case 'ctrlPlusA':
             this.ctrlPlusA();

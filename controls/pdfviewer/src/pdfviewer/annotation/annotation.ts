@@ -3828,7 +3828,7 @@ export class Annotation {
                         // eslint-disable-next-line max-len
                         shapeAnnotationType: 'sticky', author: annotation.Author, modifiedDate: annotation.ModifiedDate, note: annotation.Note, state: annotation.state, stateModel: annotation.stateModel,
                         comments: [], review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
-                        annotName: annotation.AnnotName, parentId: parentAnnotation.AnnotName, subject: 'Comments',
+                        annotName: annotation.AnnotName, parentId: parentAnnotation.AnnotName, subject: annotation.Subject,
                         isLock: annotation.IsLock
                     };
                     newArray[newArray.length] = annotationObject;
@@ -5021,6 +5021,11 @@ export class Annotation {
                     this.pdfViewer.nodePropertyChange(currentAnnotation, { author: annotation.author });
                     this.triggerAnnotationPropChange(currentAnnotation, false, true, false, false);
                 }
+                if (currentAnnotation.subject !== annotation.subject) {
+                    redoClonedObject.subject = annotation.subject;
+                    this.pdfViewer.nodePropertyChange(currentAnnotation, { subject: annotation.subject });
+                    this.triggerAnnotationPropChange(currentAnnotation, false, true, false, false);
+                }
                 if (currentAnnotation.modifiedDate !== annotation.modifiedDate) {
                     redoClonedObject.modifiedDate = annotation.modifiedDate;
                     this.pdfViewer.nodePropertyChange(currentAnnotation, { modifiedDate: annotation.modifiedDate });
@@ -5083,7 +5088,7 @@ export class Annotation {
                     annotationType = 'ink';
                 }
                 // eslint-disable-next-line max-len
-                if (annotation.type === 'Measure' || annotation.subject === 'Distance calculation' || annotation.subject === 'Perimeter calculation' || annotation.subject === 'Radius calculation' || annotation.subject === 'Area calculation' || annotation.subject === 'Volume calculation') {
+                if (annotation.type === 'Measure' || annotation.indent === 'LineDimension' || annotation.indent === 'PolyLineDimension' || annotation.indent === 'PolygonDimension' || annotation.indent === 'PolygonRadius' || annotation.indent === 'PolygonVolume') {
                     annotationType = 'shape_measure';
                 }
                 if (annotation.labelSettings && this.pdfViewer.enableShapeLabel) {
@@ -5459,6 +5464,7 @@ export class Annotation {
             newAnnotation.isReadonly = annotation.isReadonly;
         }
         newAnnotation.customData = annotation.customData;
+         newAnnotation.subject = annotation.subject;
         newAnnotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         newAnnotation.isPrint = annotation.isPrint;
         if (annotation.annotationSettings && !isNullOrUndefined(annotation.annotationSettings.isLock)) {

@@ -28,7 +28,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     private backgroundLoaded: boolean | null = null;
     private fileType: SignatureFileType;
     private fileName: string;
-    private clearArray: number[] = [];
+    private clearArray: number[];
     private isBlazor: boolean = false;
     private isResponsive: boolean = false;
     private dotnetRef: BlazorDotnetObject;
@@ -106,6 +106,7 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
      * @returns {void}
      */
     public initialize(element: HTMLCanvasElement, dotnetRef?: BlazorDotnetObject): void {
+        this.clearArray = [];
         this.element = element;
         this.canvasContext = this.element.getContext('2d');
         this.canvasContext.canvas.tabIndex = -1;

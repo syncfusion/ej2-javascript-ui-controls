@@ -667,6 +667,14 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public pageRotation: number;
 
     /**
+     * Represents the stamp icon name
+     * @private
+     *
+     */
+    @Property('')
+    public icon: string;
+
+    /**
      * Represents the annotation is added programmatically.
      * @private
      *

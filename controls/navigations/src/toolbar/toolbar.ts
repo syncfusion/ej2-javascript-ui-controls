@@ -2222,7 +2222,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             if (isNOU(this.trgtEle) && !(<HTEle>curEle.parentElement).classList.contains(CLS_TEMPLATE)) {
                 this.updateTabIndex('-1');
                 curEle.removeAttribute('tabindex');
-            } else {
+            } else if ((<HTEle>curEle.parentElement).classList.contains(CLS_TEMPLATE) && !isNOU(curEle.getAttribute('data-tabindex'))) {
                 this.activeEle.setAttribute('tabindex', this.getDataTabindex(this.activeEle));
             }
         }

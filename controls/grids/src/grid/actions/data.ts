@@ -314,7 +314,7 @@ export class Data implements IDataProcessor {
             if (defaultFltrCols.length) {
                 for (let i: number = 0, len: number = defaultFltrCols.length; i < len; i++) {
                     defaultFltrCols[parseInt(i.toString(), 10)].uid = defaultFltrCols[parseInt(i.toString(), 10)].uid ||
-                        this.parent.grabColumnByFieldFromAllCols(defaultFltrCols[parseInt(i.toString(), 10)].field).uid;
+                        this.parent.grabColumnByFieldFromAllCols(defaultFltrCols[parseInt(i.toString(), 10)].field, defaultFltrCols[parseInt(i.toString(), 10)].isForeignKey).uid;
                 }
                 const excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(defaultFltrCols);
                 for (const prop of Object.keys(excelPredicate)) {
@@ -323,7 +323,7 @@ export class Data implements IDataProcessor {
             }
             if (foreignCols.length) {
                 for (const col of foreignCols) {
-                    col.uid = col.uid || this.parent.grabColumnByFieldFromAllCols(col.field).uid;
+                    col.uid = col.uid || this.parent.grabColumnByFieldFromAllCols(col.field, col.isForeignKey).uid;
                     const column: Column = this.parent.grabColumnByUidFromAllCols(col.uid);
                     if (!column) {
                         this.parent.log('initial_action', { moduleName: 'filter', columnName: col.field });

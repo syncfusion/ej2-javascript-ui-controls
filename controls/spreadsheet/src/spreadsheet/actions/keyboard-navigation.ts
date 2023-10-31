@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
-import { keyDown, cellNavigate, filterCellKeyDown, getUpdateUsingRaf, isLockedCells, focus, dialog, getRightIdx } from '../common/index';
-import { SheetModel, getCellIndexes, getRangeAddress, getRowHeight, getColumnWidth, CellModel, isHiddenCol } from '../../workbook/index';
+import { keyDown, cellNavigate, filterCellKeyDown, getUpdateUsingRaf, isLockedCells, focus, dialog, getRightIdx, addressHandle, initiateCur, rangeSelectionByKeydown, editOperation, isNavigationKey } from '../common/index';
+import { SheetModel, getCellIndexes, getRangeAddress, getRowHeight, getColumnWidth, CellModel, isHiddenCol, checkIsFormula } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, isHiddenRow, isColumnSelected, isRowSelected, skipHiddenIdx, getCell } from '../../workbook/index';
 import { getRowsHeight, getColumnsWidth, isLocked, getColumn, ColumnModel } from '../../workbook/index';
 import { getBottomOffset } from '../common/index';
@@ -139,6 +139,12 @@ export class KeyboardNavigation {
                 }
             } else if (isNameBox && e.keyCode === 9 && e.shiftKey) {
                 this.focusEle(e, '.e-formula-bar', false, true);
+            }
+            const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
+            this.parent.notify(editOperation, eventArgs);
+            const isFormulaEdit: boolean =  checkIsFormula(eventArgs.editedValue, true);
+            if (this.parent.isEdit && isFormulaEdit && e.shiftKey && !e.ctrlKey && isNavigationKey(e.keyCode)) {
+                this.shiftSelection(e);
             }
             return;
         }
@@ -975,7 +981,14 @@ export class KeyboardNavigation {
         }
         if (e.keyCode === 37 || e.keyCode === 39 || e.keyCode === 38 || e.keyCode === 40) { /*left,right,up,down*/
             const activeIdxes: number[] = getCellIndexes(sheet.activeCell);
-            this.parent.selectRange(getRangeAddress(selectedRange));
+            if (this.parent.isEdit && e.shiftKey) {
+                e.preventDefault();
+                this.parent.notify(rangeSelectionByKeydown, { range: selectedRange, e });
+                this.parent.notify(addressHandle, { range: getRangeAddress(getSwapRange(selectedRange)), isSelect: false });
+                this.parent.notify(initiateCur, {});
+            } else {
+                this.parent.selectRange(getRangeAddress(selectedRange));
+            }
             this.scrollNavigation(
                 [isColumnSelected(sheet, selectedRange) ? activeIdxes[0] : selectedRange[2],
                 isRowSelected(sheet, selectedRange) ? activeIdxes[1] : selectedRange[3]]);

@@ -18,7 +18,7 @@ $grid-frozen-row-shadow-background-color: rgba(0, 0, 0, .12) !default;
 $grid-headercell-div-padding: 0 .6em !default;
 $grid-grouped-headercell-span-padding: 0 !default;
 $grid-group-unpgroupicon-padding-right: 0 !default;
-$grid-group-text-width: 57px !default;
+$grid-group-text-width: auto !default;
 
 $grid-content-bg-color: $content-bg-color !default;
 $grid-popup-bg-color: $content-bg-color !default;
@@ -522,7 +522,7 @@ $grid-animator-bigger-area-margin: 15px !default;
 $grid-group-animator-drop-height: 48px !default;
 $grid-group-animator-cell-margin: 12px 0 12px 0 !default;
 $grid-animtor-border-bottom-width: 1px !default;
-$grid-animator-area-padding: 0 !default;
+$grid-animator-area-padding: 0 12px 0 !default;
 $grid-animtor-area-border-width: 1px !default;
 $grid-animator-area-border: 0 !default;
 $grid-animator-area-margin: 9px !default;

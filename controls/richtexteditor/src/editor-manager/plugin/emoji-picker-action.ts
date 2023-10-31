@@ -16,7 +16,7 @@ export class EmojiPickerAction {
 
     private emojiInsert(args: IHtmlSubCommands): void {
         const node: Node = document.createTextNode(args.value as string);
-        const selection: Selection = window.getSelection();
+        const selection: Selection = this.parent.currentDocument.getSelection();
         const range: Range = selection.getRangeAt(0);
         const cursorPos: number = range.startOffset;
         for (let i: number = cursorPos - 1; i >= cursorPos - 15; i--) {

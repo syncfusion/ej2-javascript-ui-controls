@@ -610,6 +610,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
         this.value = value;
+        if (value == null && this.textboxWrapper.container.classList.contains('e-valid-input')) {
+            this.textboxWrapper.container.classList.remove('e-valid-input');
+        }
         this.isProtectedOnChange = prevOnChange;
     }
     private resetForm() : void {

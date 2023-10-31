@@ -580,6 +580,13 @@ export interface PdfAnnotationBaseModel {
     pageRotation?: number;
 
     /**
+     * Represents the stamp icon name
+     * @private
+     *
+     */
+    icon?: string;
+
+    /**
      * Represents the annotation is added programmatically.
      * @private
      *

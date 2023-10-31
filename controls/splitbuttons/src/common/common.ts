@@ -189,6 +189,7 @@ export class Item extends ChildProperty<Item> {
 export interface MenuEventArgs extends BaseEventArgs {
     element: HTMLElement;
     item: ItemModel;
+    event?: Event;
 }
 
 /**

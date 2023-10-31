@@ -97,6 +97,10 @@ export class FreeTextAnnotation {
     /**
      * @private
      */
+    public subject: string;
+    /**
+     * @private
+     */
     public isNewFreeTextAnnot: boolean;
     /**
      * @private
@@ -529,7 +533,7 @@ export class FreeTextAnnotation {
                     fillColor: this.fillColor, opacity: this.opacity, notes: '', isCommentLock: false,
                     thickness: this.borderWidth, borderDashArray: '0', modifiedDate: modifiedDateRect,
                     // eslint-disable-next-line max-len
-                    author: this.pdfViewer.freeTextSettings.author, subject: 'Text Box', font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline }, textAlign: this.textAlign
+                    author: this.pdfViewer.freeTextSettings.author, subject: this.pdfViewer.freeTextSettings.subject, font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline }, textAlign: this.textAlign
                 };
                 this.pdfViewer.tool = 'Select';
                 break;
@@ -841,11 +845,12 @@ export class FreeTextAnnotation {
                 let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
                 // eslint-disable-next-line
                 this.author = this.author ? this.author : this.pdfViewer.freeTextSettings.author ? this.pdfViewer.freeTextSettings.author : 'Guest';
+                this.subject = this.subject ? this.subject : this.pdfViewer.freeTextSettings.subject ? this.pdfViewer.freeTextSettings.subject : 'Text Box';
                 // eslint-disable-next-line
                 let allowedInteractions: any = this.pdfViewer.freeTextSettings.allowedInteractions ? this.pdfViewer.freeTextSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
                 // eslint-disable-next-line
                 annot = {
-                    author: this.author, modifiedDate: currentDateString, subject: 'Text Box', id: 'free_text' + this.inputBoxCount,
+                    author: this.author, modifiedDate: currentDateString, subject: this.subject, id: 'free_text' + this.inputBoxCount,
                     // eslint-disable-next-line max-len
                     rotateAngle: 0, dynamicText: inputValue, strokeColor: this.borderColor, thickness: this.borderWidth, fillColor: this.fillColor,
                     bounds: {
@@ -878,7 +883,7 @@ export class FreeTextAnnotation {
                 this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'FreeText', bounds, settings);
                 this.pdfViewer.fireCommentAdd(annot.annotName, annot.dynamicText, annot);
                 // eslint-disable-next-line
-                this.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
+                this.pdfViewer.annotation.addAction(pageIndex, null, annotation, 'Addition', '', annotation, annotation);
                 this.pdfViewer.renderSelector((annot as PdfAnnotationBaseModel).pageIndex);
                 this.pdfViewer.clearSelection(annot.pageIndex);
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
@@ -1523,7 +1528,7 @@ export class FreeTextAnnotation {
             State: 'Unmarked',
             StateModel: 'None',
             StrokeColor: annotationObject.borderColor ? annotationObject.borderColor : '#ffffff00',
-            Subject: 'Text Box',
+            Subject: annotationObject.subject ? annotationObject.subject : 'Text Box',
             Text: annotationObject.defaultText ? annotationObject.defaultText : 'Type Here',
             TextAlign: annotationObject.textAlignment ? annotationObject.textAlignment : 'Left',
             TextMarkupColor: null,

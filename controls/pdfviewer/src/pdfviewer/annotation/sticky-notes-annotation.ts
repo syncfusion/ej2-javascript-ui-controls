@@ -278,6 +278,7 @@ export class StickyNotesAnnotation {
             let annotationName: string;
             // eslint-disable-next-line max-len
             const author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stickyNotesSettings.author;
+            const subject: string = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.stickyNotesSettings.subject ? this.pdfViewer.stickyNotesSettings.subject : 'Sticky Note';
             if (annotation) {
                 annot = {
                     // eslint-disable-next-line max-len
@@ -304,7 +305,7 @@ export class StickyNotesAnnotation {
                 let allowedInteractions: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                 annotationObject = {
                     // eslint-disable-next-line max-len
-                    author: author, allowedInteractions: allowedInteractions, modifiedDate: this.getDateAndTime(), subject: 'Sticky Note', shapeAnnotationType: 'sticky', pageNumber: pageIndex,
+                    author: author, allowedInteractions: allowedInteractions, modifiedDate: this.getDateAndTime(), subject: subject, shapeAnnotationType: 'sticky', pageNumber: pageIndex,
                     // eslint-disable-next-line max-len
                     note: '', opacity: this.opacity, pathData: '', state: '', stateModel: '', color: 'rgba(255,255,0)', comments: [], annotName: annotationName,
                     // eslint-disable-next-line max-len
@@ -326,7 +327,7 @@ export class StickyNotesAnnotation {
                 let bounds: any = { left: annot.bounds.x, top: annot.bounds.y, width: annot.bounds.width, height: annot.bounds.height };
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
                 // eslint-disable-next-line
-                let settings: any = { opacity: annot.opacity, author: author, modifiedDate: annot.modifiedDate, subject: annot.shapeAnnotationType };
+                let settings: any = { opacity: annot.opacity, author: author, modifiedDate: annot.modifiedDate, subject: subject  };
                 this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'StickyNotes', bounds, settings);
             }
             if (canvas) {
@@ -2582,13 +2583,13 @@ export class StickyNotesAnnotation {
                     }
                 }
                 // eslint-disable-next-line max-len
-                const newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
+                const newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: currentAnnotation.subject, comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
                 if (!isComment) {
                     currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
                 }
             } else {
                 // eslint-disable-next-line max-len
-                const newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: 'Comments', comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
+                const newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: currentAnnotation.subject, comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
                 currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
             }
             // eslint-disable-next-line max-len
@@ -3633,7 +3634,7 @@ export class StickyNotesAnnotation {
              StateModel: "",
              StrokeColor: null,
              SubType: null,
-             Subject: 'Sticky Note',
+             Subject: annotationObject.subject ? annotationObject.subject : 'Sticky Note',
              Type: null
          }     
 

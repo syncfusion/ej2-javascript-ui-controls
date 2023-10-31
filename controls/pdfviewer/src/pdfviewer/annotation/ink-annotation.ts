@@ -210,6 +210,7 @@ export class InkAnnotation {
             // eslint-disable-next-line
             let isLock: boolean = this.pdfViewer.inkAnnotationSettings.isLock ? this.pdfViewer.inkAnnotationSettings.isLock : this.pdfViewer.annotationSettings.isLock;
             const author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.inkAnnotationSettings.author ? this.pdfViewer.inkAnnotationSettings.author : 'Guest';
+            const subject: string = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.inkAnnotationSettings.subject ? this.pdfViewer.inkAnnotationSettings.subject : 'Ink';
             const customData: object = this.pdfViewer.inkAnnotationSettings.customData;
             const isPrint: boolean = this.pdfViewer.inkAnnotationSettings.isPrint;
             // eslint-disable-next-line
@@ -220,7 +221,7 @@ export class InkAnnotation {
                 // eslint-disable-next-line max-len
                 id: 'ink' + this.pdfViewerBase.inkCount, bounds: { x: currentBounds.x, y: currentBounds.y, width: currentBounds.width, height: currentBounds.height }, pageIndex: pageIndex, data: this.outputString, customData: customData,
                 shapeAnnotationType: 'Ink', opacity: opacity, strokeColor: strokeColor, thickness: thickness, annotName: annotationName, comments: [],
-                author: author , subject: 'Ink', notes: '',
+                author: author , subject: subject, notes: '',
                 review: { state: '', stateModel: '', modifiedDate: modifiedDate, author: author },
                 annotationSelectorSettings: this.getSelector('Ink', ''), modifiedDate: modifiedDate, annotationSettings: annotationSettings,
                 isPrint: isPrint, allowedInteractions: allowedInteractions, isCommentLock: false, isLocked: isLock
@@ -444,6 +445,7 @@ export class InkAnnotation {
                     }
                     // eslint-disable-next-line max-len
                     currentAnnotation.allowedInteractions = currentAnnotation.AllowedInteractions ? currentAnnotation.AllowedInteractions :  this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(currentAnnotation);
+                    currentAnnotation.AnnotationSettings = currentAnnotation.AnnotationSettings ? currentAnnotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(currentAnnotation);
                     annot = {
                         // eslint-disable-next-line max-len
                         id: 'ink' + this.pdfViewerBase.inkCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
@@ -699,11 +701,11 @@ export class InkAnnotation {
             const customData: object = currentAnnotation.customData;
             const isPrint: boolean = currentAnnotation.isPrint;
             // eslint-disable-next-line
-            let allowedInteractions: any = currentAnnotation.AllowedInteractions ? currentAnnotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(currentAnnotation);
+            currentAnnotation.AllowedInteractions = currentAnnotation.AllowedInteractions ? currentAnnotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(currentAnnotation);
             // eslint-disable-next-line
-            let annotationSettings: any = currentAnnotation.AnnotationSettings ? currentAnnotation.AnnotationSettings : this.pdfViewer.inkAnnotationSettings ? this.pdfViewer.inkAnnotationSettings : this.pdfViewer.annotationSettings;
+            currentAnnotation.AnnotationSettings = currentAnnotation.AnnotationSettings ? currentAnnotation.AnnotationSettings : this.pdfViewer.inkAnnotationSettings ? this.pdfViewer.inkAnnotationSettings : this.pdfViewer.annotationSettings;
             if (currentAnnotation.IsLocked) {
-                annotationSettings.isLock = currentAnnotation.IsLocked;
+                currentAnnotation.AnnotationSettings.isLock = currentAnnotation.IsLocked;
             }
             // eslint-disable-next-line
             let data: any = currentAnnotation.PathData;
@@ -716,8 +718,8 @@ export class InkAnnotation {
                 // eslint-disable-next-line max-len
                 shapeAnnotationType: 'Ink', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, annotationId: currentAnnotation.AnnotName,
                 // eslint-disable-next-line max-len
-                customData: customData, comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, allowedInteractions: allowedInteractions, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
-                review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, isPrint: isPrint, isCommentLock: currentAnnotation.IsCommentLock, annotationSettings: annotationSettings, isLocked: annotationSettings.isLock
+                customData: customData, comments: this.pdfViewer.annotationModule.getAnnotationComments(currentAnnotation.Comments, currentAnnotation, currentAnnotation.Author), author: currentAnnotation.Author, allowedInteractions: currentAnnotation.AllowedInteractions, subject: currentAnnotation.Subject, modifiedDate: currentAnnotation.ModifiedDate,
+                review: { state: '', stateModel: '', modifiedDate: currentAnnotation.ModifiedDate, author: currentAnnotation.Author }, notes: currentAnnotation.Note, isPrint: isPrint, isCommentLock: currentAnnotation.IsCommentLock, annotationSettings: currentAnnotation.AnnotationSettings, isLocked: currentAnnotation.AnnotationSettings.isLock
 
             };
             return annot;
@@ -799,7 +801,7 @@ export class InkAnnotation {
              StateModel: '',
              StrokeColor: annotationObject.strokeColor?annotationObject.strokeColor:'rgba(255,0,0,1)',
              SubType: null,
-             Subject: 'Ink',
+             Subject: annotationObject.subject ? annotationObject.subject : 'Ink',
              Type: null,
              Thickness: annotationObject.thickness?annotationObject.thickness:1
          }      

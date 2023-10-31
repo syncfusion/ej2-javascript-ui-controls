@@ -284,7 +284,7 @@ export class LinkCommand {
             for (let i: number = 0; i < blockNodes.length; i++) {
                 const linkNode : NodeListOf<HTMLAnchorElement> = (blockNodes[i as number] as HTMLElement).querySelectorAll('a');
                 for (let j: number = 0; j < linkNode.length; j++) {
-                    if (document.getSelection().containsNode(linkNode[j as number], true)) {
+                    if (this.parent.currentDocument.getSelection().containsNode(linkNode[j as number], true)) {
                         linkNode[j as number].outerHTML = linkNode[j as number].innerHTML;
                     }
                 }

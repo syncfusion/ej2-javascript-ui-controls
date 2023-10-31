@@ -2163,18 +2163,19 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @param  {Fields} fields - Target item to add the given data as its children (can be null).
      *
+     * @param {number} index - Indicates the index where the data to be added.
      */
 
-    public addItem(data: { [key: string]: Object }[], fields: Fields = undefined): void {
+    public addItem(data: { [key: string]: Object }[], fields: Fields = undefined, index?: number): void {
         const dataSource: DataSource[] = this.dataSource instanceof DataManager
             ? this.localData : this.dataSource as DataSource[];
-        this.addItemInternally(data, fields, dataSource);
+        this.addItemInternally(data, fields, dataSource, index);
     }
 
-    private addItemInternally(data: DataSource[], fields: Fields, dataSource: DataSource[]): void {
+    private addItemInternally(data: DataSource[], fields: Fields, dataSource: DataSource[], index?: number): void {
         if (data instanceof Array) {
             if (this.enableVirtualization) {
-                this.virtualizationModule.addItem(data, fields, dataSource);
+                this.virtualizationModule.addItem(data, fields, dataSource, index);
             } else {
                 const ds: DataSource = <DataSource>this.findItemFromDS(
                     <DataSource[]>dataSource, <DataSource>fields);
@@ -2190,7 +2191,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 // check for whether target is nested level or top level in list
                 if (ds instanceof Array) {
                     for (let i: number = 0; i < data.length; i++) {
-                        dataSource.push(data[i]);
+                        dataSource = this.addItemAtIndex(index, dataSource, data[i]);
                         this.setViewDataSource(dataSource);
                         // since it is top level target, get the content container's first child
                         // as it is always the top level UL
@@ -2215,6 +2216,16 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         }
+    }
+
+    private addItemAtIndex(index: number, newDataSource: DataSource[], itemData: DataSource): DataSource[] {
+        let isIndexValid =  !(isNullOrUndefined(index)) && index >= 0 && index < newDataSource.length && isNullOrUndefined(this.listBaseOption.fields.groupBy);
+        if (isIndexValid) {
+            newDataSource.splice(index, 0, itemData);
+        } else {
+            newDataSource.push(itemData);
+        }
+        return newDataSource;
     }
 
     private addItemInNestedList(targetItemData: DataSource, itemQueue: DataSource[]): void {

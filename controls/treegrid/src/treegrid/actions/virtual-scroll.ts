@@ -155,7 +155,12 @@ export class VirtualScroll {
             }
             this.expandCollapseRec = null;
             startIndex = startIndex < 0 ? 0 : startIndex;
-            pageingDetails.result = visualData.slice(startIndex, endIndex);
+            if (endIndex === 0 && visualData.length > 0) {
+                pageingDetails.result = visualData;
+            }
+            else {
+                pageingDetails.result = visualData.slice(startIndex, endIndex);
+            }
             this.prevstartIndex = startIndex;
             this.prevendIndex = endIndex;
         }

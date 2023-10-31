@@ -374,7 +374,7 @@ describe('DataManager', () => {
                 });
 
                 it('To check the result length of data.', () => {
-                    expect(result.error.message).toEqual('Bad Request');
+                    expect(result.error.statusText).toEqual('Bad Request');
                 });
 
                 // No need for an afterAll() block when using Fetch API instead of Jasmine AJAX

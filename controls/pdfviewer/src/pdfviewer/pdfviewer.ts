@@ -850,6 +850,12 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -966,6 +972,12 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -1082,6 +1094,12 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -1241,6 +1259,12 @@ export class LineSettings extends ChildProperty<LineSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -1408,6 +1432,12 @@ export class ArrowSettings extends ChildProperty<ArrowSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -1559,6 +1589,12 @@ export class RectangleSettings extends ChildProperty<RectangleSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -1710,6 +1746,12 @@ export class CircleSettings extends ChildProperty<CircleSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -1919,6 +1961,12 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -2096,6 +2144,12 @@ export class StampSettings extends ChildProperty<StampSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -2237,6 +2291,12 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -2419,6 +2479,12 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -2579,6 +2645,12 @@ export class PerimeterSettings extends ChildProperty<PerimeterSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -2719,6 +2791,12 @@ export class AreaSettings extends ChildProperty<AreaSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -2870,6 +2948,12 @@ export class RadiusSettings extends ChildProperty<RadiusSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -3010,6 +3094,12 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 /**
  * The `Ink` module is used to provide the properties to Ink annotation.
@@ -3130,6 +3220,12 @@ export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> 
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 
 }
 /**
@@ -3221,6 +3317,12 @@ export class StickyNotesSettings extends ChildProperty<StickyNotesSettings> {
      */
     @Property(true)
     public isPrint: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -3487,6 +3589,12 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
      */
     @Property(false)
     public enableAutoFit: boolean;
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 
 }
 
@@ -3814,6 +3922,12 @@ export class AnnotationSettings extends ChildProperty<AnnotationSettings> {
      */
     @Property(['None'])
     public allowedInteractions: AllowedInteraction[];
+    
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('')
+    public subject: string;
 }
 
 /**
@@ -5954,7 +6068,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, color: '#FFDF56', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, color: '#FFDF56', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true, subject: "Highlight" })
     public highlightSettings: HighlightSettingsModel;
 
     /**
@@ -5964,7 +6078,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true, subject: "Strikethrough" })
     public strikethroughSettings: StrikethroughSettingsModel;
 
     /**
@@ -5974,7 +6088,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, color: '#00ff00', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, color: '#00ff00', author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false, enableMultiPageAnnotation: false, enableTextMarkupResizer: false, allowedInteractions: ['None'], isPrint: true, subject: "Underline" })
     public underlineSettings: UnderlineSettingsModel;
 
     /**
@@ -5984,7 +6098,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'None', lineHeadEndStyle: 'None', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'None', lineHeadEndStyle: 'None', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Line" })
     public lineSettings: LineSettingsModel;
 
     /**
@@ -5994,7 +6108,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Arrow" })
     public arrowSettings: ArrowSettingsModel;
 
     /**
@@ -6004,7 +6118,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Rectangle" })
     public rectangleSettings: RectangleSettingsModel;
 
     /**
@@ -6024,7 +6138,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Circle" })
     public circleSettings: CircleSettingsModel;
 
     /**
@@ -6034,7 +6148,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Polygon" })
     public polygonSettings: PolygonSettingsModel;
 
     /**
@@ -6044,7 +6158,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, dynamicStamps: [DynamicStampItem.Revised, DynamicStampItem.Reviewed, DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved], signStamps: [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere, SignStampItem.Accepted, SignStampItem.Rejected], standardBusinessStamps: [StandardBusinessStampItem.Approved, StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final, StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential, StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease, StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults, StandardBusinessStampItem.InformationOnly], allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, author: 'Guest', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, dynamicStamps: [DynamicStampItem.Revised, DynamicStampItem.Reviewed, DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved], signStamps: [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere, SignStampItem.Accepted, SignStampItem.Rejected], standardBusinessStamps: [StandardBusinessStampItem.Approved, StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final, StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential, StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease, StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults, StandardBusinessStampItem.InformationOnly], allowedInteractions: ['None'], isPrint: true, subject: "" })
     public stampSettings: StampSettingsModel;
 
     /**
@@ -6054,7 +6168,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, author: 'Guest', width: 0, height: 0, left: 0, top: 0, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, enableCustomStamp: true, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, author: 'Guest', width: 0, height: 0, left: 0, top: 0, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, enableCustomStamp: true, allowedInteractions: ['None'], isPrint: true, subject: "" })
     public customStampSettings: CustomStampSettingsModel;
 
     /**
@@ -6064,7 +6178,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40, resizeCursorType: CursorType.move, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40, resizeCursorType: CursorType.move, allowedInteractions: ['None'], isPrint: true, subject: "Distance calculation" })
     public distanceSettings: DistanceSettingsModel;
 
     /**
@@ -6074,7 +6188,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Open', lineHeadEndStyle: 'Open', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Open', lineHeadEndStyle: 'Open', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true, subject: "Perimeter calculation" })
     public perimeterSettings: PerimeterSettingsModel;
 
     /**
@@ -6084,7 +6198,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true, subject: "Area calculation" })
     public areaSettings: AreaSettingsModel;
 
     /**
@@ -6094,7 +6208,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Radius calculation" })
     public radiusSettings: RadiusSettingsModel;
 
     /**
@@ -6104,7 +6218,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', thickness: 1, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, allowedInteractions: ['None'], isPrint: true, subject: "Volume calculation" })
     public volumeSettings: VolumeSettingsModel;
 
     /**
@@ -6114,7 +6228,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ author: 'Guest', opacity: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false, allowedInteractions: ['None'], isPrint: true })
+    @Property({ author: 'Guest', opacity: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Sticky Note" })
     public stickyNotesSettings: StickyNotesSettingsModel;
     /**
      * Defines the settings of free text annotation.
@@ -6123,7 +6237,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, isReadonly: false, enableAutoFit: false })
+    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica', defaultText: 'Type Here', textAlignment: 'Left', fontStyle: FontStyle.None, allowTextOnly: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, allowedInteractions: ['None'], isPrint: true, isReadonly: false, enableAutoFit: false, subject: "Text Box" })
     public freeTextSettings: FreeTextSettingsModel;
 
     /**
@@ -6189,7 +6303,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ author: 'Guest', opacity: 1, strokeColor: '#ff0000', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false, allowedInteractions: ['None'], isPrint: true })
+    @Property({ author: 'Guest', opacity: 1, strokeColor: '#ff0000', thickness: 1, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges, resizerCursorType: null }, isLock: false, allowedInteractions: ['None'], isPrint: true, subject: "Ink" })
     public inkAnnotationSettings: InkAnnotationSettingsModel;
 
     /**
@@ -6199,7 +6313,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      */
     // eslint-disable-next-line max-len
-    @Property({ author: 'Guest', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, skipPrint: false, skipDownload: false, allowedInteractions: ['None'] })
+    @Property({ author: 'Guest', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, skipPrint: false, skipDownload: false, allowedInteractions: ['None'], subject: "" })
     public annotationSettings: AnnotationSettingsModel;
 
     /**
@@ -8383,14 +8497,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns Promise<object>
      */
     public exportAnnotationsAsObject(annotationDataFormat: AnnotationDataFormat = AnnotationDataFormat.Json): Promise<object> {
-        if (this.annotationModule) {
+        const isAnnotations: boolean = this.viewerBase.updateExportItem();
+        if (this.annotationModule && isAnnotations) {
             return new Promise((resolve: Function, reject: Function) => {
                 this.viewerBase.exportAnnotationsAsObject(annotationDataFormat).then((value: object) => {
                     resolve(value);
                 });
             });
         } else {
-            return null;
+            return new Promise((resolve) => { resolve(null); });
         }
     }
 

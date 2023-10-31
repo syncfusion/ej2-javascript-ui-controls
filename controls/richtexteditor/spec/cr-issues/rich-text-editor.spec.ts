@@ -2547,4 +2547,54 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+    describe('853088 - Script error throws when clicking preview toolbar while using itemConfigs with ToolbarSettings in RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        it('click the preview toolbar while using itemConfigs with ToolbarSettings ', () => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|',
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                    'SubScript', 'SuperScript', '|',
+                    'LowerCase', 'UpperCase', '|', 
+                    'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+                    'Indent', 'Outdent', '|',
+                    'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
+                    'SourceCode', '|', 'ClearFormat', 'Print', 'InsertCode'],
+                    itemConfigs: {
+                        undo: {
+                            icon: 'undo',
+                        },
+                        redo: {
+                            icon: 'redo',
+                        },
+                        justifyLeft: {
+                            icon: 'justifyLeft',
+                        },
+                        alignments: {
+                            icon: 'alignments',
+                        },
+                        bold: {
+                            icon: 'bold',
+                        },
+                        italic: {
+                            icon: 'italic',
+                        },
+                        underline: {
+                            icon: 'underline',
+                        },
+                    },
+                },  
+                value: '<p><b>Description:</b></p>'
+            });
+            rteEle = rteObj.element;
+            let previewEle: HTMLElement = document.querySelector('[title= "Code View (Ctrl+Shift+H)"]');
+            previewEle.click();
+            expect(rteObj.value === '<p><b>Description:</b></p>').toBe(true); 
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
 });

@@ -330,10 +330,11 @@ export class InsertHtml {
             : lastSelectionNode.previousSibling) : lastSelectionNode;
         while (!isNOU(lastSelectionNode) && lastSelectionNode.nodeName !== '#text' && lastSelectionNode.nodeName !== 'IMG' &&
         lastSelectionNode.nodeName !== 'BR' && lastSelectionNode.nodeName !== 'HR') {
-            if (!isNOU(lastSelectionNode.lastChild) && (lastSelectionNode.lastChild.nodeName === 'P' && (lastSelectionNode.lastChild as HTMLElement).innerHTML === '')) {
-                    const lineBreak: HTMLElement = createElement('br');
-                    lastSelectionNode.lastChild.appendChild(lineBreak);
-                }
+            if (!isNOU(lastSelectionNode.lastChild) && (lastSelectionNode.lastChild.nodeName === 'P' &&
+                (lastSelectionNode.lastChild as HTMLElement).innerHTML === '')) {
+                const lineBreak: HTMLElement = createElement('br');
+                lastSelectionNode.lastChild.appendChild(lineBreak);
+            }
             lastSelectionNode = lastSelectionNode.lastChild;
         }
         lastSelectionNode = isNOU(lastSelectionNode) ? node : lastSelectionNode;

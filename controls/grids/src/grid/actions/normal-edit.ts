@@ -130,8 +130,8 @@ export class NormalEdit {
         if (isGroupAdaptive(gObj)) {
             const rObj: Row<Column> = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
             this.previousData = rObj.data;
-        } else if (!this.previousData && (this.parent.enableVirtualization ||
-            this.parent.enableColumnVirtualization || this.parent.enableInfiniteScrolling)) {
+        } else if (this.parent.enableVirtualization || this.parent.enableColumnVirtualization ||
+            (this.parent.enableInfiniteScrolling && !this.previousData)) {
             this.previousData = e.data;
         } else if (!this.parent.enableVirtualization) {
             this.previousData = extend({}, {}, gObj.getCurrentViewRecords()[this.rowIndex], true);

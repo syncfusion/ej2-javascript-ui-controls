@@ -39,7 +39,7 @@ export class Toolbar {
     private toolbarActionModule: ToolbarAction;
     protected renderFactory: RendererFactory;
     private keyBoardModule: KeyboardEvents;
-    private tools: { [key: string]: IToolsItems };
+    private tools: { [key: string]: IToolsItems } = {};
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;

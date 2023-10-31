@@ -180,7 +180,7 @@ describe('FormValidator # ', () => {
     });
 
     it('check module name # ', () => {
-        expect(formObj.getModuleName()).toEqual('formValidator');
+        expect(formObj.getModuleName()).toEqual('formvalidator');
     });
 
     it('check modified ignore # ', () => {

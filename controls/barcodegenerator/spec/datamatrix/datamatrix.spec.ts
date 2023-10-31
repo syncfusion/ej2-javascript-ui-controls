@@ -1428,7 +1428,8 @@ describe('Barcode Control ', () => {
 
         it('renderin', (done: Function) => {
             var children = document.getElementById('barcode').children[0]
-            expect(Math.round(Number(children.children[10].getAttribute("x"))) == 100 && Math.round(Number(children.children[10].getAttribute("y"))) == 19 && Math.round(Number(children.children[100].getAttribute("x"))) == 69 && Math.round(Number(children.children[100].getAttribute("y"))) == 66 && ((children.children[10].getAttribute("fill"))) == "black").toBe(true);
+            expect(Math.round(Number(children.children[10].getAttribute("x"))) == 100 && Math.round(Number(children.children[10].getAttribute("y"))) == 19 && (Math.round(Number(children.children[100].getAttribute("x"))) == 69 || Math.ceil(Number(children.children[100].getAttribute("x"))) == 166 ) && 
+            (Math.round(Number(children.children[100].getAttribute("y"))) == 66 || Math.ceil(Number(children.children[100].getAttribute("y"))) == 57)&& ((children.children[10].getAttribute("fill"))) == "black").toBe(true);
             output(children); done();
         });
     });
@@ -1458,7 +1459,8 @@ describe('Barcode Control ', () => {
 
         it('renderin', (done: Function) => {
             var children = document.getElementById('barcode').children[0]
-            expect(Math.round(Number(children.children[10].getAttribute("x"))) == 149 && Math.round(Number(children.children[10].getAttribute("y"))) == 17 && Math.round(Number(children.children[100].getAttribute("x"))) == 107 && Math.round(Number(children.children[100].getAttribute("y"))) == 72 && ((children.children[10].getAttribute("fill"))) == "black").toBe(true);
+            expect(Math.round(Number(children.children[10].getAttribute("x"))) == 149 && Math.round(Number(children.children[10].getAttribute("y"))) == 17 && 
+            (Math.round(Number(children.children[100].getAttribute("x"))) == 107 || Math.ceil(Number(children.children[100].getAttribute("x"))) == 38 )&& (Math.round(Number(children.children[100].getAttribute("y"))) == 72 || Math.ceil(Number(children.children[100].getAttribute("y"))) == 80) && ((children.children[10].getAttribute("fill"))) == "black").toBe(true);
             output(children); done();
         });
     });

@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { WCharacterFormat } from '..';
 import { DocumentHelper, FontHeightInfo, FontSizeInfo, TextSizeInfo } from '../viewer';
 /**
@@ -47,6 +47,18 @@ export class Optimized {
      * @returns {string} - returns font size information.
      */
     private getFontInfo(characterFormat: WCharacterFormat): FontSizeInfo {
+        const iframe: HTMLIFrameElement = createElement('iframe') as HTMLIFrameElement;
+        document.body.appendChild(iframe);
+        const innerHtml: string = '<!DOCTYPE html>'
+            + '<html><head></head>'
+            + '<body>'
+            + '</body>'
+            + '</html>';
+        if (!isNullOrUndefined(iframe.contentDocument)) {
+            iframe.contentDocument.open();
+            iframe.contentDocument.write(innerHtml);
+            iframe.contentDocument.close();
+        }
         const container: HTMLDivElement = document.createElement('div');
         container.setAttribute('style', 'position:absolute;top:-1000px;left:-1000px;opacity:0;font-size:0px;line-height:normal;');
         // constant tested height value for calculating height factor which matches 90% accuracy with GDI+ value.
@@ -55,11 +67,11 @@ export class Optimized {
         container.style.transform = 'scale(' + factor.toString() + ',' + factor.toString() + ')';
         /* eslint-disable-next-line max-len */
         container.innerHTML = '<span class="e-de-font-info" style="font-size:0; font-family: ' + characterFormat.fontFamily + '; display: inline-block;">m</span><span class="e-de-font-info" style="font-size:' + maxFontHeight + 'pt; font-family: ' + characterFormat.fontFamily + ';' + ((characterFormat.bold) ? 'font-weight:bold;' : '') + ((characterFormat.italic) ? 'font-style:italic;' : '') + ' display: inline-block;">m</span>';
-        document.body.appendChild(container);
+        iframe.contentDocument.body.appendChild(container);
         /* eslint-disable-next-line max-len */
         const baseLineFactor: number = (container.firstChild as HTMLSpanElement).offsetTop / (container.lastChild as HTMLSpanElement).offsetHeight;
         const heightFactor: number = parseFloat(((container.lastChild as HTMLSpanElement).offsetHeight / maxFontHeight).toFixed(2));
-        document.body.removeChild(container);
+        document.body.removeChild(iframe);
         return {HeightFactor: heightFactor, BaselineFactor: baseLineFactor};
     }
 

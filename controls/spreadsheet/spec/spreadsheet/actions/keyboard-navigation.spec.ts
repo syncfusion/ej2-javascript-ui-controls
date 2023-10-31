@@ -826,7 +826,7 @@ describe('Spreadsheet cell navigation module ->', () => {
     });
 
     describe('CR-Issues ->', () => {
-        describe('F164825 ->', () => {
+        describe('F164825, EJ2-850507 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ allowScrolling: false }, done);
             });
@@ -845,6 +845,19 @@ describe('Spreadsheet cell navigation module ->', () => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('A2:A2');
                 helper.triggerKeyNativeEvent(38);
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('A1:A1');
+                done();
+            });
+            it('Formula selection not worked properly while selecting the cells using Shift+Down arrow key', (done: Function) => {
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('startEdit');
+                helper.getInstance().editModule.editCellData.value = '=SUM(';
+                const td: HTMLElement = helper.invoke('getCell', [0, 2]);
+                const coords: ClientRect = td.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: coords.left + 1, y: coords.top }, null, td);
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top }, document, td);
+                expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('=SUM(C1')
+                helper.triggerKeyNativeEvent(40, false, true);
+                expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('=SUM(C1:C2');
                 done();
             });
         });

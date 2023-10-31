@@ -318,8 +318,8 @@ export class MsWordPaste {
                     }
                     isCroppedImage = ((this.extractCropValue('cropl', fullImg[i as number]) > 0 &&
                         this.extractCropValue('cropt', fullImg[i as number]) > 0) ||
-                        (this.extractCropValue('cropr', fullImg[i as number]) > 0 &&
-                        this.extractCropValue('cropb', fullImg[i as number]))) ? true : false;
+                        this.extractCropValue('cropr', fullImg[i as number]) > 0 ||
+                        this.extractCropValue('cropb', fullImg[i as number])) ? true : false;
                     if (isCroppedImage) {
                         goalWidth = this.extractCropValue('wgoal', fullImg[i as number]);
                         goalHeight = this.extractCropValue('hgoal', fullImg[i as number]);
@@ -347,7 +347,7 @@ export class MsWordPaste {
 
     private extractCropValue(crop: string, rtfData: string): number {
         // eslint-disable-next-line security/detect-non-literal-regexp
-        const result: string = new RegExp('\\\\pic' + crop + '(\\-?\\d+)\\\\').exec(rtfData.replace(/\r\n\\/g, '\\'))[1];
+        const result: string = new RegExp('\\\\pic' + crop + '(\\-?\\d+)\\\\').exec(rtfData.replace(/\r\n\\/g, '\\').replace(/\n/g, '\\'))[1];
         return parseInt(result, 10);
     }
 
@@ -388,6 +388,10 @@ export class MsWordPaste {
     }
 
     private removeUnwantedElements(elm: HTMLElement): void {
+        let styleElm: HTMLElement = elm.querySelector('style');
+        if (!isNOU(styleElm)) {
+            detach(styleElm);
+        }
         let innerElement: string = elm.innerHTML;
         for (let i: number = 0; i < this.removableElements.length; i++) {
             // eslint-disable-next-line security/detect-non-literal-regexp
@@ -683,10 +687,8 @@ export class MsWordPaste {
                 }
                 if (!isNOU(listNodes[i as number].getAttribute('style'))) {
                     listNodes[i as number].setAttribute('style', listNodes[i as number].getAttribute('style').replace('text-align:start;', ''));
-                    if ((listNodes[i as number] as HTMLElement).style.textAlign !== '') {
-                        listNodes[i as number].setAttribute('style', 'text-align:' + (listNodes[i as number] as HTMLElement).style.textAlign);
-                        currentListStyle = listNodes[i as number].getAttribute('style');
-                    }
+                    (listNodes[i as number] as HTMLElement).style.textIndent = '';
+                    currentListStyle = listNodes[i as number].getAttribute('style');
                 }
                 collection.push({
                     listType: type, content: tempNode, nestedLevel: level, class: currentClassName,
@@ -890,8 +892,7 @@ export class MsWordPaste {
                 }
             }
             prevList.setAttribute('class', collection[index as number].class);
-            const currentStyle: string = prevList.getAttribute('style');
-            prevList.setAttribute('style', (!isNOU(currentStyle) ? currentStyle : ''));
+            prevList.setAttribute('style', (!isNOU(collection[index as number].listStyle) ? collection[index as number].listStyle : ''));
             pLevel = collection[index as number].nestedLevel;
             listCount++;
             if (!isNOU(collection[index as number].start)) {

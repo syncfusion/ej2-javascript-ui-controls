@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.43 (2023-10-31)
+
+### Barcode
+
+#### Bug Fixes
+
+- `#I508544` - Now, the DataMatrix barcode is rendered properly with alphanumeric values.
+
 ## 19.1.63 (2021-05-13)
 
 ### Barcode

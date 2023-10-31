@@ -1496,8 +1496,8 @@ export class Image {
             }
         }
         if (target.tagName !== 'IMG') {
-            let items: NodeListOf<HTMLElement> = this.contentModule.getEditPanel().querySelectorAll('img');
-            for (let i = 0; i < items.length; i++) {
+            const items: NodeListOf<HTMLElement> = this.contentModule.getEditPanel().querySelectorAll('img');
+            for (let i: number = 0; i < items.length; i++) {
                 removeClass([items[i as number]], 'e-img-focus');
                 removeClass([items[i as number]], 'e-resize');
                 items[i as number].style.maxWidth = '';

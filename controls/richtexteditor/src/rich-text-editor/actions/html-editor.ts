@@ -180,7 +180,7 @@ export class HtmlEditor {
                             detach(currentChildNode[i as number]);
                             i--;
                         }
-                        if (focusNode.textContent.replace(regEx, '') === currentChildNode[i as number].textContent) {
+                        if (!isNOU(currentChildNode[i as number]) && focusNode.textContent.replace(regEx, '') === currentChildNode[i as number].textContent) {
                             pointer = focusNode.textContent.length > 1 ?
                                 (focusNode.textContent === currentChildNode[i as number].textContent ? pointer :
                                     pointer - (focusNode.textContent.length - focusNode.textContent.replace(regEx, '').length)) :

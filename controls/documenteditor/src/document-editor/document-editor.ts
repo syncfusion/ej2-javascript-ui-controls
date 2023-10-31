@@ -2734,7 +2734,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             const field: FieldElementBox = this.documentHelper.fields[parseInt(i.toString(), 10)];
             const code: string = this.selection.getFieldCode(field);
             if (code.toLowerCase().trim().indexOf('ref ') === 0) {
-                this.selection.updateRefField(field);
+                const fieldPara: ParagraphWidget = field.line.paragraph;
+                if(!isNullOrUndefined(fieldPara)
+                    && !isNullOrUndefined(this.selection)
+                    && !isNullOrUndefined(this.selection.getPage(fieldPara))) {
+                    this.selection.updateRefField(field);
+                }
             }
         }
     }

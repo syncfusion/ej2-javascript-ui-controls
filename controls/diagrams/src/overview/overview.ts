@@ -732,28 +732,24 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
     public updateView(view: Overview): void {
         //let width: number; let height: number;
         const bounds: Rect = this.parent.scroller.getPageBounds();
-        const diagramBoundsWidth: number = this.parent.scroller.viewPortWidth / this.parent.scroller.currentZoom;
-        const diagramBoundsHeight: number = this.parent.scroller.viewPortHeight / this.parent.scroller.currentZoom;
-        let transformWidth: number = 0;
-        let transformHeight: number = 0;
-        if (this.parent.scroller.currentZoom < 1 && diagramBoundsWidth > bounds.width && diagramBoundsHeight > bounds.height) {
-            transformWidth = (diagramBoundsWidth - bounds.width) / 2;
-            transformHeight = (diagramBoundsHeight - bounds.height) / 2;
-        }
+        // Bug 851571: Overview with html node is not updated properly when we zoom-out the diagram.
+        // Below transformWidth calculation is removed.
         const width: number = bounds.width;
         const height: number = bounds.height;
         const offwidth: number = Number(this.model.width);
         const offheight: number = Number(this.model.height);
         //let scale: number;
         let w: number = Math.max(width, this.parent.scroller.viewPortWidth);
-        let h: number = Math.max(height, this.parent.scroller.viewPortHeight / this.parent.scroller.currentZoom);
+        // Bug 851571: Overview with html node is not updated properly when we zoom-out the diagram.
+        // Removed viewPortHeight/ currentZoom for height calculation.
+        let h: number = Math.max(height, this.parent.scroller.viewPortHeight);
         this.contentWidth = w = Math.max(w, (offwidth / offheight) * h);
         this.contentHeight = h = Math.max(h, (offheight / offwidth) * w);
         const scale: number = Math.min(offwidth / w, offheight / h);
         const htmlLayer: HTMLElement = document.getElementById(this.element.id + '_htmlLayer');
         htmlLayer.style.webkitTransform = 'scale(' + scale + ') translate(' + -bounds.x + 'px,' + (-bounds.y) + 'px)';
-        htmlLayer.style.transform = 'scale(' + scale + ') translate(' + ((-(bounds.x)) + transformWidth) + 'px,'
-            + (((-bounds.y) + transformHeight)) + 'px)';
+        htmlLayer.style.transform = 'scale(' + scale + ') translate(' + ((-(bounds.x))) + 'px,'
+            + (((-bounds.y))) + 'px)';
         const ovw: HTMLElement = document.getElementById(this.element.id + '_overviewlayer');
         ovw.setAttribute('transform', 'translate(' + (-bounds.x * scale) + ',' + (-bounds.y * scale) + ')');
         this.horizontalOffset = bounds.x * scale;

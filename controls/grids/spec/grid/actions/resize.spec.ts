@@ -1325,4 +1325,41 @@ describe('Resize module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-852246 - Imporper UI when AutoFit on a frozen column', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    height: 410,
+                    allowResizing: true,
+                    frozenColumns: 4,
+                    frozenRows: 2,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, format: 'C2', minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 180, minWidth: 10 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 150, format: 'yMd', textAlign: 'Right', minWidth: 10 },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 180, format: 'yMd', textAlign: 'Right', minWidth: 10 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 300, minWidth: 10 },
+                        { field: 'ShipAddress', headerText: 'Ship Address', width: 270, minWidth: 10 },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 250, minWidth: 10 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 250, minWidth: 10 }
+                    ],
+    
+                    pageSettings: { pageCount: 5 }
+                }, done);
+        });
+    
+        it('Frozen grid with autofit all columns', () => {
+            gridObj.autoFitColumns('');
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
 });

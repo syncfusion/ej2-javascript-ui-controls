@@ -226,6 +226,9 @@ export class Resize implements IAction {
         if (this.parent.allowTextWrap) {
             this.parent.notify(events.freezeRender, { case: 'refreshHeight', isModeChg: true });
         }
+        if (this.parent.isFrozenGrid()) {
+            this.refreshResizefrzCols(true, true);
+        }
     }
 
     /**
@@ -519,13 +522,13 @@ export class Resize implements IAction {
         this.refreshResizefrzCols(true);
     }
 
-    private refreshResizefrzCols(freezeRefresh?: boolean): void {
+    private refreshResizefrzCols(freezeRefresh?: boolean, isAutoFitCol?: boolean): void {
         const translateX: number = this.parent.enableColumnVirtualization ? this.parent.translateX : 0;
         if (freezeRefresh || ((this.column.freeze === 'Left' || this.column.isFrozen) ||
             (this.column.columns && frozenDirection(this.column) === 'Left'))) {
             let width: number = this.parent.getIndentCount() * 30;
             const columns: Column[] = this.parent.getColumns().filter((col: Column) => col.freeze === 'Left' || col.isFrozen);
-            if (!freezeRefresh) {
+            if (!freezeRefresh || isAutoFitCol) {
                 this.frzHdrRefresh('Left');
             }
             for (let i: number = 0; i < columns.length; i++) {
@@ -553,7 +556,7 @@ export class Resize implements IAction {
         if (freezeRefresh || (this.column.freeze === 'Right' || (this.column.columns && frozenDirection(this.column) === 'Right'))) {
             let width: number =  this.parent.getFrozenMode() === 'Right' && this.parent.isRowDragable() ? 30 : 0;
             const columns: Column[] = this.parent.getColumns();
-            if (!freezeRefresh) {
+            if (!freezeRefresh || isAutoFitCol) {
                 this.frzHdrRefresh('Right');
             }
             const columnsRight: Column[] = columns.filter((col: Column) => col.freeze === 'Right');

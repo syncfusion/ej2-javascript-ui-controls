@@ -496,8 +496,8 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     private updateHtmlAttribute(): void {
         if (!isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
+                const wrapper: Element = this.element.parentElement;
                 if (ATTRIBUTES.indexOf(key) > -1) {
-                    const wrapper: Element = this.element.parentElement;
                     if (key === 'class') {
                         addClass([wrapper], this.htmlAttributes[`${key}`].replace(/\s+/g, ' ').trim().split(' '));
                     } else if (key === 'title' || key === 'style') {
@@ -505,6 +505,8 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                     } else {
                         this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
                     }
+                } else {
+                    wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
                 }
             }
         }

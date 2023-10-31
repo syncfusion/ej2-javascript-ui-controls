@@ -5,7 +5,7 @@ import { Sort } from '../../src/treegrid/actions/sort';
 import { Freeze } from '../../src/treegrid/actions/freeze-column';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Page } from '../../src/treegrid/actions/page';
-import { createElement, EmitType, remove, extend } from '@syncfusion/ej2-base';
+import { createElement, EmitType, remove, extend, select } from '@syncfusion/ej2-base';
 import { RowExpandedEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs } from '../../src';
 import { projectDatas as data } from '../base/datasource.spec';
 import { Filter } from '../../src/treegrid/actions/filter';
@@ -421,6 +421,49 @@ describe('829685 - Frozen Rows and columns with enableCollapseAll', () => {
     it('Rendering check', (done: Function) => {
         expect(gridObj.grid.currentViewData.length > 1).toBe(true);
         done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Bug 851412: script error throws on editing and focus out on a record', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                frozenColumns: 2,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+                editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Batch', newRowPosition:'Below'},
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID',  textAlign: 'Right', width: 100 },
+                    { field: 'taskName', headerText: 'Task Name', width: 190 },
+                    { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100 },
+                    { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 100 },
+                    { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 120 }
+                ],
+                height: 315
+            },
+            done
+        );
+    });
+    it('Rendering check', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+          if (args["requestType"] == "batchsave") {
+            expect(gridObj.getCurrentViewRecords().length === 37).toBe(true);
+            done();
+          }
+        };
+        gridObj.selectRow(35);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+        (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 37;
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+        gridObj.grid.actionComplete = actionComplete;
     });
     afterAll(() => {
         destroy(gridObj);
