@@ -364,6 +364,10 @@ export class Filter {
         if (this.parent.treeGrid.filterSettings.type === 'Menu') {
             (element.querySelector('.e-valid-input') as HTMLElement).focus();
         }
+        if (this.parent.treeGrid.filterSettings.type === 'Excel') {
+            var inputElement = document.querySelector('.e-searchinput') as HTMLElement;
+            inputElement.focus();
+        }
     }
 
     private removeEventListener(): void {

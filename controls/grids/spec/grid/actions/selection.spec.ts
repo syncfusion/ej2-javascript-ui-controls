@@ -6740,3 +6740,39 @@ describe('Code Coverage - Left - Right freeze with autofill', () => {
         gridObj = null;
     });
 });
+
+describe('853221 => When row drag and drop enabled, cell selection is not working properly.', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    let rows: Element[];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0,5),
+                allowRowDragAndDrop: true,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'ShipCountry', headerText: 'Ship Country' }],
+                selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'Box' },
+            }, done);
+    });
+
+    it('First row second column cell selection', (done: Function) => {
+        (<any>gridObj.selectionModule).selectCell({ rowIndex: 0, cellIndex: 1 }, true);
+        done();
+    });
+
+    it('checking cell selection using shiftRight keyboard shortcut', (done: Function) => {
+        rows = gridObj.getRows();
+        let args: any = { action: 'shiftRight', preventDefault: preventDefault };
+        gridObj.keyboardModule.keyAction(args);
+        expect(rows[0].querySelectorAll('.e-rowcell')[2].classList.contains('e-cellselectionbackground')).toBeTruthy();
+        done();
+    });        
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

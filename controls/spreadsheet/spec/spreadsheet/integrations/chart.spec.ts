@@ -1917,4 +1917,67 @@ describe('Chart ->', () => {
             done();
         })
     });
+    describe('EJ2-852097', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ 
+                sheets: [{ rows: [
+                    { cells: [{ value: 'Heading1' }, { value: 'Heading2'}, { value: 'Heading3'}, { value: 'Heading4'}] },
+                    { cells: [{ value: 'Text1' }, { value: '1'}, { value: '2'}, { value: '3'}] },
+                    { cells: [{ value: 'Text2' }, { value: '3'}, { value: '6'}, { value: '9'}] },
+                    { cells: [{ value: 'Text3' }, { value: '2'}, { value: '4'}, { value: '6'}] }
+                ] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Scatter chart X - axis plottings are not ordered with numerical values in a series order', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().insertChart([{ type: "Scatter", range: 'A1:B4' }]);
+            let chartId: string = `#${spreadsheet.sheets[0].rows[0].cells[0].chart[0].id}`;
+            let chartEle: HTMLElement = spreadsheet.element.querySelector(chartId) as HTMLElement;
+            let chart: Chart = getComponent(chartEle, 'chart');
+            expect(chart.primaryXAxis['labels'][0]).toBe('Text1');
+            expect(chart.primaryXAxis.valueType).toBe("Category");
+            expect(chart.primaryXAxis.rangePadding).toBe("Auto");
+            expect(chartEle.querySelector(chartId + '0_AxisLabel_0').textContent).toBe('1');
+            expect(chartEle.querySelector(chartId + '_chart_legend_translate_g').childElementCount).toEqual(1);
+            expect(chartEle.querySelector(chartId + '_chart_legend_g_0').textContent).toBe('Heading2');
+            helper.getElement('#' + helper.id + '_chart-type-btn').click();
+            let target: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#stackedColumn').click();
+            setTimeout(() => {
+                expect(chart.primaryXAxis['labels'][0]).toBe('Text1');
+                expect(chartEle.querySelector(chartId + '0_AxisLabel_0').textContent).toBe('Text1');
+                helper.getElement('#' + helper.id + '_chart-type-btn').click();
+                target = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Scatter"]');
+                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+                helper.getElement('#scatter').click();
+                helper.getElement('#spreadsheetswitch_row_column_chart').click();
+                setTimeout(() => {
+                    expect(chartEle.querySelector(chartId + '0_AxisLabel_0').textContent).toBe('1');
+                    expect(chartEle.querySelector(chartId + '_chart_legend_translate_g').childElementCount).toEqual(3);
+                    expect(chartEle.querySelector(chartId + '_chart_legend_g_0').textContent).toBe('Text1');
+                    helper.getInstance().insertChart([{ type: "Scatter", range: 'B1:C4' }]);
+                    chartId = `#${spreadsheet.sheets[0].rows[0].cells[1].chart[0].id}`;
+                    chartEle = spreadsheet.element.querySelector(chartId) as HTMLElement;
+                    chart = getComponent(spreadsheet.element.querySelector(chartId) as HTMLElement, 'chart');
+                    expect(chart.primaryXAxis.valueType).toBe("Double");
+                    expect(chart.primaryXAxis.rangePadding).toBe("Round");
+                    helper.getInstance().insertChart([{ type: "Scatter", range: 'B1:D4' }]);
+                    chartId = `#${spreadsheet.sheets[0].rows[0].cells[1].chart[1].id}`;
+                    chartEle = spreadsheet.element.querySelector(chartId) as HTMLElement;
+                    chart = getComponent(spreadsheet.element.querySelector(chartId) as HTMLElement, 'chart');
+                    expect(chart.primaryXAxis.valueType).toBe("Double");
+                    expect(chart.primaryXAxis.rangePadding).toBe("Round");
+                    expect(chartEle.querySelector(chartId + '_chart_legend_translate_g').childElementCount).toEqual(2);
+                    expect(chartEle.querySelector(chartId + '_chart_legend_g_0').textContent).toBe('Heading3');
+                    done();
+                });
+            });
+        })
+    });
 });

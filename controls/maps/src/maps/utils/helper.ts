@@ -766,7 +766,7 @@ export function renderTextElement(
  * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function convertElement(element: HTMLCollection, markerId: string, data: any, index: number, mapObj: Maps): HTMLElement {
+export function convertElement(element: HTMLCollection, markerId: string, data: any, index: number, mapObj: Maps, templateType: string): HTMLElement {
     const childElement: HTMLElement = createElement('div', {
         id: markerId, className: mapObj.element.id + '_marker_template_element'
     });
@@ -776,18 +776,20 @@ export function convertElement(element: HTMLCollection, markerId: string, data: 
         childElement.appendChild(element[0]);
         elementLength--;
     }
-    let templateHtml: string = childElement.innerHTML;
-    const properties: string[] = Object.keys(data);
-    const regExp: RegExpConstructor = RegExp;
-    for (let i: number = 0; i < properties.length; i++) {
-        if (typeof data[properties[i as number]] === 'object') {
-            templateHtml = convertStringToValue(templateHtml, '', data, mapObj);
-            // eslint-disable-next-line @typescript-eslint/ban-types
-        } else if ((<String>properties[i as number]).toLowerCase() !== 'latitude' && (<string>properties[i as number]).toLowerCase() !== 'longitude') {
-            templateHtml = templateHtml.replace(new regExp('{{:' + <string>properties[i as number] + '}}', 'g'), data[properties[i as number].toString()]);
+    if (!(mapObj as any).isReact || templateType !== 'function') {
+        let templateHtml: string = childElement.innerHTML;
+        const properties: string[] = Object.keys(data);
+        const regExp: RegExpConstructor = RegExp;
+        for (let i: number = 0; i < properties.length; i++) {
+            if (typeof data[properties[i as number]] === 'object') {
+                templateHtml = convertStringToValue(templateHtml, '', data, mapObj);
+                // eslint-disable-next-line @typescript-eslint/ban-types
+            } else if ((<String>properties[i as number]).toLowerCase() !== 'latitude' && (<string>properties[i as number]).toLowerCase() !== 'longitude') {
+                templateHtml = templateHtml.replace(new regExp('{{:' + <string>properties[i as number] + '}}', 'g'), data[properties[i as number].toString()]);
+            }
         }
+        childElement.innerHTML = templateHtml;
     }
-    childElement.innerHTML = templateHtml;
     return childElement;
 }
 
@@ -1407,7 +1409,7 @@ export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn:
     if (templateFn && (templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false).length)) {
         const templateElement: HTMLCollection = templateFn(data, maps, eventArgs.template, maps.element.id + '_MarkerTemplate' + markerIndex, false);
         const markerElement: HTMLElement = <HTMLElement>convertElement(
-            templateElement, markerID, data, markerIndex, maps
+            templateElement, markerID, data, markerIndex, maps, typeof eventArgs.template
         );
         for (let i: number = 0; i < markerElement.children.length; i++) {
             (<HTMLElement>markerElement.children[i as number]).style.pointerEvents = 'auto';

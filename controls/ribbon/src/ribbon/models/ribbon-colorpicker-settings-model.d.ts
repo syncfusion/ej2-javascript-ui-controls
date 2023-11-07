@@ -70,6 +70,13 @@ export interface RibbonColorPickerSettingsModel {
     value?: string;
 
     /**
+     * Specifies additional HTML attributes to be applied to the color picker.
+     *
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string };
+
+    /**
      * Event triggers before closing the ColorPicker popup.
      *
      * @event beforeClose

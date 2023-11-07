@@ -1233,7 +1233,7 @@ export class _XfdfDocument extends _ExportHelper {
         }
     }
     _writeObject(writer: _XmlWriter, primitive: any, dictionary: _PdfDictionary, key?: string): void { // eslint-disable-line
-        if (primitive) {
+        if (primitive !== null && typeof primitive !== 'undefined') {
             if (primitive instanceof _PdfName) {
                 this._writePrefix(writer, 'NAME', key);
                 writer._writeAttributeString('VAL', primitive.name);
@@ -1446,6 +1446,7 @@ export class _XfdfDocument extends _ExportHelper {
             case 'Vertices':
             case 'GroupNesting':
             case 'ITEx':
+            case 'TextMarkupContent':
                 break;
             default:
                 this._writeAttributeString(writer, key.toLowerCase(), primitive);
@@ -1756,6 +1757,7 @@ export class _XfdfDocument extends _ExportHelper {
                             const annotations: PdfAnnotationCollection = page.annotations;
                             const annotation: PdfAnnotation = annotations._parseAnnotation(annotationDictionary);
                             if (annotation) {
+                                annotation._isImported = true;
                                 const reference: _PdfReference = this._crossReference._getNextReference();
                                 this._crossReference._cacheMap.set(reference, annotationDictionary);
                                 if (annotationDictionary.has('NM') || annotationDictionary.has('IRT')) {
@@ -2264,26 +2266,23 @@ export class _XfdfDocument extends _ExportHelper {
     _addAppearanceData(element: Node, dictionary: _PdfDictionary): void {
         const innerText: string = element.textContent;
         if (innerText && innerText !== '') {
-            const appearanceArray: Uint8Array = _decode(innerText) as Uint8Array;
-            if (appearanceArray && appearanceArray.length > 0) {
-                const document: Document = (new DOMParser()).parseFromString(_bytesToString(appearanceArray), 'text/xml');
-                if (document && document.hasChildNodes) {
-                    let childNodes: NodeList = document.childNodes;
-                    if (childNodes && childNodes.length === 1) {
-                        const rootNode: Node = childNodes[0];
-                        if (rootNode && rootNode.nodeType === 1) {
-                            const rootElement: Element = rootNode as Element;
-                            if (rootElement.nodeName.toLowerCase() === 'DICT' && rootElement.hasAttribute('KEY')) {
-                                const key: string = rootElement.getAttribute('KEY');
-                                if (key && key === 'AP' && rootElement.hasChildNodes) {
-                                    const appearance: _PdfDictionary = new _PdfDictionary(this._crossReference);
-                                    childNodes = rootElement.childNodes;
-                                    for (let i: number = 0; i < childNodes.length; i++) {
-                                        this._getAppearance(appearance, childNodes[Number.parseInt(i.toString(), 10)]);
-                                    }
-                                    if (appearance.size > 0) {
-                                        dictionary.update('AP', appearance);
-                                    }
+            const document: Document = (new DOMParser()).parseFromString(atob(innerText), 'text/xml');
+            if (document && document.hasChildNodes) {
+                let childNodes: NodeList = document.childNodes;
+                if (childNodes && childNodes.length === 1) {
+                    const rootNode: Node = childNodes[0];
+                    if (rootNode && rootNode.nodeType === 1) {
+                        const rootElement: Element = rootNode as Element;
+                        if (rootElement.nodeName.toUpperCase() === 'DICT' && rootElement.hasAttribute('KEY')) {
+                            const key: string = rootElement.getAttribute('KEY');
+                            if (key && key === 'AP' && rootElement.hasChildNodes) {
+                                const appearance: _PdfDictionary = new _PdfDictionary(this._crossReference);
+                                childNodes = rootElement.childNodes;
+                                for (let i: number = 0; i < childNodes.length; i++) {
+                                    this._getAppearance(appearance, childNodes[Number.parseInt(i.toString(), 10)]);
+                                }
+                                if (appearance.size > 0) {
+                                    dictionary.update('AP', appearance);
                                 }
                             }
                         }
@@ -2313,7 +2312,7 @@ export class _XfdfDocument extends _ExportHelper {
                     dictionary = this._getDictionary(element);
                     if (dictionary) {
                         const reference: _PdfReference = this._crossReference._getNextReference();
-                        this._crossReference._cacheMap.set(reference, stream);
+                        this._crossReference._cacheMap.set(reference, dictionary);
                         this._addKey(reference, appearance, element);
                     }
                     break;

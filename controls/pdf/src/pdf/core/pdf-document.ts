@@ -54,6 +54,7 @@ export class PdfDocument {
     _hasUserPasswordOnly: boolean = false;
     _encryptOnlyAttachment: boolean = false;
     _encryptMetaData: boolean = false;
+    _isExport: boolean = false;
     private _allowCustomData: boolean = false;
     /**
      * Initializes a new instance of the `PdfDocument` class.
@@ -565,6 +566,7 @@ export class PdfDocument {
      */
     exportAnnotations(filename: string, settings: PdfAnnotationExportSettings): void
     exportAnnotations(arg1?: string | PdfAnnotationExportSettings, arg2?: PdfAnnotationExportSettings): Uint8Array | void {
+        this._isExport = true;
         this._doPostProcessOnAnnotations();
         let helper: _ExportHelper;
         let settings: PdfAnnotationExportSettings;
@@ -961,6 +963,7 @@ export class PdfDocument {
     _doPostProcessOnAnnotations(isFlatten: boolean = false): void {
         for (let i: number = 0; i < this.pageCount; i++) {
             const page: PdfPage = this.getPage(i);
+            page.annotations._isExport = this._isExport;
             page.annotations._doPostProcess(isFlatten);
             if (isFlatten) {
                 if (page._pageDictionary.has('Annots')) {

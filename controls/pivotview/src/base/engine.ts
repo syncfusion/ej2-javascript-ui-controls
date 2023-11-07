@@ -3253,8 +3253,9 @@ export class PivotEngine {
                 let isFiltered: boolean = false;
                 if (showNoDataItems && childrens.filter.length > 0 && childrens.filterType === 'include') {
                     isFiltered = true;
-                }   /* eslint-disable-next-line max-len */
-                if ((!(decisionObj && decisionObj[memInd as number])) && (!isFiltered || (isFiltered && childrens.filter.indexOf(headerValue.toString()) > -1))) {
+                }
+                if ((!(decisionObj && decisionObj[memInd as number])) && (!isFiltered ||
+                    (isFiltered && childrens.filter.indexOf(headerValue.toString()) > -1))) {
                     decisionObj[memInd as number] = { index: [], indexObject: {} };
                     member.index = decisionObj[memInd as number].index;
                     member.indexObject = decisionObj[memInd as number].indexObject;

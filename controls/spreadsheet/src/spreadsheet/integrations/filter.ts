@@ -1324,20 +1324,16 @@ export class Filter {
                             date++;
                         } else if (isNumber(cell.value)) {
                             num++;
-                        } else if(isNullOrUndefined(cell.value) || cell.value === ""){
-                            continue;
-                        } else {
+                        } else if (cell.value) {
                             str++;
                         }
                         break;
                     }
-                } else {
-                    if (typeof cell.value === 'string' || cell.value === undefined || cell.value === null) {
-                        str++;
-                    } else { num++; }
+                } else if (isNumber(cell.value)) {
+                    num++;
+                } else if (cell.value) {
+                    str++;
                 }
-            } else {
-                continue;
             }
         }
         return { type: (num > str && num > date && num > time) ? 'number' : (str >= num && str >= date && str >= time) ? 'string'

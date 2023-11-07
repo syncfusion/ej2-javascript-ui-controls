@@ -45,6 +45,14 @@ export class RibbonButtonSettings extends ChildProperty<RibbonButtonSettings>  {
     public isPrimary: boolean;
 
     /**
+     * Specifies additional HTML attributes to be applied to the button.
+     *
+     * @default {}
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string };
+
+    /**
      * Event triggers once the button is created.
      *
      * @event created

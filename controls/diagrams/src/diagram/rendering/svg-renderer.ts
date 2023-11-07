@@ -17,6 +17,7 @@ import { createSvgElement, createHtmlElement, getBackgroundLayerSvg } from '../u
 import { removeGradient, checkBrowserInfo } from '../utility/diagram-util';
 import { Container } from '../core/containers/container';
 import { isBlazor } from '@syncfusion/ej2-base';
+import { UserHandleModel } from '../interaction/selector-model';
 
 /**
  * SVG Renderer
@@ -640,6 +641,18 @@ export class SvgRenderer implements IRenderer {
             if (isOverviewLayer) {
                 htmlElement.appendChild(element.template.cloneNode(true));
             } else {
+                //Bug 852259: User handle template not working properly after saving and loading the diagram.
+                // After serialization the template will be in string format, so we need to convert it to element.
+                if(typeof element.template === 'string'){
+                    var temp = document.createElement('div');
+                    temp.innerHTML = element.template;
+                    element.template = temp;
+                    var diagram = (document.getElementById(element.diagramId) as any).ej2_instances[0];
+                    let handle: UserHandleModel[] = diagram.selectedItems.userHandles.filter((x: UserHandleModel) => {
+                        return x.name === (element.id.split('_shape')[0]) && (x.template as any) !== '';
+                    });
+                    handle[0].template = element.template;
+                }
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 element.isTemplate ? htmlElement.appendChild(element.template) : htmlElement.appendChild(element.template.cloneNode(true));
             }

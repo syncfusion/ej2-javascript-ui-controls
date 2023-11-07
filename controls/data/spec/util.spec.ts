@@ -227,6 +227,10 @@ describe('DataUtil', () => {
             expect(!isNaN(parsedDate[0])).toBe(true);
             expect(!isNaN(parsedDate[1])).toBe(true);
         });
+        it('EJ2-WI-852037 - parse the string value with double quotes', () => {
+            const parsedData: any = DataUtil.parse.parseJson(['VINET\"s', "TOMSP"]);
+            expect(parsedData[0]).toBe('VINET\"s');
+        });
     });
     describe('isJson method', () => {
         it('To check method is properly working.', () => {

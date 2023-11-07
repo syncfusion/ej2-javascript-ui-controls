@@ -1861,15 +1861,15 @@
     font-size: 18px;
   }
 
-  .e-pv-annotation-color-container,
-  .e-pv-annotation-opacity-container,
-  .e-pv-annotation-stroke-container,
-  .e-pv-custom-annotation-thickness-container,
-  .e-pv-custom-annotation-opacity-container,
-  .e-pv-annotation-thickness-container,
-  .e-pv-annotation-textcolor-container,
-  .e-pv-annotation-textalign-container,
-  .e-pv-annotation-textprop-container {
+  .e-pv-annotation-color-container .e-btn,
+  .e-pv-annotation-opacity-container .e-btn,
+  .e-pv-annotation-stroke-container .e-btn,
+  .e-pv-custom-annotation-thickness-container .e-btn,
+  .e-pv-custom-annotation-opacity-container .e-btn,
+  .e-pv-annotation-thickness-container .e-btn,
+  .e-pv-annotation-textcolor-container .e-btn,
+  .e-pv-annotation-textalign-container .e-btn,
+  .e-pv-annotation-textprop-container .e-btn {
     height: $pv-annotation-drop-down-height;
     width: $pv-annotation-drop-down-width;
   }

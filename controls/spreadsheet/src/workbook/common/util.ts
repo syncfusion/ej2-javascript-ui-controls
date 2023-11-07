@@ -3,6 +3,7 @@ import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate
 import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel, clearFormulaDependentCells } from './index';
 import { isHiddenCol, isHiddenRow, VisibleMergeIndexArgs } from './../index';
 import { isUndefined, defaultCurrencyCode, getNumberDependable, getNumericObject } from '@syncfusion/ej2-base';
+import { parseThousandSeparator } from './internalization';
 
 /**
  * Check whether the text is formula or not.
@@ -702,7 +703,7 @@ export function parseLocaleNumber(valArr: string[], locale: string): string[] {
     for (let idx: number = 0; idx < valArr.length; idx++) {
         numVal = valArr[idx as number].toString().split(curSymbol).join('');
         groupArr = numVal.split(numObj.group);
-        if (groupArr.length === 2) {
+        if (groupArr.length === 2 && parseThousandSeparator(numVal, locale, numObj.group, numObj.decimal)) {
             numVal = groupArr.join('');
         }
         if (numObj.decimal !== '.' && numVal.includes(numObj.decimal)) {

@@ -1199,6 +1199,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (this.visible) {
             this.show();
+            if (this.isModal && this.target instanceof Element) {
+                const computedStyle = window.getComputedStyle(this.target);
+                if (computedStyle.getPropertyValue('direction') === 'rtl') {
+                    this.setPopupPosition();
+                } 
+            }
         } else {
             if (this.isModal) {
                 this.dlgOverlay.style.display = 'none';
@@ -1275,7 +1281,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                             this.dlgContainer.classList.remove('e-dlg-' + this.position.X + '-' + this.position.Y);
                         }
                         // Reset the dialog position after drag completion.
-                        this.element.style.position = 'relative';
+                        if (this.target instanceof Element) {
+                            const computedStyle = window.getComputedStyle(this.target);
+                            if (computedStyle.getPropertyValue('direction') === 'rtl') {
+                                this.element.style.position = 'absolute';
+                            } else {
+                                this.element.style.position = 'relative';
+                            }
+                        } 
                     }
                     this.trigger('dragStop', event);
                     this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
@@ -2061,7 +2074,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                                 this.dlgContainer.style.position = 'absolute';
                             }
                             this.dlgOverlay.style.position = 'absolute';
-                            this.element.style.position = 'relative';
+                            if (this.target instanceof Element) {
+                                const computedStyle = window.getComputedStyle(this.target);
+                                if (computedStyle.getPropertyValue('direction') === 'rtl') {
+                                    this.element.style.position = 'absolute';
+                                } else {
+                                    this.element.style.position = 'relative';
+                                }
+                            } 
                             addClass([this.targetEle], [DLG_TARGET , SCROLL_DISABLED ]);
                         } else {
                             addClass([document.body], [DLG_TARGET , SCROLL_DISABLED ]);
@@ -2413,6 +2433,9 @@ export namespace DialogUtility {
         if (!isNullOrUndefined(option.click)) {
             buttonProps.click = option.click;
         }
+        if(!isNullOrUndefined(option.isFlat)) {
+            buttonProps.isFlat = option.isFlat;
+        }
         return buttonProps;
     }
 }
@@ -2425,6 +2448,7 @@ export interface ButtonArgs {
     cssClass?: string
     click?: EmitType<Object>
     text?: string
+    isFlat?: boolean
 }
 
 /**

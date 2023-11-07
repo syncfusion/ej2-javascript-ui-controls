@@ -142,12 +142,16 @@ export class FormFieldsBase {
             if (isAnnotationFlattern) {
                 let rotationAngle: number = this.getRotateAngle(page.rotation);
                 rubberStampAnnotation.rotationAngle = Math.abs(rotationAngle);
+                rubberStampAnnotation.flatten = true;
             }
-            if (isAnnotationFlattern) {
+            if (!isAnnotationFlattern) {
+                const state: PdfGraphicsState = graphics.save();
+                appearance.graphics.drawImage(bitmap, 0, 0, width, height);
+                appearance.graphics.restore(state);
             }
-            const state: PdfGraphicsState = graphics.save();
-            appearance.graphics.drawImage(bitmap, 0, 0, width, height);
-            appearance.graphics.restore(state);
+            else {
+                appearance.graphics.drawImage(bitmap, 0, 0, width, height);
+            }
             page.annotations.add(rubberStampAnnotation);
         }
     }

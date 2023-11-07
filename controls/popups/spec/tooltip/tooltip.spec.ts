@@ -548,6 +548,30 @@ describe('Tooltip Control', () => {
             document.getElementById("focusdiv").blur();
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
         });
+        it('focus event for dynamically added button element testing', () => {
+            let btn1: HTMLElement = createElement('div', {
+                id: 'div1', innerHTML: "<button id='tooltip1' class='btn' title='Content 1'>tooltip1</button>"
+            });
+            let btn2: HTMLElement = createElement('button', {
+                id: 'tooltip2', attrs: { "title": "Content 2" }
+            });
+            document.body.appendChild(btn1);
+            document.getElementById("div1").appendChild(btn2);
+            btn1.addEventListener("mousedown", function () {
+                btn2.innerText = "tooltip2";
+                btn2.classList.add("btn");
+                tooltip.refresh();
+                document.getElementById("tooltip2").focus();
+            });
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } }, target: '.btn', opensOn: "Focus Click"
+            }, '#div1');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            document.getElementById("tooltip1").focus();
+            expect((document.querySelector('.e-tip-content') as HTMLElement).innerText).toEqual('Content 1');
+            triggerMouseEvent(document.getElementById("tooltip1"), 'mousedown');
+            expect((document.querySelector('.e-tip-content') as HTMLElement).innerHTML).toEqual('Content 2');
+        });
     });
     describe('Tooltip Click events', () => {
         let tooltip: Tooltip;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.44 (2023-11-07)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+- `#I512609` - Issue with "aria-label is updated as undefined while changing the cell value using `updateCell` method" has been resolved.
+
 ## 23.1.42 (2023-10-24)
 
 ### Spreadsheet

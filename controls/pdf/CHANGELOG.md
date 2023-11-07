@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 23.1.43 (2023-10-31)
+## 23.1.44 (2023-11-07)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Preservation issues in PDF annotation import and export have been resolved.
+
+## 23.1.39 (2023-10-04)
 
 ### PDF Parser
 

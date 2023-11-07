@@ -117,7 +117,8 @@ export class BatchEdit {
 
     protected clickHandler(e: MouseEvent): void {
         if (!parentsUntil(e.target as Element, this.parent.element.id + '_add', true)) {
-            if (this.parent.isEdit && closest(this.form, 'td') !== closest(e.target as Element, 'td')) {
+            if (this.parent.isEdit && !(e.target as HTMLElement).classList.contains('e-row') &&
+             closest(this.form, 'td') !== closest(e.target as Element, 'td')) {
                 this.saveCell();
                 this.editNextValCell();
             }
@@ -624,8 +625,8 @@ export class BatchEdit {
             //     return i;
             // } else 
             if (isAdd && (!cols[parseInt(i.toString(), 10)].template || cols[parseInt(i.toString(), 10)].field)
-                && cols[parseInt(i.toString(), 10)].visible && !(cols[parseInt(i.toString(), 10)].isIdentity
-                && cols[parseInt(i.toString(), 10)].isPrimaryKey) && !validation) {
+                && cols[parseInt(i.toString(), 10)].allowEditing && cols[parseInt(i.toString(), 10)].visible &&
+                !(cols[parseInt(i.toString(), 10)].isIdentity && cols[parseInt(i.toString(), 10)].isPrimaryKey) && !validation) {
                 return i;
             }
         }

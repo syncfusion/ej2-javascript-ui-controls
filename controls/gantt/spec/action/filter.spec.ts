@@ -692,3 +692,60 @@ describe('Gantt filter support', () => {
         });
     });
 });
+describe('Bug-853245: Excel filter only takes one character at a time', () => {
+    Gantt.Inject(Filter, Toolbar, ColumnMenu);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectData1,
+                allowFiltering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'ResourceId',
+                },
+                resourceNameMapping: 'ResourceName',
+                resourceIDMapping: 'ResourceId',
+                resources: projectResources,
+                splitterSettings: {
+                    columnIndex: 7,
+                },
+                filterSettings: {
+                    type: "Excel"
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'ResourceId', headerText: 'Resources' },
+                    { field: 'TaskName', headerText: 'Task Name' },
+                    { field: 'StartDate', headerText: 'Start Date' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                    { field: 'Progress', headerText: 'Progress' },
+                ],
+                projectStartDate: new Date('02/01/2017'),
+                projectEndDate: new Date('12/30/2017'),
+                rowHeight: 40,
+                taskbarHeight: 30
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Initial Filter', (done: Function) => {
+        ganttObj.filterSettings.columns = [{ field: 'TaskName', matchCase: false, operator: 'startswith', value: 'Design complete' }];
+        ganttObj.dataBind();
+        expect(ganttObj.filterSettings.columns.length).toBe(1);
+        setTimeout(done, 2000);
+        ganttObj.clearFiltering();
+        done();
+    });
+});

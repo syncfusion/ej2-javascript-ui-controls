@@ -21,6 +21,7 @@ export class PdfAnnotationCollection {
     _annotations: Array<_PdfReference>;
     _comments: Array<PdfPopupAnnotation>;
     _parsedAnnotations: Map<number, PdfAnnotation>;
+    _isExport: boolean = false;
     private _page: PdfPage;
     private _crossReference: _PdfCrossReference;
     /**
@@ -409,6 +410,7 @@ export class PdfAnnotationCollection {
         for (let i: number = this.count - 1; i >= 0; i--) {
             const annotation: PdfAnnotation = this.at(i);
             if (annotation) {
+                annotation._isExport = this._isExport;
                 annotation._doPostProcess(annotation.flatten || isFlatten);
             }
         }

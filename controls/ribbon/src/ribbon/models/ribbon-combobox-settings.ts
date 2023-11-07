@@ -230,6 +230,14 @@ export class RibbonComboBoxSettings extends ChildProperty<RibbonComboBoxSettings
     public width: string | number;
 
     /**
+     * Specifies additional HTML attributes to be applied to the combobox.
+     *
+     * @default {}
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string };
+
+    /**
      * Event triggers before opening the popup.
      *
      * @event beforeOpen

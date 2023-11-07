@@ -978,7 +978,9 @@ export class Edit implements IAction {
                     inputElement: inputElement,
                     value: (inputElement as HTMLInputElement).value
                 };
-                this.valErrorPlacement(inputElement, error);
+                if (!(event && event['relatedTarget'] && event['relatedTarget'].classList.contains('e-cancelbutton'))) {
+                    this.valErrorPlacement(inputElement, error);
+                }
                 this.parent.notify(events.valCustomPlacement, args);
             }
         });

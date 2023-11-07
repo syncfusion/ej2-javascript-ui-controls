@@ -127,6 +127,10 @@ export function getData(
                                 rowIndex: sRow, colIndex: i };
                             context.trigger(queryCellInfo, eventArgs);
                             const cellObj: CellModel = getCell(sRow, i, sheet, false, true);
+                            if (cellObj.formula && cellObj.formula.toUpperCase().includes('UNIQUE')) {
+                                context.notify(
+                                    'calculateFormula', { cell: cellObj, rowIdx: sRow, colIdx: i, sheetIndex: context.activeSheetIndex, address: eventArgs.address });
+                            }
                             if (cellObj.colSpan > 1 && cellObj.rowSpan > 1) {
                                 let cell: CellModel;
                                 for (let j: number = sRow, len: number = sRow + cellObj.rowSpan; j < len; j++) {

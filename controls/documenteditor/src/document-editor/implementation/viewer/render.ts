@@ -1709,7 +1709,11 @@ export class Renderer {
                     for (let i: number = 0; i < errorDetails.elements.length; i++) {
                         let currentElement: ErrorTextElementBox = errorDetails.elements[i];
                         if (elementBox.ignoreOnceItems.indexOf(this.spellChecker.manageSpecialCharacters(currentElement.text, undefined, true)) === -1) {
-                            this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
+                            if (isRTL) {
+                                this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.end)) ? left : currentElement.end.location.x, (isNullOrUndefined(currentElement.end)) ? top : currentElement.end.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
+                            } else {
+                                this.renderWavyLine(currentElement, (isNullOrUndefined(currentElement.start)) ? left : currentElement.start.location.x, (isNullOrUndefined(currentElement.start)) ? top : currentElement.start.location.y - elementBox.margin.top, underlineY, color, 'Single', format.baselineAlignment, backgroundColor);
+                            }
                         }
                     }
                 } else if (elementBox.ischangeDetected || this.documentHelper.triggerElementsOnLoading) {

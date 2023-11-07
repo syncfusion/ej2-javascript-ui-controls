@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { NodeModel, BasicShapeModel, SelectorModel } from '../../../src/diagram/objects/node-model';
+import { NodeModel, BasicShapeModel, SelectorModel, HtmlModel } from '../../../src/diagram/objects/node-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { UserHandleModel } from '../../../src/diagram/interaction/selector-model';
 import { HorizontalAlignment, Side, VerticalAlignment, DiagramTools, BpmnSequenceFlows, DiagramConstraints, NodeConstraints, AnnotationConstraints, ConnectorConstraints, PortConstraints, PortVisibility, SnapConstraints } from '../../../src/diagram/enum/enum';
@@ -1851,4 +1851,66 @@ describe('EJ2-42693 - Exception occurs when try to draw connector on node text e
         expect(diagram.nodes.length === 7 && (diagram.connectors.length === 7 || diagram.connectors.length === 6)).toBe(true);
         done();
     });   
+});
+describe('user handle Template save and load', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramUserHandleTemplate' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: "node1",
+                offsetX: 100,
+                offsetY: 100,
+                width: 100,
+                height: 100,
+                shape: { type: "HTML", content:'<div style="background-color:green;">html</div>' } as HtmlModel,
+                style: { fill: 'yellow' }
+            },
+        ];
+        function getContent(){
+            let content = document.createElement('div');
+            content.innerHTML = '<div style="background-color:green;">handle</div>';
+            return content;
+        }
+        let handle : UserHandleModel[]  = [{
+            name: 'handle1',
+            template:getContent(),
+            visible: true, backgroundColor: 'black', offset: 0, side: 'Right',
+            pathColor: 'white'
+        },   {
+            name: 'handle2',
+            pathData:'M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z',
+            visible: true, backgroundColor: 'black', offset: 0, side: 'Left',
+            pathColor: 'white'
+        }
+        ];
+    diagram = new Diagram({
+        width: 800, height: 600, nodes: nodes, selectedItems: { userHandles: handle },
+    });
+    diagram.appendTo('#diagramUserHandleTemplate');
+    })
+    it('Checking Userhanlde after serialization ', function (done) {
+        var diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');
+        diagram.select([diagram.nodes[0]]);
+        let hanldeBeforeSerialization = document.getElementById('handle1_shape_html_element');
+        let data = diagram.saveDiagram();
+        diagram.loadDiagram(data);
+        diagram.select([diagram.nodes[0]]);
+        let hanldeAfterSerialization = document.getElementById('handle1_shape_html_element');
+        expect(hanldeBeforeSerialization !== null && hanldeAfterSerialization !== null).toBe(null);
+       done();
+    });
 });

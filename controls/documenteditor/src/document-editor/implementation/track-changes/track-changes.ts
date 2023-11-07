@@ -97,7 +97,7 @@ export class Revision {
                             this.owner.documentHelper.bookmarks.remove(inline.name);
                         }
                     }
-                    const moveToNextItem: boolean = this.unlinkRangeItem(this.range[rangeIndex] as ElementBox, this, isFromAccept);
+                    const moveToNextItem: boolean = this.unlinkRangeItem(this.range[rangeIndex] as ElementBox, this, isFromAccept, startPos, endPos);
                     if (moveToNextItem) {
                         rangeIndex++;
                     } else {
@@ -199,7 +199,7 @@ export class Revision {
      * @param isFromAccept 
      */
     /* eslint-disable  */
-    public unlinkRangeItem(item: any, revision: Revision, isFromAccept: boolean): boolean {
+    public unlinkRangeItem(item: any, revision: Revision, isFromAccept: boolean, start: TextPosition, end: TextPosition): boolean {
         if (this.isTableRevision) {
             this.removeRangeRevisionForItem(item);
             if (revision.range.length === 0) {
@@ -244,6 +244,7 @@ export class Revision {
         } else if (!this.canSkipTableItems && (item instanceof WCharacterFormat) && (!removeChanges)) {
             this.owner.editorHistory.currentBaseHistoryInfo.action = 'ClearRevisions';
             this.updateRevisionID();
+            this.removeRevisionFromPara(start, end);
         } else if (item instanceof WRowFormat && !removeChanges) {
             this.isTableRevision = true;
             let tableWidget: TableWidget = (item as WRowFormat).ownerBase.ownerTable;
@@ -315,6 +316,28 @@ export class Revision {
         }
         return false;
     }
+
+    private removeRevisionFromPara(start: TextPosition, end: TextPosition): void {
+        let blockInfo: ParagraphInfo = this.owner.selection.getParagraphInfo(start);
+        let endBlockInfo: ParagraphInfo = this.owner.selection.getParagraphInfo(end);
+        let para: ParagraphWidget = blockInfo.paragraph;
+        while (para instanceof ParagraphWidget) {
+            if (para.characterFormat.revisions.length > 0) {
+                for (let i: number = 0; i < para.characterFormat.revisions.length; i++) {
+                    if (para.characterFormat.revisions[i].range.length === 0) {
+                        let revisionIndex: number = para.characterFormat.revisions.indexOf(para.characterFormat.revisions[i]);
+                        para.characterFormat.revisions.splice(revisionIndex, 1);
+                    }
+                }
+            }
+            if (endBlockInfo.paragraph === para) {
+                para = undefined;
+            } else {
+                para = para.nextWidget as ParagraphWidget;
+            }
+        }
+    }
+
     private updateRevisionID(): void {
         this.owner.editor.addRemovedNodes(this.revisionID);
         while (this.range.length > 0) {

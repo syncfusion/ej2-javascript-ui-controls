@@ -880,7 +880,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         // Condition to resolve the text size issue only in chart.
         if(this.controlName === 'Chart' && parseFloat(fontSize) < parseFloat(font.size)){
-            textHeight = (parseFloat(font.size) - parseFloat(fontSize)) + this.marginY;
+            textHeight = (parseFloat(font.size) - parseFloat(fontSize));
         }
         const options: TextOption = new TextOption(
             this.element.id + '_text', this.marginX * 2, (textHeight + this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? this.controlName ==='RangeNavigator' ? 5 : 3 : 0)),
@@ -913,7 +913,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 continue;
             }
             if ((k !== 0) || (headerContent === '')) {
-                this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height - (textHeight !== 0 ? (parseFloat(font.size) / this.marginY) : 0));
+                this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height - (textHeight !== 0 ? ((textHeight / this.markerSize) * (parseFloat(font.size) / this.markerSize)) : 0));
             }
             for (let i: number = 0, len: number = textCollection.length; i < len; i++) { // string value of unicode for LTR is \u200E
                 lines = textCollection[i as number].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').replace(/:/g, (this.enableRTL) ? '<br>\u200E: <br>' : '<br>\u200E:<br>')

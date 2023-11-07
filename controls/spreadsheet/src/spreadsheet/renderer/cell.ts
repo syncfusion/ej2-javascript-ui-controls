@@ -165,11 +165,10 @@ export class CellRenderer implements ICellRenderer {
         if (args.cell) {
             this.parent.notify(getFormattedCellObject, formatArgs);
         }
-        attributes(args.td, { 'aria-label': (formatArgs.formattedText ? formatArgs.formattedText + ' ' : '') + args.address });
         this.parent.refreshNode(
             args.td, { type: formatArgs.type, result: formatArgs.formattedText, curSymbol:
                 formatArgs.curSymbol, isRightAlign: formatArgs.isRightAlign, value:
-                <string>((formatArgs.value || formatArgs.value === 0) ? formatArgs.value : ''), isRowFill: formatArgs.isRowFill });
+                <string>((formatArgs.value || formatArgs.value === 0) ? formatArgs.value : ''), isRowFill: formatArgs.isRowFill, rowIndex: args.rowIdx, colIndex: args.colIdx });
         let style: CellStyleModel = {};
         if (args.cell) {
             if (args.cell.style) {

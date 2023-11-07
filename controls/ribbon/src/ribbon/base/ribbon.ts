@@ -237,6 +237,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     private currentControlIndex: number;
     private keyboardModuleRibbon: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
+    private initialPropsData: {[key: string]: object};
     /** @hidden */
     public overflowDDB: DropDownButton;
     /** @hidden */
@@ -270,6 +271,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     protected preRender(): void {
         this.idIndex = 0;
         this.tooltipData = [];
+        this.initialPropsData = {};
         this.isAddRemove = false;
         this.keyConfigs = {
             leftarrow: 'leftarrow',
@@ -776,20 +778,22 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         // The position is reversed if RTL is enabled.
         // isRight = ((isGroupOF && isMenu) && !this.enableRtl ) || (!(isGroupOF && isMenu) && this.enableRtl)  ==> (isGroupOF && isMenu) !== this.enableRtl
         const isLeft: boolean = (isGroupOF && isMenu) === this.enableRtl;
-        dropDownPopup.setProperties({ position: { X: isLeft ? 'left' : 'right', Y: isMenu ? 'top' : 'bottom' } }, true);
-        if (isMenu) {
-            dropdown.beforeOpen = (): void => {
-                if (isLeft) {
-                    dropDownPopup.element.style.setProperty('visibility', 'hidden');
-                    dropDownPopup.element.style.setProperty('display', 'block');
-                    dropDownPopup.setProperties({ offsetX: -1 * dropDownPopup.element.offsetWidth });
-                    dropDownPopup.element.style.removeProperty('display');
-                    dropDownPopup.element.style.removeProperty('visibility');
-                }
-            };
-        } else {
-            dropDownPopup.setProperties({ offsetX: 0 }, true);
-            dropdown.beforeOpen = null;
+        if (dropDownPopup) {
+            dropDownPopup.setProperties({ position: { X: isLeft ? 'left' : 'right', Y: isMenu ? 'top' : 'bottom' } }, true);
+            if (isMenu) {
+                dropdown.beforeOpen = (): void => {
+                    if (isLeft) {
+                        dropDownPopup.element.style.setProperty('visibility', 'hidden');
+                        dropDownPopup.element.style.setProperty('display', 'block');
+                        dropDownPopup.setProperties({ offsetX: -1 * dropDownPopup.element.offsetWidth });
+                        dropDownPopup.element.style.removeProperty('display');
+                        dropDownPopup.element.style.removeProperty('visibility');
+                    }
+                };
+            } else {
+                dropDownPopup.setProperties({ offsetX: 0 }, true);
+                dropdown.beforeOpen = null;
+            }
         }
     }
 
@@ -869,7 +873,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         , itemEle: HTMLElement, groupContainer: HTMLElement, isResize?: boolean): void {
         let overflowButton: DropDownButton;
         const contentEle: HTMLElement = this.tabObj.items[parseInt(tabIndex.toString(), 10)].content as HTMLElement;
-        const isDisabledGroup: HTMLElement = contentEle.querySelector('#' + groupId);
+        const groupEle: HTMLElement = contentEle.querySelector('#' + groupId);
         if (isGroupOF) {
             const overflowDDB: HTMLElement = groupContainer.querySelector('#' + groupId + constants.GROUPOF_BUTTON_ID);
             if (!overflowDDB) {
@@ -880,8 +884,11 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 overflowButton = getInstance(overflowDDB, DropDownButton) as DropDownButton;
             }
             const overflowBtnTarget: HTMLElement = overflowButton.target as HTMLElement;
-            if (isDisabledGroup && isDisabledGroup.classList.contains('e-disabled')) {
+            if (groupEle && groupEle.classList.contains('e-disabled')) {
                 overflowBtnTarget.classList.add('e-disabled');
+            }
+            if (groupEle && groupEle.classList.contains('e-hidden')) {
+                overflowBtnTarget.classList.add('e-hidden');
             }
             isResize ? overflowBtnTarget.insertBefore(itemEle, overflowBtnTarget.querySelector('.' + constants.RIBBON_ITEM)) 
                 : overflowBtnTarget.append(itemEle);
@@ -901,7 +908,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     let ofGroupContainer: HTMLElement = overflowEle.querySelector('#' + groupId + constants.CONTAINER_ID);
                     if (!ofGroupContainer) {
                         ofGroupContainer = this.createGroupContainer(groupId, groupHeader);
-                        if (isDisabledGroup && isDisabledGroup.classList.contains('e-disabled')) {
+                        if (groupEle && groupEle.classList.contains('e-disabled')) {
                             ofGroupContainer.classList.add('e-disabled');
                         }
                         ofTabContainer.append(ofGroupContainer);
@@ -956,6 +963,15 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         ofGroupContainer.append(itemEle);
         ofTabContainer.append(ofGroupContainer);
         if (tabIndex === this.selectedTab) { ofTabContainer.classList.add(constants.RIBBON_TAB_ACTIVE); }
+        let groupEle: HTMLElement = document.querySelector('#' + groupId);
+        if (groupEle) {
+            if (groupEle.classList.contains('e-disabled')) {
+                ofGroupContainer.classList.add('e-disabled');
+            }
+            if (groupEle.classList.contains('e-hidden')) {
+                ofGroupContainer.classList.add('e-hidden');
+            }
+        }
     }
 
     private checkGroupShrinking(tabIndex: number, tabContent: HTMLElement, activeContent: HTMLElement, isLarge: boolean): boolean {
@@ -1449,26 +1465,28 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setItemSize(itemEle: HTMLElement, item: RibbonItemModel): void {
-        const itemContainer: HTMLElement = itemEle.closest('.' + constants.RIBBON_ITEM) as HTMLElement;
-        if (item.type === RibbonItemType.Button) {
-            this.ribbonButtonModule.updateButtonSize(itemEle, item);
-        } else if (item.type === RibbonItemType.DropDown) {
-            this.ribbonDropDownModule.updateDropDownSize(itemEle, item);
-        } else if (item.type === RibbonItemType.SplitButton) {
-            this.ribbonSplitButtonModule.updateSplitButtonSize(itemEle, item);
-        } else if (item.type === RibbonItemType.Template) {
-            remove(itemEle);
-            this.createTemplateContent(item, itemContainer);
-        } else if (item.type === RibbonItemType.GroupButton) {
-            this.ribbonGroupButtonModule.updateGroupButtonSize(itemEle, item);
-        }
-        itemContainer.classList.remove(constants.RIBBON_CONTENT_HEIGHT, constants.RIBBON_LARGE_ITEM
-            , constants.RIBBON_MEDIUM_ITEM, constants.RIBBON_SMALL_ITEM);
-        if (item.activeSize === RibbonItemSize.Large) {
-            itemContainer.classList.add(constants.RIBBON_LARGE_ITEM, constants.RIBBON_CONTENT_HEIGHT);
-        } else {
-            itemContainer.classList.add((item.activeSize === RibbonItemSize.Medium) ?
-                constants.RIBBON_MEDIUM_ITEM : constants.RIBBON_SMALL_ITEM);
+        if (itemEle) {
+            const itemContainer: HTMLElement = itemEle.closest('.' + constants.RIBBON_ITEM) as HTMLElement;
+            if (item.type === RibbonItemType.Button) {
+                this.ribbonButtonModule.updateButtonSize(itemEle, item);
+            } else if (item.type === RibbonItemType.DropDown) {
+                this.ribbonDropDownModule.updateDropDownSize(itemEle, item);
+            } else if (item.type === RibbonItemType.SplitButton) {
+                this.ribbonSplitButtonModule.updateSplitButtonSize(itemEle, item);
+            } else if (item.type === RibbonItemType.Template) {
+                remove(itemEle);
+                this.createTemplateContent(item, itemContainer);
+            } else if (item.type === RibbonItemType.GroupButton) {
+                this.ribbonGroupButtonModule.updateGroupButtonSize(itemEle, item);
+            }
+            itemContainer.classList.remove(constants.RIBBON_CONTENT_HEIGHT, constants.RIBBON_LARGE_ITEM
+                , constants.RIBBON_MEDIUM_ITEM, constants.RIBBON_SMALL_ITEM);
+            if (item.activeSize === RibbonItemSize.Large) {
+                itemContainer.classList.add(constants.RIBBON_LARGE_ITEM, constants.RIBBON_CONTENT_HEIGHT);
+            } else {
+                itemContainer.classList.add((item.activeSize === RibbonItemSize.Medium) ?
+                    constants.RIBBON_MEDIUM_ITEM : constants.RIBBON_SMALL_ITEM);
+            }
         }
     }
 
@@ -1767,28 +1785,30 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private removeOverflowEvent(item: RibbonItemModel, itemEle: HTMLElement): void {
-        switch (item.type) {
-        case 'Button':
-            this.ribbonButtonModule.removeOverFlowEvents(item, itemEle);
-            break;
-        case 'DropDown':
-            this.ribbonDropDownModule.removeOverFlowEvents(item, itemEle);
-            break;
-        case 'SplitButton':
-            this.ribbonSplitButtonModule.removeOverFlowEvents(item, itemEle);
-            break;
-        case 'CheckBox':
-            this.ribbonCheckBoxModule.removeOverFlowEvents(item, itemEle);
-            break;
-        case 'ColorPicker':
-            this.ribbonColorPickerModule.removeOverFlowEvents(item, itemEle);
-            break;
-        case 'ComboBox':
-            this.ribbonComboBoxModule.removeOverFlowEvents(item, itemEle);
-            break;
-        case 'GroupButton':
-            this.ribbonGroupButtonModule.removeOverFlowEvents(item, itemEle);
-            break;
+        if (itemEle) {
+            switch (item.type) {
+            case 'Button':
+                this.ribbonButtonModule.removeOverFlowEvents(item, itemEle);
+                break;
+            case 'DropDown':
+                this.ribbonDropDownModule.removeOverFlowEvents(item, itemEle);
+                break;
+            case 'SplitButton':
+                this.ribbonSplitButtonModule.removeOverFlowEvents(item, itemEle);
+                break;
+            case 'CheckBox':
+                this.ribbonCheckBoxModule.removeOverFlowEvents(item, itemEle);
+                break;
+            case 'ColorPicker':
+                this.ribbonColorPickerModule.removeOverFlowEvents(item, itemEle);
+                break;
+            case 'ComboBox':
+                this.ribbonComboBoxModule.removeOverFlowEvents(item, itemEle);
+                break;
+            case 'GroupButton':
+                this.ribbonGroupButtonModule.removeOverFlowEvents(item, itemEle);
+                break;
+            }
         }
     }
 
@@ -1976,8 +1996,10 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                                         this.ribbonGroupButtonModule.switchGroupButton(item, itemEle);
                                     }
                                     (item as RibbonItem).setProperties({ activeSize: size }, true);
-                                    const ele: HTMLElement = itemEle.querySelector('#' + item.id);
-                                    this.setItemSize(ele, item);
+                                    if (itemEle) {
+                                        const ele: HTMLElement = itemEle.querySelector('#' + item.id);
+                                        this.setItemSize(ele, item);
+                                    }
                                 }
                             }
                         }
@@ -2048,7 +2070,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                                 }
                                 else {
                                     let itemEle: HTMLElement = groupContainer.querySelector('#' + item.id + constants.CONTAINER_ID);
-                                    if (!itemEle) {
+                                    if (!itemEle && overflowtarget) {
                                         itemEle = overflowtarget.querySelector('#' + item.id + constants.CONTAINER_ID);
                                         if ((item.type === RibbonItemType.DropDown) || (item.type === RibbonItemType.SplitButton) || (item.type === RibbonItemType.GroupButton)) {
                                             this.updatePopupItems(item, itemEle, group.enableGroupOverflow, false);
@@ -2058,7 +2080,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                                     if (item.type === RibbonItemType.GroupButton) {
                                         this.ribbonGroupButtonModule.switchGroupButton(item, itemEle);
                                     }
-                                    groupCollection.append(itemEle);
+                                    if (itemEle) {
+                                        groupCollection.append(itemEle);
+                                    }
                                 }
                                 let ele: HTMLElement = groupContainer.querySelector('#' + item.id);
                                 if (item.type === RibbonItemType.GroupButton) {
@@ -2143,8 +2167,28 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             if ((this.activeLayout === 'Simplified') && !(group.enableGroupOverflow || groupEle.querySelector('.' + constants.RIBBON_ITEM))) {
                 groupEle.classList.add('e-ribbon-emptyCollection');
             }
+            const initialProps = this.initialPropsData[parseInt(tabIndex.toString(), 10)] as {[key: string]: object};
+            if (initialProps) {
+                if (initialProps.hiddenGroups && (initialProps.hiddenGroups as string[]).length) {
+                    this.updateGroupProps('hiddenGroups', initialProps, groupEle);
+                }
+                if (initialProps.disabledGroups && (initialProps.disabledGroups as string[]).length) {
+                    this.updateGroupProps('disabledGroups', initialProps, groupEle);
+                }
+            }
+        }
+        if (this.initialPropsData[parseInt(tabIndex.toString(), 10)]) {
+            delete this.initialPropsData[parseInt(tabIndex.toString(), 10)];
         }
         return groupElements;
+    }
+
+    private updateGroupProps(key: string, initialProps: {[key: string]: object}, groupEle: HTMLElement): void {
+        // eslint-disable-next-line
+        let groupIndex: number = (initialProps[key] as string[]).indexOf(groupEle.id);        
+        if (groupIndex !== -1) {
+            key === 'hiddenGroups' ? groupEle.classList.add('e-hidden') : groupEle.classList.add('e-disabled');   
+        }
     }
 
     private validateItemSize(): void {
@@ -2269,6 +2313,13 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 itemEle.classList.add(constants.RIBBON_LARGE_ITEM, constants.RIBBON_CONTENT_HEIGHT);
             } else {
                 itemEle.classList.add((size & RibbonItemSize.Medium) ? constants.RIBBON_MEDIUM_ITEM : constants.RIBBON_SMALL_ITEM);
+            }
+            const initialProps = this.initialPropsData[parseInt(tabIndex.toString(), 10)] as {[key: string]: object};
+            if (initialProps && initialProps.hiddenItems && (initialProps.hiddenItems as string[]).length) {
+                const itemIndex: number = (initialProps.hiddenItems as string[]).indexOf(item.id);
+                if (itemIndex !== -1) {
+                    itemEle.classList.add('e-hidden');
+                }
             }
             this.createRibbonItem(item, itemEle);
             if ((this.activeLayout === 'Simplified') && ((item.displayOptions === DisplayMode.Overflow) || (item.displayOptions === (DisplayMode.Classic | DisplayMode.Overflow)))) {
@@ -2801,7 +2852,12 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         if (!itemProp) { return; }
         const contentEle: HTMLElement = this.tabObj.items[itemProp.tabIndex].content as HTMLElement;
         const groupEle: HTMLElement = contentEle.querySelector('#' + groupID);
-        isHidden ? groupEle.classList.add('e-hidden') : groupEle.classList.remove('e-hidden');
+        if (groupEle) {
+            isHidden ? groupEle.classList.add('e-hidden') : groupEle.classList.remove('e-hidden');
+        }
+        else {
+            this.updateInitialProps(itemProp.tabIndex, groupID, 'hiddenGroups', isHidden);
+        }
         if (this.overflowDDB) {
             const overflowEle: HTMLElement = this.overflowDDB.target as HTMLElement;
             const ofTabContainer: HTMLElement = overflowEle.querySelector('#' + this.tabs[parseInt(itemProp.tabIndex.toString(), 10)].id + constants.OVERFLOW_ID);
@@ -2852,7 +2908,12 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         if (!itemProp) { return; }
         const contentEle: HTMLElement = this.tabObj.items[itemProp.tabIndex].content as HTMLElement;
         const groupEle: HTMLElement = contentEle.querySelector('#' + groupID);
-        isDisabled ? groupEle.classList.add('e-disabled') : groupEle.classList.remove('e-disabled');
+        if (groupEle) {
+            isDisabled ? groupEle.classList.add('e-disabled') : groupEle.classList.remove('e-disabled');
+        }
+        else {
+            this.updateInitialProps(itemProp.tabIndex, groupID, 'disabledGroups', isDisabled);
+        }
         if (this.overflowDDB) {
             const overflowEle: HTMLElement = this.overflowDDB.target as HTMLElement;
             const ofTabContainer: HTMLElement = overflowEle.querySelector('#' + this.tabs[parseInt(itemProp.tabIndex.toString(), 10)].id + constants.OVERFLOW_ID);
@@ -3052,6 +3113,37 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         if (ele) {
             const itemEle: HTMLElement = closest(ele, '.e-ribbon-item') as HTMLElement;
             isHidden ? itemEle.classList.add('e-hidden') : itemEle.classList.remove('e-hidden');
+            this.refreshLayout();
+        }
+        else {
+            this.updateInitialProps(itemProp.tabIndex, itemId, 'hiddenItems', isHidden);
+        }
+    }
+
+    private updateInitialProps(tabIndex: number, id: string, key: string, isInsert: boolean): void {
+        let initialProps = this.initialPropsData[parseInt(tabIndex.toString(), 10)] as {[key: string]: object};
+        if (!initialProps) {
+            this.initialPropsData[parseInt(tabIndex.toString(), 10)] = {};
+            initialProps = this.initialPropsData[parseInt(tabIndex.toString(), 10)] as {[key: string]: object};
+        }
+        if (initialProps) {
+            /* eslint-disable */
+            if (!initialProps[key])
+                initialProps[key] = [];
+
+            const itemIndex: number = (initialProps[key] as string[]).indexOf(id);
+            if (isInsert) {
+                if (itemIndex === -1)
+                    (initialProps[key] as string[]).push(id);
+            } else {
+                if (itemIndex !== -1)
+                    (initialProps[key] as string[]).splice(itemIndex, 1);
+                (initialProps[key] as string[]).length === 0 && delete initialProps[key];
+                /* eslint-enable */
+                if (Object.keys(initialProps).length === 0) {
+                    delete this.initialPropsData[parseInt(tabIndex.toString(), 10)];
+                }
+            }
         }
     }
 
@@ -3476,6 +3568,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         super.destroy();
         this.tabObj.destroy();
         this.tabObj = undefined;
+        this.initialPropsData = {};
         remove(this.element.querySelector('#' + this.element.id + constants.TAB_ID));
         this.element.style.removeProperty(constants.RIBBON_FILE_MENU_WIDTH);
         this.element.style.removeProperty(constants.RIBBON_HELP_PANE_TEMPLATE_WIDTH);

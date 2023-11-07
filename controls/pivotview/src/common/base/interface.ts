@@ -261,6 +261,22 @@ export interface PdfMargins {
 }
 
 /**
+ * Defines the row and column page size of the pivot table to be exported while virtualization is enabled.
+ *
+ * @hidden
+ */
+export interface ExportPageSize {
+    /**
+     * Specifies the row page size.
+     */
+    rowSize?: number;
+    /**
+     * Specifies the column page size.
+     */
+    columnSize?: number;
+}
+
+/**
  * The PDF cell render event arguments provides the necessary information to customize the pivot cells while PDF exporting.
  */
 export interface PdfCellRenderArgs {

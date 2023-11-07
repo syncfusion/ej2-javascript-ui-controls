@@ -1063,10 +1063,11 @@ export class Image {
             const linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             const getAlt: string = ((e.selectNode[0] as HTMLElement).getAttribute('alt') === null) ? '' :
                 (e.selectNode[0] as HTMLElement).getAttribute('alt');
-            const content: string = '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
-                '<input type="text" spellcheck="false" value="' + getAlt + '" class="e-input e-img-alt' + ' ' + this.parent.cssClass + '" placeholder="' + altText + '"/>' +
+                const content: string = '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
+                '<input type="text" spellcheck="false"  class="e-input e-img-alt' + ' ' + this.parent.cssClass + '" placeholder="' + altText + '"/>' +
                 '</div>';
             const contentElem: DocumentFragment = parseHtml(content);
+            contentElem.querySelector('input').setAttribute('value', getAlt);
             altWrap.appendChild(contentElem);
             const inputAlt: HTMLElement = altWrap.querySelector('.e-img-alt') as HTMLElement;
             const altArgs: IImageNotifyArgs = {
@@ -1603,14 +1604,12 @@ export class Image {
         this.changedWidthValue = null;
         this.changedHeightValue = null;
         const content: string = '<div class="e-rte-label' + ' ' + this.parent.cssClass + '"><label>' + imgWidth +
-            '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" id="imgwidth" class="e-img-width' + ' ' + this.parent.cssClass + '" value=' +
-            widthVal
-            + ' /></div>' +
+            '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" id="imgwidth" class="e-img-width' + ' ' + this.parent.cssClass + '/></div>' +
             '<div class="e-rte-label' + ' ' + this.parent.cssClass + '">' + '<label>' + imgHeight + '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"> ' +
-            '<input type="text" id="imgheight" class="e-img-height' + ' ' + this.parent.cssClass + '" value=' +
-            heightVal
-            + ' /></div>';
+            '<input type="text" id="imgheight" class="e-img-height' + ' ' + this.parent.cssClass + '"/></div>';
         const contentElem: DocumentFragment = parseHtml(content);
+        contentElem.getElementById('imgwidth').setAttribute('value', widthVal);
+        contentElem.getElementById('imgheight').setAttribute('value', heightVal);
         imgSizeWrap.appendChild(contentElem);
         this.widthNum = new TextBox({
             value: formatUnit(widthVal as string),

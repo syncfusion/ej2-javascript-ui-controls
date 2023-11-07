@@ -38,6 +38,7 @@ export abstract class PdfAnnotation {
     _page: PdfPage;
     _isLoaded: boolean = false;
     _setAppearance: boolean = false;
+    _isExport: boolean = false;
     _color: number[];
     _annotFlags: PdfAnnotationFlag;
     _bounds: {x: number, y: number, width: number, height: number};
@@ -9913,11 +9914,11 @@ export class PdfRubberStampAnnotation extends PdfComment {
     }
     _doPostProcess(isFlatten: boolean = false): void {
         let isTransformBBox: boolean = false;
-        if (this._isLoaded && (this._setAppearance || isFlatten)) {
-            if (!isFlatten ) {
+        if (this._isLoaded && (this._setAppearance || isFlatten || this._isExport)) {
+            if ((!isFlatten && !this._isExport) || this._setAppearance) {
                 this._appearanceTemplate = this._createRubberStampAppearance();
             }
-            if (!this._appearanceTemplate && isFlatten && this._dictionary.has('AP')) {
+            if (!this._appearanceTemplate && (this._isExport || isFlatten) && this._dictionary.has('AP')) {
                 const dictionary: _PdfDictionary = this._dictionary.get('AP');
                 if (dictionary && dictionary.has('N')) {
                     const appearanceStream: _PdfBaseStream = dictionary.get('N');
@@ -9971,8 +9972,10 @@ export class PdfRubberStampAnnotation extends PdfComment {
                 }
             }
         } else {
-            this._postProcess();
-            if ((!this._appearanceTemplate) && isFlatten) {
+            if (!(this._isImported && this._dictionary.has('AP'))) {
+                this._postProcess();
+            }
+            if ((!this._appearanceTemplate) && (isFlatten || this._isImported)) {
                 if (!this._dictionary.has('AP')) {
                     this._appearanceTemplate = this._createRubberStampAppearance();
                 } else {

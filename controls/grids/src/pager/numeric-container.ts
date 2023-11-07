@@ -95,6 +95,7 @@ export class NumericContainer implements IRender {
      */
     public wireEvents(): void {
         EventHandler.add(this.pagerElement, 'click', this.clickHandler, this);
+        EventHandler.add(this.pagerElement, 'auxclick', this.auxiliaryClickHandler, this);
     }
 
     /**
@@ -105,6 +106,7 @@ export class NumericContainer implements IRender {
      */
     public unwireEvents(): void {
         EventHandler.remove(this.pagerModule.element, 'click', this.clickHandler);
+        EventHandler.remove(this.pagerModule.element, 'auxclick', this.auxiliaryClickHandler);
     }
 
     /**
@@ -232,6 +234,13 @@ export class NumericContainer implements IRender {
             pagerObj.dataBind();
         }
         return false;
+    }
+
+    private auxiliaryClickHandler(e: MouseEvent): void {
+        this.target = <Element>e.target as Element;
+        if (this.target.classList.contains('e-numericitem') && (e.button === 1)) {
+            e.preventDefault();
+        }
     }
 
     private updateLinksHtml(): void {

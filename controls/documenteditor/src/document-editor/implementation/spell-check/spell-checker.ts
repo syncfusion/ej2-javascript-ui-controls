@@ -923,7 +923,11 @@ export class SpellChecker {
             this.addErrorCollection(span.text, span, suggestions);
 
             const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
-            this.documentHelper.render.renderWavyLine(span, span.start.location.x, span.start.location.y - elementBox.margin.top, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
+            if (elementBox.isRightToLeft) {
+                this.documentHelper.render.renderWavyLine(span, span.end.location.x, span.end.location.y - elementBox.margin.top, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
+            } else {
+                this.documentHelper.render.renderWavyLine(span, span.start.location.x, span.start.location.y - elementBox.margin.top, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
+            }
             if (isLastItem) {
                 elementBox.isSpellChecked = true;
             }

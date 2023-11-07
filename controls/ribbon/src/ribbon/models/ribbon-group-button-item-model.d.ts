@@ -34,6 +34,13 @@ export interface RibbonGroupButtonItemModel {
     selected?: boolean;
 
     /**
+     * Specifies additional HTML attributes to be applied to the group button item.
+     *
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string };
+
+    /**
      * Triggers before clicking the button from group button.
      *
      * @event beforeClick

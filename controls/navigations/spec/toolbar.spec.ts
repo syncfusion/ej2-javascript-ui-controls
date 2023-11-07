@@ -12909,18 +12909,31 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             toolbar = new Toolbar({
                 items: [
                     { type: 'Button', text: 'new', align: 'Left' },
-                    { template: "<button id='Template1'>Button</button>", type: 'Button', text: 'Underline', tooltipText: 'Bold', }]
+                    { template: "<button id='Template1'>Button</button>", type: 'Button', text: 'Underline', tooltipText: 'Underline', },
+                    { template: "<button id='Template2'>Button1</button>", type: 'Button', text: 'Bold', tooltipText: 'Bold', }]
             });
             toolbar.appendTo('#ej2Toolbar');
-            toolbar.element.querySelector('.e-toolbar-item').children[0].focus();
+            let ele1 = toolbar.element.querySelectorAll('.e-toolbar-item')[0].firstChild;
+            ele1.focus();
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'moveRight',
-                target: toolbar.element.querySelector('.e-toolbar-item').children[0],
+                target: ele1,
             };
             expect(element.classList.contains('e-keyboard')).toEqual(true);
             toolbar.keyActionHandler(keyEventArgs);
-            expect(document.activeElement.getAttribute('tabindex') === null).toEqual(true);
+            let ele2 = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
+            expect(ele2.getAttribute('tabindex')).toEqual('-1');
+            keyEventArgs = {
+                preventDefault: function () { },
+                action: 'moveRight',
+                target: ele2,
+            };
+            expect(element.classList.contains('e-keyboard')).toEqual(true);
+            toolbar.keyActionHandler(keyEventArgs);
+            let ele3 = toolbar.element.querySelectorAll('.e-toolbar-item')[2].firstChild;
+            expect(ele3.getAttribute('tabindex')).toEqual('-1');
+            expect(ele2.getAttribute('tabindex') === null).toEqual(true);
         });
     });
 

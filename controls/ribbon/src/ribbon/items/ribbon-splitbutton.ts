@@ -1,7 +1,7 @@
 import { EventHandler, KeyboardEventArgs, getComponent, merge } from '@syncfusion/ej2-base';
 import {  BeforeOpenCloseMenuEventArgs, ClickEventArgs, DropDownButton, ItemModel, OpenCloseMenuEventArgs, SplitButton } from '@syncfusion/ej2-splitbuttons';
 import { Button } from '@syncfusion/ej2-buttons';
-import { getItem, Ribbon, itemProps, getItemElement, RibbonItemSize } from '../base/index';
+import { getItem, Ribbon, itemProps, getItemElement, RibbonItemSize, setCustomAttributes } from '../base/index';
 import { ITEM_VERTICAL_CENTER, RIBBON_CONTROL, RIBBON_HOVER, RIBBON_POPUP_CONTROL, RIBBON_POPUP_OPEN, SPACE, VERTICAL_DDB } from '../base/constant';
 import { RibbonSplitButtonSettingsModel, RibbonItemModel } from '../models/index';
 
@@ -70,6 +70,9 @@ export class RibbonSplitButton {
                 if (splitButtonSettings.click) { splitButtonSettings.click.call(this, e); }
             }
         }, buttonEle);
+        if (splitButtonSettings.htmlAttributes) {
+            setCustomAttributes(buttonEle, splitButtonSettings.htmlAttributes);
+        }
         const dropdownEle: HTMLElement = buttonEle.parentElement.querySelector('.e-dropdown-btn');
         dropdownEle.onkeydown = (e: KeyboardEventArgs) => {
             if (e.key === 'Enter') { e.stopImmediatePropagation(); (dropdownEle as HTMLElement).click(); }

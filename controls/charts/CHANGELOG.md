@@ -2,9 +2,19 @@
 
 ## [Unreleased]
 
+## 23.1.44 (2023-11-07)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I495717` - Now the pdf-export module is not included by default.
+
 ## 23.1.43 (2023-10-31)
 
 ### Chart
+
+#### Bug Fixes
 
 - `#F184961` - The enable RTL property is now working correctly in polar chart.
 - `#I512713` - Now the chart series type can be updated using react hooks.
@@ -13,10 +23,14 @@
 
 ### Chart
 
+#### Bug Fixes
+
 - `#I510832` - Multiple trendlines for line type series are now functioning correctly.
 - `#I511821` - Now the data label is rendering properly in canvas mode.
 
 ### StockChart
+
+#### Bug Fixes
 
 - `#I510304` - Now, the data was updated properly in the stock chart when trying to update it using useEffect.
 
@@ -24,11 +38,15 @@
 
 ### RangeNavigator
 
+#### Bug Fixes
+
 - `#I502356` - Fixed the console error that throws when we resize the range navigator.
 
 ## 23.1.40 (2023-10-10)
 
 ### Chart
+
+#### Bug Fixes
 
 - `#I499384` - Now the chart series is getting focused properly after legend click.
 

@@ -1300,7 +1300,7 @@ export class Filter implements IAction {
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }
-            if ((hasDialogClosed && (parentsUntil(target, 'e-excel-ascending') ||
+            if ((this.filterModule && hasDialogClosed && (parentsUntil(target, 'e-excel-ascending') ||
                 parentsUntil(target, 'e-excel-descending')))) {
                 this.filterModule.closeDialog(target);
             }

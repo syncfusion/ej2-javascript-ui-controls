@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.44 (2023-11-07)
+
+### Mention
+
+#### Bug Fixes
+
+- `#I4756` - Fixed the issue where using the Mention Character as a `[` would throw a console error.
+
 ## 23.1.43 (2023-10-31)
 
 ### ComboBox

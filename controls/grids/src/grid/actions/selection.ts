@@ -3322,6 +3322,10 @@ export class Selection implements IAction {
         }
         let [rowIndex, cellIndex]: number[] = e.container.isContent ? e.container.indexes : e.indexes;
         const prev: IIndex = this.focus.getPrevIndexes();
+        if (e.element.parentElement.querySelector('.e-rowcelldrag') || e.element.parentElement.querySelector('.e-dtdiagonalright')
+            || e.element.parentElement.querySelector('.e-dtdiagonaldown') ) {
+            prev.cellIndex = prev.cellIndex - 1;
+        }
         if (this.parent.frozenRows) {
             if (e.container.isHeader && (e.element.tagName === 'TD' || closest(e.element, '.' + literals.rowCell))) {
                 const thLen: number = this.parent.getHeaderTable().querySelector('thead').childElementCount;

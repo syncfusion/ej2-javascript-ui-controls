@@ -57,6 +57,7 @@ import { DataManager } from '@syncfusion/ej2-data';
 import { Export } from '../chart/print-export/export';
 import { ExportUtils } from '../common/utils/export';
 import { Animation, AnimationOptions, compile as templateComplier} from '@syncfusion/ej2-base';
+import { PrintUtils } from '../common/utils/print'
 
 /**
  * Represents the AccumulationChart control.
@@ -1062,7 +1063,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         // To handle the print funtion in IE and Edge browsers
         const clippath: string = document.getElementById(this.element.id + '_Series_0').style.clipPath;
         document.getElementById(this.element.id + '_Series_0').style.clipPath = '';
-        const exportChart: ExportUtils = new ExportUtils(this);
+        const exportChart: PrintUtils = new PrintUtils(this);
         exportChart.print(id);
         document.getElementById(this.element.id + '_Series_0').style.clipPath = clippath;
     }

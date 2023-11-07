@@ -1,19 +1,19 @@
 import {
     PdfGrid, PdfPen, PointF, PdfGridRow, PdfDocument, PdfPage, PdfFont,
     PdfStandardFont, PdfFontFamily, PdfSolidBrush, PdfColor, PdfStringFormat,
-    PdfVerticalAlignment, PdfTextAlignment, PdfFontStyle, PdfPageTemplateElement,
-    RectangleF, PdfTrueTypeFont, PdfBorders, PdfGridCell, SizeF, PdfSection, PdfPageOrientation, PdfMargins
+    PdfVerticalAlignment, PdfTextAlignment, PdfFontStyle, PdfTrueTypeFont, PdfBorders,
+    PdfGridCell, SizeF, PdfSection, PdfPageOrientation, PdfMargins
 } from '@syncfusion/ej2-pdf-export';
 import { PivotView } from '../base/pivotview';
 import * as events from '../../common/base/constant';
 import { BeforeExportEventArgs, PdfThemeStyle, PdfBorder, PdfTheme, PdfCellRenderArgs, ExportCompleteEventArgs, EnginePopulatedEventArgs } from '../../common/base/interface';
 import { IAxisSet, IPageSettings, IDataOptions, PivotEngine } from '../../base/engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { PdfBorderStyle } from '../../common/base/enum';
 import { OlapEngine } from '../../base/olap/engine';
 import { PivotExportUtil } from '../../base/export-util';
 import { PdfExportProperties, PdfHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { PivotUtil } from '../../base/util';
+import { PDFExportHelper } from './pdf-export-helper';
 
 /**
  * @hidden
@@ -26,6 +26,7 @@ export class PDFExport {
     private document: PdfDocument
     /** @hidden */
     public exportProperties: BeforeExportEventArgs;
+    private pdfExportHelper: PDFExportHelper;
 
     /**
      * Constructor for the PivotGrid PDF Export module.
@@ -35,6 +36,7 @@ export class PDFExport {
      */
     constructor(parent?: PivotView) {
         this.parent = parent;
+        this.pdfExportHelper = new PDFExportHelper();
     }
 
     /**
@@ -79,58 +81,13 @@ export class PDFExport {
         }
         documentSection.setPageSettings(eventParams.document.pageSettings);
         const page: PdfPage = documentSection.pages.add();
-        const header: string = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)
-            && !isNullOrUndefined(pdfExportProperties.header.contents) && !isNullOrUndefined(pdfExportProperties.header.contents[0].value))
-            ? pdfExportProperties.header.contents[0].value : this.exportProperties.header ? this.exportProperties.header : '';
-        const footer: string = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer) &&
-            !isNullOrUndefined(pdfExportProperties.footer.contents) && !isNullOrUndefined(pdfExportProperties.footer.contents[0].value)) ?
-            pdfExportProperties.footer.contents[0].value : this.exportProperties.footer ? this.exportProperties.footer : '';
-        const themeStyle: PdfThemeStyle = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.theme) &&
-            !isNullOrUndefined(pdfExportProperties.theme.record)) ? pdfExportProperties.theme.record : undefined;
-        const fontFamily: number = (!isNullOrUndefined(themeStyle) && !isNullOrUndefined(themeStyle.font) &&
-            !isNullOrUndefined(themeStyle.font.name)) ? this.getFontFamily(themeStyle.font.name) : PdfFontFamily.TimesRoman;
-        const fontSize: number = (!isNullOrUndefined(themeStyle) && !isNullOrUndefined(themeStyle.font) &&
-            !isNullOrUndefined(themeStyle.font.size)) ? themeStyle.font.size : 10;
-        const fontStyle: PdfFontStyle = !isNullOrUndefined(themeStyle) ? this.getFontStyle(themeStyle) : PdfFontStyle.Regular;
-        const font: PdfStandardFont | PdfTrueTypeFont = new PdfStandardFont(fontFamily, fontSize, fontStyle);
-        // const font: PdfFont = new PdfStandardFont(PdfFontFamily.TimesRoman, 15, PdfFontStyle.Regular);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const headerCondition: any = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)
-            && !isNullOrUndefined(pdfExportProperties.header.contents) && !isNullOrUndefined(pdfExportProperties.header.contents[0].style));
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const footerCondition: any = (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer)
-            && !isNullOrUndefined(pdfExportProperties.footer.contents) && !isNullOrUndefined(pdfExportProperties.footer.contents[0].style));
-        const headerColor: { r: number; g: number; b: number } = (headerCondition) ?
-            this.hexDecToRgb(pdfExportProperties.header.contents[0].style.textBrushColor) as PdfColor : (new PdfColor(0, 0, 0));
-        const brushHeader: PdfSolidBrush = (headerCondition) ? new PdfSolidBrush(new PdfColor(headerColor.r, headerColor.g, headerColor.b))
-            : new PdfSolidBrush(new PdfColor(0, 0, 0));
-        const footerColor: { r: number; g: number; b: number } = (footerCondition) ?
-            this.hexDecToRgb(pdfExportProperties.footer.contents[0].style.textBrushColor) as PdfColor : (new PdfColor(0, 0, 0));
-        const brushFooter: PdfSolidBrush = (footerCondition) ? new PdfSolidBrush(new PdfColor(footerColor.r, footerColor.g, footerColor.b))
-            : new PdfSolidBrush(new PdfColor(0, 0, 0));
-        const pen: PdfPen = new PdfPen(new PdfColor(0, 0, 0), .5);
-        /** Header and Footer to be set */
-        const headerTemplate: PdfPageTemplateElement =
-            new PdfPageTemplateElement(new RectangleF(0, 0, page.graphics.clientSize.width, 20));
-        headerTemplate.graphics.drawString(header, font, pen, brushHeader, 0, 0, new PdfStringFormat(PdfTextAlignment.Center));
-        eventParams.document.template.top = headerTemplate;
-        const footerTemplate: PdfPageTemplateElement =
-            new PdfPageTemplateElement(new RectangleF(0, 0, page.graphics.clientSize.width, 20));
-        footerTemplate.graphics.drawString(footer, font, pen, brushFooter, 0, 0, new PdfStringFormat(PdfTextAlignment.Center));
-        eventParams.document.template.bottom = footerTemplate;
-        return page;
-    }
-
-    private hexDecToRgb(hexDec: string): { r: number; g: number; b: number } {
-        if (hexDec === null || hexDec === '' || hexDec.length !== 7) {
-            throw new Error('please set valid hex value for color..');
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)) {
+            this.pdfExportHelper.drawHeader(pdfExportProperties, eventParams.document);
         }
-        hexDec = hexDec.substring(1);
-        const bigint: number = parseInt(hexDec, 16);
-        const r: number = (bigint >> 16) & 255;
-        const g: number = (bigint >> 8) & 255;
-        const b: number = bigint & 255;
-        return { r: r, g: g, b: b };
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer)) {
+            this.pdfExportHelper.drawFooter(pdfExportProperties, eventParams.document);
+        }
+        return page;
     }
 
     private getFontStyle(theme: PdfThemeStyle): PdfFontStyle {
@@ -159,13 +116,13 @@ export class PDFExport {
             // set border color
             let color: PdfColor = new PdfColor(196, 196, 196);
             if (!isNullOrUndefined(borderStyle.color)) {
-                const borderColor: { r: number; g: number; b: number } = this.hexDecToRgb(borderStyle.color);
+                const borderColor: { r: number; g: number; b: number } = this.pdfExportHelper.hexDecToRgb(borderStyle.color);
                 color = new PdfColor(borderColor.r, borderColor.g, borderColor.b);
             }
             const pen: PdfPen = new PdfPen(color, width);
             // set border dashStyle 'Solid <default>, Dash, Dot, DashDot, DashDotDot'
             if (!isNullOrUndefined(borderStyle.dashStyle)) {
-                pen.dashStyle = this.getDashStyle(borderStyle.dashStyle);
+                pen.dashStyle = this.pdfExportHelper.getDashStyle(borderStyle.dashStyle);
             }
             borders.all = pen;
         } else {
@@ -173,21 +130,6 @@ export class PDFExport {
             borders.all = new PdfPen(pdfColor);
         }
         return borders;
-    }
-
-    private getDashStyle(dashType: PdfBorderStyle): number {
-        switch (dashType) {
-        case 'Dash':
-            return 1;
-        case 'Dot':
-            return 2;
-        case 'DashDot':
-            return 3;
-        case 'DashDotDot':
-            return 4;
-        default:
-            return 0;
-        }
     }
 
     private getStyle(): ITheme {
@@ -198,8 +140,8 @@ export class PDFExport {
             const fontStyle: PdfFontStyle = this.getFontStyle(this.gridStyle.header);
             const fontSize: number = !isNullOrUndefined(this.gridStyle.header.fontSize) ? this.gridStyle.header.fontSize : 10.5;
             let pdfColor: PdfColor = new PdfColor();
-            if (!isNullOrUndefined(this.gridStyle.header.fontColor)) {
-                const penBrushColor: { r: number; g: number; b: number } = this.hexDecToRgb(this.gridStyle.header.fontColor);
+            if (!isNullOrUndefined(this.gridStyle.header.fontColor)) { // eslint-disable-next-line max-len
+                const penBrushColor: { r: number; g: number; b: number } = this.pdfExportHelper.hexDecToRgb(this.gridStyle.header.fontColor);
                 pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
             }
             let font: PdfStandardFont | PdfTrueTypeFont = new PdfStandardFont(fontFamily, fontSize, fontStyle);
@@ -229,8 +171,8 @@ export class PDFExport {
             }
             row.style.setFont(font);
             let pdfColor: PdfColor = new PdfColor();
-            if (!isNullOrUndefined(this.gridStyle.record.fontColor)) {
-                const penBrushColor: { r: number; g: number; b: number } = this.hexDecToRgb(this.gridStyle.record.fontColor);
+            if (!isNullOrUndefined(this.gridStyle.record.fontColor)) { // eslint-disable-next-line max-len
+                const penBrushColor: { r: number; g: number; b: number } = this.pdfExportHelper.hexDecToRgb(this.gridStyle.record.fontColor);
                 pdfColor = new PdfColor(penBrushColor.r, penBrushColor.g, penBrushColor.b);
             }
             row.style.setTextBrush(new PdfSolidBrush(pdfColor));
@@ -256,7 +198,8 @@ export class PDFExport {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         : Promise<any> {
         this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
-        this.gridStyle = !isNullOrUndefined(this.exportProperties.pdfExportProperties) ? this.exportProperties.pdfExportProperties.theme : undefined;
+        this.gridStyle = !isNullOrUndefined(this.exportProperties.pdfExportProperties) ?
+            this.exportProperties.pdfExportProperties.theme : undefined;
         const eventParams: { document: PdfDocument, args: EnginePopulatedEventArgs } = this.applyEvent();
         if (!isNullOrUndefined(pdfDoc)) {
             eventParams.document = <PdfDocument>pdfDoc;
@@ -537,15 +480,15 @@ export class PDFExport {
     private processCellStyle(gridCell: PdfGridCell, arg?: PdfCellRenderArgs | PdfQueryCellInfoEventArgs | PdfHeaderQueryCellInfoEventArgs)
         : void {
         if (!isNullOrUndefined(arg.style.backgroundColor)) {
-            const backColor: { r: number, g: number, b: number } = this.hexDecToRgb(arg.style.backgroundColor);
+            const backColor: { r: number, g: number, b: number } = this.pdfExportHelper.hexDecToRgb(arg.style.backgroundColor);
             gridCell.style.backgroundBrush = new PdfSolidBrush(new PdfColor(backColor.r, backColor.g, backColor.b));
         }
         if (!isNullOrUndefined(arg.style.textBrushColor)) {
-            const textBrushColor: { r: number, g: number, b: number } = this.hexDecToRgb(arg.style.textBrushColor);
+            const textBrushColor: { r: number, g: number, b: number } = this.pdfExportHelper.hexDecToRgb(arg.style.textBrushColor);
             gridCell.style.textBrush = new PdfSolidBrush(new PdfColor(textBrushColor.r, textBrushColor.g, textBrushColor.b));
         }
         if (!isNullOrUndefined(arg.style.textPenColor)) {
-            const textColor: { r: number, g: number, b: number } = this.hexDecToRgb(arg.style.textPenColor);
+            const textColor: { r: number, g: number, b: number } = this.pdfExportHelper.hexDecToRgb(arg.style.textPenColor);
             gridCell.style.textPen = new PdfPen(new PdfColor(textColor.r, textColor.g, textColor.b));
         }
         if (!isNullOrUndefined(arg.style.fontFamily) || !isNullOrUndefined(arg.style.fontSize) || !isNullOrUndefined(arg.style.bold) ||
@@ -560,13 +503,13 @@ export class PDFExport {
             // set border color
             let color: PdfColor = new PdfColor(196, 196, 196);
             if (!isNullOrUndefined(arg.style.border.color)) {
-                const borderColor: { r: number, g: number, b: number } = this.hexDecToRgb(arg.style.border.color);
+                const borderColor: { r: number, g: number, b: number } = this.pdfExportHelper.hexDecToRgb(arg.style.border.color);
                 color = new PdfColor(borderColor.r, borderColor.g, borderColor.b);
             }
             const pen: PdfPen = new PdfPen(color, width);
             // set border dashStyle 'Solid <default>, Dash, Dot, DashDot, DashDotDot'
             if (!isNullOrUndefined(arg.style.border.dashStyle)) {
-                pen.dashStyle = this.getDashStyle(arg.style.border.dashStyle);
+                pen.dashStyle = this.pdfExportHelper.getDashStyle(arg.style.border.dashStyle);
             }
             border.all = pen;
             gridCell.style.borders = border;
@@ -576,17 +519,27 @@ export class PDFExport {
     private applyEvent(): { document: PdfDocument, args: EnginePopulatedEventArgs } {
         /** Event trigerring */
         let clonedValues: IAxisSet[][];
+        let mdxQuery: string;
         const currentPivotValues: IAxisSet[][] = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
-        if (this.parent.exportAllPages && (this.parent.enableVirtualization || this.parent.enablePaging) && this.parent.dataType !== 'olap' && this.parent.dataSourceSettings.mode !== 'Server') {
+        if (this.parent.exportAllPages && (this.parent.enableVirtualization || this.parent.enablePaging) && this.parent.dataSourceSettings.mode !== 'Server') {
             const pageSettings: IPageSettings = this.engine.pageSettings;
-            this.engine.pageSettings = null;
             (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = false;
+            if (this.parent.dataType === 'olap') {
+                this.updateOlapPageSettings(true);
+                mdxQuery = this.parent.olapEngineModule.mdxQuery.slice(0);
+            } else {
+                this.engine.pageSettings = null;
+            }
             (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings as IDataOptions, true);
             this.parent.applyFormatting(this.engine.pivotValues);
             clonedValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
             this.engine.pivotValues = currentPivotValues;
             this.engine.pageSettings = pageSettings;
             (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = true;
+            if (this.parent.dataType === 'olap') {
+                this.updateOlapPageSettings(false);
+                this.parent.olapEngineModule.mdxQuery = mdxQuery;
+            }
         } else {
             clonedValues = currentPivotValues;
         }
@@ -596,6 +549,17 @@ export class PDFExport {
         this.parent.trigger(events.enginePopulated, args);
         this.document = new PdfDocument();
         return { document: this.document, args: args };
+    }
+
+    private updateOlapPageSettings(isUpdate: boolean): void {
+        this.parent.olapEngineModule.isExporting = isUpdate ? true : false;
+        if (!this.parent.exportSpecifiedPages) {
+            this.parent.olapEngineModule.pageSettings = isUpdate ? null : this.parent.olapEngineModule.pageSettings;
+            this.parent.olapEngineModule.isPaging = isUpdate ? false : true;
+        } else {
+            this.parent.olapEngineModule.exportSpeciedPages = this.parent.exportSpecifiedPages = isUpdate ?
+                this.parent.exportSpecifiedPages : undefined;
+        }
     }
 
     /**
@@ -613,6 +577,9 @@ export class PDFExport {
         }
         if (this.document) {
             this.document = null;
+        }
+        if (this.pdfExportHelper) {
+            this.pdfExportHelper = null;
         }
     }
 }

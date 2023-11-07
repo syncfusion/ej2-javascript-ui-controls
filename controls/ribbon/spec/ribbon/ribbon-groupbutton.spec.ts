@@ -80,16 +80,19 @@ describe('Ribbon', () => {
                                     items: [{
                                         iconCss: 'e-icons e-copy',
                                         content: 'copy',
-                                        selected: true
+                                        selected: true,
+                                        htmlAttributes: { 'data-id': 'group_copy', 'class': 'copy_class', 'style': 'color: red' }
                                     },
                                     {
                                         iconCss: 'e-icons e-paste',
                                         content: 'paste',
-                                        selected: true
+                                        selected: true,
+                                        htmlAttributes: { 'data-id': 'group_paste' }
                                     },
                                     {
                                         iconCss: 'e-icons e-cut',
-                                        content: 'cut'
+                                        content: 'cut',
+                                        htmlAttributes: { 'data-id': 'group_cut' }
                                     }]
                                 }
                             }]
@@ -137,6 +140,13 @@ describe('Ribbon', () => {
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[0]).classList.contains('e-active')).toBe(true);
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[1]).classList.contains('e-active')).toBe(false);
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[2]).classList.contains('e-active')).toBe(false);
+
+            const grpBtns: NodeListOf<Element> = ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button');
+            expect(grpBtns[0].getAttribute('data-id')).toBe('group_copy');
+            expect(grpBtns[0].classList.contains('copy_class')).toBe(true);
+            expect((grpBtns[0] as HTMLElement).style.color).toBe('red');
+            expect(grpBtns[1].getAttribute('data-id')).toBe('group_paste');
+            expect(grpBtns[2].getAttribute('data-id')).toBe('group_cut');
         });
         it('in classic mode with multiple selection', () => {
             ribbon = new Ribbon({

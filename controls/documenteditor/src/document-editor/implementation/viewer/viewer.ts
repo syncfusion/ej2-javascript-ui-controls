@@ -1141,7 +1141,7 @@ export class DocumentHelper {
      * @param {ImageElementBox} image - Specfies image.
      * @returns {number} - Returns key for specific image.
      */
-    public addBase64StringInCollection(image: ImageElementBox): void {
+    public async addBase64StringInCollection(image: ImageElementBox): Promise<void> {
         let key: number = this.images.length;
         let addToCollection: boolean = true;
         let base64ImageString: string[] = [];
@@ -1754,6 +1754,44 @@ export class DocumentHelper {
         }
     };
 
+    public async getBase64(base64String: string, width:number,height:number) : Promise<string> {
+        return new Promise(
+            (resolve: Function, reject: Function) => {
+                let imageString='';
+                let drawImage: HTMLImageElement = new Image();
+                drawImage.onload = (): void => {
+
+                    let displayPixelRatio: number = Math.max(1, window.devicePixelRatio || 1);
+                    let draw: HTMLCanvasElement = document.createElement('canvas');
+                    draw.width = width * displayPixelRatio;
+                    draw.height = height * displayPixelRatio;
+                    let context = draw.getContext('2d');
+                    context.scale(displayPixelRatio, displayPixelRatio);
+                    context.drawImage(drawImage, 0, 0, width, height);
+                    imageString = draw.toDataURL('image/png', 1);
+                    resolve(imageString);
+
+                };
+                if(base64String && (HelperMethods.startsWith(base64String, 'http://') || HelperMethods.startsWith(base64String, 'https://'))){
+                    fetch(base64String)
+                    .then(response => response.blob())
+                    .then(blob => {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(blob);
+                    });
+                    })
+                    .then(dataUrl => {
+                    // The dataUrl will be a base64-encoded string
+                    drawImage.src = dataUrl as string;
+                    // console.log(base64String);
+                    })
+                }
+            }
+        );
+    }
 
     /**
      * Clears the context.

@@ -325,6 +325,10 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             animation: { next: { duration: 0 }, previous: { duration: 0 } },
             items: this.getTabItems(),
             selecting: (args: SelectingEventArgs): void => {
+                if (args.isSwiped) {
+                    args.cancel = true;
+                    return;
+                }
                 isShortcut = args.event && (args.event as unknown as { isShortcut: boolean }).isShortcut;
                 if (this.menuItems.length && args.selectingIndex === 0) {
                     args.cancel = true;

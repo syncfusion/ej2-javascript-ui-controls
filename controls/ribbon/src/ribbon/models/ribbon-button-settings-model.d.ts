@@ -41,6 +41,13 @@ export interface RibbonButtonSettingsModel {
     isPrimary?: boolean;
 
     /**
+     * Specifies additional HTML attributes to be applied to the button.
+     *
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string };
+
+    /**
      * Event triggers once the button is created.
      *
      * @event created

@@ -2977,6 +2977,39 @@ describe('EJ2-35868-script error thrown while adding bottom rows after batch del
     });
 });
 
+describe('EJ2-852976 - Disabling First Field with allowEditing False Does not Prevent Input in New Rows,', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0,5),
+                editSettings: {
+                    allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch'
+                },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'CustomerID', type: 'string', allowEditing: false, width: 120  },
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, validationRules: { required: true }, width: 120 },
+                    { field: 'ShipCountry', type: 'string', editType: 'dropdownedit', width: 120 },
+                    { field: 'Verified', type: 'boolean', editType: 'booleanedit', width: 120 },
+                ]
+            }, done);
+    });
+    it('add row', (done: Function) => {
+        let batchAdd = (args?: any): void => {
+            expect(args.cell.getAttribute('data-colindex')).toBe('1');            
+            done();
+        };
+        gridObj.batchAdd = batchAdd;
+        gridObj.addRecord();
+    });
+
+    afterAll(() => {
+        gridObj.batchAdd = null;
+        destroy(gridObj);
+    });
+});
+
 describe('EJ2-36298 - Delete with persist selection => ', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {

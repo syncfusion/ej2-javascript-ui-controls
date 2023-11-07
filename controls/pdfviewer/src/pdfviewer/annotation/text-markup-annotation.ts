@@ -1623,7 +1623,7 @@ export class TextMarkupAnnotation {
     public modifyOpacityProperty(args: ChangeEventArgs, isOpacity?: number): void {
         if (this.currentTextMarkupAnnotation) {
             let pageAnnotations: ITextMarkupAnnotation[];
-            if (isOpacity) {
+            if (!(isNullOrUndefined(isOpacity))) {
                 pageAnnotations = this.modifyAnnotationProperty('Opacity', isOpacity, 'changed');
             } else {
                 pageAnnotations = this.modifyAnnotationProperty('Opacity', args.value / 100, args.name);
@@ -1631,7 +1631,7 @@ export class TextMarkupAnnotation {
             if (pageAnnotations) {
                 this.manageAnnotations(pageAnnotations, this.selectTextMarkupCurrentPage);
                 this.pdfViewer.annotationModule.renderAnnotations(this.selectTextMarkupCurrentPage, null, null, null);
-                if (isOpacity || args.name === 'changed') {
+                if (!(isNullOrUndefined(isOpacity)) || args.name === 'changed') {
                     this.pdfViewerBase.updateDocumentEditedProperty(true);
                     // eslint-disable-next-line
                     let annotation: any = this.currentTextMarkupAnnotation;

@@ -42,7 +42,7 @@ module.exports = function (config) {
       { pattern: "spec/pivotview/toolbar.spec.js", included: false },
       { pattern: "spec/pivotview/pivot-chart.spec.js", included: false },
       { pattern: "spec/pivotview/cell-template.spec.js", included: false },
-      { pattern: "spec/pivotview/pdf-export.spec.js", included: false },
+      { pattern: "spec/pivotview/exporting.spec.js", included: false },
 
       // { pattern: "spec/pivotview/grouping.spec.js", included: false },
       // { pattern: "spec/pivotview/virtual-scrolling.spec.js", included: false },

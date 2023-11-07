@@ -253,10 +253,9 @@ export class DrillThroughDialog {
                     if (this.parent.dataSourceSettings.mode === 'Server') {
                         const dataIndex: { [key: string]: Object } = {};
                         dataIndex[indexObject as number] = indexObject;
-                        /* eslint-disable-next-line @typescript-eslint/tslint/config*/
-                        const prevItems = [currentData];
-                        this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, {
-                            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const prevItems: any = [currentData];
+                        this.parent.getEngine('updateRawData', null, null, null, null, null, null, null, { /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                             'addedData': [], 'removedData': [], 'updatedData': prevItems, indexObject: dataIndex as any
                         });
                     }

@@ -662,8 +662,7 @@ describe('Insert & Delete ->', () => {
             helper.setAnimationToNone('#' + helper.id + '_contextmenu');
             helper.openAndClickCMenuItem(0, 9, [7], false, true);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[0].cells[8].formula).toBe('=UNIQUE(D2:D11)');
-                expect(helper.getInstance().sheets[0].rows[0].cells[8].value).toBe('20');
+                expect(helper.getInstance().sheets[0].rows[0].cells[8]).toBeUndefined();
                 done();
             });
         });
@@ -673,8 +672,7 @@ describe('Insert & Delete ->', () => {
             helper.setAnimationToNone('#' + helper.id + '_contextmenu');
             helper.openAndClickCMenuItem(11, 0, [7], true, false);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].rows[11].cells[0].formula).toBe('=UNIQUE(A2:H2)');
-                expect(helper.getInstance().sheets[0].rows[11].cells[0].value).toBe('Casual Shoes');
+                expect(helper.getInstance().sheets[0].rows[11]).toBeUndefined();
                 done();
             });
         });
@@ -2628,6 +2626,55 @@ describe('Insert & Delete ->', () => {
                     expect(spreadsheet.sheets[3].rows).not.toBeUndefined();
                     expect(spreadsheet.sheets[3].rows.length).not.toEqual(0);
                     done();
+                });
+            });
+        });
+        describe('EJ2-850911->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rows: [
+                        { cells: [{ index: 3, formula: '=UNIQUE(G1:H2)' }, { index: 6, value: 'column1'}, { value: 'column2'}] }
+                    ] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Spreadsheet control restricts to insert new column before the unique formula applied column->', (done: Function) => {
+                expect(helper.invoke('getCell', [0, 4]).textContent).toBe('column2');
+                helper.invoke('selectRange', ['D1']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(0, 5, [6, 1], false, true);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 3]).textContent).toBe('');
+                    expect(helper.getInstance().sheets[0].rows[0].cells[4].formula).toBe('=UNIQUE(H1:I2)');
+                    expect(helper.invoke('getCell', [0, 4]).textContent).toBe('column1');
+                    expect(helper.invoke('getCell', [0, 5]).textContent).toBe('column2');
+                    expect(helper.invoke('getCell', [0, 7]).textContent).toBe('column1');
+                    expect(helper.invoke('getCell', [0, 8]).textContent).toBe('column2');
+                    helper.invoke('selectRange', ['F1']);
+                    helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                    helper.openAndClickCMenuItem(0, 5, [6, 1], false, true);
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[0].cells[4].formula).toBe('=UNIQUE(I1:J2)');
+                        expect(helper.invoke('getCell', [0, 4]).textContent).toBe('column1');
+                        expect(helper.invoke('getCell', [0, 5]).textContent).toBe('column2');
+                        expect(helper.invoke('getCell', [0, 8]).textContent).toBe('column1');
+                        expect(helper.invoke('getCell', [0, 9]).textContent).toBe('column2');
+                        helper.invoke('selectRange', ['J1']);
+                        helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                        helper.openAndClickCMenuItem(0, 5, [6, 1], false, true);
+                        setTimeout(() => {
+                            expect(helper.getInstance().sheets[0].rows[0].cells[4].formula).toBe('=UNIQUE(I1:K2)');
+                            expect(helper.invoke('getCell', [0, 4]).textContent).toBe('column1');
+                            expect(helper.invoke('getCell', [0, 5]).textContent).toBe('0');
+                            expect(helper.invoke('getCell', [0, 6]).textContent).toBe('column2');
+                            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('column1');
+                            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('');
+                            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('column2');
+                            done();
+                        });
+                    });
                 });
             });
         });

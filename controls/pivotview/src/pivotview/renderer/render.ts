@@ -1791,6 +1791,8 @@ export class Render {
             const headerSplit: Object[] = [];
             const splitPos: Object[] = [];
             const colWidth: number = this.calculateColWidth(this.engine.pivotValues ? this.engine.pivotValues[0].length : 0);
+            const measureFlag: boolean = this.parent.dataType === 'olap' && !isNullOrUndefined((this.engine as OlapEngine).colMeasurePos) && // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                ((this.engine as OlapEngine) as any).colDepth - 1 === this.parent.olapEngineModule.colMeasurePos;
             do {
                 const columnModel: ColumnModel[] = [];
                 let actualCnt: number = 0;
@@ -1800,8 +1802,8 @@ export class Render {
                 if (colField) {
                     for (let cCnt: number = 0; cCnt < Object.keys(colField).length + (colField[0] ? 0 : 1); cCnt++) {
                         let colSpan: number = (colField[cCnt as number] && colField[cCnt as number].colSpan) ?
-                            ((colField[cCnt as number].memberType !== 3 || headerCnt === 0) ?
-                                colField[cCnt as number].colSpan : headerSplit[cCnt as number] as number) : 1;
+                            ((colField[cCnt as number].memberType !== 3 || (colField[cCnt as number].memberType === 3 && !measureFlag) ||
+                                headerCnt === 0) ? colField[cCnt as number].colSpan : headerSplit[cCnt as number] as number) : 1;
                         colSpan = this.parent.dataType === 'olap' && isNullOrUndefined(colSpan) ? 1 : colSpan;
                         let formattedText: string = colField[cCnt as number] ? (colField[cCnt as number].type === 'grand sum' ?
                             (isNullOrUndefined(colField[cCnt as number].valueSort.axis) ? this.parent.localeObj.getConstant('grandTotal') :
@@ -1947,7 +1949,7 @@ export class Render {
                 if (this.parent.olapEngineModule.fieldList[field.name] &&
                     !isNullOrUndefined(this.parent.olapEngineModule.fieldList[field.name].formatString)) {
                     const fString: string = this.parent.olapEngineModule.fieldList[field.name].formatString;
-                    format = fString.indexOf('#') > -1 ? fString : (fString[0] + '2');
+                    format = (!isNullOrUndefined(fString) && fString !== '') ? fString.indexOf('#') > -1 ? fString : (fString[0] + '2') : undefined;
                 }
             } else {
                 if ((['PercentageOfDifferenceFrom', 'PercentageOfRowTotal', 'PercentageOfColumnTotal', 'PercentageOfGrandTotal', 'PercentageOfParentRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentTotal']).indexOf(field.type) > -1) {

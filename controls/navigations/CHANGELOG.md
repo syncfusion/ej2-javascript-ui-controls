@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
+## 23.1.44 (2023-11-07)
+
+### TreeView
+
+#### Bug fixes
+
+- `#I511195` - An issue with the TreeView component's tooltip(title) not decoded properly like tree node text has been resolved.
+
 ## 23.1.43 (2023-10-31)
+
+### TreeView
+
+#### Bug fixes
+
+- `#F184993` - An issue with the TreeView checkbox status was not updating properly after drag and drop  the node has been resolved.
 
 ### Toolbar
 

@@ -689,7 +689,7 @@ export class SfdtReader {
                                 for (let j = 0; j < styles.length; j++) {
                                     if (styles[j][nameProperty[this.keywordIndex]] === styleName) {
                                         var fontColor = styles[j][characterFormatProperty[this.keywordIndex]];
-                                        if (fontColor[fontColorProperty[this.keywordIndex]] !== (styleObj as WCharacterStyle).characterFormat.fontColor) {
+                                        if (isNullOrUndefined(fontColor) || fontColor[fontColorProperty[this.keywordIndex]] !== (styleObj as WCharacterStyle).characterFormat.fontColor) {
                                             const charFormat: WCharacterFormat = new WCharacterFormat();
                                             this.parseCharacterFormat(this.keywordIndex, styles[j][characterFormatProperty[this.keywordIndex]], charFormat);
                                             (styleObj as WCharacterStyle).characterFormat.copyFormat(charFormat);
@@ -1095,6 +1095,10 @@ export class SfdtReader {
                 }
                 textElement.line = lineWidget;
                 lineWidget.children.push(textElement);
+                if (textElement instanceof TextElementBox && textElement.text.length > 90) {
+                    // Here, the text is split based on the maximum character length of 90.
+                    HelperMethods.splitWordByMaxLength(textElement, lineWidget);
+                }
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty(footnoteTypeProperty[this.keywordIndex])) {
                 let footnoteElement: FootnoteElementBox = new FootnoteElementBox();
@@ -1171,13 +1175,17 @@ export class SfdtReader {
                 if (imgStrValue.toString() === "NaN" ? true : false) {
                     this.documentHelper.addBase64StringInCollection(image);
                 }
+                image.width = HelperMethods.convertPointToPixel(inline[widthProperty[this.keywordIndex]]);
+                image.height = HelperMethods.convertPointToPixel(inline[heightProperty[this.keywordIndex]]);
                 let imgStr: string = this.documentHelper.getImageString(image);
                 if (!isNullOrUndefined(imgStr) && (HelperMethods.startsWith(imgStr, 'http://') || HelperMethods.startsWith(imgStr, 'https://'))) {
                     imgStr += `?t=${new Date().getTime()}`;
+                    // Generate fall back image for URL images.
+                    this.viewer.documentHelper.getBase64(imgStr,image.width, image.height).then((imageUrlString: string) => {
+                        this.viewer.documentHelper.images.get(parseInt(image.imageString))[1] =imageUrlString;
+                    });
                 }
                 image.element.src = imgStr;
-                image.width = HelperMethods.convertPointToPixel(inline[widthProperty[this.keywordIndex]]);
-                image.height = HelperMethods.convertPointToPixel(inline[heightProperty[this.keywordIndex]]);
                 image.top = inline[topProperty[this.keywordIndex]];
                 image.left = inline[leftProperty[this.keywordIndex]];
                 image.bottom = inline[bottomProperty[this.keywordIndex]];

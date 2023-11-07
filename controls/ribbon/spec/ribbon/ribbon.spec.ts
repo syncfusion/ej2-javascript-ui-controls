@@ -2869,6 +2869,137 @@ describe('Ribbon', () => {
             expect(ribbon.element.querySelector('#item7_container').classList.contains('e-hidden')).toBe(false);
             expect(ribbon.element.querySelector('#item8_container').classList.contains('e-hidden')).toBe(false);
         });
+        it('hide/show when item is in second tab', (done) => {
+            let template1 = '<button id="btn1" class="tempContent">Button1</button>';
+            let template2 = '<button id="btn2" class="tempContent">Button2</button>';
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large,
+                                id: "item2",
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }, {
+                                id: "item3",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }, {
+                                id: "item4",
+                                type: RibbonItemType.CheckBox,
+                                checkBoxSettings: {
+                                    label: 'Check1',
+                                    checked: true,
+                                }
+                            }, {
+                                id: "item5",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item6",
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1
+                                }
+                            }, {
+                                id: "item7",
+                                type: RibbonItemType.Template,
+                                itemTemplate: template1
+                            }, {
+                                id: "item8",
+                                type: RibbonItemType.GroupButton,
+                                groupButtonSettings: {
+                                    items: [{
+                                        iconCss: 'e-icons e-copy',
+                                        content: 'copy',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-paste',
+                                        content: 'paste',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-cut',
+                                        content: 'cut'
+                                    }]
+                                }
+                            }]
+                        }]
+                    }]
+                },{
+                    id: "tab2",
+                    header: "tab2",
+                    groups: [{
+                        id: "group2",
+                        header: "group2Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item9",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item10",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);               
+            ribbon.hideItem('item9');
+            ribbon.hideItem('item10');
+            ribbon.showItem('item9');
+            ribbon.showItem('item10');
+            ribbon.hideItem('item9');
+            ribbon.hideItem('item10');
+            ribbon.hideItem('item10');
+            ribbon.setProperties({ selectedTab: 1 });
+            setTimeout(() => {
+                setTimeout(() => {
+                    expect(ribbon.element.querySelector('#item9_container').classList.contains('e-hidden')).toBe(true);
+                    expect(ribbon.element.querySelector('#item10_container').classList.contains('e-hidden')).toBe(true);
+                    done();
+                }, 450);
+            }, 450);            
+        });
         it('hide/show tab', () => {
             ribbon = new Ribbon({
                 tabs: [{
@@ -3121,6 +3252,192 @@ describe('Ribbon', () => {
             expect(document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target').classList.contains('e-hidden')).toBe(false);
             ribbon.showGroup('group4');
         });
+        it('hide/show when group is in second tab', (done) => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    cssClass: "tabCss",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item2",
+                                type: RibbonItemType.GroupButton,
+                                groupButtonSettings: {
+                                    items: [{
+                                        iconCss: 'e-icons e-copy',
+                                        content: 'copy',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-paste',
+                                        content: 'paste',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-cut',
+                                        content: 'cut'
+                                    }]
+                                }
+                            },
+                            {
+                                id: "item3",
+                                type: RibbonItemType.DropDown,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        enableGroupOverflow: true,
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item4",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            },{
+                                id: "item5",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item6",
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group3",
+                        header: "group3Header",
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item7",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            },{
+                                id: "item8",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item9",
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1
+                                }
+                            }]
+                        }]
+                    }]
+                },
+                {
+                    id: "tab2",
+                    cssClass: "tabs",
+                    header: "tab2",
+                    groups: [{
+                        id: "group10",
+                        header: "group10Header",
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item12",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item14",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            },{
+                                id: "item15",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            },{
+                                id: "item16",
+                                displayOptions: DisplayMode.Overflow,
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1
+                                }
+                            }]
+                        }]
+                    },{
+                        id: "group11",
+                        header: "group11Header",
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item17",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item18",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);            
+            ribbon.hideGroup('group10');
+            ribbon.hideGroup('group11');
+            ribbon.showGroup('group10');
+            ribbon.showGroup('group11');
+            ribbon.hideGroup('group10');
+            ribbon.hideGroup('group11');
+            ribbon.hideGroup('group11');
+            ribbon.setProperties({ selectedTab: 1 });
+            setTimeout(() => {
+                setTimeout(() => {
+                    expect(ribbon.element.querySelector('#group10').classList.contains('e-hidden')).toBe(true);
+                    expect(ribbon.element.querySelector('#group11').classList.contains('e-hidden')).toBe(true);
+                    done();
+                }, 450);
+            }, 450);            
+        });
         it('enable/disable group', () => {
             ribbon = new Ribbon({
                 tabs: [{
@@ -3280,6 +3597,507 @@ describe('Ribbon', () => {
             expect(document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('#group1_container').classList.contains('e-disabled')).toBe(true);
             expect(document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target').classList.contains('e-disabled')).toBe(true);
             ribbon.enableGroup('group4');
+        });
+        it('enable/disable when group is in second tab', (done) => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    cssClass: "tabCss",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item2",
+                                type: RibbonItemType.GroupButton,
+                                groupButtonSettings: {
+                                    items: [{
+                                        iconCss: 'e-icons e-copy',
+                                        content: 'copy',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-paste',
+                                        content: 'paste',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-cut',
+                                        content: 'cut'
+                                    }]
+                                }
+                            },
+                            {
+                                id: "item3",
+                                type: RibbonItemType.DropDown,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        enableGroupOverflow: true,
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item4",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            },{
+                                id: "item5",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item6",
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group3",
+                        header: "group3Header",
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item7",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            },{
+                                id: "item8",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item9",
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1
+                                }
+                            }]
+                        }]
+                    }]
+                },
+                {
+                    id: "tab2",
+                    cssClass: "tabs",
+                    header: "tab2",
+                    groups: [{
+                        id: "group12",
+                        header: "group12Header",
+                        collections: [{
+                            id: "collection12",
+                            items: [{
+                                id: "item12",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item14",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            },{
+                                id: "item15",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            },{
+                                id: "item16",
+                                displayOptions: DisplayMode.Overflow,
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1
+                                }
+                            }]
+                        }]
+                    },{
+                        id: "group13",
+                        header: "group13Header",
+                        collections: [{
+                            id: "collection13",
+                            items: [{
+                                id: "item17",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item18",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);           
+            ribbon.disableGroup('group12');
+            ribbon.disableGroup('group13');
+            ribbon.enableGroup('group12');
+            ribbon.enableGroup('group13');
+            ribbon.disableGroup('group12');
+            ribbon.disableGroup('group13');
+            ribbon.disableGroup('group13');
+            ribbon.setProperties({ selectedTab: 1 });
+            setTimeout(() => {
+                setTimeout(() => {
+                    expect(ribbon.element.querySelector('#group12').classList.contains('e-disabled')).toBe(true);
+                    expect(ribbon.element.querySelector('#group13').classList.contains('e-disabled')).toBe(true);
+                    done();
+                }, 450);
+            }, 450);            
+        });
+        it('enable/disable and show/hide when group is in group overflow popup and in second tab', (done) => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    cssClass: "tabCss",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item2",
+                                type: RibbonItemType.GroupButton,
+                                groupButtonSettings: {
+                                    items: [{
+                                        iconCss: 'e-icons e-copy',
+                                        content: 'copy',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-paste',
+                                        content: 'paste',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-cut',
+                                        content: 'cut'
+                                    }]
+                                }
+                            },
+                            {
+                                id: "item3",
+                                type: RibbonItemType.DropDown,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        enableGroupOverflow: true,
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item4",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            },{
+                                id: "item5",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item6",
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group3",
+                        header: "group3Header",
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item7",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            },{
+                                id: "item8",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item9",
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1
+                                }
+                            }]
+                        }]
+                    }]
+                },
+                {
+                    id: "tab2",
+                    cssClass: "tabs",
+                    header: "tab2",
+                    groups: [{
+                        id: "group12",
+                        header: "group2Header",
+                        enableGroupOverflow: true,
+                        collections: [{
+                            id: "collection12",
+                            items: [{
+                                id: "item12",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item14",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            },{
+                                id: "item15",
+                                displayOptions: DisplayMode.Overflow,
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            ribbon.activeLayout = 'Simplified';
+            ribbon.dataBind();
+            containerEle.style.width = '250px';
+            ribbon.refreshLayout();
+            ribbon.disableGroup('group12');
+            ribbon.hideGroup('group12');
+            ribbon.setProperties({ selectedTab: 1 });
+            setTimeout(() => {
+                setTimeout(() => {
+                    expect(ribbon.element.querySelector('#group12').classList.contains('e-disabled')).toBe(true);
+                    expect(ribbon.element.querySelector('#group12').classList.contains('e-hidden')).toBe(true);
+                    done();
+                }, 450);
+            }, 450);            
+        });
+        it('enable/disable and show/hide when group is in overall overflow popup and in second tab', (done) => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    cssClass: "tabCss",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item2",
+                                type: RibbonItemType.GroupButton,
+                                groupButtonSettings: {
+                                    items: [{
+                                        iconCss: 'e-icons e-copy',
+                                        content: 'copy',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-paste',
+                                        content: 'paste',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-cut',
+                                        content: 'cut'
+                                    }]
+                                }
+                            },
+                            {
+                                id: "item3",
+                                type: RibbonItemType.DropDown,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        enableGroupOverflow: true,
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item4",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            },{
+                                id: "item5",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item6",
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group3",
+                        header: "group3Header",
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item7",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            },{
+                                id: "item8",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item9",
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    dataSource: sportsData,
+                                    index: 1
+                                }
+                            }]
+                        }]
+                    }]
+                },
+                {
+                    id: "tab2",
+                    cssClass: "tabs",
+                    header: "tab2",
+                    groups: [{
+                        id: "group12",
+                        header: "group2Header",
+                        collections: [{
+                            id: "collection12",
+                            items: [{
+                                id: "item12",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },{
+                                id: "item14",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            },{
+                                id: "item15",
+                                displayOptions: DisplayMode.Overflow,
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            ribbon.activeLayout = 'Simplified';
+            ribbon.dataBind();
+            containerEle.style.width = '250px';
+            ribbon.refreshLayout();
+            ribbon.disableGroup('group12');
+            ribbon.hideGroup('group12');
+            ribbon.setProperties({ selectedTab: 1 });
+            setTimeout(() => {
+                setTimeout(() => {
+                    expect(ribbon.element.querySelector('#group12').classList.contains('e-disabled')).toBe(true);
+                    expect(ribbon.element.querySelector('#group12').classList.contains('e-hidden')).toBe(true);
+                    done();
+                }, 450);
+            }, 450);            
         });
     });
 

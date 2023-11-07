@@ -457,6 +457,7 @@ export class _JsonDocument extends _ExportHelper {
         case 'MeasurementTypes':
         case 'GroupNesting':
         case 'ITEx':
+        case 'TextMarkupContent':
             break;
         case 'Border':
         case 'A':

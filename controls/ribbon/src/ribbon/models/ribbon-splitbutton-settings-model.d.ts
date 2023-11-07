@@ -49,6 +49,13 @@ export interface RibbonSplitButtonSettingsModel {
     target?: string | HTMLElement;
 
     /**
+     * Specifies additional HTML attributes to be applied to the SplitButton.
+     *
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string };
+
+    /**
      * Triggers before closing the SplitButton popup.
      *
      * @event beforeClose

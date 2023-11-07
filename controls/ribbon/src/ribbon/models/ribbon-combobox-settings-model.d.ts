@@ -210,6 +210,13 @@ export interface RibbonComboBoxSettingsModel {
     width?: string | number;
 
     /**
+     * Specifies additional HTML attributes to be applied to the combobox.
+     *
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string };
+
+    /**
      * Event triggers before opening the popup.
      *
      * @event beforeOpen

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.44 (2023-11-07)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I508486` - Now, user-handle template is rendered properly after save and load.
+
 ## 23.1.43 (2023-10-31)
 
 ### Diagram

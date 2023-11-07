@@ -52,7 +52,8 @@ describe('Ribbon Items', () => {
                             cssClass: 'test-css',
                             iconCss: 'e-icons e-paste',
                             items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
-                            close: ()=>{ isCloseCalled = true; }
+                            close: ()=>{ isCloseCalled = true; },
+                            htmlAttributes: { 'data-id': 'largepaste' }
                         }
                     },{
                         type: RibbonItemType.DropDown,
@@ -69,7 +70,8 @@ describe('Ribbon Items', () => {
                                 { text: 'Insert Table' }, { text: 'Draw Table' },
                                 { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
                             ],
-                            close: ()=>{ isCloseCalled = true; }
+                            close: ()=>{ isCloseCalled = true; },
+                            htmlAttributes: { 'data-id': 'largetable' }
                         }
                     },{
                         type: RibbonItemType.Button,
@@ -81,7 +83,8 @@ describe('Ribbon Items', () => {
                                 outputEle.innerText = ("Large " + "Cut Clicked");
                             },
                             content: 'cut',
-                            iconCss: 'e-icons e-cut'
+                            iconCss: 'e-icons e-cut',
+                            htmlAttributes: { 'data-id': 'largecut' }
                         }
                     }]
                 },]
@@ -201,7 +204,8 @@ describe('Ribbon Items', () => {
                             cssClass: 'test-css',
                             index: 2,
                             allowFiltering: true,
-                            close: ()=>{ isCloseCalled = true; }
+                            close: ()=>{ isCloseCalled = true; },
+                            htmlAttributes: { 'data-id': 'fontfamily' }
                         }
                     }]
                 }, {
@@ -214,7 +218,8 @@ describe('Ribbon Items', () => {
                                 outputEle.innerText = ("Font " + args.checked);
                             },
                             label: 'Ruler',
-                            checked: false
+                            checked: false,
+                            htmlAttributes: { 'data-id': 'fontbold' }
                         }
                     }, {
                         type: RibbonItemType.ColorPicker,
@@ -228,6 +233,7 @@ describe('Ribbon Items', () => {
                                 isColorPickerBeforeClose = true;
                             },
                             value: '#123456',
+                            htmlAttributes: { 'data-id': 'fontcolor' }
                         }
                     } ]
                 }]
@@ -1227,6 +1233,24 @@ describe('Ribbon Items', () => {
             (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
             expect(document.body.querySelector('#'+splitBtn.id+'_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
             expect(isColorPickerBeforeClose).toBe(true);
+        });
+        it('Custom attributes for items', () => {
+            ribbon = new Ribbon({
+                tabs: tabs
+            });
+            ribbon.appendTo("#ribbon");
+            //Check button
+            expect(document.querySelector('#largecut').getAttribute('data-id')).toBe('largecut');
+            //Check checkbox
+            expect(document.querySelector('#fontbold').closest('.e-checkbox-wrapper').getAttribute('data-id')).toBe('fontbold');
+            //Check combobox
+            expect(document.querySelector('#fontfamily_hidden').getAttribute('data-id')).toBe('fontfamily');
+            //Check color picker
+            expect(document.querySelector('#fontcolor').getAttribute('data-id')).toBe('fontcolor');
+            //Check dropdown button
+            expect(document.querySelector('#largetable').getAttribute('data-id')).toBe('largetable');
+            //Check split button
+            expect(document.querySelector('#largepaste').getAttribute('data-id')).toBe('largepaste');
         });
     });
     describe('Overflow items interaction', () => {   

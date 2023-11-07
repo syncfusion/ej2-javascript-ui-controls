@@ -2306,11 +2306,15 @@ export class Editor {
                     insertPosition.paragraph.paragraphFormat.listFormat.listId === -1) {
                     insertPosition.paragraph.x = this.owner.viewer.clientActiveArea.x;
                 }
+                if (span instanceof TextElementBox && span.text.length > 90) {
+                    // Here, the text is split based on the maximum character length of 90.
+                    HelperMethods.splitWordByMaxLength(span, span.line);
+                }
                 this.documentHelper.layout.reLayoutParagraph(insertPosition.paragraph, 0, 0);
             } else {
                 let indexInInline: number = 0;
 
-                let inlineObj: ElementInfo = insertPosition.currentWidget.getInline(insertPosition.offset, indexInInline, bidi, (isReplace) ? false : true);
+                let inlineObj: ElementInfo = insertPosition.currentWidget.getInline(insertPosition.offset, indexInInline, bidi, (isReplace) ? false : true, this.documentHelper.owner.isSpellCheck);
                 let inline: ElementBox = inlineObj.element;
                 indexInInline = inlineObj.index;
                 inline.ischangeDetected = true;
@@ -2420,6 +2424,10 @@ export class Editor {
                         if (!isRevisionCombined) {
                             inline.line.children.splice(insertIndex + 1, 0, tempSpan);
                         }
+                    }
+                    if (tempSpan instanceof TextElementBox && tempSpan.text.length > 90) {
+                        // Here, the text is split based on the maximum character length of 90.
+                        HelperMethods.splitWordByMaxLength(tempSpan, tempSpan.line);
                     }
                     this.documentHelper.layout.reLayoutParagraph(insertPosition.paragraph, inline.line.indexInOwner, 0);
                 }
@@ -3923,6 +3931,10 @@ export class Editor {
             let paragraph: ParagraphWidget = (element.line as LineWidget).paragraph;
             let lineIndex: number = paragraph.childWidgets.indexOf(element.line);
             let elementIndex: number = element.line.children.indexOf(element);
+            if (element instanceof TextElementBox && element.text.length > 90) {
+                // Here, the text is split based on the maximum character length of 90.
+                HelperMethods.splitWordByMaxLength(element, element.line);
+            }
             if (isNullOrUndefined(skipReLayout) || !skipReLayout) {
                 this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, elementIndex, element.line.paragraph.bidi);
             }
@@ -14562,6 +14574,7 @@ export class Editor {
         let insertIndex: number = 0;
         let blockIndex: number = paragraphAdv.index;
         let currentPara: ParagraphWidget = paragraphAdv;
+        let isAddRevToNxtPara: boolean = false;
         currentPara.isChangeDetected = (offset === 0) ? true : false;
         while (this.owner.isSpellCheck && !isNullOrUndefined(currentPara.nextRenderedWidget)) {
             currentPara = currentPara.nextRenderedWidget as ParagraphWidget;
@@ -14594,13 +14607,23 @@ export class Editor {
             // if (paragraphAdv.characterFormat.revisions.length > 0) {
             //     revisions = paragraphAdv.characterFormat.revisions;
             // } else {
+            if (this.handledEnter && this.selection.isEmpty && this.selection.start.isAtParagraphEnd && paragraphAdv.characterFormat.revisions.length > 0) {
+                isAddRevToNxtPara = true;
+            }
             if (this.owner.enableTrackChanges) {
                 let lastLine: LineWidget = paragraphAdv.lastChild as LineWidget;
                 if (!isNullOrUndefined(lastLine) && lastLine.children.length > 0) {
                     let lastElement: ElementBox = lastLine.children[lastLine.children.length - 1].previousValidNodeForTracking;
+                    if (lastElement.revisions.length !== 0) {
+                        isAddRevToNxtPara = false;
+                    }
                     //ensure whether para mark can be combined with element revision
                     if (!isNullOrUndefined(lastElement) && !this.checkParaMarkMatchedWithElement(lastElement, paragraphAdv.characterFormat, false, 'Insertion')) {
-                        this.insertParaRevision(paragraphAdv);
+                        if (isAddRevToNxtPara) {
+                            this.insertParaRevision(paragraph);
+                        } else {
+                            this.insertParaRevision(paragraphAdv);
+                        }
                     }
                 }
             }
@@ -14661,9 +14684,15 @@ export class Editor {
             }
         }
 
-        if (this.owner.enableTrackChanges && (paragraph.characterFormat.revisions.length === 0 && paragraphAdv.characterFormat.revisions.length === 0)) {
-            if (!this.checkToMatchEmptyParaMark(paragraphAdv)) {
-                this.insertParaRevision(paragraphAdv);
+        if (this.owner.enableTrackChanges && (paragraph.characterFormat.revisions.length === 0)) {
+            let para: ParagraphWidget = undefined;
+            if (paragraphAdv.characterFormat.revisions.length === 0) {
+                para = paragraphAdv;
+            } else if (isAddRevToNxtPara) {
+                para = paragraph;
+            }
+            if (!isNullOrUndefined(para) && !this.checkToMatchEmptyParaMark(para)) {
+                this.insertParaRevision(para);
             }
         }
         this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, container as BodyWidget, paragraph, false);
@@ -16038,7 +16067,11 @@ export class Editor {
             this.owner.trackChangesPane.updateCurrentTrackChanges(revision);
         }
         this.addRemovedNodes(spittedElement.clone());
-        this.insertTextInternal(spittedElement.text, false, 'Deletion');
+        if (spittedElement.text === '') {
+            this.deleteParagraphMark(elementBox.paragraph, this.selection, 0, true);
+        } else {
+            this.insertTextInternal(spittedElement.text, false, 'Deletion');
+        }
     }
 
     private updateCursorForInsertRevision(inline: ElementBox, startOffset: number, endOffset: number): void {
@@ -16757,6 +16790,10 @@ export class Editor {
                 let imgStr: string = this.documentHelper.getImageString(imageElementBox);
                 if (!isNullOrUndefined(imgStr) && (HelperMethods.startsWith(imgStr, 'http://') || HelperMethods.startsWith(imgStr, 'https://'))) {
                     imgStr += `?t=${new Date().getTime()}`;
+                    // Generate fall back image for URL images.
+                    this.viewer.documentHelper.getBase64(base64String,width, height).then((imageUrlString: string) => {
+                        this.viewer.documentHelper.images.get(parseInt(imageElementBox.imageString))[1] =imageUrlString;
+                    });
                 }
                 imageElementBox.element.src = imgStr;
                 this.insertPictureInternal(imageElementBox, isUiInteracted);

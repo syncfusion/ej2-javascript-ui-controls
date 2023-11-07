@@ -95,6 +95,40 @@ export const chartLoaded: string = 'chartLoaded';
 /** @hidden */
 export const multiLevelLabelRender: string = 'multiLevelLabelRender';
 /** @hidden */
+export const beforePrint: string = 'beforePrint';
+/** @hidden */
+export const animationComplete: string = 'animationComplete';
+/** @hidden */
+export const legendRender: string = 'legendRender';
+/** @hidden */
+export const textRender: string = 'textRender';
+/** @hidden */
+export const pointRender: string = 'pointRender';
+/** @hidden */
+export const seriesRender: string = 'seriesRender';
+/** @hidden */
+export const chartMouseMove: string = 'chartMouseMove';
+/** @hidden */
+export const chartMouseClick: string = 'chartMouseClick';
+/** @hidden */
+export const pointMove: string = 'pointMove';
+/** @hidden */
+export const chartMouseLeave: string = 'chartMouseLeave';
+/** @hidden */
+export const chartMouseDown: string = 'chartMouseDown';
+/** @hidden */
+export const chartMouseUp: string = 'chartMouseUp';
+/** @hidden */
+export const dragComplete: string = 'dragComplete';
+/** @hidden */
+export const zoomComplete: string = 'zoomComplete';
+/** @hidden */
+export const scrollStart: string = 'scrollStart';
+/** @hidden */
+export const scrollEnd: string = 'scrollEnd';
+/** @hidden */
+export const scrollChanged: string = 'scrollChanged';
+/** @hidden */
 export const chartLoad: string = 'chartLoad';
 /** @hidden */
 export const chartResized: string = 'chartResized';

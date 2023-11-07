@@ -1,6 +1,6 @@
 import { getComponent, merge } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
-import { getItem, getItemElement, itemProps, Ribbon, RibbonItemSize } from '../base/index';
+import { getItem, getItemElement, itemProps, Ribbon, RibbonItemSize, setCustomAttributes } from '../base/index';
 import { ITEM_VERTICAL_CENTER, RIBBON_CONTROL, RIBBON_POPUP_CONTROL, SPACE } from '../base/constant';
 import { RibbonButtonSettingsModel, RibbonItemModel } from '../models/index';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
@@ -48,6 +48,9 @@ export class RibbonButton {
             isToggle: btnSettings.isToggle,
             created: btnSettings.created
         }, buttonEle);
+        if (btnSettings.htmlAttributes) {
+            setCustomAttributes(buttonEle, btnSettings.htmlAttributes);
+        }
         buttonEle.onclick = (e: Event) => {
             if (btnSettings.clicked) { btnSettings.clicked.call(this, e); }
         };

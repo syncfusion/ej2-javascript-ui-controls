@@ -1505,7 +1505,52 @@ export class Layout {
         return height;
     }
 
+    // check whether the paragraph has the field separator or field end of the field begin.
+    private checkParaHasField(paragraph: ParagraphWidget): boolean {
+        let hasField: boolean = false;
+        for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
+            let lineWidget: LineWidget = paragraph.childWidgets[i] as LineWidget;
+            for (let j: number = 0; j < lineWidget.children.length; j++) {
+                let element: ElementBox = lineWidget.children[j];
+                if (element instanceof FieldElementBox && (element.fieldType === 2 || element.fieldType === 1)) {
+                    if (this.documentHelper.fieldStacks.length > 0 && element.fieldBegin === this.documentHelper.fieldStacks[this.documentHelper.fieldStacks.length - 1]) {
+                        hasField = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return hasField;
+    }
+
+    // check whether the table has the field separator or field end of the field begin.
+    private checkTableHasField(table: TableWidget): boolean {
+        let hasField: boolean = false;
+        for (let i: number = 0; i < table.childWidgets.length; i++) {
+            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                for (let k: number = 0; k < cell.childWidgets.length; k++) {
+                    let block: BlockWidget = cell.childWidgets[k] as BlockWidget;
+                    if (block instanceof ParagraphWidget) {
+                        hasField = this.checkParaHasField(block);
+                    } else {
+                        hasField = this.checkTableHasField(block as TableWidget);
+                    }
+                    if (hasField) {
+                        break;
+                    }
+                }
+            }
+        }
+        return hasField;
+    }
+
     private layoutParagraph(paragraph: ParagraphWidget, lineIndex: number, isUpdatedList?: boolean): BlockWidget {
+        if (this.isFieldCode && !this.checkParaHasField(paragraph)) {
+            paragraph.isFieldCodeBlock = true;
+            return paragraph;
+        }
         this.addParagraphWidget(this.viewer.clientActiveArea, paragraph);
         let isListLayout: boolean = true;
         const isFirstElmIsparagraph: boolean = this.isFirstElementWithPageBreak(paragraph);
@@ -1555,6 +1600,7 @@ export class Layout {
         }
         this.updateWidgetToPage(this.viewer, paragraph);
         paragraph.isLayouted = true;
+        paragraph.isFieldCodeBlock = false;
         return paragraph;
     }
     private clearLineMeasures(): void {
@@ -4181,7 +4227,7 @@ export class Layout {
                 //We have increased the checkbox form field font size using a constant factor `CHECK_BOX_FACTOR`
                 //To match the MS Word check box rendering size.
                 //Due to it line height also get increased. So, handled adjusting height while updating line height.
-                if (element instanceof TextElementBox && element.isCheckBoxElement && !isNullOrUndefined(element.previousNode) && element.previousNode instanceof ContentControl && element.previousNode.contentControlWidgetType === 'Cell') {
+                if (element instanceof TextElementBox && element.isCheckBoxElement && !isNullOrUndefined(element.previousNode) && element.previousNode instanceof ContentControl && (element.previousNode.contentControlWidgetType === 'Cell' || element.previousNode.contentControlWidgetType === 'Inline')) {
                     isCellContentControl = true;
                 }
                 if (element instanceof TextElementBox && element.isCheckBoxElement && !isCellContentControl) {
@@ -4506,6 +4552,11 @@ export class Layout {
         let previousBlock: BlockWidget;
         if (block instanceof ParagraphWidget) {
             previousBlock = block.previousWidget as BlockWidget;
+            if (!this.isInitialLoad && isNullOrUndefined(previousBlock) && block.containerWidget instanceof BodyWidget && !isNullOrUndefined(block.containerWidget.previousRenderedWidget) && block.containerWidget.sectionIndex === (block.containerWidget.previousRenderedWidget as BodyWidget).sectionIndex) {
+                if (!isNullOrUndefined(block.previousRenderedWidget) && block.previousRenderedWidget instanceof ParagraphWidget) {
+                    previousBlock = block.previousRenderedWidget as BlockWidget;
+                }
+            }
         } else if (block instanceof TableRowWidget) {
             previousBlock = block.previousWidget as TableRowWidget;
             if (isNullOrUndefined(previousBlock)) {
@@ -6318,6 +6369,9 @@ export class Layout {
         let issplit: boolean = false;
         for (let i: number = 0; i < this.documentHelper.splittedCellWidgets.length; i++) {
             splittedCell = this.documentHelper.splittedCellWidgets[i];
+            if (tableRowWidget.childWidgets.length < splittedCell.index) {
+                break;
+            }
             if (isNullOrUndefined(splittedWidget)) {
                 splittedWidget = new TableRowWidget();
                 splittedWidget.containerWidget = tableRowWidget.containerWidget;
@@ -8257,6 +8311,10 @@ export class Layout {
     //#region Table
 
     public layoutTable(table: TableWidget, startIndex: number): BlockWidget {
+        if (this.isFieldCode && !this.checkTableHasField(table)) {
+            table.isFieldCodeBlock = true;
+            return table;
+        }
         table.isBidiTable = table.bidi;
         if (!table.isGridUpdated) {
             table.buildTableColumns();
@@ -8311,6 +8369,7 @@ export class Layout {
             this.updateClientAreaForWrapTable(tableView, table, false, clientActiveAreaForTableWrap, clientAreaForTableWrap);
         }
         tableView[tableView.length - 1].isLayouted = true;
+        tableView[tableView.length - 1].isFieldCodeBlock = false;
         if (this.documentHelper.compatibilityMode !== 'Word2013' 
                 && !table.isInsideTable 
                 && !table.wrapTextAround
@@ -8877,7 +8936,15 @@ export class Layout {
                 //this.shiftLayoutFloatingItems(currentWidget as ParagraphWidget);
             }
             updateNextBlockList = true;
-            this.reLayoutOrShiftWidgets(block, this.viewer);
+            // Here, we have added this condition to skip the non-layouted blocks during relayouting.
+            if (!block.isFieldCodeBlock) {
+                this.reLayoutOrShiftWidgets(block, this.viewer);
+            }
+            if (this.keepWithNext) {
+                block = this.documentHelper.blockToShift;
+                this.keepWithNext = false;
+            }
+           
             if (!this.isMultiColumnSplit && isColumnBreak && block.bodyWidget.sectionFormat.numberOfColumns > 1 && block.bodyWidget.nextWidget && block.nextRenderedWidget && block.bodyWidget.index !== (block.nextRenderedWidget as BlockWidget).bodyWidget.index) {
                 let clientY: number = this.viewer.clientActiveArea.y;
                 let clientHeight: number = this.viewer.clientActiveArea.height;
@@ -9608,9 +9675,23 @@ export class Layout {
                 }
             }
         } else {
+            let startBlock: BlockWidget;
+            let keepWithNext: boolean = false;
             viewer.columnLayoutArea.setColumns(previousBodyWidget.sectionFormat);
             nextBodyWidget = this.createOrGetNextBodyWidget(previousBodyWidget, this.viewer);
-            if (paragraphWidget.containerWidget !== nextBodyWidget) {
+            let blockInfo: BlockInfo = this.alignBlockElement(paragraphWidget);
+            if (!this.isInitialLoad && !isNullOrUndefined(blockInfo.node) && !paragraphWidget.isEndsWithPageBreak && !paragraphWidget.isEndsWithColumnBreak) {
+                startBlock = blockInfo.node instanceof TableRowWidget ? this.splitRow(blockInfo.node) : blockInfo.node as BlockWidget;
+                if (startBlock.containerWidget instanceof BodyWidget && startBlock.containerWidget.firstChild !== startBlock) {
+                    paragraphWidget = startBlock as ParagraphWidget;
+                    keepWithNext = true;
+                    if (!isNullOrUndefined(paragraphWidget.nextRenderedWidget) && paragraphWidget.nextRenderedWidget instanceof ParagraphWidget) {
+                        this.keepWithNext = true;
+                        this.documentHelper.blockToShift = paragraphWidget.nextRenderedWidget;
+                    }
+                }
+            }
+            if (paragraphWidget.containerWidget !== nextBodyWidget || keepWithNext) {
                 let prevPage: Page = paragraphWidget.bodyWidget.page;
                 nextBodyWidget = this.moveBlocksToNextPage(paragraphWidget, true);
                 if (previousBodyWidget !== nextBodyWidget) {

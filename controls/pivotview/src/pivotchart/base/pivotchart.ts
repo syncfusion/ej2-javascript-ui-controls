@@ -2,7 +2,9 @@ import { PivotEngine, IAxisSet, IDataOptions, IField, IFormatSettings, IFieldLis
 import { IPivotRows, INumberIndex, IFieldOptions, IDrilledItem } from '../../base/engine';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { SeriesModel, Chart, ColumnSeries, LineSeries, Legend, Tooltip, Category, AreaSeries, Selection, StripLine, DataLabel, StackingLineSeries, ILegendClickEventArgs } from '@syncfusion/ej2-charts';
+import { SeriesModel, Chart, ColumnSeries, LineSeries, Legend, Tooltip, Category, AreaSeries, Selection, StripLine, DataLabel, StackingLineSeries } from '@syncfusion/ej2-charts';
+import { ILegendClickEventArgs, IPrintEventArgs, IAnimationCompleteEventArgs, ILegendRenderEventArgs, ITextRenderEventArgs, IPointRenderEventArgs } from '@syncfusion/ej2-charts';
+import {  ISeriesRenderEventArgs, IMouseEventArgs, IDragCompleteEventArgs, IZoomCompleteEventArgs, IScrollEventArgs } from '@syncfusion/ej2-charts';
 import { AccumulationChart, PieSeries, FunnelSeries, PyramidSeries } from '@syncfusion/ej2-charts';
 import { SplineAreaSeries, MultiColoredLineSeries, RangeAreaSeries, StackingAreaSeries, StepAreaSeries } from '@syncfusion/ej2-charts';
 import { MultiColoredAreaSeries, SplineSeries, StepLineSeries, AccumulationLegend, AccumulationTooltip } from '@syncfusion/ej2-charts';
@@ -15,10 +17,8 @@ import { AccumulationDataLabel, AccumulationSeriesModel, getSeriesColor } from '
 import { createElement, remove, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
 import { PivotView } from '../../pivotview/base/pivotview';
-import {
-    RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo,
-    DrillArgs, MultiLevelLabelClickEventArgs, EnginePopulatedEventArgs, EnginePopulatingEventArgs, MultiLevelLabelRenderEventArgs
-} from '../../common';
+import { RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo } from '../../common';
+import { DrillArgs, MultiLevelLabelClickEventArgs, EnginePopulatedEventArgs, EnginePopulatingEventArgs, MultiLevelLabelRenderEventArgs } from '../../common';
 import { DrillOptionsModel } from '../../model/datasourcesettings-model';
 import { PivotUtil } from '../../base/util';
 import { OlapEngine, ITupInfo, IDrillInfo } from '../../base/olap/engine';
@@ -686,20 +686,19 @@ export class PivotChart {
                         useGroupingSeparator: this.chartSettings.useGroupingSeparator,
                         locale: this.parent.locale,
                         enableRtl: this.parent.enableRtl,
-                        beforePrint: this.chartSettings.beforePrint ? this.chartSettings.beforePrint.bind(this) : undefined,
-                        animationComplete: this.chartSettings.animationComplete ? this.chartSettings.animationComplete.bind(this)
-                            : undefined,
-                        legendRender: this.chartSettings.legendRender ? this.chartSettings.legendRender.bind(this) : undefined,
-                        textRender: this.chartSettings.textRender ? this.chartSettings.textRender.bind(this) : undefined,
-                        pointRender: this.chartSettings.pointRender ? this.chartSettings.pointRender.bind(this) : undefined,
-                        seriesRender: this.chartSettings.seriesRender ? this.chartSettings.seriesRender.bind(this) : undefined,
-                        chartMouseMove: this.chartSettings.chartMouseMove ? this.chartSettings.chartMouseMove.bind(this) : undefined,
-                        chartMouseClick: this.chartSettings.chartMouseClick ? this.chartSettings.chartMouseClick.bind(this) : undefined,
-                        pointMove: this.chartSettings.pointMove ? this.chartSettings.pointMove.bind(this) : undefined,
+                        beforePrint: this.beforePrint.bind(this),
+                        animationComplete: this.animationComplete.bind(this),
+                        legendRender: this.legendRender.bind(this),
+                        textRender: this.textRender.bind(this),
+                        pointRender: this.pointRender.bind(this),
+                        seriesRender: this.seriesRender.bind(this),
+                        chartMouseMove: this.chartMouseMove.bind(this),
+                        chartMouseClick: this.chartMouseClick.bind(this),
+                        pointMove: this.pointMove.bind(this),
                         pointClick: this.pointClick.bind(this),
-                        chartMouseLeave: this.chartSettings.chartMouseLeave ? this.chartSettings.chartMouseLeave.bind(this) : undefined,
-                        chartMouseDown: this.chartSettings.chartMouseDown ? this.chartSettings.chartMouseDown.bind(this) : undefined,
-                        chartMouseUp: this.chartSettings.chartMouseUp ? this.chartSettings.chartMouseUp.bind(this) : undefined,
+                        chartMouseLeave: this.chartMouseLeave.bind(this),
+                        chartMouseDown: this.chartMouseDown.bind(this),
+                        chartMouseUp: this.chartMouseUp.bind(this),
                         tooltipRender: this.tooltipRender.bind(this),
                         loaded: this.loaded.bind(this),
                         load: this.load.bind(this),
@@ -754,25 +753,24 @@ export class PivotChart {
                         locale: this.parent.locale,
                         enableRtl: this.parent.enableRtl,
                         enableSideBySidePlacement: this.chartSettings.enableSideBySidePlacement,
-                        beforePrint: this.chartSettings.beforePrint ? this.chartSettings.beforePrint.bind(this) : undefined,
-                        animationComplete: this.chartSettings.animationComplete ? this.chartSettings.animationComplete.bind(this)
-                            : undefined,
-                        legendRender: this.chartSettings.legendRender ? this.chartSettings.legendRender.bind(this) : undefined,
-                        textRender: this.chartSettings.textRender ? this.chartSettings.textRender.bind(this) : undefined,
-                        pointRender: this.chartSettings.pointRender ? this.chartSettings.pointRender.bind(this) : undefined,
-                        seriesRender: this.chartSettings.seriesRender ? this.chartSettings.seriesRender.bind(this) : undefined,
-                        chartMouseMove: this.chartSettings.chartMouseMove ? this.chartSettings.chartMouseMove.bind(this) : undefined,
-                        chartMouseClick: this.chartSettings.chartMouseClick ? this.chartSettings.chartMouseClick.bind(this) : undefined,
-                        pointMove: this.chartSettings.pointMove ? this.chartSettings.pointMove.bind(this) : undefined,
+                        beforePrint: this.beforePrint.bind(this),
+                        animationComplete: this.animationComplete.bind(this),
+                        legendRender: this.legendRender.bind(this),
+                        textRender: this.textRender.bind(this),
+                        pointRender: this.pointRender.bind(this),
+                        seriesRender: this.seriesRender.bind(this),
+                        chartMouseMove: this.chartMouseMove.bind(this),
+                        chartMouseClick: this.chartMouseClick.bind(this),
+                        pointMove: this.pointMove.bind(this),
                         pointClick: this.pointClick.bind(this),
-                        chartMouseLeave: this.chartSettings.chartMouseLeave ? this.chartSettings.chartMouseLeave.bind(this) : undefined,
-                        chartMouseDown: this.chartSettings.chartMouseDown ? this.chartSettings.chartMouseDown.bind(this) : undefined,
-                        chartMouseUp: this.chartSettings.chartMouseUp ? this.chartSettings.chartMouseUp.bind(this) : undefined,
-                        dragComplete: this.chartSettings.dragComplete ? this.chartSettings.dragComplete.bind(this) : undefined,
-                        zoomComplete: this.chartSettings.zoomComplete ? this.chartSettings.zoomComplete.bind(this) : undefined,
-                        scrollStart: this.chartSettings.scrollStart ? this.chartSettings.scrollStart.bind(this) : undefined,
-                        scrollEnd: this.chartSettings.scrollEnd ? this.chartSettings.scrollEnd.bind(this) : undefined,
-                        scrollChanged: this.chartSettings.scrollChanged ? this.chartSettings.scrollChanged.bind(this) : undefined,
+                        chartMouseLeave: this.chartMouseLeave.bind(this),
+                        chartMouseDown: this.chartMouseDown.bind(this),
+                        chartMouseUp: this.chartMouseUp.bind(this),
+                        dragComplete: this.dragComplete.bind(this),
+                        zoomComplete: this.zoomComplete.bind(this),
+                        scrollStart: this.scrollStart.bind(this),
+                        scrollEnd: this.scrollEnd.bind(this),
+                        scrollChanged: this.scrollChanged.bind(this),
                         tooltipRender: this.tooltipRender.bind(this),
                         legendClick: this.legendClick.bind(this),
                         loaded: this.loaded.bind(this),
@@ -1754,9 +1752,78 @@ export class PivotChart {
         this.parent.trigger(events.chartLoad, args);
     }
 
+    private beforePrint(args: IPrintEventArgs): void {
+        this.parent.trigger(events.beforePrint, args);
+    }
+
+    private animationComplete(args: IAnimationCompleteEventArgs): void {
+        this.parent.trigger(events.animationComplete, args);
+    }
+
+    private legendRender(args: ILegendRenderEventArgs): void {
+        this.parent.trigger(events.legendRender, args);
+    }
+
+    private textRender(args: ITextRenderEventArgs): void {
+        this.parent.trigger(events.textRender, args);
+    }
+
+    private pointRender(args: IPointRenderEventArgs): void {
+        this.parent.trigger(events.pointRender, args);
+    }
+
+    private seriesRender(args: ISeriesRenderEventArgs): void {
+        this.parent.trigger(events.seriesRender, args);
+    }
+
+    private chartMouseMove(args: IMouseEventArgs): void {
+        this.parent.trigger(events.chartMouseMove, args);
+    }
+
+    private chartMouseClick(args: IMouseEventArgs): void {
+        this.parent.trigger(events.chartMouseClick, args);
+    }
+
+    private pointMove(args: IPointEventArgs): void {
+        this.parent.trigger(events.pointMove, args);
+    }
+
+    private chartMouseLeave(args: IMouseEventArgs): void {
+        this.parent.trigger(events.chartMouseLeave, args);
+    }
+
+    private chartMouseDown(args: IMouseEventArgs): void {
+        this.parent.trigger(events.chartMouseDown, args);
+    }
+
+    private chartMouseUp(args: IMouseEventArgs): void {
+        this.parent.trigger(events.chartMouseUp, args);
+    }
+
+    private dragComplete(args: IDragCompleteEventArgs): void {
+        this.parent.trigger(events.dragComplete, args);
+    }
+
+    private zoomComplete(args: IZoomCompleteEventArgs): void {
+        this.parent.trigger(events.zoomComplete, args);
+    }
+
+    private scrollStart(args: IScrollEventArgs): void {
+        this.parent.trigger(events.scrollStart, args);
+    }
+
+    private scrollEnd(args: IScrollEventArgs): void {
+        this.parent.trigger(events.scrollEnd, args);
+    }
+
+    private scrollChanged(args: IScrollEventArgs): void {
+        this.parent.trigger(events.scrollChanged, args);
+    }
+
     private multiLevelLabelRender(args: MultiLevelLabelRenderEventArgs): void {
         this.parent.trigger(events.multiLevelLabelRender, args);
     }
+
     private resized(args: IResizeEventArgs): void {
         if (this.accumulationType.indexOf(this.chartSettings.chartSeries.type) < 0) {
             (args.chart as Chart).primaryXAxis.zoomFactor = isNullOrUndefined(this.parent.chartSettings.primaryXAxis.zoomFactor)

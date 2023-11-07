@@ -6,7 +6,7 @@ import { IAxisSet, IGridValues, IPivotValues, IFilter, ICustomProperties, IValue
 import { IFormatSettings, IMatrix2D } from '../engine';
 import * as cls from '../../common/base/css-constant';
 import { Sorting, SummaryTypes } from '../types';
-import { HeadersSortEventArgs } from '../../common/base/interface';
+import { ExportPageSize, HeadersSortEventArgs } from '../../common/base/interface';
 
 /**
  * OlapEngine is used to manipulate the olap or Multi-Dimensional data as pivoting values.
@@ -100,12 +100,15 @@ export class OlapEngine {
     /** @hidden */
     public isPaging: boolean;
     /** @hidden */
+    public exportSpeciedPages: ExportPageSize;
+    /** @hidden */
     public pageSettings: IPageSettings;
     /** @hidden */
     public calcChildMembers: IOlapField[];
     /** @hidden */
     public drilledSets: { [key: string]: HTMLElement } = {};
     /** @hidden */
+    public isExporting: boolean = false;
     private showSubTotalsAtTop: boolean;
     private showSubTotalsAtBottom: boolean;
     public aggregatedValueMatrix: IMatrix2D = [];
@@ -3059,8 +3062,8 @@ export class OlapEngine {
         let drillQuery: string = 'DRILLTHROUGH MAXROWS ' + maxRows + ' Select(' + (columnQuery.length > 0 ? columnQuery : '') +
             (columnQuery.length > 0 && rowQuery.length > 0 ? ',' : '') + (rowQuery.length > 0 ? rowQuery : '') + ') on 0 from ' +
             (filterQuery === '' ? '[' + this.dataSourceSettings.cube + ']' : '(SELECT (' + filterQuery + ') ON COLUMNS FROM [' +
-                this.dataSourceSettings.cube + '])');   /* eslint-disable-next-line no-useless-escape */
-        drillQuery = drillQuery.replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;');
+                this.dataSourceSettings.cube + '])');
+        drillQuery = drillQuery.replace(/\&/g, '&amp;').replace(/\>/g, '&gt;').replace(/\</g, '&lt;').replace(/\'/g, '&apos;').replace(/\"/g, '&quot;'); /* eslint-disable-line no-useless-escape */
         const xmla: string = this.getSoapMsg(this.dataSourceSettings, drillQuery);
         const connectionString: ConnectionInfo =
             this.getConnectionInfo(this.dataSourceSettings.url, this.dataSourceSettings.localeIdentifier);

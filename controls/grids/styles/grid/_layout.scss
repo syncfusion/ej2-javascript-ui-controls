@@ -1995,8 +1995,8 @@ margin: $grid-group-animator-cell-margin;
       border-left-width: 0;
     }
 
-    &.e-default.e-bothlines .e-headercell,
-    &.e-default.e-bothlines .e-detailheadercell {
+    &:not(.sf-grid).e-default.e-bothlines .e-headercell,
+    &:not(.sf-grid).e-default.e-bothlines .e-detailheadercell {
       border-width: $grid-headercell-both-border-width;
     }
 
@@ -2691,7 +2691,7 @@ margin: $grid-group-animator-cell-margin;
       border-left-width: $grid-border-size;
     }
 
-    &.e-bothlines .e-gridheader th.e-stackedheadercell {
+    &:not(.sf-grid).e-bothlines .e-gridheader th.e-stackedheadercell {
       border-bottom-style: $grid-border-type;
       border-bottom-width: $grid-border-size;
       border-left-style: $grid-border-type;
@@ -3980,8 +3980,8 @@ margin: $grid-group-animator-cell-margin;
         padding-top: $grid-ungroup-rtl-padding-top;
       }
 
-      &.e-default.e-bothlines .e-headercell,
-      &.e-default.e-bothlines .e-detailheadercell {
+      &:not(.sf-grid).e-default.e-bothlines .e-headercell,
+      &:not(.sf-grid).e-default.e-bothlines .e-detailheadercell {
         border-width: $grid-headercell-both-border-width;
       }
 
@@ -4004,7 +4004,7 @@ margin: $grid-group-animator-cell-margin;
         border-right: 0;
       }
 
-      &.e-bothlines .e-gridheader th.e-stackedheadercell {
+      &:not(.sf-grid).e-bothlines .e-gridheader th.e-stackedheadercell {
         border-bottom-style: $grid-border-type;
         border-bottom-width: $grid-border-size;
       }
@@ -4511,6 +4511,16 @@ margin: $grid-group-animator-cell-margin;
         }
       }
 
+      &.e-rtl.e-bothlines .e-gridheader th.e-stackedheadercell {
+        border-bottom-style: $grid-border-type;
+        border-bottom-width: $grid-border-size;
+      }
+
+      &.e-rtl.e-default.e-bothlines .e-headercell,
+      &.e-rtl.e-default.e-bothlines .e-detailheadercell {
+        border-width: $grid-headercell-both-border-width;
+      }
+      
       .e-bigger #{&}.e-grid.sf-grid,
       #{&}.e-grid.sf-grid.e-bigger {
         .e-gridheader table th:not([rowspan = '1']),

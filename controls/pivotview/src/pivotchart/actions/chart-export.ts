@@ -7,6 +7,7 @@ import { PivotView } from '../../pivotview/base';
 import * as events from '../../common/base/constant';
 import { PivotUtil } from '../../base/util';
 import { PdfExportProperties } from '@syncfusion/ej2-grids';
+import { PDFExportHelper } from '../../pivotview/actions/pdf-export-helper';
 
 /**
  * `ChartExport` module is used to handle the Pivot Chart PDF export action.
@@ -17,6 +18,7 @@ export class ChartExport {
     private parent: PivotView;
     /** @hidden */
     public exportProperties: BeforeExportEventArgs;
+    private pdfExportHelper: PDFExportHelper;
     /**
      * Constructor for chart and accumulation annotation
      *
@@ -24,6 +26,7 @@ export class ChartExport {
      */
     constructor(parent?: PivotView) {
         this.parent = parent;
+        this.pdfExportHelper = new PDFExportHelper();
     }
 
     /**
@@ -173,6 +176,12 @@ export class ChartExport {
         imageString = imageString.slice(imageString.indexOf(',') + 1);
         const image: PdfBitmap = new PdfBitmap(imageString);
         const pdfPage: PdfPage = documentSection.pages.add();
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)) {
+            this.pdfExportHelper.drawHeader(pdfExportProperties, pdfDocument);
+        }
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.footer)) {
+            this.pdfExportHelper.drawFooter(pdfExportProperties, pdfDocument);
+        }
         pdfPage.graphics.drawImage(image, 0, 0, (documentHeight < height || this.exportProperties.width
             || pdfDocument.pageSettings.size) ? pdfPage.getClientSize().width : chartWidth, documentHeight < height
             ? pdfPage.getClientSize().height : height);
@@ -205,6 +214,9 @@ export class ChartExport {
     public destroy(): void {
         if (this.exportProperties) {
             this.exportProperties = null;
+        }
+        if (this.pdfExportHelper) {
+            this.pdfExportHelper = null;
         }
     }
 }

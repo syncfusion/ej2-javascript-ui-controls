@@ -26,25 +26,6 @@ export class WorkbookDelete {
         if (args.modelType === 'Sheet' && sheetLength === 1) {
             return;
         }
-        if (args.modelType === 'Column') {
-            if (typeof (args.start) === 'number') {
-                for (let j: number = 0; j <= this.parent.getActiveSheet().usedRange.rowIndex + 1; j++) {
-                    const uniqueArgs: { cellIdx: number[], isUnique: boolean } = { cellIdx: [j, args.start], isUnique: false };
-                    this.parent.notify(checkUniqueRange, uniqueArgs);
-                    if (uniqueArgs.isUnique) { return; }
-                }
-            }
-        } else if (args.modelType === 'Row') {
-            if (typeof (args.start) === 'number') {
-                for (let i: number = 0; i <= this.parent.getActiveSheet().usedRange.colIndex + 1; i++) {
-                    const uniqueArgs: { cellIdx: number[], isUnique: boolean } = { cellIdx: [args.start, i], isUnique: false };
-                    this.parent.notify(checkUniqueRange, uniqueArgs);
-                    if (uniqueArgs.isUnique) {
-                        return;
-                    }
-                }
-            }
-        }
         const modelName: string = `${args.modelType.toLowerCase()}s`;
         args.start = <number>args.start;
         if (args.start > args.end) {

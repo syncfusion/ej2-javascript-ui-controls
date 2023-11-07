@@ -505,6 +505,14 @@ export class EnterKeyAction {
         } else if ((this.parent.enterKey === 'P' && !shiftKey) || (this.parent.shiftEnterKey === 'P' && shiftKey)) {
             insertElem = this.parent.createElement('p');
         }
+        const previousBlockNode: Element = this.parent.formatter.editorManager.domNode.blockNodes()[0].previousSibling as Element;
+        const nextBlockNode: Element = this.parent.formatter.editorManager.domNode.blockNodes()[0].nextSibling as Element;
+        if (!isNOU(previousBlockNode) && previousBlockNode.hasAttribute('style')) {
+            insertElem.setAttribute('style', previousBlockNode.getAttribute('style'));
+        }
+        if (isNOU(previousBlockNode) && !isNOU(nextBlockNode) && nextBlockNode.hasAttribute('style')) {
+            insertElem.setAttribute('style', nextBlockNode.getAttribute('style'));
+        }
         return insertElem;
     }
 }

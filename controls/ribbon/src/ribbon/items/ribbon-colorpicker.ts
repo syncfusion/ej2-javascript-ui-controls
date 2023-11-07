@@ -1,6 +1,6 @@
 import { EventHandler, getComponent, merge } from '@syncfusion/ej2-base';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
-import { itemProps, Ribbon, getItem, getItemElement } from '../base/index';
+import { itemProps, Ribbon, getItem, getItemElement, setCustomAttributes } from '../base/index';
 import { RibbonItemModel, RibbonColorPickerSettingsModel } from '../models/index';
 import { RIBBON_CONTROL, RIBBON_HOVER, RIBBON_POPUP_CONTROL, RIBBON_POPUP_OPEN, SPACE } from '../base/constant';
 import { BeforeOpenCloseMenuEventArgs, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
@@ -67,6 +67,9 @@ export class RibbonColorPicker {
             },
             select: colorPickerSettings.select
         }, inputEle);
+        if (colorPickerSettings.htmlAttributes) {
+            setCustomAttributes(inputEle, colorPickerSettings.htmlAttributes);
+        }
         const wrapper: HTMLElement = colorPicker.element.parentElement;
         EventHandler.add(wrapper, 'mouseenter', this.toggleWrapperHover.bind(this, wrapper, true), this);
         EventHandler.add(wrapper, 'mouseleave', this.toggleWrapperHover.bind(this, wrapper, false), this);

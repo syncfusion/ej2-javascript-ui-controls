@@ -80,6 +80,14 @@ export class RibbonColorPickerSettings extends ChildProperty<RibbonColorPickerSe
     public value: string;
 
     /**
+     * Specifies additional HTML attributes to be applied to the color picker.
+     *
+     * @default {}
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string };
+
+    /**
      * Event triggers before closing the ColorPicker popup.
      *
      * @event beforeClose

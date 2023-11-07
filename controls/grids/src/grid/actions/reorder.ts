@@ -502,6 +502,14 @@ export class Reorder implements IAction {
             } else if (!(gObj.allowGrouping && parentsUntil(e.target as Element, 'e-groupdroparea'))) {
                 classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
             }
+        } else {
+            if (closest && closest.isEqualNode(this.element) &&
+                !((gObj.allowGrouping && e.column.allowGrouping) || e.column.allowReordering)) {
+                classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
+            }
+            else if (!closest && !(gObj.allowGrouping && parentsUntil(e.target as Element, 'e-groupdroparea'))) {
+                classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
+            }
         }
         if (!e.column.allowReordering || e.column.lockColumn) {
             return;

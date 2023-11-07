@@ -204,8 +204,12 @@ export class Group implements IAction {
             this.animateDropper(e);
         }
         const cloneElement: HTMLElement = this.parent.element.querySelector('.e-cloneproperties') as HTMLElement;
-        classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
-        if (!parentsUntil(e.target as Element, 'e-groupdroparea') &&
+        if (!this.parent.allowReordering) {
+            classList(cloneElement, ['e-defaultcur'], ['e-notallowedcur']);
+        }
+        if (!(e.column.allowGrouping && (parentsUntil(e.target as Element, 'e-groupdroparea') ||
+            (parentsUntil(e.target as Element, 'e-headercell') &&
+                parentsUntil(e.target as Element, 'e-headercell').isEqualNode(this.parent.getColumnHeaderByField(e.column.field))))) &&
             !(this.parent.allowReordering && parentsUntil(e.target as Element, 'e-headercell'))) {
             classList(cloneElement, ['e-notallowedcur'], ['e-defaultcur']);
         }
@@ -411,11 +415,13 @@ export class Group implements IAction {
     private wireEvent(): void {
         EventHandler.add(this.element, 'focusin', this.onFocusIn, this);
         EventHandler.add(this.element, 'focusout', this.onFocusOut, this);
+        EventHandler.add(this.parent.element, 'auxclick', this.auxilaryclickHandler, this);
     }
 
     private unWireEvent(): void {
         EventHandler.remove(this.element, 'focusin', this.onFocusIn);
         EventHandler.remove(this.element, 'focusout', this.onFocusOut);
+        EventHandler.remove(this.parent.element, 'auxclick', this.auxilaryclickHandler);
     }
 
     private onFocusIn(e: FocusEvent): void {
@@ -470,6 +476,13 @@ export class Group implements IAction {
         this.applySortFromTarget(e.target as Element);
         this.unGroupFromTarget(e.target as Element);
         this.toogleGroupFromHeader(e.target as Element);
+    }
+
+    private auxilaryclickHandler(e: MouseEvent): void {
+        if ((e.target as Element).classList.contains('e-icon-grightarrow') || (e.target as Element).classList.contains('e-icon-gdownarrow')
+            && (e.button === 1)) {
+            e.preventDefault();
+        }
     }
 
     private unGroupFromTarget(target: Element): void {

@@ -409,6 +409,16 @@ describe('Numericcontainer module testing', () => {
             expect(pagerObj.element.querySelectorAll('.e-active')[0].getAttribute('index')).toBe('3');
         });
 
+        it('Auxclick event checking', function () {
+            const auxClickEvent = new MouseEvent('auxclick', {
+                bubbles: true,
+                cancelable: true,
+                button: 1,
+            });
+            let pagerlink = (pagerObj.element.querySelectorAll('.e-numericcontainer')[0].childNodes[1] as HTMLElement);
+            pagerlink.dispatchEvent(auxClickEvent);
+        });
+
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();

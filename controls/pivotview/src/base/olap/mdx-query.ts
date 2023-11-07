@@ -149,8 +149,10 @@ export class MDXQuery {
         // }
         let calRowPage: number = (this.pageSettings.currentRowPage - 1) * this.pageSettings.rowPageSize;
         let calColPage: number = (this.pageSettings.currentColumnPage - 1) * this.pageSettings.columnPageSize;
-        const calRowSize: number = this.pageSettings.rowPageSize * 3;
-        const calColumnSize: number = this.pageSettings.columnPageSize * 3;
+        const calRowSize: number = (this.engine.isExporting && this.engine.exportSpeciedPages && this.engine.exportSpeciedPages.rowSize) ?
+            this.engine.exportSpeciedPages.rowSize : (this.pageSettings.rowPageSize * 3);
+        const calColumnSize: number = (this.engine.isExporting && this.engine.exportSpeciedPages &&
+            this.engine.exportSpeciedPages.columnSize) ? this.engine.exportSpeciedPages.columnSize : (this.pageSettings.columnPageSize * 3);
         calRowPage = (this.engine.rowCount < (calRowPage + calRowSize)) ?
             (this.engine.rowCount > calRowSize ? (this.engine.rowCount - calRowSize) : 0) : calRowPage;
         this.engine.pageRowStartPos = calRowPage;

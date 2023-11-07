@@ -310,7 +310,7 @@ export class Parser {
                     form = form + formula[i as number];
                     i = i + 1;
                 } else if (formula[i as number] === this.parent.tic || formula[i as number] === ' ' || formula[i as number] === '.' ||
-                    formula[i as number] === this.sheetToken || formula[i as number] === '$') {
+                    formula[i as number] === this.sheetToken || formula[i as number] === '$'|| formula[i as number] === '_') {
                     form = form + formula[i as number];
                     i = i + 1;
                 } else {
@@ -570,8 +570,8 @@ export class Parser {
                         } else {
                             let period: boolean = false;
                             while (j > -1 && (this.parent.isDigit(text[j as number]) ||
-                                (!period && text[j as number] === this.parent.getParseDecimalSeparator()))) {
-                                if (text[j as number] === this.parent.getParseDecimalSeparator()) {
+                                (!period && (text[j as number] === this.parent.getParseDecimalSeparator() || text[j as number] === '%')))) {
+                                if (!this.parent.isDigit(text[j as number])) {
                                     period = true;
                                 }
                                 j = j - 1;
@@ -1145,7 +1145,7 @@ export class Parser {
      * @returns {string} - mark Named Ranges.
      */
     public markNamedRanges(formula: string): string {
-        const markers: string[] = [')', this.parent.getParseArgumentSeparator(), '}', '+', '-', '*', '/', '<', '>', '=', '&'];
+        const markers: string[] = [')', this.parent.getParseArgumentSeparator(), '}', '+', '-', '*', '/', '<', '>', '=', '&', ':'];
         let i: number = (formula.length > 0 && (formula[0] === '(' || formula[0] === '{')) ? 1 : 0;
         if (formula.indexOf('#N/A') > -1) {
             formula = formula.split('#N/A').join('#N~A');

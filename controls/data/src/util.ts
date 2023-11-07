@@ -1923,7 +1923,7 @@ export class DataUtil {
          * @param  {string|Object|Object[]} jsonText
          */
         parseJson: (jsonText: string | Object | Object[]): Object => {
-            if (typeof jsonText === 'string') {
+            if (typeof jsonText === 'string' && (/^[\s]*\[|^[\s]*\{(.)+:/g.test(jsonText) || jsonText.indexOf('"') === -1)) {
                 jsonText = JSON.parse(<string>jsonText, DataUtil.parse.jsonReviver);
             } else if (jsonText instanceof Array) {
                 DataUtil.parse.iterateAndReviveArray(jsonText);

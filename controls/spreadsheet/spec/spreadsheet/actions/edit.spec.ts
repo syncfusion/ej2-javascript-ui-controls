@@ -1087,7 +1087,7 @@ describe('Editing ->', () => {
                 done();
             });
         });
-        describe('EJ2-71834', () => {
+        describe('EJ2-71834, EJ2-853079', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{  ranges: [{ dataSource: defaultData }]}] }, done);
             });
@@ -1110,6 +1110,15 @@ describe('Editing ->', () => {
                 helper.invoke('goTo', ['I6']);
                 helper.edit('I6', '$-');
                 expect(helper.invoke('getCell', [5, 8]).textContent).toBe('$-');
+                done();
+            });
+            it('Aria label getting updated as undefined while using updateCell method', (done: Function) => {
+                helper.invoke('updateCell', [{ value: 'value1' }, 'J1']);
+                expect(helper.invoke('getCell', [0, 9]).ariaLabel).toBe('value1 J1');
+                helper.edit('J2', 'value2');
+                expect(helper.invoke('getCell', [1, 9]).ariaLabel).toBe('value2 J2');
+                helper.edit('H2', 'value3');
+                expect(helper.invoke('getCell', [1, 7]).ariaLabel).toBe('value3 H2');
                 done();
             });
         });

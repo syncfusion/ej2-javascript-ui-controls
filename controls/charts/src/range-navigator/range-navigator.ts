@@ -46,6 +46,7 @@ import { AccumulationChart } from '../accumulation-chart/accumulation';
 import { IRangeSelectorRenderEventArgs, IPrintEventArgs } from '../chart/model/chart-interface';
 import { StockChart } from '../stock-chart/stock-chart';
 import { DateTimeCategory } from '../chart/axis/date-time-category-axis';
+import { PrintUtils } from '../common/utils/print'
 
 /**
  * Range Navigator
@@ -955,7 +956,7 @@ export class RangeNavigator extends Component<HTMLElement> {
      * Handles the print method for range navigator control.
      */
     public print(id?: string[] | string | Element): void {
-        new ExportUtils(this).print(id);
+        new PrintUtils(this).print(id);
     }
     /**
      * Handles the export method for range navigator control.

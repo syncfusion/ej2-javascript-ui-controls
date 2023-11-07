@@ -308,7 +308,7 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
                                 (internalProp.indexOf(property) === -1 && obj[`${keys}`]) ? obj[`${keys}`][`${property}`] : obj[`${property}`],
                                 additionalProp, property, cloneBlazorProp);
                         } else if (obj[`${property}`] instanceof Array === false && obj[`${property}`] instanceof HTMLElement) {
-                            newObject[`${property}`] = obj[`${property}`].cloneNode(true).innerHtml;
+                            newObject[`${property}`] = obj[`${property}`].cloneNode(true).innerHTML;
                         } else if (obj[`${property}`] instanceof Array === false && obj[`${property}`] instanceof Object) {
                             newObject[`${property}`] = cloneObject(
                                 (internalProp.indexOf(property) === -1 && obj[`${keys}`]) ? obj[`${keys}`][`${property}`] : obj[`${property}`],

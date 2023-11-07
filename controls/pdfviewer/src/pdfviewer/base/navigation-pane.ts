@@ -1,6 +1,6 @@
 import { AnnotationDataFormat, PdfViewer } from '../index';
 import { PdfViewerBase } from '../index';
-import { createElement, Browser, isBlazor, initializeCSPTemplate } from '@syncfusion/ej2-base';
+import { createElement, Browser, isBlazor, initializeCSPTemplate, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Toolbar as Tool, ItemModel, ClickEventArgs, MenuItemModel, ContextMenu as Context } from '@syncfusion/ej2-navigations';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Toast, ToastCloseArgs } from '@syncfusion/ej2-notifications';
@@ -34,6 +34,7 @@ export class NavigationPane {
     private toastObject: Toast;
     private isTooltipCreated: boolean = false;
     private isThumbnail: boolean = false;
+    private isThumbnailAddedProgrammatically: boolean = false;
     private annotationInputElement: HTMLElement;
     private annotationXFdfInputElement: HTMLElement;
     private annotationContextMenu: MenuItemModel[] = [];
@@ -1090,6 +1091,8 @@ export class NavigationPane {
         proxy.removeThumbnailSelectionIconTheme();
         proxy.removeBookmarkSelectionIconTheme();
         proxy.updateViewerContainerOnClose();
+        proxy.isThumbnailAddedProgrammatically = false;
+        proxy.isThumbnail = false;
     };
     /**
      * @private
@@ -1190,17 +1193,20 @@ export class NavigationPane {
                 if (proxy.isBookmarkOpen) {
                     proxy.isThumbnailOpen = true;
                     proxy.setThumbnailSelectionIconTheme();
-                    this.updateViewerContainerOnExpand();
+                    proxy.updateViewerContainerOnExpand();
                 } else {
                     proxy.isThumbnailOpen = false;
                     proxy.removeThumbnailSelectionIconTheme();
-                    this.updateViewerContainerOnClose();
+                    proxy.updateViewerContainerOnClose();
+                    proxy.isThumbnailAddedProgrammatically = false;
+                    proxy.isThumbnail = false;
                 }
             } else {
-                this.sideBarContent.focus();
+                proxy.sideBarContent.focus();
                 proxy.isThumbnailOpen = true;
                 proxy.setThumbnailSelectionIconTheme();
-                this.updateViewerContainerOnExpand();
+                proxy.updateViewerContainerOnExpand();
+                proxy.isThumbnail = true;
             }
         }
         proxy.isBookmarkOpen = false;
@@ -1224,28 +1230,28 @@ export class NavigationPane {
         const pageContainer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageViewContainer');
         document.getElementById(this.pdfViewer.element.id + '_thumbnail_view').style.display = 'block';
         document.getElementById(this.pdfViewer.element.id + '_sideBarResizer').style.display = 'none';
-        document.getElementById(this.pdfViewer.element.id + '_sideBarTitleContainer').style.display = 'none';
-        document.getElementById(this.pdfViewer.element.id + '_sideBarContentSplitter').style.display = 'none';
-        sideBarContent.classList.add('e-thumbnail');
-        sideBarContentContainer.classList.add('e-thumbnail');
-        if (sideBarContentContainer) {
+        proxy.sideBarTitle.textContent = this.pdfViewer.localeObj.getConstant('Page Thumbnails');
+        proxy.sideBarContent.setAttribute('aria-label', 'Thumbnail View Panel');
+        if (sideBarContentContainer  && !this.isThumbnailAddedProgrammatically) {
             if (proxy.isThumbnail) {
                 sideBarContentContainer.style.display = 'none';
                 viewerContainer.style.width = proxy.pdfViewer.element.clientWidth + 'px';
                 pageContainer.style.width = viewerContainer.clientWidth + 'px';
                 viewerContainer.style.left = sideBarContentContainer.clientWidth + 'px';
                 proxy.pdfViewerBase.updateZoomValue();
+                proxy.removeThumbnailSelectionIconTheme();
                 proxy.isThumbnail = false;
             } else {
                 sideBarContent.focus();
-                sideBarContentContainer.style.display = 'block';
+                proxy.setThumbnailSelectionIconTheme();
+                proxy.updateViewerContainerOnExpand();
                 // eslint-disable-next-line max-len
-                viewerContainer.style.width = (proxy.pdfViewer.element.clientWidth - sideBarContentContainer.clientWidth) + 'px';
-                pageContainer.style.width = viewerContainer.clientWidth + 'px';
-                viewerContainer.style.left = (sideBarContentContainer.clientWidth) + 'px';
-                proxy.pdfViewerBase.updateZoomValue();
-                proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.pdfViewerBase.currentPageNumber - 1);
                 proxy.isThumbnail = true;
+                proxy.pdfViewerBase.updateZoomValue();
+                if (!isNullOrUndefined(proxy.pdfViewer.thumbnailViewModule)) {
+                    proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.pdfViewerBase.currentPageNumber - 1);
+                }
+                proxy.isThumbnailAddedProgrammatically = true;
             }
         }
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
@@ -1254,6 +1260,23 @@ export class NavigationPane {
             this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
         }
     };
+
+     /**
+     * @private
+     * @returns {void}
+     */
+     public closeThumbnailPane  = (): void => {
+        let proxy : NavigationPane = null;
+        proxy = this;
+        if(proxy.isThumbnail || !proxy.isThumbnailAddedProgrammatically) {
+            proxy.removeThumbnailSelectionIconTheme();
+            proxy.isThumbnailOpen = false;
+            proxy.updateViewerContainerOnClose();
+            proxy.isThumbnailAddedProgrammatically = false;
+            proxy.isThumbnail = false;
+        }
+    }
+
     /**
      * @private
      * @returns {void}

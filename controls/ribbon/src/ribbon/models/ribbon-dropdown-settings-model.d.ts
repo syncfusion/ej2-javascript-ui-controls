@@ -56,6 +56,13 @@ export interface RibbonDropDownSettingsModel {
     createPopupOnClick?: boolean;
 
     /**
+     * Specifies additional HTML attributes to be applied to the DropDownButton.
+     *
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string };
+
+    /**
      * Triggers before closing the DropDownButton popup.
      *
      * @event beforeClose

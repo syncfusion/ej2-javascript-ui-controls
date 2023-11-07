@@ -1,4 +1,4 @@
-import { KeyboardEventArgs, removeClass, addClass, extend, L10n } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, removeClass, addClass, extend, L10n, EventHandler } from '@syncfusion/ej2-base';
 import { closest, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid } from '../base/interface';
 import { Grid } from '../base/grid';
@@ -49,6 +49,7 @@ export class DetailRow {
      */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
+        EventHandler.add(this.parent.element, 'auxclick', this.auxilaryclickHandler, this);
         this.parent.on(events.click, this.clickHandler, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.keyPressed, this.keyPressHandler, this);
@@ -64,6 +65,13 @@ export class DetailRow {
             e.preventDefault();
         }
         this.toogleExpandcollapse(closest(e.target as Element, 'td'));
+    }
+
+    private auxilaryclickHandler(e: MouseEvent): void {
+        if ((e.target as Element).classList.contains('e-icon-grightarrow') || (e.target as Element).classList.contains('e-icon-gdownarrow')
+            && !this.parent.allowGrouping && (e.button === 1)) {
+            e.preventDefault();
+        }
     }
 
     private toogleExpandcollapse(target: Element): void {
@@ -260,6 +268,7 @@ export class DetailRow {
         const gridElement: Element = this.parent.element;
         if (this.parent.isDestroyed || !gridElement || (!gridElement.querySelector('.' + literals.gridHeader) &&
             !gridElement.querySelector( '.' + literals.gridContent))) { return; }
+        EventHandler.remove(this.parent.element, 'auxclick', this.auxilaryclickHandler);
         this.parent.off(events.click, this.clickHandler);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.keyPressed, this.keyPressHandler);

@@ -1405,14 +1405,18 @@ export class WordExport {
                 writer.writeAttributeString('w14', 'val', undefined, '0');
                 writer.writeEndElement();
             }
-            writer.writeStartElement('w14', 'uncheckedState', undefined);
-            writer.writeAttributeString('w14', 'val', undefined, this.toUnicode(contentProperties[uncheckedStateProperty[this.keywordIndex]][valueProperty[this.keywordIndex]]));
-            writer.writeAttributeString('w14', 'font', undefined, (contentProperties[uncheckedStateProperty[this.keywordIndex]][fontProperty[this.keywordIndex]]));
-            writer.writeEndElement();
-            writer.writeStartElement('w14', 'checkedState', undefined);
-            writer.writeAttributeString('w14', 'val', undefined, this.toUnicode(contentProperties[checkedStateProperty[this.keywordIndex]][valueProperty[this.keywordIndex]]));
-            writer.writeAttributeString('w14', 'font', undefined, contentProperties[checkedStateProperty[this.keywordIndex]][fontProperty[this.keywordIndex]]);
-            writer.writeEndElement();
+            if (contentProperties[uncheckedStateProperty[this.keywordIndex]]) {
+                writer.writeStartElement('w14', 'uncheckedState', undefined);
+                writer.writeAttributeString('w14', 'val', undefined, this.toUnicode(contentProperties[uncheckedStateProperty[this.keywordIndex]][valueProperty[this.keywordIndex]]));
+                writer.writeAttributeString('w14', 'font', undefined, (contentProperties[uncheckedStateProperty[this.keywordIndex]][fontProperty[this.keywordIndex]]));
+                writer.writeEndElement();
+            }
+            if (contentProperties[checkedStateProperty[this.keywordIndex]]) {
+                writer.writeStartElement('w14', 'checkedState', undefined);
+                writer.writeAttributeString('w14', 'val', undefined, this.toUnicode(contentProperties[checkedStateProperty[this.keywordIndex]][valueProperty[this.keywordIndex]]));
+                writer.writeAttributeString('w14', 'font', undefined, contentProperties[checkedStateProperty[this.keywordIndex]][fontProperty[this.keywordIndex]]);
+                writer.writeEndElement();
+            }
             writer.writeEndElement();
         }
         if (!isNullOrUndefined(contentProperties[contentControlListItemsProperty[this.keywordIndex]]) && contentProperties[typeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 5: 'DropDownList')) {
@@ -2199,7 +2203,8 @@ export class WordExport {
     private getBase64ImageString(image: any): ImageStringInfo {
         let base64ImageString: string[] = !isNullOrUndefined(image[metaFileImageStringProperty[this.keywordIndex]]) ? this.mImages.get(parseInt(image[metaFileImageStringProperty[this.keywordIndex]])) : this.mImages.get(parseInt(image[imageStringProperty[this.keywordIndex]]));
         let imageString: string = base64ImageString[HelperMethods.parseBoolValue(image[isMetaFileProperty[this.keywordIndex]]) ? 1 : 0];
-        let metaFileImageString: string = base64ImageString[0];
+        let index = (this.startsWith(imageString, "https://") || this.startsWith(imageString, "http://") || this.startsWith(imageString, "file://")) ? 1 : 0;
+        let metaFileImageString: string = base64ImageString[index];
         return { imageString: imageString, metaFileImageString: metaFileImageString };
     }
     private getNextChartName(): string {
@@ -3606,7 +3611,10 @@ export class WordExport {
         chartCollection.add(relationId, chart);
         return relationId;
     }
-    private startsWith(sourceString: string, startString: string): boolean {
+    /**
+     * @private
+     */
+    public startsWith(sourceString: string, startString: string): boolean {
         return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
     }
     private serializeShapeDrawingGraphics(writer: XmlWriter, shape: any): void {
@@ -3817,6 +3825,11 @@ export class WordExport {
                 this.documentImages.remove(id);
                 this.externalImages.add(id, imageString);
                 writer.writeAttributeString(undefined, 'link', this.rNamespace, id);
+                if (this.startsWith(imageString, "https://") || this.startsWith(imageString, "http://") || this.startsWith(imageString, "file://")) {
+                    let newRId: string = this.getNextRelationShipID();
+                    this.documentImages.add(newRId, imageStringInfo.metaFileImageString);
+                    writer.writeAttributeString('r', 'embed', this.rNamespace, newRId);
+                }
             }
         }
         if (format === '.svg') {
@@ -7059,12 +7072,17 @@ export class WordExport {
             let keys: string[] = images.keys;
             for (let i: number = 0; i < keys.length; i++) {
                 let mImage: any = images.get(keys[i]);
-                let imageStringInfo: ImageStringInfo = this.getBase64ImageString(mImage);
-                base64ImageString = imageStringInfo.imageString;
-                if (HelperMethods.parseBoolValue(mImage[isMetaFileProperty[this.keywordIndex]])) {
-                    let format: string = HelperMethods.formatClippedString(imageStringInfo.metaFileImageString).extension;
-                    if (format !== '.svg' || isSvg) {
-                        base64ImageString = imageStringInfo.metaFileImageString;
+                let imageStringInfo: ImageStringInfo;
+                if (typeof mImage === 'string' && this.startsWith(mImage, 'data')) {
+                    base64ImageString = mImage;
+                } else {
+                    imageStringInfo = this.getBase64ImageString(mImage);
+                    base64ImageString = imageStringInfo.imageString;
+                    if (HelperMethods.parseBoolValue(mImage[isMetaFileProperty[this.keywordIndex]])) {
+                        let format: string = HelperMethods.formatClippedString(imageStringInfo.metaFileImageString).extension;
+                        if (format !== '.svg' || isSvg) {
+                            base64ImageString = imageStringInfo.metaFileImageString;
+                        }
                     }
                 }
 

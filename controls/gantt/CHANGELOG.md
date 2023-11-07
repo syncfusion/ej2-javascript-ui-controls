@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.44 (2023-11-07)
+
+### GanttChart
+
+- `#I513332` - Excel filter only takes one character at a time issue has been fixed.
+
+#### Bug Fixes
+
 ## 23.1.43 (2023-10-31)
 
 ### GanttChart

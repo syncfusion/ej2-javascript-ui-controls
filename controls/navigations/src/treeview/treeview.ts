@@ -4214,6 +4214,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         else {
             this.dropAsChildNode(dragLi, dropLi, dragObj, null, e, offsetY, true);
         }
+        if (this.showCheckBox) {
+            this.ensureIndeterminate();
+        }
     }
 
     private dropAsSiblingNode(dragLi: Element, dropLi: Element, e: DropEventArgs, dragObj: TreeView): void {

@@ -800,6 +800,10 @@ export abstract class BlockWidget extends Widget {
     /**
      * @private
      */
+    public isFieldCodeBlock: boolean = false;
+    /**
+     * @private
+     */
     public leftBorderWidth: number;
     /**
      * @private
@@ -4400,7 +4404,7 @@ export class LineWidget implements IWidget {
     /**
      * @private
      */
-    public getInline(offset: number, indexInInline: number, bidi?: boolean, isInsert?: boolean): ElementInfo {
+    public getInline(offset: number, indexInInline: number, bidi?: boolean, isInsert?: boolean, isSpellCheck?: boolean): ElementInfo {
         bidi = isNullOrUndefined(bidi) ? this.paragraph.bidi : bidi;
         let inlineElement: ElementBox = undefined;
         let count: number = 0;
@@ -4429,7 +4433,7 @@ export class LineWidget implements IWidget {
                 isStarted = true;
             }
             if (isStarted && offset <= count + inlineElement.length) {
-                if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && inlineElement.revisions.length === 0 && isInsert)) {
+                if (inlineElement instanceof TextElementBox && ((inlineElement as TextElementBox).text === ' ' && inlineElement.revisions.length === 0 && isInsert && !isSpellCheck)) {
                     let currentElement: ElementBox = this.getNextTextElement(this, i + 1);
                     inlineElement = !isNullOrUndefined(currentElement) ? currentElement : inlineElement;
                     indexInInline = isNullOrUndefined(currentElement) ? (offset - count) : 0;

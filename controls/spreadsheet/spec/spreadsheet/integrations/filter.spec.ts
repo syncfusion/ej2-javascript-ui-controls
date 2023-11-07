@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, filterData } from '../util/datasource.spec';
-import { Spreadsheet, filterByCellValue, refreshCheckbox, DialogBeforeOpenEventArgs } from '../../../src/index';
+import { Spreadsheet, filterByCellValue, refreshCheckbox, DialogBeforeOpenEventArgs, focus, setCell } from '../../../src/index';
 import { classList, getComponent } from '@syncfusion/ej2-base';
 import { doesImplementInterface } from '@syncfusion/ej2-grids';
 
@@ -1729,6 +1729,8 @@ describe('Filter ->', () => {
                 helper.invoke('destroy');
             });
             it('Apply Filter in Multiple Column->', (done: Function) => {
+                helper.invoke('updateCell', [{ value: 'value' }, 'I1']);
+                setCell(3, 8, helper.invoke('getActiveSheet'), { value: '0.11' });
                 helper.invoke(
                     'applyFilter', [[{ value: 10, field: 'D', predicate: 'or', operator: 'equal', type: 'number', matchCase: false, ignoreAccent: false },
                     { value: 20, field: 'D', predicate: 'or', operator: 'equal', type: 'number', matchCase: false, ignoreAccent: false },
@@ -1740,7 +1742,7 @@ describe('Filter ->', () => {
             it('Filter not applied properly in multiple column filtering after clearing the single column filter->', (done: Function) => {
                 const td: HTMLTableCellElement = helper.invoke('getCell', [0, 3]);
                 helper.invoke('selectRange', ['D1']);
-                helper.invoke('getCell', [0, 3]).focus();
+                focus(td);
                 helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
                 setTimeout(() => {
                     setTimeout(() => {
@@ -1751,6 +1753,16 @@ describe('Filter ->', () => {
                             done();
                         });
                     });
+                });
+            });
+            it('Number column filtering with cell value as number in string type', (done: Function) => {
+                helper.invoke('selectRange', ['I1']);
+                const cell: HTMLTableCellElement = helper.invoke('getCell', [0, 8]);
+                focus(cell);
+                helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: cell, altKey: true, keyCode: 40 });
+                setTimeout(() => {
+                    expect(helper.getElement('.e-filter-popup .e-submenu.e-menu-item').textContent).toBe('Number Filters');
+                    done();
                 });
             });
         });

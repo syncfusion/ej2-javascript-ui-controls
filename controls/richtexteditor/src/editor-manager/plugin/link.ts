@@ -92,6 +92,12 @@ export class LinkCommand {
                 || (e.event as KeyboardEvent).keyCode === 13) || e.item.action === 'Paste' || range.collapsed || text) {
                 const anchor: HTMLElement = this.createAchorNode(e);
                 anchor.innerText = e.item.text === '' ? e.item.url : e.item.text;
+                const text : string = anchor.innerText;
+                // Replace spaces with non-breaking spaces
+                const modifiedText : string  = text.replace(/  +/g, function(match) {
+                    return '\u00A0'.repeat(match.length);
+                });
+                anchor.innerText = modifiedText;
                 e.item.selection.restore();
                 InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
                 if (e.event && (e.event as KeyboardEvent).type === 'keydown' && ((e.event as KeyboardEvent).keyCode === 32

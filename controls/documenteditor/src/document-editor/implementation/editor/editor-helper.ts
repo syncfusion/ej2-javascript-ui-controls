@@ -1,7 +1,7 @@
 import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget, TableRowWidget, TableCellWidget, TableWidget } from '../viewer/page';
-import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults, WList, WAbstractList } from '../index';
+import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults, WList, WAbstractList, Revision } from '../index';
 import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride, BreakClearType, LineStyle, TextAlignment, LineSpacingType, OutlineLevel } from '../../base/types';
 import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { Dictionary } from '../..';
@@ -242,11 +242,11 @@ export class HelperMethods {
         if (colorCode) {
             colorCode = colorCode.replace(/[^0-9A-â€Œâ€‹F]/gi, '');   // To remove # from color code string.
             const colCodeNo: number = parseInt(colorCode, 16);
-            if(colorCode.length == 8){
+            if (colorCode.length === 8) {
                 r = (colCodeNo >> 32) & 255;
                 g = (colCodeNo >> 16) & 255;
                 b = (colCodeNo >> 8) & 255;
-            } else if (colorCode.length == 6) {
+            } else if (colorCode.length === 6) {
                 r = (colCodeNo >> 16) & 255;
                 g = (colCodeNo >> 8) & 255;
                 b = colCodeNo & 255;
@@ -420,7 +420,7 @@ export class HelperMethods {
     }
     public static getBoolInfo(value: boolean, keywordIndex: number): any
     {
-        if (keywordIndex == 1) {
+        if (keywordIndex === 1) {
             return this.getBoolValue(value);
         }else {
             return value;
@@ -429,7 +429,7 @@ export class HelperMethods {
     }
     public static parseBoolValue(value: any): boolean {
         if (value instanceof String) {
-            if (isNullOrUndefined(value) || value == "f" || value == "0" || value == "off" || value == "false") {
+            if (isNullOrUndefined(value) || value === "f" || value === "0" || value === "off" || value === "false") {
                 return false;
             } else {
                 return true;
@@ -492,6 +492,7 @@ export class HelperMethods {
                 return 17;
         }
     }
+    /* eslint-disable */
     public static getStrikeThroughEnumValue(strikethrough: Strikethrough): number {
         switch (strikethrough) {
             case 'None':
@@ -951,7 +952,7 @@ export class HelperMethods {
         return (value.charAt(0).toUpperCase() + value.slice(1, value.length).toLowerCase());
     }
     public static getModifiedDate(date: string): string {        
-        const modifiedDate: Date = HelperMethods.getLocaleDate(date)
+        const modifiedDate: Date = HelperMethods.getLocaleDate(date);
         const dateString: string = modifiedDate.toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
         const time: string = modifiedDate.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
         const dateTime: string = dateString + ' ' + time;
@@ -989,6 +990,71 @@ export class HelperMethods {
      */
     public static getUniqueElementId(): string {
         return 'de_element' + Date.now().toString(36) + Math.random().toString(36).substring(2);
+    }
+    /* eslint-disable */
+    private static getTextIndexAfterWhitespace(text: string, startIndex: number): number {
+        const length: number = text.length;
+        let index: number = 0;
+        index = text.indexOf(' ', startIndex) + 1;
+        let nextIndex: number = index;
+        if (nextIndex === 0 || nextIndex === length) {
+            return nextIndex;
+        }
+        while (text[nextIndex] === ' ') {
+            nextIndex++;
+            if (nextIndex === length) {
+                break;
+            }
+        }
+        return nextIndex;
+    }
+    /**
+     * @private
+     * @param {TextElementBox} textElementBox text element box to split the text based on max text length.
+     * @param {LineWidget} lineWidget  line widget to add the splitted text element box.
+     * @returns {void}
+     */
+    public static splitWordByMaxLength(textElementBox: TextElementBox, lineWidget: LineWidget): void {
+        const text: string = textElementBox.text;
+        let index: number = 0;
+        const textLength: number = text.length;
+        const maxLength: number = 90;
+        let splittedText: string = '';
+        const characterFormat: WCharacterFormat = textElementBox.characterFormat;
+        const revisions: Revision[] = textElementBox.revisions;
+        while (index < textLength) {
+            let nextIndex: number = index + maxLength;
+            if (nextIndex > textLength) {
+                nextIndex = textLength;
+            }
+            let spaceIndex: number = HelperMethods.getTextIndexAfterWhitespace(text, nextIndex);
+            if (spaceIndex === 0 || spaceIndex > textLength) {
+                spaceIndex = nextIndex;
+            }
+            splittedText = text.substring(index, spaceIndex);
+            if (index === 0) {
+                textElementBox.text = splittedText;
+            } else {
+                const splittedElement: TextElementBox = new TextElementBox();
+                splittedElement.text = splittedText;
+                splittedElement.line = lineWidget;
+                splittedElement.characterFormat.copyFormat(characterFormat);
+                if (revisions.length > 0) {
+                    for (let i: number = 0; i < revisions.length; i++) {
+                        const revision: Revision = revisions[i];
+                        splittedElement.revisions.push(revision);
+                        const rangeIndex: number = revision.range.indexOf(textElementBox);
+                        if (rangeIndex < 0) {
+                            revision.range.push(splittedElement);
+                        } else {
+                            revision.range.splice(rangeIndex + 1, 0, splittedElement);
+                        }
+                    }
+                }
+                lineWidget.children.push(splittedElement);
+            }
+            index = spaceIndex;
+        }
     }
 }
 /**

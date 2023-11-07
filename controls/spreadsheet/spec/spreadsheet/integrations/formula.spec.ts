@@ -11027,6 +11027,26 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [5, 9]).textContent).toBe('3');
             done();
         });
+        it('Arithmetic operation with percentage value', (done: Function) => {
+            helper.edit('D12', '=-(D3*(100%-D2))');
+            const tdEle: Element = helper.invoke('getCell', [11, 3]);
+            expect(tdEle.textContent).toBe('180');
+            const cell: CellModel = helper.getInstance().sheets[0].rows[11].cells[3];
+            expect(cell.value).toBe('180');
+            helper.edit('D12', '=-((100-D2)*D3)');
+            expect(cell.value).toBe('-1800');
+            expect(tdEle.textContent).toBe('-1800');
+            helper.edit('D12', '=-((100%-D2)*D3)');
+            expect(cell.value).toBe('180');
+            expect(tdEle.textContent).toBe('180');
+            helper.edit('D12', '=-((100%*D3))');
+            expect(cell.value).toBe('-20');
+            expect(tdEle.textContent).toBe('-20');
+            helper.edit('D12', '=-(2+(100%*D4))');
+            expect(cell.value).toBe('-22');
+            expect(tdEle.textContent).toBe('-22');
+            done();
+        });
     });
     describe('Provide the support to handle the wrong formula in spreadsheet and display alert dialog -> ', () => {
         beforeEach((done: Function) => {

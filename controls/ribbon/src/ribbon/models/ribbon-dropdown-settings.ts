@@ -64,6 +64,14 @@ export class RibbonDropDownSettings extends ChildProperty<RibbonDropDownSettings
     public createPopupOnClick: boolean;
 
     /**
+     * Specifies additional HTML attributes to be applied to the DropDownButton.
+     *
+     * @default {}
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string };
+
+    /**
      * Triggers before closing the DropDownButton popup.
      *
      * @event beforeClose

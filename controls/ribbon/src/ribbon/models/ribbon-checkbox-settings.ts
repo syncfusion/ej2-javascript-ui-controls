@@ -39,6 +39,14 @@ export class RibbonCheckBoxSettings extends ChildProperty<RibbonCheckBoxSettings
     public labelPosition: LabelPosition;
 
     /**
+     * Specifies additional HTML attributes to be applied to the checkbox.
+     *
+     * @default {}
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string };
+
+    /**
      * Event triggers once the checkbox is created.
      *
      * @event created

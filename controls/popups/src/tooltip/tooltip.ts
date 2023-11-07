@@ -1269,13 +1269,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.tooltipEle.style.top = elePos.top + 'px';
     }
     private keyDown(event: KeyboardEvent): void {
-        if (!isNullOrUndefined(this.targetsList) && !isNullOrUndefined(this.target)) {
-            const target: Element[] = [].slice.call(selectAll(this.target, this.element));
-            if (target.length !== this.targetsList.length) {
-                this.unwireEvents(this.opensOn);
-                this.wireEvents(this.opensOn);
-            }
-        }
         if (this.tooltipEle && event.keyCode === 27) {
             this.close();
         }
@@ -1356,15 +1349,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private wireFocusEvents(): void {
         if (!isNullOrUndefined(this.target)) {
-            if (this.element.nodeName !== "BODY") {
-                EventHandler.add(this.element, 'focusin', this.targetHover, this);
-            }
-            else {
-                const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
-                this.targetsList = targetList;
-                for (const target of targetList) {
-                    EventHandler.add(target, 'focus', this.targetHover, this);
-                }
+            const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
+            this.targetsList = targetList;
+            for (const target of targetList) {
+                EventHandler.add(target, 'focus', this.targetHover, this);
             }
         } else {
             EventHandler.add(this.element, 'focusin', this.targetHover, this);
@@ -1376,7 +1364,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 if (e.type === 'focus') {
                     EventHandler.add(target, 'blur', this.onMouseOut, this);
                 }
-                if(e.type === 'focusin'){
+                if (e.type === 'focusin') {
                     EventHandler.add(target, 'focusout', this.onMouseOut, this);
                 }
                 if (e.type === 'mouseover') {
@@ -1427,17 +1415,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private unwireFocusEvents(): void {
         if (!isNullOrUndefined(this.target)) {
-            if (this.element.nodeName === 'BODY') {
-                EventHandler.remove(this.element, 'focusin', this.targetHover);
-            }
-            else {
-                const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
-                for (const target of targetList) {
-                    EventHandler.remove(target, 'focus', this.targetHover);
-                }
+            const targetList: Element[] = [].slice.call(selectAll(this.target, this.element));
+            for (const target of targetList) {
+                EventHandler.remove(target, 'focus', this.targetHover);
             }
         } else {
-            EventHandler.remove(this.element, 'focus', this.targetHover);
+            EventHandler.remove(this.element, 'focusin', this.targetHover);
         }
     }
     private unwireMouseEvents(target: Element): void {
@@ -1613,6 +1596,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.tooltipEle) { this.renderContent(target); }
         if (this.popupObj && target) {
             this.reposition(target);
+        }
+        if (!isNullOrUndefined(this.targetsList) && !isNullOrUndefined(this.target)) {
+            const target: Element[] = selectAll(this.target, this.element);
+            if (target.length !== this.targetsList.length) {
+                this.unwireEvents(this.opensOn);
+                this.wireEvents(this.opensOn);
+            }
         }
     }
     /**

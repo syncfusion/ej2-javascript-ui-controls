@@ -154,21 +154,22 @@ export class FormulaBar {
             if (sheetIdx === undefined) { return; }
             let range: string = getRangeFromAddress(refersTo);
             const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIdx);
-            if (range.indexOf(':') !== -1) {
+            let left: string; let right: string;
+            if (range.indexOf(':') === -1) {
+                left = right = range.replace('$', '');
+            } else {
                 const colIndex: number = range.indexOf(':');
-                let left: string = range.substr(0, colIndex);
-                let right: string = range.substr(colIndex + 1, range.length);
-                left = left.replace('$', '');
-                right = right.replace('$', '');
-                if (right.match(/\D/g) && !right.match(/[0-9]/g) && left.match(/\D/g) && !left.match(/[0-9]/g)) {
-                    left = left + '1';
-                    right = right + sheet.rowCount;
-                    range = left + ':' + right;
-                } else if (!right.match(/\D/g) && right.match(/[0-9]/g) && !left.match(/\D/g) && left.match(/[0-9]/g)) {
-                    left = getCellAddress(parseInt(left, 10) - 1, 0);
-                    right = getCellAddress(parseInt(right, 10) - 1, sheet.colCount - 1);
-                    range = left + ':' + right;
-                }
+                left = range.substr(0, colIndex).replace('$', '');
+                right = range.substr(colIndex + 1, range.length).replace('$', '');
+            }
+            if (right.match(/\D/g) && !right.match(/[0-9]/g) && left.match(/\D/g) && !left.match(/[0-9]/g)) {
+                left = left + '1';
+                right = right + sheet.rowCount;
+                range = left + ':' + right;
+            } else if (!right.match(/\D/g) && right.match(/[0-9]/g) && !left.match(/\D/g) && left.match(/[0-9]/g)) {
+                left = getCellAddress(parseInt(left, 10) - 1, 0);
+                right = getCellAddress(parseInt(right, 10) - 1, sheet.colCount - 1);
+                range = left + ':' + right;
             }
             if (sheetIdx === this.parent.activeSheetIndex) {
                 this.parent.selectRange(range);

@@ -4738,7 +4738,7 @@ export class Annotation {
             let clonedObject: any = cloneObject(currentAnnotation);
             // eslint-disable-next-line
             let redoClonedObject: any = cloneObject(currentAnnotation);
-            if (currentAnnotation.opacity !== signature.opacity) {
+            if (!(isNullOrUndefined(signature.opacity)) || currentAnnotation.opacity !== signature.opacity) {
                 redoClonedObject.opacity = signature.opacity;
                 this.pdfViewer.nodePropertyChange(currentAnnotation, { opacity: signature.opacity });
                 // eslint-disable-next-line max-len
@@ -4971,13 +4971,13 @@ export class Annotation {
                     currentAnnotation.data = annotation.stampAnnotationPath;
                     currentAnnotation.wrapper.children[0].imageSource = annotation.stampAnnotationPath;
                 }
-                if (annotation.opacity && currentAnnotation.opacity !== annotation.opacity) {
+                if (!(isNullOrUndefined(annotation.opacity)) && currentAnnotation.opacity !== annotation.opacity) {
                     this.annotationPropertyChange(currentAnnotation, annotation.opacity, 'Shape Opacity', clonedObject, redoClonedObject);
                 }
                 this.calculateAnnotationBounds(currentAnnotation, annotation);
                 // eslint-disable-next-line max-len
             } else if (annotation.type === 'StickyNotes' || annotation.type === 'Stamp' || annotation.shapeAnnotationType === 'sticky' || annotation.shapeAnnotationType === 'stamp') {
-                if (annotation.opacity && currentAnnotation.opacity !== annotation.opacity) {
+                if (!(isNullOrUndefined(annotation.opacity)) && currentAnnotation.opacity !== annotation.opacity) {
                     this.annotationPropertyChange(currentAnnotation, annotation.opacity, 'Shape Opacity', clonedObject, redoClonedObject);
                 }
                 this.calculateAnnotationBounds(currentAnnotation, annotation);
@@ -4989,7 +4989,7 @@ export class Annotation {
                 // eslint-disable-next-line max-len
             } else if (annotation.type === 'Ink' || annotation.type === 'Shape' || annotation.type === 'Measure' || annotation.shapeAnnotationType === 'Line' || annotation.shapeAnnotationType === 'Square' || annotation.shapeAnnotationType === 'Circle' || annotation.shapeAnnotationType === 'Polygon' || annotation.shapeAnnotationType === 'Polyline' || annotation.shapeAnnotationType === 'Ink') {
                 this.calculateAnnotationBounds(currentAnnotation, annotation);
-                if (annotation.opacity && currentAnnotation.opacity !== annotation.opacity) {
+                if (!(isNullOrUndefined(annotation.opacity)) && currentAnnotation.opacity !== annotation.opacity) {
                     this.annotationPropertyChange(currentAnnotation, annotation.opacity, 'Shape Opacity', clonedObject, redoClonedObject);
                 }
                 if (annotation.fillColor && currentAnnotation.fillColor !== annotation.fillColor) {

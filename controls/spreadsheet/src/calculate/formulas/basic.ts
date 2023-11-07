@@ -1021,7 +1021,7 @@ export class BasicFormulas {
      * @returns {number | string | number[] | string[]} - Compute the unique.
      */
     public ComputeUNIQUE(...args: string[]): number | string | number[] | string[] {
-        const argArr: string[] = args; let result: string; let isComputeExp: boolean;
+        const argArr: string[] = args; let result: string; let isComputeExp: boolean; let uniqueActCell: string;
         if (argArr[argArr.length - 1] === 'isComputeExp') { isComputeExp = true; argArr.pop(); }
         if (isNullOrUndefined(args) || args[0] === '' || argArr.length > 3) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
@@ -1029,7 +1029,7 @@ export class BasicFormulas {
         const byCol: string = argArr[1] ? argArr[1].toUpperCase() : 'FALSE';
         const exactlyOne: string = argArr[2] ? argArr[2].toUpperCase() : 'FALSE';
         const uniqueCollection: string[] = [];
-        let actCell: string = this.parent.actCell;
+        let actCell: string = uniqueActCell = this.parent.actCell;
         if (argArr[0].indexOf(':') > -1) {
             if (isNullOrUndefined(argArr[0].match(/[0-9]/))) {
                 const splitArray: string[] = argArr[0].split(':');
@@ -1153,8 +1153,8 @@ export class BasicFormulas {
                             const splitValue: string[] = tmp[0].split('+');
                             for (let j: number = actColIdx, diff2: number = splitValue.length + actColIdx; j < diff2; j++) {
                                 if (i === diff - 1 && j === diff2 - 1 &&
-                                    this.parent.uniqueRange.indexOf(this.parent.actCell + ':' + getAlphalabel(j) + i) === - 1) {
-                                    this.parent.uniqueRange.push(this.parent.actCell + ':' + getAlphalabel(j) + i);
+                                    this.parent.uniqueRange.indexOf(uniqueActCell + ':' + getAlphalabel(j) + i) === - 1) {
+                                    this.parent.uniqueRange.push(uniqueActCell + ':' + getAlphalabel(j) + i);
                                 }
                                 if (this.checkSpill(j, i)) {
                                     isSpill = true;

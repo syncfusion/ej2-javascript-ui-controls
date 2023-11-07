@@ -94,15 +94,26 @@ export class ExcelExport {
         let clonedValues: IAxisSet[][];
         const currentPivotValues: IAxisSet[][] = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
         const customFileName: string = isFileNameSet ? exportProperties.fileName : type === 'CSV' ? 'default.csv' : 'default.xlsx';
-        if (this.parent.exportAllPages && (this.parent.enableVirtualization || this.parent.enablePaging) && this.parent.dataType !== 'olap') {
-            const pageSettings: IPageSettings = this.engine.pageSettings; this.engine.pageSettings = null;
+        if (this.parent.exportAllPages && (this.parent.enableVirtualization || this.parent.enablePaging)) {
+            const pageSettings: IPageSettings = this.engine.pageSettings;
+            let mdxQuery: string;
             (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = false;
+            if (this.parent.dataType === 'olap') {
+                this.updateOlapPageSettings(true);
+                mdxQuery = this.parent.olapEngineModule.mdxQuery.slice(0);
+            } else {
+                this.engine.pageSettings = null;
+            }
             (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings, true);
             this.parent.applyFormatting(this.engine.pivotValues);
             clonedValues = PivotExportUtil.getClonedPivotValues(this.engine.pivotValues) as IAxisSet[][];
             this.engine.pivotValues = currentPivotValues;
             this.engine.pageSettings = pageSettings;
             (this.engine as PivotEngine).isPagingOrVirtualizationEnabled = true;
+            if (this.parent.dataType === 'olap') {
+                this.updateOlapPageSettings(false);
+                this.parent.olapEngineModule.mdxQuery = mdxQuery;
+            }
         } else {
             clonedValues = currentPivotValues;
         }
@@ -288,6 +299,17 @@ export class ExcelExport {
             promise: isBlob ? blobData : null
         };
         this.parent.trigger(events.exportComplete, exportCompleteEventArgs);
+    }
+
+    private updateOlapPageSettings(isUpdate: boolean): void {
+        this.parent.olapEngineModule.isExporting = isUpdate ? true : false;
+        if (!this.parent.exportSpecifiedPages) {
+            this.parent.olapEngineModule.pageSettings = isUpdate ? null : this.parent.olapEngineModule.pageSettings;
+            this.parent.olapEngineModule.isPaging = isUpdate ? false : true;
+        } else {
+            this.parent.olapEngineModule.exportSpeciedPages = this.parent.exportSpecifiedPages = isUpdate ?
+                this.parent.exportSpecifiedPages : undefined;
+        }
     }
 
     /**

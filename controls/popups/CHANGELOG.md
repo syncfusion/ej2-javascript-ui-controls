@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.44 (2023-11-07)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I506296` - Resolved issue where the dialog would disappear or abruptly shift beyond the viewport when dragging and dropping.
+
 ## 23.1.43 (2023-10-31)
 
 ### Tooltip

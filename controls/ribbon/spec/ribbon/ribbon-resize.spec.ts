@@ -1,6 +1,6 @@
 import { createElement, isNullOrUndefined, remove } from "@syncfusion/ej2-base";
 import { ItemModel } from "@syncfusion/ej2-splitbuttons";
-import { ItemOrientation, Ribbon, RibbonItemSize, RibbonItemType } from "../../src/ribbon/base/index";
+import { ItemOrientation, Ribbon, RibbonItemSize, RibbonItemType, RibbonLayout } from "../../src/ribbon/base/index";
 import { getMemoryProfile, inMB, profile } from "./common.spec";
 import { RibbonTabModel } from "../../src/ribbon/models/ribbon-tab-model";
 import { RibbonCollectionModel, RibbonGroupModel, RibbonItemModel } from "../../src/ribbon/models/index";
@@ -473,7 +473,151 @@ describe('Ribbon', () => {
         });
     });
 
-
+    describe('Ribbon Resize With multiple Items', () => {
+        let ribbon: Ribbon;
+        let ribbonEle: HTMLElement;
+        let containerEle: HTMLElement;
+        let  tabs: RibbonTabModel[] =  [{
+            header: 'Insert',
+            groups: [{
+                header: 'Tables',
+                collections: [{
+                    items: [{
+                        id: "dropdownTable",
+                        type: RibbonItemType.DropDown,
+                        dropDownSettings: {
+                            iconCss: 'e-icons e-table',
+                            content: 'Table',
+                            createPopupOnClick: true,
+                            items: [
+                                { text: 'Insert Table' }, { text: 'Draw Table' },
+                                { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                            ]
+                        }
+                    }]
+                }]
+            }, {
+                id: 'illustration',
+                header: 'Illustrations',
+                groupIconCss: 'e-icons e-image',
+                collections: [{
+                    items: [{
+                        type: RibbonItemType.Button,
+                        buttonSettings: {
+                            content: 'Screenshot',
+                            iconCss: 'sf-icon-screenshot',
+                        }
+                    }, {
+                        type: RibbonItemType.Button,
+                        buttonSettings: {
+                            content: '3D Models',
+                            iconCss: 'sf-icon-3d-model',
+                        }
+                    }, {
+                        type: RibbonItemType.Button,
+                        buttonSettings: {
+                            iconCss: 'sf-icon-smart-art',
+                            content: 'SmartArt',
+                        }
+                    }, {
+                        type: RibbonItemType.Button,
+                        buttonSettings: {
+                            content: 'Chart',
+                            iconCss: 'sf-icon-chart'
+                        }
+                    }]
+                }]
+            }, {
+                id: 'clipboard',
+                header: 'Clipboard',
+                groupIconCss: 'e-icons e-paste',
+                collections: [{
+                    items: [{
+                        type: RibbonItemType.Button,
+                        buttonSettings: {
+                            content: 'cut',
+                            iconCss: 'e-icons e-cut'
+                        }
+                    }, {
+                        type: RibbonItemType.Button,
+                        buttonSettings: {
+                            content: 'copy',
+                            iconCss: 'e-icons e-copy'
+                        }
+                    }, {
+                        type: RibbonItemType.Button,
+                        buttonSettings: {
+                            content: 'Format Painter',
+                            iconCss: 'e-icons e-paste'
+                        }
+                    }]
+                }]
+            }]
+        }];
+        beforeEach(() => {
+            ribbonEle = createElement('div', { id: 'ribbon' });
+            containerEle = createElement('div', { id: 'container', styles: 'width:600px' });
+            containerEle.appendChild(ribbonEle);
+            document.body.appendChild(containerEle);
+        })
+        afterEach(() => {
+            if (ribbon) {
+                ribbon.destroy();
+                ribbon = undefined;
+            }
+            remove(ribbonEle);
+            remove(containerEle);
+        });
+        it('Resize Ribbon with createPopupOnclick property to be true', () => {
+            ribbon = new Ribbon({
+                tabs: tabs,
+                activeLayout: RibbonLayout.Simplified,
+            }, ribbonEle);
+            containerEle.style.width = '1080px';
+            ribbon.refreshLayout();
+            expect(document.querySelector('#dropdownTable-popup') === null).toBe(true);
+            containerEle.style.width = '300px';
+            ribbon.refreshLayout();
+            (document.body.querySelector('#dropdownTable') as HTMLElement).click();
+            expect(document.querySelector('#dropdownTable-popup') !== null).toBe(true);
+            (document.body.querySelector('#dropdownTable') as HTMLElement).click();
+            expect(document.querySelector('#dropdownTable-popup') === null).toBe(true);
+            containerEle.style.width = '1080px';
+            ribbon.refreshLayout();
+            expect(document.querySelector('#dropdownTable-popup') === null).toBe(true);
+        });
+        it('Resize Ribbon with createPopupOnclick property to be false', () => {
+            ribbon = new Ribbon({
+                tabs: tabs,
+                activeLayout: RibbonLayout.Simplified,
+            }, ribbonEle);
+            containerEle.style.width = '1080px';
+            ribbon.refreshLayout();
+            ribbon.ribbonDropDownModule.updateDropDown({ createPopupOnClick: false }, 'dropdownTable');
+            expect(document.querySelector('#dropdownTable-popup') !== null).toBe(true);
+            expect(document.querySelector('#dropdownTable-popup').classList.contains("e-popup-close")).toBe(true);
+            expect(document.querySelector('#dropdownTable-popup').classList.contains("e-popup-open")).toBe(false);
+            containerEle.style.width = '300px';
+            ribbon.refreshLayout();
+            expect(document.querySelector('#dropdownTable-popup') !== null).toBe(true);
+            expect(document.querySelector('#dropdownTable-popup').classList.contains("e-popup-close")).toBe(true);
+            expect(document.querySelector('#dropdownTable-popup').classList.contains("e-popup-open")).toBe(false);
+            (document.body.querySelector('#dropdownTable') as HTMLElement).click();
+            expect(document.querySelector('#dropdownTable-popup') !== null).toBe(true);
+            expect(document.querySelector('#dropdownTable-popup').classList.contains("e-popup-close")).toBe(false);
+            expect(document.querySelector('#dropdownTable-popup').classList.contains("e-popup-open")).toBe(true);
+            (document.body.querySelector('#dropdownTable') as HTMLElement).click();
+            expect(document.querySelector('#dropdownTable-popup') !== null).toBe(true);
+            expect(document.querySelector('#dropdownTable-popup').classList.contains("e-popup-close")).toBe(true);
+            expect(document.querySelector('#dropdownTable-popup').classList.contains("e-popup-open")).toBe(false);
+            containerEle.style.width = '1080px';
+            ribbon.refreshLayout();
+            expect(document.querySelector('#dropdownTable-popup') !== null).toBe(true);
+            expect(document.querySelector('#dropdownTable-popup').classList.contains("e-popup-close")).toBe(true);
+            expect(document.querySelector('#dropdownTable-popup').classList.contains("e-popup-open")).toBe(false);
+        });
+    });
+    
     describe('Ribbon Resize', () => {
         let ribbon: Ribbon;
         let ribbonEle: HTMLElement;

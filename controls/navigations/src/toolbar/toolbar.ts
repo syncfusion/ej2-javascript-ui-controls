@@ -2215,14 +2215,19 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private activeEleRemove(curEle: HTEle): void {
         if (!isNOU(this.activeEle)) {
-            this.activeEle.setAttribute('tabindex', this.getDataTabindex(this.activeEle));
+            if(!(<HTEle>curEle.parentElement).classList.contains(CLS_TEMPLATE)) {
+                this.activeEle.setAttribute('tabindex', this.getDataTabindex(this.activeEle));
+            }
+            else {
+                this.activeEle.removeAttribute('tabindex');
+            }
         }
         this.activeEle = curEle;
         if (this.getDataTabindex(this.activeEle) === '-1') {
             if (isNOU(this.trgtEle) && !(<HTEle>curEle.parentElement).classList.contains(CLS_TEMPLATE)) {
                 this.updateTabIndex('-1');
                 curEle.removeAttribute('tabindex');
-            } else if ((<HTEle>curEle.parentElement).classList.contains(CLS_TEMPLATE) && !isNOU(curEle.getAttribute('data-tabindex'))) {
+            } else {
                 this.activeEle.setAttribute('tabindex', this.getDataTabindex(this.activeEle));
             }
         }

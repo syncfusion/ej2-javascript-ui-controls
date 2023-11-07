@@ -39,6 +39,7 @@ import { IFeatureBarBounds } from './model/bullet-interface';
 import { getBulletThemeColor } from './utils/theme';
 import { ExportUtils } from '../common/utils/export';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
+import { PrintUtils } from '../common/utils/print'
 
 /**
  * bullet chart
@@ -1439,7 +1440,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * Handles the print method for bullet chart control.
      */
     public print(id?: string[] | string | Element): void {
-        new ExportUtils(this).print(id);
+        new PrintUtils(this).print(id);
     }
 
     /**

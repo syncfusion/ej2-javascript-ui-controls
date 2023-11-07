@@ -1167,10 +1167,13 @@ export class Drawing {
     }
 
     private shownBorder(): boolean {
-        let annotation: any = this.pdfViewer.selectedItems.annotations[0];
-        let allowedInteraction: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
-        let isLock: boolean = this.pdfViewer.annotationModule.checkIsLockSettings(annotation);
-        let isSelectInAllowed: any = !isNullOrUndefined(allowedInteraction) && (allowedInteraction.includes('Select') || !isLock);
+        let isSelectInAllowed: boolean = false;
+        if (this.pdfViewer.annotationModule) {
+            let annotation: any = this.pdfViewer.selectedItems.annotations[0];
+            let allowedInteraction: any = this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+            let isLock: boolean = this.pdfViewer.annotationModule.checkIsLockSettings(annotation);
+            isSelectInAllowed = !isNullOrUndefined(allowedInteraction) && (allowedInteraction.includes('Select') || !isLock);
+        }
         return isSelectInAllowed;
     }
     /**

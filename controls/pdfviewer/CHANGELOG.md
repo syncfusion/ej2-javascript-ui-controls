@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 23.1.44 (2023-11-07)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I511552` - Now, the `openThumbnailPane` method does not close the thumbnail pane.
+- `#I509218` - Now, The thumbnail pane is now rendered properly when opened programmatically.
+- `#I509483` - Now, the issue of loading the provided PDF document has been resolved.
+- `#I510606` - Now, the opacity value is properly preserved in the free annotation if it is set as zero programmatically.
+
 ## 23.1.43 (2023-10-31)
 
 ### PDF Viewer

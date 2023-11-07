@@ -56,6 +56,14 @@ export class RibbonSplitButtonSettings extends ChildProperty<RibbonSplitButtonSe
     public target: string | HTMLElement;
 
     /**
+     * Specifies additional HTML attributes to be applied to the SplitButton.
+     *
+     * @default {}
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string };
+
+    /**
      * Triggers before closing the SplitButton popup.
      *
      * @event beforeClose

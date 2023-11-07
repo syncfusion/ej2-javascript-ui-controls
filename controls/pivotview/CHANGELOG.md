@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.44 (2023-11-07)
+
+### PivotTable
+
+#### Bug fixes
+
+- `I515880` - The pivot table grouping bar actions will now work properly when invoking the refresh method dynamically.
+
 ## 23.1.41 (2023-10-17)
 
 ### PivotTable

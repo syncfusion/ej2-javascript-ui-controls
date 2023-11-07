@@ -66,6 +66,7 @@ export class RibbonComboBox {
             width: comboBoxSettings.width,
             beforeOpen: comboBoxSettings.beforeOpen,
             open: comboBoxSettings.open,
+            htmlAttributes: comboBoxSettings.htmlAttributes,
             close: (e: PopupEventArgs) => {
                 if (comboBoxSettings.close) { comboBoxSettings.close.call(this, e); }
             },

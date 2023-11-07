@@ -88,6 +88,8 @@ export class Selection {
     private htmlWriterIn: HtmlExport;
 
     private toolTipElement: HTMLElement;
+    private screenTipElement:HTMLElement
+    private toolTipTextElement: HTMLElement;
     private toolTipObject: Popup;
     private toolTipField: FieldElementBox | string;
     private isMoveDownOrMoveUp: boolean = false;
@@ -8736,6 +8738,10 @@ export class Selection {
             if (!this.toolTipElement) {
                 this.toolTipElement = createElement('div', { className: 'e-de-tooltip' });
                 this.documentHelper.viewerContainer.appendChild(this.toolTipElement);
+                this.screenTipElement= createElement('p');
+                this.toolTipElement.appendChild(this.screenTipElement);
+                this.toolTipTextElement = createElement('p', { styles: 'font-weight:bold' });
+                this.toolTipElement.appendChild(this.toolTipTextElement);
             }
             this.toolTipElement.style.display = 'block';
             let l10n: L10n = new L10n('documenteditor', this.owner.defaultLocale);
@@ -8749,14 +8755,16 @@ export class Selection {
                 }
             }
             let linkText: string = this.getScreenTipText(fieldBegin);
+           
             if (isFormField) {
                 let helpText: string = fieldBegin.formFieldData.helpText;
                 if (isNullOrUndefined(helpText) || helpText === '') {
                     return;
                 }
-                this.toolTipElement.innerHTML = helpText;
+                this.screenTipElement.innerText = helpText;
             } else {
-                this.toolTipElement.innerHTML = linkText + '</br><b>' + toolTipText + '</b>';
+                this.screenTipElement.innerText = linkText;
+                this.toolTipTextElement.innerText = toolTipText;
             }
             let position: Point = this.getTooltipPosition(fieldBegin.line, xPos, this.toolTipElement, false);
             this.showToolTip(position.x, position.y);

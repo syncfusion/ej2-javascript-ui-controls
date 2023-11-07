@@ -34,6 +34,13 @@ export interface RibbonCheckBoxSettingsModel {
     labelPosition?: LabelPosition;
 
     /**
+     * Specifies additional HTML attributes to be applied to the checkbox.
+     *
+     * @default {}
+     */
+    htmlAttributes?: { [key: string]: string };
+
+    /**
      * Event triggers once the checkbox is created.
      *
      * @event created

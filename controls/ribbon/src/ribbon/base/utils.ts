@@ -1,4 +1,4 @@
-import { compile, getComponent, select } from '@syncfusion/ej2-base';
+import { compile, getComponent, select, addClass } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { RibbonTabModel, RibbonGroupModel, RibbonCollectionModel, RibbonItemModel, RibbonTooltipModel } from '../models/index';
 import { commonProperties, DisplayMode, EJ2Control, itemProps, RibbonLayout, ribbonTooltipData } from './interface';
@@ -310,4 +310,31 @@ export function destroyTooltip(element: HTMLElement): void {
 export function updateTooltipProp(element: HTMLElement, prop: commonProperties): void {
     const control: Tooltip = getComponent(element, Tooltip);
     control.setProperties(prop);
+}
+
+/**
+ * Sets the HTML attributes of an element
+ *
+ * @param {HTMLElement} element - The HTML element for which attributes are to be updated.
+ * @param {commonProperties} attributes - An object containing key-value pairs of attributes to be updated.
+ * @returns {void}
+ * @hidden
+ */
+export function setCustomAttributes(element: HTMLElement, attributes: { [key: string]: string }): void {
+    for (const key in attributes) {
+        if (key === 'class') {
+            const elementClass: string = attributes['class'].replace(/\s+/g, ' ').trim();
+            if (elementClass) {
+                addClass([element], elementClass.split(' '));
+            }
+        }
+        else if (key === 'style') {
+            const prevStyles: string = element.getAttribute('style') || '';
+            const value: string = `${prevStyles}${attributes[`${key}`]}`;
+            element.setAttribute(`${key}`, value);
+        }
+        else {
+            element.setAttribute(key, attributes[`${key}`]);
+        }
+    }
 }

@@ -43,6 +43,7 @@ export class RibbonCheckBox {
             labelPosition: checkBoxSettings.labelPosition,
             disabled: item.disabled,
             created: checkBoxSettings.created,
+            htmlAttributes: checkBoxSettings.htmlAttributes,
             change: (e: ChangeEventArgs) => {
                 if (checkBoxSettings.change) { checkBoxSettings.change.call(this, e); }
             }

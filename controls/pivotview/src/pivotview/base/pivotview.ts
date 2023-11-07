@@ -13,7 +13,9 @@ import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } fr
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';
-import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo, EditCompletedEventArgs, MultiLevelLabelClickEventArgs, BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs, PivotActionFailureEventArgs, PivotActionInfo, AfterServiceInvokeEventArgs, MultiLevelLabelRenderEventArgs } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, MultiLevelLabelRenderEventArgs, EditCompletedEventArgs, ExportPageSize } from '../../common/base/interface';
+import { BeforeServiceInvokeEventArgs, FetchRawDataArgs, UpdateRawDataArgs, PivotActionBeginEventArgs, PivotActionCompleteEventArgs } from '../../common/base/interface';
+import { MultiLevelLabelClickEventArgs, PivotActionInfo, AfterServiceInvokeEventArgs, PivotColumn, ChartLabelInfo, PivotActionFailureEventArgs } from '../../common/base/interface';
 import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';
 import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, AggregateEventArgs } from '../../common/base/interface';
 import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs, ExportCompleteEventArgs } from '../../common/base/interface';
@@ -55,7 +57,9 @@ import { Toolbar } from '../../common/popups/toolbar';
 import { PivotChart } from '../../pivotchart/index';
 import { ChartSettings } from '../model/chartsettings';
 import { ChartSettingsModel } from '../model/chartsettings-model';
-import { Chart, ITooltipRenderEventArgs, ILoadedEventArgs, IPointEventArgs, AccumulationChart, ILegendClickEventArgs } from '@syncfusion/ej2-charts';
+import { Chart, ITooltipRenderEventArgs, ILoadedEventArgs, IPointEventArgs, AccumulationChart, ILegendClickEventArgs, IPrintEventArgs } from '@syncfusion/ej2-charts';
+import { IAnimationCompleteEventArgs, ILegendRenderEventArgs, ITextRenderEventArgs, IPointRenderEventArgs, ISeriesRenderEventArgs } from '@syncfusion/ej2-charts';
+import { IMouseEventArgs, IDragCompleteEventArgs, IZoomCompleteEventArgs, IScrollEventArgs } from '@syncfusion/ej2-charts';
 import { IResizeEventArgs, IAxisLabelRenderEventArgs, ExportType } from '@syncfusion/ej2-charts';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { ClickEventArgs, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
@@ -611,6 +615,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public minHeight: number;
     /** @hidden */
     public allowEngineExport: boolean = false;
+    /** @hidden */
+    public exportSpecifiedPages: ExportPageSize;
 
     //Module Declarations
     public pivotView: PivotView;
@@ -1553,6 +1559,125 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     protected chartLegendClick: EmitType<ILegendClickEventArgs>;
+
+    /**
+     * @event beforePrint
+     * @hidden
+     */
+    @Event()
+    protected beforePrint: EmitType<IPrintEventArgs>;
+
+    /**
+     * @event animationComplete
+     * @hidden
+     */
+    @Event()
+    protected animationComplete: EmitType<IAnimationCompleteEventArgs>;
+
+    /**
+     * @event legendRender
+     * @hidden
+     */
+    @Event()
+    protected legendRender: EmitType<ILegendRenderEventArgs>;
+
+    /**
+     * @event textRender
+     * @hidden
+     */
+    @Event()
+    protected textRender: EmitType<ITextRenderEventArgs>;
+
+    /**
+     * @event pointRender
+     * @hidden
+     */
+    @Event()
+    protected pointRender: EmitType<IPointRenderEventArgs>;
+
+    /**
+     * @event seriesRender
+     * @hidden
+     */
+    @Event()
+    protected seriesRender: EmitType<ISeriesRenderEventArgs>;
+
+    /**
+     * @event chartMouseMove
+     * @hidden
+     */
+    @Event()
+    protected chartMouseMove: EmitType<IMouseEventArgs>;
+
+    /**
+     * @event chartMouseMove
+     * @hidden
+     */
+    @Event()
+    protected chartMouseClick: EmitType<IMouseEventArgs>;
+
+    /**
+     * @event pointMove
+     * @hidden
+     */
+    @Event()
+    protected pointMove: EmitType<IPointEventArgs>;
+
+    /**
+     * @event chartMouseLeave
+     * @hidden
+     */
+    @Event()
+    protected chartMouseLeave: EmitType<IMouseEventArgs>;
+
+    /**
+     * @event chartMouseDown
+     * @hidden
+     */
+    @Event()
+    protected chartMouseDown: EmitType<IMouseEventArgs>;
+
+    /**
+     * @event chartMouseUp
+     * @hidden
+     */
+    @Event()
+    protected chartMouseUp: EmitType<IMouseEventArgs>;
+
+    /**
+     * @event dragComplete
+     * @hidden
+     */
+    @Event()
+    protected dragComplete: EmitType<IDragCompleteEventArgs>;
+
+    /**
+     * @event zoomComplete
+     * @hidden
+     */
+    @Event()
+    protected zoomComplete: EmitType<IZoomCompleteEventArgs>;
+
+    /**
+     * @event scrollStart
+     * @hidden
+     */
+    @Event()
+    protected scrollStart: EmitType<IScrollEventArgs>;
+
+    /**
+     * @event scrollEnd
+     * @hidden
+     */
+    @Event()
+    protected scrollEnd: EmitType<IScrollEventArgs>;
+
+    /**
+     * @event scrollChanged
+     * @hidden
+     */
+    @Event()
+    protected scrollChanged: EmitType<IScrollEventArgs>;
 
     /**
      * @event multiLevelLabelRender
@@ -2644,6 +2769,23 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.contextMenuOpen = this.gridSettings.contextMenuOpen ? this.gridSettings.contextMenuOpen : undefined;
         this.beforePdfExport = this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport.bind(this) : undefined;
         this.beforeExcelExport = this.gridSettings.beforeExcelExport ? this.gridSettings.beforeExcelExport.bind(this) : undefined;
+        this.beforePrint = this.chartSettings.beforePrint ? this.chartSettings.beforePrint : undefined;
+        this.animationComplete = this.chartSettings.animationComplete ? this.chartSettings.animationComplete : undefined;
+        this.legendRender = this.chartSettings.legendRender ? this.chartSettings.legendRender : undefined;
+        this.textRender = this.chartSettings.textRender ? this.chartSettings.textRender : undefined;
+        this.pointRender = this.chartSettings.pointRender ? this.chartSettings.pointRender : undefined;
+        this.seriesRender = this.chartSettings.seriesRender ? this.chartSettings.seriesRender : undefined;
+        this.chartMouseMove = this.chartSettings.chartMouseMove ? this.chartSettings.chartMouseMove : undefined;
+        this.chartMouseClick = this.chartSettings.chartMouseClick ? this.chartSettings.chartMouseClick : undefined;
+        this.pointMove = this.chartSettings.pointMove ? this.chartSettings.pointMove : undefined;
+        this.chartMouseLeave = this.chartSettings.chartMouseLeave ? this.chartSettings.chartMouseLeave : undefined;
+        this.chartMouseDown = this.chartSettings.chartMouseDown ? this.chartSettings.chartMouseDown : undefined;
+        this.chartMouseUp = this.chartSettings.chartMouseUp ? this.chartSettings.chartMouseUp : undefined;
+        this.dragComplete = this.chartSettings.dragComplete ? this.chartSettings.dragComplete : undefined;
+        this.zoomComplete = this.chartSettings.zoomComplete ? this.chartSettings.zoomComplete : undefined;
+        this.scrollStart = this.chartSettings.scrollStart ? this.chartSettings.scrollStart : undefined;
+        this.scrollEnd = this.chartSettings.scrollEnd ? this.chartSettings.scrollEnd : undefined;
+        this.scrollChanged = this.chartSettings.scrollChanged ? this.chartSettings.scrollChanged : undefined;
         this.multiLevelLabelRender = this.chartSettings.multiLevelLabelRender ? this.chartSettings.multiLevelLabelRender : undefined;
         if (this.gridSettings.rowHeight === null) {
             if (this.isTouchMode) {
@@ -2963,11 +3105,21 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         const chartPointClickEvent: any = this.chartSettings['pointClick'];
         const chartTooltipRenderEvent: any = this.chartSettings['tooltipRender'];
         const chartLegendClickEvent: any = this.chartSettings['legendClick'];
-        const multiLevelLabelRenderEvent: any = this.chartSettings['multiLevelLabelRender'];
+        const chartMultiLevelLabelRenderEvent: any = this.chartSettings['multiLevelLabelRender'];
+        const chartBeforePrintEvent: any = this.chartSettings['beforePrint'];
+        const chartAnimationCompleteEvent: any = this.chartSettings['animationComplete'];
+        const chartMouseMoveEvent: any = this.chartSettings['chartMouseMove'];
+        const chartMouseClickEvent: any = this.chartSettings['chartMouseClick'];
+        const chartPointMoveEvent: any = this.chartSettings['pointMove'];
+        const chartMouseLeaveEvent: any = this.chartSettings['chartMouseLeave'];
+        const chartMouseDownEvent: any = this.chartSettings['chartMouseDown'];
+        const chartMouseUpEvent: any = this.chartSettings['chartMouseUp'];
+        const chartDragCompleteEvent: any = this.chartSettings['dragComplete'];
+        const chartZoomCompleteEvent: any = this.chartSettings['zoomComplete'];
+        const chartScrollStartEvent: any = this.chartSettings['scrollStart'];
+        const chartScrollEndEvent: any = this.chartSettings['scrollEnd'];
+        const chartScrollChangedEvent: any = this.chartSettings['scrollChanged'];
         /* eslint-enable @typescript-eslint/no-explicit-any */
-        this.chartSettings['tooltipRender'] = undefined;
-        this.chartSettings['legendClick'] = undefined;
-        this.chartSettings['multiLevelLabelRender'] = undefined;
         this.chartSettings['load'] = undefined;
         this.chartSettings['loaded'] = undefined;
         this.chartSettings['textRender'] = undefined;
@@ -2975,6 +3127,22 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.chartSettings['seriesRender'] = undefined;
         this.chartSettings['legendRender'] = undefined;
         this.chartSettings['pointClick'] = undefined;
+        this.chartSettings['tooltipRender'] = undefined;
+        this.chartSettings['legendClick'] = undefined;
+        this.chartSettings['multiLevelLabelRender'] = undefined;
+        this.chartSettings['beforePrint'] = undefined;
+        this.chartSettings['animationComplete'] = undefined;
+        this.chartSettings['chartMouseMove'] = undefined;
+        this.chartSettings['chartMouseClick'] = undefined;
+        this.chartSettings['pointMove'] = undefined;
+        this.chartSettings['chartMouseLeave'] = undefined;
+        this.chartSettings['chartMouseDown'] = undefined;
+        this.chartSettings['chartMouseUp'] = undefined;
+        this.chartSettings['dragComplete'] = undefined;
+        this.chartSettings['zoomComplete'] = undefined;
+        this.chartSettings['scrollStart'] = undefined;
+        this.chartSettings['scrollEnd'] = undefined;
+        this.chartSettings['scrollChanged'] = undefined;
         const persistData: string = this.addOnPersist(keyEntity);
         this.chartSettings['load'] = chartLoadEvent;
         this.chartSettings['loaded'] = chartLoadedEvent;
@@ -2985,7 +3153,20 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.chartSettings['pointClick'] = chartPointClickEvent;
         this.chartSettings['tooltipRender'] = chartTooltipRenderEvent;
         this.chartSettings['legendClick'] = chartLegendClickEvent;
-        this.chartSettings['multiLevelLabelRender'] = multiLevelLabelRenderEvent;
+        this.chartSettings['multiLevelLabelRender'] = chartMultiLevelLabelRenderEvent;
+        this.chartSettings['beforePrint'] = chartBeforePrintEvent;
+        this.chartSettings['animationComplete'] = chartAnimationCompleteEvent;
+        this.chartSettings['chartMouseMove'] = chartMouseMoveEvent;
+        this.chartSettings['chartMouseClick'] = chartMouseClickEvent;
+        this.chartSettings['pointMove'] = chartPointMoveEvent;
+        this.chartSettings['chartMouseLeave'] = chartMouseLeaveEvent;
+        this.chartSettings['chartMouseDown'] = chartMouseDownEvent;
+        this.chartSettings['chartMouseUp'] = chartMouseUpEvent;
+        this.chartSettings['dragComplete'] = chartDragCompleteEvent;
+        this.chartSettings['zoomComplete'] = chartZoomCompleteEvent;
+        this.chartSettings['scrollStart'] = chartScrollStartEvent;
+        this.chartSettings['scrollEnd'] = chartScrollEndEvent;
+        this.chartSettings['scrollChanged'] = chartScrollChangedEvent;
         return persistData;
     }
 
@@ -3100,7 +3281,20 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         const chartPointClickEvent: any = this.chartSettings['pointClick'];
         const chartTooltipRenderEvent: any = this.chartSettings['tooltipRender'];
         const chartLegendClickEvent: any = this.chartSettings['legendClick'];
-        const multiLevelLabelRenderEvent: any = this.chartSettings['multiLevelLabelRender'];
+        const chartMultiLevelLabelRenderEvent: any = this.chartSettings['multiLevelLabelRender'];
+        const chartBeforePrintEvent: any = this.chartSettings['beforePrint'];
+        const chartAnimationCompleteEvent: any = this.chartSettings['animationComplete'];
+        const chartMouseMoveEvent: any = this.chartSettings['chartMouseMove'];
+        const chartMouseClickEvent: any = this.chartSettings['chartMouseClick'];
+        const chartPointMoveEvent: any = this.chartSettings['pointMove'];
+        const chartMouseLeaveEvent: any = this.chartSettings['chartMouseLeave'];
+        const chartMouseDownEvent: any = this.chartSettings['chartMouseDown'];
+        const chartMouseUpEvent: any = this.chartSettings['chartMouseUp'];
+        const chartDragCompleteEvent: any = this.chartSettings['dragComplete'];
+        const chartZoomCompleteEvent: any = this.chartSettings['zoomComplete'];
+        const chartScrollStartEvent: any = this.chartSettings['scrollStart'];
+        const chartScrollEndEvent: any = this.chartSettings['scrollEnd'];
+        const chartScrollChangedEvent: any = this.chartSettings['scrollChanged'];
         /* eslint-enable @typescript-eslint/no-explicit-any */
         this.gridSettings['columnRender'] = undefined;
         this.gridSettings['excelQueryCellInfo'] = undefined;
@@ -3117,6 +3311,19 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.chartSettings['seriesRender'] = undefined;
         this.chartSettings['legendRender'] = undefined;
         this.chartSettings['pointClick'] = undefined;
+        this.chartSettings['beforePrint'] = undefined;
+        this.chartSettings['animationComplete'] = undefined;
+        this.chartSettings['chartMouseMove'] = undefined;
+        this.chartSettings['chartMouseClick'] = undefined;
+        this.chartSettings['pointMove'] = undefined;
+        this.chartSettings['chartMouseLeave'] = undefined;
+        this.chartSettings['chartMouseDown'] = undefined;
+        this.chartSettings['chartMouseUp'] = undefined;
+        this.chartSettings['dragComplete'] = undefined;
+        this.chartSettings['zoomComplete'] = undefined;
+        this.chartSettings['scrollStart'] = undefined;
+        this.chartSettings['scrollEnd'] = undefined;
+        this.chartSettings['scrollChanged'] = undefined;
         let dataSource: IDataSet[] = [];
         if (isRemoveDatasource) {
             dataSource = (this.dataSourceSettings.dataSource && !(this.dataSourceSettings.dataSource instanceof DataManager)) ?
@@ -3138,7 +3345,20 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.chartSettings['pointClick'] = chartPointClickEvent;
         this.chartSettings['tooltipRender'] = chartTooltipRenderEvent;
         this.chartSettings['legendClick'] = chartLegendClickEvent;
-        this.chartSettings['multiLevelLabelRender'] = multiLevelLabelRenderEvent;
+        this.chartSettings['multiLevelLabelRender'] = chartMultiLevelLabelRenderEvent;
+        this.chartSettings['beforePrint'] = chartBeforePrintEvent;
+        this.chartSettings['animationComplete'] = chartAnimationCompleteEvent;
+        this.chartSettings['chartMouseMove'] = chartMouseMoveEvent;
+        this.chartSettings['chartMouseClick'] = chartMouseClickEvent;
+        this.chartSettings['pointMove'] = chartPointMoveEvent;
+        this.chartSettings['chartMouseLeave'] = chartMouseLeaveEvent;
+        this.chartSettings['chartMouseDown'] = chartMouseDownEvent;
+        this.chartSettings['chartMouseUp'] = chartMouseUpEvent;
+        this.chartSettings['dragComplete'] = chartDragCompleteEvent;
+        this.chartSettings['zoomComplete'] = chartZoomCompleteEvent;
+        this.chartSettings['scrollStart'] = chartScrollStartEvent;
+        this.chartSettings['scrollEnd'] = chartScrollEndEvent;
+        this.chartSettings['scrollChanged'] = chartScrollChangedEvent;
         if (isRemoveDatasource) {
             this.setProperties({ dataSourceSettings: { dataSource: dataSource } }, true);
         }
@@ -3703,10 +3923,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const pivot: PivotView = this;
         //setTimeout(() => {
-        const isSorted: boolean = Object.keys(pivot.lastSortInfo).length > 0 ? true : false;
-        const isFiltered: boolean = Object.keys(pivot.lastFilterInfo).length > 0 ? true : false;
-        const isAggChange: boolean = Object.keys(pivot.lastAggregationInfo).length > 0 ? true : false;
-        const isCalcChange: boolean = Object.keys(pivot.lastCalcFieldInfo).length > 0 ? true : false;
+        const isSorted: boolean = !isNullOrUndefined(pivot.lastSortInfo) && Object.keys(pivot.lastSortInfo).length > 0 ? true : false;
+        const isFiltered: boolean = !isNullOrUndefined(pivot.lastFilterInfo) && Object.keys(pivot.lastFilterInfo).length > 0 ? true : false;
+        const isAggChange: boolean = !isNullOrUndefined(pivot.lastAggregationInfo) && Object.keys(pivot.lastAggregationInfo).length > 0 ?
+            true : false;
+        const isCalcChange: boolean = !isNullOrUndefined(pivot.lastCalcFieldInfo) && Object.keys(pivot.lastCalcFieldInfo).length > 0 ?
+            true : false;
 
         const args: EnginePopulatingEventArgs = {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(pivot.dataSourceSettings)
@@ -3954,15 +4176,18 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         const args: BeforeExportEventArgs = {
             pdfExportProperties: pdfExportProperties, isMultipleExport: isMultipleExport, isBlob: isBlob, pdfDoc: pdfDoc, currentExportView: 'Table',
             pdfMargins: {}
-        };
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        }; // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let pdfDocument: Promise<any> = null;
         this.trigger(events.beforeExport, args);
         if (this.pdfExportModule) {
             this.pdfExportModule.exportProperties = args;
-        }   // eslint-disable-next-line max-len
-        if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || (this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0) || args.height || args.width || Object.keys(args.pdfMargins).length > 0) &&
-            (this.dataSourceSettings.mode !== 'Server' || ((this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0) && (this.enableVirtualization || this.enablePaging) && this.dataSourceSettings.mode === 'Server'))) {
+        }   /* eslint-disable max-len */
+        if ((this.enableVirtualization || this.enablePaging || this.allowEngineExport || Object.keys(args.pdfMargins).length > 0)
+            || args.height || args.width || (this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0)
+            && (this.dataSourceSettings.mode !== 'Server' || ((this.enableVirtualization || this.enablePaging) && this.dataSourceSettings.mode === 'Server'
+            && (this.allowConditionalFormatting && this.dataSourceSettings.conditionalFormatSettings.length > 0)))
+        ) {
+            /* eslint-enable max-len */
             pdfDocument = this.pdfExportModule.exportToPDF(args.pdfExportProperties, args.isMultipleExport, args.pdfDoc, args.isBlob);
         } else {
             pdfDocument = this.grid.pdfExport(args.pdfExportProperties, args.isMultipleExport, args.pdfDoc, args.isBlob);
@@ -5854,10 +6079,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                                                 this.conditionalFormattingModule.colourNameToHex(format[k as number].style.backgroundColor);
                                         }
                                         if (format[k as number].style && format[k as number].style.color) {
-                                            format[k as number].style.color =
-                                                format[k as number].style.color.charAt(0) === '#' && this.conditionalFormattingModule.isHex(
-                                                    format[k as number].style.color.substr(1)) ? format[k as number].style.color
-                                                    : this.conditionalFormattingModule.colourNameToHex(format[k as number].style.color);
+                                            format[k as number].style.color = format[k as number].style.color.charAt(0) === '#' &&
+                                                this.conditionalFormattingModule.isHex(format[k as number].style.color.substr(1)) ?
+                                                format[k as number].style.color :
+                                                this.conditionalFormattingModule.colourNameToHex(format[k as number].style.color);
                                         }
                                         (pivotValues[i as number][j as number] as IAxisSet).style = format[k as number].style;
                                         (pivotValues[i as number][j as number] as IAxisSet).cssClass = 'format' + this.element.id + k;
@@ -6473,6 +6698,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
         if (this.chartExportModule) {
             this.chartExportModule = null;
+        }
+        if (this.exportSpecifiedPages) {
+            this.exportSpecifiedPages = undefined;
         }
         this.element.innerHTML = '';
         removeClass([this.element], cls.ROOT);

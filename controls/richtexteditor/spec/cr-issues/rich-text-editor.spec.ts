@@ -2597,4 +2597,82 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+    describe('853677 - The image alternate text is not shown properly in the Rich Text Editor.', () => {
+        let rteObj: RichTextEditor;
+        it('ensure insert image on Alternate text', () => {
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px'
+            });
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            setCursorPoint((rteObj as any).inputElement, 0);
+            (rteObj as any).inputElement.focus();
+            rteObj.executeCommand('insertImage', {
+                url: 'https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png',
+                cssClass: 'testingClass',
+                width: { minWidth: '200px', maxWidth: '200px', width: 180 },
+                height: { minHeight: '200px', maxHeight: '600px', height: 500 },
+                altText: '<a href="javascript:alert(\'XSS\')">Click me</a>'
+            });
+            let imgElem: HTMLElement = (rteObj as any).inputElement.querySelector('img');
+            expect(imgElem.getAttribute('alt') === '<a href="javascript:alert(\'XSS\')">Click me</a>').toBe(true);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('852541 -ToolbarClick event should trigger before the opening of emoji picker popup in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        let toolbarClick: any;
+        beforeEach((done: Function) => {
+            toolbarClick = null;
+            toolbarClick = jasmine.createSpy('toolbarClick');
+            rteObj = renderRTE({
+                toolbarClick: toolbarClick,
+                value: '<span id="rte">RTE</span>',
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                }
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('toolbarClick event should trigger', () => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            dispatchEvent((rteObj as any).inputElement, 'focusin');
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
+            item.click();
+            expect(toolbarClick).toHaveBeenCalled();
+        });
+    });
+    describe('853717 - Not able to insert the SVG or Canvas elements using ExecuteCommand in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: ''
+            });
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Not able to insert the SVG or Canvas elements', () => {
+            rteObj.executeCommand('insertHTML', `<div>
+            <p>test</p>
+            <svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'>
+              <circle cx='50' cy='50' r='40' stroke='green' stroke-width='4' fill='yellow' />
+            </svg>
+          </div><p>text</p>`);
+          expect(rteObj.contentModule.getEditPanel().innerHTML === '<div>\n            <p>test</p>\n            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">\n              <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow"></circle>\n            </svg>\n          </div><p>text</p>').toBe(true);
+        });
+    });
 });

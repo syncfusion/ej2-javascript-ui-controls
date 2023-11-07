@@ -42,6 +42,14 @@ export class RibbonGroupButtonItem extends ChildProperty<RibbonGroupButtonItem> 
     public selected: boolean;
 
     /**
+     * Specifies additional HTML attributes to be applied to the group button item.
+     *
+     * @default {}
+     */
+    @Property({})
+    public htmlAttributes: { [key: string]: string };
+
+    /**
      * Triggers before clicking the button from group button.
      *
      * @event beforeClick

@@ -365,7 +365,7 @@ describe('EJ2-69674 - Pressing enter key after deleting the list using backspace
         keyBoardEvent.which = 13;
         (rteObj as any).keyDown(keyBoardEvent);
         expect(window.getSelection().anchorOffset !== (rteObj as any).inputElement).toBe(true);
-        expect((rteObj as any).inputElement.innerHTML === `<p style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br></p><p style="text-align:center; margin-bottom: 5px; "><font face="Calibri"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></font><br></p><p style="text-align: center; margin-bottom: 2px; "><font face="Calibri"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br></font></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;">​</span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></p><p><span style="font-size: 14pt; "><span style="font-size: 14pt;"><span style="font-family: Calibri; "><br></span></span></span></p>`).toBe(true);
+        expect((rteObj as any).inputElement.innerHTML === `<p style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br></p><p style="text-align:center; margin-bottom: 5px; "><font face="Calibri"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></font><br></p><p style="text-align: center; margin-bottom: 2px; "><font face="Calibri"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br></font></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;">​</span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-size: 14pt;"><span style="font-family: Calibri; "><br></span></span></span></p>`).toBe(true);
         done();
     });
     afterAll(() => {
@@ -3553,6 +3553,33 @@ describe('RTE base module', () => {
             expect(linkElm.innerText).toBe('hello this is facebook link');
         });
 
+        it('853715 - White Spaces are not included in display text while inserting link in RichTextEditor', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px'
+            });
+            (rteObj as any).inputElement.focus();
+            let selection: NodeSelection = new NodeSelection();
+            let range: Range;
+            let saveSelection: NodeSelection;
+            range = selection.getRange(document);
+            saveSelection = selection.save(range, document);
+            rteObj.executeCommand('createLink', {
+                url: 'https://www.facebook.com',
+                title: 'facebook',
+                selection: saveSelection,
+                text: 'text text   text   ',
+                target: '_self'
+            });
+            let linkElm: HTMLElement = rteObj.inputElement.querySelector('a');
+            expect(linkElm).not.toBe(null);
+            expect(linkElm.getAttribute('href')).toBe('https://www.facebook.com');
+            expect(linkElm.getAttribute('title')).toBe('facebook');
+            expect(linkElm.getAttribute('target')).toBe('_self');
+            expect(linkElm.innerHTML).toBe('text text&nbsp;&nbsp;&nbsp;text&nbsp;&nbsp;&nbsp;');
+        });
+        
         it('EJ2-59978 - Insert link after Max char count - Execute Command Module', () => {
             destroy(rteObj);
             rteObj = renderRTE({

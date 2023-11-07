@@ -243,7 +243,7 @@ export class SpreadsheetChart {
     }
 
     private processChartRange(
-        range: number[], dataSheetIdx: number, opt: ChartModel): { xRange: number[], yRange: number[], lRange: number[] } {
+        range: number[], dataSheetIdx: number, opt: ChartModel): { xRange: number[], yRange: number[], lRange: number[], isStringSeries: boolean } {
         let xRange: number[];
         let yRange: number[];
         let lRange: number[];
@@ -260,7 +260,7 @@ export class SpreadsheetChart {
         if (!isNumber(blVal) || !tlVal) {
             isStringSeries = true;
         }
-        if (isNullOrUndefined(tlVal) && !isSingleRow && !isSingleCol || (opt.type === 'Scatter' && range[3] - range[1] === 1)) {
+        if ((isNullOrUndefined(tlVal) || (opt.type === 'Scatter' && !opt.isSeriesInRows)) && !isSingleRow && !isSingleCol) {
             xRange = [minr + 1, minc, maxr, minc];
             yRange = [minr + 1, minc + 1, maxr, maxc];
             lRange = [minr, minc + 1, minr, maxc];
@@ -288,7 +288,7 @@ export class SpreadsheetChart {
                 }
             }
         }
-        return { xRange: xRange, yRange: yRange, lRange: lRange };
+        return { xRange: xRange, yRange: yRange, lRange: lRange, isStringSeries: isStringSeries };
     }
 
     private toIntrnlRange(range: number[], sheetIdx: number): number[] {
@@ -429,7 +429,7 @@ export class SpreadsheetChart {
             if (lValue && lValue.length > 0) {
                 seriesName = lValue[i as number] as string;
             } else {
-                seriesName = 'series' + i;
+                seriesName = options.type === 'Scatter' ? ('series' + (i + 1)) : ('series' + i);
             }
             if (isNullOrUndefined(seriesName)) {
                 seriesName = '';
@@ -557,7 +557,7 @@ export class SpreadsheetChart {
 
     private initiateChartHandler(argsOpt: {
         option: ChartModel, isRefresh?: boolean, isInitCell?: boolean,
-        triggerEvent?: boolean, dataSheetIdx?: number, range?: string, isPaste?: boolean
+        triggerEvent?: boolean, dataSheetIdx?: number, range?: string, isPaste?: boolean, isSwitchRowColumn?: boolean
     }): SeriesModel[] | AccumulationSeriesModel[] {
         const chart: ChartModel = argsOpt.option;
         let isRangeSelect: boolean = true;
@@ -595,7 +595,7 @@ export class SpreadsheetChart {
         }
         options.isSeriesInRows = isRowLesser ? true : options.isSeriesInRows ? options.isSeriesInRows : false;
         argsOpt.dataSheetIdx = isNullOrUndefined(argsOpt.dataSheetIdx) ? sheetIdx : argsOpt.dataSheetIdx;
-        const chartRange: { xRange: number[], yRange: number[], lRange: number[] } =
+        const chartRange: { xRange: number[], yRange: number[], lRange: number[], isStringSeries: boolean } =
             this.processChartRange(rangeIdx, argsOpt.dataSheetIdx, options);
         const xRange: number[] = chartRange.xRange;
         const yRange: number[] = chartRange.yRange;
@@ -630,7 +630,8 @@ export class SpreadsheetChart {
             minorTicksPerInterval: chart.primaryXAxis && chart.primaryXAxis.minorGridLines && chart.primaryXAxis.minorGridLines.width > 0 ?
                 5 : 0,
             lineStyle: { width: 0 },
-            valueType: 'Category',
+            valueType: chart.type === 'Scatter' && !chartRange.isStringSeries && !chart.isSeriesInRows ? 'Double' : 'Category',
+            rangePadding: chart.type === 'Scatter' && !chartRange.isStringSeries && !chart.isSeriesInRows ? 'Round' : 'Auto',
             visible: chart.primaryXAxis ? chart.primaryXAxis.visible : true,
             title: chart.primaryXAxis ? chart.primaryXAxis.title : ''
         };
@@ -648,6 +649,13 @@ export class SpreadsheetChart {
             title: chart.primaryYAxis ? chart.primaryYAxis.title : ''
         };
         if (argsOpt.isRefresh) {
+            if (argsOpt.isSwitchRowColumn && chart.type === 'Scatter' ) {
+                const chartObj: HTMLElement = this.parent.element.querySelector('.' + chart.id);
+                if (chartObj) {
+                    let chartComp: Chart = getComponent(chartObj, 'chart');
+                    chartComp.primaryXAxis.valueType = !chartRange.isStringSeries && !chart.isSeriesInRows ? 'Double' : 'Category';
+                }
+            }
             return chartOptions.series;
         }
         const id: string = chart.id + '_overlay';
@@ -715,6 +723,8 @@ export class SpreadsheetChart {
                 axisLabelRender: (args: IAxisLabelRenderEventArgs) => {
                     if (args.axis.name === 'primaryYAxis' && format && !isNullOrUndefined(args.value) && this.parent) {
                         args.text = this.parent.getDisplayText({ format: format, value: args.value.toString()});
+                    } else if (args.axis.name === 'primaryXAxis' && chart.type === 'Scatter' && args.axis.labels.length > 0) {
+                        args.text = !isNumber(args.text) ? (args.axis.labels.indexOf(args.text) + 1).toString() : args.text;
                     }
                 }
             });
@@ -1220,7 +1230,7 @@ export class SpreadsheetChart {
             }
         }
         const chartSeries: SeriesModel[] =
-            this.initiateChartHandler({ option: this.parent.chartColl[chartCollId as number], isRefresh: true }) as SeriesModel[];
+            this.initiateChartHandler({ option: this.parent.chartColl[chartCollId as number], isRefresh: true, isSwitchRowColumn: true }) as SeriesModel[];
         chartComp.series = chartSeries;
     }
 
@@ -1286,6 +1296,16 @@ export class SpreadsheetChart {
             if (type === 'Pie' || type === 'Doughnut') {
                 this.changeCharType(chartCollId);
             } else {
+                if (type !== chartType) {
+                    if (chartType === 'Scatter') {
+                        const labels: string[] = (chartComp as Chart).primaryXAxis['labels'];
+                        if (labels && labels.length > 0 && isNumber(labels[labels.length - 1])) {
+                            (chartComp as Chart).primaryXAxis.valueType = 'Double';
+                        }
+                    } else if ((chartComp as Chart).primaryXAxis.valueType === 'Double') {
+                        (chartComp as Chart).primaryXAxis.valueType = 'Category';
+                    }
+                }
                 const chartSeries: SeriesModel[] = chartComp.series as SeriesModel[];
                 const isLineChart: boolean = chartType === 'Line' || chartType === 'StackingLine' || chartType === 'StackingLine100';
                 for (let idx: number = 0, len: number = chartSeries.length; idx < len; idx++) {

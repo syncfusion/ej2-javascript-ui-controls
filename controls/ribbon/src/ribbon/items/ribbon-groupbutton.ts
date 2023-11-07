@@ -5,7 +5,7 @@ import * as constants from '../base/constant';
 import { Button } from '@syncfusion/ej2-buttons';
 import { BeforeClickGroupButtonEventArgs, ClickGroupButtonEventArgs, RibbonGroupButtonSelection, RibbonItemSize } from '../base/interface';
 import { BeforeOpenCloseMenuEventArgs, DropDownButton, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { createTooltip, isTooltipPresent } from '../base/utils';
+import { createTooltip, isTooltipPresent, setCustomAttributes } from '../base/utils';
 import { Tooltip } from '@syncfusion/ej2-popups';
 
 /**
@@ -58,6 +58,9 @@ export class RibbonGroupButton {
                     content: item.activeSize === RibbonItemSize.Small ? '' : groupBtnSettings.items[parseInt(i.toString(), 10)].content,
                     iconPosition: item.activeSize === RibbonItemSize.Large ? 'Top' : 'Left'
                 }, groupButtonEle);
+                if (groupBtnSettings.items[parseInt(i.toString(), 10)].htmlAttributes) {
+                    setCustomAttributes(groupButtonEle, groupBtnSettings.items[parseInt(i.toString(), 10)].htmlAttributes);
+                }
                 const buttonEle: HTMLElement = itemElement.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + i);
                 if (groupBtnSettings.selection === RibbonGroupButtonSelection.Single) {
                     btnContainerEle.classList.add(constants.RIBBON_SINGLE_BUTTON_SELECTION);

@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../../workbook/base/workbook-model.d.ts'/>
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, Event, isUndefined } from '@syncfusion/ej2-base';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, Event, isUndefined, attributes } from '@syncfusion/ej2-base';
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { detach, select, closest, setStyleAttribute, EventHandler, getComponent, remove } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
@@ -2206,6 +2206,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 }
             }
             value = !isNullOrUndefined(value) ? value : '';
+            if (!isNullOrUndefined(args.rowIndex) && !isNullOrUndefined(args.colIndex)) {
+                attributes(td, { 'aria-label': (value ? value + ' ' : '') + getCellAddress(args.rowIndex, args.colIndex)});
+            }
             let node: Node = td.lastChild;
             if (td.querySelector('.e-databar-value')) {
                 node = td.querySelector('.e-databar-value').lastChild;

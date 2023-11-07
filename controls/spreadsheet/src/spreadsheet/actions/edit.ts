@@ -1201,7 +1201,7 @@ export class Edit {
         this.parent.notify(getFormattedCellObject, eventArgs);
         return <RefreshValueArgs>{ isRightAlign: eventArgs.isRightAlign, type: eventArgs.type, value: <string>eventArgs.value,
             result: this.parent.allowNumberFormatting ? eventArgs.formattedText : <string>eventArgs.value, curSymbol: eventArgs.curSymbol,
-            isRowFill: eventArgs.isRowFill };
+            isRowFill: eventArgs.isRowFill, rowIndex: rowIdx, colIndex: colIdx };
     }
 
     public endEdit(refreshFormulaBar: boolean = false, event?: MouseEvent & TouchEvent | KeyboardEventArgs, isPublic?: boolean): void {

@@ -57,7 +57,18 @@ export class ThumbnailView {
             this.pdfViewerBase.navigationPane.openThumbnailPane();
         }
     }
-
+    
+    /**
+     * Close the thumbnail pane of the PdfViewer.
+     *
+     * @returns void
+     */
+    public closeThumbnailPane(): void {
+        if (this.pdfViewerBase.navigationPane) {
+            this.pdfViewerBase.navigationPane.closeThumbnailPane();
+        }
+    };
+    
     /**
      * @private
      */
@@ -209,12 +220,15 @@ export class ThumbnailView {
             const thumbnailChild: HTMLAnchorElement = this.thumbnailView.children[pageNumber] as HTMLAnchorElement;
             if (thumbnailChild) {
                 const thumbnailDiv: HTMLElement = thumbnailChild.children[0] as HTMLElement;
-                var offsetTop: number;
-                if(thumbnailDiv.offsetTop <= 0){
-                    offsetTop = thumbnailDiv.parentElement.offsetTop + thumbnailDiv.clientTop - this.thumbnailTopMargin;
-                }
-                else{
-                    offsetTop = thumbnailDiv.offsetTop + thumbnailDiv.clientTop - this.thumbnailTopMargin;
+                let offsetTop: number;
+                if (shouldScroll) {
+                    if(thumbnailDiv.offsetTop <= 0){
+                        offsetTop = thumbnailDiv.parentElement.offsetTop + thumbnailDiv.clientTop - this.thumbnailTopMargin;
+                    }
+                    else{
+                        offsetTop = thumbnailDiv.offsetTop + thumbnailDiv.clientTop - this.thumbnailTopMargin;
+                    }
+                    this.pdfViewerBase.navigationPane.sideBarContent.scrollTop = offsetTop;
                 }
                 if (!this.isThumbnailClicked) {
                     if (this.previousElement) {

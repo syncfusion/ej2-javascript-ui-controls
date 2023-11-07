@@ -1,7 +1,7 @@
 import { KeyboardEventArgs, closest, getComponent, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
 import { BeforeOpenCloseMenuEventArgs, DropDownButton, ItemModel, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Tooltip } from '@syncfusion/ej2-popups';
-import { getItem, Ribbon, itemProps, getItemElement, RibbonItemSize, createTooltip } from '../base/index';
+import { getItem, Ribbon, itemProps, getItemElement, RibbonItemSize, createTooltip, setCustomAttributes } from '../base/index';
 import { RibbonDropDownSettingsModel, RibbonItemModel } from '../models/index';
 import { DROPDOWN_ID, ITEM_VERTICAL_CENTER, OVERFLOW_ID, RIBBON_CONTROL, RIBBON_GROUP_OVERFLOW_DDB, RIBBON_POPUP_CONTROL, SPACE, VERTICAL_DDB } from '../base/constant';
 
@@ -64,6 +64,9 @@ export class RibbonDropDown {
             open: dropDownSettings.open,
             select: dropDownSettings.select
         }).appendTo(buttonEle);
+        if (dropDownSettings.htmlAttributes) {
+            setCustomAttributes(buttonEle, dropDownSettings.htmlAttributes);
+        }
     }
     /**
      * Adds the additional event handlers as the item moved into overflow popup.

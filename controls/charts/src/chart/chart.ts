@@ -116,7 +116,7 @@ import { ScrollBar } from '../common/scrollbar/scrollbar';
 import { DataManager } from '@syncfusion/ej2-data';
 import { StockChart } from '../stock-chart/stock-chart';
 import { Export } from './print-export/export';
-import { ExportUtils } from '../common/utils/export';
+import { PrintUtils } from '../common/utils/print'
 
 /**
  * Configures the RangeColorSetting in the chart.
@@ -2441,7 +2441,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * Handles the print method for chart control.
      */
     public print(id?: string[] | string | Element): void {
-        const exportChart: ExportUtils = new ExportUtils(this);
+        const exportChart: PrintUtils = new PrintUtils(this);
         let width: string = this.width;
         if (this.getModuleName() == 'chart' && parseInt(this.width) >= 80 && this.width.indexOf('%') > -1) {
             this.width = '80%';
