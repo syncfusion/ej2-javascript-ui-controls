@@ -195,6 +195,7 @@ export class ScrollBar {
             elem.thumbRectX = this.isWithIn(currentX) ? currentX : elem.thumbRectX;
             this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
             this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth, false);
+            this.axis.zoomPosition = this.zoomPosition < 0 ? 0 : this.zoomPosition > 0.9 ? 1 : this.zoomPosition;
             if (this.isLazyLoad) {
                 const thumbMove: string = elem.thumbRectX > this.previousRectX ? 'RightMove' : 'LeftMove';
                 const args: IScrollEventArgs = this.calculateLazyRange(elem.thumbRectX, elem.thumbRectWidth, thumbMove);
@@ -273,10 +274,8 @@ export class ScrollBar {
         const currentZPWidth: number = circleRadius + (circleWidth / 2);
         const axisSize: number = this.isVertical ? axis.rect.height : this.width;
         this.zoomFactor = (currentWidth + (currentScrollWidth >= this.width ? circleRadius + circleWidth : 0)) / axisSize;
-        axis.zoomFactor = isRequire ? this.zoomFactor : axis.zoomFactor;
         this.zoomPosition = currentScrollWidth > axisSize ? (1 - axis.zoomFactor) : currentX < (circleRadius + circleWidth) ? 0 :
             (currentX - (currentX - currentZPWidth <= 0 ? currentZPWidth : 0)) / axisSize;
-        axis.zoomPosition = this.zoomPosition < 0 ? 0 : this.zoomPosition > 0.9 ? 1 : this.zoomPosition;
     }
     /**
      * Handles the mouse move on scrollbar.
@@ -323,11 +322,11 @@ export class ScrollBar {
                 this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
                 this.previousXY = mouseXY;
                 this.setZoomFactorPosition(currentX, elem.thumbRectWidth, false);
+                this.axis.zoomPosition = this.zoomPosition < 0 ? 0 : this.zoomPosition > 0.9 ? 1 : this.zoomPosition;
             }
             this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         } else if (this.isResizeLeft || this.isResizeRight) {
             this.resizeThumb();
-            this.component.trigger(scrollChanged, this.getArgs(scrollChanged, range, zoomPosition, zoomFactor, currentRange));
         }
     }
     /**
@@ -361,6 +360,8 @@ export class ScrollBar {
         this.positionThumb(elem.thumbRectX, elem.thumbRectWidth);
         if (this.isLazyLoad) {
             this.setZoomFactorPosition(elem.thumbRectX, elem.thumbRectWidth);
+            this.axis.zoomFactor = this.zoomFactor;
+            this.axis.zoomPosition = this.zoomPosition < 0 ? 0 : this.zoomPosition > 0.9 ? 1 : this.zoomPosition;
         }
         axis.zoomFactor = this.zoomFactor;
         axis.zoomPosition = this.zoomPosition;
@@ -678,21 +679,61 @@ export class ScrollBar {
                 this.scrollElements.thumbRectX = this.previousRectX = currentX;
                 this.scrollElements.thumbRectWidth = this.previousWidth = currentWidth;
                 this.previousXY = mouseXY;
-                this.positionThumb(currentX, currentWidth);
                 this.setZoomFactorPosition(currentX, currentWidth);
-
+                const argsData: IScrollEventArgs = {
+                    axis: (this.component.isBlazor ? {} : this.axis) as Axis,
+                    name: scrollChanged,
+                    range: this.axis.visibleRange,
+                    zoomFactor: this.zoomFactor,
+                    zoomPosition: this.zoomPosition,
+                    previousRange: this.axis.visibleRange,
+                    previousZoomFactor: this.axis.zoomFactor,
+                    previousZoomPosition: this.axis.zoomPosition,
+                    currentRange: null,
+                    cancel: false
+                };
+                this.component.trigger(scrollChanged, argsData);
+                if (!argsData.cancel) {
+                    this.positionThumb(currentX, currentWidth);
+                    this.axis.zoomFactor = argsData.zoomFactor;
+                    this.axis.zoomPosition = argsData.zoomPosition;
+                }
+                else {
+                    this.zoomFactor = argsData.previousZoomFactor;
+                    this.zoomPosition = argsData.previousZoomPosition;
+                }
             }
         } else if (this.isResizeRight) {
             currentWidth = mouseXY >= minThumbWidth + this.scrollElements.thumbRectX && mouseXY <= this.width - circleRadius ?
                 mouseXY - this.scrollElements.thumbRectX : this.previousWidth;
             this.scrollElements.thumbRectWidth = this.previousWidth = currentWidth;
             this.previousXY = mouseXY;
-            this.positionThumb(this.startX, currentWidth);
             this.setZoomFactorPosition(this.startX, currentWidth);
             if (!this.isLazyLoad) {
                 this.setZoomFactorPosition(this.startX, currentWidth);
             }
-
+            const argsData: IScrollEventArgs = {
+                axis: (this.component.isBlazor ? {} : this.axis) as Axis,
+                name: scrollChanged,
+                range: this.axis.visibleRange,
+                zoomFactor: this.zoomFactor,
+                zoomPosition: this.zoomPosition,
+                previousRange: this.axis.visibleRange,
+                previousZoomFactor: this.axis.zoomFactor,
+                previousZoomPosition: this.axis.zoomPosition,
+                currentRange: null,
+                cancel: false
+            };
+            this.component.trigger(scrollChanged, argsData);
+            if (!argsData.cancel) {
+                this.positionThumb(this.startX, currentWidth);
+                this.axis.zoomFactor = argsData.zoomFactor;
+                this.axis.zoomPosition = argsData.zoomPosition;
+            }
+            else {
+                this.zoomFactor = argsData.previousZoomFactor;
+                this.zoomPosition = argsData.previousZoomPosition;
+            }
         }
     }
     /**

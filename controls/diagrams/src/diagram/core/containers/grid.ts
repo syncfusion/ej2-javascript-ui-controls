@@ -101,7 +101,9 @@ export class GridPanel extends Container {
         // obj.minWidth = cell.desiredCellWidth; obj.minHeight = cell.desiredCellHeight;
         obj.style.strokeColor = 'black';
         obj.style.strokeWidth = 1;
-        obj.style.fill = 'white';
+        //Bug 853721: Grid lines remain hidden when lane fill is set to transparent.
+        // Removed below code in which the fill set as white.
+        // obj.style.fill = 'white';
         cell.children.push(obj);
     }
 

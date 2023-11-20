@@ -411,6 +411,7 @@ export class ContextMenu {
                     sItems = this.parent.selectedItems;
                     if (this.parent.activeModule === 'navigationpane') {
                         sItems = [];
+                        this.parent.navigationpaneModule.openFileOnContextMenuClick(closest(this.targetNodeElement, 'li') as HTMLLIElement);
                     }
                     GetDetails(this.parent, sItems, this.parent.path, 'details');
                     break;

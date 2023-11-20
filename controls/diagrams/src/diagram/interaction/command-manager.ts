@@ -3088,13 +3088,13 @@ export class CommandHandler {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 (this.diagram.nameTable[`${temp}`] instanceof Node) ? undoObject.nodes.push(cloneObject(this.diagram.nameTable[`${temp}`])) :
                     undoObject.connectors.push(cloneObject(this.diagram.nameTable[`${temp}`]));
-                let clonedNode = cloneObject( this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]]);
-                (this.diagram.layers[0] as Layer).zIndexTable[parseInt(overlapObject.toString(), 10)] = index.id;
-                this.diagram.nameTable[zIndexTable[parseInt(overlapObject.toString(), 10)]].zIndex = overlapObject;
-                this.triggerOrderCommand(clonedObjects, elements, elements);
+                let clonedNode = cloneObject( this.diagram.nameTable[zIndexTable[parseInt(overlapObject.toString(), 10)]]);
                 (this.diagram.layers[0] as Layer).zIndexTable[parseInt(currentObject.toString(), 10)] = intersectArray[0].id;
                 this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]].zIndex = currentObject;
                 this.triggerOrderCommand(clonedNode, this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]], this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]]);
+                (this.diagram.layers[0] as Layer).zIndexTable[parseInt(overlapObject.toString(), 10)] = index.id;
+                this.diagram.nameTable[zIndexTable[parseInt(overlapObject.toString(), 10)]].zIndex = overlapObject;
+                this.triggerOrderCommand(clonedObjects, elements, elements);
                 if (this.diagram.mode === 'SVG') {
                     this.moveSvgNode(zIndexTable[Number(intersectArray[0].zIndex)], nodeId);
                     this.updateNativeNodeIndex(zIndexTable[Number(intersectArray[0].zIndex)], nodeId);
@@ -3185,13 +3185,13 @@ export class CommandHandler {
                     undoObject.connectors.push(cloneObject(this.diagram.nameTable[`${temp}`]));
 
                 //swap the nodes
-                let clonedNode = cloneObject( this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]]);
-                zIndexTable[parseInt(overlapObject.toString(), 10)] = node.id;
-                this.diagram.nameTable[zIndexTable[parseInt(overlapObject.toString(), 10)]].zIndex = overlapObject;
-                this.triggerOrderCommand(clonedObject, element, element);
+                let clonedNode = cloneObject( this.diagram.nameTable[zIndexTable[parseInt(overlapObject.toString(), 10)]]);
                 zIndexTable[parseInt(currentObject.toString(), 10)] = intersectArray[intersectArray.length - 1].id;
                 this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]].zIndex = currentObject;
                 this.triggerOrderCommand(clonedNode, this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]], this.diagram.nameTable[zIndexTable[parseInt(overlapObject.toString(), 10)]]);
+                zIndexTable[parseInt(overlapObject.toString(), 10)] = node.id;
+                this.diagram.nameTable[zIndexTable[parseInt(overlapObject.toString(), 10)]].zIndex = overlapObject;
+                this.triggerOrderCommand(clonedObject, element, element);
                 if (this.diagram.mode === 'SVG') {
                     this.moveSvgNode(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
                     const node: NodeModel = this.diagram.nameTable[zIndexTable[intersectArray[intersectArray.length - 1].zIndex]];

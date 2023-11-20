@@ -22,3 +22,4 @@ export * from './form-field-text-dialog';
 export * from './form-field-drop-down-dialog';
 export * from './form-field-popup';
 export * from './columns-dialog';
+export * from './tab-dialog';

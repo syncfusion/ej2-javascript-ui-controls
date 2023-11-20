@@ -86,11 +86,15 @@ export class ToolbarStatus {
             if ((index === 0 && formatCollection.fontcolor) || !formatCollection.fontcolor) {
                 nodeCollection.fontcolor = formatCollection.fontcolor;
             }
-            if ((index === 0 && formatCollection.fontname) || !formatCollection.fontname) {
+            if (index === 0 && formatCollection.fontname) {
                 nodeCollection.fontname = formatCollection.fontname;
+            } else {
+                nodeCollection.fontname = formatCollection.fontname === nodeCollection.fontname ? formatCollection.fontname : 'empty';
             }
-            if ((index === 0 && formatCollection.fontsize) || !formatCollection.fontsize) {
+            if (index === 0 && formatCollection.fontsize) {
                 nodeCollection.fontsize = formatCollection.fontsize;
+            } else{
+                nodeCollection.fontsize = formatCollection.fontsize === nodeCollection.fontsize ? formatCollection.fontsize : 'empty';
             }
             if ((index === 0 && formatCollection.backgroundcolor) || !formatCollection.backgroundcolor) {
                 nodeCollection.backgroundcolor = formatCollection.backgroundcolor;
@@ -104,8 +108,10 @@ export class ToolbarStatus {
             if ((index === 0 && formatCollection.alignments) || !formatCollection.alignments) {
                 nodeCollection.alignments = formatCollection.alignments;
             }
-            if ((index === 0 && formatCollection.formats) || !formatCollection.formats) {
+            if (index === 0 && formatCollection.formats) {
                 nodeCollection.formats = formatCollection.formats;
+            } else {
+                nodeCollection.formats = formatCollection.formats === nodeCollection.formats ? formatCollection.formats : 'empty';
             }
             if ((index === 0 && formatCollection.createlink) || !formatCollection.createlink) {
                 nodeCollection.createlink = formatCollection.createlink;

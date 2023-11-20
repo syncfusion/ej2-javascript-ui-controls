@@ -284,7 +284,8 @@ export abstract class Base<ElementType extends HTMLElement> {
     protected destroy(): void {
         // eslint-disable-next-line
         (<DomElements>(this.element as HTMLElement)).ej2_instances =
-            (<DomElements>(this.element as HTMLElement)).ej2_instances.filter((i: Object) => { return i !== this; });
+            (<DomElements>(this.element as HTMLElement)).ej2_instances ? (<DomElements>(this.element as HTMLElement)).ej2_instances.filter((i: Object) => { return i !== this; })
+            : [];
         removeClass([this.element], ['e-' + this.getModuleName()]);
         if ((<DomElements>(this.element as HTMLElement)).ej2_instances.length === 0) {
             // Remove module class from the root element

@@ -1092,23 +1092,14 @@ export class Parser {
         } else {
             let oneTimeOnly: boolean = true;
             while (id > -1) {
-                const fCheck: string = fSubstr.substring(id + 1, fSubstr.length);
-                let j: number = this.indexOfAny(fCheck, rightSides);
-                const formulaVal: number = this.indexOfAny(fCheck, ['q']);
-                const fId: number = fCheck.indexOf(this.parent.getParseArgumentSeparator());
-                const marker: string[] = ['+', '-', '*', '/'];
+                let j: number = this.indexOfAny(fSubstr.substring(id + 1, fSubstr.length), rightSides);
                 if (j >= 0) {
                     j = id + j + 1;
                 } else if (j === -1 && fSubstr[fSubstr.length - 1] === ')') {
                     j = fSubstr.length - 1;
                 }
-                if (formulaVal > -1 && fCheck[formulaVal - 1] !== '{' && marker.indexOf(fCheck[formulaVal - 1]) > -1) {
-                    if (fCheck[fId + 1] !== '{' && fCheck[fId - 1] !== '}') {
-                        j += 1;
-                    }
-                }
                 if (j > 0) {
-                    if (fSubstr[id + 1] !== '{' && fSubstr[j - 1] !== '}') {
+                    if (fSubstr[id + 1] !== '{' && fSubstr[j - 1] !== '}' && fSubstr[j - 1] !== '¢') {
                         fSubstr = fSubstr.substr(0, j).trim() + '}' + fSubstr.substr(j);
                         fSubstr = fSubstr.substr(0, id + 1) + '{' + fSubstr.substr(id + 1).trim();
                     }

@@ -1,5 +1,5 @@
-import { Browser, EventHandler, extend, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ActivePoint, Dimension } from '@syncfusion/ej2-inputs';
+import { Browser, EventHandler, extend, getComponent, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { ActivePoint, Dimension, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { BeforeSaveEventArgs, CropSelectionSettings, CurrentObject, ImageEditor, ImageEditorClickEventArgs, Point, SelectionChangeEventArgs, SelectionPoint, ShapeChangeEventArgs, ShapeSettings, ShapeType, StrokeSettings, TextSettings, ZoomTrigger } from '../index';
 export class Selection {
     private parent: ImageEditor;
@@ -3555,6 +3555,35 @@ export class Selection {
                     parent.notify('transform', {prop: 'resize', value: {width: point.x, height: point.y, isAspectRatio: false }});
                 }
             }
+            if (isBlazor()) {
+                const aspectRatioHeight: HTMLInputElement = this.parent.element.querySelector('.e-ie-toolbar-e-resize-height-input .e-numerictextbox');
+                const aspectRatioWidth: HTMLInputElement = this.parent.element.querySelector('.e-ie-toolbar-e-resize-width-input .e-numerictextbox');
+                if ((blrAspRatElem && blrAspRatElem.classList.contains('e-hidden'))) {
+                    if (aspectRatioHeight && aspectRatioHeight.value === "") {
+                        aspectRatioHeight.value = aspectRatioHeight.placeholder;
+                        (aspectRatioHeight as HTMLInputElement).value = Math.floor(parent.img.destHeight).toString();
+                    }
+                    if (aspectRatioWidth && aspectRatioWidth.value === "") {
+                        aspectRatioWidth.value = aspectRatioWidth.placeholder;
+                        (aspectRatioWidth as HTMLInputElement).value = Math.floor(parent.img.destWidth).toString();
+                    }
+                }
+            } else {
+                const aspectRatioHeight: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
+                const aspectRatioWidth: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
+                if (isNullOrUndefined(aspectRatioElement)) {
+                    let elem: NumericTextBox = getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox;
+                    if (aspectRatioHeight && isNullOrUndefined(elem.value)) {
+                        elem.value = parseFloat(elem.placeholder);
+                        (aspectRatioHeight as HTMLInputElement).value = Math.floor(parent.img.destHeight).toString() + ' px';
+                    }
+                    elem = getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox;
+                    if (aspectRatioWidth && isNullOrUndefined(elem.value)) {
+                        elem.value = parseFloat(elem.placeholder);
+                        (aspectRatioWidth as HTMLInputElement).value = Math.floor(parent.img.destWidth).toString() + ' px';
+                    }
+                }
+            }
         } else {
             let splitWords: string[];
             if (parent.activeObj.shape) {splitWords = parent.activeObj.shape.split('-'); }
@@ -4430,8 +4459,14 @@ export class Selection {
             heightElement = this.parent.element.querySelector('.e-ie-toolbar-e-resize-height-input .e-numerictextbox');
         }
         if (widthElement && heightElement) {
-            const heightString: string = heightElement.value.replace(/,/g, '');
-            const widthString: string = widthElement.value.replace(/,/g, '');
+            let heightString: string = heightElement.value.replace(/,/g, '');
+            let widthString: string = widthElement.value.replace(/,/g, '');
+            if (heightString === '') {
+                heightString = heightElement.placeholder.replace(/,/g, '');
+            }
+            if (widthString === '') {
+                widthString = widthElement.placeholder.replace(/,/g, '');
+            }
             height = parseFloat(heightString);
             width  = parseFloat(widthString);
         }

@@ -642,7 +642,10 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             ele.appendChild(noDataElement[i as number]);
                         }
                     } else {
-                        ele.appendChild(noDataElement[i as number]);
+                        if(noDataElement[i as number] instanceof HTMLElement)
+                        {
+                            ele.appendChild(noDataElement[i as number]);
+                        }
                     }
                 }
             }

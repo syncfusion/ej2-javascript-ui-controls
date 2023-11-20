@@ -11,7 +11,7 @@ export class _PdfCrossReference {
     _stream: _PdfStream;
     _pendingRefs: _PdfReferenceSet;
     _entries: _PdfObjectInformation[];
-    _crossReferencePosition: Object;
+    _crossReferencePosition: any; // eslint-disable-line
     _cacheMap: Map<_PdfReference, any>; // eslint-disable-line
     _startXRefQueue: number[];
     _trailer: _PdfDictionary;

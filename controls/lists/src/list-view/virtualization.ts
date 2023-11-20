@@ -1,5 +1,5 @@
 import { ListView, ItemCreatedArgs, classNames, Fields, UISelectedItem } from './list-view';
-import { EventHandler, append, isNullOrUndefined, detach, removeClass, addClass, compile, formatUnit } from '@syncfusion/ej2-base';
+import { EventHandler, append, isNullOrUndefined, detach, compile, formatUnit, select } from '@syncfusion/ej2-base';
 import { debounce } from '@syncfusion/ej2-base';
 import { ListBase } from '../common/list-base';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -21,7 +21,6 @@ export class Virtualization {
 
     // eslint-disable-next-line
     private listViewInstance: any;
-    private headerData: DataSource;
     private templateData: DataSource;
     private topElementHeight: number;
     private bottomElementHeight: number;
@@ -42,9 +41,6 @@ export class Virtualization {
     private uiIndices: { [key: string]: number[] };
     private listDiff: number;
     private elementDifference: number = 0;
-    private templateFunction: Function;
-    private groupTemplateFunction: Function;
-    private commonTemplate: string;
 
     /**
      * For internal use only.
@@ -73,10 +69,6 @@ export class Virtualization {
      */
 
     public uiVirtualization(): void {
-        this.commonTemplate = '<div class="e-text-content" role="presentation"> ' +
-            '<span class="e-list-text"> ${' + this.listViewInstance.fields.text + '} </span></div>';
-        this.templateFunction = compile(this.listViewInstance.template || this.commonTemplate, this.listViewInstance);
-        this.groupTemplateFunction =  compile(this.listViewInstance.groupTemplate || this.commonTemplate, this.listViewInstance);
         this.wireScrollEvent(false);
         const curViewDS: { [key: string]: object; }[] = this.listViewInstance.curViewDS as { [key: string]: object; }[];
         const firstDs: { [key: string]: object }[] = curViewDS.slice(0, 1);
@@ -211,6 +203,9 @@ export class Virtualization {
 
     private onVirtualUiScroll(e: Event): void {
         let startingHeight: number;
+        const curViewDS: { [key: string]: object; }[] = this.listViewInstance.curViewDS as { [key: string]: object; }[];
+        this.listItemHeight = select(".e-list-item", this.listViewInstance.element).getBoundingClientRect().height;
+        this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
         if (this.listViewInstance.isWindow) {
             startingHeight = this.listViewInstance.ulElement.getBoundingClientRect().top -
                 document.documentElement.getBoundingClientRect().top;
@@ -322,7 +317,13 @@ export class Virtualization {
                 if (!element.querySelector('.' + classNames.checkboxWrapper)) {
                     element.classList.add(classNames.checklist);
                     textContent.classList.add(classNames.checkbox);
-                    textContent.insertBefore(this.checkListWrapper.cloneNode(true), element.querySelector('.' + classNames.listItemText));
+                    if (this.listViewInstance.checkBoxPosition === 'Left') {
+                        textContent.classList.add('e-checkbox-left');
+                    }
+                    else {
+                        textContent.classList.add('e-checkbox-right');
+                    }
+                    textContent.append(this.checkListWrapper.cloneNode(true));
                 }
             }
         }
@@ -831,186 +832,47 @@ export class Virtualization {
     }
 
     public createUIItem(args: ItemCreatedArgs): void {
-        const template: HTMLElement = document.createElement('div');
-        this.templateData = args.curData.isHeader ? (args.curData as { [key: string]: any[]; }).items[0] as DataSource :
-            args.curData;
-        if (this.listViewInstance.isReact) {
-            this.commonTemplate = null;
-        }
-        if (this.listViewInstance.showCheckBox) {
-            // eslint-disable-next-line
-            (this.listViewInstance as any).renderCheckbox(args);
-            if ((!isNullOrUndefined(this.listViewInstance.virtualCheckBox)) &&
-                (!isNullOrUndefined(this.listViewInstance.virtualCheckBox.outerHTML))) {
-                const div: HTMLElement = document.createElement('div');
-                const nodes: NodeList = this.templateFunction(this.templateData, this.listViewInstance);
-                if (this.listViewInstance.template && this.listViewInstance.isReact) {
-                    this.listViewInstance.renderReactTemplates();
-                }
-                [].slice.call(nodes).forEach((ele: HTMLElement): void => {
-                    div.appendChild(ele);
-                });
-                if (div.children && div.children[0]) {
-                    div.children[0].classList.add('e-checkbox');
-                    if (this.listViewInstance.checkBoxPosition === 'Left') {
-                        div.children[0].classList.add('e-checkbox-left');
+        if (!args.item.classList.contains("e-list-group-item")) {
+            this.templateData = args.curData.isHeader ? (args.curData as { [key: string]: any[]; }).items[0] as DataSource :
+                args.curData;
+            if (this.listViewInstance.showCheckBox) {
+                // eslint-disable-next-line
+                (this.listViewInstance as any).renderCheckbox(args);
+                if ((!isNullOrUndefined(this.listViewInstance.virtualCheckBox)) &&
+                    (!isNullOrUndefined(this.listViewInstance.virtualCheckBox.outerHTML))) {
+                    const div: HTMLElement = document.createElement('div');
+                    const commonTemplate: string = '<div class="e-text-content" role="presentation"> ' +
+                        '<span class="e-list-text"> ${' + this.listViewInstance.fields.text + '} </span></div>';
+                    const templateFunction: Function = compile(this.listViewInstance.template || commonTemplate, this.listViewInstance);
+                    const nodes: NodeList = templateFunction(this.templateData, this.listViewInstance);
+                    if (this.listViewInstance.template && this.listViewInstance.isReact) {
+                        this.listViewInstance.renderReactTemplates();
                     }
-                    else {
-                        div.children[0].classList.add('e-checkbox-right');
-                    }
-                    if (this.listViewInstance.checkBoxPosition === 'Left') {
-                        div.children[0].insertBefore(this.listViewInstance.virtualCheckBox, (div.childNodes[0] as HTMLElement).children[0]);
-                    } else {
-                        div.children[0].appendChild(this.listViewInstance.virtualCheckBox);
-                    }
-                    template.innerHTML = div.innerHTML;
-                }
-            }
-            else {
-                let div: HTMLElement = document.createElement('div');
-                const nodes: NodeList = this.templateFunction(this.templateData, this.listViewInstance);
-                if (this.listViewInstance.template && this.listViewInstance.isReact) {
-                    this.listViewInstance.renderReactTemplates();
-                }
-                [].slice.call(nodes).forEach((ele: HTMLElement) => {
-                    div.appendChild(ele);
-                });
-                template.innerHTML = div.innerHTML;
-            }
-        } else {
-            const nodes: NodeList = this.templateFunction(this.templateData, this.listViewInstance);
-            if (this.listViewInstance.template && this.listViewInstance.isReact) {
-                this.listViewInstance.renderReactTemplates();
-            }
-            [].slice.call(nodes).forEach((ele: HTMLElement) => {
-                template.appendChild(ele);
-            });
-        }
-        if (args.curData.isHeader) {
-            this.headerData = args.curData;
-        }
-        const groupTemplate: HTMLElement = this.listViewInstance.createElement('div');
-        if (this.listViewInstance.fields.groupBy) {
-            const nodes: NodeList = this.groupTemplateFunction(this.headerData, this.listViewInstance);
-            if (this.listViewInstance.template && this.listViewInstance.isReact) {
-                this.listViewInstance.renderReactTemplates();
-            }
-            [].slice.call(nodes).forEach((ele: HTMLElement) => {
-                groupTemplate.appendChild(ele);
-            });
-        }
-        
-        if ((!this.listViewInstance.isReact || (typeof this.listViewInstance.template == "string" && !args.item.classList.contains("e-list-group-item")) ||
-            (typeof this.listViewInstance.groupTemplate == "string" && args.item.classList.contains("e-list-group-item"))) && !this.listViewInstance.isVue) {
-            args.item.innerHTML = '';
-        }
-        (<ElementContext>args.item).context = { data: args.curData, nodes: { flatTemplateNodes: [], groupTemplateNodes: [] } };
-        for (let i: number = 0; i < template.children.length; i++) {
-            this.compileTemplate(template.children[i as number] as HTMLElement, args.item, false);
-        }
-        for (let i: number = 0; i < groupTemplate.children.length; i++) {
-            this.compileTemplate(groupTemplate.children[i as number] as HTMLElement, args.item, true);
-        }
-        (<ElementContext>args.item).context.template = args.curData.isHeader ? template.firstElementChild :
-            groupTemplate.firstElementChild;
-        (<ElementContext>args.item).context.type = args.curData.isHeader ? 'flatList' : 'groupList';
-        const element: HTMLElement = args.curData.isHeader ? groupTemplate : template;
-        if (element.firstElementChild && !this.listViewInstance.isReact && !this.listViewInstance.isVue) {
-            args.item.insertBefore(element.firstElementChild, null);
-        }
-    }
-
-    private compileTemplate(element: HTMLElement, item: HTMLElement, isHeader: boolean): void {
-        const subNode: { [key: string]: string | Function } = {};
-        subNode.onChange = (value: DataSource) => {
-            let groupTemplateElements: NodeList;
-            let templateElements: NodeList
-            if (this.listViewInstance.isVue) {
-                groupTemplateElements = this.groupTemplateFunction(value);
-                templateElements = this.templateFunction(value);
-            } else {
-                groupTemplateElements = this.groupTemplateFunction(value, this.listViewInstance);
-                templateElements = this.templateFunction(value, this.listViewInstance);
-            }
-            if (this.listViewInstance.template && this.listViewInstance.isReact) {
-                this.listViewInstance.renderReactTemplates();
-            }
-            let currentTemplate: NodeList = templateElements;
-            if (value.isHeader) {
-                currentTemplate = groupTemplateElements;
-            }
-            [].slice.call(currentTemplate).forEach(function (currentElement: HTMLElement) {
-                let RemovableClass: string = element.classList.value.replace('e-checkbox', '');
-                RemovableClass = RemovableClass.replace('e-checkbox-left', '');
-                RemovableClass = RemovableClass.replace('e-checkbox-right', '');
-                removeClass([element], RemovableClass.split(' ').filter(function (css) { return css; }))
-                addClass([element], Array.from(currentElement.classList));
-                for (let i: number = 0; i < element.attributes.length; i++) {
-                    if (element.attributes[i as number].name != 'class') {
-                        const newData: string = currentElement.getAttribute(element.attributes[i as number].name)
-                        element.setAttribute(element.attributes[i as number].name, newData);
+                    [].slice.call(nodes).forEach((ele: HTMLElement): void => {
+                        div.appendChild(ele);
+                    });
+                    if (div.children && div.children[0]) {
+                        div.children[0].classList.add('e-checkbox');
+                        if (this.listViewInstance.checkBoxPosition === 'Left') {
+                            div.children[0].classList.add('e-checkbox-left');
+                        }
+                        else {
+                            div.children[0].classList.add('e-checkbox-right');
+                        }
+                        if (this.listViewInstance.checkBoxPosition === 'Left') {
+                            div.children[0].insertBefore(this.listViewInstance.virtualCheckBox, (div.childNodes[0] as HTMLElement).children[0]);
+                        } else {
+                            div.children[0].appendChild(this.listViewInstance.virtualCheckBox);
+                        }
+                        while (args.item.lastChild) {
+                            args.item.removeChild(args.item.lastChild);
+                        }
+                        [].slice.call(div.children).forEach(function (ele: HTMLElement) {
+                            args.item.appendChild(ele);
+                        });
                     }
                 }
-                [].slice.call(element.children).forEach(function (ele: HTMLElement) {
-                    if (!ele.classList.contains('e-listview-checkbox') && !(ele.classList.contains('e-checkbox-left') || ele.classList.contains('e-checkbox-right'))) {
-                        ele.remove();
-                    }
-                });
-                [].slice.call(currentElement.children).forEach(function (ele: HTMLElement) {
-                    element.appendChild(ele);
-                });
-            });
-        };
-        this.updateContextData(item, subNode, isHeader);
-    }
-
-    private onChange(newData: DataSource, listElement: HTMLElement): void {
-        (<ElementContext>listElement).context.data = newData;
-        // eslint-disable-next-line max-len
-        const groupTemplateNodes: object[] = ((<ElementContext>listElement).context.nodes as { [key: string]: object[] }).groupTemplateNodes;
-        // eslint-disable-next-line max-len
-        const flatTemplateNodes: object[] = ((<ElementContext>listElement).context.nodes as { [key: string]: object[] }).flatTemplateNodes;
-        // eslint-disable-next-line
-        if (!isNullOrUndefined(newData.isHeader as any) && newData.isHeader as any && (<ElementContext>listElement).context.type as any === 'groupList' as any) {
-            // eslint-disable-next-line
-            const element: HTMLElement = listElement.firstElementChild as HTMLElement as any;
-            detach(listElement.firstElementChild);
-            listElement.insertBefore((<ElementContext>listElement).context.template as HTMLElement, null);
-            (<ElementContext>listElement).context.template = element;
-            (<ElementContext>listElement).context.type = 'flatList';
-            for (let i: number = 0; i < groupTemplateNodes.length; i++) {
-                // eslint-disable-next-line
-                (groupTemplateNodes[i] as { [key: string]: Function }).onChange(newData);
             }
-        } else if (!newData.isHeader && (<ElementContext>listElement).context.type === 'flatList') {
-            const element: HTMLElement = listElement.firstElementChild as HTMLElement;
-            detach(listElement.firstElementChild);
-            listElement.insertBefore((<ElementContext>listElement).context.template as HTMLElement, null);
-            (<ElementContext>listElement).context.template = element;
-            (<ElementContext>listElement).context.type = 'groupList';
-            for (let i: number = 0; i < flatTemplateNodes.length; i++) {
-                // eslint-disable-next-line
-                (flatTemplateNodes[i] as { [key: string]: Function }).onChange(newData);
-            }
-        } else if (!newData.isHeader) {
-            for (let i: number = 0; i < flatTemplateNodes.length; i++) {
-                // eslint-disable-next-line
-                (flatTemplateNodes[i] as { [key: string]: Function }).onChange(newData);
-            }
-        } else {
-            for (let i: number = 0; i < groupTemplateNodes.length; i++) {
-                // eslint-disable-next-line
-                (groupTemplateNodes[i] as { [key: string]: Function }).onChange(newData);
-            }
-        }
-    }
-
-    // eslint-disable-next-line
-    private updateContextData(listElement: HTMLElement, node: { [key: string]: string | Function | string[] }, isHeader: Boolean): void {
-        if (isHeader) {
-            ((<ElementContext>listElement).context.nodes as { [key: string]: object[] }).groupTemplateNodes.push(node);
-        } else {
-            ((<ElementContext>listElement).context.nodes as { [key: string]: object[] }).flatTemplateNodes.push(node);
         }
     }
 
@@ -1029,7 +891,7 @@ export class Virtualization {
 
     private updateUI(element: HTMLElement, index: number, targetElement?: HTMLElement): void {
         // eslint-disable-next-line @typescript-eslint/ban-types
-        const onChange: Function = this.isNgTemplate() ? this.onNgChange : (this.isVueFunctionTemplate()) ?  this.onVueChange : this.onChange;
+        const onChange: Function = this.isNgTemplate() ? this.onNgChange : this.onChange;
         if (this.listViewInstance.template || this.listViewInstance.groupTemplate) {
             const curViewDS: DataSource = (this.listViewInstance.curViewDS as DataSource[])[index as number];
             // eslint-disable-next-line
@@ -1053,15 +915,20 @@ export class Virtualization {
      * @param {ElementContext} listElement - The HTML element context for the list view.
      * @param {Virtualization} virtualThis - The virtualization context for the list view.
      */
-    private onVueChange(newData: DataSource, listElement: ElementContext, virtualThis: Virtualization): void {
+    private onChange(newData: DataSource, listElement: ElementContext, virtualThis: Virtualization): void {
         let liItem: HTMLElement[] = ListBase.createListItemFromJson(virtualThis.listViewInstance.createElement,
             // eslint-disable-next-line
             [newData] as any,
             virtualThis.listViewInstance.listBaseOption, null, null, virtualThis.listViewInstance);
+        if (virtualThis.listViewInstance.isReact) {
+            virtualThis.listViewInstance.renderReactTemplates();
+        }
         while (listElement.lastChild) {
             listElement.removeChild(listElement.lastChild);
         }
-        listElement.appendChild(liItem[0].firstChild);
+        [].slice.call(liItem[0].children).forEach(function (ele: HTMLElement) {
+            listElement.appendChild(ele);
+        });
     }
 
     private onNgChange(newData: DataSource, listElement: ElementContext, virtualThis: Virtualization): void {

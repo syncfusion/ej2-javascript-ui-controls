@@ -110,7 +110,7 @@ describe('Cell Editing with Frozen Columns', () => {
         done
       );
     });
-    it('cell refresh', (done: Function) => {
+    it('cell refresh', () => {
       let event: MouseEvent = new MouseEvent('dblclick', {
         'view': window,
         'bubbles': true,
@@ -121,7 +121,6 @@ describe('Cell Editing with Frozen Columns', () => {
       gridObj.actionComplete = (args?: SaveEventArgs): void => {
         expect(args.target.textContent).toBe('test');
         expect((gridObj.getCellFromIndex(1, 1) as HTMLElement).style.background).toBe('red');
-        done();
       };
       gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
       gridObj.getRows()[0].click();

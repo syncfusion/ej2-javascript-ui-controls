@@ -42,10 +42,22 @@ import { Optimized, Regular, HelperMethods } from './index';
 import { ColumnsDialog } from './implementation/dialogs/columns-dialog';
 import { DocumentCanvasElement } from './implementation/viewer/document-canvas';
 import { ZipArchiveItem, ZipArchive } from '@syncfusion/ej2-compression';
+import { Ruler } from './implementation/ruler/index';
+import { TabDialog } from './implementation/dialogs/tab-dialog';
+import { RulerHelper } from './implementation/utility/dom-util';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
 export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings> {
+    /**
+     * Gets or sets a value indicating where to append the pop up element
+     *
+     * @returns {HTMLElement}
+     * @aspType HTMLElement
+     * @default document.body
+     */
+    @Property(document.body)
+    public popupTarget: HTMLElement;
     /**
      * Specifies the user preferred Search Highlight Color of Document Editor.
      *
@@ -69,12 +81,11 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     @Property({ shadingColor: '#cfcfcf', applyShading: true, selectionColor: '#cccccc', formFillingMode: 'Popup' })
     public formFieldSettings: FormFieldSettingsModel;
 
-   /**
-    * Specified the auto resize settings.
-    */ 
-    @Property({ interval: 2000, itertationCount: 5})
+    /**
+     * Specified the auto resize settings.
+     */
+    @Property({ interval: 2000, itertationCount: 5 })
     public autoResizeSettings: AutoResizeSettingsModel;
-
     /**
      * Gets ot sets the collaborative editing settings.
      */
@@ -152,9 +163,9 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      * @aspType bool
      * @returns {boolean} Returns `true` if editable ranges in the document is highlighted. Otherwise `false`.
      */
-     @Property(true)
+    @Property(true)
     public highlightEditableRanges: boolean;
-    
+
     /**
      * Describes whether to reduce the resultant SFDT file size by minifying the file content
      *
@@ -164,6 +175,16 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      */
     @Property(true)
     public optimizeSfdt: boolean;
+
+    /**
+     *  Gets or sets a value indicating whether to display ruler in Document Editor.
+     *
+     * @default false
+     * @aspType bool
+     * @returns {boolean} Returns `true` if ruler is visible in Document Editor. Otherwise `false`.
+     */
+    @Property(false)
+    public showRuler: boolean;
 }
 
 /**
@@ -179,6 +200,8 @@ export class DocumentSettings extends ChildProperty<DocumentSettings> {
     @Property('Word2013')
     public compatibilityMode: CompatibilityMode;
 }
+
+
 
 /**
  * Represents the settings required for resizing the Document editor automatically when the visibility of parent element changed.
@@ -250,6 +273,18 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
+    public isOnIndent: boolean = false;
+    /**
+     * @private
+     */
+     public isTableMarkerDragging : boolean =false;
+     /**
+     * @private
+     */
+     public startXPosition : number =0;
+    /**
+     * @private
+     */
     public parser: SfdtReader = undefined;
     private isDocumentLoadedIn: boolean;
     private disableHistoryIn: boolean = false;
@@ -259,6 +294,19 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public skipSettingsOps: boolean = false;
+    /**
+     * @private 
+     */
+    public hRuler: Ruler;
+    /** 
+     * @private 
+     */
+    public vRuler: Ruler;
+    /**
+     * @private
+     */
+    public rulerHelper: RulerHelper;
+
     private isSettingOp: boolean = false;
     /**
      * @private
@@ -313,6 +361,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public styleDialogModule: StyleDialog;
+    /**
+     * @private
+     */
+    public tabDialogModule: TabDialog;
     /**
      * @private
      */
@@ -1019,6 +1071,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public trackChangesPane: TrackChangesPane;
+
+    /**
+     * @private
+     */
+    public rulerContainer: HTMLElement;
     /**
      * @private
      */
@@ -1116,6 +1173,46 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public set isDocumentLoaded(value: boolean) {
         this.isDocumentLoadedIn = value;
+    }
+    /**
+     *  Describes whether Document contains any content or not
+     *
+     * @returns {boolean} Returns `true` if Document does not contains any content; otherwise, `false`
+     * @aspType bool
+     * @default false
+     */
+    public get isDocumentEmpty(): boolean {
+        if(this.documentHelper.pages.length == 1) {
+            const firstPage = this.documentHelper.pages[0];
+            const headerWidget = firstPage.headerWidget;
+            const footerWidget = firstPage.footerWidget;
+            let isHeaderEmpty = true;
+            let isFooterEmpty = true;
+            if(!isNullOrUndefined(headerWidget) && !isNullOrUndefined(headerWidget.firstChild)) {
+                if(!(headerWidget.firstChild instanceof ParagraphWidget) || !headerWidget.firstChild.isEmpty()) {
+                    isHeaderEmpty = false;
+                }
+            }
+            if(!isNullOrUndefined(footerWidget) && !isNullOrUndefined(footerWidget.firstChild)) {
+                if(!(footerWidget.firstChild instanceof ParagraphWidget) || !footerWidget.firstChild.isEmpty()) {
+                    isFooterEmpty = false;
+                }
+            }
+            if(isHeaderEmpty && isFooterEmpty) {
+                const firstBodywidget = firstPage.bodyWidgets[0];
+                if(isNullOrUndefined(firstBodywidget.nextWidget)) {
+                    const firstChild = firstBodywidget.firstChild;
+                    if(firstChild instanceof ParagraphWidget
+                        && firstChild.isEmpty()
+                        && isNullOrUndefined(firstChild.nextWidget)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } else {
+            return false;
+        }
     }
     /**
      * Gets the revision collection which contains information about changes made from original document
@@ -1242,7 +1339,33 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.documentHelper.initializeComponents();
         this.openBlank();
         this.renderComplete();
+        this.renderRulers();
         this.createdTriggered = true;
+    }
+    /**
+     * @private
+     */
+    public renderRulers() {
+        this.rulerHelper = new RulerHelper();
+        this.rulerContainer = this.rulerHelper.renderOverlapElement(this);
+        this.rulerHelper.renderRuler(this, true);
+        this.rulerHelper.renderRuler(this, false);
+        this.rulerHelper.renderRulerMarkerIndicatorElement(this);
+        this.rulerHelper.createIndicatorLines(this);
+        this.showHideRulers();
+    }
+    private showHideRulers(): void {
+        if (this.rulerHelper && this.documentEditorSettings && !isNullOrUndefined(!this.documentEditorSettings.showRuler)) {
+            let showRuler: boolean = this.documentEditorSettings.showRuler && !this.isReadOnlyMode;
+            this.rulerHelper.hideTabStopSwitch(showRuler);
+            this.rulerHelper.hideRulerBottom(showRuler);
+            if (this.vRuler) {
+                this.vRuler.showHideRuler(showRuler);
+            }
+            if (this.hRuler) {
+                this.hRuler.showHideRuler(showRuler);
+            }
+        }
     }
     /**
      * Get component name
@@ -1264,148 +1387,158 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public onPropertyChanged(model: DocumentEditorModel, oldProp: DocumentEditorModel): void {
         for (const prop of Object.keys(model)) {
             switch (prop) {
-            case 'enableTrackChanges':
-                this.notify(trackChanges, model);
-                this.getSettingData('enableTrackChanges', model.enableTrackChanges);
-                if (this.documentHelper.isTrackedOnlyMode && !model.enableTrackChanges) {
-                    this.enableTrackChanges = true;
-                }
-            break;
-            case 'autoResizeOnVisibilityChange':
-                if (model.autoResizeOnVisibilityChange) {
-                    this.documentHelper.triggerAutoResizeInterval();
-                }
-            break;
-            case 'zoomFactor':
-                if (this.viewer && oldProp.zoomFactor !== model.zoomFactor) {
-                    this.documentHelper.zoomFactor = model.zoomFactor;
-                }
-                break;
-            case 'layoutType':
-                if (this.selection && this.selection.isWebLayout) {
-                    break;
-                }
-                this.viewer.destroy();
-                if (this.layoutType === 'Pages') {
-                    this.viewer = new PageLayoutViewer(this);
-                } else {
-                    if (this.enableHeaderAndFooter === true) {
-                        this.selection.closeHeaderFooter();
+                case 'enableTrackChanges':
+                    this.notify(trackChanges, model);
+                    this.getSettingData('enableTrackChanges', model.enableTrackChanges);
+                    if (this.documentHelper.isTrackedOnlyMode && !model.enableTrackChanges) {
+                        this.enableTrackChanges = true;
                     }
-                    this.viewer = new WebLayoutViewer(this);
-                }
-                /* eslint-disable */
-                const paragraph: ParagraphWidget = this.selection.start.paragraph;
-                if (paragraph.containerWidget instanceof FootNoteWidget) {
-                    this.selection.clearSelectionHighlightInSelectedWidgets();
-                    this.selection.selectContent(this.documentStart, true);
-                }
-                this.editor.layoutWholeDocument(true);
-                setTimeout((): void => {
-                    this.fireViewChange();
-                }, 200);
-                break;
-            case 'locale':
-                this.localizeDialogs();
-                break;
-            case 'isReadOnly':
-                if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
-                    this.optionsPaneModule.showHideOptionsPane(false);
-                    this.documentHelper.updateFocus();
-                }
-                if (this.showComments) {
-                    this.commentReviewPane.showHidePane(true, 'Comments');
-                }
-                this.commentReviewPane.enableDisableItems();
-                this.trackChangesPane.enableDisableButton(!this.isReadOnly && !this.documentHelper.isDocumentProtected);
-                break;
-            case 'currentUser':
-            case 'userColor':
-                if (this.selection && this.documentHelper.isDocumentProtected) {
-                    this.selection.highlightEditRegion();
-                }
-                this.viewer.updateScrollBars();
-                break;
-            case 'pageGap':
-            case 'pageOutline':
-                this.viewer.updateScrollBars();
-                break;
-            case 'zIndex':
-                if (this.documentHelper.dialog) {
-                    this.documentHelper.dialog.zIndex = model.zIndex + 10;
-                }
-                if (this.documentHelper.dialog2) {
-                    this.documentHelper.dialog2.zIndex = model.zIndex;
-                }
-                break;
-            case 'showComments':
-                if (this.viewer && model.showComments !== oldProp.showComments) {
-                    this.documentHelper.showComments(model.showComments);
-                }
-                this.viewer.updateScrollBars();
-                break;
-            case 'enableRtl':
-                this.localizeDialogs(model.enableRtl);
-                break;
-            case 'enableComment':
-                if (this.viewer && this.showComments) {
-                    this.showComments = this.showComments ? this.enableComment : false;
-                    this.documentHelper.showComments(model.enableComment);
-                }
-                this.viewer.updateScrollBars();
-                break;
-            case 'showRevisions':
-                if (this.isReadOnly || this.documentHelper.isDocumentProtected) {
-                    this.documentHelper.showRevisions(false);
-                } else if (this.viewer) {
-                    this.documentHelper.showRevisions(model.showRevisions);
-                }
-                this.viewer.updateScrollBars();
-                break;
-            case 'documentSettings':
-                if (!isNullOrUndefined(model.documentSettings.compatibilityMode)) {
-                    let oldValue: CompatibilityMode = oldProp.documentSettings.compatibilityMode;
-                    let newValue: CompatibilityMode = model.documentSettings.compatibilityMode;
-                    if ((oldValue == "Word2013" && newValue != "Word2013") || (oldValue != "Word2013" && newValue == "Word2013")) {
-                        if (this.documentHelper.compatibilityMode !== newValue) {
-                            this.documentHelper.compatibilityMode = newValue;
-                            this.editor.layoutWholeDocument(true);
+                    break;
+                case 'autoResizeOnVisibilityChange':
+                    if (model.autoResizeOnVisibilityChange) {
+                        this.documentHelper.triggerAutoResizeInterval();
+                    }
+                    break;
+                case 'zoomFactor':
+                    if (this.viewer && oldProp.zoomFactor !== model.zoomFactor) {
+                        this.documentHelper.zoomFactor = model.zoomFactor;
+                        if (this.rulerHelper && this.documentEditorSettings && this.documentEditorSettings.showRuler) {
+                            this.rulerHelper.updateRuler(this, true);
                         }
                     }
-                }
-                this.viewer.updateScrollBars();
-                break;
-            case 'documentEditorSettings':
-                if (!isNullOrUndefined(model.documentEditorSettings.enableOptimizedTextMeasuring)) {
-                    //Clears previously cached height information.
-                    this.documentHelper.heightInfoCollection = {}
-                    if (model.documentEditorSettings.enableOptimizedTextMeasuring) {
-                        this.textMeasureHelper = this.optimizedModule;
+                    break;
+                case 'layoutType':
+                    if (this.selection && this.selection.isWebLayout) {
+                        break;
+                    }
+                    this.viewer.destroy();
+                    if (this.layoutType === 'Pages') {
+                        this.viewer = new PageLayoutViewer(this);
                     } else {
-                        this.textMeasureHelper = this.regularModule;
+                        if (this.enableHeaderAndFooter === true) {
+                            this.selection.closeHeaderFooter();
+                        }
+                        this.viewer = new WebLayoutViewer(this);
+                    }
+                    /* eslint-disable */
+                    const paragraph: ParagraphWidget = this.selection.start.paragraph;
+                    if (paragraph.containerWidget instanceof FootNoteWidget) {
+                        this.selection.clearSelectionHighlightInSelectedWidgets();
+                        this.selection.selectContent(this.documentStart, true);
+                    }
+                    this.editor.layoutWholeDocument(true);
+                    setTimeout((): void => {
+                        this.fireViewChange();
+                    }, 200);
+                    break;
+                case 'locale':
+                    this.localizeDialogs();
+                    break;
+                case 'isReadOnly':
+                    if (!isNullOrUndefined(this.optionsPaneModule) && this.optionsPaneModule.isOptionsPaneShow) {
+                        this.optionsPaneModule.showHideOptionsPane(false);
+                        this.documentHelper.updateFocus();
+                    }
+                    if (this.showComments) {
+                        this.commentReviewPane.showHidePane(true, 'Comments');
+                    }
+                    this.commentReviewPane.enableDisableItems();
+                    this.trackChangesPane.enableDisableButton(!this.isReadOnly && !this.documentHelper.isDocumentProtected);
+                    this.showHideRulers();
+                    break;
+                case 'currentUser':
+                case 'userColor':
+                    if (this.selection && this.documentHelper.isDocumentProtected) {
+                        this.selection.highlightEditRegion();
                     }
                     this.viewer.updateScrollBars();
-                }
-                if (!isNullOrUndefined(model.documentEditorSettings.showHiddenMarks) && (model.documentEditorSettings.showHiddenMarks !== oldProp.documentEditorSettings.showHiddenMarks)) {
+                    break;
+                case 'pageGap':
+                case 'pageOutline':
                     this.viewer.updateScrollBars();
-                }
-                if(!isNullOrUndefined(model.documentEditorSettings.highlightEditableRanges)){
-                    if (this.documentHelper && this.documentHelper.restrictEditingPane) {
-                        this.documentHelper.restrictEditingPane.highlightCheckBox.checked = model.documentEditorSettings.highlightEditableRanges;
+                    break;
+                case 'zIndex':
+                    if (this.documentHelper.dialog) {
+                        this.documentHelper.dialog.zIndex = model.zIndex + 10;
                     }
-                }
-                break;
-            case 'height':
-                this.element.style.height = formatUnit(this.height);
-                this.resize();
-                break;
-            case 'width':
-                this.element.style.width = formatUnit(this.width);
-                this.resize();
-                break;
-            case 'enableAutoFocus':
-                this.enableAutoFocus = model.enableAutoFocus;
-                break;
+                    if (this.documentHelper.dialog2) {
+                        this.documentHelper.dialog2.zIndex = model.zIndex;
+                    }
+                    break;
+                case 'showComments':
+                    if (this.viewer && model.showComments !== oldProp.showComments) {
+                        this.documentHelper.showComments(model.showComments);
+                    }
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'enableRtl':
+                    this.localizeDialogs(model.enableRtl);
+                    break;
+                case 'enableComment':
+                    if (this.viewer && this.showComments) {
+                        this.showComments = this.showComments ? this.enableComment : false;
+                        this.documentHelper.showComments(model.enableComment);
+                    }
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'showRevisions':
+                    if (this.isReadOnly || this.documentHelper.isDocumentProtected) {
+                        this.documentHelper.showRevisions(false);
+                    } else if (this.viewer) {
+                        this.documentHelper.showRevisions(model.showRevisions);
+                    }
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'documentSettings':
+                    if (!isNullOrUndefined(model.documentSettings.compatibilityMode)) {
+                        let oldValue: CompatibilityMode = oldProp.documentSettings.compatibilityMode;
+                        let newValue: CompatibilityMode = model.documentSettings.compatibilityMode;
+                        if ((oldValue == "Word2013" && newValue != "Word2013") || (oldValue != "Word2013" && newValue == "Word2013")) {
+                            if (this.documentHelper.compatibilityMode !== newValue) {
+                                this.documentHelper.compatibilityMode = newValue;
+                                this.editor.layoutWholeDocument(true);
+                            }
+                        }
+                    }
+                    this.viewer.updateScrollBars();
+                    break;
+                case 'documentEditorSettings':
+                    if (!isNullOrUndefined(model.documentEditorSettings.enableOptimizedTextMeasuring)) {
+                        //Clears previously cached height information.
+                        this.documentHelper.heightInfoCollection = {}
+                        if (model.documentEditorSettings.enableOptimizedTextMeasuring) {
+                            this.textMeasureHelper = this.optimizedModule;
+                        } else {
+                            this.textMeasureHelper = this.regularModule;
+                        }
+                        this.viewer.updateScrollBars();
+                    }
+                    if (!isNullOrUndefined(model.documentEditorSettings.showHiddenMarks) && (model.documentEditorSettings.showHiddenMarks !== oldProp.documentEditorSettings.showHiddenMarks)) {
+                        this.viewer.updateScrollBars();
+                    }
+                    if (!isNullOrUndefined(model.documentEditorSettings.highlightEditableRanges)) {
+                        if (this.documentHelper && this.documentHelper.restrictEditingPane) {
+                            this.documentHelper.restrictEditingPane.highlightCheckBox.checked = model.documentEditorSettings.highlightEditableRanges;
+                        }
+                    }
+                    if(!isNullOrUndefined(model.documentEditorSettings.showRuler)) { 
+                        this.showHideRulers();
+                        if(model.documentEditorSettings.showRuler) {
+                            this.rulerHelper.updateRuler(this, true);
+                        }
+                    }
+                    break;
+                case 'height':
+                    this.element.style.height = formatUnit(this.height);
+                    this.resize();
+                    break;
+                case 'width':
+                    this.element.style.width = formatUnit(this.width);
+                    this.resize();
+                    break;
+                case 'enableAutoFocus':
+                    this.enableAutoFocus = model.enableAutoFocus;
+                    break;
             }
         }
     }
@@ -1429,7 +1562,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             if (this.pageSetupDialogModule) {
                 this.pageSetupDialogModule.initPageSetupDialog(l10n, enableRtl);
             }
-            if(this.columnsDialogModule){
+            if (this.columnsDialogModule) {
                 this.columnsDialogModule.initColumnsDialog(l10n, enableRtl);
             }
             if (this.fontDialogModule) {
@@ -1463,6 +1596,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             if (this.styleDialogModule) {
                 this.styleDialogModule.initStyleDialog(l10n, enableRtl);
             }
+            if (this.tabDialogModule) {
+                this.tabDialogModule.initTabsDialog(l10n, enableRtl);
+            }
             if (this.tableOfContentsDialogModule) {
                 this.tableOfContentsDialogModule.initTableOfContentDialog(l10n, enableRtl);
             }
@@ -1484,7 +1620,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public setDefaultCharacterFormat(characterFormat: CharacterFormatProperties): void {
         this.characterFormat = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(characterFormat)));
         this.documentHelper.setDefaultDocumentFormat();
-        if(!isNullOrUndefined(this.selection)) {
+        if (!isNullOrUndefined(this.selection)) {
             this.selection.retrieveCurrentFormatProperties();
         }
     }
@@ -1498,7 +1634,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public setDefaultParagraphFormat(paragraphFormat: ParagraphFormatProperties): void {
         this.paragraphFormat = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(paragraphFormat)));
         this.documentHelper.setDefaultDocumentFormat();
-        if(!isNullOrUndefined(this.selection)) {
+        if (!isNullOrUndefined(this.selection)) {
             this.selection.retrieveCurrentFormatProperties();
         }
     }
@@ -1512,7 +1648,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public setDefaultSectionFormat(sectionFormat: SectionFormatProperties): void {
         this.sectionFormat = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(sectionFormat)));
         this.documentHelper.setDefaultDocumentFormat();
-        if(!isNullOrUndefined(this.selection)) {
+        if (!isNullOrUndefined(this.selection)) {
             this.selection.retrieveCurrentFormatProperties();
         }
     }
@@ -1599,7 +1735,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (!this.documentHelper.isCompositionStart && Browser.isDevice && this.editorModule) {
             this.editorModule.predictText();
         }
-        const eventArgs: SelectionChangeEventArgs = { source: this , isCompleted:this.documentHelper.isCompleted};
+        const eventArgs: SelectionChangeEventArgs = { source: this, isCompleted: this.documentHelper.isCompleted };
         // if (this.createdTriggered) {
         this.trigger(selectionChangeEvent, eventArgs);
         this.documentHelper.isSelectionCompleted = this.documentHelper.isCompleted;
@@ -1705,7 +1841,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      * @returns {void}
      */
-     public showColumnsDialog(): void {
+    public showColumnsDialog(): void {
         if (this.columnsDialogModule && !this.isReadOnlyMode && this.viewer) {
             this.columnsDialogModule.show();
         }
@@ -1905,10 +2041,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (this.documentEditorSettings && this.documentEditorSettings.enableOptimizedTextMeasuring) {
             DocumentEditor.Inject(Optimized);
-            modules.push({member: 'Optimized', args : [this.documentHelper]});
+            modules.push({ member: 'Optimized', args: [this.documentHelper] });
         } else {
             DocumentEditor.Inject(Regular);
-            modules.push({member: 'Regular', args : [this.documentHelper]});
+            modules.push({ member: 'Regular', args: [this.documentHelper] });
         }
         if (this.enableEditor) {
             modules.push({
@@ -1949,7 +2085,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     member: 'PageSetupDialog', args: [this.documentHelper]
                 });
             }
-            if(this.enableColumnsDialog){
+            if (this.enableColumnsDialog) {
                 modules.push({
                     member: 'ColumnsDialog', args: [this.documentHelper]
                 });
@@ -1978,6 +2114,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             if (this.enableParagraphDialog) {
                 modules.push({
                     member: 'ParagraphDialog', args: [this.documentHelper]
+                });
+                modules.push({
+                    member: 'TabDialog', args: [this.documentHelper]
                 });
             }
             if (this.enableFontDialog) {
@@ -2047,6 +2186,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Left': 'Left',
         'Center': 'Center',
         'Right': 'Right',
+        'Decimal': 'Decimal',
+        'Bar': 'Bar',
         'Justify': 'Justify',
         'Indent from left': 'Indent from left',
         'Borders and Shading': 'Borders and Shading',
@@ -2109,6 +2250,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Right align page numbers': 'Right align page numbers',
         'Nothing': 'Nothing',
         'Tab leader': 'Tab leader',
+        'Leader': 'Leader',
         'Show levels': 'Show levels',
         'Use hyperlinks instead of page numbers': 'Use hyperlinks instead of page numbers',
         'Build table of contents from': 'Build table of contents from',
@@ -2143,7 +2285,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Number of columns': 'Number of columns',
         'Number of rows': 'Number of rows',
         'Text to display': 'Text to display',
-        'ScreenTip text' : 'ScreenTip text',
+        'ScreenTip text': 'ScreenTip text',
         'Address': 'Address',
         'Insert Hyperlink': 'Insert Hyperlink',
         'Edit Hyperlink': 'Edit Hyperlink',
@@ -2238,6 +2380,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Click to follow link': 'Click to follow link',
         'Continue Numbering': 'Continue Numbering',
         'Bookmark name': 'Bookmark name',
+        'Tab': 'Tab',
+        'Tab stop position': 'Tab stop position',
         'Close': 'Close',
         'Restart At': 'Restart At',
         'Properties': 'Properties',
@@ -2317,7 +2461,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Your permissions': 'Your permissions',
         'Protected Document': 'This document is protected from unintentional editing.',
         'FormFieldsOnly': 'You may only fill in forms in this region.',
-        'CommentsOnly' : 'You may only insert comments into this region.',
+        'CommentsOnly': 'You may only insert comments into this region.',
         'ReadOnlyProtection': 'You may edit in this region.',
         'Stop Protection': 'Stop Protection',
         'Password': 'Password',
@@ -2418,7 +2562,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Click to View/Edit Endnote': 'Click to View/Edit Endnote',
         'Multiple Comment': 'Please post your comment',
         'No suggestions': 'No suggestions',
-		'More Suggestion': 'More Suggestion',
+        'More Suggestion': 'More Suggestion',
         'Ignore Once': 'Ignore Once',
         'Keep With Next': 'Keep with next',
         'Keep Lines Together': 'Keep lines together',
@@ -2428,33 +2572,33 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Pagination': 'Pagination',
         'Single': 'Single',
         'DashSmallGap': 'DashSmallGap',
-        'DashDot':'DashDot',
-        'Double':'Double',
-        'ThinThickSmallGap':'ThinThickSmallGap',
-        'ThickThinSmallGap':'ThickThinSmallGap',
-        'ThickThinMediumGap':'ThickThinMediumGap',
-        'ThickThinLargeGap':'ThickThinLargeGap',
-        'SingleWavy':'SingleWavy',
-        'DoubleWavy':'DoubleWavy',
-        'Inset':'Inset',
-        'DashLargeGap':'DashLargeGap',
-        'Dot':'Dot',
-        'DashDotDot':'DashDotDot',
-        'Triple':'Triple',
-        'ThinThickThinSmallGap':'ThinThickThinSmallGap',
-        'ThinThickThinMediumGap':'ThinThickThinMediumGap',
-        'ThinThickThinLargeGap':'ThinThickThinLargeGap',
-        'DashDotStroked':'DashDotStroked',
-        'Engrave3D':'Engrave3D',
-        'Thick':'Thick',
-        'Outset':'Outset',
-        'Emboss3D':'Emboss3D',
-        'ThinThickLargeGap':'ThinThickLargeGap',
-        'ThinThickMediumGap':'ThinThickMediumGap',
+        'DashDot': 'DashDot',
+        'Double': 'Double',
+        'ThinThickSmallGap': 'ThinThickSmallGap',
+        'ThickThinSmallGap': 'ThickThinSmallGap',
+        'ThickThinMediumGap': 'ThickThinMediumGap',
+        'ThickThinLargeGap': 'ThickThinLargeGap',
+        'SingleWavy': 'SingleWavy',
+        'DoubleWavy': 'DoubleWavy',
+        'Inset': 'Inset',
+        'DashLargeGap': 'DashLargeGap',
+        'Dot': 'Dot',
+        'DashDotDot': 'DashDotDot',
+        'Triple': 'Triple',
+        'ThinThickThinSmallGap': 'ThinThickThinSmallGap',
+        'ThinThickThinMediumGap': 'ThinThickThinMediumGap',
+        'ThinThickThinLargeGap': 'ThinThickThinLargeGap',
+        'DashDotStroked': 'DashDotStroked',
+        'Engrave3D': 'Engrave3D',
+        'Thick': 'Thick',
+        'Outset': 'Outset',
+        'Emboss3D': 'Emboss3D',
+        'ThinThickLargeGap': 'ThinThickLargeGap',
+        'ThinThickMediumGap': 'ThinThickMediumGap',
         'Number of rows must be between': 'Number of rows must be between',
-        'Number of columns must be between':'Number of columns must be between',
-        'and' : 'and',
-        'Unlimited' : 'Unlimited',
+        'Number of columns must be between': 'Number of columns must be between',
+        'and': 'and',
+        'Unlimited': 'Unlimited',
         'Regular text': 'Regular text',
         'Date': 'Date',
         'Uppercase': 'Uppercase',
@@ -2476,7 +2620,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Section Break Continuous': 'Section Break (Continuous)',
         'Unsupported format': 'The file format you have selected isn\'t supported. Please choose valid format.',
         'One': 'One',
-        'Two':'Two',
+        'Two': 'Two',
         'Three': 'Three',
         'Presets': 'Presets',
         'Columns': 'Columns',
@@ -2485,13 +2629,34 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Width and Spacing': 'Width and Spacing',
         'Equal column width': 'Equal column width',
         'Column': 'Column',
-        'Paste Content Dialog' : 'Due to browser’s security policy, paste from system clipboard is restricted. Alternatively use the keyboard shortcut',
-        'Paste Content CheckBox' : 'Don’t show again',
-        'BookMarkList':'List of bookmarks in the document',
-        'Discard':'Discard',
-        'The top/bottom margins are too large for the page height in some sections.':'The top/bottom margins are too large for the page height in some sections.',
+        'Paste Content Dialog': 'Due to browser’s security policy, paste from system clipboard is restricted. Alternatively use the keyboard shortcut',
+        'Paste Content CheckBox': 'Don’t show again',
+        'BookMarkList': 'List of bookmarks in the document',
+        'TabMarkList': 'List of tab stops in the paragraph',
+        'Default tab stops': 'Default tab stops',
+        'Tab stops to be cleared': 'Tab stops to be cleared',
+        'Tabs': 'Tabs',
+        'Set': 'Set',
+        'Clear': 'Clear',
+        'Clear All': 'Clear All',
+        'Discard': 'Discard',
+        'The top/bottom margins are too large for the page height in some sections.': 'The top/bottom margins are too large for the page height in some sections.',
         'Column width cannot be less than 36 pt.': 'Column width cannot be less than 36 pt.',
-        'Left and right margins.': 'Settings you chose for the left and right margins, column spacing, or pargraph indents are too large for the page width in same secitions.'
+        'Left and right margins.': 'Settings you chose for the left and right margins, column spacing, or pargraph indents are too large for the page width in same secitions.',
+        'Left Indent': 'Left Indent',
+        'Right Indent': 'Right Indent',
+        'Hanging Indent': 'Hanging Indent',
+        'First Line Indent': 'First Line Indent',
+        'Left Margin': 'Left Margin',
+        'Right Margin': 'Right Margin',
+        'Top Margin': 'Top Margin',
+        'Bottom Margin': 'Bottom Margin',
+        'Left Tab': 'Left Tab',
+        'Right Tab': 'Right Tab',
+        'Center Tab': 'Center Tab',
+        'Decimal Tab': 'Decimal Tab',
+        'Bar Tab': 'Bar Tab',
+        'Move Table Column': 'Move Table Column',
     };
     /* eslint-enable */
     // Public Implementation Starts
@@ -2562,7 +2727,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             = this.enableTableOptionsDialog = this.enableSpellCheck = this.enableComment
             = this.enableFormField = this.enableColumnsDialog = true;
         /* eslint-disable-next-line max-len */
-        DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, NotesDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, ColumnsDialog);
+        DocumentEditor.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu, OptionsPane, HyperlinkDialog, TableDialog, NotesDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, TabDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, ColumnsDialog);
     }
     /**
      * Resizes the component and its sub elements based on given size or container size.
@@ -2585,6 +2750,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             if (this.trackChangesPane.toolbar) {
                 this.trackChangesPane.toolbar.refreshOverflow();
             }
+        }
+        if (this.rulerHelper && this.documentEditorSettings && this.documentEditorSettings.showRuler) {
+            this.rulerHelper.updateRuler(this, false);
         }
     }
     /**
@@ -2648,7 +2816,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public resetFormFields(name?: string): void {
-        if(!isNullOrUndefined(name)) {
+        if (!isNullOrUndefined(name)) {
             name = HelperMethods.sanitizeString(name);
         }
         const formFields: FieldElementBox[] = this.documentHelper.formFields;
@@ -2855,7 +3023,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public save(fileName: string, formatType?: FormatType): void {
-        if(!isNullOrUndefined(fileName)) {
+        if (!isNullOrUndefined(fileName)) {
             fileName = HelperMethods.sanitizeString(fileName);
         }
         fileName = fileName || 'Untitled';
@@ -2872,23 +3040,23 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.textExportModule.save(this.documentHelper, fileName);
         } else if (formatType === 'Sfdt' && this.enableSfdtExport && this.sfdtExportModule) {
             if (this.documentEditorSettings.optimizeSfdt) {
-            const jsonString: string = this.serialize();
-            const blob: Blob = new Blob([jsonString], {
-                type: 'application/json'
-            });
-            const archiveItem: ZipArchiveItem = new ZipArchiveItem(blob, "sfdt");
-            const mArchive: ZipArchive = new ZipArchive();
-            mArchive.addItem(archiveItem);
-            mArchive.saveAsBlob().then((blob: Blob): void => {
-                this.zipArchiveBlobToSfdtFile(blob, fileName);
-            });
-        }else {
-            const jsonString: string = this.serialize();
-            const blob: Blob = new Blob([jsonString], {
-                type: 'application/json'
-            });
-            Save.save(fileName + '.sfdt', blob);
-        }
+                const jsonString: string = this.serialize();
+                const blob: Blob = new Blob([jsonString], {
+                    type: 'application/json'
+                });
+                const archiveItem: ZipArchiveItem = new ZipArchiveItem(blob, "sfdt");
+                const mArchive: ZipArchive = new ZipArchive();
+                mArchive.addItem(archiveItem);
+                mArchive.saveAsBlob().then((blob: Blob): void => {
+                    this.zipArchiveBlobToSfdtFile(blob, fileName);
+                });
+            } else {
+                const jsonString: string = this.serialize();
+                const blob: Blob = new Blob([jsonString], {
+                    type: 'application/json'
+                });
+                Save.save(fileName + '.sfdt', blob);
+            }
         } else {
             throw new Error('Invalid operation. Specified export is not enabled.');
         }
@@ -3025,51 +3193,54 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public showDialog(dialogType: DialogType): void {
         switch (dialogType) {
-        case 'Hyperlink':
-            this.showHyperlinkDialog();
-            break;
-        case 'Table':
-            this.showTableDialog();
-            break;
-        case 'Bookmark':
-            this.showBookmarkDialog();
-            break;
-        case 'TableOfContents':
-            this.showTableOfContentsDialog();
-            break;
-        case 'PageSetup':
-            this.showPageSetupDialog();
-            break;
-        case 'Columns':
-            this.showColumnsDialog();
-            break;
-        case 'List':
-            this.showListDialog();
-            break;
-        case 'Styles':
-            this.showStylesDialog();
-            break;
-        case 'Style':
-            this.showStyleDialog();
-            break;
-        case 'Paragraph':
-            this.showParagraphDialog();
-            break;
-        case 'Font':
-            this.showFontDialog();
-            break;
-        case 'TableProperties':
-            this.showTablePropertiesDialog();
-            break;
-        case 'BordersAndShading':
-            this.showBordersAndShadingDialog();
-            break;
-        case 'TableOptions':
-            this.showTableOptionsDialog();
-            break;
-        case 'SpellCheck':
-            this.showSpellCheckDialog();
-            break;
+            case 'Hyperlink':
+                this.showHyperlinkDialog();
+                break;
+            case 'Table':
+                this.showTableDialog();
+                break;
+            case 'Bookmark':
+                this.showBookmarkDialog();
+                break;
+            case 'TableOfContents':
+                this.showTableOfContentsDialog();
+                break;
+            case 'PageSetup':
+                this.showPageSetupDialog();
+                break;
+            case 'Columns':
+                this.showColumnsDialog();
+                break;
+            case 'List':
+                this.showListDialog();
+                break;
+            case 'Styles':
+                this.showStylesDialog();
+                break;
+            case 'Style':
+                this.showStyleDialog();
+                break;
+            case 'Paragraph':
+                this.showParagraphDialog();
+                break;
+            case 'Font':
+                this.showFontDialog();
+                break;
+            case 'TableProperties':
+                this.showTablePropertiesDialog();
+                break;
+            case 'BordersAndShading':
+                this.showBordersAndShadingDialog();
+                break;
+            case 'TableOptions':
+                this.showTableOptionsDialog();
+                break;
+            case 'SpellCheck':
+                this.showSpellCheckDialog();
+                break;
+            // case 'TabStop':
+            //     this.showTabDialog();
+            //     break;
         }
     }
     /**
@@ -3079,7 +3250,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public toggleShowHiddenMarksInternal(): void {
         this.documentEditorSettings.showHiddenMarks = !this.documentEditorSettings.showHiddenMarks;
         this.notify(internalDocumentEditorSettingsChange, this.documentEditorSettings);
-    }  
+    }
     /**
      * Shows the options pane.
      *
@@ -3114,6 +3285,17 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             if (!isNullOrUndefined(element)) {
                 this.spellCheckDialogModule.show(element.text, element.element);
             }
+        }
+    }
+    /**
+     * Shows the tab dialog.
+     *
+     * @private
+     * @returns {void}
+     */
+    public showTabDialog(): void {
+        if (this.tabDialogModule && !this.isReadOnlyMode && this.viewer) {
+            this.tabDialogModule.show();
         }
     }
     /**
@@ -3154,11 +3336,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public updateStyle(styleInCollection: WStyle, style: WStyle): void {
-        if(!isNullOrUndefined(this.styleDialogModule)) {
+        if (!isNullOrUndefined(this.styleDialogModule)) {
             let type: string = style.type == 'Paragraph' ? !isNullOrUndefined(style.link) ? 'Linked Style' : 'Paragraph' : 'Character';
             styleInCollection.type = this.styleDialogModule.getTypeValue(type);
             styleInCollection.basedOn = style.basedOn;
-    
+
             if (type === 'Paragraph' || type === 'Linked Style') {
                 styleInCollection.next = style.next;
                 (styleInCollection as WParagraphStyle).characterFormat.copyFormat((style as WParagraphStyle).characterFormat);
@@ -3176,7 +3358,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 (styleInCollection as WCharacterStyle).characterFormat.copyFormat((style as WCharacterStyle).characterFormat);
             }
             styleInCollection.name = style.name;
-        }    
+        }
     }
     private createNewBodyWidget(): BodyWidget {
         const section: BodyWidget = new BodyWidget();
@@ -3207,7 +3389,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public getStyleData(name: string, listId?: number): void {
-        if(!this.enableCollaborativeEditing) {
+        if (!this.enableCollaborativeEditing) {
             return;
         }
         this.isSettingOp = true;
@@ -3250,7 +3432,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public getSettingData(name: string, value: boolean, hashValue?: string, saltValue?: string, protectionType?: ProtectionType): void {
-        if(!this.enableCollaborativeEditing) {
+        if (!this.enableCollaborativeEditing) {
             return;
         }
         this.isSettingOp = true;
@@ -3327,11 +3509,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.paragraphDialogModule.destroy();
             this.paragraphDialogModule = undefined;
         }
+        if (this.tabDialogModule) {
+            this.tabDialogModule.destroy();
+            this.tabDialogModule = undefined;
+        }
         if (this.pageSetupDialogModule) {
             this.pageSetupDialogModule.destroy();
             this.pageSetupDialogModule = undefined;
         }
-        if(this.columnsDialogModule){
+        if (this.columnsDialogModule) {
             this.columnsDialogModule.destroy();
             this.columnsDialogModule = undefined;
         }

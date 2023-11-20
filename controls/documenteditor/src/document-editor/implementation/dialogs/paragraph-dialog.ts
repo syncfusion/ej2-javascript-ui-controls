@@ -846,6 +846,14 @@ export class ParagraphDialog {
         this.documentHelper.hideDialog();
     };
     /**
+     * @private
+     * @returns {void}
+     */
+    public openTabDialog = (): void => {
+        this.documentHelper.hideDialog();
+        this.documentHelper.owner.tabDialogModule.show();
+    }
+    /**
      * Applies Paragraph Format
      *
      * @private
@@ -910,14 +918,20 @@ export class ParagraphDialog {
         this.documentHelper.dialog.content = this.target;
         this.documentHelper.dialog.height = 'auto';
         this.documentHelper.dialog.width = 'auto';
-        this.documentHelper.dialog.buttons = [{
+        this.documentHelper.dialog.buttons = [
+        {
+            click: this.openTabDialog,
+            buttonModel: { content: local.getConstant('Tabs') + '....', cssClass: 'e-flat e-de-para-tab', enableRtl: this.documentHelper.owner.enableRtl }
+        },
+        {
             click: this.applyParagraphFormat,
             buttonModel: { content: local.getConstant('Ok'), cssClass: 'e-flat e-para-okay', isPrimary: true }
         },
         {
             click: this.closeParagraphDialog,
             buttonModel: { content: local.getConstant('Cancel'), cssClass: 'e-flat e-para-cancel' }
-        }];
+        }
+    ];
         this.documentHelper.dialog.beforeOpen = this.documentHelper.updateFocus;
         this.documentHelper.dialog.close = this.documentHelper.updateFocus;
         this.documentHelper.dialog.dataBind();

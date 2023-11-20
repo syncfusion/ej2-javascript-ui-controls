@@ -1499,6 +1499,7 @@ export class Draw {
 
     private shapeImage(canvasDraw: CanvasRenderingContext2D): void {
         const parent: ImageEditor = this.parent;
+        const actObj: SelectionPoint = extend({}, parent.activeObj) as SelectionPoint;
         const ctx: CanvasRenderingContext2D = parent.activeObj.imageCanvas.getContext('2d');
         if (canvasDraw === this.lowerContext && this.isImageApply) {
             let dimObj: Object = {width: 0, height: 0 };
@@ -1519,34 +1520,16 @@ export class Draw {
         if (parent.activeObj.flipObjColl.length === 4) {
             parent.activeObj.flipObjColl = []; parent.activeObj.shapeFlip = '';
         }
-        for (let j: number = 0, len: number = parent.activeObj.flipObjColl.length; j < len; j++) {
-            if (parent.activeObj.flipObjColl[j as number].toLowerCase() === 'horizontal') {
-                canvasDraw.translate(canvasDraw.canvas.width, 0); canvasDraw.scale(-1, 1);
-                parent.activeObj.activePoint = this.updateActPoint('horizontal', canvasDraw);
-            } else if (parent.activeObj.flipObjColl[j as number].toLowerCase() === 'vertical') {
-                canvasDraw.translate(0, canvasDraw.canvas.height); canvasDraw.scale(1, -1);
-                parent.activeObj.activePoint = this.updateActPoint('vertical', canvasDraw);
-            }
-        }
         imgPoint.startX = ((parent.activeObj.activePoint.width - imgPoint.width) / 2) + parent.activeObj.activePoint.startX;
         imgPoint.startY = ((parent.activeObj.activePoint.height - imgPoint.height) / 2) + parent.activeObj.activePoint.startY;
         const temp: number = canvasDraw.globalAlpha;
         canvasDraw.globalAlpha = parent.activeObj.imageTransparency;
-        if (parent.activeObj.shapeDegree !== parent.transform.degree) {
+        if (actObj.rotateFlipColl && actObj.rotateFlipColl.length > 0) {
             this.rotateImage(canvasDraw);
         } else {
             canvasDraw.drawImage(parent.activeObj.imageCanvas, imgPoint.startX, imgPoint.startY, imgPoint.width, imgPoint.height);
         }
         canvasDraw.globalAlpha = temp;
-        for (let k: number = 0, len: number = parent.activeObj.flipObjColl.length; k < len; k++) {
-            if (parent.activeObj.flipObjColl[k as number].toLowerCase() === 'horizontal') {
-                canvasDraw.translate(canvasDraw.canvas.width, 0); canvasDraw.scale(-1, 1);
-                parent.activeObj.activePoint = this.updateActPoint('horizontal', canvasDraw);
-            } else if (parent.activeObj.flipObjColl[k as number].toLowerCase() === 'vertical') {
-                canvasDraw.translate(0, canvasDraw.canvas.height); canvasDraw.scale(1, -1);
-                parent.activeObj.activePoint = this.updateActPoint('vertical', canvasDraw);
-            }
-        }
         parent.currObjType.isText = false;
     }
 
@@ -1554,6 +1537,7 @@ export class Draw {
         const filter: string = canvasDraw.filter;
         canvasDraw.filter = 'none';
         const parent: ImageEditor = this.parent; let actPoint: ActivePoint = parent.activeObj.activePoint;
+        const actObj: SelectionPoint = extend({}, parent.activeObj) as SelectionPoint;
         const rows: string[] = parent.activeObj.keyHistory.split('\n');
         const height: number = parent.activeObj.textSettings.fontSize + parent.activeObj.textSettings.fontSize * 0.25;
         const lineHeight: number = ((height * rows.length) - (parent.activeObj.textSettings.fontSize * rows.length)) / rows.length;
@@ -1584,29 +1568,11 @@ export class Draw {
             if (parent.activeObj.flipObjColl.length === 4) {
                 parent.activeObj.flipObjColl = []; parent.activeObj.shapeFlip = '';
             }
-            for (let j: number = 0, len: number = parent.activeObj.flipObjColl.length; j < len; j++) {
-                if (parent.activeObj.flipObjColl[j as number].toLowerCase() === 'horizontal') {
-                    canvasDraw.translate(canvasDraw.canvas.width, 0); canvasDraw.scale(-1, 1);
-                    actPoint = this.updateActPoint('horizontal', canvasDraw);
-                } else if (parent.activeObj.flipObjColl[j as number].toLowerCase() === 'vertical') {
-                    canvasDraw.translate(0, canvasDraw.canvas.height); canvasDraw.scale(1, -1);
-                    actPoint = this.updateActPoint('vertical', canvasDraw);
-                }
-            }
-            if (parent.activeObj.shapeDegree !== parent.transform.degree) {
+            if (actObj.rotateFlipColl && actObj.rotateFlipColl.length > 0) {
                 this.rotateText(canvasDraw);
             } else {
                 canvasDraw.fillText(text, actPoint.startX + parent.activeObj.textSettings.fontSize * 0.1,
                                     actPoint.startY + yPoint);
-            }
-            for (let k: number = 0, len: number = parent.activeObj.flipObjColl.length; k < len; k++) {
-                if (parent.activeObj.flipObjColl[k as number].toLowerCase() === 'horizontal') {
-                    canvasDraw.translate(canvasDraw.canvas.width, 0); canvasDraw.scale(-1, 1);
-                    actPoint = this.updateActPoint('horizontal', canvasDraw);
-                } else if (parent.activeObj.flipObjColl[k as number].toLowerCase() === 'vertical') {
-                    canvasDraw.translate(0, canvasDraw.canvas.height); canvasDraw.scale(1, -1);
-                    actPoint = this.updateActPoint('vertical', canvasDraw);
-                }
             }
         }
         canvasDraw.filter = filter;
@@ -1644,8 +1610,8 @@ export class Draw {
     }
 
     private rotateImage(canvasDraw: CanvasRenderingContext2D): void {
-        const parent: ImageEditor = this.parent;
-        let degree: number;
+        const parent: ImageEditor = this.parent; let degree: number; let actObj: SelectionPoint = parent.activeObj;
+        const tempActiveObj: SelectionPoint = extend({}, parent.activeObj, null, true) as SelectionPoint;
         if (parent.activeObj.shapeDegree === 0) {degree = parent.transform.degree; }
         else {degree = parent.transform.degree - parent.activeObj.shapeDegree; }
         if (degree === -450) {degree = -90; }
@@ -1658,93 +1624,141 @@ export class Draw {
         imgPoint.startY = parent.activeObj.activePoint.startY;
         let startX: number = imgPoint.startX;
         let startY: number = imgPoint.startY;
-        if (degree % 360 === 0 && (parent.transform.degree !== -360 || parent.transform.currFlipState === '')) {
-            canvasDraw.drawImage(parent.activeObj.imageCanvas, imgPoint.startX, imgPoint.startY, imgPoint.width, imgPoint.height);
-        }
-        else if (degree % 90 === 0 && degree % 180 !== 0) {
-            canvasDraw.translate(parent.lowerCanvas.width / 2, parent.lowerCanvas.height / 2);
-            canvasDraw.rotate(Math.PI / 180 * degree);
-            canvasDraw.translate(-parent.lowerCanvas.height / 2, -parent.lowerCanvas.width / 2);
-            if (degree % 90 === 0 && degree % 270 !== 0) {
-                startY = parent.lowerCanvas.width - (parent.activeObj.activePoint.startX + parent.activeObj.activePoint.width);
-                startY += ((parent.activeObj.activePoint.width - imgPoint.height) / 2);
-                startX = imgPoint.startY;
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        let tempDegree: number; const tempColl: any= [];
+        canvasDraw.save();
+        for (let i: number = 0, len: number = actObj.rotateFlipColl.length; i < len; i++) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            let coll: any = actObj.rotateFlipColl[i as number];
+            tempColl.push(coll);
+            if (typeof(coll) === 'number') {
+                if (actObj.shapeDegree === 0) {tempDegree = coll; }
+                else {tempDegree = coll - actObj.shapeDegree; }
+                if (tempDegree === -450) {tempDegree = -90; }
+                if (tempDegree < 0) {tempDegree = 360 + tempDegree; }
+                imgPoint.width = tempDegree % 90 === 0 && tempDegree % 180 !== 0 ? actObj.activePoint.height : actObj.activePoint.width;
+                imgPoint.height = tempDegree % 90 === 0 && tempDegree % 180 !== 0 ? actObj.activePoint.width :
+                    actObj.activePoint.height;
+                canvasDraw.translate(canvasDraw.canvas.width / 2, canvasDraw.canvas.height / 2);
+                canvasDraw.rotate(Math.PI / 180 * coll);
+                canvasDraw.translate(-canvasDraw.canvas.height / 2, -canvasDraw.canvas.width / 2);
+                if (tempDegree % 90 === 0 && tempDegree % 270 !== 0) {
+                    startY = canvasDraw.canvas.width - (actObj.activePoint.startX + actObj.activePoint.width);
+                    startY += ((actObj.activePoint.width - imgPoint.height) / 2);
+                    startX = imgPoint.startY;
+                } else if (tempDegree % 270 === 0) {
+                    startX = canvasDraw.canvas.height - (actObj.activePoint.startY + actObj.activePoint.height);
+                    startX += ((actObj.activePoint.height - imgPoint.width) / 2);
+                    startY = imgPoint.startX;
+                }
+                imgPoint.startX = startX; imgPoint.startY = startY;
+                actObj.activePoint.startX = startX; actObj.activePoint.startY = startY;
+                actObj.activePoint.endX = actObj.activePoint.startX + imgPoint.width;
+                actObj.activePoint.endY = actObj.activePoint.startY + imgPoint.height;
+                actObj = this.updateWidthHeight(actObj);
+            } else {
+                if (coll === 'horizontal' && degree % 90 === 0 && degree % 180 !== 0) {
+                    coll = 'vertical';
+                }
+                else if (coll === 'vertical' && degree % 90 === 0 && degree % 180 !== 0) {
+                    coll = 'horizontal';
+                }
+                if (coll === 'horizontal') {
+                    canvasDraw.translate(canvasDraw.canvas.width, 0); canvasDraw.scale(-1, 1);
+                    actObj.activePoint = this.updateActPoint('horizontal', canvasDraw);
+                } else if (coll === 'vertical') {
+                    canvasDraw.translate(0, canvasDraw.canvas.height); canvasDraw.scale(1, -1);
+                    actObj.activePoint = this.updateActPoint('vertical', canvasDraw);
+                }
+                imgPoint.startX = actObj.activePoint.startX; imgPoint.startY = actObj.activePoint.startY;
             }
-            else if (degree % 270 === 0) {
-                startX = parent.lowerCanvas.height - (parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height);
-                startX += ((parent.activeObj.activePoint.height - imgPoint.width) / 2);
-                startY = imgPoint.startX;
-            }
-            canvasDraw.drawImage(parent.activeObj.imageCanvas, startX, startY, imgPoint.width, imgPoint.height);
-            canvasDraw.translate(parent.lowerCanvas.height / 2, parent.lowerCanvas.width / 2);
-            canvasDraw.rotate(Math.PI / 180 * -degree);
-            canvasDraw.translate(-parent.lowerCanvas.width / 2, -parent.lowerCanvas.height / 2);
+            imgPoint.startX = actObj.activePoint.startX;
+            imgPoint.startY = actObj.activePoint.startY;
+            startX = imgPoint.startX; startY = imgPoint.startY;
         }
-        else {
-            canvasDraw.translate(parent.lowerCanvas.width / 2, parent.lowerCanvas.height / 2);
-            canvasDraw.rotate(Math.PI / 180 * degree);
-            startX = parent.lowerCanvas.width - (imgPoint.startX + imgPoint.width);
-            startY = parent.lowerCanvas.height - (imgPoint.startY + imgPoint.height);
-            canvasDraw.translate(-parent.lowerCanvas.width / 2, -parent.lowerCanvas.height / 2);
-            canvasDraw.drawImage(parent.activeObj.imageCanvas, startX, startY, imgPoint.width, imgPoint.height);
-            canvasDraw.translate(parent.lowerCanvas.width / 2, parent.lowerCanvas.height / 2);
-            canvasDraw.rotate(Math.PI / 180 * -degree);
-            canvasDraw.translate(-parent.lowerCanvas.width / 2, -parent.lowerCanvas.height / 2);
+        if (actObj.rotatedAngle !== 0) {
+            parent.notify('shape', { prop: 'setPointCollForShapeRotation', onPropertyChange: false, value: { obj: actObj } });
         }
+        canvasDraw.drawImage(actObj.imageCanvas, imgPoint.startX, imgPoint.startY, imgPoint.width, imgPoint.height);
+        canvasDraw.restore();
+        parent.activeObj = tempActiveObj;
         if (parent.transform.degree === 360 || parent.transform.degree === -360) {
             parent.transform.degree = 0;
         }
     }
 
     private rotateText(canvasDraw: CanvasRenderingContext2D): void {
-        const parent: ImageEditor = this.parent;
-        let startX: number = parent.activeObj.activePoint.startX;
-        let startY: number = parent.activeObj.activePoint.startY;
-        let degree: number;
-        const actPoint: ActivePoint = parent.activeObj.activePoint;
+        const parent: ImageEditor = this.parent; let degree: number; let actObj: SelectionPoint = parent.activeObj;
+        const tempActiveObj: SelectionPoint = extend({}, parent.activeObj, null, true) as SelectionPoint;
         if (parent.activeObj.shapeDegree === 0) {degree = parent.transform.degree; }
         else {degree = parent.transform.degree - parent.activeObj.shapeDegree; }
         if (degree === -450) {degree = -90; }
         if (degree < 0) {degree = 360 + degree; }
-        if (degree % 360 === 0 && (parent.transform.degree !== -360 || parent.transform.currFlipState === '')) {
-            startX = actPoint.startX + parent.activeObj.textSettings.fontSize * 0.15;
-            startY = actPoint.startY + (actPoint.endY - actPoint.startY);
-            const rows: string[] = parent.activeObj.keyHistory.split('\n');
-            for (let i: number = 0; i < rows.length; i++) {
-                startY = actPoint.startY + (i * parent.activeObj.textSettings.fontSize + parent.activeObj.textSettings.fontSize * 0.25);
-                canvasDraw.fillText(rows[i as number], startX, startY);
+        const imgPoint: ActivePoint = {startX: 0, startY: 0, width: 0, height: 0 };
+        imgPoint.width = degree % 90 === 0 && degree % 180 !== 0 ? actObj.activePoint.height : actObj.activePoint.width;
+        imgPoint.height = degree % 90 === 0 && degree % 180 !== 0 ? actObj.activePoint.width :
+            actObj.activePoint.height;
+        imgPoint.startX = actObj.activePoint.startX;
+        imgPoint.startY = actObj.activePoint.startY;
+        let startX: number = imgPoint.startX;
+        let startY: number = imgPoint.startY;
+         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        let tempDegree: number; const tempColl: any= [];
+        canvasDraw.save();
+        for (let i: number = 0, len: number = actObj.rotateFlipColl.length; i < len; i++) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            let coll: any = actObj.rotateFlipColl[i as number];
+            tempColl.push(coll);
+            if (typeof(coll) === 'number') {
+                if (actObj.shapeDegree === 0) {tempDegree = coll; }
+                else {tempDegree = coll - actObj.shapeDegree; }
+                if (tempDegree === -450) {tempDegree = -90; }
+                if (tempDegree < 0) {tempDegree = 360 + tempDegree; }
+                imgPoint.width = tempDegree % 90 === 0 && tempDegree % 180 !== 0 ? actObj.activePoint.height : actObj.activePoint.width;
+                imgPoint.height = tempDegree % 90 === 0 && tempDegree % 180 !== 0 ? actObj.activePoint.width :
+                    actObj.activePoint.height;
+                canvasDraw.translate(canvasDraw.canvas.width / 2, canvasDraw.canvas.height / 2);
+                canvasDraw.rotate(Math.PI / 180 * coll);
+                canvasDraw.translate(-canvasDraw.canvas.height / 2, -canvasDraw.canvas.width / 2);
+                if (tempDegree % 90 === 0 && tempDegree % 270 !== 0) {
+                    startY = (parent.lowerCanvas.width - actObj.activePoint.endX);
+                    startX = actObj.activePoint.startY;
+                } else if (tempDegree % 270 === 0) {
+                    startX = parent.lowerCanvas.height - actObj.activePoint.endY;
+                    startY = actObj.activePoint.startX;
+                }
+                imgPoint.startX = startX; imgPoint.startY = startY;
+                actObj.activePoint.startX = startX; actObj.activePoint.startY = startY;
+                actObj.activePoint.endX = actObj.activePoint.startX + imgPoint.width;
+                actObj.activePoint.endY = actObj.activePoint.startY + imgPoint.height;
+                actObj = this.updateWidthHeight(actObj);
+            } else {
+                if (coll === 'horizontal' && degree % 90 === 0 && degree % 180 !== 0) {
+                    coll = 'vertical';
+                }
+                else if (coll === 'vertical' && degree % 90 === 0 && degree % 180 !== 0) {
+                    coll = 'horizontal';
+                }
+                if (coll === 'horizontal') {
+                    canvasDraw.translate(canvasDraw.canvas.width, 0); canvasDraw.scale(-1, 1);
+                    actObj.activePoint = this.updateActPoint('horizontal', canvasDraw);
+                } else if (coll === 'vertical') {
+                    canvasDraw.translate(0, canvasDraw.canvas.height); canvasDraw.scale(1, -1);
+                    actObj.activePoint = this.updateActPoint('vertical', canvasDraw);
+                }
+                imgPoint.startX = actObj.activePoint.startX; imgPoint.startY = actObj.activePoint.startY;
             }
+            imgPoint.startX = actObj.activePoint.startX;
+            imgPoint.startY = actObj.activePoint.startY;
+            startX = imgPoint.startX; startY = imgPoint.startY;
         }
-        else if (degree % 90 === 0 && degree % 180 !== 0) {
-            canvasDraw.translate(parent.lowerCanvas.width / 2, parent.lowerCanvas.height / 2);
-            canvasDraw.rotate(Math.PI / 180 * degree);
-            canvasDraw.translate(-parent.lowerCanvas.height / 2, -parent.lowerCanvas.width / 2);
-            if (degree % 90 === 0 && degree % 270 !== 0) {
-                startY = (parent.lowerCanvas.width - actPoint.endX) +
-                parent.activeObj.textSettings.fontSize * 0.4;
-                startX = actPoint.startY;
-            }
-            else if (degree % 270 === 0) {
-                startX = parent.lowerCanvas.height - actPoint.endY;
-                startY = actPoint.startX + parent.activeObj.textSettings.fontSize * 0.4;
-            }
-            this.textFlipDegree(canvasDraw, startX, startY);
-            canvasDraw.translate(parent.lowerCanvas.height / 2, parent.lowerCanvas.width / 2);
-            canvasDraw.rotate(Math.PI / 180 * -degree);
-            canvasDraw.translate(-parent.lowerCanvas.width / 2, -parent.lowerCanvas.height / 2);
+        if (actObj.rotatedAngle !== 0) {
+            parent.notify('shape', { prop: 'setPointCollForShapeRotation', onPropertyChange: false, value: { obj: actObj } });
         }
-        else {
-            canvasDraw.translate(parent.lowerCanvas.width / 2, parent.lowerCanvas.height / 2);
-            canvasDraw.rotate(Math.PI / 180 * degree);
-            startX = parent.lowerCanvas.width - actPoint.endX;
-            startY = (parent.lowerCanvas.height - actPoint.endY) +
-            parent.activeObj.textSettings.fontSize * 0.4;
-            canvasDraw.translate(-parent.lowerCanvas.width / 2, -parent.lowerCanvas.height / 2);
-            this.textFlipDegree(canvasDraw, startX, startY);
-            canvasDraw.translate(parent.lowerCanvas.width / 2, parent.lowerCanvas.height / 2);
-            canvasDraw.rotate(Math.PI / 180 * -degree);
-            canvasDraw.translate(-parent.lowerCanvas.width / 2, -parent.lowerCanvas.height / 2);
-        }
+        startY += actObj.textSettings.fontSize * 0.4;
+        this.textFlipDegree(canvasDraw, startX, startY);
+        canvasDraw.restore();
+        parent.activeObj = tempActiveObj;
         if (parent.transform.degree === 360 || parent.transform.degree === -360) {
             parent.transform.degree = 0;
         }
@@ -2218,20 +2232,21 @@ export class Draw {
                 this.parent.notify('toolbar', { prop: 'getPrevCropObj', onPropertyChange: false, value: { obj: obj1 } });
                 this.parent.notify('toolbar', { prop: 'getPrevObj', onPropertyChange: false, value: { obj: obj2 } });
                 if (obj1['prevCropObj'] && obj2['prevObj']) {
-                    if (!aspectRatioElement) {
-                        parent.objColl = []; parent.pointColl = []; parent.freehandCounter = 0;
-                        parent.cropObj = extend({}, obj1['prevCropObj'], {}, true) as CurrentObject;
-                        this.setCurrentObj(obj2['prevObj']);
-                        parent.objColl = obj2['prevObj']['objColl'];
-                        parent.pointColl = obj2['prevObj']['pointColl'];
-                        parent.freehandCounter = parent.pointColl.length;
-                        parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
-                        parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
-                    }
+                    parent.objColl = []; parent.pointColl = []; parent.freehandCounter = 0;
+                    parent.cropObj = extend({}, obj1['prevCropObj'], {}, true) as CurrentObject;
+                    this.setCurrentObj(obj2['prevObj']);
+                    parent.objColl = obj2['prevObj']['objColl'];
+                    parent.pointColl = obj2['prevObj']['pointColl'];
+                    parent.freehandCounter = parent.pointColl.length;
+                    parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
+                    parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+                    const currObj: SelectionPoint = parent.currSelectionPoint ?
+                        extend({}, parent.currSelectionPoint, {}, true) as SelectionPoint : null;
                     this.parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
                         value: { zoomFactor: -this.parent.transform.zoomFactor, zoomPoint: null, isResize: true } });
                     this.parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
                         value: { zoomFactor: obj2['prevObj']['defaultZoom'], zoomPoint: null, isResize: true } });
+                    parent.currSelectionPoint = currObj;
                     if (obj2['prevObj'].zoomFactor) {
                         parent.setProperties({zoomSettings: { zoomFactor: obj2['prevObj'].zoomFactor}}, true);
                     }
@@ -2239,6 +2254,7 @@ export class Draw {
                         value: { previousZoomValue: parent.zoomSettings.zoomFactor }});
                 }
                 parent.isResize = false;
+                parent.notify('transform', { prop: 'setResizedImgAngle', onPropertyChange: false, value: {angle: null}});
             }
         }
         if (parent.togglePen) {

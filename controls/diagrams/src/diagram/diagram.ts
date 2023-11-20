@@ -7318,7 +7318,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (obj.children) {
             canvas.measureChildren = false;
             portContainer.id = obj.id + 'group_container';
-            portContainer.style.fill = 'none';
+            //Bug 853721: Grid lines remain hidden when lane fill is set to transparent.
+            // Added below code to set swimlane fill while dragging from palette to diagram.
+            if( obj.shape && obj.shape.type === 'SwimLane'){
+                portContainer.style.fill = obj.style.fill;
+            }else{
+                portContainer.style.fill = 'none';
+            }
             portContainer.style.strokeColor = 'none'; portContainer.horizontalAlignment = 'Stretch';
             portContainer.verticalAlignment = 'Stretch'; canvas.style = obj.style;
             canvas.padding.left = obj.padding.left; canvas.padding.right = obj.padding.right; canvas.padding.top = obj.padding.top; canvas.padding.bottom = obj.padding.bottom;
@@ -10605,7 +10611,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (obj.annotations) {
                     for (const annotation of obj.annotations) {
                         const wrapper: DiagramElement = this.getWrapper(element, annotation.id);
-                        wrapper.visible = visible;
+                        if(visible){
+                            wrapper.visible = (wrapper as TextElement).annotationVisibility === 'Visible' ? true : false;
+                        }else{
+                            wrapper.visible = visible;
+                        }
                     }
                 }
             } else {
@@ -10618,7 +10628,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 //annotations
                 for (const annotation of obj.annotations) {
                     const wrapper: DiagramElement = this.getWrapper(element, annotation.id);
-                    wrapper.visible = visible;
+                    //Bug 855273: Annotation visible property is not working while changing node visibility at runtime.
+                    if(visible){
+                        wrapper.visible = (wrapper as TextElement).annotationVisibility === 'Visible' ? true : false;
+                    }else{
+                        wrapper.visible = visible;
+                    }
                 }
             }
             if ((obj as NodeModel).expandIcon || (obj as NodeModel).collapseIcon) {
@@ -10823,6 +10838,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (changedObject.visibility !== undefined) {
                 annotationWrapper.visible = (nodes.visible && changedObject.visibility) ? true : false;
+                (annotationWrapper as TextElement).annotationVisibility =  annotationWrapper.visible ? 'Visible' : 'Collapsed';
             }
             if (changedObject.constraints !== undefined) {
                 const updateSelector: boolean = false;

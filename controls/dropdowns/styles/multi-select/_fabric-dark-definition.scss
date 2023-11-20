@@ -184,4 +184,9 @@ $ddl-closer-margin-top-bigger-small: -3.2em !default;
   .e-small .e-multi-select-wrapper .e-chips {
     margin: 2px 2px 2px 0;
   }
+
+  .e-multi-select-wrapper .e-searcher input[type = 'text'],
+  .e-multi-select-wrapper .e-multi-searcher input[type = 'text'] {
+    color: #fff;
+  }
 }

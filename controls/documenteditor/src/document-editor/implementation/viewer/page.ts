@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { WTableFormat, WRowFormat, WCellFormat, WColumnFormat } from '../format/index';
+import { WTableFormat, WRowFormat, WCellFormat, WColumnFormat, WTabStop } from '../format/index';
 import {
     WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType, VerticalOrigin, VerticalAlignment,
     HorizontalOrigin, HorizontalAlignment, LineFormatType, LineDashing, AutoShapeType, ContentControlType, ContentControlWidgetType,
@@ -1671,6 +1671,7 @@ export class ParagraphWidget extends BlockWidget {
         paragraph.y = this.y;
         paragraph.height = this.height;
         paragraph.width = this.width;
+        paragraph['absoluteXPosition'] = isNullOrUndefined(this['absoluteXPosition']) ? undefined: { 'width': this['absoluteXPosition']['width'], 'x': this['absoluteXPosition']['x'] };
         if (this.contentControlProperties) {
             paragraph.contentControlProperties = this.contentControlProperties;
         }
@@ -1701,6 +1702,9 @@ export class ParagraphWidget extends BlockWidget {
             //     // (this.containerWidget as BodyWidget).destroyInternal(viewer);
             // }
             this.containerWidget = undefined;
+        }
+        if (this.hasOwnProperty('absoluteXPosition')) {
+            delete this['absoluteXPosition'];
         }
         this.destroy();
     }
@@ -2369,10 +2373,10 @@ export class TableWidget extends BlockWidget {
         this.tableHolder.validateColumnWidths();
         if (isAutoFit) {
             // Fits the column width automatically based on contents.
-            this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, hasSpannedCells, this.leftIndent + this.rightIndent, pageContainerWidth);
+            this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, isAutoFit, hasSpannedCells, this.leftIndent + this.rightIndent, pageContainerWidth);
         } else {
             // Fits the column width based on preferred width. i.e. Fixed layout.
-            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, this.leftIndent + this.rightIndent);
+            this.tableHolder.fitColumns(containerWidth, tableWidth, isAutoWidth, isAutoFit, this.leftIndent + this.rightIndent);
         }
         // if (!isAutoFit && isAutoWidth) {
         //     tableWidth = this.tableHolder.tableWidth;
@@ -9238,7 +9242,7 @@ export class WTableHolder {
     /**
      * @private
      */
-    public autoFitColumn(containerWidth: number, preferredTableWidth: number, isAuto: boolean, isNestedTable: boolean, hasSpannedCells: boolean, indent?: number, pageContainerWidth?: number): void {
+    public autoFitColumn(containerWidth: number, preferredTableWidth: number, isAuto: boolean, isNestedTable: boolean, isAutoFit: boolean, hasSpannedCells: boolean, indent?: number, pageContainerWidth?: number): void {
         // Cell's preferred width should be considered until the table width fits to the container width.
         let maxTotal: number = 0;
         let minTotal: number = 0;
@@ -9292,7 +9296,7 @@ export class WTableHolder {
             }
             // If the width is defined for table(cells undefined) then fit the columns to preferred table width using FitColumns.
             if (!isAuto) {
-                this.fitColumns(containerWidth, preferredTableWidth, isAuto);
+                this.fitColumns(containerWidth, preferredTableWidth, isAuto, isAutoFit);
             }
         } else {
             let totalPreferredWidth: number = this.getTotalWidth(0);
@@ -9326,7 +9330,7 @@ export class WTableHolder {
                 if ((preferredTableWidth < minTotal && minTotal + (isNullOrUndefined(indent) ? 0 : indent) < containerWidth)) {
                     considerMinAsTableWidth = true;
                 }
-                this.fitColumns(containerWidth, considerMinAsTableWidth ? minTotal : preferredTableWidth, isAuto);
+                this.fitColumns(containerWidth, considerMinAsTableWidth ? minTotal : preferredTableWidth, isAuto, isAutoFit);
                 return;
                 //}
                 //containerWidth = preferredTableWidth < totalMinimumWordWidth ? totalMinimumWordWidth < containerWidth ? totalMinimumWordWidth : containerWidth : preferredTableWidth;
@@ -9410,7 +9414,7 @@ export class WTableHolder {
     /**
      * @private
      */
-    public fitColumns(containerWidth: number, preferredTableWidth: number, isAutoWidth: boolean, indent?: number): void {
+    public fitColumns(containerWidth: number, preferredTableWidth: number, isAutoWidth: boolean, isAutoFit: boolean, indent?: number): void {
         if (isNullOrUndefined(indent)) {
             indent = 0;
         }
@@ -9434,7 +9438,20 @@ export class WTableHolder {
             factor = isNaN(factor) || factor === Infinity ? 1 : factor;
             for (let i: number = 0; i < this.columns.length; i++) {
                 let column: WColumn = this.columns[i];
-                column.preferredWidth = factor * column.preferredWidth;
+                if (column.widthType === 'Percent' && !isAutoWidth && !isAutoFit && totalColumnWidth > this.tableWidth) {
+                    if (i !== 0 && column.endOffset > this.tableWidth) {
+                        let totalCellWidth: number = this.getCellWidth(0, i + 1, preferredTableWidth);
+                        if (totalCellWidth > this.tableWidth) {
+                            column.preferredWidth -= (totalCellWidth - this.tableWidth);
+                            if (column.preferredWidth === 0 || column.preferredWidth < column.minimumWidth) {
+                                column.preferredWidth = column.minimumWidth > 0 ? column.minimumWidth : 1;
+                                this.columns[0].preferredWidth -= column.preferredWidth;
+                            }
+                        }
+                    }
+                } else {
+                    column.preferredWidth = factor * column.preferredWidth;
+                }
             }
         }
     }
@@ -9636,4 +9653,17 @@ export class BreakElementBox extends TextElementBox {
         this.breakClearType = undefined;
         super.componentDestroy();
     }
+}
+/**
+ * @private
+ */
+export class TabStopListInfo {
+    /**
+     * @private
+     */
+    public displayText: string;
+    /**
+     * @private
+     */
+    public value: WTabStop;
 }

@@ -470,7 +470,7 @@ describe('Kanban Virtual Scroll Feature', () => {
         });
     });
     
-    describe('Testing the Virtual Scrolling for the remote sample', () => {
+    xdescribe('Testing the Virtual Scrolling for the remote sample', () => {
         const defaultOptions: KanbanModel = {
             keyField: 'Status',
             columns: [

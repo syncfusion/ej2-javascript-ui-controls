@@ -1879,6 +1879,7 @@ export class Connector extends NodeBase implements IElement {
         }
         textele.constraints = annotation.constraints;
         textele.visible = annotation.visibility;
+        (textele as TextElement).annotationVisibility = textele.visible ? 'Visible': 'Collapsed';
         textele.rotateAngle = annotation.rotateAngle;
         textele.horizontalAlignment = annotation.horizontalAlignment;
         textele.verticalAlignment = annotation.verticalAlignment;

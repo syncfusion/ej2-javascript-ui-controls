@@ -50,7 +50,8 @@ export class PdfTimeline {
      * @returns {void}
      */
     public drawTimeline(page: PdfPage, startPoint: PointF, detail: TimelineDetails): void {
-        let remainWidth: number = pointToPixel(Math.floor(detail.totalWidth));
+        let remainWidth: number = (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
+            this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? pointToPixel(Math.floor(detail.totalWidth)) : Math.floor(detail.totalWidth);
         let renderWidth: number = 0;
         this.topTierPoint.x = startPoint.x;
         this.topTierPoint.y = startPoint.y;
@@ -77,7 +78,8 @@ export class PdfTimeline {
                 //Primary header Event Arguments
                 /* eslint-disable-next-line */
                 this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, renderWidth, pHeader.value, true);
-                this.topTierPoint.x += renderWidth;
+                this.topTierPoint.x += (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
+                    this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? renderWidth : pixelToPoint(renderWidth);
                 remainWidth -= renderWidth;
                 if (isCompleted) {
                     this.topTierIndex++;
@@ -102,7 +104,8 @@ export class PdfTimeline {
                 //Secondary header Event Arguments
                 /* eslint-disable-next-line */
                 this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, width, secondHeader.value, false);
-                this.bottomTierPoint.x = this.bottomTierPoint.x + width;
+                this.bottomTierPoint.x = (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
+                    this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? this.bottomTierPoint.x + width : this.bottomTierPoint.x + pixelToPoint(width);
                 remainWidth -= width;
                 secondHeader.completedWidth = width;
                 if (isCompleted) {
@@ -133,7 +136,8 @@ export class PdfTimeline {
                     //Primary header Event Arguments
                     /* eslint-disable-next-line */
                     this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, pHeader.completedWidth, pHeader.value, true);
-                    this.topTierPoint.x += pHeader.completedWidth;
+                    this.topTierPoint.x += (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
+                        this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? pHeader.completedWidth : pixelToPoint(pHeader.completedWidth);
                 }
             }
         }
@@ -146,7 +150,8 @@ export class PdfTimeline {
                     //Secondary header Event Arguments
                     /* eslint-disable-next-line */
                     this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, secondHeader.width, secondHeader.value, false);
-                    this.bottomTierPoint.x = this.bottomTierPoint.x + secondHeader.width;
+                    this.bottomTierPoint.x = (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
+                        this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? this.bottomTierPoint.x + secondHeader.width : this.bottomTierPoint.x + pixelToPoint(secondHeader.width);
                 }
             }
         }
@@ -191,7 +196,8 @@ export class PdfTimeline {
         const e: PdfGanttCellStyle = eventArgs.timelineCell;
         const rectPen: PdfPen = new PdfPen(eventArgs.timelineCell.borderColor);
         const rectBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.backgroundColor);
-        graphics.drawRectangle(rectPen, rectBrush, x, y, width, pixelToPoint(height));
+        graphics.drawRectangle(rectPen, rectBrush, x, y, (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
+            this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? width : pixelToPoint(width), pixelToPoint(height));
         if(!isTopTier && (this.parent.gridLines == "Both" || this.parent.gridLines == "Vertical") ){
             graphics.drawRectangle(rectPen, rectBrush, x, y + pixelToPoint(height), width, page.getClientSize().height);
         }

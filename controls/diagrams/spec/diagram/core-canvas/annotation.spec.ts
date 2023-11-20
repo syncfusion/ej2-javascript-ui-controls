@@ -3,7 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { Node } from '../../../src/diagram/objects/node';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { ConnectorModel, PathModel, BasicShapeModel } from '../../../src';
+import { ConnectorModel, PathModel, BasicShapeModel, ShapeStyleModel, TextElement } from '../../../src';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
 /**
@@ -204,4 +204,99 @@ describe('Diagram Control', () => {
 
     });
 
+    describe('855273-Annotation visible property is not working while changing node visibility at runtime', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+
+            ele = createElement('div', { id: 'diagramAnnotationVisible' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 400, offsetY: 200,
+                    
+                }
+            ];
+            
+            let connectors: ConnectorModel [] = [{
+                id:'con1',type:'Straight',sourcePoint:{x:100,y:100},targetPoint:{x:200,y:200},annotations:[ {
+                    id: 'conhidden1',
+                    visibility: false,
+                    content: 'con hidden1',
+                    constraints: 2,
+                    annotationType: 'String',
+                    horizontalAlignment: 'Center',
+                    verticalAlignment: 'Center',
+                  },]
+            }]
+            diagram = new Diagram({
+                width: '800px', height: '500px', nodes: nodes,
+                connectors: connectors,
+                getNodeDefaults: function (node: NodeModel) {
+                    node.height = 100;
+                    node.width = 100;
+                    ((node as NodeModel).style as ShapeStyleModel).fill = '#6BA5D7';
+                    ((node as NodeModel).style as ShapeStyleModel).strokeColor = 'White';
+                    node.annotations = [
+                    {
+                        id: 'hidden1',
+                        visibility: false,
+                        content: 'Hidden 1 ',
+                        constraints: 2,
+                        annotationType: 'String',
+                        horizontalAlignment: 'Center',
+                        verticalAlignment: 'Center',
+                    },
+                    {
+                        id: 'hidden2',
+                        visibility: false,
+                        content: 'Hidden 2',
+                        constraints: 2,
+                        annotationType: 'String',
+                        horizontalAlignment: 'Center',
+                        verticalAlignment: 'Center',
+                        offset: {
+                        x: 0.5,
+                        y: 1,
+                        },
+                    },
+                    ];
+                    return node;
+                },
+            });
+            diagram.appendTo('#diagramAnnotationVisible');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking the annotation visibility after changing node visibility', (done: Function) => {
+            let node = diagram.nodes[0] as NodeModel;
+            node.visible = false;
+            diagram.dataBind();
+            node.visible = true;
+            diagram.dataBind();
+            let annotation = node.wrapper.children[1];
+            expect(annotation.visible === false && (annotation as TextElement).annotationVisibility === 'Collapsed').toBe(true);
+            done();
+        });
+        it('Checking the annotation visibility after changing connector visibility', (done: Function) => {
+            let connector = diagram.connectors[0] as ConnectorModel;
+            connector.visible = false;
+            diagram.dataBind();
+            connector.visible = true;
+            diagram.dataBind();
+            let annotation = connector.wrapper.children[3];
+            expect(annotation.visible === false && (annotation as TextElement).annotationVisibility === 'Collapsed').toBe(true);
+            done();
+        });
+    });
 });

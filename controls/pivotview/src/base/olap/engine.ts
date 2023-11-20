@@ -108,6 +108,8 @@ export class OlapEngine {
     /** @hidden */
     public drilledSets: { [key: string]: HTMLElement } = {};
     /** @hidden */
+    public olapVirtualization: boolean;
+    /** @hidden */
     public isExporting: boolean = false;
     private showSubTotalsAtTop: boolean;
     private showSubTotalsAtBottom: boolean;
@@ -119,6 +121,7 @@ export class OlapEngine {
     private mappingFields: { [key: string]: IFieldOptions } = {};   /* eslint-disable security/detect-unsafe-regex */
     private customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
     private formatRegex: RegExp = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;   /* eslint-enable security/detect-unsafe-regex */
+    private clonedValTuple: Element[] = [];
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /** @hidden */
@@ -213,9 +216,14 @@ export class OlapEngine {
             this.drilledMembers = dataSourceSettings.drilledMembers ? this.updateDrilledItems(dataSourceSettings.drilledMembers) : [];
             this.calculatedFieldSettings = dataSourceSettings.calculatedFieldSettings ? dataSourceSettings.calculatedFieldSettings : [];
             this.emptyCellTextContent = dataSourceSettings.emptyCellsTextContent ? dataSourceSettings.emptyCellsTextContent : '';
-            this.pageSettings = customProperties ? (customProperties.pageSettings ? customProperties.pageSettings : this.pageSettings)
-                : undefined;
+            this.pageSettings = customProperties ? (customProperties.pageSettings ?
+                customProperties.pageSettings : this.pageSettings) : undefined;
+            const measuresInfo: IMeasureInfo = this.getMeasureInfo();
             this.isPaging = this.pageSettings && (customProperties.enablePaging || customProperties.enableVirtualization) ? true : false;
+            this.olapVirtualization = this.isPaging && dataSourceSettings.showSubTotals && (measuresInfo.measureIndex === (
+                measuresInfo.measureAxis === 'column' ? dataSourceSettings.columns.length - 1 : dataSourceSettings.rows.length - 1
+            )) && !isNullOrUndefined(this.pageSettings) && dataSourceSettings.showGrandTotals;
+            this.isPaging = this.isPaging ? !this.olapVirtualization : this.isPaging;
             this.frameSortObject();
             this.getFormattedFields(this.formats);
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
@@ -264,37 +272,216 @@ export class OlapEngine {
         MDXQuery.getCellSets(dataSourceSettings, this, true);
     }
     public scrollPage(): void {
-        MDXQuery.getCellSets(this.dataSourceSettings, this, true);
+        if (this.olapVirtualization) {
+            const columnTuples: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 0 ?
+                [].slice.call(this.xmlaCellSet[0].querySelectorAll('Axis[name|="Axis0"] Tuple')) : [];
+            const rowTuples: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 0 ?
+                [].slice.call(this.xmlaCellSet[0].querySelectorAll('Axis[name|="Axis1"] Tuple')) : [];
+            const virtualScrollingData: VirtualScrollingData = this.getVirtualScrollingData(columnTuples, rowTuples);
+            if (virtualScrollingData.isCalculated) {
+                this.pivotValues = [];
+                this.clearEngineProperties();
+                this.performEngine(virtualScrollingData.columnTuple, virtualScrollingData.rowTuple, virtualScrollingData.valueTuple);
+            }
+            this.pivotValues = this.pivotValues.slice();
+        } else {
+            MDXQuery.getCellSets(this.dataSourceSettings, this, true);
+        }
+    }
+    private getVirtualScrollingData(colTuples: Element[], rowTuples: Element[]): VirtualScrollingData {
+        let valTuples: Element[] = this.clonedValTuple.slice();
+        let isCalculated: boolean = false;
+        let calColPage: number = (this.pageSettings.currentColumnPage - 1) * this.pageSettings.columnPageSize;
+        let calRowPage: number = (this.pageSettings.currentRowPage - 1) * this.pageSettings.rowPageSize;
+        const calColSize: number = this.pageSettings.columnPageSize * 3;
+        const calRowSize: number = this.pageSettings.rowPageSize * 3;
+        calColPage = (this.columnCount < (calColPage + calColSize)) ?
+            (this.columnCount > calColSize ? (this.columnCount - calColSize) : 0) : calColPage;
+        calRowPage = (this.rowCount < (calRowPage + calRowSize)) ?
+            (this.rowCount > calRowSize ? (this.rowCount - calRowSize) : 0) : calRowPage;
+        if ((calColPage !== this.pageColStartPos || calRowPage !== this.pageRowStartPos) ||
+            !(colTuples.length <= calColSize && rowTuples.length <= calRowSize)) {
+            isCalculated = true;
+            const measureInfo: IMeasureInfo = this.getMeasureInfo();
+            const isColGrandTolExists: boolean = !isNullOrUndefined(colTuples[0]) &&
+                (Number(colTuples[0].querySelectorAll('Member')[0].querySelector('LNum').textContent) === 0);
+            const isRowGrandTolExists: boolean = !isNullOrUndefined(rowTuples[0]) &&
+                (Number(rowTuples[0].querySelectorAll('Member')[0].querySelector('LNum').textContent) === 0);
+            const isAddColGrandTotals: boolean = isColGrandTolExists ? (calColPage + calColSize >= colTuples.length - 1) : false;
+            const isAddRowGrandTotals: boolean = isRowGrandTolExists ? (calRowPage + calRowSize >= rowTuples.length - 1) : false;
+            const colDepth: number = isColGrandTolExists ?
+                this.getAxisdepth(colTuples) : measureInfo.measureAxis === 'column' ? measureInfo.valueInfo.length : 1;
+            const rowDepth: number = isRowGrandTolExists ?
+                this.getAxisdepth(rowTuples) : measureInfo.measureAxis === 'row' ? measureInfo.valueInfo.length : 1 ;
+            let colTuplesOffset: number = (isColGrandTolExists ? colDepth : 0) + calColPage;
+            let rowTuplesOffset: number = (isRowGrandTolExists ? rowDepth : 0) + calRowPage;
+            let virtualColTuples: Element[] = colTuples.slice(colTuplesOffset, colTuplesOffset + calColSize);
+            let virtualRowTuples: Element[] = rowTuples.slice(rowTuplesOffset, rowTuplesOffset + calRowSize);
+            const colLastLevel: number = virtualColTuples[0] ?
+                Number(virtualColTuples[0].querySelectorAll('Member')[0].querySelector('LNum').textContent) : 0;
+            const rowLastLevel: number = virtualRowTuples[0] ?
+                Number(virtualRowTuples[0].querySelectorAll('Member')[0].querySelector('LNum').textContent) : 0;
+            const colData: VirtualTotals = this.getVirtualTotals(
+                colTuples.slice(0, colTuplesOffset), colLastLevel, isAddColGrandTotals, 'column', colDepth
+            );
+            const rowData: VirtualTotals = this.getVirtualTotals(
+                rowTuples.slice(0, rowTuplesOffset), rowLastLevel, isAddRowGrandTotals, 'row', rowDepth
+            );
+            colTuplesOffset = virtualColTuples.length + colData.totalsCollection.length > calColSize ?
+                Math.max(virtualColTuples.length + colData.totalsCollection.length - calColSize) : 0;
+            rowTuplesOffset = virtualRowTuples.length + rowData.totalsCollection.length > calRowSize ?
+                Math.max(virtualRowTuples.length + rowData.totalsCollection.length - calRowSize) : 0;
+            virtualColTuples = colData.totalsCollection.concat(virtualColTuples.slice(colTuplesOffset, virtualColTuples.length));
+            virtualRowTuples = rowData.totalsCollection.concat(virtualRowTuples.slice(rowTuplesOffset, virtualRowTuples.length));
+            const virtualValuesTupples: Element[] = this.getVirtualValues(
+                valTuples, calColPage + colTuplesOffset, calRowPage + rowTuplesOffset, calColSize, calRowSize,
+                colData.indexCollection, rowData.indexCollection, colTuples.length, rowTuples.length, colDepth,
+                rowDepth, isRowGrandTolExists
+            );
+            colTuples = virtualColTuples.slice();
+            rowTuples = virtualRowTuples.slice();
+            valTuples = virtualValuesTupples.slice();
+        }
+        this.pageColStartPos = calColPage;
+        this.pageRowStartPos = calRowPage;
+        return {
+            columnTuple: colTuples,
+            rowTuple : rowTuples,
+            valueTuple: valTuples,
+            isCalculated: isCalculated
+        };
+    }
+    private getAxisdepth(tuplesCollection: Element[]): number {
+        let depth: number = 0;
+        for (let i: number = 0; i < tuplesCollection.length; i++) {
+            const level: number = Number(tuplesCollection[i as number].querySelectorAll('Member')[0].querySelector('LNum').textContent);
+            if (level === 0) {
+                depth++;
+            } else {
+                break;
+            }
+        }
+        return depth;
+    }
+    private getVirtualTotals(
+        tuplesCollection: Element[], lastLevel: number, isAddGrandTotals: boolean, axis: string, axisDepth: number
+    ): VirtualTotals {
+        let totalsCollection: Element[] = [];
+        let indexCollection: number[] = [];
+        if (lastLevel !== 1) {
+            for (let i: number = tuplesCollection.length - 1; i > 0; i--) {
+                const currLevel: number = Number(tuplesCollection[i as number].querySelectorAll('Member')[0].querySelector('LNum').textContent);
+                if (currLevel === 0) {
+                    break;
+                } else if (lastLevel > currLevel) {
+                    lastLevel = currLevel;
+                    const nextLevel: number = Number(tuplesCollection[i - 1].querySelectorAll('Member')[0].querySelector('LNum').textContent);
+                    if (nextLevel === currLevel) {
+                        for (let offset: number = 0; offset < axisDepth; offset++) {
+                            totalsCollection[totalsCollection.length] = tuplesCollection[i - offset];
+                            indexCollection[indexCollection.length] = i - offset;
+                        }
+                        i = axisDepth > 1 ? i - axisDepth : i;
+                    } else {
+                        totalsCollection[totalsCollection.length] = tuplesCollection[i as number];
+                        indexCollection[indexCollection.length] = i;
+                    }
+                } else if (currLevel === 1) {
+                    break;
+                }
+            }
+        }
+        if (isAddGrandTotals) {
+            for (let i: number = axisDepth; i > 0; i--) {
+                totalsCollection = totalsCollection.concat([tuplesCollection[i - 1]]);
+                indexCollection = indexCollection.concat([i - 1]);
+            }
+        }
+        return {
+            totalsCollection: totalsCollection.reverse(),
+            indexCollection: indexCollection.reverse()
+        };
+    }
+    private getVirtualValues(
+        valueTuples: Element[], calColumnPage: number, calRowPage: number, calColunmnSize: number, calRowSize: number,
+        colTotalsIndex: number[], rowTotalsIndex: number[], colTuplesLen: number, rowTuplesLen: number, columnDepth: number,
+        rowDepth: number, isRowGrandTolExists: boolean
+    ): Element[] {
+        let framedVirtValTuples: Element[] = [];
+        let virtValTuples: Element[] = valueTuples;
+        if (rowTuplesLen > calRowSize) {
+            const rowValuesOffset: number = ((isRowGrandTolExists ? rowDepth : 0) + calRowPage) * colTuplesLen;
+            virtValTuples = valueTuples.slice(rowValuesOffset, rowValuesOffset + (calRowSize * colTuplesLen));
+            let virtRowTotalValues: Element[] = [];
+            for (let i: number = 0; i < rowTotalsIndex.length; i++) {
+                virtRowTotalValues = virtRowTotalValues.concat(valueTuples.slice(
+                    rowTotalsIndex[i as number] * colTuplesLen, (rowTotalsIndex[i as number] * colTuplesLen) + colTuplesLen
+                ));
+            }
+            virtValTuples = virtRowTotalValues.concat(virtValTuples);
+        }
+        for (let i: number = 0, j: number = virtValTuples.length / colTuplesLen; i < j; i++) {
+            const rows: Element[] = virtValTuples.slice(i * colTuplesLen, (i * colTuplesLen) + colTuplesLen);
+            const virtRows: Element[] = rows.slice(calColumnPage + columnDepth, calColumnPage + columnDepth + calColunmnSize);
+            const virtTotals: Element[] = [];
+            for (let x: number = 0; x < colTotalsIndex.length; x++) {
+                virtTotals[virtTotals.length] = rows[colTotalsIndex[x as number]];
+            }
+            framedVirtValTuples = framedVirtValTuples.concat(virtTotals.concat(virtRows));
+        }
+        return framedVirtValTuples;
     }
     public generateEngine(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
         if (customArgs.action !== 'down') {
-            this.pivotValues = [];
-            this.valueContent = [];
-            this.headerContent = [];
-            this.colDepth = 0;
-            this.tupColumnInfo = [];
-            this.tupRowInfo = [];
-            this.colMeasures = {};
-            this.colMeasurePos = undefined;
-            this.rowMeasurePos = undefined;
-            this.rowStartPos = -1;
+            this.clearEngineProperties();
         }
         this.xmlDoc = xmlDoc ? xmlDoc.cloneNode(true) as Document : undefined;
         this.request = request;
         this.customArgs = customArgs;
-        this.totalCollection = [];
         this.parentObjCollection = {};
         this.curDrillEndPos = -1;
         this.onDemandDrillEngine = [];
         this.getSubTotalsVisibility();
         this.xmlaCellSet = xmlDoc ? xmlDoc.querySelectorAll('Axes, CellData') : undefined;
-
-        let columnTuples: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 0 ?
+        const columnTuples: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 0 ?
             [].slice.call(this.xmlaCellSet[0].querySelectorAll('Axis[name|="Axis0"] Tuple')) : [];
-        let rowTuples: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 0 ?
+        const rowTuples: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 0 ?
             [].slice.call(this.xmlaCellSet[0].querySelectorAll('Axis[name|="Axis1"] Tuple')) : [];
         let valCollection: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 1 ?
             [].slice.call(this.xmlaCellSet[1].querySelectorAll('Cell')) : [];
+        if (this.olapVirtualization && !isNullOrUndefined(this.pageSettings)) {
+            this.columnCount = columnTuples.length;
+            this.rowCount = rowTuples.length;
+            if (columnTuples.length * rowTuples.length !== valCollection.length) {
+                const valueCollection: Element[] = [];
+                for (let colPos: number = 0; colPos < valCollection.length; colPos++) {
+                    if (!isNullOrUndefined(valCollection[colPos as number])) {
+                        valueCollection[Number(valCollection[colPos as number].getAttribute('CellOrdinal'))] = valCollection[colPos as number];
+                    }
+                }
+                valCollection = valueCollection;
+            }
+            this.clonedValTuple = valCollection;
+            const virtualScrollingData: VirtualScrollingData = this.getVirtualScrollingData(columnTuples, rowTuples);
+            this.performEngine(virtualScrollingData.columnTuple, virtualScrollingData.rowTuple, virtualScrollingData.valueTuple);
+        } else {
+            this.performEngine(columnTuples, rowTuples, valCollection);
+        }
+    }
+    private clearEngineProperties(): void {
+        this.pivotValues = [];
+        this.valueContent = [];
+        this.headerContent = [];
+        this.colDepth = 0;
+        this.tupColumnInfo = [];
+        this.tupRowInfo = [];
+        this.colMeasures = {};
+        this.colMeasurePos = undefined;
+        this.rowMeasurePos = undefined;
+        this.rowStartPos = -1;
+    }
+    private performEngine(columnTuples: Element[], rowTuples: Element[], valCollection: Element[]): void {
+        this.totalCollection = [];
         if (this.drilledMembers.length > 0) {
             // let st1: number = new Date().getTime();
             const measureInfo: IMeasureInfo = this.getMeasureInfo();
@@ -308,17 +495,17 @@ export class OlapEngine {
             // let st2: number = (new Date().getTime() - st1) / 1000;
             // console.log('over-all:' + st2);
         }
-        if (customArgs.action === 'down') {
-            this.updateTupCollection(customArgs.drillInfo.axis === 'row' ? rowTuples.length : columnTuples.length);
+        if (this.customArgs.action === 'down') {
+            this.updateTupCollection(this.customArgs.drillInfo.axis === 'row' ? rowTuples.length : columnTuples.length);
         }
-        if (customArgs.action === 'down' ? customArgs.drillInfo.axis === 'column' : true) {
+        if (this.customArgs.action === 'down' ? this.customArgs.drillInfo.axis === 'column' : true) {
             this.olapValueAxis = isNullOrUndefined(this.getValueAxis(undefined, undefined)) ? 'column' : 'row';
             this.frameColumnHeader(columnTuples);
             if (!this.isPaging) {
                 this.performColumnSorting();
             }
         }
-        if (customArgs.action === 'down' ? customArgs.drillInfo.axis === 'row' : true) {
+        if (this.customArgs.action === 'down' ? this.customArgs.drillInfo.axis === 'row' : true) {
             this.frameRowHeader(rowTuples);
             if (!this.isPaging) {
                 this.performRowSorting();
@@ -391,6 +578,7 @@ export class OlapEngine {
         let withoutAllEndPos: number = -1;
         const minLevel: number[] = [];
         let gTotals: IAxisSet[] = [{
+            actualText: 'Grand Total',
             axis: 'row',
             colIndex: 0,
             formattedText: 'Grand Total',
@@ -2294,7 +2482,9 @@ export class OlapEngine {
         const valCollection: { [key: string]: Element } = {};
         for (let colPos: number = 0; colPos < tuples.length; colPos++) {
             if (!isNullOrUndefined(tuples[colPos as number])) {
-                valCollection[Number(tuples[colPos as number].getAttribute('CellOrdinal'))] = tuples[colPos as number];
+                valCollection[
+                    this.olapVirtualization ? colPos as number : Number(tuples[colPos as number].getAttribute('CellOrdinal'))
+                ] = tuples[colPos as number];
             }
         }
         for (let rowPos: number = rowStartPos; rowPos < rowEndPos; rowPos++) {
@@ -2515,6 +2705,7 @@ export class OlapEngine {
             if (vTuples.length > 0) {
                 const valueIndex: IPivotValues = [];
                 const vOrdinalIndex: number[] = [];
+                let vOrdinalIndexPos: number = 0;
                 let len: number = 0;
                 let cRow: number = 0;
                 for (let j: number = 0, cnt: number = vTuples.length; j < cnt; j++) {
@@ -2533,7 +2724,10 @@ export class OlapEngine {
                         valueIndex[cRow as number][len as number] = j;
                         len++;
                     }
-                    vOrdinalIndex[vOrdinalIndex.length] = Number(vTuples[j as number].getAttribute('CellOrdinal'));
+                    if (vTuples[j as number]) {
+                        vOrdinalIndex[vOrdinalIndexPos as number] = Number(vTuples[j as number].getAttribute('CellOrdinal'));
+                    }
+                    vOrdinalIndexPos++;
                 }
                 if (measureAxis === 'column') {
                     if (valueIndex.length > 0 && valueIndex[0].length === orderedIndex.length) {
@@ -2545,8 +2739,10 @@ export class OlapEngine {
                                     && !isNullOrUndefined(orderedIndex[i as number])) {
                                     const ordinalValue: string = vOrdinalIndex[index as number].toString();
                                     const tuple: Element = vTuples[Number(valueIndex[j as number][orderedIndex[i as number]])];
-                                    tuple.setAttribute('CellOrdinal', ordinalValue.toString());
-                                    orderedVTuples[index as number] = tuple;
+                                    if (tuple) {
+                                        tuple.setAttribute('CellOrdinal', ordinalValue.toString());
+                                        orderedVTuples[index as number] = tuple;
+                                    }
                                 }
                                 j++;
                             }
@@ -2558,10 +2754,12 @@ export class OlapEngine {
                             let j: number = 0;
                             while (j < valueIndex[orderedIndex[i as number]].length) {
                                 const index: number = (i * cLen) + j;
-                                const ordinalValue: string = vOrdinalIndex[index as number].toString();
-                                const tuple: Element = vTuples[Number(valueIndex[orderedIndex[i as number]][j as number])];
-                                tuple.setAttribute('CellOrdinal', ordinalValue.toString());
-                                orderedVTuples[orderedVTuples.length] = tuple;
+                                if (vOrdinalIndex[index as number]) {
+                                    const ordinalValue: string = vOrdinalIndex[index as number].toString();
+                                    const tuple: Element = vTuples[Number(valueIndex[orderedIndex[i as number]][j as number])];
+                                    tuple.setAttribute('CellOrdinal', ordinalValue.toString());
+                                    orderedVTuples[orderedVTuples.length] = tuple;
+                                }
                                 j++;
                             }
                         }
@@ -4103,5 +4301,17 @@ export interface IMeasureInfo {
 export interface IOrderedInfo {
     orderedValueTuples: Element[];
     orderedHeaderTuples: Element[];
+}
+/** @hidden */
+export interface VirtualScrollingData {
+    columnTuple: Element[];
+    rowTuple: Element[];
+    valueTuple: Element[];
+    isCalculated: boolean;
+}
+/** @hidden */
+export interface VirtualTotals {
+    totalsCollection: Element[];
+    indexCollection: number[];
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////

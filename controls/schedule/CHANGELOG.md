@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.4 (2023-11-20)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I518285` - An issue related to incorrect start day name on the week header in year view has been resolved.
+
 ## 23.1.44 (2023-11-07)
 
 ### Schedule

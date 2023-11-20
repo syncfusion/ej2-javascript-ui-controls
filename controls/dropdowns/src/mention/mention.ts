@@ -677,7 +677,7 @@ export class Mention extends DropDownBase {
         let currentRange: string = this.getTextRange();
 	    const lastWordRange: string = this.getLastLetter(currentRange);
         // eslint-disable-next-line security/detect-non-literal-regexp
-        const Regex: RegExp = new RegExp(this.mentionChar.replace(/[[\]]/g, '\\$&'), 'g');
+        const Regex: RegExp = new RegExp(this.mentionChar.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
         const charRegex: RegExp = new RegExp('[a-zA-Z]', 'g');
         if (e.key === 'Shift' || e.keyCode === 37 || e.keyCode === 39) { return; }
         if ((!currentRange || !lastWordRange) || e.code === 'Enter' || e.keyCode === 27 ||

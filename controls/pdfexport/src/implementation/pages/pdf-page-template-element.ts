@@ -387,9 +387,6 @@ export class PdfPageTemplateElement {
     public draw(layer : PdfPageLayer, document : PdfDocument) : void {
         let page : PdfPage = layer.page as PdfPage;
         let bounds : RectangleF = this.calculateBounds(page, document);
-        if (bounds.x === -0) {
-            bounds.x = 0;
-        }
         layer.graphics.drawPdfTemplate(this.template, new PointF(bounds.x, bounds.y), new SizeF(bounds.width, bounds.height));
     }
     /**
@@ -483,16 +480,16 @@ export class PdfPageTemplateElement {
         switch (this.alignmentStyle) {
             case PdfAlignmentStyle.TopLeft:
                 if (this.type === TemplateType.Left) {
-                    x = -actualBounds.x;
+                    x = this.convertSign(actualBounds.x);
                     y = 0;
                 } else if (this.type === TemplateType.Top) {
-                    x = -actualBounds.x;
-                    y = -actualBounds.y;
+                    x = this.convertSign(actualBounds.x);
+                    y = this.convertSign(actualBounds.y);
                 }
                 break;
             case PdfAlignmentStyle.TopCenter:
                 x = (actualBounds.width - this.width) / 2;
-                y = -actualBounds.y;
+                y = this.convertSign(actualBounds.y);
                 break;
             case PdfAlignmentStyle.TopRight:
                 if (this.type === TemplateType.Right) {
@@ -500,11 +497,11 @@ export class PdfPageTemplateElement {
                     y = 0;
                 } else if (this.type === TemplateType.Top) {
                     x = actualBounds.width + section.getRightIndentWidth(document, page, false) - this.width;
-                    y = -actualBounds.y;
+                    y = this.convertSign(actualBounds.y);
                 }
                 break;
             case PdfAlignmentStyle.MiddleLeft:
-                x = -actualBounds.x;
+                x = this.convertSign(actualBounds.x);
                 y = (actualBounds.height - this.height) / 2;
                 break;
             case PdfAlignmentStyle.MiddleCenter:
@@ -517,10 +514,10 @@ export class PdfPageTemplateElement {
                 break;
             case PdfAlignmentStyle.BottomLeft:
                 if (this.type === TemplateType.Left) {
-                    x = -actualBounds.x;
+                    x = this.convertSign(actualBounds.x);
                     y = actualBounds.height - this.height;
                 } else if (this.type === TemplateType.Bottom) {
-                    x = -actualBounds.x;
+                    x = this.convertSign(actualBounds.x);
                     y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
                 }
                 break;
@@ -617,18 +614,18 @@ export class PdfPageTemplateElement {
         let height : number = this.height;
         switch (this.dockStyle) {
             case PdfDockStyle.Left:
-                x = -actualBounds.x;
+                x = this.convertSign(actualBounds.x);
                 y = 0;
                 width = this.width;
                 height = actualBounds.height;
                 break;
             case PdfDockStyle.Top:
-                x = -actualBounds.x;
-                y = -actualBounds.y;
+                x = this.convertSign(actualBounds.x);
+                y = this.convertSign(actualBounds.y);
                 width = actualSize.width;
                 height = this.height;
                 if (actualBounds.height < 0) {
-                    y = -actualBounds.y + actualSize.height;
+                    y = actualSize.height - actualBounds.y;
                 }
                 break;
             case PdfDockStyle.Right:
@@ -638,7 +635,7 @@ export class PdfPageTemplateElement {
                 height = actualBounds.height;
                 break;
             case PdfDockStyle.Bottom:
-                x = -actualBounds.x;
+                x = this.convertSign(actualBounds.x);
                 y = actualBounds.height + section.getBottomIndentHeight(document, page, false) - this.height;
                 width = actualSize.width;
                 height = this.height;
@@ -655,5 +652,12 @@ export class PdfPageTemplateElement {
         }
         result = new RectangleF(x, y, width, height);
         return result;
+    }
+    /**
+     * Ignore value zero, otherwise convert sign.
+     * @private
+     */
+    private convertSign(value : number) : number {
+        return (value !== 0 || (value === 0 && 1 / value === -Infinity)) ? -value : value;
     }
 }

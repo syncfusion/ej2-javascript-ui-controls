@@ -517,7 +517,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     @Event()
     public actionFailure: EmitType<MouseEvent>;
 
-
     /**
      * Constructor for creating the widget
      *
@@ -2429,7 +2428,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
         return modules;
     }
-
 
     /**
      * Get the properties to be maintained in the persisted state.

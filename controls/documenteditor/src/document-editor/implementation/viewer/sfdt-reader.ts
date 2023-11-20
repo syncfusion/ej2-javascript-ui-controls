@@ -679,13 +679,15 @@ export class SfdtReader {
                         this.parseParagraphFormat(this.keywordIndex, block[paragraphFormatProperty[this.keywordIndex]], paragraph.paragraphFormat);
                         let styleObj: Object;
                         let styleName: string = 'Normal';
+                        let isParaHasStyleName: boolean = false;
                         if (!isNullOrUndefined(block[paragraphFormatProperty[this.keywordIndex]]) && !isNullOrUndefined(block[paragraphFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]])) {
                             //Default value to link style object.
                             styleName = block[paragraphFormatProperty[this.keywordIndex]][styleNameProperty[this.keywordIndex]];
+                            isParaHasStyleName = true;
                         }
                         styleObj = this.documentHelper.styles.findByName(styleName, 'Paragraph');
                         if (!isNullOrUndefined(styleObj)) {
-                            if (this.isPaste && styles) {
+                            if (this.isPaste && styles && isParaHasStyleName) {
                                 for (let j = 0; j < styles.length; j++) {
                                     if (styles[j][nameProperty[this.keywordIndex]] === styleName) {
                                         var fontColor = styles[j][characterFormatProperty[this.keywordIndex]];
@@ -991,6 +993,38 @@ export class SfdtReader {
         }
     }
 
+    private parseSymbol(fieldCode: string, lineWidget: LineWidget) {
+        const code = fieldCode.split(' ');
+        const indexOf = code.indexOf('SYMBOL');
+        if (indexOf !== -1) {
+            const characterCode = code[indexOf + 1];
+            let textElement: any = new TextElementBox();
+            textElement.characterFormat = new WCharacterFormat(textElement);
+            textElement.text = String.fromCharCode(parseInt(characterCode));
+            const fontIndex = code.indexOf('\\f');
+            if (fontIndex !== -1) {
+                let fontName: string = "";
+                for (let j = fontIndex + 1; j < code.length; j++) {
+                    if (code[j] === '\\s') {
+                        break;
+                    }
+                    fontName += code[j] + ' ';
+                }
+                if (fontName !== null) {
+                    fontName = fontName.replace(/"/g, '');
+                    fontName = fontName.trim();
+                    textElement.characterFormat.fontFamily = fontName;
+                }
+            }
+            const sizeIndex = code.indexOf('\\s');
+            if (sizeIndex !== -1) {
+                textElement.characterFormat.fontSize = parseInt(code[sizeIndex + 1]);
+            }
+            textElement.line = lineWidget;
+            lineWidget.children.push(textElement);
+        }
+    }
+
     /* eslint-disable  */
     private parseParagraph(data: any, paragraph: ParagraphWidget, writeInlineFormat?: boolean, lineWidget?: LineWidget): boolean {
         let isContentControl: boolean = false;
@@ -1005,6 +1039,7 @@ export class SfdtReader {
         let count: number = 0;
         let isCreateTextEleBox: boolean = false;
         let isCreateField: boolean = false;
+        let fieldCode: string = undefined;
         for (let i: number = 0; i < data.length; i++) {
             let inline: any = data[i];
             isCreateTextEleBox = false;
@@ -1026,6 +1061,10 @@ export class SfdtReader {
                 hasValidElmts = true;
                 i--;
                 continue;
+            } else if (isCreateTextEleBox && !isNullOrUndefined(fieldCode) && fieldCode.indexOf('SYMBOL') !== -1) {
+                this.parseSymbol(fieldCode, lineWidget);
+                fieldCode = undefined;
+                isCreateTextEleBox = false;
             }
             if (inline.hasOwnProperty(textProperty[this.keywordIndex]) || inline.hasOwnProperty(breakClearTypeProperty[this.keywordIndex])) {
                 let textElement: any = undefined;
@@ -1049,6 +1088,7 @@ export class SfdtReader {
                 this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], textElement.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, textElement);
                 textElement.text = textElement instanceof BreakElementBox ? "\v" : inline[textProperty[this.keywordIndex]];
+                fieldCode = textElement.text;
                 if (this.isHtmlPaste && (textElement instanceof TextElementBox || textElement instanceof BreakElementBox)) {
                     let previousElement: ElementBox;
                     if (lineWidget.children.length > 0) {
@@ -1179,11 +1219,11 @@ export class SfdtReader {
                 image.height = HelperMethods.convertPointToPixel(inline[heightProperty[this.keywordIndex]]);
                 let imgStr: string = this.documentHelper.getImageString(image);
                 if (!isNullOrUndefined(imgStr) && (HelperMethods.startsWith(imgStr, 'http://') || HelperMethods.startsWith(imgStr, 'https://'))) {
-                    imgStr += `?t=${new Date().getTime()}`;
                     // Generate fall back image for URL images.
                     this.viewer.documentHelper.getBase64(imgStr,image.width, image.height).then((imageUrlString: string) => {
                         this.viewer.documentHelper.images.get(parseInt(image.imageString))[1] =imageUrlString;
                     });
+                    imgStr += `?t=${new Date().getTime()}`;
                 }
                 image.element.src = imgStr;
                 image.top = inline[topProperty[this.keywordIndex]];
@@ -1302,6 +1342,7 @@ export class SfdtReader {
                     this.fieldSeparator = undefined;
                     this.documentHelper.isPageField = false;
                     this.documentHelper.fieldCollection.push(field.fieldBegin);
+                    fieldCode = undefined;
                 }
                 field.line = lineWidget;
                 lineWidget.children.push(field);

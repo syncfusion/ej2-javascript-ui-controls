@@ -451,7 +451,7 @@ describe('Bug 851412: script error throws on editing and focus out on a record',
             done
         );
     });
-    it('Rendering check', (done: Function) => {
+    it('Frozen with batch edit', (done: Function) => {
         actionComplete = (args?: Object): void => {
           if (args["requestType"] == "batchsave") {
             expect(gridObj.getCurrentViewRecords().length === 37).toBe(true);

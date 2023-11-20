@@ -55,8 +55,7 @@ export class StepAreaSeries extends LineBase {
                 if (prevPoint != null) {
                     currentPoint = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted);
                     secondPoint = getPoint(prevPoint.xValue, prevPoint.yValue, xAxis, yAxis, isInverted);
-                    direction += ('L' + ' ' +
-                        (currentPoint.x) + ' ' + (secondPoint.y) + ' L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
+                    direction = direction.concat(this.GetStepLineDirection(currentPoint, secondPoint, series.step));
                 } else if (series.emptyPointSettings.mode === 'Gap') {
                     currentPoint = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted);
                     direction += 'L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ';

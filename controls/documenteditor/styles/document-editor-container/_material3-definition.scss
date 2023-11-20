@@ -148,6 +148,14 @@ $de-toggle-disabled-color: $secondary-bg-color !default;
 $de-background-color: $content-bg-color-alt3 !default;
 $de-toolbar-background-color: $content-bg-color-alt2 !default;
 $de-pane-background-color: $content-bg-color-alt1 !default;
+$de-ruler-background-color: $content-bg-color-alt3 !default;
+$de-ruler-margin-color: rgba($content-bg-color) !default;
+$de-ruler-tick-stroke: rgba($icon-color) !default;
+$de-ruler-label-fill: rgba($content-text-color-alt1) !default;
+$de-ruler-indent-stroke: rgba($icon-color) !default;
+$de-ruler-indent-fill:  rgba($content-bg-color) !default;
+$de-ruler-indent-hover: $content-bg-color-alt5 !default;
+$de-ruler-indent-active: rgba($primary) !default;
 
 //Blazor
 $e-de-bzr-button-border-color: rgba($white) !default;

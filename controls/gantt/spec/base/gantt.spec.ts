@@ -4,7 +4,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs } from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData } from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -1301,4 +1301,53 @@ describe('Milestone Baseline render', () => {
              destroyGantt(ganttObj);
          });
      });
+     describe('CR-Issue-EJ2-854909-Columns does not update while changing columns values by Gantt instance', () => {        
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: filterdata,
+                taskFields: {
+                  id: 'TaskID',
+                  name: 'TaskName',
+                  startDate: 'StartDate',
+                  endDate: 'EndDate',
+                  duration: 'Duration',
+                },
+                columns: [
+                  {
+                    field: 'TaskName',
+                    headerText: 'Task Name',
+                    width: '250',
+                    clipMode: 'EllipsisWithTooltip',
+                  },
+                  { field: 'StartDate', headerText: 'Start Date' },
+                  { field: 'Duration', headerText: 'Duration', editType: 'numericedit', type:"number" },
+                  { field: 'EndDate', headerText: 'End Date' },
+                ],
+                treeColumnIndex: 0,
+                toolbar: ['Search'],
+                allowFiltering: true,
+                includeWeekend: true,
+                height: '450px',
+                splitterSettings: {
+                  columnIndex: 3,
+                },
+                labelSettings: {
+                  rightLabel: 'TaskName',
+                },
+                projectStartDate: new Date('07/15/1969'),
+                projectEndDate: new Date('07/25/1969'),
+            }, done);
+
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        it('columns length', () => {
+            ganttObj.columns = [
+                { field: 'TaskName' }
+            ];
+            expect(ganttObj.columns.length).toBe(1);
+        });
+    });
 });

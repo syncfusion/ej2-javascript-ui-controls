@@ -3157,6 +3157,7 @@ export class Selection implements IAction {
             (this.selectionSettings.allowColumnSelection && target.classList.contains('e-headercell'))) {
             this.isInteracted = true;
         }
+        this.cmdKeyPressed = e.metaKey;
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch ||
             (this.isMacOS && this.cmdKeyPressed);
         if (!this.parent.allowKeyboard) {

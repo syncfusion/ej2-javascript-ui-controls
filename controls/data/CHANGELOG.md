@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.1.44 (2023-11-07)
+
+### DataManager
+
+#### Bug Fixes
+
+- `#FB47580` - Script error thrown while the server data has double quotes issue has been resolved.
+
 ## 23.1.43 (2023-10-31)
 
 ### DataManager

@@ -244,7 +244,10 @@ export class Shape {
             break;
         case 'updateObj':
             this.updateObj(args.value['dimObj'], args.value['x'], args.value['y']);
-            break
+            break;
+        case 'updateSelectionChangeEventArgs':
+            this.updateSelectionChangeEventArgs(args.value['selectionSettings']);
+            break;
         }
     }
 
@@ -790,6 +793,18 @@ export class Shape {
                     break;
                 }
             }
+        }
+    }
+
+    private updateSelectionChangeEventArgs(selectionSettings: CropSelectionSettings): void {
+        const parent: ImageEditor = this.parent;
+        parent.activeObj.activePoint.startX = selectionSettings.startX;
+        parent.activeObj.activePoint.startY = selectionSettings.startY;
+        if (selectionSettings.width && selectionSettings.height) {
+            parent.activeObj.activePoint.width = selectionSettings.width;
+            parent.activeObj.activePoint.height = selectionSettings.height;
+            parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX + parent.activeObj.activePoint.width;
+            parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height;
         }
     }
 

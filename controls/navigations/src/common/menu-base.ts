@@ -2270,12 +2270,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let ul: Element;
         let index: number;
         let navIdx: number[];
+        let item: objColl;
         for (let i: number = 0; i < items.length; i++) {
             navIdx = this.getIndex(items[i as number], isUniqueId);
             index = navIdx.pop();
             ul = this.getUlByNavIdx(navIdx.length);
+            item = this.getItems(navIdx);
             if (ul) {
-                const validUl: string = isUniqueId ? ul.children[index as number].id : ul.children[index as number].textContent;
+                const validUl: string = isUniqueId ? ul.children[index as number].id : item[index as number].text.toString();
                 if (ishide && validUl === items[i as number]) {
                     ul.children[index as number].classList.add(HIDE);
                 } else if (!ishide && validUl === items[i as number]) {

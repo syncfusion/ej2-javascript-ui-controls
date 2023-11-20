@@ -1161,6 +1161,10 @@ export type DialogType =
      * Specifies spell check dialog.
      */
     'SpellCheck';
+    // /**
+    //  * Specifies tab stop dialog.
+    //  */
+    // 'TabStop';
 
 /**
  * Action type
@@ -1224,7 +1228,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 |'BottomBorder'
 |'HorizontalBorder'
 |'VerticalBorder'|'ColumnBreak'
-|'DragAndDropContent'|'LinkToPrevious' | 'GroupAction' | 'DeleteHeaderFooter' | 'EditComment'| 'TableTitle'|'TableDescription';
+|'DragAndDropContent'|'LinkToPrevious' | 'GroupAction' | 'DeleteHeaderFooter' | 'EditComment'| 'TableTitle'|'TableDescription'|'TabStop';
 /**
  * Enum for direction
  */

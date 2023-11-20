@@ -385,6 +385,32 @@ describe('FileManager control Grid view', () => {
             expect(feObj.activeModule).toEqual("navigationpane");
             expect(li.querySelector(".e-icons")).toBe(null);
         });
+        it('Treeview context menu details option testing', () => {
+            let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-fe-grid-name');
+            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+            let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+            let li: any = feObj.navigationpaneModule.treeObj.element.querySelectorAll("li")[1];
+            mouseEventArgs.target = li.querySelector('.e-fullrow');
+            tapEvent.tapCount = 1;
+            treeObj.touchClickObj.tap(tapEvent);
+            expect(li.textContent).toBe('New folder');
+            let sourceElement: any = el.ej2_instances[0];
+            let evt = document.createEvent('MouseEvents')
+            evt.initEvent('contextmenu', true, true);
+            li.querySelector('.e-fullrow').dispatchEvent(evt);
+            sourceElement.element.querySelector('#file_cm_details').click();
+            expect(ntr[0].textContent).toBe("New folder");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(singleSelectionDetails)
+            });
+            expect(document.getElementById('file_dialog_title').textContent).toBe('Documents');
+            expect(document.querySelectorAll('.e-fe-value').length).toBe(4);
+            expect((<any>document.querySelectorAll('.e-fe-value')[0]).textContent).toBe('Folder');
+            expect((<any>document.querySelectorAll('.e-fe-value')[2]).textContent).toBe('/Documents');
+            expect((<any>document.querySelectorAll('.e-fe-value')[3]).textContent).toBe('October 16, 2018 19:43:17');
+        });
         it('Treeview context menu upload process when select grid view item', () => {
             let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');

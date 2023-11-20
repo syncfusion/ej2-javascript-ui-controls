@@ -2633,7 +2633,11 @@ describe('Insert & Delete ->', () => {
             beforeEach((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ rows: [
-                        { cells: [{ index: 3, formula: '=UNIQUE(G1:H2)' }, { index: 6, value: 'column1'}, { value: 'column2'}] }
+                        { cells: [{ formula: '=UNIQUE(Sheet2!D1:E2)' }, { index: 3, formula: '=UNIQUE(G1:H2)' }, { index: 6, value: 'column1'}, { value: 'column2'}, { index: 10, formula: '22' }] },
+                        { cells: [{ index: 6, formula: '=SUM(K1:K2)'}, { index: 10, formula: '22' }] }
+                    ] }, { rows: [
+                        { cells: [{ index: 3, value: 'column1'}, { value: 'column2'}, { index: 6, formula: '11' }] },
+                        { cells: [{ index: 3, formula: '=SUM(G1:G2)'}, { index: 6, formula: '22' }] }
                     ] }]
                 }, done);
             });
@@ -2672,7 +2676,23 @@ describe('Insert & Delete ->', () => {
                             expect(helper.invoke('getCell', [0, 8]).textContent).toBe('column1');
                             expect(helper.invoke('getCell', [0, 9]).textContent).toBe('');
                             expect(helper.invoke('getCell', [0, 10]).textContent).toBe('column2');
-                            done();
+                            helper.getInstance().activeSheetIndex = 1;
+                            helper.getInstance().dataBind();
+                            setTimeout((): void => {
+                                helper.invoke('selectRange', ['E1']);
+                                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                                helper.openAndClickCMenuItem(0, 5, [6, 1], false, true);
+                                setTimeout((): void => {
+                                    helper.getInstance().activeSheetIndex = 0;
+                                    helper.getInstance().dataBind();
+                                    setTimeout((): void => {
+                                        expect(helper.invoke('getCell', [0, 0]).textContent).toBe('column1');
+                                        expect(helper.invoke('getCell', [0, 1]).textContent).toBe('0');
+                                        expect(helper.invoke('getCell', [0, 2]).textContent).toBe('column2');
+                                        done();
+                                    });
+                                });
+                            });
                         });
                     });
                 });

@@ -177,11 +177,6 @@ describe('FileManager control single selection Grid view', () => {
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
-                    responseText: JSON.stringify(data1)
-                });
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
                     responseText: JSON.stringify(data17)
                 });
                 this.request = jasmine.Ajax.requests.mostRecent();

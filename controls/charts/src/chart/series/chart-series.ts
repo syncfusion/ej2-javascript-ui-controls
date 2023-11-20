@@ -11,7 +11,7 @@ import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, a
 import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
 import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue } from '../../common/utils/helper';
 import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
-import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType, ShapeType } from '../utils/enum';
+import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType, ShapeType, StepPosition } from '../utils/enum';
 import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';
 import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';
 import { ConnectorModel } from '../../common/model/base-model';
@@ -2001,6 +2001,17 @@ export class Series extends SeriesBase {
      */
     @Property()
     public sumIndexes: number[];
+
+    /**
+     * Defines the position for the steps in the step line, step area, and step range area chart types. 
+     * * Left: Steps start from the left side of the 2nd point. 
+     * * Center: Steps start between the data points. 
+     * * Right: Steps start from the right side of the 1st point. 
+     *
+     * @default 'Left'
+     */
+    @Property('Left')
+    public step: StepPosition;
 
     /**
      * Defines the appearance of line connecting adjacent points in waterfall charts.

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 23.1.44 (2023-11-07)
+## 23.2.4 (2023-11-20)
+
+### Kanban
+
+#### Bug Fixes
+
+`#I513537` - Now, localization of the "Cards" text was done. When you drag the multiple cards, it show up.
+
+## 23.1.36 (2023-09-15)
 
 ### Kanban
 

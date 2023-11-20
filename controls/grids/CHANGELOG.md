@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.4 (2023-11-20)
+
+### Grid
+
+#### Bug fixes
+
+- `#I508354` - Cell selection is now working fine with row drag and drop.
+
 ## 23.1.44 (2023-11-07)
 
 ### Grid

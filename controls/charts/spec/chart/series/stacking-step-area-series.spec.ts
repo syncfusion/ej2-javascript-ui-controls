@@ -352,6 +352,39 @@ describe('Chart Control', () => {
             chartObj.refresh(); 
 
         });
+
+        it('Checking with step as Right', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true)
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Right'
+            chartObj.refresh();
+        });
+
+        it('Checking with step as Left', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true)
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Left'
+            chartObj.refresh();
+        });
+
+        it('Checking with step as Center', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true)
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Center'
+            chartObj.refresh();
+        });
         
         it('Checking with multiple series', (done: Function) => {
              loaded = (args: Object): void => {

@@ -1155,6 +1155,9 @@ export class DiagramEventHandler {
             if (actualShape.orientation === 'Vertical') { swimLaneobj.width += 20; }
             swimLaneobj.offsetX = this.currentPosition.x + (swimLaneobj.width / 2);
             swimLaneobj.offsetY = this.currentPosition.y + (swimLaneobj.height / 2);
+             //Bug 853721: Grid lines remain hidden when lane fill is set to transparent.
+            // Added below code to set swimlane style for dropped swimlane.
+            swimLaneobj.style = selectedNode.style;
             this.diagram.add(swimLaneobj);
         }
     }

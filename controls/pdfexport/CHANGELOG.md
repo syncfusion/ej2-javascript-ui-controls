@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 23.1.44 (2023-11-07)
+## 23.2.4 (2023-11-20)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Resolved the floating point equality check issue.
+
+## 23.1.43 (2023-10-31)
 
 ### Pdf Export
 

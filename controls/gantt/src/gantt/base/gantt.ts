@@ -2922,6 +2922,7 @@ export class Gantt extends Component<HTMLElement>
                 this.treeGridModule.treeGridColumns = [];
                 this.treeGridModule.validateGanttColumns();
                 this.treeGrid.columns = this.treeGridModule.treeGridColumns;
+                (this.treeGrid.grid.columns as any) = this.treeGridModule.treeGridColumns;
                 this.chartRowsModule.initiateTemplates();
                 this.timelineModule.updateChartByNewTimeline();
                 break;

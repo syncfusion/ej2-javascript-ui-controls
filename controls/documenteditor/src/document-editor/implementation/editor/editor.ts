@@ -7,7 +7,7 @@ import {
     BlockWidget, BlockContainer, BodyWidget, TableWidget, TableCellWidget, TableRowWidget, Widget, ListTextElementBox,
     BookmarkElementBox, HeaderFooterWidget, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     CommentElementBox, CommentCharacterElementBox, CheckBoxFormField, DropDownFormField, TextFormField, FormField, ShapeElementBox,
-    TextFrame, ContentControl, FootnoteElementBox, FootNoteWidget, ShapeBase, HeaderFooters
+    TextFrame, ContentControl, FootnoteElementBox, FootNoteWidget, ShapeBase, HeaderFooters, TabStopListInfo
 } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import {
@@ -43,7 +43,7 @@ import { WParagraphStyle } from '../format/style';
 import {
     TableAlignment, WidthType, HeightType, CellVerticalAlignment, BorderType, LineStyle,
     TabLeader, OutlineLevel, AutoFitType, ProtectionType, PasteOptions, TablePasteOptions, FormFieldType, TextFormFieldType, RevisionType,
-    FootEndNoteNumberFormat, FootnoteRestartIndex, CONTROL_CHARACTERS
+    FootEndNoteNumberFormat, FootnoteRestartIndex, CONTROL_CHARACTERS, TabJustification
 } from '../../base/types';
 import { DocumentEditor } from '../../document-editor';
 import { showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';
@@ -57,7 +57,6 @@ import { SectionBreakType } from '../../base/types';
 import { sectionsProperty, commentsProperty, bidiProperty, revisionsProperty, lastParagraphMarkCopiedProperty, sectionFormatProperty, revisionIdProperty, contextualSpacingProperty, keepWithNextProperty, keepLinesTogetherProperty, widowControlProperty, outlineLevelProperty, numberFormatProperty, startAtProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, cellsProperty, rowsProperty, blocksProperty, listLevelPatternProperty, levelsProperty, stylesProperty, nameProperty } from '../../index';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ChangesSingleView } from '../track-changes/track-changes-pane';
-
 
 /**
  * Editor module
@@ -2168,7 +2167,6 @@ export class Editor {
             || this.documentHelper.protectionType === 'CommentsOnly' && this.owner.isReadOnly) {
             return;
         }
-        text = HelperMethods.sanitizeString(text);
         this.insertTextInternal(text, false);
     }
     /**
@@ -2746,6 +2744,7 @@ export class Editor {
         this.documentHelper.owner.isShiftingEnabled = true;
         this.updateInsertPosition();
         if (sectionBreakType === SectionBreakType.Continuous) {
+	    this.documentHelper.layout.isSectionBreakCont = true;
             this.insertSection(selection, true, undefined, true);
         } else {
             this.insertSection(selection, true, undefined, undefined, true); 
@@ -2755,6 +2754,7 @@ export class Editor {
         //if (this.owner.layoutType === 'Continuous') {
         this.layoutWholeDocument(true);
         //} 
+	this.documentHelper.layout.isSectionBreakCont = false;
     }
 
     private combineRevisionWithBlocks(elementBox: ElementBox | ParagraphWidget, revisionType?: RevisionType): void {
@@ -10167,6 +10167,28 @@ export class Editor {
         this.onApplyParagraphFormat(bordersType, borders, false, false);
     }
     /**
+     * @private
+     */
+    public applyRulerMarkerValues(type: string, initialValue: number, finalValue: number): void {
+        let differenceValue: number = HelperMethods.convertPixelToPoint(finalValue - initialValue) / this.owner.zoomFactor;
+        if (type === 'firstLineIndent') {
+            let currentValue: number =  this.owner.selection.start.paragraph.paragraphFormat.firstLineIndent;
+            this.onApplyParagraphFormat(type, currentValue + differenceValue, false, false);
+        } else if (type === 'hangingIndent') {
+            let currentValue: number = this.owner.selection.start.paragraph.paragraphFormat.firstLineIndent;
+            this.onApplyParagraphFormat('firstLineIndent', currentValue - differenceValue, false, false);
+            let leftIndentCurrentValue: number = this.owner.selection.start.paragraph.paragraphFormat.leftIndent + currentValue;
+            currentValue = currentValue - differenceValue;
+            this.onApplyParagraphFormat('leftIndent', leftIndentCurrentValue - currentValue, false, false, true);
+        } else if (type === 'leftIndent') {
+            let currentValue: number =  this.owner.selection.start.paragraph.paragraphFormat.leftIndent;
+            this.onApplyParagraphFormat(type, currentValue + differenceValue, false, false);
+        } else if (type === 'rightIndent') {
+            let currentValue: number = this.owner.selection.start.paragraph.paragraphFormat.rightIndent;
+            this.onApplyParagraphFormat(type, currentValue + differenceValue, false, false);
+        }
+    }
+    /**
      * Applies paragraph format for the selection ranges.
      *
      * @param {string} property - Specifies the property
@@ -10176,7 +10198,7 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public onApplyParagraphFormat(property: string, value: Object, update: boolean, isSelectionChanged: boolean): void {
+    public onApplyParagraphFormat(property: string, value: Object, update: boolean, isSelectionChanged: boolean, isSkipPositionCheck?: boolean): void {
         let allowFormatting: boolean = this.documentHelper.isFormFillProtectedMode
             && this.documentHelper.selection.isInlineFormFillMode() && this.allowFormattingInFormFields(property);
         if (this.restrictFormatting && !allowFormatting) {
@@ -10195,7 +10217,7 @@ export class Editor {
             isFirstParaForList = this.isFirstParaForList(selection, currentPara);
         }
         // To stop the indentation when the paragraph x position is at the clientArea's x position
-        if (value <= 0 && property == 'leftIndent') {
+        if (value <= 0 && property == 'leftIndent' && !isSkipPositionCheck) {
             let x: number = HelperMethods.convertPointToPixel(value as number);
             if ((currentPara.x + x) < this.viewer.clientArea.x && !currentPara.paragraphFormat.bidi) {
                 this.documentHelper.owner.isShiftingEnabled = false;
@@ -10466,7 +10488,9 @@ export class Editor {
             case 'contextualSpacing':
                 this.updateParagraphFormat('contextualSpacing', value, false);
                 break;
-
+            case 'tabStop':
+                this.updateParagraphFormat('tabStop', value, false);
+                break;
         }
     }
     /**
@@ -10627,6 +10651,9 @@ export class Editor {
             format.spaceAfterAuto = value as boolean;
         } else if (property === 'spaceBeforeAuto') {
             format.spaceBeforeAuto = value as boolean;
+        } else if (property === 'tabStop') {
+            let isReplace: boolean = this.editorHistory.isUndoing || this.editorHistory.isRedoing;
+            this.updateTabStopCollection(paragraph, value as WTabStop[], isReplace);
         }
     }
     private copyParagraphFormat(sourceFormat: WParagraphFormat, destFormat: WParagraphFormat): void {
@@ -13038,6 +13065,7 @@ export class Editor {
             for (let z: number = 0; z < (block as ParagraphWidget).floatingElements.length; z++) {
                 let inline: ShapeBase = (block as ParagraphWidget).floatingElements[z];
                 this.removeAutoShape(inline);
+                z--;
             }
         }
 
@@ -13112,12 +13140,125 @@ export class Editor {
                         }
                     }
                     this.documentHelper.endnoteCollection.splice(i, 1);
-
                     i--;
                 }
             }
         }
-
+    }
+    /**
+     * @private
+     */
+    public getTabsInSelection(): WTabStop[] {
+        let oldTabstops: WTabStop[] = [];
+        let selection = this.owner.selection;
+        let selectedWidgets = selection.selectedWidgets.keys;
+        let paragraphsInSelection: ParagraphWidget[] = [];
+        if (selectedWidgets.length === 0) {
+            return selection.start.paragraph.paragraphFormat.getUpdatedTabs();
+        } else if (selection.start.paragraph === selection.end.paragraph) {
+            return selection.start.paragraph.paragraphFormat.getUpdatedTabs();
+        } else if (selection.start.paragraph !== selection.end.paragraph) {
+            paragraphsInSelection = this.owner.selection.getParagraphsInSelection();
+        }
+        let para: ParagraphWidget = paragraphsInSelection.length>0 ? paragraphsInSelection[0]:undefined;
+        let tabs: WTabStop[] = !isNullOrUndefined(para)?para.paragraphFormat.getUpdatedTabs(): [];
+        let isRemove: boolean = true;
+        for (let j = 0; j < tabs.length; j++) {
+            oldTabstops.push(tabs[j]);
+        }
+        for (let i = 1; i < paragraphsInSelection.length; i++) {
+            let para: ParagraphWidget = paragraphsInSelection[i];
+            let newCollection: WTabStop[] = para.paragraphFormat.getUpdatedTabs();
+            let itemsToRemove: WTabStop[] = [];
+            isRemove = true;
+            for (let k = 0; k < oldTabstops.length; k++) {
+                for (let j = 0; j < newCollection.length; j++) {
+                    if (newCollection[j].equals(oldTabstops[k])) {
+                        isRemove = false;
+                        break;
+                    }
+                }
+                if (isRemove) {
+                    itemsToRemove.push(oldTabstops[k]);
+                }
+            }
+            for (let k = 0; k < itemsToRemove.length; k++) {
+                oldTabstops.splice(oldTabstops.indexOf(itemsToRemove[k]), 1);
+            }
+        }
+        return oldTabstops;
+    }
+    /**
+     * @private
+     */
+    public updateTabStopCollection(paragraph: ParagraphWidget, newCollection: WTabStop[], isReplace?: boolean): void {
+        let oldCollection: WTabStop[] = paragraph.paragraphFormat.tabs;
+        if (isReplace) {
+            paragraph.paragraphFormat.tabs = [];
+            for (let i = 0; i < newCollection.length; i++) {
+                paragraph.paragraphFormat.tabs.push(newCollection[i]);
+            }
+            return;
+        }
+        for (let i = 0; i < newCollection.length; i++) {
+            const newTab: WTabStop = newCollection[i];
+            let index: number = -1;
+            for (let j = 0; j < oldCollection.length; j++) {
+                const oldTab = oldCollection[j];
+                if (newTab.position === oldTab.position) {
+                    index = j;
+                    break;
+                } else if (newTab.position < oldTab.position) {
+                    break;
+                }
+            }
+            if (index >= 0) {
+                this.modifyTabStop(oldCollection[index], newTab);
+            } else {
+                this.addTabStopToCollection(oldCollection, newTab);
+            }
+        }
+    }
+    private modifyTabStop(oldTab: WTabStop, newTab: WTabStop): void {
+        oldTab.deletePosition = newTab.deletePosition;
+        oldTab.tabJustification = newTab.tabJustification;
+        oldTab.tabLeader = newTab.tabLeader;
+    }
+    /**
+     * @private
+     */
+    public removeTabStops(paragraphs: ParagraphWidget[], tabs: WTabStop[]): void {
+        for (let k = 0; k < paragraphs.length; k++) {
+            let tabCollection: WTabStop[] = paragraphs[k].paragraphFormat.tabs;
+            for (let i = 0; i < tabs.length; i++) {
+                const tab = tabs[i];
+                for (let j = 0; j < tabCollection.length; j++) {
+                    if (tabCollection[j].equals(tab)) {
+                        tabCollection.splice(j, 1);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public addTabStopToCollection(collection: WTabStop[], tab: WTabStop, isReturnIndex?: boolean): number {
+        let index: number = -1;
+        for (let i = 0; i < collection.length; i++) {
+            const element = collection[i];
+            if (element.position > tab.position) {
+                index = i;
+                break;
+            }
+        }
+        index = index === -1 ? collection.length: index;
+        if (isReturnIndex) {
+            return index;
+        }
+        collection.splice(index, 0, tab.clone());
+        return index;
     }
     /**
      * @private
@@ -15546,6 +15687,10 @@ export class Editor {
                     if (!(paragraph === paragraph.bodyWidget.lastChild && previousParagraph.bodyWidget.index !== paragraph.bodyWidget.index)) {
                         this.removeBlock(previousParagraph);
                         this.addRemovedNodes(previousParagraph);
+                        let prevParagraph: ParagraphWidget = paragraph.previousRenderedWidget as ParagraphWidget;
+                        if (!isNullOrUndefined(prevParagraph) && prevParagraph instanceof ParagraphWidget && prevParagraph.isEmpty() && prevParagraph.bodyWidget.index !== paragraph.bodyWidget.index) {
+                            selection.moveToPreviousCharacter();
+                        }
                     } else {
                         let endOffset: number = this.documentHelper.selection.getLineLength(previousParagraph.lastChild as LineWidget);
                         let previousIndex: number = previousParagraph.childWidgets.length - 1;
@@ -16404,6 +16549,11 @@ export class Editor {
             selection.owner.isShiftingEnabled = true;
             if (paragraph.isEmpty()) {
                 this.removePrevParaMarkRevision(paragraph, true);
+                let nxtParagraph: ParagraphWidget = selection.getNextParagraphBlock(paragraph);
+                if (!isNullOrUndefined(nxtParagraph) && nxtParagraph instanceof ParagraphWidget && nxtParagraph.bodyWidget.index !== paragraph.bodyWidget.index) {
+                    this.deleteSection(selection, paragraph.bodyWidget, nxtParagraph.bodyWidget, 0);
+                    this.editorHistory.currentBaseHistoryInfo.type = "SectionBreak";
+                }
                 this.removeBlock(paragraph, false, true);
                 this.addRemovedNodes(paragraph);
                 if (isNullOrUndefined(nextParagraph)) {

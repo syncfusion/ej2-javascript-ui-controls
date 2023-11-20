@@ -166,12 +166,17 @@ export class FormFields {
                             let foreColor: string = 'rgba(' + fontColor.R + ',' + fontColor.G + ',' + fontColor.B + ',' + 1 + ')';
                             foreColor = this.rgbaToHex(foreColor);
                             let borderColor: any = currentData['BorderColor'];
-                            let borderRGB: string = 'rgba(' + borderColor.R + ',' + borderColor.G + ',' + borderColor.B + ',' + 1 + ')';
+                            let borderRGB: string;
+                            if (currentData.IsTansparentBorderColor) {
+                                borderRGB = 'rgba(' + borderColor.R + ',' + borderColor.G + ',' + borderColor.B + ',' + 0 + ')';
+                            }
+                            else {                              
+                                borderRGB = 'rgba(' + borderColor.R + ',' + borderColor.G + ',' + borderColor.B + ',' + 1 + ')';
+                            }                           
                             borderRGB = this.rgbaToHex(borderRGB);
                             let borderWidth: number = currentData['BorderWidth'];
                             this.selectedIndex = [];
- 
-                            var elementValue = "";
+                            let elementValue: string = "";
                             if (currentData.Name === 'RadioButton' || currentData.Name === 'CheckBox') {
                                 elementValue = currentData['Text'] ? currentData['Text'] : currentData['Value'];
                             }

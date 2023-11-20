@@ -23,6 +23,14 @@ $e-de-ctnr-break-listview-margin-right-big: 16px !default;
 $e-de-ctnr-break-listview-margin-left: 10px !default;
 $e-de-ctnr-break-listview-margin-left-big: 16px !default;
 $de-tlbr-btn-height: calc(100% - 10px) !default;
+$de-ruler-background-color: $content-bg-color-alt2 !default;
+$de-ruler-margin-color: $content-bg-color !default;
+$de-ruler-tick-stroke: $icon-color !default;
+$de-ruler-label-fill: $content-text-color-alt1 !default;
+$de-ruler-indent-stroke: $icon-color !default;
+$de-ruler-indent-fill: $content-bg-color !default;
+$de-ruler-indent-hover: $content-bg-color-alt3 !default;
+$de-ruler-indent-active: $primary !default;
 
 // Subtract toolbar & statusbar height
 $de-tool-ctnr-editor-height: calc(100% - 115px) !default;

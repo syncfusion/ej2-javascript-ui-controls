@@ -530,11 +530,6 @@ describe('FileManager control Grid view', () => {
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,
-                    responseText: JSON.stringify(data1)
-                });
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
                     responseText: JSON.stringify(data17)
                 });
                 this.request = jasmine.Ajax.requests.mostRecent();
@@ -554,6 +549,53 @@ describe('FileManager control Grid view', () => {
                 }, 500);
             }, 500);
         });
+
+        it('Search folder navigation in root directory', (done: Function) => {
+            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+            let treeLi: any = treeObj.element.querySelectorAll('li');
+            let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+            expect(treeLi.length).toEqual(5);
+            expect(gridLi.length).toEqual(5);
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            expect(searchEle.placeholder).toBe("Search FileContent");
+            searchEle.value = 'Documents';
+            searchObj.value = 'Documents';
+            let eventArgs: any = { value: 'Documents', container: searchEle };
+            searchObj.change(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data18)
+            });
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(5);
+                expect(gridLi.length).toEqual(3);
+                let args = { rowData: { "name": "Documents", "size": 0, "dateModified": "2019-03-14T14:55:22.5808132+05:30", "dateCreated": "2019-03-07T14:49:02.6184375+05:30", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\", "_fm_iconClass": "e-fe-folder" }, rowIndex: 1 };
+                feObj.detailsviewModule.gridObj.recordDoubleClick(args);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data17)
+                });
+                setTimeout(function () {
+                    expect(searchEle.placeholder).toBe("Search Documents");
+                    let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                    let treeLi: any = treeObj.element.querySelectorAll('li');
+                    let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                    expect(treeObj.selectedNodes[0]).toEqual("fe_tree_0");
+                    expect(treeLi.length).toEqual(6);
+                    expect(gridLi.length).toEqual(1);
+                    done();
+                }, 500);
+            }, 500);
+        });
+        
         it('Search folder rename operation', (done: Function) => {
             let ele: any = document.getElementById(feObj.element.id + '_contextmenu');
             let menuObj: any = ele.ej2_instances[0];

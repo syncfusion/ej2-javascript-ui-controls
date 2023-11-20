@@ -46,7 +46,6 @@ import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEvent
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
 import { IFormField, IFormFieldBound } from './form-designer/form-designer';
-import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export'; 
 
 
 /**
@@ -7277,6 +7276,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property()
     public drawingObject: PdfAnnotationBaseModel;
 
+    /**
+     * Interal property used to store the created event object.
+     * 
+     * @private
+     */
+    private _created: any;
 
     constructor(options?: PdfViewerModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -7295,6 +7300,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             //EJ2-63562 - Reduced the touchPadding of mobile devices to 16 to improve selection of fields without affecting resizing ability.
             this.touchPadding = 16;
         }
+        const isProtectedOnChangeValue: boolean = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+        this._created = this.created;
+        delete this.properties.created;
+        this.created = null;
+        this.isProtectedOnChange = isProtectedOnChangeValue;
     }
     private getUniqueElementId(): string{
         return 'pdfViewer_' + Date.now().toString(36) + Math.random().toString(36).substring(2);
@@ -7317,10 +7328,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.viewerBase.pdfViewerRunner.onmessage = function (event) {
                 if (event.data.message === 'loaded') {
                     proxy.renderComponent();
+                    proxy.properties.created = proxy._created;
+                    proxy.created = proxy._created;
+                    proxy.trigger("created");
                 }
             }
         } else {
             this.renderComponent();
+            this.properties.created = this._created;
+            this.created = this._created;
+            this.trigger("created");
         }
     }
 

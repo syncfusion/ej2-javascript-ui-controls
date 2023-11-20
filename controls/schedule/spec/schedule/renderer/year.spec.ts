@@ -781,6 +781,33 @@ describe('Schedule year view', () => {
         });
     });
 
+    describe('Checking week header names', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                views: [
+                    { option: 'Year', isSelected: true },
+                ],
+                selectedDate: new Date(2023, 1, 24)
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking headers for year view', () => {
+            let Element: HTMLElement = document.querySelectorAll(".e-month-calendar")[10] as HTMLElement;
+            expect(Element.querySelector(".e-title").innerHTML).toEqual('November 2023');
+            expect(Element.querySelector(".e-week-header").querySelectorAll('.e-content.e-month > table > thead > tr > th')[0].innerHTML).toEqual('S');
+            expect(Element.querySelector(".e-week-header").querySelectorAll('.e-content.e-month > table > thead > tr > th')[1].innerHTML).toEqual('M');
+            expect(Element.querySelector(".e-week-header").querySelectorAll('.e-content.e-month > table > thead > tr > th')[2].innerHTML).toEqual('T');
+            expect(Element.querySelector(".e-week-header").querySelectorAll('.e-content.e-month > table > thead > tr > th')[3].innerHTML).toEqual('W');
+            expect(Element.querySelector(".e-week-header").querySelectorAll('.e-content.e-month > table > thead > tr > th')[4].innerHTML).toEqual('T');
+            expect(Element.querySelector(".e-week-header").querySelectorAll('.e-content.e-month > table > thead > tr > th')[5].innerHTML).toEqual('F');
+            expect(Element.querySelector(".e-week-header").querySelectorAll('.e-content.e-month > table > thead > tr > th')[6].innerHTML).toEqual('S');
+        });
+    });
 
     it('memory leak', () => {
         profile.sample();

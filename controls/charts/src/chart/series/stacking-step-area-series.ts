@@ -8,12 +8,15 @@ import { Series, Points } from './chart-series';
 import { LineBase } from './line-base';
 import { AnimationModel } from '../../common/model/base-model';
 import { Axis } from '../../chart/axis/axis';
+import { StepPosition } from '../utils/enum';
 
 /**
  * `StackingStepAreaSeries` module used to render the Stacking Step Area series.
  */
 
 export class StackingStepAreaSeries extends LineBase {
+
+    private prevStep: StepPosition;
 
     /**
      * Render the Stacking step area series.
@@ -24,6 +27,7 @@ export class StackingStepAreaSeries extends LineBase {
     public render(stackSeries: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
         let currentPointLocation: ChartLocation; let secondPoint: ChartLocation;
         let start: ChartLocation = null; let direction: string = '';
+        let borderDirection: string = '';
         const stackedvalue: StackValues = stackSeries.stackedValues;
         const visiblePoint: Points[] = this.enableComplexProperty(stackSeries);
         const origin: number = Math.max(stackSeries.yAxis.visibleRange.min, stackedvalue.startValues[0]);
@@ -48,15 +52,17 @@ export class StackingStepAreaSeries extends LineBase {
                     direction += ('M' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                     currentPointLocation = getPoint(xValue - lineLength, stackedvalue.endValues[pointIndex as number], xAxis, yAxis, isInverted);
                     direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                    borderDirection += ('M' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
                 }
                 if (prevPoint != null) {
                     currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex as number], xAxis, yAxis, isInverted);
                     secondPoint = getPoint(prevPoint.xValue, stackedvalue.endValues[prevPoint.index], xAxis, yAxis, isInverted);
-                    direction += ('L' + ' ' + (currentPointLocation.x) + ' ' + (secondPoint.y) +
-                        ' L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                    direction += (this.GetStepLineDirection(currentPointLocation, secondPoint, stackSeries.step));
+                    borderDirection += (this.GetStepLineDirection(currentPointLocation, secondPoint, stackSeries.step));
                 } else if (stackSeries.emptyPointSettings.mode === 'Gap') {
                     currentPointLocation = getPoint(point.xValue, stackedvalue.endValues[pointIndex as number], xAxis, yAxis, isInverted);
                     direction += 'L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ';
+                    borderDirection += 'L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ';
                 }
                 visiblePoint[i as number].symbolLocations.push(
                     getPoint(visiblePoint[i as number].xValue, stackedvalue.endValues[pointIndex as number], xAxis, yAxis, isInverted));
@@ -68,27 +74,29 @@ export class StackingStepAreaSeries extends LineBase {
                 prevPoint = point;
             }
             // If we set the empty point mode is Gap or next point of the current point is false, we will close the series path.
-            if (visiblePoint[i + 1] && !visiblePoint[i + 1].visible && stackSeries.emptyPointSettings.mode !== 'Drop') {
+            if (visiblePoint[i + 1] && (!visiblePoint[i + 1].visible && start !== null) && stackSeries.emptyPointSettings.mode !== 'Drop') {
                 let previousPointIndex: number;
                 for (let j: number = i; j >= startPoint; j--) {
                     pointIndex = visiblePoint[j as number].index;
                     previousPointIndex = j === 0 ? 0 : visiblePoint[j - 1].index;
+                    currentPointLocation = getPoint(
+                        visiblePoint[pointIndex as number].xValue, stackedvalue.startValues[pointIndex as number], xAxis, yAxis, isInverted);
                     if (j !== 0 && (stackedvalue.startValues[pointIndex as number] < stackedvalue.startValues[previousPointIndex as number] ||
                         stackedvalue.startValues[pointIndex as number] > stackedvalue.startValues[previousPointIndex as number])) {
-                        currentPointLocation = getPoint(
-                            visiblePoint[pointIndex as number].xValue, stackedvalue.startValues[pointIndex as number], xAxis, yAxis, isInverted);
                         direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
-                        currentPointLocation = getPoint(
-                            visiblePoint[pointIndex as number].xValue, stackedvalue.startValues[previousPointIndex as number],
+                        secondPoint = getPoint(
+                            visiblePoint[previousPointIndex as number].xValue, stackedvalue.startValues[previousPointIndex as number],
                             xAxis, yAxis, isInverted
                         );
                     } else {
-                        currentPointLocation = getPoint(
+                        secondPoint = getPoint(
                             visiblePoint[pointIndex as number].xValue, stackedvalue.startValues[pointIndex as number], xAxis, yAxis, isInverted);
                     }
-                    direction = direction.concat('L' + ' ' + (currentPointLocation.x) + ' ' + (currentPointLocation.y) + ' ');
+                    if (visiblePoint[previousPointIndex as number].visible) {
+                        direction = direction.concat(this.GetStepLineDirection(secondPoint, currentPointLocation, this.prevStep));
+                    }
                 }
-                startPoint = i + 1;
+                startPoint = i + 2;
                 start = null;
                 prevPoint = null;
             }
@@ -100,6 +108,7 @@ export class StackingStepAreaSeries extends LineBase {
                 start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.endValues[pointIndex as number] };
                 secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
                 direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
+                borderDirection += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
                 start = { 'x': visiblePoint[pointsLength - 1].xValue + lineLength, 'y': stackedvalue.startValues[pointIndex as number] };
                 secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
                 direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
@@ -121,9 +130,12 @@ export class StackingStepAreaSeries extends LineBase {
                     point3 = getPoint(
                         visiblePoint[validIndex as number].xValue, stackedvalue.startValues[pointIndex as number],
                         xAxis, yAxis, isInverted);
-                    direction = direction.concat('L' + ' ' + (point2.x) + ' ' + (point3.y) + ' ');
+                    if (!(j !== 0 && !visiblePoint[j - 1].visible)) {
+                        direction = direction.concat(this.GetStepLineDirection(point3, point2, this.prevStep));
+                    }
                 }
             }
+            this.prevStep = stackSeries.step === 'Right' ? 'Left' : stackSeries.step === 'Left' ? 'Right' : stackSeries.step;
             options = new PathOption(
                 stackSeries.chart.element.id + '_Series_' + stackSeries.index, stackSeries.interior,
                 0, 'transparent', stackSeries.opacity, stackSeries.dashArray, direction
@@ -133,11 +145,10 @@ export class StackingStepAreaSeries extends LineBase {
              * To draw border for the path directions of area
              */
             if (stackSeries.border.width !== 0) {
-                emptyPointDirection = this.removeEmptyPointsBorder(this.getBorderDirection(direction));
                 options = new PathOption(
                     stackSeries.chart.element.id + '_Series_border_' + stackSeries.index, 'transparent',
                     stackSeries.border.width, stackSeries.border.color ? stackSeries.border.color : stackSeries.interior, 1,
-                    stackSeries.dashArray, emptyPointDirection
+                    stackSeries.dashArray, borderDirection
                 );
                 this.appendLinePath(options, stackSeries, '');
             }

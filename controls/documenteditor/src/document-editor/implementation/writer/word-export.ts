@@ -3825,7 +3825,7 @@ export class WordExport {
                 this.documentImages.remove(id);
                 this.externalImages.add(id, imageString);
                 writer.writeAttributeString(undefined, 'link', this.rNamespace, id);
-                if (this.startsWith(imageString, "https://") || this.startsWith(imageString, "http://") || this.startsWith(imageString, "file://")) {
+                if (!isNullOrUndefined(imageStringInfo.metaFileImageString) && (this.startsWith(imageString, "https://") || this.startsWith(imageString, "http://") || this.startsWith(imageString, "file://"))) {
                     let newRId: string = this.getNextRelationShipID();
                     this.documentImages.add(newRId, imageStringInfo.metaFileImageString);
                     writer.writeAttributeString('r', 'embed', this.rNamespace, newRId);
@@ -5300,6 +5300,9 @@ export class WordExport {
         } else if (span[textProperty[this.keywordIndex]] === '\f') {
             writer.writeStartElement(undefined, 'br', this.wNamespace);
             writer.writeAttributeString('w', 'type', this.wNamespace, 'page');
+            writer.writeEndElement();
+        } else if (span[textProperty[this.keywordIndex]] === '\r') {
+            writer.writeStartElement('w', 'cr', this.wNamespace);
             writer.writeEndElement();
         } else if (span[textProperty[this.keywordIndex]] === String.fromCharCode(14)) {
             writer.writeStartElement(undefined, 'br', this.wNamespace);

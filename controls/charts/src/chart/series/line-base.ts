@@ -10,6 +10,7 @@ import { Series, Points } from './chart-series';
 import { Chart } from '../chart';
 import { AnimationModel } from '../../common/model/base-model';
 import { Animation, AnimationOptions, animationMode, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { StepPosition } from '../utils/enum';
 
 
 
@@ -194,6 +195,22 @@ export class LineBase {
         return point.yValue >= yAxis.visibleRange.min && point.yValue <= yAxis.visibleRange.max;
     }
 
+    public GetStepLineDirection(currentPoint: ChartLocation, previousPoint: ChartLocation, stepLineType: StepPosition, command: string = 'L'): string {
+        if (stepLineType === 'Right') {
+            return (command + ' ' +
+                (previousPoint.x) + ' ' + (currentPoint.y) + ' L ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
+        }
+        else if (stepLineType === 'Center') {
+            const centerX: number = previousPoint.x + (currentPoint.x - previousPoint.x) / 2;
+            return (command + ' ' +
+                (centerX) + ' ' + (previousPoint.y) + ' L ' + (centerX) + ' ' + (currentPoint.y) + ' L ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
+        }
+        else {
+            return (command + ' ' +
+                (currentPoint.x) + ' ' + (previousPoint.y) + ' L ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
+        }
+    }
+    
     /**
      * To get first and last visible points
      *

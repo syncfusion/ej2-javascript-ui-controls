@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 23.1.44 (2023-11-07)
+## 23.2.4 (2023-11-20)
+
+### Common
+
+#### Bug Fixes
+
+- `#I514915` - The issue with "the script error occurs when the RTE component is used inside the v-if directive in the `Vue 2` application" has been resolved.
+- `#I508733` - Negative Currency filtering issue has been fixed.
+
+## 23.1.41 (2023-10-17)
 
 ### Common
 

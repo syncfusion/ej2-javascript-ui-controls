@@ -42,7 +42,6 @@ import { Revision } from '../track-changes/track-changes';
 import { TrackChangesPane } from '../track-changes/track-changes-pane';
 import { Themes } from '../themes/themes';
 import { beforeAutoResize, internalAutoResize } from '../../base/constants';
-
 /**
  * @private
  */
@@ -1134,7 +1133,15 @@ export class DocumentHelper {
     */
     public getImageString(image: ImageElementBox): string {
         let base64ImageString: string[] = this.images.get(parseInt(image.imageString));
-        return image.isMetaFile && HelperMethods.formatClippedString(base64ImageString[0]).extension !== ".svg" ? base64ImageString[1] : base64ImageString[0];
+        let imageStr: string;
+        if (image.isMetaFile && HelperMethods.formatClippedString(base64ImageString[0]).extension !== ".svg") {
+            imageStr = base64ImageString[1];
+        } else if (HelperMethods.formatClippedString(base64ImageString[0]).extension === ".tif") {
+            imageStr = base64ImageString[1];
+        } else {
+            imageStr = base64ImageString[0];
+        }
+        return imageStr;
     }
     /**
      * @private
@@ -1659,7 +1666,7 @@ export class DocumentHelper {
                 this.dialogTarget1.classList.add('e-de-rtl');
             }
             this.dialogInternal = new Dialog({
-                target: document.body, showCloseIcon: true,
+                target: this.owner.documentEditorSettings.popupTarget, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
                 width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex + 20,
                 animationSettings: { effect: 'None' }
@@ -1679,7 +1686,7 @@ export class DocumentHelper {
                 this.dialogTarget3.classList.add('e-de-rtl');
             }
             this.dialogInternal3 = new Dialog({
-                target: document.body, showCloseIcon: true,
+                target: this.owner.documentEditorSettings.popupTarget, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
                 width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex,
                 animationSettings: { effect: 'None' }
@@ -1705,7 +1712,7 @@ export class DocumentHelper {
                 this.dialogTarget2.classList.add('e-de-rtl');
             }
             this.dialogInternal2 = new Dialog({
-                target: document.body, showCloseIcon: true,
+                target: this.owner.documentEditorSettings.popupTarget, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
                 width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex + 10
             });
@@ -1901,6 +1908,22 @@ export class DocumentHelper {
             this.iframe.style.top = this.owner.viewer.containerTop + 'px';
             this.iframe.style.left = this.owner.viewer.containerLeft + 'px';
         }
+        if (this.owner.hRuler) {
+            let hRuler = document.getElementById(this.owner.element.id + ('_hRulerBottom'));
+            hRuler.style.top = this.viewerContainer.scrollTop + 'px';
+            let markIndicator = document.getElementById(this.owner.element.id + ('_markIndicator'));
+            if(markIndicator) {
+                markIndicator.style.top = this.viewerContainer.scrollTop + 'px';
+            }
+        }
+        if (this.owner.vRuler) {
+            let vRuler = document.getElementById(this.owner.element.id + ('_vRuler'));
+            vRuler.style.left = this.viewerContainer.scrollLeft + 'px';
+            let markIndicator = document.getElementById(this.owner.element.id + ('_markIndicator'));
+            if(markIndicator) {
+                markIndicator.style.left = this.viewerContainer.scrollLeft + 'px';
+            }
+        }
         this.owner.viewer.updateScrollBars();
         const vtHeight: number = this.owner.viewer.containerTop + this.visibleBounds.height - (this.owner.viewer.padding.top + this.owner.viewer.padding.bottom);
         if (vtHeight > this.pageContainer.offsetHeight) {
@@ -1930,6 +1953,9 @@ export class DocumentHelper {
         this.resizeTimer = setTimeout((): void => {
             if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.element)) {
                 this.updateViewerSize();
+                if (this.owner.rulerHelper && this.owner.documentEditorSettings && this.owner.documentEditorSettings.showRuler) {
+                    this.owner.rulerHelper.updateRuler(this.owner, true);
+                }
                 this.clearContent();
                 this.owner.viewer.updateScrollBars();
                 if (!isNullOrUndefined(this.selection)) {
@@ -2013,7 +2039,7 @@ export class DocumentHelper {
     public onMouseDownInternal = (event: MouseEvent): void => {
         const target: HTMLElement = event.target as HTMLElement;
         this.owner.focusIn();
-        if ((!isNullOrUndefined(target) && target !== this.viewerContainer) || this.isTouchInput ||
+        if ((!isNullOrUndefined(target) && target !== this.viewerContainer) || this.owner.isTableMarkerDragging || this.isTouchInput ||
             event.offsetX > (this.visibleBounds.width - (this.visibleBounds.width - this.viewerContainer.clientWidth))
             || event.offsetY > (this.visibleBounds.height - (this.visibleBounds.height - this.viewerContainer.clientHeight))) {
             return;
@@ -2096,7 +2122,7 @@ export class DocumentHelper {
      * @returns {void}
      */
     public onMouseMoveInternal = (event: MouseEvent): void => {
-        if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer) {
+        if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer || this.owner.isTableMarkerDragging) {
             return;
         }
         event.preventDefault();
@@ -2382,7 +2408,7 @@ export class DocumentHelper {
      */
     /* eslint-disable  */
     public onMouseUpInternal = (event: MouseEvent): void => {
-        if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer) {
+        if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer || this.owner.isTableMarkerDragging) {
             return;
         }
         event.preventDefault();
@@ -3050,6 +3076,7 @@ export class DocumentHelper {
      */
     public updateViewerSize(): void {
         let element: HTMLElement = this.owner.getDocumentEditorElement();
+        
         this.updateViewerSizeInternal(element);
         this.owner.viewer.updateScrollBars();
         if (this.owner.viewer instanceof WebLayoutViewer && (!isNullOrUndefined(this.owner)) && (!isNullOrUndefined(element))) {
@@ -3081,6 +3108,10 @@ export class DocumentHelper {
         if (!isNullOrUndefined(this.selection)) {
             this.selection.updateCaretPosition();
         }
+        // if(!isNullOrUndefined(this.owner) && (!isNullOrUndefined(this.owner.hRuler && !isNullOrUndefined(this.owner.vRuler))))
+        // {
+        //      updateRuler(this.owner);
+        // }
     }
 
     /**
@@ -4531,7 +4562,7 @@ export abstract class LayoutViewer {
     /** 
      * @private
      */
-    public padding: Padding = new Padding(10, 10, 10, 10);
+    public padding: Padding = new Padding(10, 10, 30, 10);
     /**
      * @private
      */
@@ -5614,7 +5645,6 @@ export class PageLayoutViewer extends LayoutViewer {
         this.updateScrollBarPosition(containerWidth, containerHeight, updateObj.viewerWidth, updateObj.viewerHeight, updateObj.width, updateObj.height);
         this.updateVisiblePages();
         this.documentHelper.isScrollToSpellCheck = false;
-
     }
     public updateVisiblePages(): void {
         // Clears the container first.

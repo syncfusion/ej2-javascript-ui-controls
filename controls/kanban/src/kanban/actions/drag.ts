@@ -114,7 +114,7 @@ export class DragAndDrop {
                     this.dragObj.cloneElement.innerHTML = '';
                     const drag: Element = createElement('div', {
                         className: 'e-multi-card-text',
-                        innerHTML: (<HTMLElement[]>this.dragObj.selectedCards).length + ' Cards'
+                        innerHTML: (<HTMLElement[]>this.dragObj.selectedCards).length + ' ' + this.parent.localeObj.getConstant("cards")
                     });
                     this.dragObj.cloneElement.appendChild(drag);
                     classList(this.dragObj.cloneElement, ['e-multi-card-clone'], [cls.CARD_SELECTION_CLASS]);

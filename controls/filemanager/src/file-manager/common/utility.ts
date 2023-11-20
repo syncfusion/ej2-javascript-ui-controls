@@ -792,8 +792,31 @@ export function setNextPath(parent: IFileManager, path: string): void {
  */
 // eslint-disable-next-line
 export function openSearchFolder(parent: IFileManager, data: Object): void {
-    parent.notify(events.clearPathInit, { selectedNode: parent.pathId[parent.pathId.length - 1] });
     parent.originalPath = getFullPath(parent, data, parent.path);
+    const root: Object = getValue(parent.pathId[0], parent.feParent);
+    const isRoot: boolean = getValue('_fm_id', parent.itemData[0]) == 'fe_tree';
+    const key: string = isNOU(getValue('id', root)) ? 'name' : 'id';
+    const searchData: object = getObject(parent, key, getValue('name', data));
+    if(isNullOrUndefined(searchData))
+    {
+        if(!isRoot)
+        {
+            parent.notify(events.clearPathInit, { selectedNode: parent.pathId[parent.pathId.length - 1] });	
+        }
+        else
+        {
+            setNextPath(parent, parent.path);
+            return;
+        }
+    }
+    else
+    {
+        const id: string = getValue('_fm_id', searchData);
+        parent.setProperties({ path: parent.originalPath }, true);
+        parent.pathId.push(id);
+        parent.itemData = [searchData];
+        parent.pathNames.push(getValue('name', searchData));
+    }
     read(parent, (parent.path !== parent.originalPath) ? events.initialEnd : events.finalizeEnd, parent.path);
 }
 

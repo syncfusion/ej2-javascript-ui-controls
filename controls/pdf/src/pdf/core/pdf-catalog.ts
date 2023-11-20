@@ -40,16 +40,21 @@ export class _PdfCatalog {
         let form: _PdfDictionary;
         if (this._catalogDictionary.has('AcroForm')) {
             form = this._catalogDictionary.get('AcroForm');
-        } else {
-            form = new _PdfDictionary(this._crossReference);
-            const ref: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(ref, form);
-            this._catalogDictionary.set('AcroForm', ref);
-            this._catalogDictionary._updated = true;
+        }
+        if (form === null || typeof form === 'undefined') {
+            form = this._createForm();
         }
         return form;
     }
     /* eslint-disable */
+    _createForm(): _PdfDictionary {
+        const form: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        const ref: _PdfReference = this._crossReference._getNextReference();
+        this._crossReference._cacheMap.set(ref, form);
+        this._catalogDictionary.set('AcroForm', ref);
+        this._catalogDictionary._updated = true;
+        return form;
+    }
     getPageDictionary(pageIndex: number): {dictionary: _PdfDictionary, reference: _PdfReference} {
         const nodesToVisit = [this._topPagesDictionary];
         const visitedNodes = new _PdfReferenceSet();

@@ -85,6 +85,8 @@ export interface ISharedTooltipRenderEventArgs extends IChartEventArgs {
  * Defines the scroll events
  */
 export interface IScrollEventArgs {
+    /** Defines the event cancel status. */
+    cancel?: boolean;
     /** Defines the name of the event. */
     name?: string;
     /** Defines the current Zoom Position. */

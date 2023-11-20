@@ -322,7 +322,7 @@ export class Toolbar {
         if (!select('#' + this.parent.element.id + 'mdx-dialog', document)) {
             this.renderMDXDialog();
         }
-        let mdxDialog: Dialog = getInstance(select('#' + this.parent.element.id + 'mdx-dialog', document), Dialog) as Dialog;
+        const mdxDialog: Dialog = getInstance(select('#' + this.parent.element.id + 'mdx-dialog', document), Dialog) as Dialog;
         const outerDiv: HTMLElement = createElement('div', {
             className: cls.MDX_QUERY
         });

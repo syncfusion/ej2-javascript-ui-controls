@@ -1587,6 +1587,62 @@
             }
         }
     }
+    .e-de-hRuler {
+        background-color: $de-ruler-background-color;
+        @if $skin-name =='Material3' {
+            background: $de-ruler-background-color;
+        }
+        border-bottom: 0.5px solid $de-panel-border;
+    }
+    .e-de-vRuler {
+        background-color: $de-ruler-background-color;
+        @if $skin-name =='Material3' {
+            background: $de-ruler-background-color;
+        }
+        border-right: 0.5px solid $de-panel-border;
+    }
+    .e-de-ruler-margin {
+        background-color: $de-ruler-margin-color;
+        @if $skin-name =='Material3' {
+            background: $de-ruler-margin-color;
+        }
+    }
+    .e-de-ruler-tick {
+        stroke: $de-ruler-tick-stroke;
+    }
+    .e-de-ruler-tick-label {
+        fill: $de-ruler-label-fill
+    }
+    .e-de-ruler-markIndicator {
+        background-color: $de-ruler-margin-color;
+    }
+    .e-de-ruler-marker .e-de-ruler-tab-svg {
+        fill: $de-ruler-tick-stroke;
+    }
+   .e-de-ruler-marker .e-de-ruler-indent-svg {
+        fill: $de-ruler-tick-stroke;
+    }
+    .e-de-ruler-indent .e-de-ruler-indent-svg {
+        fill: $de-ruler-indent-fill;
+        stroke: $de-ruler-indent-stroke;
+    }
+    .e-de-ruler-indent .e-de-ruler-indent-svg:hover {
+        fill: $de-ruler-indent-hover;
+        stroke:  $de-ruler-indent-stroke;
+    }
+    .e-de-ruler-indent .e-de-ruler-indent-svg:active {
+        fill: $de-ruler-indent-active;
+        stroke:  $de-ruler-indent-stroke;
+    }
+    .e-de-ruler-table-svg {
+        fill: $de-ruler-indent-stroke;
+    }
+    .e-de-ruler-table-svg:hover {
+        fill: $de-ruler-indent-hover;
+    }
+    .e-de-ruler-table-svg:active {
+        fill: $de-ruler-indent-active;
+    }
     .e-rtl {
         .e-listview .e-list-icon {
             height: 24px;
@@ -1598,6 +1654,11 @@
             width: auto;
             line-height: 22px;
             margin-left: $e-de-ctnr-break-listview-margin-left;
+        }
+        .e-de-vRuler {
+            background-color: $de-ruler-background-color;
+            border-right: none;
+            border-left: 0.5px solid $de-panel-border;
         }
     }
     .e-bigger {

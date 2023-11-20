@@ -750,7 +750,7 @@ export class _PdfParser {
             const dictBytes: Uint8Array = stream.getBytes(dictLength);
             stream.position = initialStreamPos;
             cacheKey = this._computeMaxNumber(imageBytes) + '_' + this._computeMaxNumber(dictBytes);
-            const cacheEntry: _PdfBaseStream = this.imageCache[cacheKey]; // eslint-disable-line
+            const cacheEntry: _PdfBaseStream = this.imageCache.get(cacheKey);
             if (cacheEntry !== undefined) {
                 this.second = _PdfCommand.get('EI');
                 this.shift();
@@ -764,7 +764,7 @@ export class _PdfParser {
         imageStream = this.filter(imageStream, dictionary, length);
         imageStream.dictionary = dictionary;
         if (cacheKey !== undefined) {
-            this.imageCache[cacheKey] = imageStream; // eslint-disable-line
+            this.imageCache.set(cacheKey, imageStream);
         }
         this.second = _PdfCommand.get('EI');
         this.shift();

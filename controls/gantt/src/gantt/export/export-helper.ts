@@ -265,10 +265,10 @@ export class ExportHelper {
             this.parent.predecessorModule.createConnectorLinesCollection();
             this.parent.updatedConnectorLineCollection.forEach((data: IConnectorLineObject) => {
                 const predecessor: PdfGanttPredecessor = this.gantt.predecessor.add();
-                predecessor.parentLeft = pointToPixel(data.parentLeft);
-                predecessor.childLeft = pointToPixel(data.childLeft);
-                predecessor.parentWidth = pointToPixel(data.parentWidth);
-                predecessor.childWidth = pointToPixel(data.childWidth);
+                predecessor.parentLeft = data.parentLeft;
+                predecessor.childLeft = data.childLeft;
+                predecessor.parentWidth = data.parentWidth;
+                predecessor.childWidth = data.childWidth;
                 predecessor.parentIndex = data.parentIndex;
                 predecessor.childIndex = data.childIndex;
                 predecessor.rowHeight = data.rowHeight;
@@ -348,8 +348,8 @@ export class ExportHelper {
         flatData.forEach((data: IGanttData) => {
             const taskbar: PdfGanttTaskbarCollection = this.gantt.taskbar.add();
             const ganttProp: ITaskData = data.ganttProperties;
-            taskbar.left = pointToPixel(ganttProp.left);
-            taskbar.width = pointToPixel(ganttProp.width);
+            taskbar.left = ganttProp.left;
+            taskbar.width = ganttProp.width;
             if (taskbar.left < 0) {
                 taskbar.width = taskbar.width + taskbar.left;
                 taskbar.left = 0;
@@ -386,8 +386,8 @@ export class ExportHelper {
             taskbar.isMilestone = ganttProp.isMilestone;
             taskbar.baselineStartDate = ganttProp.baselineStartDate;
             taskbar.baselineEndDate = ganttProp.baselineEndDate;
-            taskbar.baselineLeft = pointToPixel(ganttProp.baselineLeft);
-            taskbar.baselineWidth = pointToPixel(ganttProp.baselineWidth);
+            taskbar.baselineLeft = ganttProp.baselineLeft;
+            taskbar.baselineWidth = ganttProp.baselineWidth;
             taskbar.milestoneColor = new PdfColor(this.ganttStyle.taskbar.milestoneColor);
             taskbar.isParentTask = data.hasChildRecords;
             if (ganttProp.isMilestone) {
@@ -403,9 +403,9 @@ export class ExportHelper {
                 taskbar.taskLabel = data[this.parent.labelSettings.taskLabel].toString();
             }
             const reduceLeft: number = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
-            taskbar.rightTaskLabel.left = pointToPixel(ganttProp.left) + pointToPixel(ganttProp.width) + reduceLeft; // right label left value
+            taskbar.rightTaskLabel.left = ganttProp.left + ganttProp.width + reduceLeft; // right label left value
             taskbar.fontFamily = this.ganttStyle.fontFamily;
-            taskbar.progressWidth = pointToPixel(ganttProp.progressWidth);
+            taskbar.progressWidth = ganttProp.progressWidth;
             taskbar.labelColor = new PdfColor(this.ganttStyle.label.fontColor);
             taskbar.progressFontColor = new PdfColor(this.ganttStyle.taskbar.progressFontColor);
             if (taskbar.isParentTask) {

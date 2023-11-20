@@ -1199,11 +1199,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (this.visible) {
             this.show();
-            if (this.isModal && this.target instanceof Element) {
-                const computedStyle = window.getComputedStyle(this.target);
-                if (computedStyle.getPropertyValue('direction') === 'rtl') {
-                    this.setPopupPosition();
-                } 
+            if (this.isModal) {
+                const targetType = this.getTargetContainer(this.target);
+                if (targetType instanceof Element){
+                    const computedStyle = window.getComputedStyle(targetType);
+                    if (computedStyle.getPropertyValue('direction') === 'rtl') {
+                        this.setPopupPosition();
+                    } 
+                }
             }
         } else {
             if (this.isModal) {
@@ -1213,6 +1216,25 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.initialRender = false;
     }
 
+    private getTargetContainer(targetValue: HTMLElement | string): HTMLElement | null {
+        let targetElement = null;
+        if (typeof targetValue === 'string') {
+            if (targetValue.startsWith('#')) {
+                targetElement = document.getElementById(targetValue.substring(1));
+            } else if (targetValue.startsWith('.')) {
+                const elements = document.getElementsByClassName(targetValue.substring(1));
+                targetElement = elements.length > 0 ? elements[0] as HTMLElement : null;
+            } else {
+                if (!((targetValue as any) instanceof HTMLElement) && (targetValue as any) !== document.body) {
+                    targetElement = document.querySelector(targetValue) as HTMLElement;
+                }
+            }
+        } else if (targetValue instanceof HTMLElement) {
+            targetElement = targetValue;
+        }
+        return targetElement;
+    }
+    
     private resetResizeIcon(): void {
         const dialogConHeight: number = this.getMinHeight();
         if (this.targetEle.offsetHeight < dialogConHeight) {
@@ -1281,14 +1303,17 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                             this.dlgContainer.classList.remove('e-dlg-' + this.position.X + '-' + this.position.Y);
                         }
                         // Reset the dialog position after drag completion.
-                        if (this.target instanceof Element) {
-                            const computedStyle = window.getComputedStyle(this.target);
+                        const targetType = this.getTargetContainer(this.target);
+                        if (targetType instanceof Element) {
+                            const computedStyle = window.getComputedStyle(targetType);
                             if (computedStyle.getPropertyValue('direction') === 'rtl') {
                                 this.element.style.position = 'absolute';
                             } else {
                                 this.element.style.position = 'relative';
                             }
-                        } 
+                        } else {
+                            this.element.style.position = 'relative';
+                        }
                     }
                     this.trigger('dragStop', event);
                     this.element.classList.remove(DLG_RESTRICT_LEFT_VALUE);
@@ -2074,14 +2099,17 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                                 this.dlgContainer.style.position = 'absolute';
                             }
                             this.dlgOverlay.style.position = 'absolute';
-                            if (this.target instanceof Element) {
-                                const computedStyle = window.getComputedStyle(this.target);
+                            const targetType = this.getTargetContainer(this.target);
+                            if (targetType instanceof Element) {
+                                const computedStyle = window.getComputedStyle(targetType);
                                 if (computedStyle.getPropertyValue('direction') === 'rtl') {
                                     this.element.style.position = 'absolute';
                                 } else {
                                     this.element.style.position = 'relative';
                                 }
-                            } 
+                            } else {
+                                this.element.style.position = 'relative';
+                            }
                             addClass([this.targetEle], [DLG_TARGET , SCROLL_DISABLED ]);
                         } else {
                             addClass([document.body], [DLG_TARGET , SCROLL_DISABLED ]);

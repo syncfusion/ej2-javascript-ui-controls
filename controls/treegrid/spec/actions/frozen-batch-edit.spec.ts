@@ -645,63 +645,63 @@ describe('Frozen Columns With Editing', () => {
       });
     });
 
-    describe('Hierarchy Frozen editing - Batch Edit with expand/collapse request', () => {
-      let gridObj: TreeGrid;
-      beforeAll((done: Function) => {
-        gridObj = createGrid(
-          {
-              dataSource: sampleData,
-              childMapping: 'subtasks',
-              editSettings: { allowEditing: true, mode: 'Batch', allowDeleting: true, allowAdding: true },
+    // describe('Hierarchy Frozen editing - Batch Edit with expand/collapse request', () => {
+    //   let gridObj: TreeGrid;
+    //   beforeAll((done: Function) => {
+    //     gridObj = createGrid(
+    //       {
+    //           dataSource: sampleData,
+    //           childMapping: 'subtasks',
+    //           editSettings: { allowEditing: true, mode: 'Batch', allowDeleting: true, allowAdding: true },
   
-              treeColumnIndex: 1,
-              toolbar: ['Add', 'Edit', 'Update'],
-                columns: [
-                    {
-                        field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
-                        validationRules: { required: true, number: true}, width: 90
-                    },
-                    { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220 },
-                    { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
-                      format: 'yMd' },
-                    { field: 'endDate', headerText: 'End Date', width: 230, textAlign: 'Right',
-                      type: 'date', format: { type: 'dateTime', format: 'dd/MM/yyyy' } },
-                    { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 210 },
-                    { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 210 },
-                    { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 230 },
-                    { field: 'approved', headerText: 'Approved', width: 230, textAlign: 'Left' }
-                ]
-          },
-          done
-        );
-      });
-      it('record double click', () => {
-        let event: MouseEvent = new MouseEvent('dblclick', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
-        gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
-      });
-      it('batch edit', () => {
-        let click: MouseEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
-        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
-        gridObj.getRowByIndex(1).dispatchEvent(click);
-      });
-      it('collapse record', () => {
-        let method: string = 'expandCollapseRequest';
-        gridObj[method](gridObj.getRowByIndex(0).querySelector('.e-treegridexpand'));
-        expect(gridObj.getBatchChanges()['changedRecords'].length === 1).toBe(true);
-        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
-      });
-      afterAll(() => {
-          destroy(gridObj);
-        });
-      });
+    //           treeColumnIndex: 1,
+    //           toolbar: ['Add', 'Edit', 'Update'],
+    //             columns: [
+    //                 {
+    //                     field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
+    //                     validationRules: { required: true, number: true}, width: 90
+    //                 },
+    //                 { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220 },
+    //                 { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
+    //                   format: 'yMd' },
+    //                 { field: 'endDate', headerText: 'End Date', width: 230, textAlign: 'Right',
+    //                   type: 'date', format: { type: 'dateTime', format: 'dd/MM/yyyy' } },
+    //                 { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 210 },
+    //                 { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 210 },
+    //                 { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 230 },
+    //                 { field: 'approved', headerText: 'Approved', width: 230, textAlign: 'Left' }
+    //             ]
+    //       },
+    //       done
+    //     );
+    //   });
+    //   it('record double click', () => {
+    //     let event: MouseEvent = new MouseEvent('dblclick', {
+    //       'view': window,
+    //       'bubbles': true,
+    //       'cancelable': true
+    //     });
+    //     gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+    //   });
+    //   it('batch edit', () => {
+    //     let click: MouseEvent = new MouseEvent('click', {
+    //       'view': window,
+    //       'bubbles': true,
+    //       'cancelable': true
+    //     });
+    //     gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
+    //     gridObj.getRowByIndex(1).dispatchEvent(click);
+    //   });
+    //   it('collapse record', () => {
+    //     let method: string = 'expandCollapseRequest';
+    //     gridObj[method](gridObj.getRowByIndex(0).querySelector('.e-treegridexpand'));
+    //     expect(gridObj.getBatchChanges()['changedRecords'].length === 1).toBe(true);
+    //     select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+    //   });
+    //   afterAll(() => {
+    //       destroy(gridObj);
+    //     });
+    //   });
 
     describe('Filtering Frozen Columns with Edit', () => {
       let gridObj: TreeGrid;

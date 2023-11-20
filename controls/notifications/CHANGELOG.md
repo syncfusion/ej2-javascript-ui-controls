@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
-## 23.1.44 (2023-11-07)
+## 23.1.40 (2023-10-10)
 
 ### Toast
 
 #### Bug Fixes
 
 - `#I503827` - Fixed CSP error that occurred when using the Toast Utility in conjunction with the CSP Meta Tag.
+
+- `#I504520` - Fixed an issue where adding double quotes to the Toast Messages would result in an error.
 
 ## 23.1.36 (2023-09-15)
 

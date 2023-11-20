@@ -12612,3 +12612,113 @@ describe('83597-Delete Lane and Perform undo and redo', () => {
         done();
     });
 });
+describe('853721-Grid lines remain hidden when lane fill is set to transparent.', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let btn: HTMLButtonElement;
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramSwimlaneTransparent' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS', style: { fill: '#111111' } },
+                        height: 50, style: { fontSize: 11 },
+                        orientation: 'Horizontal',
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            style:{fill:'transparent'},
+                            children: [
+                               
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'ONLINE' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'selectItemaddcart',
+                                    annotations: [{ content: 'Select item\nAdd cart' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'paymentondebitcreditcard',
+                                    annotations: [{ content: 'Payment on\nDebit/Credit Card' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas3',
+                            header: {
+                                annotation: { content: 'SHOP' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            style:{fill:'green'},
+                            children: [
+                                {
+                                    id: 'getmaildetailaboutorder',
+                                    annotations: [{ content: 'Get mail detail\nabout order' }],
+                                    margin: { left: 190, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'pakingitem',
+                                    annotations: [{ content: 'Paking item' }],
+                                    margin: { left: 350, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 170,
+                            header: { annotation: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650,
+                style:{fill:'transparent'}
+            },
+        ];
+
+        diagram = new Diagram({
+            width: '80%',
+            height: '600px',
+            nodes: nodes,
+        });
+        diagram.appendTo('#diagramSwimlaneTransparent');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Check swimlane fill color', (done: Function) => {
+        let swimlane = diagram.nodes[0];
+        diagram.select([swimlane]);
+        let fill = diagram.selectedItems.nodes[0].wrapper.children[0].style.fill;
+        expect(fill === 'transparent').toBe(true);
+        done();
+    });
+});

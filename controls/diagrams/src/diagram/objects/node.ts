@@ -2977,6 +2977,8 @@ export class Node extends NodeBase implements IElement {
         annotationcontent.height = annotation.height;
         annotationcontent.width = annotation.width;
         annotationcontent.visible = annotation.visibility;
+        //Bug 855273: Annotation visible property is not working while changing node visibility at runtime
+        (annotationcontent as TextElement).annotationVisibility = annotationcontent.visible ? 'Visible' : 'Collapsed';
         annotationcontent.rotateAngle = annotation.rotateAngle;
         annotationcontent.id = this.id + '_' + annotation.id;
         if (this.width !== undefined && !annotation.template) {
@@ -3205,7 +3207,7 @@ export class Phase extends ChildProperty<Shape> {
      *
      * @default ''
      */
-    @Complex<ShapeStyleModel>({ strokeColor: '#CCCCCC' }, ShapeStyle)
+    @Complex<ShapeStyleModel>({ fill: '#FFFFFF', strokeColor: '#CCCCCC' }, ShapeStyle)
     public style: ShapeStyleModel;
 
     /**

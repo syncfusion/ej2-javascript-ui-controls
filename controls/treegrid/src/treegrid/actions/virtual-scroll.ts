@@ -110,7 +110,7 @@ export class VirtualScroll {
         } else {
             const requestType: string = pageingDetails.actionArgs.requestType;
             if (requestType === 'filtering' || requestType === 'collapseAll' || requestType === 'searching' ||
-                (requestType === 'refresh' && this.parent.enableCollapseAll && endIndex > visualData.length)) {
+                (requestType === 'refresh' && this.parent.enableCollapseAll && endIndex > visualData.length && isNullOrUndefined(this.expandCollapseRec))) {
                 startIndex = 0;
                 endIndex = this.parent.grid.pageSettings.pageSize - 1;
                 (this.parent.grid.getContent() as HTMLElement).firstElementChild.scrollTop = 0;

@@ -594,7 +594,7 @@ export class DatePicker extends Calendar implements IInput {
             this.inputElement.setAttribute('aria-disabled', 'false');
             this.inputElement.setAttribute('tabindex', this.tabIndex);
         }
-        Input.addAttributes({ 'aria-label': 'select' }, this.inputWrapper.buttons[0]);
+        Input.addAttributes({ 'aria-label': 'select', 'role': 'button' }, this.inputWrapper.buttons[0]);
         addClass([this.inputWrapper.container], DATEWRAPPER);
     }
     protected updateInput(isDynamic: boolean = false, isBlur: boolean = false): void {
@@ -770,7 +770,7 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     protected bindEvents(): void {
-        EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler, this);
+        EventHandler.add(this.inputWrapper.buttons[0], 'mousedown', this.dateIconHandler, this);
         EventHandler.add(this.inputElement, 'mouseup', this.mouseUpHandler, this);
         EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
         EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
@@ -828,7 +828,7 @@ export class DatePicker extends Calendar implements IInput {
     protected unBindEvents() : void {
         if (!isNullOrUndefined(this.inputWrapper))
         {
-            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler);
+            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown', this.dateIconHandler);
         }
         EventHandler.remove(this.inputElement, 'mouseup', this.mouseUpHandler);
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);

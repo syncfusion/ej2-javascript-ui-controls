@@ -39,8 +39,7 @@ export class StepLineSeries extends LineBase {
                 if (prevPoint != null) {
                     point2 = getPoint(point.xValue, point.yValue, xAxis, yAxis, isInverted);
                     point1 = getPoint(prevPoint.xValue, prevPoint.yValue, xAxis, yAxis, isInverted);
-                    direction = direction.concat(startPoint + ' ' + (point1.x) + ' ' + (point1.y) + ' ' + 'L' + ' ' +
-                        (point2.x) + ' ' + (point1.y) + ' L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
+                    direction = direction.concat(startPoint + ' ' + (point1.x) + ' ' + (point1.y) + this.GetStepLineDirection(point2, point1, series.step));
                     startPoint = 'L';
                 } else {
                     point1 = getPoint(point.xValue - lineLength, point.yValue, xAxis, yAxis, isInverted);

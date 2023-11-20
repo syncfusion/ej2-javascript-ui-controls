@@ -2091,15 +2091,15 @@ export class PivotEngine {
             if (!headerCollection) {
                 this.isLastHeaderHasMeasures = true;
                 this.columnCount = 0; this.rowCount = 0; this.cMembers = []; this.rMembers = [];
-                if (rows.length !== 0) {
-                    this.rMembers =
-                        this.getIndexedHeaders(
-                            rows, data, 0, rows[0].showNoDataItems ? filterMembers : this.filterMembers,
-                            'row', '', this.allowValueFilter);
+                if (rows.length !== 0 && values.length !== 0) {
+                    this.rMembers = this.getIndexedHeaders(
+                        rows, data, 0, rows[0].showNoDataItems ? filterMembers : this.filterMembers, 'row', '', this.allowValueFilter
+                    );
                 }
-                if (columns.length !== 0) {
-                    this.cMembers = this.getIndexedHeaders(columns, data, 0, columns[0].showNoDataItems ?
-                        filterMembers : this.filterMembers, 'column', '', this.allowValueFilter);
+                if (columns.length !== 0 && values.length !== 0) {
+                    this.cMembers = this.getIndexedHeaders(
+                        columns, data, 0, columns[0].showNoDataItems ? filterMembers : this.filterMembers, 'column', '', this.allowValueFilter
+                    );
                 }
                 this.insertAllMembersCommon();
                 this.saveDataHeaders = (this.isValueFiltersAvail && dataSource.allowValueFilter) ? {

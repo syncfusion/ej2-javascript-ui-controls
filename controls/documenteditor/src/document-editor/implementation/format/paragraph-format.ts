@@ -46,7 +46,24 @@ export class WTabStop {
     public set tabLeader(value: TabLeader) {
         this.leader = value;
     }
-
+    public clone(): WTabStop {
+        let tabStop: WTabStop = new WTabStop();
+        tabStop.deletePosition = this.deletePosition;
+        tabStop.position = this.position;
+        tabStop.tabJustification = this.tabJustification;
+        tabStop.tabLeader = this.tabLeader;
+        return tabStop;
+    }
+    public equals(tab: WTabStop): boolean {
+        if (this.position === tab.position && 
+            this.deletePosition === tab.deletePosition && 
+            this.tabJustification === tab.tabJustification && 
+            this.tabLeader === tab.tabLeader) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     public destroy(): void {
         this.position = undefined;
         this.deletePosition = undefined;

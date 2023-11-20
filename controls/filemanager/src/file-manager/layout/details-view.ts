@@ -980,10 +980,10 @@ export class DetailsView {
         if (!dragLi) { return null; }
         let name: string;
         if (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]) {
-            name = (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]).innerText;
+            name = this.parent.hasId ? (this.gridObj.getRowInfo(dragLi).rowData as any).id : (<HTMLElement>dragLi.getElementsByClassName('e-fe-text')[0]).innerText;
         }
         else if (<HTMLElement>dragLi.getElementsByClassName('e-rowcell e-templatecell')[0].nextElementSibling) {
-            name = (<HTMLElement>dragLi.getElementsByClassName('e-rowcell e-templatecell')[0].nextElementSibling).innerText;
+            name = this.parent.hasId ? (this.gridObj.getRowInfo(dragLi).rowData as any).id : (<HTMLElement>dragLi.getElementsByClassName('e-rowcell e-templatecell')[0].nextElementSibling).innerText;
         }
         if (dragLi && !dragLi.querySelector('.e-active')) {
             this.selectRecords([name]);

@@ -1620,7 +1620,20 @@ export class Renderer {
             this.clipRect(containerWidget.x - containerWidget.margin.left, containerWidget.y, this.getScaledValue(width), this.getScaledValue(containerWidget.height));
         }
         let format: WCharacterFormat = elementBox.characterFormat;
-        if (format.highlightColor !== 'NoColor') {
+        let doHighLight: Boolean = true;
+        if(format.highlightColor != "NoColor" && elementBox.text.trim() == "") {
+            const firstLine = elementBox.line.paragraph.firstChild
+            const lastLine = elementBox.line.paragraph.lastChild;
+            if(!isNullOrUndefined(firstLine) && firstLine instanceof LineWidget
+                && firstLine.children.length > 0 && elementBox === firstLine.children[0]) {
+                doHighLight = false;
+            } 
+            if(!isNullOrUndefined(lastLine) && lastLine instanceof LineWidget
+                && lastLine.children.length > 0 && elementBox === lastLine.children[lastLine.children.length - 1]) {
+                doHighLight = false;
+            }
+        }
+        if (format.highlightColor !== 'NoColor' && doHighLight) {
             if (format.highlightColor.substring(0, 1) !== '#') {
                 this.pageContext.fillStyle = HelperMethods.getHighlightColorCode(format.highlightColor);
             } else {
@@ -1683,6 +1696,9 @@ export class Renderer {
         if (this.documentHelper.owner.documentEditorSettings.showHiddenMarks && !this.isPrinting) {
             if ((elementBox instanceof TabElementBox || elementBox instanceof TextElementBox) && elementBox.text === "\t") {
                 this.tabMark(elementBox, format, left, top, leftMargin, topMargin);
+            }
+            if (text === '\r') {
+                text = String.fromCharCode(182);
             }
             (this.pageContext as any).letterSpacing = format.characterSpacing * this.documentHelper.zoomFactor + 'pt';
             this.pageContext.save();
@@ -2125,30 +2141,59 @@ export class Renderer {
                 this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width),
                 this.getScaledValue(elementBox.height));
         } else {
+            const fallbackImage: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';
             try {
+                const imgX: number = this.getScaledValue(left + leftMargin, 1);
+                const imgY: number = this.getScaledValue(top + topMargin, 2);
+                const width: number = this.getScaledValue(elementBox.width);
+                const height: number = this.getScaledValue(elementBox.height);
+                const render: Renderer = this;
+                elementBox.element.onload = (): void => {
+                    const lastLoaded: string | null = elementBox.element.getAttribute("lastLoaded");
+
+                    if (!isNullOrUndefined(render.documentHelper) && lastLoaded !== elementBox.element.src) {
+                        if (!elementBox.isCrop) {
+                            render.pageContext.drawImage(elementBox.element, imgX, imgY, width, height);
+                        } else {
+                            render.pageContext.drawImage(elementBox.element,
+                                elementBox.cropX,
+                                elementBox.cropY,
+                                elementBox.cropWidth,
+                                elementBox.cropHeight,
+                                imgX,
+                                imgY,
+                                width,
+                                height
+                            );
+                        }
+                    }
+                };
+
+                elementBox.element.onerror = (): void => {
+                    elementBox.element.src = fallbackImage;
+                };
+
                 if (!elementBox.isCrop) {
-
                     this.pageContext.drawImage(elementBox.element, 
-                        this.getScaledValue(left + leftMargin, 1), //dx
-                        this.getScaledValue(top + topMargin, 2), //dy
-                        this.getScaledValue(elementBox.width), //dw
-                        this.getScaledValue(elementBox.height)); //dh
+                        imgX, //dx
+                        imgY, //dy
+                        width, //dw
+                        height); //dh
                 } else {
-
                     this.pageContext.drawImage(elementBox.element, 
                         elementBox.cropX, //sx
                         elementBox.cropY, //sy
                         elementBox.cropWidth, //sw
                         elementBox.cropHeight, //sh
-                        this.getScaledValue(left + leftMargin, 1), //dx
-                        this.getScaledValue(top + topMargin, 2), //dy
-                        this.getScaledValue(elementBox.width), //dw
-                        this.getScaledValue(elementBox.height)); //dh
+                        imgX, //dx
+                        imgY, //dy
+                        width, //dw
+                        height); //dh
                 }
             } catch (e) {
 
-                elementBox.imageString = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAgVBMVEX///8AAADgAADY2Njl5eVcXFxjY2NZWVl/f3+wsLCmpqb4+PiioqKpqam7u7vV1dX2uLj2wsLhFRXzpKT3vb30sbHhCwv74+P40dH+9vbkIyO2trbBwcHLy8tsbGycnJz529v4zMzrbGzlLS3qZmblNzfrdXXoRkbvi4vvgYHlHh7CZsBOAAADpUlEQVR4nO3da1faQBSF4ekAUQlUEFs14AXxVv7/D6yaQiZx5mSEYXF2ut+PNKzyyK5diYDmR9czx34AB49C/CjE759w3jvvWr15Tdgz3atXE54f++EcIArxoxA/CvGjED8K8aMQPwrxoxA/CvGLEeZ9jPJdhfk4GyCUjb3ECGE/Q6m/q3DwfudjP0ERZYN9hKdn2hvd3+0jHJz5/kBVuTk96bbQUEjhYR9ckiikUH8UUqg/CinUH4UU6o9CCvVHIYX6o5BC/VFIof4opFB/FFKoPwop1B+FFOqPQgrjyxfjVC38Lxk9tnAxGqZqdKtSOE4GHA5/fuNJpDCtcNHbv4VqYYqPLjgfUViPQgrjozA2CptRSGF8/59w+Wrt+rr1btNna1cPzg0wwuXavncxabnX7PfHYYXzlYARvlobQZyUR9mXm+1NMEK7SSLONgcVV9vb8IQXv4J3KSeKKlxXxNCzONkeYp8AV3p9UT1+P3FWHVAsq5thhGZSEb1DrSZq7dS5HUdoLiuBZ6jORG3tCwAkNJfCUJ2Jrqe1P0ESCkMNTdSACYNDDU7UoAkDQw1P1MAJvUMVJmrwhJ6hShM1gMIvQxUnahCFjaHKEzWQQneoxR95ogZTWBuqPFEDKnSHKk/UoArdoYoTNbDC5lBDEzW4QjMpYiZqgIXG/S76JhwHK5zVVipcnkIVuv/RW/HyFKhwYhuFr6NiCmdNoDBUSGFjovJQEYXuRN9ahwoorJ8uSZenPsMTNk+X2q6jwgm/ntHL11HhhL4zenmoYEL/Gb04VCxh6KKTNFQoYfiikzBUJKF00Sk8VCChfF00OFQcYdt10dBQYYRT5xn0n9G7Q0X8GfCzNNEyZ6iPgD/HlydaVg11DfhajJaJlm2HugIUrlomWrYZKuJKHz6vHhbSM/hROdRnxNe1meuXYvW0DB6+aflYrB7dlzDiCM3N1dVN6GDhMCDhjlHYjEIK46MwNgqbUUhhfJ/vA07wO8N1vw94ONo/3e/lTpVOYfc/UyG//ZmqW52fi/FuTNW3/lZ+eguF+qOQQv1RSKH+KKRQfxRSqD8KKdQfhRTqj0IK9UchhfqjkEL9UUih/iikUH8UUqg/CmXh6Hsv3jlK+wnvD/vgkrSHMMuyu1P9ZdmuwnycDQYn+svG3n9KEUKT9zHyf6+IEWJHIX4U4kchfhTiRyF+FOJHIX4U4kchfnVhijeZa6sunCf4ZdPamteEHY5C/CjEr/vCv0ec0g+AtS1QAAAAAElFTkSuQmCC';
-                
+                elementBox.imageString = fallbackImage;
+
                 this.documentHelper.addBase64StringInCollection(elementBox);
                 elementBox.element.src = this.documentHelper.getImageString(elementBox);
                 this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));

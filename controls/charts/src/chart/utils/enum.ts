@@ -902,3 +902,17 @@ export type LegendMode =
     'Range' |
     /** Render legend items based on range color mapping conditions */
     'Gradient';
+
+/** 
+ * Defines the position for the steps in the step line, step area, and step range area chart types. 
+ * * Left: Steps start from the left side of the 2nd point. 
+ * * Center: Steps start between the data points. 
+ * * Right: Steps start from the right side of the 1st point. 
+ */
+export type StepPosition =
+    /** Steps start from the left side of the 2nd point.*/
+    'Left' |
+    /** Steps start from the right side of the 1st point.*/
+    'Right' |
+    /** Steps start between the data points.*/
+    'Center'; 

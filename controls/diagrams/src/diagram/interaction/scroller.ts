@@ -644,8 +644,9 @@ export class DiagramScroller {
                 y: (this.viewPortHeight / 2 - this.verticalOffset) / this.currentZoom
             };
             focusPoint = transformPointByMatrix(matrix, focusPoint);
-            if ((this.currentZoom * factor) >= this.diagram.scrollSettings.minZoom &&
-                (this.currentZoom * factor) <= this.diagram.scrollSettings.maxZoom) {
+            //Bug 853566: Fit to page is not working when zoom value less than minZoom.
+            // Removed minZoom calculation to call fitToPage even if currentZoom less than minZoom.
+            if ((this.currentZoom * factor) <= this.diagram.scrollSettings.maxZoom) {
                 this.currentZoom *= factor;
                 const pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
                 pageBounds.x *= this.currentZoom;
@@ -720,6 +721,26 @@ export class DiagramScroller {
                 bounds = this.getPageBounds(true, region, true);
             }
             const scale: PointModel = { x: 0, y: 0 };
+            //Bug 853566: Fit to page is not working when zoom value less than minZoom.
+            // Resetting margin value if the margin value is greater than the viewport size to avoid scale value in negative.
+            if((margin.left + margin.right) > this.viewPortWidth){
+                if(this.viewPortWidth <= 100){
+                    margin.left = 5;
+                    margin.right = 5;
+                }else{
+                    margin.left = 25;
+                    margin.right = 25;
+                }
+            }
+            if((margin.top + margin.bottom) > this.viewPortHeight){
+                if(this.viewPortHeight <= 100){
+                    margin.top = 5;
+                    margin.bottom = 5;
+                }else{
+                    margin.top = 25;
+                    margin.bottom = 25
+                }
+            }
             scale.x = (this.viewPortWidth - (margin.left + margin.right)) / (bounds.width);
             scale.y = (this.viewPortHeight - (margin.top + margin.bottom)) / (bounds.height);
             if (!canZoomIn && (((bounds.width - this.horizontalOffset) < this.viewPortWidth) &&

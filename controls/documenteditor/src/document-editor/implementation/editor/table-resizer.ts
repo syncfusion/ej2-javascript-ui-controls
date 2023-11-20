@@ -203,15 +203,21 @@ export class TableResizer {
         }
         return -1;
     }
-    public handleResizing(touchPoint: Point): void {
+    public handleResizing(touchPoint?: Point, isTableMarkerDragging?: boolean, dragValue?: number): void {
         this.owner.isShiftingEnabled = true;
-        let dragValue: number = 0;
-        if (this.resizeNode === 0) {
-            dragValue = touchPoint.x - this.startingPoint.x;
-            this.resizeTableCellColumn(dragValue);
-        } else {
-            dragValue = touchPoint.y - this.startingPoint.y;
-            this.resizeTableRow(dragValue);
+        if (!isTableMarkerDragging) {
+            if (this.resizeNode === 0) {
+                dragValue = touchPoint.x - this.startingPoint.x;
+                this.resizeTableCellColumn(dragValue);
+            } else {
+                dragValue = touchPoint.y - this.startingPoint.y;
+                this.resizeTableRow(dragValue);
+            }
+        }
+        else {
+            if (this.resizeNode === 0) {
+                this.resizeTableCellColumn(dragValue);
+            }
         }
     }
     public resizeTableRow(dragValue: number): void {
@@ -400,7 +406,7 @@ export class TableResizer {
             let dragOffset: number = dragValue;
             if (tableAlignment !== 'Left' && (table.tableHolder.getTotalWidth(0) > containerWidth) && table.tableFormat.preferredWidthType === 'Auto') {
                 if (table.tableHolder.isFitColumns(containerWidth, table.tableHolder.tableWidth, table.tableFormat.preferredWidthType === 'Auto')) {
-                    table.tableHolder.fitColumns(containerWidth, table.tableHolder.tableWidth, table.tableFormat.preferredWidthType === 'Auto');
+                    table.tableHolder.fitColumns(containerWidth, table.tableHolder.tableWidth, table.tableFormat.preferredWidthType === 'Auto', table.tableFormat.allowAutoFit);
                 } else {
                     rightColumn.preferredWidth = width;
                 }

@@ -346,6 +346,7 @@ export class ContextMenu {
             target: '#' + this.documentHelper.owner.containerId + 'e-de-contextmenu',
             enableRtl: isRtl,
             items: this.addMenuItems(this.menuItems),
+            cssClass: 'e-de-contextmenu-wrapper',
             select: (args: MenuEventArgs) => {
                 let item: string = args.element.id;
                 this.handleContextMenuItem(item);
@@ -375,6 +376,9 @@ export class ContextMenu {
                 this.documentHelper.selection.showCaret();
             }
         };
+        if (!isNullOrUndefined(this.documentHelper.owner.documentEditorSettings.popupTarget)) {
+            this.documentHelper.owner.documentEditorSettings.popupTarget.append(document.getElementsByClassName('e-de-contextmenu-wrapper')[0]);
+        }
         this.contextMenuInstance.onClose = () => {
             if (this.viewer && this.documentHelper.selection) {
                 classList(this.documentHelper.selection.caret, ['e-de-cursor-animation'], []);

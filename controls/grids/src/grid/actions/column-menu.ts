@@ -44,6 +44,7 @@ export class ColumnMenu implements IAction {
     private FILTER: string = 'e-icon-filter';
     private POP: string = 'e-filter-popup';
     private WRAP: string = 'e-col-menu';
+    private COL_POP: string = 'e-colmenu-popup';
     private CHOOSER: string = '_chooser_';
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
@@ -237,6 +238,9 @@ export class ColumnMenu implements IAction {
             beforeItemRender: this.beforeMenuItemRender.bind(this),
             beforeClose: this.columnMenuBeforeClose.bind(this)
         });
+        if (this.element && parentsUntil(this.element, 'e-popup')) {
+            this.element.classList.add(this.COL_POP);
+        }
         this.columnMenu.appendTo(this.element);
         this.wireFilterEvents();
     }
@@ -288,8 +292,8 @@ export class ColumnMenu implements IAction {
         } else if (args.event && (closest(args.event.target as Element, '.' + this.POP)
             || (args.event.currentTarget && (args.event.currentTarget as Document).activeElement &&
                 parentsUntil((args.event.currentTarget as Document).activeElement as Element, 'e-filter-popup'))
-            || parentsUntil(args.event.target as Element, 'e-popup') ||
-            (parentsUntil(args.event.target as Element, 'e-popup-wrapper'))) && !Browser.isDevice) {
+            || (parentsUntil(args.event.target as Element, 'e-popup') && parentsUntil(args.event.target as Element, 'e-colmenu-popup'))
+            || (parentsUntil(args.event.target as Element, 'e-popup-wrapper'))) && !Browser.isDevice) {
             args.cancel = true;
         } else if (args.event && args.event.target && (args.event.target as Element).classList.contains('e-filter-item') && (args.event as KeyboardEvent).key === 'Enter') {
             args.cancel = true;

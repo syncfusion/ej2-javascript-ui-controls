@@ -2523,6 +2523,82 @@ describe('RTE CR issues', () => {
         });
     });
 
+    describe('851908 - When selecting multiple fonts applied texts, the font family toolbar should not show the font name as empty', () => {
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontName', 'FontSize', 'Formats']
+                },
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('CASE 1 - Check the toolbar values after selecting multiple font size in singel line', (done: DoneFn) => {
+            rteObj.value = `<h2 title="heading1">
+            <span style="font-size: 24pt;">
+                <span style="font-family: Tahoma, Geneva, sans-serif;">
+                    <span style="color: rgb(68, 114, 196); text-decoration: inherit;">
+                        <span style="background-color: rgb(204, 255, 255);">
+                            <b><u>FORMAT PAINTER:</u></b>
+                        </span>
+                    </span>
+                </span>
+            </span>
+            is used to copy the <span style="font-family: Verdana, Geneva, sans-serif;">formatting</span> of a <span style="font-size: 24pt;">selected text or object and apply it to another text or object.
+            </span> 
+        </h2>`
+            rteObj.dataBind();
+            rteObj.selectAll();
+            dispatchEvent(rteObj.contentModule.getEditPanel(), 'mouseup');
+            setTimeout(() => {
+                expect(rteObj.toolbarModule.getToolbarElement().querySelector('.e-font-size-tbar-btn').textContent).toBe('');
+                done();
+            }, 200);
+        });
+        it('CASE 2 - Check the toolbar values after selecting multiple font size in multiple line', () => {
+            rteObj.value = `                <h2 title="heading1">
+                <span style="font-size: 24pt;">
+                    <span style="font-family: Tahoma, Geneva, sans-serif;">
+                        <span style="color: rgb(68, 114, 196); text-decoration: inherit;">
+                            <span style="background-color: rgb(204, 255, 255);">
+                                <b><u>FORMAT PAINTER:</u></b>
+                            </span>
+                        </span>
+                    </span>
+                </span>
+                is used to copy the <span style="font-family: Verdana, Geneva, sans-serif;">formatting</span> of a <span style="font-size: 24pt;">selected text or object and apply it to another text or object.
+                </span> 
+            </h2>
+            <p><span style="background-color: rgb(255, 204, 204);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">
+                <span style="font-size: 14pt;"><strong><em><span style="text-decoration: underline;">
+                <span style="text-decoration: line-through;">Getting started with the format painter:</span></span></em>
+            </strong></span></span></span></p>
+            <p>The format painter toolbar button allows you to copy the <span style="font-size: 24pt;"><span
+                        style="font-family: Arial, Helvetica, sans-serif;"><strong>formatting </strong></span></span>of a selected
+                text or object and
+                apply it to another text or object.
+                This is a quick and easy way to ensure consistent formatting throughout your document or website.
+            </p>
+            <p><br></p>
+            <h3>The format painter toolbar button allows you to copy the formatting of a selected text or object and 
+                apply it to another text or object. 
+                This is a quick and easy way to ensure consistent formatting throughout your document or website.
+            </h3>`;
+            rteObj.dataBind();
+            rteObj.selectAll();
+            dispatchEvent(rteObj.contentModule.getEditPanel(), 'mouseup');
+            setTimeout(() => {
+                if (rteObj.toolbarModule.getToolbarElement()) {
+                    expect(rteObj.toolbarModule.getToolbarElement().querySelector('.e-font-size-tbar-btn').textContent).toBe('');
+                    expect(rteObj.toolbarModule.getToolbarElement().querySelector('.e-font-name-tbar-btn').textContent).toBe('');
+                    expect(rteObj.toolbarModule.getToolbarElement().querySelector('.e-formats-tbar-btn').textContent).toBe('');
+                }
+            }, 200);
+        });
+    });
+
     describe('847097 - Image get duplicated when we press enter key next to the copy pasted image content from Word', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2673,6 +2749,24 @@ describe('RTE CR issues', () => {
             </svg>
           </div><p>text</p>`);
           expect(rteObj.contentModule.getEditPanel().innerHTML === '<div>\n            <p>test</p>\n            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">\n              <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow"></circle>\n            </svg>\n          </div><p>text</p>').toBe(true);
+        });
+    });
+    describe('853959 - The anchor element was removed when removing the underline in the Rich Text Editor.', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: '<p><span style="color: rgb(0, 0, 0); font-family: &quot;Segoe UI VSS (Regular)&quot;, &quot;Segoe UI&quot;, -apple-system, BlinkMacSystemFont, Roboto, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">Copy the text from this</span><span style="color: rgb(0, 0, 0); font-family: &quot;Segoe UI VSS (Regular)&quot;, &quot;Segoe UI&quot;, -apple-system, BlinkMacSystemFont, Roboto, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255);">&nbsp;</span><a href="https://support.syncfusion.com/kb/article/7218/download-excel-from-ajax-call-in-asp-net-mvc?isInternalRefresh=False" style="text-decoration: underline; color: var(--communication-foreground,rgba(0, 90, 158, 1)); font-family: &quot;Segoe UI VSS (Regular)&quot;, &quot;Segoe UI&quot;, -apple-system, BlinkMacSystemFont, Roboto, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); cursor: pointer;">link</a><span style="color: rgb(0, 0, 0); font-family: &quot;Segoe UI VSS (Regular)&quot;, &quot;Segoe UI&quot;, -apple-system, BlinkMacSystemFont, Roboto, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">, which has a link and an underline.</span></p>'
+            });
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('The anchor element was removed', () => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.contentModule.getDocument().querySelector('a'), rteObj.contentModule.getDocument().querySelector('a'), 0, 1);
+            rteObj.executeCommand('underline');
+            expect(rteObj.contentModule.getDocument().querySelector('a').style.textDecoration === 'none').toBe(true);
         });
     });
 });

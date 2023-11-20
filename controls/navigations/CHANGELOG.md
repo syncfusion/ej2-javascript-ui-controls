@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.4 (2023-11-20)
+
+### Menu
+
+#### Bug Fixes
+
+- `#F519984` - The issue with "`hideItems` method not working properly in Menu" has been resolved.
+
 ## 23.1.44 (2023-11-07)
 
 ### TreeView

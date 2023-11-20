@@ -1132,6 +1132,15 @@
       border-bottom-width: $grid-border-bottom-width;
     }
 
+    .e-bigger & .e-gridcontent .e-groupcaptionrow .e-lastrowcell.e-recordplusexpand ~ td.e-lastrowcell,
+    &.e-bigger .e-gridcontent .e-groupcaptionrow .e-lastrowcell.e-recordplusexpand ~ td.e-lastrowcell,
+    .e-gridcontent .e-groupcaptionrow .e-lastrowcell.e-recordplusexpand ~ td.e-lastrowcell {
+      &.e-groupcaption,
+      &.e-summarycell {
+        border-bottom-width: 0;
+      }
+    }
+
     & .e-cloneproperties.e-draganddrop .e-row .e-icon-rowdragicon::before {
       position: relative;
       left: -5px;
@@ -4452,7 +4461,7 @@ margin: $grid-group-animator-cell-margin;
         text-align: left;
       }
       
-      &.e-default table th:not([rowspan = '1'])  {
+      &.e-default table th:not([rowspan = '1']):not(.e-detailcell,.e-detailindentcell,.e-stackedheadercell)  {
         border-width: $grid-headercell-both-border-width;
       }
 
@@ -4478,7 +4487,7 @@ margin: $grid-group-animator-cell-margin;
         border-right-width: 1px;
       }
       
-      &.e-rtl.e-default table th:not([rowspan = '1'])  {
+      &.e-rtl.e-default table th:not([rowspan = '1']):not(.e-detailcell,.e-detailindentcell,.e-stackedheadercell)  {
         border-width: $grid-rtl-headercell-both-border-width;
       }
 
@@ -4519,6 +4528,29 @@ margin: $grid-group-animator-cell-margin;
       &.e-rtl.e-default.e-bothlines .e-headercell,
       &.e-rtl.e-default.e-bothlines .e-detailheadercell {
         border-width: $grid-headercell-both-border-width;
+      }
+
+      &.e-resize-lines,
+      &.e-resize-lines.e-rtl {
+
+        & th.e-headercell.e-stackedheadercell:not(.e-freezerightborder, .e-freezeleftborder),
+        & th.e-headercell.e-firstcell:not(.e-freezerightborder, .e-freezeleftborder) {
+          border-left: 0;
+          border-right: 0;
+          border-top: 0;
+        }
+      }
+
+      &.e-default.e-bothlines .e-headercell,
+      &.e-default.e-bothlines .e-detailheadercell {
+        border-width: $grid-headercell-both-border-width;
+      }
+
+      &.e-bothlines .e-gridheader th.e-stackedheadercell {
+        border-bottom-style: $grid-border-type;
+        border-bottom-width: $grid-border-size;
+        border-left-style: $grid-border-type;
+        border-left-width: $grid-border-size;
       }
       
       .e-bigger #{&}.e-grid.sf-grid,

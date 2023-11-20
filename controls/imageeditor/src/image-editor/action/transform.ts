@@ -183,6 +183,9 @@ export class Transform {
         case 'resize':
             this.resize(args.value['width'], args.value['height'], args.value['isAspectRatio']);
             break;
+        case 'setResizedImgAngle':
+            this.resizedImgAngle = args.value['angle'];
+            break;
         case 'reset':
             this.reset();
             break;
@@ -643,7 +646,7 @@ export class Transform {
             const previousZoomFactor: number = parent.zoomSettings.zoomFactor - (zoomFactor * 10);
             const zoomEventArgs: ZoomEventArgs = {zoomPoint: zoomPoint, cancel: false, previousZoomFactor: previousZoomFactor,
                 currentZoomFactor: parent.zoomSettings.zoomFactor, zoomTrigger: obj['zoomType']};
-            if (!parent.isCropToolbar && isBlazor() && parent.events && parent.events.zooming.hasDelegate === true) {
+                if (!parent.isCropToolbar && isBlazor() && parent.events && parent.events.zooming.hasDelegate === true) {
                 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 (parent.dotNetRef.invokeMethodAsync('ZoomEventAsync', 'OnZoom', zoomEventArgs) as any).then((args: ZoomEventArgs) => {
                     this.zoomEvent(args, zoomFactor);
@@ -1974,7 +1977,7 @@ export class Transform {
                     parent.notify('transform', { prop: 'setPreventDownScale', value: { bool: false } });
                     parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'resize',
                         isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                }                
+                }
             } else {
                 parent.notify('transform', { prop: 'resizeCrop', value: { width: args.width, height: args.height } });
             }

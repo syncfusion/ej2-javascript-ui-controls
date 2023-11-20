@@ -57,6 +57,10 @@ export class Layout {
      */
     public isTextFormat: boolean =false;
     /**
+    * @private
+    */
+     public isSectionBreakCont: boolean = false;
+    /**
      * @private
      */
     public isReplacingAll: boolean = false;
@@ -1238,6 +1242,7 @@ export class Layout {
             const width: number = this.documentHelper.textHelper.getParagraphMarkWidth(paragraphWidget.characterFormat);
             paragraphWidget.clientX = area.x;
             let left: number = area.x;
+            paragraphWidget['absoluteXPosition'] = { 'width': area.width, 'x': area.x };
             if (paragraphWidget.paragraphFormat.textAlignment === 'Center') {
                 left += (area.width - width) / 2;
             } else {
@@ -1257,6 +1262,9 @@ export class Layout {
             paragraphWidget.width = area.width;
             paragraphWidget.y = area.y;
             paragraphWidget.clientX = undefined;
+            if (paragraphWidget.hasOwnProperty('absoluteXPosition')) {
+                delete paragraphWidget['absoluteXPosition'];
+            }
         }
         return paragraphWidget;
     }
@@ -1954,6 +1962,16 @@ export class Layout {
             }
             return;
         }
+        if(element instanceof TextElementBox && element.characterFormat.highlightColor != "NoColor" && element.text.trim() != "" && element.text != element.text.trim()) {
+            const firstLine = paragraph.firstChild
+            const lastLine = paragraph.lastChild;
+            if(!isNullOrUndefined(firstLine) && firstLine instanceof LineWidget && firstLine.children.length > 0 && element === firstLine.children[0]) {
+                HelperMethods.splitSpaceInTextElementBox(element, true);
+            } 
+            if(!isNullOrUndefined(lastLine) && lastLine instanceof LineWidget && lastLine.children.length > 0 && element === lastLine.children[lastLine.children.length - 1]) {
+                HelperMethods.splitSpaceInTextElementBox(element, false);
+            }
+        }
         let width: number = element.width;
         if (element instanceof FieldTextElementBox && !this.isTocField(element.fieldBegin)) {
             text = this.documentHelper.getFieldResult((element as FieldTextElementBox).fieldBegin, element.paragraph.bodyWidget.page);
@@ -2138,36 +2156,13 @@ export class Layout {
         if(!isNullOrUndefined(element.nextNode) && element.nextNode instanceof ContentControl){
             contentControl = element.nextNode;
         }
-        if ((text === '\v' || text === '\f' || text === String.fromCharCode(14)) && !contentControl) {
+        if ((text === '\v' || text === '\f' || text === '\r' || text === String.fromCharCode(14)) && !contentControl) {
             let elementIndex: number = line.children.indexOf(element);
             if (elementIndex > -1) {
                 this.addSplittedLineWidget(line, elementIndex);
             }
         }
-        // We don't have a carriage return support, thus we have to manage it by creating a new paragraph if the break is a carriage return character.
-        // Todo: Remove this code once carriage return break support is implemented.
-        if (text === '\r') {
-            element.width = 0;
-            (element as TextElementBox).text = '';
-            let newParagraph = new ParagraphWidget();
-            let newline = new LineWidget(newParagraph);
-            newParagraph.childWidgets.push(newline);
-            do {
-                let lastElement: ElementBox = line.children[line.children.length - 1];
-                if (lastElement === element) {
-                    break;
-                }
-                line.children.splice(line.children.indexOf(lastElement), 1);
-                newline.children.splice(0, 0, lastElement);
-                lastElement.line = newline;
-            } while (true);
-            newParagraph.containerWidget = paragraph.containerWidget;
-            paragraph.containerWidget.childWidgets.splice(paragraph.indexInOwner + 1, 0, newParagraph);
-            newParagraph.paragraphFormat = paragraph.paragraphFormat;
-            newParagraph.characterFormat = paragraph.characterFormat;
-            newParagraph.index = paragraph.index + 1;
-        }
-        if (element.line.isLastLine() && isNullOrUndefined(element.nextElement) || text === '\v' || text === '\f' || text === String.fromCharCode(14)) {
+        if (element.line.isLastLine() && isNullOrUndefined(element.nextElement) || text === '\v' || text === '\f' || text === '\r' || text === String.fromCharCode(14)) {
             if (this.isXPositionUpdated) {
                 this.isXPositionUpdated = false;
                 return;
@@ -4619,6 +4614,7 @@ export class Layout {
             lineWidget.paragraph = nextParagraph;
             insertIndex++;
         }
+        nextParagraph.width = paragarph.width;
         if (isMoveCurrentBlock) {
             nextParagraph.containerWidget.childWidgets.splice(nextParagraph.indexInOwner, 1);
             nextParagraph.y = paragarph.y;
@@ -10113,7 +10109,7 @@ export class Layout {
             if (nextPage) {
                 do {
                     let lastBody: BodyWidget = body.page.bodyWidgets[body.page.bodyWidgets.length - 1];
-                    if (body === lastBody || body.containerWidget instanceof FootNoteWidget) {
+                    if (this.isSectionBreakCont || body === lastBody || body.containerWidget instanceof FootNoteWidget) {
                         break;
                     }
                     body.page.bodyWidgets.splice(body.page.bodyWidgets.indexOf(lastBody), 1);

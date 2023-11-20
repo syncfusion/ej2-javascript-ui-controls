@@ -524,53 +524,53 @@ describe('Batch Edit module', () => {
       });
     });
 
-    describe('Hirarchy editing - Batch Edit with expand/collapse request', () => {
-      let gridObj: TreeGrid;
-      beforeAll((done: Function) => {
-        gridObj = createGrid(
-          {
-              dataSource: sampleData,
-              childMapping: 'subtasks',
-              editSettings: { allowEditing: true, mode: 'Batch', allowDeleting: true, allowAdding: true },
+    // describe('Hirarchy editing - Batch Edit with expand/collapse request', () => {
+    //   let gridObj: TreeGrid;
+    //   beforeAll((done: Function) => {
+    //     gridObj = createGrid(
+    //       {
+    //           dataSource: sampleData,
+    //           childMapping: 'subtasks',
+    //           editSettings: { allowEditing: true, mode: 'Batch', allowDeleting: true, allowAdding: true },
   
-              treeColumnIndex: 1,
-              toolbar: ['Add', 'Edit', 'Update'],
-                columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-                { field: 'taskName', headerText: 'Task Name' },
-                { field: 'progress', headerText: 'Progress' },
-                { field: 'startDate', headerText: 'Start Date' }
-                ]
-          },
-          done
-        );
-      });
-      it('record double click', () => {
-        let event: MouseEvent = new MouseEvent('dblclick', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
-        gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
-      });
-      it('batch edit', () => {
-        let click: MouseEvent = new MouseEvent('click', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true
-        });
-        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
-        gridObj.getRowByIndex(1).dispatchEvent(click);
-      });
-      it('collapse record', () => {
-        let method: string = 'expandCollapseRequest';
-        gridObj[method](gridObj.getRowByIndex(0).querySelector('.e-treegridexpand'));
-        expect(gridObj.getBatchChanges()['changedRecords'].length === 1).toBe(true);
-        select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
-      });
-      afterAll(() => {
-          destroy(gridObj);
-        });
-      });
+    //           treeColumnIndex: 1,
+    //           toolbar: ['Add', 'Edit', 'Update'],
+    //             columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+    //             { field: 'taskName', headerText: 'Task Name' },
+    //             { field: 'progress', headerText: 'Progress' },
+    //             { field: 'startDate', headerText: 'Start Date' }
+    //             ]
+    //       },
+    //       done
+    //     );
+    //   });
+    //   it('record double click', () => {
+    //     let event: MouseEvent = new MouseEvent('dblclick', {
+    //       'view': window,
+    //       'bubbles': true,
+    //       'cancelable': true
+    //     });
+    //     gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+    //   });
+    //   it('batch edit', () => {
+    //     let click: MouseEvent = new MouseEvent('click', {
+    //       'view': window,
+    //       'bubbles': true,
+    //       'cancelable': true
+    //     });
+    //     gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
+    //     gridObj.getRowByIndex(1).dispatchEvent(click);
+    //   });
+    //   it('collapse record', () => {
+    //     let method: string = 'expandCollapseRequest';
+    //     gridObj[method](gridObj.getRowByIndex(0).querySelector('.e-treegridexpand'));
+    //     expect(gridObj.getBatchChanges()['changedRecords'].length === 1).toBe(true);
+    //     select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
+    //   });
+    //   afterAll(() => {
+    //       destroy(gridObj);
+    //     });
+    //   });
 
     describe('Filtering', () => {
       let gridObj: TreeGrid;

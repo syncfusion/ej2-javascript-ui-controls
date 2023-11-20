@@ -8211,12 +8211,16 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
         } else if (this._dictionary.has('A') && !this._destination) {
             const action: _PdfDictionary = this._dictionary.get('A');
             if (action.has('D')) {
-                const reference: _PdfReference = action.get('D');
-                if (reference) {
-                    const referenceValue: any[] = this._crossReference._fetch(reference);// eslint-disable-line
+                const reference: any = action.get('D');// eslint-disable-line
+                if (reference !== null && typeof reference !== 'undefined') {
                     let referenceArray: any[];// eslint-disable-line
-                    if (Array.isArray(referenceValue)) {
-                        referenceArray = referenceValue;
+                    if (Array.isArray(reference)) {
+                        referenceArray = reference;
+                    } else if (reference instanceof _PdfReference) {
+                        const referenceValue: any[] = this._crossReference._fetch(reference);// eslint-disable-line
+                        if (Array.isArray(referenceValue)) {
+                            referenceArray = referenceValue;
+                        }
                     }
                     if (referenceArray) {
                         if (referenceArray[0] instanceof _PdfReference) {

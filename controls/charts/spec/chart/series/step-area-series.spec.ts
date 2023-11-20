@@ -511,6 +511,40 @@ describe('Chart Control', () => {
             chartObj.refresh();
 
         });
+        
+        it('Checking with step as Right', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true)
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Right'
+            chartObj.refresh();
+        });
+
+        it('Checking with step as Left', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true)
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Left'
+            chartObj.refresh();
+        });
+
+        it('Checking with step as Center', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element = document.getElementById('container_Series_0');
+                expect(element.getAttribute('d') !== '').toBe(true)
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].step = 'Center'
+            chartObj.refresh();
+        });
+        
           it('checking with log axis with dataTime axis', (done: Function) => {
             loaded = (args: Object): void => {
                 let axisLabelLast: Element = document.getElementById('container1_AxisLabel_3');

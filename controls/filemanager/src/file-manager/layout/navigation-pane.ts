@@ -319,6 +319,7 @@ export class NavigationPane {
             this.expandNodeTarget = args.node.getAttribute('data-uid');
             this.parent.expandedId = this.expandNodeTarget;
             this.parent.itemData = this.getTreeData(getValue('id', args.nodeData));
+            this.parent.pathId.push(getValue('id', args.nodeData));
             read(this.parent, events.nodeExpand, path);
             this.isNodeExpandCalled = true;
         }

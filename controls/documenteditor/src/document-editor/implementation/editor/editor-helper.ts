@@ -235,6 +235,31 @@ export class HelperMethods {
         }
         return hex;
     }
+    // public static convertPointsToCentimetre(val: number): number {
+    //     return val/28.34644;
+    // }
+    // public static convertCentimetreToPoints(val: number): number {
+    //     return val*28.34644;
+    // }
+    /**
+     * @private
+     */
+    public static getNumberFromString(input: string): number {
+        const numbers: number[] = [];
+        let currentNumber = "";
+        for (const char of input) {
+            if (/\d|\./.test(char)) {
+                currentNumber += char;
+            } else if (currentNumber) {
+                numbers.push(parseFloat(currentNumber));
+                currentNumber = "";
+            }
+        }
+        if (currentNumber) {
+            numbers.push(parseFloat(currentNumber));
+        }
+        return parseFloat(numbers.join(''));
+    }
     public static convertHexToRgb(colorCode: string): any  {
         let r: number;
         let g: number;
@@ -264,6 +289,19 @@ export class HelperMethods {
             style.appendChild(document.createTextNode(css));
         }
         document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    /**
+     * @private
+     */
+    public static convertNodeListToArray(nodeList: NodeListOf<HTMLElement>): HTMLElement[] {
+        const array: HTMLElement[] = [];
+        if (!isNullOrUndefined(nodeList)) {
+            for (let i: number = 0; i < nodeList.length; i++) {
+                array.push(nodeList[parseInt(i.toString(), 10)]);
+            }
+        }
+        return array;
     }
 
     public static getHighlightColorCode(highlightColor: HighlightColor): string {
@@ -444,52 +482,52 @@ export class HelperMethods {
     }
     public static getBaselineAlignmentEnumValue(baselineAlignment: BaselineAlignment): number {
         switch (baselineAlignment) {
-            case 'Normal':
-                return 0;
-            case 'Superscript':
-                return 1;
-            case 'Subscript':
-                return 2;
+        case 'Normal':
+            return 0;
+        case 'Superscript':
+            return 1;
+        case 'Subscript':
+            return 2;
         }
     }
     public static getUnderlineEnumValue(underline: Underline): number {
         switch (underline) {
-            case 'None':
-                return 0;
-            case 'Single':
-                return 1;
-            case 'Words':
-                return 2;
-            case 'Double':
-                return 3;
-            case 'Dotted':
-                return 4;
-            case 'Thick':
-                return 5;
-            case 'Dash':
-                return 6;
-            case 'DashLong':
-                return 7;
-            case 'DotDash':
-                return 8;
-            case 'DotDotDash':
-                return 9;
-            case 'Wavy':
-                return 10;
-            case 'DottedHeavy':
-                return 11;
-            case 'DashHeavy':
-                return 12;
-            case 'DashLongHeavy':
-                return 13;
-            case 'DotDashHeavy':
-                return 14;
-            case 'DotDotDashHeavy':
-                return 15;
-            case 'WavyHeavy':
-                return 16;
-            case 'WavyDouble':
-                return 17;
+        case 'None':
+            return 0;
+        case 'Single':
+            return 1;
+        case 'Words':
+            return 2;
+        case 'Double':
+            return 3;
+        case 'Dotted':
+            return 4;
+        case 'Thick':
+            return 5;
+        case 'Dash':
+            return 6;
+        case 'DashLong':
+            return 7;
+        case 'DotDash':
+            return 8;
+        case 'DotDotDash':
+            return 9;
+        case 'Wavy':
+            return 10;
+        case 'DottedHeavy':
+            return 11;
+        case 'DashHeavy':
+            return 12;
+        case 'DashLongHeavy':
+            return 13;
+        case 'DotDashHeavy':
+            return 14;
+        case 'DotDotDashHeavy':
+            return 15;
+        case 'WavyHeavy':
+            return 16;
+        case 'WavyDouble':
+            return 17;
         }
     }
     /* eslint-disable */
@@ -865,8 +903,10 @@ export class HelperMethods {
         return { 'extension': extension, 'formatClippedString': formatClippedString };
     }
     /**
-     * 
      * @private
+     * @param sourceString 
+     * @param startString 
+     * @returns 
      */
     public static startsWith(sourceString: string, startString: string): boolean {
         return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
@@ -990,6 +1030,55 @@ export class HelperMethods {
      */
     public static getUniqueElementId(): string {
         return 'de_element' + Date.now().toString(36) + Math.random().toString(36).substring(2);
+    }
+    /**
+     * @private
+     * @param element - element to be splitted of space
+     * @param fromStart - weather to removed space from start or end
+     * @returns {Boolean} - is the input element is splitted
+     */
+    /* eslint-disable  */
+    public static splitSpaceInTextElementBox(element: TextElementBox, fromStart: boolean): void {
+        let elementText: string = element.text;
+        let emptySpace: string = "";
+        if(fromStart) {
+            while(HelperMethods.startsWith(elementText, " ")) {
+                emptySpace += ' ';
+                elementText = elementText.substring(1);
+            }
+        } else {
+            while(HelperMethods.endsWith(elementText)) {
+                emptySpace += ' ';
+                elementText = elementText.slice(0, -1);
+            }
+        }
+        if(emptySpace != "") {
+            const textBox: TextElementBox = new TextElementBox();
+            textBox.characterFormat.copyFormat(element.characterFormat);
+            if(element.revisions.length > 0) {
+                for (let i: number = 0; i < element.revisions.length; i++) {
+                    const currentRevision: Revision = element.revisions[i];
+                    textBox.revisions.push(currentRevision);
+                    let rangeIndex: number = currentRevision.range.indexOf(element);
+                    if (rangeIndex < 0) {
+                        currentRevision.range.push(textBox);
+                    } else {
+                        currentRevision.range.splice(rangeIndex + 1, 0, textBox);
+                    }
+                }
+                textBox.isMarkedForRevision = element.isMarkedForRevision;
+            }
+            textBox.line = element.line;
+            const lineChildren = textBox.line.children;
+            if(fromStart) {
+                element.text = emptySpace;
+                textBox.text = elementText;
+            } else {
+                element.text = elementText;
+                textBox.text = emptySpace;
+            }
+            lineChildren.splice(lineChildren.indexOf(element)+1, 0, textBox);
+        }
     }
     /* eslint-disable */
     private static getTextIndexAfterWhitespace(text: string, startIndex: number): number {

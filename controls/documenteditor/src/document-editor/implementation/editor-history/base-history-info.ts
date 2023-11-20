@@ -1,4 +1,4 @@
-import { WParagraphFormat } from '../format/paragraph-format';
+import { WParagraphFormat, WTabStop } from '../format/paragraph-format';
 import { WSectionFormat } from '../format/section-format';
 import { WCharacterFormat } from '../format/character-format';
 import { WListFormat } from '../format/list-format';
@@ -1023,6 +1023,17 @@ export class BaseHistoryInfo {
                 this.currentPropertyIndex++;
                 return value;
             }
+            if (property === 'tabStop') {
+                value = [];
+                for (let i = 0; i < previousFormat.tabs.length; i++) {
+                    (value as WTabStop[]).push(previousFormat.tabs[i]);
+                }
+                let currentFormat: WParagraphFormat = new WParagraphFormat(undefined);
+                currentFormat.copyFormat(format);
+                this.modifiedProperties[this.currentPropertyIndex] = currentFormat;
+                this.currentPropertyIndex++;
+                return value;
+            }
             if (property === 'styleName') {
                 if (!isNullOrUndefined(previousFormat.baseStyle)) {
                     value = new WParagraphStyle();
@@ -1324,6 +1335,8 @@ export class BaseHistoryInfo {
             case 'VerticalBorder':
             case 'Borders':
                 return (this.action[0].toLowerCase() + this.action.slice(1));
+            case 'TabStop':
+                return 'tabStop';
         }
         return undefined;
     }

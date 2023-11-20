@@ -338,7 +338,8 @@ export namespace ListBase {
                 anchorElement = li.querySelector('.' + cssClass.anchorWrap);
                 // eslint-disable-next-line no-prototype-builtins
                 if (fieldData.hasOwnProperty(fields.tooltip)) {
-                    li.setAttribute('title', <string>fieldData[fields.tooltip]);
+                    const tooltipText = SanitizeHtmlHelper.sanitize(<string>fieldData[fields.tooltip]);                    
+                    li.setAttribute('title', tooltipText);
                 }
                 // eslint-disable-next-line no-prototype-builtins
                 if (fieldData.hasOwnProperty(fields.htmlAttributes) && fieldData[fields.htmlAttributes]) {

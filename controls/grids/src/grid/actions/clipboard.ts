@@ -69,17 +69,17 @@ export class Clipboard implements IAction {
     private pasteHandler(e: KeyboardEvent): void {
         const grid: IGrid = this.parent;
         const isMacLike: boolean = /(Mac)/i.test(navigator.platform);
+        const selectedRowCellIndexes = this.parent.getSelectedRowCellIndexes();
         if (e.keyCode === 67 && isMacLike && e.metaKey && !grid.isEdit) {
             this.copy();
         }
-        if (e.keyCode === 86 && (e.ctrlKey || (isMacLike && e.metaKey)) && !grid.isEdit) {
+        if (selectedRowCellIndexes.length && e.keyCode === 86 && ((!isMacLike && e.ctrlKey) || (isMacLike && e.metaKey)) && !grid.isEdit) {
             const target: HTMLElement = closest(document.activeElement, '.' + literals.rowCell) as HTMLElement;
             if (!this.clipBoardTextArea || !target || !grid.editSettings.allowEditing || grid.editSettings.mode !== 'Batch' ||
-            grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
+                grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
                 return;
             }
             this.activeElement = document.activeElement;
-            this.clipBoardTextArea.value = '';
             const x: number = window.scrollX;
             const y: number = window.scrollY;
             this.clipBoardTextArea.focus();
@@ -89,8 +89,8 @@ export class Clipboard implements IAction {
                     window.scrollTo(x, y);
                     this.paste(
                         this.clipBoardTextArea.value,
-                        this.parent.getSelectedRowCellIndexes()[0].rowIndex,
-                        this.parent.getSelectedRowCellIndexes()[0].cellIndexes[0]
+                        selectedRowCellIndexes[0].rowIndex,
+                        selectedRowCellIndexes[0].cellIndexes[0]
                     );
                 },
                 10);
@@ -157,6 +157,7 @@ export class Clipboard implements IAction {
         if (cell) {
             classList(cell, ['e-focus', 'e-focused'], []);
         }
+        this.clipBoardTextArea.value = '';
     }
 
     private initialEnd(): void {

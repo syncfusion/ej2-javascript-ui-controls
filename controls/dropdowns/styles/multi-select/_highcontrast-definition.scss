@@ -295,4 +295,9 @@ $ddl-closer-margin-top-bigger-small: -3.4em !default;
     height: 30px;
     width: 30px;
   }
+
+  .e-multi-select-wrapper .e-searcher input[type = 'text'],
+  .e-multi-select-wrapper .e-multi-searcher input[type = 'text'] {
+    color: #fff;
+  }
 }

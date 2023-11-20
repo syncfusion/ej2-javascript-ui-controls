@@ -182,7 +182,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         const formatItems: IDropDownItemModel[] = e.parent.format.types;
                         const formatContent: string = isNOU(e.parent.format.default) ? formatItems[0].text :
                             e.parent.format.default;
-                        result = getDropDownValue(formatItems, value, 'subCommand', 'text');
+                        result = value === 'empty' ? '' :getDropDownValue(formatItems, value, 'subCommand', 'text');
                         dropDown.formatDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.format.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
@@ -206,7 +206,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             break;
                         }
                         const fontNameItems: IDropDownItemModel[] = e.parent.fontFamily.items;
-                        result = getDropDownValue(fontNameItems, value, 'value', 'text');
+                        result = value === 'empty' ? '' : getDropDownValue(fontNameItems, value, 'value', 'text');
                         const fontNameContent: string = isNOU(e.parent.fontFamily.default) ? fontNameItems[0].text :
                             e.parent.fontFamily.default;
                         const name: string = (isNOU(result) ? fontNameContent : result);
@@ -224,7 +224,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         const fontSizeItems: IDropDownItemModel[] = e.parent.fontSize.items;
                         const fontSizeContent: string = isNOU(e.parent.fontSize.default) ? fontSizeItems[1].text :
                             e.parent.fontSize.default;
-                        result = getDropDownValue(
+                        result =  value === 'empty' ? '' : getDropDownValue(
                             fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), 'value', 'text');
                         dropDown.fontSizeDropDown.content = ('<span style="display: inline-flex;' +
                             'width:' + e.parent.fontSize.width + '" >' +

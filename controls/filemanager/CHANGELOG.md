@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 23.2.4 (2023-11-20)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I519501` - The Details dialog having incorrect values while opening it using the navigation pane in the File Manager component has been resolved.
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I506576` - The issue with the incorrect drag and drop operation in the `Details` view, with ID-based files in the File Manager component has been resolved.
+
 ## 23.1.43 (2023-10-31)
 
 ### FileManager
@@ -9,6 +23,7 @@
 #### Bug Fixes
 
 - `#I503129` - The issue with the `Details` view header alignment in the File Manager component has been resolved.
+- `#I506586` - The issue with the sequential server-side API requests when opening searched folder in the File Manager component has been resolved.
 
 ## 23.1.40 (2023-10-10)
 

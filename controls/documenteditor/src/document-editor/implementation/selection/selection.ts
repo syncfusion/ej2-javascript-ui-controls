@@ -7507,6 +7507,10 @@ export class Selection {
             this.triggerFormFillEvent(isKeyBoardNavigation);
             this.previousSelectedFormField = this.currentFormField;
         }
+        if (this.owner.rulerHelper && this.owner.documentEditorSettings && this.owner.documentEditorSettings.showRuler &&
+            !this.owner.isReadOnlyMode) {
+            this.owner.rulerHelper.updateRuler(this.owner, false);
+        }
     }
     //Formats Retrieval
     /**
@@ -8020,7 +8024,24 @@ export class Selection {
     /**
      * @private
      */
-
+    public getParagraphsInSelection(): ParagraphWidget[] {
+        let selection = this.owner.selection;
+        let selectedWidgets = selection.selectedWidgets.keys;
+        let paragraphsInSelection: ParagraphWidget[] = [];
+        if (selection.isEmpty || selection.start.paragraph === selection.end.paragraph) {
+            return [selection.start.paragraph];
+        }
+        for (let i = 0; i < selectedWidgets.length; i++) {
+            let widget: LineWidget = selectedWidgets[i] as LineWidget;
+            if (paragraphsInSelection.indexOf(widget.paragraph) === -1) {
+                paragraphsInSelection.push(widget.paragraph);
+            }
+        }
+        return paragraphsInSelection;
+    }
+    /**
+     * @private
+     */
     public getParagraphFormatInternalInParagraph(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition): void {
         if (start.paragraph === paragraph) {
             this.paragraphFormat.copyFormat(paragraph.paragraphFormat);

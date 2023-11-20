@@ -1601,7 +1601,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, frame: 'none',
                 srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter: '', isBrightAdjust: false,
                 aspectWidth: null, aspectHeight: null };
-            this.afterCropActions = []; this.currentFilter = ''; this.tempFrameZoomLevel = null;
+            this.afterCropActions = []; this.currentFilter = ''; this.tempFrameZoomLevel = null; this.cxtTbarHeight = null;
             const obj: Object = {initialZoomValue: false };
             this.notify('draw', { prop: 'getInitialZoomValue', onPropertyChange: false, value: {obj: obj }});
             if (obj['initialZoomValue']) {
@@ -2252,7 +2252,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         else if (type === 'horizontalflip') {value = 'horizontal'; }
         else if (type === 'verticalflip') {value = 'vertical'; }
         for (let i: number = 0; i < this.objColl.length; i++) {
-            if (this.objColl[i as number].shape === 'image') {
+            const shape: string = this.objColl[i as number].shape;
+            if (shape === 'image' || shape === 'text') {
                 if (isNullOrUndefined(this.objColl[i as number].rotateFlipColl)) {
                     this.objColl[i as number].rotateFlipColl = [];
                 }

@@ -1272,7 +1272,21 @@ export class Edit {
         if (args.action && args.action === 'DrawConnectorLine') {
             eventArgs.action = 'DrawConnectorLine';
         }
+        const ganttObj: Gantt = this.parent;
+        const currentBaselineStart = { ...eventArgs.data.ganttProperties.baselineStartDate };
+        const currentBaselineEnd = { ...eventArgs.data.ganttProperties.baselineEndDate };
         this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
+            if (currentBaselineStart != eventArg.data["ganttProperties"].baselineStartDate
+            || currentBaselineEnd != eventArg.data["ganttProperties"].baselineEndDate) {
+                ganttObj.setRecordValue(
+                    'baselineLeft', ganttObj.dataOperation.calculateBaselineLeft(
+                        eventArg.data['ganttProperties']),
+                    eventArg.data['ganttProperties'], true);
+                ganttObj.setRecordValue(
+                    'baselineWidth', ganttObj.dataOperation.calculateBaselineWidth(
+                        eventArg.data['ganttProperties']),
+                    eventArg.data['ganttProperties'], true);
+            }
             if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
                 this.parent.showMaskRow();
             } else {

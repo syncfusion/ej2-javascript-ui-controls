@@ -64,6 +64,7 @@
 
         & .e-fill.e-template,
         & .e-stroke.e-template,
+        & .e-frame-stroke.e-template,
         & .e-pen-stroke-color.e-template,
         & .e-text-font-color.e-template,
         & .e-save.e-template {
@@ -79,6 +80,17 @@
             & .e-icons.e-caret {
               margin-top: -4px;
             }
+          }
+        }
+
+        & .e-btn-icon.e-dropdownbtn-preview {
+          margin-top: $image-editor-bigger-dropdown-btn-preview-top !important; /* stylelint-disable-line declaration-no-important */
+          margin-left: $image-editor-bigger-dropdown-btn-preview-left;
+        }
+
+        & .e-dropdown-btn.e-icon-btn {
+          @if $skin-name == 'Material3' {
+            padding: 7px 15px;
           }
         }
 
@@ -228,6 +240,7 @@
 
         & .e-fill.e-template,
         & .e-stroke.e-template,
+        & .e-frame-stroke.e-template,
         & .e-pen-stroke-color.e-template,
         & .e-text-font-color.e-template,
         & .e-save.e-template {
@@ -249,7 +262,8 @@
         & .e-btn-icon.e-dropdownbtn-preview {
           height: 18px;
           width: 18px;
-          margin-top: -4px;
+          margin-top: $image-editor-dropdown-btn-preview-top !important; /* stylelint-disable-line declaration-no-important */
+          margin-left: $image-editor-dropdown-btn-preview-left;
         }
 
         & .e-dropdown-btn.e-image-popup {
@@ -321,6 +335,11 @@
           margin: 4px;
           text-align: center;
         }
+
+        & .e-dropdown-btn {
+          margin: 0 auto;
+          width: max-content;
+        }
       }
 
       &.e-frame-wrapper {
@@ -362,12 +381,7 @@
 
       & .e-slider-container {
         margin-left: calc(50% - 137px);
-        @if $skin-name == 'Material3' {
-          height: 70px !important; /* stylelint-disable-line declaration-no-important */
-        }
-        @else {
-          height: 54px !important; /* stylelint-disable-line declaration-no-important */
-        }
+        height: 54px !important; /* stylelint-disable-line declaration-no-important */
       }
     }
   }

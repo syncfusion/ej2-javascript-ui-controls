@@ -170,6 +170,10 @@
       content: '\e954';
     }
 
+    .e-delete-icon::before {
+      content: '\e965';
+    }
+
     .e-recurrence-container {
       .e-recurrence-edit-button {
         .e-recurrence-edit.e-icons::before {

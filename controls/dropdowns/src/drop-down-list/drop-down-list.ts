@@ -1171,6 +1171,9 @@ export class DropDownList extends DropDownBase implements IInput {
     private updateUpDownAction(e: KeyboardEventArgs, isVirtualKeyAction?: boolean): void {
         if (this.allowFiltering && !this.enableVirtualization && this.getModuleName() !== 'autocomplete') {
             let value = this.getItemData().value;
+            if (isNullOrUndefined(value)) {
+                value = 'null';
+            }
             let filterIndex: number = this.getIndexByValue(value);
             if (!isNullOrUndefined(filterIndex)) {
                 this.activeIndex = filterIndex;
@@ -1406,7 +1409,6 @@ export class DropDownList extends DropDownBase implements IInput {
             if (this.inputWrapper.container.classList.contains(dropDownListClasses.inputFocus) || this.isPopupOpen) {
                 this.isDocumentClick = true;
                 const isActive: boolean = this.isRequested;
-                this.isInteracted = false;
                 this.hidePopup(e);
                 if (!isActive) {
                     this.onFocusOut();
@@ -3761,6 +3763,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.isSelectCustom = false;
             this.clearAll(e);
         }
+        this.isInteracted = false;
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-param */
     /**

@@ -88,7 +88,10 @@ export class TextHelper {
         // Gets the text element's width;
         let textTrimEndWidth: number = 0;
         const isRTL: boolean = characterFormat.bidi || this.isRTLText(elementBox.text);
-        const text: string = this.setText(elementBox.text, isRTL, characterFormat.bdo);
+        let text: string = this.setText(elementBox.text, isRTL, characterFormat.bdo);
+        if (text === '\r') {
+            text = String.fromCharCode(182);
+        }
         textTrimEndWidth = this.getWidth(text, characterFormat, elementBox.scriptType);
         elementBox.width = textTrimEndWidth;
         // Calculate the text element's height and baseline offset.

@@ -2,8 +2,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase } from '../index';
 import {FormFieldsBase, AnnotationRenderer, ShapeAnnotationBase, PdfLayer, PopupAnnotationBase, FreeTextAnnotationBase, MeasureShapeAnnotationBase, AnnotBounds, TextMarkupAnnotationBase, SignatureAnnotationBase, InkSignatureAnnotation, ImageStructureBase  } from './index';
 import { PdfAnnotationBorder, PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, PdfPopupAnnotation, PdfFreeTextAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfInkAnnotation, PdfLineAnnotation, PdfRectangleAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfPolygonAnnotation, PdfPolyLineAnnotation , PdfAnnotation, PdfFont, PdfAnnotationCollection, PdfAngleMeasurementAnnotation, _PdfCrossReference, _PdfDictionary, _PdfStream, PdfRubberStampAnnotationIcon, PdfAnnotationState, PdfAnnotationStateModel, _PdfReference, _ContentParser, _stringToBytes, _bytesToString, _PdfRecord, _encode, _PdfBaseStream } from '@syncfusion/ej2-pdf';
-import { PointF, SizeF } from '@syncfusion/ej2-pdf-export';
-import { Matrix, Rect } from '@syncfusion/ej2-drawings';
+import { Matrix, Rect, Size } from '@syncfusion/ej2-drawings';
 
 /**
  * PageRenderer
@@ -126,10 +125,10 @@ export class PageRenderer{
 
     /**
      * @param {number} pageNumber
-     * @param {SizeF} pageSize
+     * @param {Size} pageSize
      * @private
      */
-    public exportAnnotationComments(pageNumber: number, pageSize: SizeF): any{
+    public exportAnnotationComments(pageNumber: number, pageSize: Size): any{
         const page: PdfPage = this.pdfViewer.pdfRendererModule.loadedDocument.getPage(parseInt(pageNumber.toString(), 10));
         const pageRotation: PdfRotationAngle = page.rotation;
         return this.getAnnotationFromPDF(pageSize.height, pageSize.width, pageNumber, pageRotation);
@@ -366,6 +365,13 @@ export class PageRenderer{
                             this.pdfViewerBase.pngData.push(stampAnnotation);
                             rubberStampAnnotation.IsDynamic = false;
                             rubberStampAnnotation.AnnotType = 'stamp';
+                            if (stampAnnotation._dictionary.hasOwnProperty("iconName")) { 
+                                rubberStampAnnotation.IconName = stampAnnotation.getValues("iconName")[0];
+                            } else if (stampAnnotation.subject !== null) {
+                                rubberStampAnnotation.IconName = stampAnnotation.subject;
+                            } else {
+                                rubberStampAnnotation.IconName = "";
+                            }  
                             if (stampAnnotation.flags === PdfAnnotationFlag.readOnly) {
                                 rubberStampAnnotation.IsCommentLock = true;
                             } else {
@@ -820,6 +826,7 @@ export class StampAnnotationBase{
     public IsMaskedImage: boolean;
     public AnnotType: string;
     public Icon: PdfRubberStampAnnotationIcon;
+    public IconName: string;
     public State: string;
     public StateModel: any;
     public Comments: PopupAnnotationBase[];

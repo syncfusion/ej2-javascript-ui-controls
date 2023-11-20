@@ -2911,9 +2911,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         let requireRefresh: boolean = false;
         for (const prop of properties) {
             switch (prop) {
-            case 'columns':
-                this.grid.columns = this.getGridColumns(this.columns as Column[]);
-                break;
             case 'treeColumnIndex':
                 this.grid.refreshColumns(); break;
             case 'allowPaging':

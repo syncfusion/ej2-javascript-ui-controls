@@ -134,7 +134,8 @@ export class PdfGanttTaskbarCollection {
         //code for while current pdf page is exceed
         if (yPoint > pageSize.height) {
             page = this.GetNextPage(page);
-            page['contentWidth'] = pointToPixel(detail.endPoint - detail.startPoint);
+            page['contentWidth'] = (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
+                this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? pointToPixel(detail.endPoint - detail.startPoint) : detail.endPoint - detail.startPoint;
             taskGraphics = page.graphics;
             startPoint.y = 0;
             if (this.parent.pdfExportModule.gantt.enableHeader) {
@@ -162,7 +163,7 @@ export class PdfGanttTaskbarCollection {
         progressFormat.alignment = PdfTextAlignment.Right;
         let isLabelString: boolean = false;
         let updatedWidth: number;
-        if (/^[a-zA-Z]/.test(this.taskLabel)) {
+        if (!isNullOrUndefined(this.taskLabel) && (/^[a-zA-Z]/.test(this.taskLabel))) {
             isLabelString = true;
             progressFormat.alignment = PdfTextAlignment.Left;
         }
@@ -226,7 +227,6 @@ export class PdfGanttTaskbarCollection {
                         taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(this.baselineWidth), pixelToPoint(this.baselineHeight));
                     }
                     taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) + 0.5, startPoint.y + adjustHeight, pixelToPoint(renderWidth), pixelToPoint(taskbar.height));
-                    taskbar.width = taskbar.width - renderWidth;
                     if (this.isScheduledTask) {
                         let progressBoundsWidth: number = 0;
                         if (this.progressWidth <= renderWidth) {

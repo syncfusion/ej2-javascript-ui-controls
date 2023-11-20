@@ -3361,7 +3361,18 @@
       line-height: normal;
     }
 
-    .e-save-icon {
+    .e-title-text {
+      text-align: center;
+    }
+
+    .e-save-icon,
+    .e-back-icon,
+    .e-delete-icon {
+      width: 2.5em;
+    }
+
+    .e-save-icon,
+    .e-delete-icon {
       text-align: right;
     }
 

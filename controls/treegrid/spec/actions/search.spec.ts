@@ -369,64 +369,6 @@ describe('Search module', () => {
       destroy(gridObj);
     });
   });
-  
-  describe('EJ2-23098: Editing with searching ', () => {
-    let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionComplete: ()=> void;
-    beforeAll((done: Function) => {
-      gridObj = createGrid(
-        {
-          dataSource: newSampledata,
-          childMapping: 'Children',
-          treeColumnIndex: 1,
-          editSettings: {
-            allowAdding: true,
-            allowEditing: true,
-            allowDeleting: true,
-            mode: 'Cell',
-            newRowPosition: 'Below'
-          },
-          toolbar: ['Search'],
-          columns: [
-            { field: 'TaskId', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 80 },
-            { field: 'TaskName', headerText: 'Task Name', width: 200 },
-            { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
-            { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
-            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
-          ]
-
-        },
-        done
-      );
-    });
-
-    it('Editing', (done: Function) => {
-      let event: MouseEvent = new MouseEvent('dblclick', {
-        'view': window,
-        'bubbles': true,
-        'cancelable': true
-      });
-      gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
-      gridObj.actionComplete = (args?: SaveEventArgs): void => {
-        expect(args.target.textContent).toBe('SP');
-        done();
-      };
-      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'SP';
-      gridObj.getRows()[0].click();
-
-    });
-    it('Search after editing', (done: Function) => {
-      gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
-        expect(gridObj.getRows()[1].querySelector('span.e-treecell').innerHTML).toBe('SP');
-        done();
-      };
-      gridObj.search('SP');
-    });
-    afterAll(() => {
-      destroy(gridObj);
-    });
-  });
 
   describe('EJ2-23097: Records are not properly collapsed after filter/search is performed', () => {
     let gridObj: TreeGrid;
@@ -539,6 +481,63 @@ describe('Search module', () => {
 });
 });
 
+describe('EJ2-23098: Editing with searching ', () => {
+  let gridObj: TreeGrid;
+  let rows: Element[];
+  let actionComplete: ()=> void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: newSampledata,
+        childMapping: 'Children',
+        treeColumnIndex: 1,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: 'Cell',
+          newRowPosition: 'Below'
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Search'],
+        columns: [
+          { field: 'TaskId', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 80 },
+          { field: 'TaskName', headerText: 'Task Name', width: 200 },
+          { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
+          { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+          { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+        ]
+
+      },
+      done
+    );
+  });
+
+  it('Editing', () => {
+    let event: MouseEvent = new MouseEvent('dblclick', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true
+    });
+    gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
+    actionComplete = (args?: SaveEventArgs): void => {
+      expect(args.target.textContent).toBe('SP');
+    };
+    gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'SP';
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    gridObj.actionComplete = actionComplete;
+  });
+  it('Search after editing', (done: Function) => {
+    gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
+      expect(gridObj.getRows()[1].querySelector('span.e-treecell').innerHTML).toBe('SP');
+      done();
+    };
+    gridObj.search('SP');
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
 describe('EJ2-28175: Duplicate records of search result after sorting', () => {
   let gridObj: TreeGrid;
   let rows: Element[];
@@ -576,6 +575,7 @@ describe('EJ2-28175: Duplicate records of search result after sorting', () => {
     destroy(gridObj);
   });
 });
+
 describe('Hierarchy Search Mode Testing - deep child', () => {
   let gridObj: TreeGrid;
   let actionComplete: () => void;
@@ -604,6 +604,7 @@ describe('Hierarchy Search Mode Testing - deep child', () => {
     destroy(gridObj);
   });
 });
+
 describe('Hierarchy Search Mode Testing for expand icon - Child', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;
@@ -631,7 +632,8 @@ describe('Hierarchy Search Mode Testing for expand icon - Child', () => {
     afterAll(() => {
       destroy(gridObj);
     });
-  });
+});
+
 describe('EJ2-44620: Collapsing and expanding the searched records with hierarchyMode as child', () => {
   let gridObj: TreeGrid;
   beforeAll((done: Function) => {

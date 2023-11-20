@@ -3744,3 +3744,96 @@ describe('Edit baseline dates', function () {
         triggerMouseEvent(saveRecord, 'click');
     });
 });
+describe('Change baseline dates', function () {
+    let ganttObj: Gantt;
+    let bwData = [
+        {
+            TaskID: 1,
+            TaskName: 'New Task 1',
+            StartDate: new Date('05/22/2023'),
+            EndDate: new Date('05/22/2023'),
+            Progress: 59,
+            Duration: 1,
+        }
+    ];
+    beforeAll(function (done) {
+        ganttObj = createGantt({
+            dataSource: bwData,
+            allowSorting: true,
+            allowReordering: true,
+            enableContextMenu: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                parentID: 'parentID',
+                baselineStartDate: 'BaselineStartDate',
+                baselineEndDate: 'BaselineEndDate'
+            },
+            renderBaseline: true,
+            baselineColor: 'red',
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                { field: 'Duration', headerText: 'Duration' },
+                { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                { field: 'CustomColumn', headerText: 'CustomColumn' }
+            ],
+            sortSettings: {
+                columns: [{ field: 'TaskID', direction: 'Ascending' },
+                { field: 'TaskName', direction: 'Ascending' }]
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+
+            labelSettings: {
+                leftLabel: 'TaskID',
+                rightLabel: 'Task Name: ${taskData.TaskName}',
+                taskLabel: '${Progress}%'
+            },
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            height: '550px',
+            allowUnscheduledTasks: true,
+        }, done);
+    });
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('change baseline dates', () => {
+        ganttObj.actionBegin= (args) => {
+            if (args.requestType === 'beforeSave') {
+                args.data.BaselineStartDate = args.data.StartDate;
+                args.data.ganttProperties.baselineStartDate = args.data.ganttProperties.startDate;
+                args.data.ganttProperties.baselineEndDate = args.data.ganttProperties.endDate;
+                args.data.BaselineEndDate = args.data.EndDate;
+                args.data.taskData.BaselineStartDate = args.data.taskData.StartDate;
+                args.data.taskData.BaselineEndDate = args.data.taskData.EndDate;
+            }
+        }
+        ganttObj.actionComplete= (args) => {
+            if (args.requestType == "save") {
+                expect(args.data.ganttProperties.baselineWidth > 0).toBe(true);
+            } 
+        }
+        ganttObj.openEditDialog(1);
+        let saveRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[0] as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+    });
+});

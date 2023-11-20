@@ -1,4 +1,4 @@
-import { extend, addClass, removeClass, setValue, closest, select } from '@syncfusion/ej2-base';
+import { extend, addClass, removeClass, setValue, closest, select, EventHandler } from '@syncfusion/ej2-base';
 import { remove, classList } from '@syncfusion/ej2-base';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { isNullOrUndefined, KeyboardEventArgs, isUndefined } from '@syncfusion/ej2-base';
@@ -58,6 +58,7 @@ export class BatchEdit {
     /** @hidden */
     public addBatchRow: boolean = false;
     private prevEditedBatchCell: boolean = false;
+    private mouseDownElement: Element;
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, renderer?: EditRender) {
         this.parent = parent;
@@ -82,6 +83,7 @@ export class BatchEdit {
             { event: events.editNextValCell, handler: this.editNextValCell },
             { event: events.destroy, handler: this.destroy }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
+        EventHandler.add(this.parent.element, 'mousedown', this.mouseDownHandler, this);
         this.dataBoundFunction = this.dataBound.bind(this);
         this.batchCancelFunction = this.batchCancel.bind(this);
         this.parent.addEventListener(events.dataBound, this.dataBoundFunction);
@@ -95,6 +97,7 @@ export class BatchEdit {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         addRemoveEventListener(this.parent, this.evtHandlers, false);
+        EventHandler.remove(this.parent.element, 'mousedown', this.mouseDownHandler);
         this.parent.removeEventListener(events.dataBound, this.dataBoundFunction);
         this.parent.removeEventListener(events.batchCancel, this.batchCancelFunction);
     }
@@ -115,10 +118,19 @@ export class BatchEdit {
         this.removeEventListener();
     }
 
+    protected mouseDownHandler(e: MouseEvent): void {
+        if (!isNullOrUndefined(this.parent.element.querySelector('.e-gridform'))){
+            this.mouseDownElement = e.target as Element;
+        }
+        else {
+            this.mouseDownElement = undefined;
+        }
+    }
+
     protected clickHandler(e: MouseEvent): void {
         if (!parentsUntil(e.target as Element, this.parent.element.id + '_add', true)) {
-            if (this.parent.isEdit && !(e.target as HTMLElement).classList.contains('e-row') &&
-             closest(this.form, 'td') !== closest(e.target as Element, 'td')) {
+            if ((this.parent.isEdit && closest(this.form, 'td') !== closest(e.target as Element, 'td'))
+                && isNullOrUndefined(this.mouseDownElement) || this.mouseDownElement === e.target as Element) {
                 this.saveCell();
                 this.editNextValCell();
             }
@@ -740,29 +752,31 @@ export class BatchEdit {
         if (col && !col.isPrimaryKey && col.allowEditing) {
             const td: Element = getCellByColAndRowIndex(this.parent, col, rowIndex, index);
             const rowObj: Row<Column> = gObj.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
-            this.refreshTD(td, col, rowObj, value);
-            const isReactChild = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
-                this.parent.parentDetails.parentInstObj.isReact;
-            if (((this.parent.isReact && this.parent.requireTemplateRef) || (isReactChild &&
-                this.parent.parentDetails.parentInstObj.requireTemplateRef)) && col.template) {
-                const thisRef: BatchEdit = this;
-                const newReactTd: Element = this.newReactTd;
-                thisRef.parent.renderTemplates(function () {
-                    thisRef.parent.trigger(events.queryCellInfo, {
-                        cell: newReactTd || td, column: col, data: rowObj.changes
+            if ((!rowObj.changes && rowObj.data[`${field}`] !== value) || (rowObj.changes && rowObj.changes[`${field}`] !== value)) {
+                this.refreshTD(td, col, rowObj, value);
+                const isReactChild = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                    this.parent.parentDetails.parentInstObj.isReact;
+                if (((this.parent.isReact && this.parent.requireTemplateRef) || (isReactChild &&
+                    this.parent.parentDetails.parentInstObj.requireTemplateRef)) && col.template) {
+                    const thisRef: BatchEdit = this;
+                    const newReactTd: Element = this.newReactTd;
+                    thisRef.parent.renderTemplates(function () {
+                        thisRef.parent.trigger(events.queryCellInfo, {
+                            cell: newReactTd || td, column: col, data: rowObj.changes
+                        });
                     });
-                });
-            }
-            else if ((this.parent.isReact || isReactChild) && col.template) {
-                this.parent.renderTemplates();
-                this.parent.trigger(events.queryCellInfo, {
-                    cell: this.newReactTd || td, column: col, data: rowObj.changes
-                });
-            }
-            else {
-                this.parent.trigger(events.queryCellInfo, {
-                    cell: this.newReactTd || td, column: col, data: rowObj.changes
-                });
+                }
+                else if ((this.parent.isReact || isReactChild) && col.template) {
+                    this.parent.renderTemplates();
+                    this.parent.trigger(events.queryCellInfo, {
+                        cell: this.newReactTd || td, column: col, data: rowObj.changes
+                    });
+                }
+                else {
+                    this.parent.trigger(events.queryCellInfo, {
+                        cell: this.newReactTd || td, column: col, data: rowObj.changes
+                    });
+                }
             }
         }
     }

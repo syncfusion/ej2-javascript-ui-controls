@@ -5593,7 +5593,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     this.isAnimate = false;
                     this.isFieldChange = true;
                     this.initialRender = true;
-                    this.reRenderNodes();
+                    if (isNOU((this as any).isReact) && !(this.fields.dataSource instanceof DataManager)) {
+                        this.reRenderNodes();
+                    }
                     this.initialRender = false;
                     this.isAnimate = true;
                     this.isFieldChange = false;

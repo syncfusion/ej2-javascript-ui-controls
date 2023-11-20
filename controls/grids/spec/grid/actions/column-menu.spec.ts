@@ -247,7 +247,7 @@ describe('column menu module', () => {
                 cancel: false
             };
             colMenu.columnMenuBeforeClose(args);
-            expect(args.cancel).toBe(true);
+            expect(args.cancel).toBe(false);
             target = createElement('span', { className: 'e-popup-wrapper' })
             tar = createElement('span', { className: 'e-filters' });
             target.appendChild(tar);

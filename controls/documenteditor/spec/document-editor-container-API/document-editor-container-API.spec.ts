@@ -111,3 +111,60 @@ describe('Script error throws whenever using refresh API,', () => {
 
 });
 
+describe('isDocumentEmptyAPI', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('isDocumentEmpty API Checking with document Body', function () {
+        console.log('isDocumentEmpty API Checking with document Body');
+        container.openBlank();
+        expect(container.isDocumentEmpty).toBeTruthy();
+        container.editor.insertText("Hello");
+        expect(container.isDocumentEmpty).toBeFalsy();
+        container.selection.selectAll();
+        container.editor.delete();
+        expect(container.isDocumentEmpty).toBeTruthy();
+    });
+    it('isDocumentEmpty API Checking with document Header', function () {
+        console.log('isDocumentEmpty API Checking with document Header');
+        container.openBlank();
+        expect(container.isDocumentEmpty).toBeTruthy();
+        container.selection.goToHeader();
+        container.editor.insertText("Header");
+        expect(container.isDocumentEmpty).toBeFalsy();
+        container.selection.selectAll();
+        container.editor.delete();
+        expect(container.isDocumentEmpty).toBeTruthy();
+    });
+    it('isDocumentEmpty API Checking with document Footer', function () {
+        console.log('isDocumentEmpty API Checking with document Footer');
+        container.openBlank();
+        expect(container.isDocumentEmpty).toBeTruthy();
+        container.selection.goToFooter();
+        container.editor.insertText("Footer");
+        expect(container.isDocumentEmpty).toBeFalsy();
+        container.selection.selectAll();
+        container.editor.delete();
+        expect(container.isDocumentEmpty).toBeTruthy();
+    });
+
+});

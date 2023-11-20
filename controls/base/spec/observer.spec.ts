@@ -10,6 +10,8 @@ describe('Observable', () => {
     let evtName: string[] = ['event1'];
     let obj: Object = { test: 'context' };
     let obj2: Object = { dynamicContext: 'dynamic' };
+    let context1: any = { isRendered: false, detectFunction: function (arg: string) { return console.log(arg); }, randomId: [1253, 1232, 6443] };
+    let context2: any = { isRendered: false, detectFunction: function (arg: string) { return console.log(arg); }, randomId: [4652, 3465, 7643] };
     beforeEach(() => {
         instance = new Observer(obj);
         event1Spy = jasmine.createSpy('event1');
@@ -151,5 +153,14 @@ describe('Observable', () => {
             expect(instance.context).toBeUndefined();
         });
 
+    });
+    describe('offIntlEvents', () => {
+        it('Works properly', () => {
+            instance.on('notifyExternalChange', context1.detectFunction, context1, context1.randomId);
+            instance.on('notifyExternalChange', context2.detectFunction, context2, context2.randomId);
+            instance.offIntlEvents();
+            expect(Object.keys(instance.boundedEvents).length).toBe(0);
+            expect(instance.ranArray.length).toBe(0);
+        });
     });
 });

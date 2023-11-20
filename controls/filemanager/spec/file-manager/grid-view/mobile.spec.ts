@@ -107,10 +107,65 @@ describe('FileManager control Grid view', () => {
             clearItem.click();
             expect(feObj.detailsviewModule.gridObj.getSelectedRows().length).toEqual(0);
             expect(feObj.element.classList.contains('e-fe-m-select')).toBe(false);
-        });        
+        });  
+    }); 
+    describe('mobile testing', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        let iosPhoneUa: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
+        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        beforeEach((done: Function): void => {
+            jasmine.Ajax.install();
+            Browser.userAgent = iosPhoneUa;
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'Details',
+                searchSettings: { allowSearchOnTyping: false },
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            setTimeout(function () {
+                done();
+            }, 500);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            Browser.userAgent = Chromebrowser;
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });      
         it('Search file testing', (done: Function) => {
             let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
-            expect(gridLi.length).toEqual(9);
+            expect(gridLi.length).toEqual(5);
             let searchEle: any = feObj.element.querySelector("#file_search");
             let searchObj: any = searchEle.ej2_instances[0];
             searchEle.value = 'doc';
@@ -143,7 +198,7 @@ describe('FileManager control Grid view', () => {
         });
         it('Search folder navigation', (done: Function) => {
             let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
-            expect(gridLi.length).toEqual(9);
+            expect(gridLi.length).toEqual(5);
             let searchEle: any = feObj.element.querySelector("#file_search");
             let searchObj: any = searchEle.ej2_instances[0];
             searchEle.value = 'doc';
@@ -160,11 +215,6 @@ describe('FileManager control Grid view', () => {
                 expect(gridLi.length).toEqual(3);
                 let args = { rowData: { "name": "docs", "size": 0, "dateModified": "2019-03-14T09:27:45.346Z", "dateCreated": "2019-03-13T07:28:06.117Z", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\", "_fm_iconClass": "e-fe-folder" }, rowIndex: 0 };
                 feObj.detailsviewModule.gridObj.recordDoubleClick(args);
-                this.request = jasmine.Ajax.requests.mostRecent();
-                this.request.respondWith({
-                    status: 200,
-                    responseText: JSON.stringify(data1)
-                });
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,

@@ -133,7 +133,7 @@ export class MDXQuery {
         }
         query = caclQuery + query + (this.isPaging && !refPaging ? '\nMEMBER [Measures].[3d268ce0-664d-4092-b9cb-fece97175006] AS Count([e16a30d0-2174-4874-8dae-a5085a75a3e2]) ' +
             'MEMBER [Measures].[8d7fe8c1-f09f-410e-b9ba-eaab75a1fc3e] AS Count ([d1876d2b-e50e-4547-85fe-5b8ed9d629de])' +
-            '\nSELECT { [Measures].[3d268ce0-664d-4092-b9cb-fece97175006] , [Measures].[8d7fe8c1-f09f-410e-b9ba-eaab75a1fc3e] } ON AXIS(0)' : '') +
+            '\nSELECT { [Measures].[3d268ce0-664d-4092-b9cb-fece97175006] , [Measures].[8d7fe8c1-f09f-410e-b9ba-eaab75a1fc3e] } ON AXIS(0)' : '') + ' ' +
             filterQuery + slicerQuery + '\nCELL PROPERTIES VALUE, FORMAT_STRING, FORMATTED_VALUE\n';
         return query;
     }
@@ -404,11 +404,12 @@ export class MDXQuery {
                                     rawQuery.push('(' + measureQuery + ')');
                                 }
                             } else {
+                                const dimensionQuery: string = this.getDimensionQuery(dimensions[i as number], axis);
                                 if (isOnDemandDrill) {
-                                    onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + this.getDimensionQuery(dimensions[i as number], axis) + '})';
+                                    onDemandDrillQuery = onDemandDrillQuery + (onDemandDrillQuery !== '' ? ' * ' : '') + '({' + dimensionQuery + '})';
                                 } else {
-                                    drillQuery.push('(' + this.getDimensionQuery(dimensions[i as number], axis) + ')');
-                                    rawQuery.push('(' + this.getDimensionQuery(dimensions[i as number], axis) + ')');
+                                    drillQuery.push('(' + dimensionQuery + ')');
+                                    rawQuery.push('(' + dimensionQuery + ')');
                                 }
                             }
                         } else {

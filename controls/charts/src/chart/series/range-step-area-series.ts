@@ -19,6 +19,7 @@ export class RangeStepAreaSeries extends LineBase {
      */
 
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
+        this.prevPoint = null;
         let point: Points;
         let currentPoint: ChartLocation;
         let secondPoint: ChartLocation;
@@ -76,10 +77,9 @@ export class RangeStepAreaSeries extends LineBase {
                         : (point.low as number), xAxis, yAxis, isInverted);
                     secondPoint = getPoint(this.prevPoint.xValue, this.prevPoint.high > this.prevPoint.low ? (this.prevPoint.high as number)
                         : (this.prevPoint.low as number), xAxis, yAxis, isInverted);
-                    direction += ( command + ' ' +
-                        (currentPoint.x) + ' ' + (secondPoint.y) +  command + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
-                    this.borderDirection += ( command + ' ' +
-                        (currentPoint.x) + ' ' + (secondPoint.y) +  command + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
+                    direction += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, command));
+                    this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, command));
+                    
                 }
                 else if (series.emptyPointSettings.mode === 'Gap') {
                     currentPoint = getPoint(point.xValue, point.high > point.low ? (point.high as number)
@@ -88,16 +88,18 @@ export class RangeStepAreaSeries extends LineBase {
                     this.borderDirection += command + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ';
                 }
                 closed = false;
+                command = ' L';
+                this.prevPoint = point;
                 if ((i + 1 < visiblePoints.length && !visiblePoints[i + 1].visible)
                     || i === visiblePoints.length - 1) {
                     // Path to connect the low points.
                     direction = this.closeRangeStepAreaPath(visiblePoints, point, series, direction, i, xAxis, yAxis, isInverted);
                     command = 'M';
-                    direction = direction.concat(' ' + 'Z');
+                    direction = direction.concat(' ' + 'Z ');
                     closed = true;
+                    this.prevPoint = null;
+                    start = null;
                 }
-                command = ' L';
-                this.prevPoint = point;
             } else {
                 if (closed === false && i !== 0) {
                     direction = this.closeRangeStepAreaPath(visiblePoints, point, series, direction, i, xAxis, yAxis, isInverted);
@@ -160,15 +162,12 @@ export class RangeStepAreaSeries extends LineBase {
                         : (point.high as number), xAxis, yAxis, isInverted);
                     secondPoint = getPoint(this.prevPoint.xValue, this.prevPoint.low < this.prevPoint.high ? (this.prevPoint.low as number)
                         : (this.prevPoint.high as number), xAxis, yAxis, isInverted);
-                    direction += ('L' + ' ' +
-                        (currentPoint.x) + ' ' + (secondPoint.y) + ' L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ');
+                    direction += (this.GetStepLineDirection(currentPoint, secondPoint, series.step));
                     if (j === i) {
-                        this.borderDirection += 'M' + ' ' +
-                            (currentPoint.x) + ' ' + (currentPoint.y) + ' L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ';
+                        this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, 'M'));
                     }
                     else {
-                        this.borderDirection += 'L' + ' ' +
-                            (currentPoint.x) + ' ' + (secondPoint.y) + ' L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y) + ' ';
+                        this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, 'L'));
                     }
                 }
 

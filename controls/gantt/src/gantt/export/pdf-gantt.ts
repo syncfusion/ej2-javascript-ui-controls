@@ -94,10 +94,12 @@ export class PdfGantt extends PdfTreeGrid {
             }
             const detail: TimelineDetails = {};
             const range: number[] = [];
-            const convertedWidth: number = pixelToPoint(this.chartHeader.bottomTierCellWidth);
+            const convertedWidth: number = (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
+                this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? pixelToPoint(this.chartHeader.bottomTierCellWidth) : this.chartHeader.bottomTierCellWidth;
             let width: number = 0;
             if (this.chartHeader.bottomTierCellWidth !== 0) {
-                width = (Math.floor(pageWidth / convertedWidth) * convertedWidth);
+                width = (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
+                    this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? (Math.floor(pageWidth / convertedWidth) * convertedWidth) : (Math.floor(pageWidth / convertedWidth) * convertedWidth) + 5;
             }
             range[0] = point;
             if (headerWidth - point <= width) {
@@ -214,7 +216,8 @@ export class PdfGantt extends PdfTreeGrid {
         let pageData: PageDetail;
         this.headerDetails.forEach((detail: TimelineDetails, index: number): void => {
             const page: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
-            page['contentWidth'] = pointToPixel(this.headerDetails[index as number].endPoint - this.headerDetails[index as number].startPoint);
+            page['contentWidth'] = (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
+                this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? pointToPixel(this.headerDetails[index as number].endPoint - this.headerDetails[index as number].startPoint) : this.headerDetails[index as number].endPoint - this.headerDetails[index as number].startPoint;
             this.chartHeader.drawTimeline(page, this.startPoint, detail);
             taskbarPoint.y = taskbarPoint.y + pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
             pageStartX = taskbarPoint.x;

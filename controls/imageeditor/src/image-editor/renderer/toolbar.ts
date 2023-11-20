@@ -780,18 +780,29 @@ export class ToolbarModule {
         const parent: ImageEditor = this.parent;
         const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
         const aspectRatioWidth: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
-        const aspectRatioIcon: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_aspectratio');
+        const icon: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_aspectratio');
         const originalWidth: number = parent.img.destWidth;
         const originalHeight: number = parent.img.destHeight;
         const aspectRatioHeightValue: number = parseFloat(aspectRatioHeight.value);
         const width: number = Math.floor((aspectRatioHeightValue / (originalHeight / originalWidth)));
-        if (aspectRatioIcon) {
+        const widthNumeric: NumericTextBox = getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox;
+        if (icon) {
             if (width != null && !isNaN(width)) {
-                (getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).value = width;
-                (aspectRatioWidth as HTMLInputElement).value = width.toString() + ' px';
+                if (isNullOrUndefined(widthNumeric.value)) {
+                    widthNumeric.placeholder = width + ' px';
+                    (aspectRatioWidth as HTMLInputElement).placeholder = width.toString() + ' px';
+                } else {
+                    widthNumeric.value = width;
+                    (aspectRatioWidth as HTMLInputElement).value = width.toString() + ' px';
+                }
             } else {
-                (getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).value = 0;
-                (aspectRatioWidth as HTMLInputElement).value = '0 px';
+                if (isNullOrUndefined(widthNumeric.value)) {
+                    widthNumeric.placeholder = '0 px';
+                    (aspectRatioWidth as HTMLInputElement).placeholder = '0 px';
+                } else {
+                    widthNumeric.value = 0;
+                    (aspectRatioWidth as HTMLInputElement).value = '0 px';
+                }
             }
         }
     }
@@ -801,37 +812,51 @@ export class ToolbarModule {
         const parent: ImageEditor = this.parent;
         const aspectRatioHeight: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
         const aspectRatioWidth: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
-        const aspectRatioIcon: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_aspectratio');
+        const icon: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_aspectratio');
         const originalWidth: number = parent.img.destWidth;
         const originalHeight: number = parent.img.destHeight;
         const aspectRatioWidthValue: number = parseFloat(aspectRatioWidth.value);
         const height: number = Math.floor((aspectRatioWidthValue / (originalWidth / originalHeight)));
-        if (aspectRatioIcon && !isNaN(height)) {
-            (getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).value = height;
-            (aspectRatioHeight as HTMLInputElement).value = height.toString() + ' px';
-        } else {
-            (getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).value = 0;
-            (aspectRatioHeight as HTMLInputElement).value = '0 px';
+        const heightNumeric: NumericTextBox = getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox;
+        if (icon) {
+            if (!isNaN(height)) {
+                if (isNullOrUndefined(heightNumeric.value)) {
+                    heightNumeric.placeholder = height + ' px';
+                    (aspectRatioHeight as HTMLInputElement).placeholder = height.toString() + ' px';
+                } else {
+                    heightNumeric.value = height;
+                    (aspectRatioHeight as HTMLInputElement).value = height.toString() + ' px';
+                }
+            } else {
+                if (isNullOrUndefined(heightNumeric.value)) {
+                    heightNumeric.placeholder = '0 px';
+                    (aspectRatioHeight as HTMLInputElement).placeholder = '0 px';  
+                } else {
+                    heightNumeric.value = 0;
+                    (aspectRatioHeight as HTMLInputElement).value = '0 px';
+                }
+            }
         }
     }
 
     private getResizeToolbarItem(): ItemModel[] {
         const toolbarItems: ItemModel[] = [];
+        const isResize: boolean = this.parent.aspectWidth && this.parent.aspectHeight ? true : false;
         const spanWidth: HTMLElement = document.createElement('span');
         spanWidth.innerHTML = this.l10n.getConstant('W');
         toolbarItems.push({ id: this.parent.element.id + '_width', cssClass: 'e-ie-resize-width', template: spanWidth, align: 'Center' });
         toolbarItems.push({ id: this.parent.element.id + '_resizeWidth', prefixIcon: 'e-icons e-anti-clock-wise',
             tooltipText: this.l10n.getConstant('Width'), align: 'Center', type: 'Input', template: new NumericTextBox({ width: 75, htmlAttributes: {  maxLength: "4" },
-                showSpinButton: false, value: (this.parent.aspectWidth && this.parent.aspectHeight) ? this.parent.aspectWidth : Math.ceil(this.parent.img.destWidth),
-                format: '###.## px' })
+                showSpinButton: false, value: isResize ? this.parent.aspectWidth : null,
+                placeholder: isResize ? null : Math.ceil(this.parent.img.srcWidth).toString(), format: '###.## px' })
         });
         const spanHeight: HTMLElement = document.createElement('span');
         spanHeight.innerHTML = this.l10n.getConstant('H');
         toolbarItems.push({ id: this.parent.element.id + '_height', cssClass: 'e-ie-resize-height', template: spanHeight , align: 'Center' });
         toolbarItems.push({ id: this.parent.element.id + '_resizeHeight', prefixIcon: 'e-icons e-clock-wise',
             tooltipText: this.l10n.getConstant('Height'), align: 'Center', type: 'Input', template: new NumericTextBox({ width: 75, htmlAttributes: {  maxLength: "4" },
-                showSpinButton: false, value: (this.parent.aspectWidth && this.parent.aspectHeight) ? this.parent.aspectHeight : Math.ceil(this.parent.img.destHeight),
-                format: '###.## px' })
+                showSpinButton: false, value: isResize ? this.parent.aspectHeight : null,
+                placeholder: isResize ? null : Math.ceil(this.parent.img.srcHeight).toString(), format: '###.## px' })
         });
         if (!this.isAspectRatio) {
             toolbarItems.push({ id: this.parent.element.id + '_aspectratio', prefixIcon: 'e-icons e-lock', align: 'Center', tooltipText: this.l10n.getConstant('AspectRatio'), type: 'Button'});
@@ -898,14 +923,11 @@ export class ToolbarModule {
         const parent: ImageEditor = this.parent;
         const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
         const aspectRatioWidth: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
-        const aspectRatio: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_aspectratio');
-        if (aspectRatio) {
-            if (!isNullOrUndefined(aspectRatioHeight)) {
-                aspectRatioWidth.addEventListener('keyup', this.heightAspectRatio.bind(this));
-            }
-            if (!isNullOrUndefined(aspectRatioWidth)) {
-                aspectRatioHeight.addEventListener('keyup', this.widthAspectRatio.bind(this));
-            }
+        if (!isNullOrUndefined(aspectRatioHeight)) {
+            aspectRatioWidth.addEventListener('keyup', this.heightAspectRatio.bind(this));
+        }
+        if (!isNullOrUndefined(aspectRatioWidth)) {
+            aspectRatioHeight.addEventListener('keyup', this.widthAspectRatio.bind(this));
         }
     }
 
@@ -981,7 +1003,7 @@ export class ToolbarModule {
 
     private fileSelect(inputElement: HTMLInputElement, args: Event): void {
         const type: string = (inputElement as any).files[0].type.split('/')[1];
-        if (type === 'png' || type === 'jpg' || type === 'jpeg' || type === 'svg') {
+        if (type === 'png' || type === 'jpg' || type === 'jpeg' || type === 'svg' || type === 'svg+xml') {
             this.parent.notify('draw', {prop: 'fileSelect', value: {inputElement: inputElement, args: args }});
         } else {
             this.parent.showDialogPopup();
@@ -3386,6 +3408,8 @@ export class ToolbarModule {
                                isDisabledFilter: boolean, isFilterFinetune: boolean): void {
         const parent: ImageEditor = this.parent;
         const zoomIn: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_zoomIn');
+        const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
+        const aspectRatioWidth: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
         let isCropSelection: boolean = false;  let panBtn: HTMLElement; let splitWords: string[];
         if (parent.activeObj.shape !== undefined) {splitWords = parent.activeObj.shape.split('-'); }
         if (splitWords === undefined && parent.currObjType.isCustomCrop) {
@@ -3456,12 +3480,27 @@ export class ToolbarModule {
             case 'aspectratio':
                 if (!parent.isCircleCrop && (isNullOrUndefined(parent.currSelectionPoint)) ||
                     (parent.currSelectionPoint && parent.currSelectionPoint.shape !== 'crop-circle')) {
+                    if ((getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).value) {
+                        parent.aspectWidth = (getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).value;
+                        parent.aspectHeight = (getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).value;
+                        parent.notify('transform', {prop: 'resize', value: {width: parent.aspectWidth, height: null, isAspectRatio: true }});
+                    }
                     parent.resizeSrc = { startX: parent.img.srcLeft, startY: parent.img.srcTop, width: parent.img.srcWidth,
                         height: parent.img.srcHeight };
                     this.refreshToolbar('resize');
                 }
                 break;
             case 'nonaspectratio':
+                if ((getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).value ||
+                    (getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).value) {
+                    parent.aspectWidth = (getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).value ?
+                        (getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).value :
+                        parseFloat((getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).placeholder);
+                    parent.aspectHeight = (getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).value ?
+                        (getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).value :
+                        parseFloat((getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).placeholder);
+                    parent.notify('transform', {prop: 'resize', value: {width: parent.aspectWidth, height: parent.aspectHeight, isAspectRatio: false }});
+                }
                 parent.resizeSrc = { startX: parent.img.srcLeft, startY: parent.img.srcTop, width: parent.img.srcWidth,
                     height: parent.img.srcHeight };
                 this.refreshToolbar('resize');

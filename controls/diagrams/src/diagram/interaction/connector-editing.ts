@@ -173,7 +173,8 @@ export class ConnectorEditing extends ToolBase {
                     && this.updateLastSegment(connector as Connector, this.selectedSegment as OrthogonalSegment)) {
                     connector.segments.splice(connector.segments.length - 2, 1);
                 } else {
-                    if (prev && Math.abs(prev.length) < 5) {
+                    //Bug 853404: Exception occurs while adjusting the connector segment.
+                    if (prev && Math.abs(prev.length) < 5 && prev.length > 0) {
                         if (index !== 1) {
                             this.removePrevSegment(connector, index);
                         }

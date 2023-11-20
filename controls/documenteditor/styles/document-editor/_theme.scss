@@ -9,6 +9,13 @@
         padding-left: 20px;
         padding-right: 20px;
     }
+
+    .e-de-para-tab {
+        float: left;
+    }
+    .e-de-para-tab.e-rtl {
+        float: right;
+    }
     
     .e-de-column-label.e-de-rtl {
         font-size: $de-border-dlg-settinglabels-fontsize;

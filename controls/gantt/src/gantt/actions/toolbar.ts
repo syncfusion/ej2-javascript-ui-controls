@@ -122,6 +122,9 @@ export class Toolbar {
         (<{ isReact?: boolean }>this.toolbar).isReact = (this.parent as any).isReact;
         this.toolbar.on('render-react-toolbar-template', this.addReactToolbarPortals, this);
         this.toolbar.appendTo(this.element);
+        if (this.parent.treeGrid.grid && (this.parent as any).isReact) {
+           (this.parent.treeGrid.grid as any).portals = (this.parent as any).portals;
+        }
         const cancelItem: Element = this.element.querySelector('#' + this.parent.element.id + '_cancel');
         const updateItem: Element = this.element.querySelector('#' + this.parent.element.id + '_update');
         if (cancelItem) {

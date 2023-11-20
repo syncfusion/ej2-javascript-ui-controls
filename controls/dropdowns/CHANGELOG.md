@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 23.2.4 (2023-11-20)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I514409` - Issue with "After clearing the filter Listbox item template was empty" has been resolved.
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I473804` - Provided smooth scrolling to drag and drop support for the ListBox component.
+
+### DropDownList
+
+#### Bug Fixes
+
+- `#I503134` - Fixed the issue where keyboard navigation was not working when null values were included in the datasource.
+
 ## 23.1.44 (2023-11-07)
 
 ### Mention

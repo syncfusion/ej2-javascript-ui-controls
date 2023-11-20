@@ -901,3 +901,77 @@ describe('832273- Resolved sub stacked Header with resizing script error issue',
     destroy(gridObj);
   });
 });
+describe('853984- Resolved header check box not working properly in checkbox box column', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+  childMapping: 'subtasks',
+  treeColumnIndex: 1,
+  height: '300',
+  autoCheckHierarchy: true, 
+  toolbar: ['Search'],
+  enableCollapseAll:true, 
+  allowFiltering:true, 
+  allowPaging:true, 
+  columns: [
+    {
+      field: 'taskID',
+      headerText: 'Task ID',
+      width: 100,
+      textAlign: 'Right',
+      showCheckbox: true,
+    },
+    {
+      field: 'taskName',
+      headerText: 'Task Name',
+      width: 150,
+      textAlign: 'Left',
+    },
+    {
+      field: 'startDate',
+      headerText: 'Start Date',
+      width: 90,
+      textAlign: 'Right',
+      type: 'date',
+      format: 'yMd',
+    },
+    {
+      field: 'endDate',
+      headerText: 'End Date',
+      width: 90,
+      textAlign: 'Right',
+      type: 'date',
+      format: 'yMd',
+    },
+    {
+      field: 'duration',
+      headerText: 'Duration',
+      width: 80,
+      textAlign: 'Right',
+    },
+    {
+      field: 'progress',
+      headerText: 'Progress',
+      width: 80,
+      textAlign: 'Right',
+    },
+  ]
+      },
+      done
+    );
+  });
+  it('Searching after header selection ', () => {
+    (<HTMLElement>gridObj.element.querySelectorAll('.e-treeselectall')[0]).click();
+      gridObj.search("Testing");
+      expect((document.getElementsByClassName("e-hierarchycheckbox")[0].childNodes[1] as any).classList.contains("e-check")).toBe(true);
+  });
+  it('header selection test', () => {
+    (<HTMLElement>gridObj.element.querySelectorAll('.e-treeselectall')[0]).click();
+     expect((document.getElementsByClassName("e-hierarchycheckbox")[0].childNodes[1] as any).classList.contains("e-check")).toBe(false);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

@@ -38,7 +38,7 @@ export class TreeClipboard extends GridClipboard {
                         this.treeCopyContent += '\n';
                     }
                     if (!rows[selectedIndexes[parseInt(i.toString(), 10)] as number].classList.contains('e-summaryrow')) {
-                        const cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[parseInt(i.toString(), 10)] as number].querySelectorAll('.e-rowcell'));
+                        const cells: HTMLElement[] = [].slice.call(rows[selectedIndexes[parseInt(i.toString(), 10)] as number].querySelectorAll('.e-rowcell:not(.e-hide)'));
                         const uniqueid: string = this.treeGridParent.getSelectedRecords()[parseInt(i.toString(), 10) as number][`${uniqueID}`];
                         if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
                             if (this.treeGridParent.copyHierarchyMode === 'Parent' || this.treeGridParent.copyHierarchyMode === 'Both') {
@@ -102,7 +102,7 @@ export class TreeClipboard extends GridClipboard {
                     if (!isNullOrUndefined(currentRecords[parseInt(selectedIndex.toString(), 10)][`${parentItem}`]) &&
                         currentRecords[parseInt(j.toString(), 10)][`${uniqueID}`] === currentRecords[parseInt(selectedIndex.toString(), 10)][`${parentItem}`][`${uniqueID}`]) {
                         selectedIndex = j;
-                        const cells: HTMLElement[] = [].slice.call(rows[parseInt(selectedIndex.toString(), 10)].querySelectorAll('.e-rowcell'));
+                        const cells: HTMLElement[] = [].slice.call(rows[parseInt(selectedIndex.toString(), 10)].querySelectorAll('.e-rowcell:not(.e-hide)'));
                         const uniqueid: string = currentRecords[parseInt(j.toString(), 10)][`${uniqueID}`];
                         if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
                             this[`${getCopyData}`](cells, false, '\t', withHeader);
@@ -157,7 +157,7 @@ export class TreeClipboard extends GridClipboard {
                 for (let j: number = 0; j < currentRecords.length; j++) {
                     if (!isNullOrUndefined(childData[parseInt(i.toString(), 10)][`${uniqueID}`]) && currentRecords[parseInt(j.toString(), 10)][`${uniqueID}`] === childData[parseInt(i.toString(), 10)][`${uniqueID}`]) {
                         if ((!isNullOrUndefined(rows[parseInt(j.toString(), 10)])) && !rows[parseInt(j.toString(), 10)].classList.contains('e-summaryrow')) {
-                            const cells: HTMLElement[] = [].slice.call(rows[parseInt(j.toString(), 10)].querySelectorAll('.e-rowcell'));
+                            const cells: HTMLElement[] = [].slice.call(rows[parseInt(j.toString(), 10)].querySelectorAll('.e-rowcell:not(.e-hide)'));
                             const uniqueid: string = currentRecords[parseInt(j.toString(), 10)][`${uniqueID}`];
                             if (this.copiedUniqueIdCollection.indexOf(uniqueid) === -1) {
                                 this[`${getCopyData}`](cells, false, '\t', withHeader);

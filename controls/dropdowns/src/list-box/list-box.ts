@@ -153,6 +153,7 @@ export class ListBox extends DropDownBase {
     private isDataSourceUpdate: boolean = false;
     private dragValue: string;
     private customDraggedItem: Object[];
+    private timer: number;
     /**
      * Sets the CSS classes to root element of this component, which helps to customize the
      * complete styles.
@@ -740,7 +741,7 @@ export class ListBox extends DropDownBase {
             }
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const event: any = (args as any).event; let wrapper: HTMLElement;
+        const event: any = (args as any).event; let wrapper: HTMLElement; this.stopTimer();
         if (args.target && (args.target.classList.contains('e-listbox-wrapper') || args.target.classList.contains('e-list-item')
         || args.target.classList.contains('e-filter-parent') || args.target.classList.contains('e-input-group')
         || args.target.closest('.e-list-item'))) {
@@ -758,10 +759,10 @@ export class ListBox extends DropDownBase {
             }
             boundRect = scrollParent.getBoundingClientRect() as DOMRect;
             if ((boundRect.y + scrollParent.offsetHeight) - (event.clientY + scrollMoved) < 1) {
-                scrollParent.scrollTop = scrollParent.scrollTop + scrollHeight;
+                this.timer = window.setInterval(() => { this.setScrollDown(scrollParent, scrollHeight, true); }, 70);
             }
             else if ((event.clientY - scrollMoved) - boundRect.y < 1) {
-                scrollParent.scrollTop = scrollParent.scrollTop - scrollHeight;
+                this.timer = window.setInterval(() => { this.setScrollDown(scrollParent, scrollHeight, false); }, 70);
             }
         }
         if (args.target === null) {
@@ -770,7 +771,20 @@ export class ListBox extends DropDownBase {
         this.trigger('drag', this.getDragArgs(args as DragEventArgs));
     }
 
+    private setScrollDown(scrollElem: Element, scrollPixel: number, isScrollDown: boolean): void {
+        if (isScrollDown) {
+            scrollElem.scrollTop = scrollElem.scrollTop + scrollPixel;
+        } else {
+            scrollElem.scrollTop = scrollElem.scrollTop - scrollPixel;
+        }
+    }
+
+    private stopTimer(): void {
+        window.clearInterval(this.timer);
+    }
+
     private beforeDragEnd(args: DropEventArgs): void {
+        this.stopTimer();
         let items: object[] = [];
         this.dragValue = this.getFormattedValue(args.droppedElement.getAttribute('data-value')) as string;
         if ((this.value as string[]).indexOf(this.dragValue) > -1) {
@@ -2173,9 +2187,12 @@ export class ListBox extends DropDownBase {
         this.isDataFetched = false;
         const backCommand: boolean = true;
         if (this.targetElement().trim() === '') {
-            const list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
+            let list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
             if (backCommand) {
                 this.remoteCustomValue = false;
+                if (this.isAngular && this.itemTemplate) {
+                    list = this.renderItems(this.listData as obj[], fields);
+                }
                 this.onActionComplete(list, this.jsonData as { [key: string]: Object }[] | string[] | number[] | boolean[]);
                 this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.selectionSettings.showCheckbox, e: this });
             }

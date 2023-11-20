@@ -320,8 +320,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         view.canvas.appendChild(svg);
         const ovw: HTMLElement = document.getElementById(this.element.id);
         const element: HTMLElement = ovw;
-        let eWidth: number = element.clientWidth;
-        let eHeight: number = element.clientHeight;
+        let eWidth: number = element.clientWidth || element.offsetWidth;
+        let eHeight: number = element.clientHeight || element.offsetHeight;
         const bRect: ClientRect = element.getBoundingClientRect();
         // Check for the window resize
         const screenX: number = (window.screenX < 0) ? window.screenX * -1 : window.screenX;

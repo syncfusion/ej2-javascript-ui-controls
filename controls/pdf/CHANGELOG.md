@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.4 (2023-11-20)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the null reference exception encountered during the parsing of PDF documents.
+
 ## 23.1.44 (2023-11-07)
 
 ### PDF Parser

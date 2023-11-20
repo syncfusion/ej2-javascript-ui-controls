@@ -325,7 +325,14 @@ export class SelectionCommands {
         }
         const formatNodeStyles: string = (formatNode as HTMLElement).getAttribute('style');
         const formatNodeTagName: string = (formatNode as HTMLElement).tagName;
-        const child: Node[] = InsertMethods.unwrap(formatNode);
+        let child: Node[];
+        if (formatNodeTagName === 'A' && format === 'underline') {
+            (formatNode as HTMLElement).style.textDecoration = 'none';
+            child = [formatNode];
+        }
+        else {
+            child = InsertMethods.unwrap(formatNode);
+        }
         if (child[0] && !isFontStyle) {
             let nodeTraverse: Node = child[index as number] ? child[index as number] : child[0];
             const textNode: Node = nodeTraverse;

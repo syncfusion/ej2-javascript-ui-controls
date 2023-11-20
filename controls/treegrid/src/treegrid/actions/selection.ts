@@ -398,7 +398,7 @@ export class Selection {
             (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0))) {
                 this.selectedItems.push(checkedRecord);
             }
-            if (this.selectedItems.indexOf(checkedRecord) === -1 && this.parent.enableVirtualization && (
+            if (this.selectedItems.indexOf(checkedRecord) === -1 && (this.parent.enableVirtualization || this.parent.allowPaging) && (
                 (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0))) {
                 this.selectedItems.push(checkedRecord);
             }
@@ -468,7 +468,7 @@ export class Selection {
                      && !isRemoteData(this.parent)) {
                     this.selectedItems = []; this.selectedIndexes = [];
                     childData = (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) ?
-                        this.parent.getCurrentViewRecords() : this.parent.flatData;
+                        this.parent.filterModule.filteredResult : this.parent.flatData;
                     childData.forEach((record: ITreeData) => {
                         if (this.parent.enableVirtualization) {
                             if (record.hasChildRecords && record.childRecords.length > 0) {

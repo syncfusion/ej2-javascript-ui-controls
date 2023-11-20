@@ -196,7 +196,7 @@ export class CheckBoxFilterBase {
             }
         } else {
             classList(this.sIcon, ['e-search-icon'], ['e-chkcancel-icon']);
-            if (!isNullOrUndefined(document.body.querySelector('.e-search-icon'))) {
+            if (!isNullOrUndefined(document.body.querySelector('.e-searchclear.e-search-icon'))) {
                 document.body.querySelector('.e-searchclear.e-search-icon').setAttribute('title', this.localeObj.getConstant('Search'));
             }
         }

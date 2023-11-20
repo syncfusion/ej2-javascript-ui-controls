@@ -914,6 +914,13 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (!isNullOrUndefined(this.documentEditorSettings.autoResizeSettings)) {
             this.documentEditor.documentEditorSettings.autoResizeSettings = this.documentEditorSettings.autoResizeSettings;
         }
+
+        if (!isNullOrUndefined(this.documentEditorSettings.showRuler)) {
+            this.documentEditor.documentEditorSettings.showRuler = this.documentEditorSettings.showRuler;
+        }
+        if (!isNullOrUndefined(this.documentEditorSettings.popupTarget)) {
+            this.documentEditor.documentEditorSettings.popupTarget = this.documentEditorSettings.popupTarget;
+        }
     }
     /**
      * @private

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 23.2.4 (2023-11-20)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I512867` - Now, the transparency in the border color for the checkbox is being maintained when the document is loaded.
+- `#I515960` - Now, the mouse cursor position is properly updated for multiline fields when clicked.
+
 ## 23.1.44 (2023-11-07)
 
 ### PDF Viewer
@@ -12,6 +21,7 @@
 - `#I509218` - Now, The thumbnail pane is now rendered properly when opened programmatically.
 - `#I509483` - Now, the issue of loading the provided PDF document has been resolved.
 - `#I510606` - Now, the opacity value is properly preserved in the free annotation if it is set as zero programmatically.
+- `#I513923` -Now, the script error is resolved when loading a document using the created event.
 
 ## 23.1.43 (2023-10-31)
 
