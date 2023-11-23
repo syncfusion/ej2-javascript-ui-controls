@@ -2769,4 +2769,40 @@ describe('RTE CR issues', () => {
             expect(rteObj.contentModule.getDocument().querySelector('a').style.textDecoration === 'none').toBe(true);
         });
     });
+    describe("849875 - Cursor position get lost when having empty span tag in RichTextEditor", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let toolbarEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    enable: true,
+                    enableFloating: false,
+                    items: [
+                        "Bold",
+                        "Italic",
+                        "Underline",
+                    ]
+                },
+                blur: function () {
+                    rteObj.toolbarSettings.enable = false;
+                    rteObj.dataBind();
+                }
+            });
+            rteEle = rteObj.element;
+            toolbarEle = document.createElement('div');
+            toolbarEle.className = 'e-rte-elements';
+            toolbarEle.innerHTML = '<ul><li class="e-list1">Object1</li><li class="e-list2">Object2</li></ul>'
+            document.body.appendChild(toolbarEle);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it("Custom toolbar", () => {
+            rteObj.focusIn();
+            const list: HTMLElement= document.querySelector('.e-list1');
+            (rteObj as any).blurHandler({ relatedTarget: list });
+            expect(rteObj.toolbarSettings.enable).toBe(true);
+        });
+    });
 });

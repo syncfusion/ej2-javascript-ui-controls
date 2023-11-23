@@ -318,9 +318,11 @@ export class Scroll {
 
     private setClientX(e: PointerEvent | TouchEvent): void {
         if (e.type === 'mousedown' || (e as PointerEvent).pointerType === 'mouse') { return; }
-        const args: { touchSelectionStarted: boolean } = { touchSelectionStarted: false };
+        const args: { touchSelectionStarted: boolean, isOverlayClicked?: boolean } = { touchSelectionStarted: false };
         this.parent.notify(selectionStatus, args);
-        if (args.touchSelectionStarted) { return; }
+        if (args.touchSelectionStarted || args.isOverlayClicked) {
+            return;
+        }
         this.clientX = this.getPointX(e);
         const sheetContent: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
         EventHandler.add(sheetContent, Browser.isPointer ? 'pointermove' : 'touchmove', this.onTouchScroll, this);

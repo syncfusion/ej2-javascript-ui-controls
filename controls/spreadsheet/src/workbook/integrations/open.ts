@@ -27,7 +27,7 @@ export class WorkbookOpen {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         if ((options as any).jsonObject) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            this.fetchSuccess((options as any).jsonObject as string, null, null, true);
+            this.fetchSuccess((options as any).jsonObject as string, null, null, true, true);
             return;
         }
         const formData: FormData = new FormData();
@@ -85,7 +85,7 @@ export class WorkbookOpen {
                     });
                 }
             })
-            .then((data: string) => this.fetchSuccess(data, eventArgs, (options as OpenArgs).orginalFile))
+            .then((data: string) => this.fetchSuccess(data, eventArgs, (options as OpenArgs).orginalFile, undefined, true))
             .catch((error: OpenFailureArgs) => this.fetchFailure(error));
     }
 
@@ -97,7 +97,7 @@ export class WorkbookOpen {
         this.parent.isOpen = false;
     }
 
-    private fetchSuccess(data: string, eventArgs: OpenOptions, file?: File, isOpenFromJson?: boolean): void {
+    private fetchSuccess(data: string, eventArgs: OpenOptions, file?: File, isOpenFromJson?: boolean, isImport?:boolean): void {
         const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword', 'InCorrectSheetPassword',
             'CorrectSheetPassword', 'DataLimitExceeded', 'FileSizeLimitExceeded'];
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -113,7 +113,7 @@ export class WorkbookOpen {
                     isOpenFromJson: isOpenFromJson });
             return;
         }
-        this.updateModel(impData, isOpenFromJson);
+        this.updateModel(impData, isOpenFromJson, isImport);
         this.parent.notify(openSuccess, { context: this, data: <string>impData, isOpenFromJson: isOpenFromJson, eventArgs: eventArgs });
         this.parent.isOpen = false;
         if (eventArgs && eventArgs.password && eventArgs.password.length > 0) {
@@ -125,7 +125,7 @@ export class WorkbookOpen {
         }
     }
 
-    private updateModel(workbookModel: WorkbookModel, isOpenFromJson: boolean): void {
+    private updateModel(workbookModel: WorkbookModel, isOpenFromJson: boolean, isImport?:boolean): void {
         this.parent.notify(workbookFormulaOperation, { action: 'unRegisterSheet' });
         this.setSelectAllRange(workbookModel.sheets, isOpenFromJson);
         this.parent.sheetNameCount = 1;
@@ -147,7 +147,7 @@ export class WorkbookOpen {
         if (!isNullOrUndefined(workbookModel.showSheetTabs)) {
             this.parent.showSheetTabs = workbookModel.showSheetTabs;
         }
-        initSheet(this.parent);
+        initSheet(this.parent, undefined, isImport);
         this.parent.notify(sheetCreated, null);
         this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });

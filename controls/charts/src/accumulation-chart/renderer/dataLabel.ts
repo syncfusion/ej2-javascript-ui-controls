@@ -365,7 +365,7 @@ export class AccumulationDataLabel extends AccumulationBase {
             }
             point.labelAngle = labelAngle;
             while (point.labelVisible && (isOverlap(previousPoint.labelRegion, point.labelRegion) || labelAngle <= previousPoint.labelAngle
-                || this.isConnectorLineOverlapping(point, previousPoint))) {
+                || labelAngle <= point.midAngle * 0.9 || this.isConnectorLineOverlapping(point, previousPoint))) {
                 if (labelAngle > point.endAngle) {
                     //this.setPointVisibileFalse(point);
                     break;

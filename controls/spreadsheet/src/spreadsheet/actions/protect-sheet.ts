@@ -7,7 +7,7 @@ import { ListView, SelectedCollection, SelectEventArgs } from '@syncfusion/ej2-l
 import { L10n, EventHandler, closest, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { locale, updateToggleItem, dialog, isImported } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
-import { SheetModel } from '../../workbook';
+import { ExtendedSheet, Sheet, SheetModel } from '../../workbook';
 import { CellModel, getSheet, protectsheetHandler, getRangeIndexes } from '../../workbook/index';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { OpenOptions } from '../common/interface';
@@ -78,6 +78,12 @@ export class ProtectSheet {
         }
     }
     private protect(args: { isActive: boolean, sheetIndex: number }): void {
+        if (args.isActive) {
+            let sheet: ExtendedSheet = this.parent.getActiveSheet() as ExtendedSheet;
+            if (sheet.isImportProtected) {
+                sheet.isImportProtected = false;
+            }
+        }
         this.parent.notify(clearCopy, null);
         if (!args.isActive) {
             this.createDialogue();
@@ -775,8 +781,8 @@ export class ProtectSheet {
     private toggleProtect(args: OpenOptions): void {
         let isActive: boolean;
         const parentId: string = this.parent.element.id;
-        const sheet: SheetModel = this.parent.getActiveSheet();
-        if (sheet.isProtected && this.parent.allowOpen && this.parent.openModule.isImportedFile &&
+        const sheet: ExtendedSheet = this.parent.getActiveSheet() as ExtendedSheet;
+        if (sheet.isProtected && this.parent.allowOpen && sheet.isImportProtected && this.parent.openModule.isImportedFile &&
             this.parent.openModule.unProtectSheetIdx.indexOf(this.parent.activeSheetIndex) === -1) {
             this.unProtectsheet(true);
         }

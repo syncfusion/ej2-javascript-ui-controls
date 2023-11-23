@@ -4795,6 +4795,20 @@ margin: $grid-group-animator-cell-margin;
   }
 }
 
+.e-bigger {
+  &.e-grid.sf-grid.e-row-responsive,
+  .e-grid.sf-grid.e-row-responsive {
+    & .e-gridcontent,
+    & .e-summarycontent {
+      & td::before{
+        @if $grid-skin == 'fluent' {
+          overflow: hidden;
+        }
+      }
+    }
+  }
+}
+
 .e-bigger .e-grid.e-row-responsive,
 .e-bigger.e-grid.e-row-responsive {
 

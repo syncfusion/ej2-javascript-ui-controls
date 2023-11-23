@@ -258,7 +258,7 @@ export class Edit {
         const actCell: number[] = getCellIndexes(sheet.activeCell);
         const cell: CellModel = getCell(actCell[0], actCell[1], sheet, false, true);
         if (!closest(trgtElem, '.e-spreadsheet .e-dialog')) {
-            if (!sheet.isProtected || trgtElem.classList.contains('e-sheet-rename') || !isLocked(cell, getColumn(sheet, actCell[1]))) {
+            if (!sheet.isProtected || trgtElem.classList.contains('e-sheet-rename') || !isLocked(cell, getColumn(sheet, actCell[1])) || (trgtElem.classList.contains('e-formula-bar') && !(trgtElem as HTMLTextAreaElement).disabled)) {
                 if (this.isEdit) {
                     const editorElem: HTMLElement = this.getEditElement(sheet);
                     const isFormulaEdit: boolean = checkIsFormula(this.editCellData.value, true);

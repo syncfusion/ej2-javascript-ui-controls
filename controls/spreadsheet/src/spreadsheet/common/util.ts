@@ -726,6 +726,28 @@ export function getClientY(e: MouseEvent & TouchEvent): number {
 }
 
 /**
+ * To get the `pageX` value from the mouse or touch event.
+ * 
+ * @param {MouseEvent | TouchEvent} e - Specifies the mouse or touch event.
+ * @returns {number} - Return the `pageX` value.
+ * @hidden
+ */
+export function getPageX(e: TouchEvent & MouseEvent): number {
+    return e.changedTouches ? e.changedTouches[0].pageX : e.pageX;
+}
+
+/**
+ * To get the `pageY` value from the mouse or touch event.
+ * 
+ * @param {MouseEvent | TouchEvent} e - Specifies the mouse or touch event.
+ * @returns {number} - Return the `pageY` value.
+ * @hidden
+ */
+export function getPageY(e: MouseEvent & TouchEvent): number {
+    return e.changedTouches ? e.changedTouches[0].pageY : e.pageY;
+}
+
+/**
  * Get even number based on device pixel ratio
  *
  * @param {number} value - Specify the number

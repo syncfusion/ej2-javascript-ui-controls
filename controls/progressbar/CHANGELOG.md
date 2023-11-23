@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 23.2.4 (2023-11-20)
+## 23.2.5 (2023-11-23)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I520853` - The circular progress bar now renders properly for all the values.
+
+## 23.1.38 (2023-09-26)
 
 ### ProgressBar
 

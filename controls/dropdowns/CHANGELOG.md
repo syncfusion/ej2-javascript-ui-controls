@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 23.2.5 (2023-11-23)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I518299` - Fixed console error that occurred when adding an item using the addItem method.
+
+### Mention
+
+#### Bug Fixes
+
+- `#I519427` - Fixed a popup positioning issue that occurred when filtering.
+
 ## 23.2.4 (2023-11-20)
 
 ### ListBox

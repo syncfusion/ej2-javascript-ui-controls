@@ -24,6 +24,7 @@ export class FormDesigner {
     // eslint-disable-next-line
     private data: any;
     // eslint-disable-next-line
+    private previousBackgroundColor : any;
     private formFieldsData: any;
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
@@ -4164,6 +4165,7 @@ export class FormDesigner {
     private onOkClicked(args: any): void {
         let selectedItem: PdfFormFieldBaseModel = this.pdfViewer.selectedItems.formFields[0];
         let clonedItem: any = cloneObject(selectedItem);
+        this.isAddFormFieldProgrammatically = false;
         if (selectedItem) {
             switch (selectedItem.formFieldAnnotationType) {
                 case 'Textbox':
@@ -6434,6 +6436,11 @@ export class FormDesigner {
         }
     }
 
+    // Implemented this method to verify the background color of the selected item. Task: 855151
+    private isTransparentBackground(backgroundColor: any) {
+        return backgroundColor === '#00000000' || backgroundColor === 'transparent' || backgroundColor === 'rgba(0,0,0,0)';
+    };
+
     private setReadOnlyToElement(selectedItem: PdfFormFieldBaseModel, inputElement: any, isReadOnly: boolean) {
         let fillColor: any = '#daeaf7ff';
         (inputElement as HTMLInputElement).disabled = isReadOnly;
@@ -6448,16 +6455,23 @@ export class FormDesigner {
             else {
                 inputElement.style.cursor = 'default';
             }
-        } 
-        if (selectedItem.formFieldAnnotationType === 'RadioButton') {
-            (inputElement as any).parentElement.style.backgroundColor = selectedItem.backgroundColor != fillColor ? selectedItem.backgroundColor : 'transparent';
         }
-        else if (selectedItem.formFieldAnnotationType === 'SignatureField' || selectedItem.formFieldAnnotationType === 'InitialField') {
+        if (isReadOnly && this.isAddFormFieldProgrammatically) {
+            this.previousBackgroundColor = selectedItem.backgroundColor;
+        }
+        if (selectedItem.formFieldAnnotationType === 'RadioButton') {
+            (inputElement as any).parentElement.style.backgroundColor = selectedItem.isReadonly ? (selectedItem.backgroundColor !== fillColor ? selectedItem.backgroundColor : 'transparent') : (this.isTransparentBackground(selectedItem.backgroundColor) ? fillColor : this.previousBackgroundColor);
+        }
+        else if (selectedItem.formFieldAnnotationType === 'SignatureField' || selectedItem.formFieldAnnotationType === 'InitialField' && isReadOnly) {
             let background = selectedItem.backgroundColor ? selectedItem.backgroundColor : '#FFE48559';
             (inputElement as any).parentElement.style.backgroundColor = this.getSignatureBackground(background);
         } else {
-            inputElement.style.backgroundColor = selectedItem.isReadonly ? (selectedItem.backgroundColor != fillColor ? selectedItem.backgroundColor : 'transparent') : selectedItem.backgroundColor;
+            inputElement.style.backgroundColor = selectedItem.isReadonly ? (selectedItem.backgroundColor !== fillColor ? selectedItem.backgroundColor : 'transparent') : (this.isTransparentBackground(selectedItem.backgroundColor) ? fillColor : (selectedItem.backgroundColor !== this.previousBackgroundColor) ? selectedItem.backgroundColor : this.previousBackgroundColor);
         }
+        // Have configured the backgroundColor of the selectedItem to ensure that transparency is maintained when downloading and loading in the viewer. Task: 855151
+        selectedItem.backgroundColor = selectedItem.isReadonly ?
+            (selectedItem.backgroundColor !== fillColor ? selectedItem.backgroundColor : 'transparent') :
+            (this.isTransparentBackground(selectedItem.backgroundColor) ? fillColor : (selectedItem.backgroundColor !== this.previousBackgroundColor) ? selectedItem.backgroundColor : this.previousBackgroundColor);
     }
 
     private setRequiredToElement(selectedItem: PdfFormFieldBaseModel, inputElement: any, isRequired: boolean) {

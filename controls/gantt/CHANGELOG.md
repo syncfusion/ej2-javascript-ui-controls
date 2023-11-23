@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 23.2.5 (2023-11-23)
+
+### GanttChart
+
+#### Bug Fixes
+
+- `#I520118` - Console error occurs other than self reference data issue has been fixed.
+- `#I515425` - Issue with observable data binding in Gantt chart issue has been fixed.
+- `#I520146` - Timeline render in advance the project start date while resizing taskbar issue has been fixed.
+- `#I521906` - Milestone not working properly while drop at weekend issue has been fixed.
+
 ## 23.2.4 (2023-11-20)
 
 ### GanttChart

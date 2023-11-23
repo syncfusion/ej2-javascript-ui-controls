@@ -2820,7 +2820,7 @@ export class Editor {
         if (nextPara instanceof TableWidget) {
             return;
         }
-        if (!isNullOrUndefined(nextPara) && nextPara.characterFormat.revisions.length > 0) {
+        if (!isNullOrUndefined(nextPara)) {
             // let lastLine: LineWidget = elementBox.paragraph.lastChild as LineWidget;
             // let lastElement: ElementBox = lastLine.children[lastLine.children.length - 1];
             let firstLine: LineWidget = nextPara.firstChild as LineWidget;
@@ -3280,7 +3280,10 @@ export class Editor {
             let end: TextPosition = this.selection.end.clone();
             this.documentHelper.layout.clearListElementBox(widget);
             const isLastChild = (widget == this.getLastParaForBodywidgetCollection(widget));
-            if(!isLastChild && !widget.isInsideTable) {
+            if (!isLastChild && !widget.isInsideTable) {
+                this.addRemovedNodes(widget.clone());
+                this.insertRevision(widget.characterFormat, revisionType);
+            } else if (!isLastChild && widget.isInsideTable && start.paragraph.isInsideTable && end.paragraph.isInsideTable && end.offset <= end.paragraph.getLength() && end.paragraph.associatedCell.index === start.paragraph.associatedCell.index) {
                 this.addRemovedNodes(widget.clone());
                 this.insertRevision(widget.characterFormat, revisionType);
             }
@@ -3289,7 +3292,7 @@ export class Editor {
                 this.removeContent(line, 0, this.documentHelper.selection.getLineLength(line), undefined, !isLastChild);
             }
             let lastLine = widget.lastChild as LineWidget;
-            while(lastLine.children.length == 0 && !isNullOrUndefined(lastLine.previousLine)) {
+            while (lastLine.children.length == 0 && !isNullOrUndefined(lastLine.previousLine)) {
                 // in case there was a line break and last line doesn't have any children
                 lastLine = lastLine.previousLine;
             }
@@ -6115,6 +6118,7 @@ export class Editor {
         //remove old table revisions if it is present.
         this.constructRevisionsForTable(table, false);
         this.removeBlock(table, true);
+        this.removeRevisionFromTable(table);
         //Inserts table in the current table position.        
         let blockAdvCollection: IWidget[] = owner.childWidgets;
         blockAdvCollection.splice(insertIndex, 0, newTable);
@@ -6129,6 +6133,23 @@ export class Editor {
         this.documentHelper.layout.linkFieldInTable(newTable);
         this.documentHelper.layout.layoutBodyWidgetCollection(newTable.index, owner as Widget, newTable, false);
     }
+
+    private removeRevisionFromTable(table: TableWidget): void {
+        for (let i = 0; i < table.childWidgets.length; i++) {
+            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            if (row.rowFormat.revisions.length > 0) {
+                for (let j: number = 0; j < row.rowFormat.revisions.length; j++) {
+                    if (row.rowFormat.revisions[j].range.length === 0) {
+                        let revisionIndex: number = row.rowFormat.revisions.indexOf(row.rowFormat.revisions[j]);
+                        row.rowFormat.revisions.splice(revisionIndex, 1);
+                        j--;
+                    }
+                }
+            }
+
+        }
+    }
+
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private canConstructRevision(item: any): boolean {
         if ((item.revisions.length > 0 && item.revisions[0].range.length === 0) || item.removedIds.length > 0) {
@@ -6629,7 +6650,7 @@ export class Editor {
                     isEnd = isEnd ? true : this.skipTracking();
                     if (isEnd) {
 
-                        if (this.editorHistory.isRedoing && this.owner.editorHistory.currentBaseHistoryInfo && this.owner.editorHistory.currentBaseHistoryInfo.action === 'BackSpace') {
+                        if (this.editorHistory.isRedoing && this.owner.editorHistory.currentBaseHistoryInfo && this.owner.editorHistory.currentBaseHistoryInfo.action === 'BackSpace' && this.selection.isTOC()) {
                             isEnd = false;
                         }
                     }
@@ -6728,7 +6749,7 @@ export class Editor {
 
         if (!isNullOrUndefined(bodyWidget)) {
             if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
-                this.editorHistory.currentBaseHistoryInfo.insertedNodes.push(block);
+                this.editorHistory.currentBaseHistoryInfo.insertedNodes.push(block.clone());
             }
             let insertIndex: number = bodyWidget.childWidgets.indexOf(selection.start.paragraph);
             bodyWidget.childWidgets.splice(insertIndex, 0, block);
@@ -12421,8 +12442,10 @@ export class Editor {
      * @param {TableWidget} table Specifies the table widget
      * @returns {void}
      */
-    public updateTable(table: TableWidget): void {
-        table = table.combineWidget(this.viewer) as TableWidget;
+    public updateTable(table: TableWidget, skipCombine?: boolean): void {
+        if (!skipCombine) {
+            table = table.combineWidget(this.viewer) as TableWidget;
+        }
         table.updateRowIndex(0);
         table.isGridUpdated = false;
         table.buildTableColumns();
@@ -12487,6 +12510,11 @@ export class Editor {
         // If previous widget is splitted paragraph, combine paragraph widget.
         let block: BlockWidget = (!isNullOrUndefined(paragraph.previousRenderedWidget) && start.paragraph !== paragraph) ?
             paragraph.previousRenderedWidget.combineWidget(this.documentHelper.viewer) as BlockWidget : undefined;
+        if (!isNullOrUndefined(block) && block instanceof TableWidget && paragraph.isEmpty() && isNullOrUndefined(paragraph.nextRenderedWidget)) {
+            this.delBlockContinue = true;
+            this.delBlock = block;
+            return;
+        }
 
         if (startOffset > paragraphStart && start.currentWidget === paragraph.lastChild &&
             startOffset === lastLinelength && (paragraph === end.paragraph && end.offset === startOffset + 1 ||
@@ -12494,7 +12522,7 @@ export class Editor {
             (this.editorHistory && this.editorHistory.isUndoing && this.editorHistory.currentHistoryInfo &&
                 this.editorHistory.currentHistoryInfo.action === 'PageBreak' && block && block.isPageBreak()
                 && (startOffset === 0 && !start.currentWidget.isFirstLine || startOffset > 0)) ||
-            start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph) {
+            start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph || !isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && (this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change' || this.editorHistory.currentBaseHistoryInfo.action === 'Reject All') && start.paragraph === paragraph && end.paragraph != paragraph && startOffset >= paragraphStart) {
             isCombineNextParagraph = true;
         }
         if ((tempStartOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget))) {
@@ -12559,10 +12587,14 @@ export class Editor {
                         if (!start.currentWidget.isFirstLine() && paragraph.lastChild === end.currentWidget) {
                             this.removeInlines(paragraph, startLine, startOffset, endLineWidget, endOffset, editAction);
                         } else {
+                            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && (this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change' || this.editorHistory.currentBaseHistoryInfo.action === 'Reject All') && start.paragraph === paragraph && end.paragraph != paragraph && startOffset >= paragraphStart && isCombineNextParagraph) {
+                                isCombineLastBlock = true;
+                            }
                             currentParagraph = this.splitParagraph(paragraph, paragraph.firstChild as LineWidget, 0, startLine, startOffset, true);
                             this.insertParagraphPaste(paragraph, currentParagraph, start, end, isCombineNextParagraph, editAction, isCombineLastBlock);
                             this.removeRevisionForBlock(paragraph, undefined, false, true);
                             this.addRemovedNodes(paragraph);
+                            isCombineLastBlock = false;
                         }
                     }
                 }
@@ -13401,6 +13433,11 @@ export class Editor {
                 || this.editorHistory.currentBaseHistoryInfo.action === 'InsertTable' || this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack' || (isNullOrUndefined(startCell.ownerRow.previousWidget)
                     && isNullOrUndefined(endCell.ownerRow.nextWidget) && this.editorHistory.currentBaseHistoryInfo.action === 'Cut');
             clonedTable = this.cloneTableToHistoryInfo(table);
+            if (this.editorHistory.isRedoing && this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack') {
+                for (let i: number = 0; i < table.childWidgets.length; i++) {
+                    this.trackRowDeletion(table.childWidgets[i] as TableRowWidget);
+                }
+            }
             if (this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack') {
                 return;
             }
@@ -13769,6 +13806,7 @@ export class Editor {
             let previousBlock: ParagraphWidget = this.checkAndInsertBlock(table, start, end, editAction, block instanceof ParagraphWidget ? block : undefined);
             if (selection.containsRow((table.firstChild as TableRowWidget), start.paragraph.associatedCell)) {
                 if (this.owner.enableTrackChanges) {
+                    this.cloneTableToHistoryInfo(table);
                     for (let i: number = 0; i < table.childWidgets.length; i++) {
                         this.trackRowDeletion(table.childWidgets[i] as TableRowWidget);
                     }
@@ -14069,7 +14107,7 @@ export class Editor {
                         this.clearFieldElementRevisions(fieldInline, inline.revisions);
                     }
                 }
-                if (this.canHandleDeletion() || (this.owner.enableTrackChanges && !this.skipTracking() && !this.skipFieldDeleteTracking && !this.isInsertingTOC)) {
+                if (this.canHandleDeletion() || (this.owner.enableTrackChanges && (!this.skipTracking() || (inline.paragraph.isInsideTable && !isNullOrUndefined(this.editorHistory) && this.editorHistory.isRedoing && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === "RemoveRowTrack")) && !this.skipFieldDeleteTracking && !this.isInsertingTOC)) {
                     if (!this.skipTableElements && !this.skipFootNoteDeleteTracking && !skipHistoryCollection) {
                         this.addRemovedNodes(inline.clone());
                     }
@@ -15919,7 +15957,7 @@ export class Editor {
 
         let isUndoing: boolean = isNullOrUndefined(this.editorHistory) ? false : (this.editorHistory.isUndoing || this.editorHistory.isRedoing);
         let removedNode: ElementBox = undefined;
-        if (this.canHandleDeletion() || (isTrackingEnabled && !this.skipTracking())) {
+        if (this.canHandleDeletion() || (isTrackingEnabled && (!this.skipTracking() || (elementBox.paragraph.isInsideTable && !isNullOrUndefined(this.editorHistory) && this.editorHistory.isRedoing && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === "RemoveRowTrack")))) {
 
             if (elementBox instanceof BookmarkElementBox || elementBox instanceof CommentCharacterElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox) {
                 if (elementBox instanceof BookmarkElementBox && elementBox.previousElement instanceof FieldElementBox && elementBox.previousElement.formFieldData) {
@@ -16733,6 +16771,9 @@ export class Editor {
                     this.removeBlock(nextParagraph);
                     //this.combineRevisionOnDeleteParaMark(paragraph, prevLastLineIndex, elementIndex);
                     if (this.editorHistory.currentBaseHistoryInfo.action !== "Insert") {
+                        if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && this.editorHistory.currentHistoryInfo.action == 'Accept All') {
+                            this.removeRevisionForBlock(nextParagraph, undefined, false, true);
+                        }
                         this.addRemovedNodes(nextParagraph, isCombineLastBlock);
                     }
                 }

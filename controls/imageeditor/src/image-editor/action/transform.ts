@@ -646,7 +646,9 @@ export class Transform {
             const previousZoomFactor: number = parent.zoomSettings.zoomFactor - (zoomFactor * 10);
             const zoomEventArgs: ZoomEventArgs = {zoomPoint: zoomPoint, cancel: false, previousZoomFactor: previousZoomFactor,
                 currentZoomFactor: parent.zoomSettings.zoomFactor, zoomTrigger: obj['zoomType']};
-                if (!parent.isCropToolbar && isBlazor() && parent.events && parent.events.zooming.hasDelegate === true) {
+            if (isBlazor() && !parent.isCropToolbar && (parent as any).currentToolbar !== 'resize-toolbar' && (parent as any).currentToolbar !== 'frame-toolbar'
+                 && parent.events && parent.events.zooming.hasDelegate === true) {
+                    (zoomEventArgs as any).zoomTrigger = parseInt(this.getZoomTriggerType(zoomEventArgs.zoomTrigger));
                 /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 (parent.dotNetRef.invokeMethodAsync('ZoomEventAsync', 'OnZoom', zoomEventArgs) as any).then((args: ZoomEventArgs) => {
                     this.zoomEvent(args, zoomFactor);
@@ -656,6 +658,19 @@ export class Transform {
                 this.zoomEvent(zoomEventArgs, zoomFactor);
             }
 
+        }
+    }
+
+    private getZoomTriggerType(type: string): string {
+        switch(type) {
+            case 'MouseWheel':
+                return '1';
+            case 'Pinch':
+                return '2';
+            case 'Commands':
+                return '4';
+            default:
+                return '8';
         }
     }
 
@@ -1938,7 +1953,9 @@ export class Transform {
     private resizeEventHandler(args: ResizeEventArgs): void {
         const parent: ImageEditor = this.parent;
         let isRotate: boolean;
+        const aspectRatioWidth: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
         const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
+        const widthElem: HTMLInputElement = parent.element.querySelector(".e-ie-toolbar-e-resize-width-input .e-numerictextbox");
         const heightElem: HTMLInputElement = parent.element.querySelector(".e-ie-toolbar-e-resize-height-input .e-numerictextbox");
         if (args.isAspectRatio) {
             if (this.resizedImgAngle == null || this.resizedImgAngle !== parent.transform.degree) {
@@ -1951,9 +1968,18 @@ export class Transform {
                     (getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).value = Math.floor(parent.img.destHeight);
                     (aspectRatioHeight as HTMLInputElement).value = Math.floor(parent.img.destHeight).toString() + ' px';
                     parent.aspectHeight = Math.floor(parent.img.destHeight);
+                    if (aspectRatioWidth && (aspectRatioWidth as HTMLInputElement).value === '') {
+                        (getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox).value = Math.floor(parent.img.destWidth);
+                        (aspectRatioWidth as HTMLInputElement).value = Math.floor(parent.img.destWidth).toString() + ' px';
+                        parent.aspectWidth = Math.floor(parent.img.destWidth);
+                    }
                 } else if (heightElem) {
                     heightElem.value =  Math.floor(parent.img.destHeight).toString();
                     parent.aspectHeight = Math.floor(parent.img.destHeight);
+                    if (widthElem && widthElem.value === '') {
+                        widthElem.value = Math.floor(parent.img.destWidth).toString();
+                        parent.aspectWidth = Math.floor(parent.img.destWidth);
+                    }
                 }
             } else {
                 parent.notify('transform', { prop: 'resizeImage', value: { width: args.width, height: null } });

@@ -3394,6 +3394,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
                 this.rule = newProp.rule;
                 newProp.rule = this.getRuleCollection(this.rule, false);
+                this.setRules(this.rule);
                 break;
             case 'width':
                 this.width = newProp.width;

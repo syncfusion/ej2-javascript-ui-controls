@@ -303,6 +303,7 @@ export class TocProperties {
             startLevel: 1,
             endLevel: parseInt(this.borderLevelStyle.value as string, 0),
             includeHyperlink: this.hyperlink.checked,
+            includeOutlineLevels: true,
             includePageNumber: this.showPageNumber.checked,
             rightAlign: this.rightalignPageNumber.checked
         };

@@ -42,7 +42,7 @@ export class ColumnSeries extends ColumnBase {
                     pointColumn.xValue + sideBySideInfo.start, pointColumn.yValue,
                     pointColumn.xValue + sideBySideInfo.end, origin, series
                 );
-                this.rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : this.rect.width;
+                this.rect.width = series.columnWidthInPixel ? (series.columnWidthInPixel - (series.chart.enableSideBySidePlacement ? series.columnWidthInPixel * series.columnSpacing : 0)) : this.rect.width;
                 this.rect.x = series.columnWidthInPixel ? this.rect.x - (((series.columnWidthInPixel / 2) * series.rectCount) -
                     (series.columnWidthInPixel * series.index)) : this.rect.x;
                 const color: string = series.category === 'Indicator' ? pointColumn.color : series.interior;

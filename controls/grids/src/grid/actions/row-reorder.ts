@@ -9,7 +9,7 @@ import { Row } from '../models/row';
 import * as events from '../base/constant';
 import { Scroll } from '../actions/scroll';
 import { RowDropEventArgs } from '../base/interface';
-import { Query } from '@syncfusion/ej2-data';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Grid } from '../base';
 import * as literals from '../base/string-literals';
 
@@ -875,9 +875,11 @@ export class RowDD {
                 this.selectedRows.push(skip + selectedRows[parseInt(i.toString(), 10)]);
             }
             srcControl.notify(events.rowsRemoved, { indexes: this.selectedRows, records: records });
-            srcControl.notify(events.modelChanged, {
-                type: events.actionBegin, requestType: 'rowdraganddrop'
-            });
+            if (srcControl.dataSource instanceof DataManager && srcControl.dataSource.dataSource.offline) {
+                srcControl.notify(events.modelChanged, {
+                    type: events.actionBegin, requestType: 'rowdraganddrop'
+                });
+            }
         }
     }
 

@@ -721,6 +721,15 @@
       transform: translate(-50%, -50%);
     }
 
+    & .e-sheet .e-ss-overlay-active .e-ss-resizer-touch::before {
+      content: '';
+      height: 20px;
+      position: absolute;
+      right: -6px;
+      top: -6px;
+      width: 20px;
+    }
+
     & .e-sheet .e-datavisualization-chart.e-ss-overlay {
       border: 1px solid $find-popup-border-color;
       @if $skin-name == 'FluentUI' or $skin-name == 'tailwind' {

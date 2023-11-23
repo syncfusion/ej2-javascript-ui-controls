@@ -1,7 +1,7 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { Animation, AnimationOptions, isNullOrUndefined, animationMode } from '@syncfusion/ej2-base';
-import { effect, getPathArc } from '../utils/helper';
+import { degreeToLocation, effect, getPathArc } from '../utils/helper';
 import { ProgressBar } from '../progressbar';
 import { lineCapRadius, completeAngle } from '../model/constant';
 /**
@@ -167,6 +167,14 @@ export class ProgressAnimation {
             (lineCapRadius / 2) * thickness : 0;
         progressEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? -(lineCapRadius / 2) * thickness : (lineCapRadius / 2) * thickness) : 0;
+        if (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) {
+            const startPosition: number = degreeToLocation(x, y, pathRadius, start).x;
+            let endPosition: number = degreeToLocation(x, y, pathRadius, progressEnd).x;
+            while ((progress.enableRtl ? endPosition <= startPosition : endPosition >= startPosition)) {
+                progressEnd += (progress.enableRtl ? 0.1 : -0.1);
+                endPosition = degreeToLocation(x, y, pathRadius, progressEnd).x;
+            }
+        }
         const startPos: number = (!isNullOrUndefined(startValue)) ? startValue : start;
         const endPos: number = (!isNullOrUndefined(startValue)) ? totalEnd - previousTotal : totalEnd;
         circularPath.setAttribute('visibility', 'Hidden');

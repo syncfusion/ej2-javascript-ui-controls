@@ -2191,7 +2191,7 @@ describe('Row Drag and Drop module', () => {
     describe('EJ2-847896 - DataSource not updated when row drag and drop performed in-between grids', () => {
         let gridObj1: Grid;
         let gridObj2: Grid;
-        let actionComplete: () => void;
+        let dataBound: () => void;
         beforeAll((done: Function) => {
             gridObj1 = createGrid(
                 {
@@ -2207,7 +2207,7 @@ describe('Row Drag and Drop module', () => {
                         { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
                         { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
                     ],
-                    actionComplete: actionComplete,
+                    dataBound: dataBound,
                 }, done);
         });
         beforeAll((done: Function) => {
@@ -2229,13 +2229,11 @@ describe('Row Drag and Drop module', () => {
         });
 
         it('coverage improvement 2nd grid empty data', (done: Function) => {
-            actionComplete = (args?: any): void => {
-                if (args.requestType === 'rowdraganddrop') {
-                    expect((gridObj1.dataSource as Object[]).length).toBe(4);
-                    done();
-                } 
+            dataBound = (): void => {
+                expect((gridObj1.dataSource as Object[]).length).toBe(4);
+                done();
             };
-            gridObj1.actionComplete = actionComplete;
+            gridObj1.dataBound = dataBound;
             gridObj1.element.style.display = 'inline-block';
             gridObj2.element.style.display = 'inline-block';
             expect(gridObj1.rowDropSettings.targetID).toBe(undefined);
@@ -2272,7 +2270,7 @@ describe('Row Drag and Drop module', () => {
 
         afterAll(() => {
             destroy(gridObj1);
-            gridObj1 = actionComplete = null;
+            gridObj1 = dataBound = null;
             destroy(gridObj2);
             gridObj2 = null;
         });

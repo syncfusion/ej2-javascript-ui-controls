@@ -9192,6 +9192,21 @@ export class Layout {
                             }
                         }
                     }
+                } else if (widget.containerWidget instanceof BodyWidget && widget.containerWidget.firstChild === widget && widget.previousRenderedWidget && widget.previousRenderedWidget instanceof ParagraphWidget && (widget.previousRenderedWidget.containerWidget as BodyWidget).sectionFormat.breakCode == 'NoBreak' && widget.containerWidget.page.index !== (widget.previousRenderedWidget.containerWidget as BodyWidget).page.index && widget.containerWidget.index !== widget.previousRenderedWidget.containerWidget.index) {
+                    if (!(widget.previousRenderedWidget.containerWidget.lastChild as ParagraphWidget).isEndsWithPageBreak && !(widget.previousRenderedWidget.containerWidget.lastChild as ParagraphWidget).isEndsWithColumnBreak) {
+                        let page: Page = (widget.previousRenderedWidget as ParagraphWidget).bodyWidget.page;
+                        for (let j: number = 0; j < widget.containerWidget.page.bodyWidgets.length; j++) {
+                            page.bodyWidgets.splice(page.bodyWidgets.length, 0, widget.containerWidget.page.bodyWidgets[j]);
+                            widget.containerWidget.page.bodyWidgets.splice(widget.containerWidget.page.bodyWidgets.indexOf(widget.containerWidget.page.bodyWidgets[j]), 1);
+                            j--;
+                        }
+                        for (let k = 0; k < page.bodyWidgets.length; k++) {
+                            page.bodyWidgets[k].page = page;
+                        }
+                        widget.containerWidget.y = this.viewer.clientActiveArea.y;
+                        widget.containerWidget.page = page;
+                        this.documentHelper.removeEmptyPages();
+                    }
                 }
                 if (!this.isInitialLoad && isSkip && widget.bodyWidget.sectionFormat.columns.length > 1 && widget === widget.bodyWidget.firstChild && (!isNullOrUndefined(firstBody.previousWidget)
                     && firstBody.page === (firstBody.previousWidget as BodyWidget).page)) {

@@ -218,6 +218,10 @@
         &:focus {
           outline: none;
         }
+
+        &.e-hidden {
+          display: none;
+        }
       }
 
       .e-ribbon-overall-of-btn {
@@ -289,7 +293,8 @@
       padding-top: $ribbon-group-padding;
       height: $ribbon-group-height;
 
-      &.e-hidden {
+      &.e-hidden,
+      &.e-hide-group {
         display: none;
       }
 
@@ -831,7 +836,8 @@
 
     .e-ribbon-overflow-target {
 
-      &.e-hidden {
+      &.e-hidden,
+      &.e-hide-group {
         display: none;
       }
 
@@ -840,7 +846,8 @@
       }
 
       .e-ribbon-of-tab .e-ribbon-of-group-container {
-        &.e-hidden {
+        &.e-hidden,
+        &.e-hide-group {
           display: none;
         }
 

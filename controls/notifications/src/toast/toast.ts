@@ -874,7 +874,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
                 // eslint-disable-next-line
         prob === 'content' ? this.contentTemplate = clo : this.toastTemplate = clo;
             } else {
-                templateFn = typeof value == 'object' ? templateCompiler(value) : templateCompiler(initializeCSPTemplate( function() { return value;}));
+                templateFn = templateCompiler(value);
             }
         } catch (e) {
             templateFn = typeof value == 'object' ? templateCompiler(value) : templateCompiler(initializeCSPTemplate( function() { return value;}));

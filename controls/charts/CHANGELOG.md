@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 23.2.5 (2023-11-23)
+
+### AccumulationChart
+
+#### Bug Fixes
+
+- `#I519546` - Now, the pie chart data label renders properly when the data point is zero.
+
+### Chart
+
+#### Bug Fixes
+
+- `#I520467` - The combination of multiple types of trendlines is now rendering properly.
+- `#I519877` - Now, `StackingGroup` is working properly along with `columnWidthInPixel`.
+- `#I519877` - Now, `ColumnSpacing` is working properly along with `columnWidthInPixel`.
+
 ## 23.2.4 (2023-11-20)
 
 ### Chart

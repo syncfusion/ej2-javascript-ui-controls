@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.5 (2023-11-23)
+
+### Ribbon
+
+#### Bug Fixes
+
+`#I516350` - Now the issue with overflow popup button when the items showing inside are in hidden state has been resolved.
+
 ## 23.1.44 (2023-11-07)
 
 ### Ribbon

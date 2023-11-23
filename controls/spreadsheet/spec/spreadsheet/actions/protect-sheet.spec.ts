@@ -1148,5 +1148,36 @@ describe('Protect sheet ->', () => {
                 });
             });
         });
+        describe('EJ2-855321 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{}, { rows: [{ cells: [{ value: 'test' }] }], isProtected: true }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Cross sheet referencing of protected cell reference to the formula argument are restricted in spreadsheet', (done: Function) => {
+                helper.invoke('startEdit');
+                setTimeout(() => {
+                    helper.getElement('.e-spreadsheet-edit').textContent = '=';
+                    helper.getInstance().editModule.editCellData.value = '=';
+                    (<HTMLInputElement>helper.getElementFromSpreadsheet('.e-formula-bar-panel .e-formula-bar')).value = '=';
+                    setTimeout(() => {
+                        const sheetTabs: HTMLElement[] = [].slice.call(helper.getElements('.e-sheet-tab-panel .e-toolbar-item'));
+                        (sheetTabs[sheetTabs.length - 1].querySelector('.e-tab-wrap') as HTMLElement).click();
+                        setTimeout(function () {
+                            helper.getElement('.e-spreadsheet-edit').textContent = '=Sheet2!A1';
+                            helper.getInstance().editModule.editCellData.value = '=Sheet2!A1';
+                            (<HTMLInputElement>helper.getElementFromSpreadsheet('.e-formula-bar-panel .e-formula-bar')).value = '=Sheet2!A1';
+                            helper.triggerKeyEvent('keydown', 13, null, false, false, (<HTMLInputElement>helper.getElementFromSpreadsheet('.e-formula-bar-panel .e-formula-bar')));
+                            setTimeout(() => {
+                                expect(helper.getInstance().sheets[0].rows[0].cells[0].formula).toBe('=Sheet2!A1');
+                                expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toBe('test');
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
     });
 });

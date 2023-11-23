@@ -699,7 +699,9 @@ export class WorkbookFormula {
             range = range.split('=').join('');
             if (range.indexOf(':') > -1) {
                 const rangeSplit: string[] = range.split(':');
-                if (isCellReference(rangeSplit[0]) && isCellReference(rangeSplit[1])) {
+                if ((isCellReference(rangeSplit[0]) && isCellReference(rangeSplit[1])) ||
+                    ((rangeSplit[0].match(/[0-9]/) && rangeSplit[1].match(/[0-9]/)) ||
+                        (rangeSplit[0].toUpperCase().match(/[A-Z]/) && rangeSplit[1].toUpperCase().match(/[A-Z]/)))) {
                     cellRef = true;
                 }
             } else if (range.indexOf(':') < 0) {
@@ -900,6 +902,7 @@ export class WorkbookFormula {
         args: InsertDeleteEventArgs, cell: CellModel, row: number, col: number, sheetIdx: number, otherSheet?: boolean,
         formulaSheet?: SheetModel): void {
         let ref: string; let pVal: string; let index: number[]; let updated: boolean; let range: number[]; let isRangeFormula: boolean;
+        const containAlphabetAndDigit: RegExp = new RegExp(/^(?=.*[a-zA-Z])(?=.*\d)/g); let isValidCellReference: boolean; let isFullColumn: boolean;
         if (cell.formula && cell.formula.includes('UNIQUE')) {
             this.clearUniqueRange(row, col, formulaSheet || args.sheet);
         }
@@ -911,6 +914,7 @@ export class WorkbookFormula {
         let sheetName: string; let refChanged: boolean;
         for (let i: number = 0; i < formulaArr.length; i++) {
             ref = formulaArr[i as number].trim().replace(/[$]/g, '');
+            isValidCellReference = true;
             if (this.calculateInstance.isCellReference(ref)) {
                 isRangeFormula = ref.includes(':');
                 pVal = i && formulaArr[i - 1].trim();
@@ -924,12 +928,17 @@ export class WorkbookFormula {
                 } else if (otherSheet) {
                     continue;
                 }
+                if (!containAlphabetAndDigit.test(ref) && ref.indexOf(':') > -1) {
+                    isValidCellReference = false;
+                    isFullColumn = isNullOrUndefined(ref.match(/[0-9]/)) ? true : false;
+                }
                 index = getRangeIndexes(ref);
                 updated = this.parent.updateRangeOnInsertDelete(args, index, isRangeFormula);
                 range = getSwapRange(index);
                 if (updated) {
                     formulaArr[i as number] = range[2] < range[0] || range[3] < range[1] ?
-                        this.calculateInstance.getErrorStrings()[CommonErrors.ref] : getAddress();
+                        this.calculateInstance.getErrorStrings()[CommonErrors.ref] : !isValidCellReference ?
+                            (isFullColumn ? getRangeAddress(index).replace(/\d/g, '') : getRangeAddress(index).replace(/[a-zA-Z]/g, '')) : getAddress();
                     refChanged = true;
                 }
             }
@@ -1091,28 +1100,39 @@ export class WorkbookFormula {
         if (!len) { return; }
         const definedNames: DefineNameModel[] = Object.assign({}, this.parent.definedNames);
         let range: number[]; let sheetName: string; let splitedRef: string[]; let definedName: DefineNameModel; let updated: boolean;
-        let checkSheetName: string;
+        let checkSheetName: string; let rangeAddress: string;
+        const containAlphabetAndDigit: RegExp = new RegExp(/^(?=.*[a-zA-Z])(?=.*\d)/g); let isValidCellReference: boolean; let isFullColumn: boolean;
         for (let i: number = 0; i < len; i++) {
+            isValidCellReference = true;
             definedName = definedNames[i as number]; splitedRef = definedName.refersTo.split('!'); sheetName = splitedRef[0].split('=')[1];
             checkSheetName = sheetName;
             if (checkSheetName.match(/'/g)) { checkSheetName = checkSheetName.slice(1, -1); }
             if (checkSheetName !== args.sheet.name) { continue; }
+            if (!containAlphabetAndDigit.test(splitedRef[1]) && splitedRef[1].indexOf(':') > -1) {
+                isValidCellReference = false;
+                isFullColumn = isNullOrUndefined(splitedRef[1].match(/[0-9]/)) ? true : false;
+            }
             range = getRangeIndexes(splitedRef[1]);
             updated = this.parent.updateRangeOnInsertDelete(args, range);
+            if (!isValidCellReference) {
+                rangeAddress = isFullColumn ? getRangeAddress(range).replace(/\d/g, '') : getRangeAddress(range).replace(/[a-zA-Z]/g, '');
+            } else {
+                rangeAddress = getRangeAddress(range);
+            }
             if (args.isInsert) {
-                this.updateDefinedNames(definedName, sheetName, range, updated);
+                this.updateDefinedNames(definedName, sheetName, rangeAddress, updated);
             } else {
                 if (args.modelType === 'Row') {
-                    this.updateDefinedNames(definedName, sheetName, range, updated, [range[0], range[2]], args);
+                    this.updateDefinedNames(definedName, sheetName, rangeAddress, updated, [range[0], range[2]], args);
                 } else if (args.modelType === 'Column') {
-                    this.updateDefinedNames(definedName, sheetName, range, updated, [range[1], range[3]], args);
+                    this.updateDefinedNames(definedName, sheetName, rangeAddress, updated, [range[1], range[3]], args);
                 }
             }
         }
     }
 
     private updateDefinedNames(
-        definedName: DefineNameModel, sheetName: string, range: number[], changed: boolean, idx?: number[],
+        definedName: DefineNameModel, sheetName: string, rangeAddress: string, changed: boolean, idx?: number[],
         args?: InsertDeleteEventArgs): void {
         if (!changed) { return; }
         const index: number = this.parent.definedNames.indexOf(definedName);
@@ -1136,7 +1156,7 @@ export class WorkbookFormula {
             }
             if (idx[1] < idx[0]) { return; }
         }
-        definedName.refersTo = sheetName + '!' + getRangeAddress(range);
+        definedName.refersTo = sheetName + '!' + rangeAddress;
         this.parent.notify(workbookFormulaOperation, { action: 'addDefinedName', definedName: definedName, isAdded: false, index: index, isEventTrigger: true });
         const refreshArgs: DefinedNameEventArgs = { name: definedName.name, scope: definedName.scope, comment: definedName.comment,
             refersTo: definedName.refersTo, cancel: false };

@@ -494,7 +494,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         };
         this.trigger('open', openArguments, (observedopenArgs: EventArgs) => {
             if (!observedopenArgs.cancel) {
-                removeClass([this.element], VISIBILITY);
+                removeClass([this.element], [VISIBILITY, DISABLEANIMATION]);
                 if (this.element.classList.contains(OPEN)) {
                     return;
                 }

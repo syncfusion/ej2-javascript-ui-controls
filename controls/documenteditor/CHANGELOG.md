@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 23.2.5 (2023-11-23)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I512661` - Resolved the TOC updating issue in the attached document.
+- `#I519561` - Resolved the track changes issues.
+- `#I521082` - Resolved the script error issue while accepting tracked changes.
+- `#I514000` - Resolved the script error while opening the attached document.
+- `#I516382` - Resolved the page ordering issue in the exported document.
+- `#I519451` - Resolved the script error issue when export as docx after accept all changes.
+- `#I519571` - Resolved the issue in track changes on enter.
+- `#I520505` - Resolved the issue of undo track changes with bullet numbering.
+
 ## 23.2.4 (2023-11-20)
 
 ### DocumentEditor

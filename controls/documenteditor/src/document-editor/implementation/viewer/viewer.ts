@@ -1917,12 +1917,15 @@ export class DocumentHelper {
             }
         }
         if (this.owner.vRuler) {
-            let vRuler = document.getElementById(this.owner.element.id + ('_vRuler'));
+            let vRuler = document.getElementById(this.owner.element.id + ('_vRulerBottom'));
             vRuler.style.left = this.viewerContainer.scrollLeft + 'px';
             let markIndicator = document.getElementById(this.owner.element.id + ('_markIndicator'));
             if(markIndicator) {
                 markIndicator.style.left = this.viewerContainer.scrollLeft + 'px';
             }
+        }
+        if(this.owner.rulerHelper && !isNullOrUndefined(this.owner.rulerHelper.vRulerBottom)) {
+            this.owner.rulerHelper.vRulerBottom.style.height = this.pageContainer.offsetHeight + 'px';
         }
         this.owner.viewer.updateScrollBars();
         const vtHeight: number = this.owner.viewer.containerTop + this.visibleBounds.height - (this.owner.viewer.padding.top + this.owner.viewer.padding.bottom);

@@ -4639,7 +4639,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if ((this.dataSourceSettings.mode === 'Server' && this.isServerWaitingPopup) || this.dataSourceSettings.mode === 'Local') {
                 this.hideWaitingPopup();
             }
-        } else {
+        } else if (this.pivotValues.length > 0) {
             this.isEmptyGrid = false;
             this.notEmpty = true;
         }
@@ -6029,10 +6029,20 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const pivot: PivotView = this;
         pivot.engineModule.data = (e.result as IDataSet[]);
-        if (!isNullOrUndefined(pivot.engineModule.data) && pivot.engineModule.data.length > 0) {
+        if (this.isEmptyGrid && !isNullOrUndefined(pivot.engineModule.data) && pivot.engineModule.data.length === 0) {
+            this.hideWaitingPopup();
+        } else if (!isNullOrUndefined(pivot.engineModule.data) && pivot.engineModule.data.length > 0) {
+            this.isEmptyGrid = false;
             pivot.initEngine();
         } else {
+            this.isEmptyGrid = true;
             this.hideWaitingPopup();
+            this.renderEmptyGrid();
+            this.engineModule.fieldList = null;
+            this.engineModule.isEmptyData = true;
+            this.pivotValues = [];
+            this.engineModule.data = [];
+            this.notify(events.dataReady, {});
         }
     }
 

@@ -1416,10 +1416,9 @@ export class Timeline {
                 const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false);
                 let isChanged: string;
                 let taskbarModule: TaskbarEdit = this.parent.editModule.taskbarEditModule;
-                if (!isNullOrUndefined(maxStartLeft) && ((minStartDate < this.timelineStartDate) ||
-                   (!isNullOrUndefined(taskbarModule)) && (!isNullOrUndefined(taskbarModule.taskBarEditAction)
+                if (!isNullOrUndefined(maxStartLeft) && ((!isNullOrUndefined(taskbarModule)) && (!isNullOrUndefined(taskbarModule.taskBarEditAction)
                    && taskbarModule.taskBarEditAction !== 'ProgressResizing' &&
-                   taskbarModule.taskBarEditAction !== 'RightResizing')) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
+                   taskbarModule.taskBarEditAction !== 'RightResizing' && taskbarModule.taskBarEditAction !== 'LeftResizing')) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
                     isChanged = 'prevTimeSpan';
                     minStartDate = minStartDate > this.timelineStartDate ? this.timelineStartDate : minStartDate;
                 } else {

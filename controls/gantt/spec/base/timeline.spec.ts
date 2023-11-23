@@ -2005,4 +2005,70 @@ describe('Render top Tier alone in Zoom to fit', () => {
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.segments[1].endDate,'MM/dd/yyyy HH:mm')).toEqual('04/25/2019 17:00');
           });
     });
+    describe('CR-855831:Timeline render in advance the project start date while resizing taskbar', () => {
+        let ganttObj: Gantt;
+        var projectNewData = [
+            { TaskID: 1, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 10 },
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+            dataSource: projectNewData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowExcelExport: true,
+            allowPdfExport: true,
+            allowSelection: true,
+            allowRowDragAndDrop: true,
+            gridLines: "Both",
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            allowResizing: true,
+            readOnly: false,
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('04/05/2019'),
+            projectEndDate: new Date('05/30/2019')
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 500);
+        });
+        it('Taskbar Right resizing', () => {
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown');
+            triggerMouseEvent(dragElement, 'mousemove', -20, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.getFormatedDate(ganttObj.timelineModule.timelineStartDate, 'MM/dd/yyyy')).toBe('04/05/2019');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/02/2019');
+        }); 
+    });
 });

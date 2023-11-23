@@ -2007,6 +2007,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         const root: string = 'root';
         this.grid[`${root}`] = this[`${root}`] ? this[`${root}`] : this;
         this.grid.appendTo(gridContainer as HTMLElement);
+        const gridContent: Element = this.element.getElementsByClassName('e-gridcontent')[0].childNodes[0] as HTMLElement;
+        gridContent.setAttribute('tabindex', '0');
+        const contentTable: Element = this.element.getElementsByClassName('e-content')[0].querySelector('.e-table') as HTMLElement;
+        contentTable.setAttribute('role', 'treegrid');
         if (this.isIndentEnabled) {
             this.refreshToolbarItems();
         }

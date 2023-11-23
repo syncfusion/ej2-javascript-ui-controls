@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 23.2.5 (2023-11-23)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I517898` - Now, the radio button's background color does not shifts to white automatically.
+- `#I507874` - Now, circles with graphics are rendered properly when loading the specific document.
+- `#I517897` - Now, the background color is not changed for read-only dropdown, checkbox and radio button fields in other viewers while saving the document.
+
 ## 23.2.4 (2023-11-20)
 
 ### PDF Viewer

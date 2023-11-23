@@ -93,7 +93,7 @@ export class Clipboard implements IAction {
                         selectedRowCellIndexes[0].cellIndexes[0]
                     );
                 },
-                10);
+                isMacLike ? 100 : 10);
         }
     }
 

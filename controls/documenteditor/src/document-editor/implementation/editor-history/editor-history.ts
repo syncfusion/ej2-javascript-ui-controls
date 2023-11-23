@@ -30,6 +30,7 @@ export class EditorHistory {
      * @private
      */
     public historyInfoStack: HistoryInfo[] = [];
+    private isUndoGroupingEnded: boolean = true;
     private owner: DocumentEditor;
     /**
      * @private
@@ -246,7 +247,27 @@ export class EditorHistory {
             }
         }
     }
-
+    /**
+     * Starts a new undo able action.
+     * > All editing and formatting changes made between `beginUndoAction` and `endUndoAction` will be grouped together as a single undo able action.
+     */
+    public beginUndoAction(): void {
+        if (this.isUndoGroupingEnded) {
+            this.owner.editorModule.initComplexHistory('Grouping');
+            this.isUndoGroupingEnded = false;
+            this.clearRedoStack();
+        }
+    }
+    /**
+     * Ends the current undo able action.
+     * > All editing and formatting changes made between `beginUndoAction` and `endUndoAction` will be grouped together as a single undo able action.
+     */
+    public endUndoAction(): void {
+        if (!this.isUndoGroupingEnded) {
+            this.updateComplexHistory();
+            this.isUndoGroupingEnded = true;
+        }
+    }
     /**
      * Update resizing history
      *
@@ -361,8 +382,10 @@ export class EditorHistory {
             }
         }
         if (this.documentHelper.owner.enableHistoryMode && !isNullOrUndefined(this.currentHistoryInfo)) {
-            this.updateHistory();
-            isHandledComplexHistory = true;
+            if (this.currentHistoryInfo.action != "Grouping") {
+                this.updateHistory();
+                isHandledComplexHistory = true;
+            }
         } else if (this.owner.editorModule.isHandledComplex) {
             isHandledComplexHistory = true;
         }

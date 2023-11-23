@@ -3995,3 +3995,80 @@ describe('Drag drop taskbar outside the chart side', () => {
         triggerMouseEvent(dragElement, 'mouseup');
     });
 });
+describe('CR-856375-Milestone not working properly while drop at weekend', () => {
+    let ganttObj: Gantt;
+    let newData1: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project Initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            isParent: true,
+            subtasks: [
+              {
+                TaskID: 2,
+                TaskName: 'Identify Site location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 0,
+                Progress: 50,
+              },
+              {
+                TaskID: 4,
+                TaskName: 'Soil test approval',
+                StartDate: new Date('04/02/2019'),
+                Duration: 4,
+                Predecessor: '2FS',
+                Progress: 50,
+              },
+            ],
+          }
+        ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: newData1,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            gridLines: "Both",
+            allowResizing:true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            highlightWeekends: true,
+            labelSettings: {
+                taskLabel: 'Progress'
+            },
+            splitterSettings:{
+                columnIndex: 2,
+            },
+            height: '550px',
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('Drag and drop milestone on weekend days', () => {
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-milestone') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 380, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/15/2019');
+    });
+});

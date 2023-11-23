@@ -1,5 +1,5 @@
 import { Workbook, SheetModel, setColumn, ColumnModel, getSheet, setCell } from '../base/index';
-import { ProtectSettings, UnprotectArgs } from '../common/index';
+import { ExtendedSheet, ProtectSettings, UnprotectArgs } from '../common/index';
 import { protectsheetHandler, protectSheetWorkBook, updateToggle, setLockCells } from '../common/index';
 import { unprotectsheetHandler } from '../common/index';
 import { getSwapRange } from '../common/index';
@@ -42,6 +42,9 @@ export class WorkbookProtectSheet {
 
     private unprotectsheetHandler(args: UnprotectArgs): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
+        if ((sheet as ExtendedSheet).isImportProtected) {
+            (sheet as ExtendedSheet).isImportProtected = false;
+        }
         if (args.sheet) {
             sheet = this.parent.sheets[args.sheet];
         }

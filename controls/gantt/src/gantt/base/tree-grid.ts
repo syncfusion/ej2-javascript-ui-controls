@@ -91,7 +91,9 @@ export class GanttTreeGrid {
         this.parent.treeGrid.loadChildOnDemand = this.parent.loadChildOnDemand;
         this.parent.treeGrid['isFromGantt'] = true;
         this.parent.treeGrid.parentIdMapping = this.parent.taskFields.parentID;
-        this.parent.treeGrid.idMapping = this.parent.taskFields.id
+        if (this.parent.taskFields.parentID) {
+           this.parent.treeGrid.idMapping = this.parent.taskFields.id;
+	}
         this.parent.treeGrid.showColumnMenu = this.parent.showColumnMenu;
 	this.parent.treeGrid.enableCollapseAll = this.parent.collapseAllParentTasks;
         this.parent.treeGrid.columnMenuItems = this.parent.columnMenuItems;
@@ -131,7 +133,7 @@ export class GanttTreeGrid {
             toolbarHeight = this.parent.toolbarModule.element.offsetHeight;
         }
         this.parent.treeGrid.height =
-	       this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['offsetHeight'] - 19;
+            this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['offsetHeight'] - (this.parent.flatData.length == 0 ? 0 : 19);
     }
     private getContentDiv(): HTMLElement {
         return this.treeGridElement.querySelector('.e-content');
@@ -818,7 +820,7 @@ export class GanttTreeGrid {
      */
     private composeIDColumn(column: GanttColumnModel): void {
         const isProjectView: boolean = this.parent.viewType === 'ProjectView';
-        const lengthDataSource: number = this.parent.dataSource['length'];
+        const lengthDataSource: number = this.parent.dataSource ? this.parent.dataSource['length'] : 0;
         let taskIDName: string | number;
         column.isPrimaryKey = isProjectView ? true : false;
         if (this.parent.isLocaleChanged) {

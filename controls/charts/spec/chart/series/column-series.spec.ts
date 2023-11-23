@@ -314,6 +314,18 @@ describe('Column Series', () => {
             chartObj.primaryXAxis.interval = 500;
             chartObj.refresh();
         });
+
+        it('checking with columnWidthInPixel', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg = document.getElementById('container_Series_0_Point_5');
+                let path = svg.getAttribute('d');
+                expect('M 542.375 175.125 Q 542.375 175.125 542.375 175.125 L 562.375 175.125 Q 562.375 175.125 562.375 175.125 L 562.375 350.25 Q 562.375 350.25 562.375 350.25 L 542.375 350.25 Q 542.375 350.25 542.375 350.25 L 542.375 175.125 Z' === path).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].columnWidthInPixel = 20;
+            chartObj.refresh();
+        });
     });
 
     describe('Column Series with negative', () => {

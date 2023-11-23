@@ -11798,4 +11798,52 @@ describe('Spreadsheet formula module ->', () => {
             done();
         });
     });
+    describe('EJ2-853889 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Spreasheet throws console error when inserting rows in sheet that contains formula with column reference', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.edit('J1', '=COUNTIF(H:H,">10")');
+            helper.edit('A12', '=COUNTIF(10:10,">10")');
+            expect(helper.invoke('getCell', [9, 0]).textContent).toBe('Cricket Shoes');
+            helper.invoke('selectRange', ['A10']);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.openAndClickCMenuItem(5, 0, [6, 1], true, false);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [9, 0]).textContent).toBe('');
+                expect(spreadsheet.sheets[0].rows[12].cells[0].formula).toBe('=COUNTIF(11:11,">10")');
+                expect(helper.invoke('getCell', [0, 7]).textContent).toBe('Profit');
+                helper.invoke('selectRange', ['H1']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(0, 5, [6, 1], false, true);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [0, 7]).textContent).toBe('');
+                    expect(spreadsheet.sheets[0].rows[0].cells[10].formula).toBe('=COUNTIF(I:I,">10")');
+                    helper.click('.e-add-sheet-tab');
+                    setTimeout(() => {
+                        helper.invoke('updateCell', [{ formula: '=SUMIF(Sheet2!I:I,">10")' }, 'Sheet1!K1']);
+                        helper.invoke('updateCell', [{ formula: '=SUMIF(Sheet2!11:11,">10")' }, 'Sheet1!A13']);
+                        helper.invoke('selectRange', ['H1']);
+                        helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                        helper.openAndClickCMenuItem(0, 5, [6, 1], false, true);
+                        setTimeout(() => {
+                            expect(spreadsheet.sheets[0].rows[0].cells[10].formula).toBe('=SUMIF(Sheet2!J:J,">10")');
+                            helper.invoke('selectRange', ['A11']);
+                            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                            helper.openAndClickCMenuItem(5, 0, [6, 1], true, false);
+                            setTimeout(() => {
+                                expect(helper.invoke('getCell', [10, 0]).textContent).toBe('');
+                                expect(spreadsheet.sheets[0].rows[12].cells[0].formula).toBe('=SUMIF(Sheet2!12:12,">10")');
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
 });

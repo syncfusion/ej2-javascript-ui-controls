@@ -96,6 +96,8 @@ export class TextExport {
             if (bodyItem.hasOwnProperty('inlines') as any) {
                 const isLastPara: boolean = (bodyItem as any === this.lastPara) ? true : false;
                 this.writeParagraph(streamWriter, bodyItem as any, isLastPara, isHeaderFooter);
+            } else if (bodyItem.blocks) {
+                this.writeBody(streamWriter, bodyItem.blocks, isHeaderFooter);
             } else {
                 this.writeTable(streamWriter, bodyItem as any);
             }

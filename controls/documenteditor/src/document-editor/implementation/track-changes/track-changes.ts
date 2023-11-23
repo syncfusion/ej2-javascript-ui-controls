@@ -2,7 +2,7 @@
 import { RevisionType, RevisionActionType } from '../../base/types';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
-import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox, FootnoteElementBox } from '../viewer/page';
+import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox, FootnoteElementBox, Widget, BlockWidget } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import { WRowFormat } from '../format/row-format';
 import { Selection, TextPosition } from '../selection';
@@ -240,6 +240,7 @@ export class Revision {
             } else {
                 this.owner.editorHistory.currentBaseHistoryInfo.action = 'ClearRevisions';
                 this.updateRevisionID();
+                this.removeRevisionFromPara(start, end);
             }
         } else if (!this.canSkipTableItems && (item instanceof WCharacterFormat) && (!removeChanges)) {
             this.owner.editorHistory.currentBaseHistoryInfo.action = 'ClearRevisions';
@@ -284,6 +285,7 @@ export class Revision {
             this.owner.editorHistory.currentBaseHistoryInfo.isAcceptOrReject = isFromAccept ? 'Accept' : 'Reject';
         } else if (item instanceof WRowFormat && removeChanges) {
             let tableWidget: TableWidget = (item as WRowFormat).ownerBase.ownerTable;
+            tableWidget = tableWidget.combineWidget(this.owner.viewer) as TableWidget;
             let currentRow: TableRowWidget = item.ownerBase as TableRowWidget;
             this.removeRevisionItemsFromRange(item);
             this.owner.editorHistory.currentBaseHistoryInfo.action = 'DeleteCells';
@@ -292,6 +294,8 @@ export class Revision {
             this.isContentRemoved = true;
             tableWidget.removeChild(tableWidget.childWidgets.indexOf(currentRow));
             this.canSkipTableItems = true;
+            // Before destroying the table row widget, delete the field element from the row.
+            this.owner.editor.removeFieldInBlock(currentRow);
             // Before destroying the table row widget, delete the bookmark element from the row.
             this.owner.editor.removeFieldInBlock(currentRow, true);
             // Before destroying the table row widget, delete the content control element from the row.
@@ -302,7 +306,7 @@ export class Revision {
                 this.owner.editor.removeBlock(tableWidget);
                 tableWidget.destroy();
             } else {
-                this.owner.editor.updateTable(tableWidget);
+                this.owner.editor.updateTable(tableWidget, true);
             }
         }
         // if the range is of row format, we will remove the row and for history preservation we use whole table to be cloned, hence skipping this part
@@ -327,6 +331,7 @@ export class Revision {
                     if (para.characterFormat.revisions[i].range.length === 0) {
                         let revisionIndex: number = para.characterFormat.revisions.indexOf(para.characterFormat.revisions[i]);
                         para.characterFormat.revisions.splice(revisionIndex, 1);
+                        i--;
                     }
                 }
             }

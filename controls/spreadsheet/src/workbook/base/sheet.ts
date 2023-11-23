@@ -4,7 +4,7 @@ import { RangeModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
-import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler } from '../common/index';
+import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler, ExtendedSheet } from '../common/index';
 import { ProtectSettings, getCellAddress } from '../common/index';
 import { isUndefined, ChildProperty, Property, Complex, Collection, extend } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
@@ -509,9 +509,9 @@ export function getMaxSheetId(sheets: SheetModel[]): number {
  * @param {SheetModel[]} sheet - Specifies the sheet.
  * @returns {void} - To initiate sheet.
  */
-export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
+export function initSheet(context: Workbook, sheet?: SheetModel[], isImport?: boolean): void {
     const sheets: SheetModel[] = sheet ? sheet : context.sheets;
-    sheets.forEach((sheet: SheetModel) => {
+    sheets.forEach((sheet: ExtendedSheet) => {
         sheet.id = sheet.id || 0;
         sheet.name = sheet.name || '';
         sheet.rowCount = isUndefined(sheet.rowCount) ? 100 : sheet.rowCount;
@@ -527,6 +527,7 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
         sheet.showGridLines = isUndefined(sheet.showGridLines) ? true : sheet.showGridLines;
         sheet.state = sheet.state || 'Visible';
         sheet.maxHgts = sheet.maxHgts || [];
+        sheet.isImportProtected = sheet.isProtected && isImport;
         sheet.protectSettings = sheet.protectSettings || { selectCells: false, formatCells: false, formatRows: false, formatColumns: false,
             insertLink: false };
         sheet.isProtected = sheet.isProtected || false;

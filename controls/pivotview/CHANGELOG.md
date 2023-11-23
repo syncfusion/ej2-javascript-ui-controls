@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.5 (2023-11-23)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I518410` - The pivot table will now refresh properly while dynamically binding an empty data source via web API.
+
 ## 23.2.4 (2023-11-20)
 
 ### PivotTable

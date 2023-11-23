@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.5 (2023-11-23)
+
+### ImageEditor
+
+#### Bug Fixes
+
+- Issue with "Resize numeric textbox not updated properly while applying with placeholder value" has been resolved.
+
 ## 23.1.43 (2023-10-31)
 
 ### ImageEditor

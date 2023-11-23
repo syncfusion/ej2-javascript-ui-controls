@@ -2096,6 +2096,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             eleObj.appendTo(ele);
         }
         this.add(innerEle, CLS_TEMPLATE);
+        const firstChild = innerEle.firstElementChild as HTMLElement;
+        if(!isNOU(firstChild)) {
+            firstChild.setAttribute('tabindex', isNOU(firstChild.getAttribute("tabIndex")) ? '-1' : this.getDataTabindex(firstChild));
+            firstChild.setAttribute('data-tabindex', isNOU(firstChild.getAttribute("tabIndex")) ? '-1' : this.getDataTabindex(firstChild));
+        }
         this.tbarEle.push(innerEle);
     }
     private buttonRendering(item: ItemModel, innerEle: HTEle): HTEle {
@@ -2215,20 +2220,16 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private activeEleRemove(curEle: HTEle): void {
         if (!isNOU(this.activeEle)) {
-            if(!(<HTEle>curEle.parentElement).classList.contains(CLS_TEMPLATE)) {
-                this.activeEle.setAttribute('tabindex', this.getDataTabindex(this.activeEle));
-            }
-            else {
-                this.activeEle.removeAttribute('tabindex');
-            }
-        }
+            this.activeEle.setAttribute('tabindex', this.getDataTabindex(this.activeEle));
+        }  
         this.activeEle = curEle;
         if (this.getDataTabindex(this.activeEle) === '-1') {
             if (isNOU(this.trgtEle) && !(<HTEle>curEle.parentElement).classList.contains(CLS_TEMPLATE)) {
                 this.updateTabIndex('-1');
                 curEle.removeAttribute('tabindex');
             } else {
-                this.activeEle.setAttribute('tabindex', this.getDataTabindex(this.activeEle));
+                let tabIndex = parseInt(this.getDataTabindex(this.activeEle)) + 1;
+                this.activeEle.setAttribute('tabindex', tabIndex.toString());
             }
         }
     }

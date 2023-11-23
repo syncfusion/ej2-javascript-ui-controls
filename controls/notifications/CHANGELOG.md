@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.5 (2023-11-23)
+
+### Toast
+
+#### Bug Fixes
+
+- `#I521037` - Fixed an issue where the Toast custom content template was not functioning correctly. Meta Tag.
+
 ## 23.1.40 (2023-10-10)
 
 ### Toast

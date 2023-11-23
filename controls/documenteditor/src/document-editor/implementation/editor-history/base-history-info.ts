@@ -512,7 +512,7 @@ export class BaseHistoryInfo {
         this.lastElementRevision = this.checkAdjacentNodeForMarkedRevision(this.lastElementRevision);
         let currentRevision: TextPosition = this.retrieveEndPosition(this.lastElementRevision);
         let blockInfo: ParagraphInfo = this.owner.selection.getParagraphInfo(currentRevision);
-        if(blockInfo.paragraph.getLength() == blockInfo.offset) {
+        if(blockInfo.paragraph.getLength() == blockInfo.offset && !blockInfo.paragraph.isInsideTable) {
             blockInfo.offset++;
         }
         this.endRevisionLogicalIndex = this.owner.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
@@ -856,6 +856,15 @@ export class BaseHistoryInfo {
                 }
                 if (currentRevision.range.length === 0) {
                     this.owner.revisions.remove(currentRevision);
+                }
+                if (currentPara.characterFormat.revisions.length > 0 && this.editorHistory.isRedoing) {
+                    for (let i: number = 0; i < currentPara.characterFormat.revisions.length; i++) {
+                        let revision: Revision  = currentPara.characterFormat.revisions[i];
+                        if (revision.range.length === 0) {
+                            currentPara.characterFormat.revisions.splice(i, 1);
+                            i--;
+                        }
+                    }
                 }
             }
         }

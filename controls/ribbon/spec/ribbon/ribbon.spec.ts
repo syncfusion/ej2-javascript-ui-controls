@@ -2869,6 +2869,182 @@ describe('Ribbon', () => {
             expect(ribbon.element.querySelector('#item7_container').classList.contains('e-hidden')).toBe(false);
             expect(ribbon.element.querySelector('#item8_container').classList.contains('e-hidden')).toBe(false);
         });
+        it('check all items are hidden', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large,
+                                id: "item2",
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }, {
+                                id: "item3",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            //To cover wrong id
+            ribbon.hideItem('item10');
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('e-hidden')).toBe(false);
+            expect(ribbon.element.querySelector('#item2_container').classList.contains('e-hidden')).toBe(false);
+            expect(ribbon.element.querySelector('#item3_container').classList.contains('e-hidden')).toBe(false);            
+            expect(ribbon.element.querySelector('#group1').classList.contains('e-hide-group')).toBe(false);
+            ribbon.hideItem('item1');
+            ribbon.hideItem('item2');
+            ribbon.hideItem('item3');
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('e-hidden')).toBe(true);
+            expect(ribbon.element.querySelector('#item2_container').classList.contains('e-hidden')).toBe(true);
+            expect(ribbon.element.querySelector('#item3_container').classList.contains('e-hidden')).toBe(true);            
+            expect(ribbon.element.querySelector('#group1').classList.contains('e-hide-group')).toBe(true);
+            ribbon.showItem('item1');
+            expect(ribbon.element.querySelector('#group1').classList.contains('e-hide-group')).toBe(false);
+            ribbon.showItem('item2');
+            ribbon.showItem('item3');
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('e-hidden')).toBe(false);
+            expect(ribbon.element.querySelector('#item2_container').classList.contains('e-hidden')).toBe(false);
+            expect(ribbon.element.querySelector('#item3_container').classList.contains('e-hidden')).toBe(false);
+            ribbon.activeLayout = 'Simplified';
+            ribbon.dataBind();
+            ribbon.hideItem('item1');
+            ribbon.hideItem('item2');
+            ribbon.hideItem('item3');
+            expect(ribbon.element.querySelector('#group1').classList.contains('e-hide-group')).toBe(true);
+            expect(ribbon.element.querySelector('#group1').classList.contains('e-ribbon-emptyCollection')).toBe(true);
+            ribbon.showItem('item1');
+            expect(ribbon.element.querySelector('#group1').classList.contains('e-ribbon-emptyCollection')).toBe(false);
+            ribbon.showItem('item2');
+            ribbon.showItem('item3');
+            containerEle.style.width = '250px';
+            ribbon.refreshLayout();
+            ribbon.hideItem('item3');
+            expect(document.querySelector('#ribbon_tab_sim_ovrl_overflow').classList.contains('e-ribbon-hide')).toBe(true);
+            ribbon.showItem('item3');
+            containerEle.style.width = '100px';
+            ribbon.refreshLayout();
+            ribbon.hideItem('item1');
+            ribbon.hideItem('item2');
+            ribbon.hideItem('item3');
+            expect(document.querySelector('#ribbon_tab_sim_ovrl_overflow').classList.contains('e-ribbon-hide')).toBe(true);
+            ribbon.showItem('item1');
+            ribbon.showItem('item2');
+            ribbon.showItem('item3');
+        });
+        it('check all items are hidden in simplified mode group oveflow popup', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large,
+                                id: "item2",
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }, {
+                                id: "item3",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    },{
+                        id: "group2",
+                        header: "group2Header",
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item4",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large,
+                                id: "item5",
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }, {
+                                id: "item6",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            ribbon.activeLayout = 'Simplified';
+            ribbon.dataBind();
+            containerEle.style.width = '500px';
+            ribbon.refreshLayout();
+            ribbon.hideItem('item5');
+            ribbon.hideItem('item6');
+            expect(document.querySelector('#group2_sim_grp_overflow').classList.contains('e-hidden')).toBe(true);
+            ribbon.showItem('item5');
+            ribbon.showItem('item6');
+        });
         it('hide/show when item is in second tab', (done) => {
             let template1 = '<button id="btn1" class="tempContent">Button1</button>';
             let template2 = '<button id="btn2" class="tempContent">Button2</button>';

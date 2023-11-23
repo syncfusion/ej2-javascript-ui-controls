@@ -105,7 +105,7 @@ export class FormulaBar {
     }
     private keyDownHandler(e: KeyboardEvent): void {
         const trgtElem: HTMLTextAreaElement = <HTMLTextAreaElement>e.target;
-        if (this.parent.isEdit && !this.parent.getActiveSheet().isProtected) {
+        if (this.parent.isEdit && (!this.parent.getActiveSheet().isProtected || (trgtElem.classList.contains('e-formula-bar') && !trgtElem.disabled))) {
             if ((checkIsFormula(trgtElem.value) || (trgtElem.validity && trgtElem.value.toString().indexOf('=') === 0)) &&
                 e.keyCode === 16) {
                 return;
@@ -311,7 +311,7 @@ export class FormulaBar {
     }
     private disabletextarea(): void {
         const element: HTMLTextAreaElement = this.getFormulaBar();
-        if (this.parent.getActiveSheet().isProtected) {
+        if (this.parent.getActiveSheet().isProtected && !this.parent.isEdit) {
             element.disabled = true;
         } else { element.disabled = false; }
     }
@@ -334,7 +334,7 @@ export class FormulaBar {
         if (target.classList.contains('e-drop-icon') && target.parentElement.classList.contains('e-formula-bar-panel')) {
             this.toggleFormulaBar(target);
         } else if (target.classList.contains('e-formula-bar')) {
-            if (!this.parent.isEdit && (!isSheetProtected || (isSheetProtected && !isCellLocked))) {
+            if ((!this.parent.isEdit && (!isSheetProtected || (isSheetProtected && !isCellLocked))) || (this.parent.isEdit && isSheetProtected && !(target as HTMLTextAreaElement).disabled)) {
                 this.formulaBarScrollEdit();
             } else if (isSheetProtected && isCellLocked) {
                 this.parent.notify(editAlert, null);
@@ -369,7 +369,7 @@ export class FormulaBar {
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (sheet.isProtected) {
             const activeCell: number[] = getCellIndexes(sheet.activeCell);
-            if (isLocked(getCell(activeCell[0], activeCell[1], sheet), getColumn(sheet, activeCell[1]))) {
+            if (isLocked(getCell(activeCell[0], activeCell[1], sheet), getColumn(sheet, activeCell[1])) && !this.parent.isEdit) {
                 this.parent.notify(editAlert, null);
                 return;
             }

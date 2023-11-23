@@ -12595,9 +12595,9 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             toolbar.appendTo('#ej2Toolbar');
             const toolbarItems: Element = toolbar.element.querySelector('.e-toolbar-items');
             expect(toolbarItems.children.length).toEqual(2);
-            expect(toolbarItems.children[0].innerHTML).toEqual('<input placeholder="Search">');
+            expect(toolbarItems.children[0].innerHTML).toEqual('<input placeholder="Search" tabindex="-1" data-tabindex="-1">');
             expect(toolbarItems.children[0].textContent).toEqual('');
-            expect(toolbarItems.children[1].innerHTML).toEqual('<div id="toolbar-template">toolbar template</div>');
+            expect(toolbarItems.children[1].innerHTML).toEqual('<div id="toolbar-template" tabindex="-1" data-tabindex="-1">toolbar template</div>');
             expect(toolbarItems.children[1].textContent).toEqual('toolbar template');
         });
     });
@@ -12923,7 +12923,7 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             expect(element.classList.contains('e-keyboard')).toEqual(true);
             toolbar.keyActionHandler(keyEventArgs);
             let ele2 = toolbar.element.querySelectorAll('.e-toolbar-item')[1].firstChild;
-            expect(ele2.getAttribute('tabindex')).toEqual('-1');
+            expect(ele2.getAttribute('tabindex')).toEqual('0');
             keyEventArgs = {
                 preventDefault: function () { },
                 action: 'moveRight',
@@ -12932,8 +12932,8 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
             expect(element.classList.contains('e-keyboard')).toEqual(true);
             toolbar.keyActionHandler(keyEventArgs);
             let ele3 = toolbar.element.querySelectorAll('.e-toolbar-item')[2].firstChild;
-            expect(ele3.getAttribute('tabindex')).toEqual('-1');
-            expect(ele2.getAttribute('tabindex') === null).toEqual(true);
+            expect(ele3.getAttribute('tabindex')).toEqual('0');
+            expect(ele2.getAttribute('tabindex')).toEqual('-1');
         });
     });
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.5 (2023-11-23)
+
+### Sidebar
+
+#### Bug Fixes
+
+- `#I521215` - An issue with the Sidebar animation which is not working for the initial rendering has been resolved.
+
 ## 23.2.4 (2023-11-20)
 
 ### Menu

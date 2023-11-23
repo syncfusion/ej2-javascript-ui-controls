@@ -72,6 +72,10 @@ export class RulerHelper {
     private position: TextPosition;
 
     private hRulerBottom: HTMLElement;
+    /**
+     * @private
+     */
+    public vRulerBottom: HTMLElement;
 
     private locale: L10n;
     /**
@@ -79,12 +83,7 @@ export class RulerHelper {
      */
     public hideTabStopSwitch(show: boolean): void {
         if (this.tabStopStwitch) {
-            if (show) {
-                this.tabStopStwitch.style.display = 'block';
-
-            } else {
-                this.tabStopStwitch.style.display = 'none';
-            }
+            this.showHideElement(show, this.tabStopStwitch);
         }
     }
     /**
@@ -92,11 +91,17 @@ export class RulerHelper {
      */
     public hideRulerBottom(show: boolean): void {
         if (this.hRulerBottom) {
-            if (show) {
-                this.hRulerBottom.style.display = 'block';
-            } else {
-                this.hRulerBottom.style.display = 'none';
-            }
+            this.showHideElement(show, this.hRulerBottom);
+        }
+        if (this.vRulerBottom) {
+            this.showHideElement(show, this.vRulerBottom);
+        }
+    }
+    private showHideElement(show: boolean, element: HTMLElement): void {
+        if (show) {
+            element.style.display = 'block';
+        } else {
+            element.style.display = 'none';
         }
     }
     /* eslint-enable */
@@ -299,19 +304,18 @@ export class RulerHelper {
         div.addEventListener('dblclick', function (): void {
             documentEditor.showDialog('PageSetup');
         });
-        if (isHorizontal) {
-            const style: string = 'height:' + (isHorizontal ? rulerSize.height : rulerGeometry.height) + 'px;overflow:hidden;width:' +
-                (rulerGeometry.width + (height * 2)) + 'px;position:absolute;z-index: 3;';
-            const attributes: Object = {
-                'id': documentEditor.element.id + '_hRulerBottom',
-                style: style, class: ('e-de-hRuler')
-            };
-            const overlap: HTMLElement = this.createHtmlElement('div', attributes);
-            this.hRulerBottom = overlap;
-            const element: HTMLElement = document.getElementById(documentEditor.element.id + '_viewerContainer');
-            element.insertBefore(overlap, element.firstChild);
-        }
-        let element: HTMLElement = isHorizontal ? document.getElementById(documentEditor.element.id + '_hRulerBottom') : document.getElementById(documentEditor.element.id + '_viewerContainer');
+        const pageElement: HTMLElement = document.getElementById(documentEditor.element.id + '_pageContainer');
+        const style: string = 'height:' + (isHorizontal ? rulerSize.height : pageElement.getBoundingClientRect().height) + 'px;overflow:hidden;width:' +
+            (isHorizontal ? pageElement.getBoundingClientRect().width : rulerSize.width) + 'px;position:absolute;z-index: 3;';
+        const attributes: Object = {
+            'id': documentEditor.element.id + (isHorizontal ? '_hRulerBottom' : '_vRulerBottom'),
+            style: style, class: (isHorizontal ? 'e-de-hRuler' : 'e-de-vRuler')
+        };
+        const overlap: HTMLElement = this.createHtmlElement('div', attributes);
+        isHorizontal ? (this.hRulerBottom = overlap) : (this.vRulerBottom = overlap);
+        const parentElement: HTMLElement = document.getElementById(documentEditor.element.id + '_viewerContainer');
+        parentElement.insertBefore(overlap, parentElement.firstChild);
+        let element: HTMLElement = isHorizontal ? document.getElementById(documentEditor.element.id + '_hRulerBottom') : document.getElementById(documentEditor.element.id + '_vRulerBottom');
         element.insertBefore(div, element.firstChild);
         this.renderRulerMargins(documentEditor, isHorizontal, div);
         //const documentEditorRuler: DocumentEditorRulerModel = isHorizontal ? documentEditor.documentEditorSettings.rulerSettings.horizontalRuler : documentEditor.documentEditorSettings.rulerSettings.verticalRuler;
@@ -718,11 +722,13 @@ export class RulerHelper {
                     }
                     const currentBottomMargin = (HelperMethods.convertPixelToPoint(divRect.height) - (documentEditor.selection.end.paragraph.bodyWidget.sectionFormat.bottomMargin * documentEditor.zoomFactor));
                     this.resizeVRulerMargins(isTopRulerMargin, initialYValue, currentScrollTop, currentBottomMargin, vRuler, mouseXRelativeToDiv, documentEditor);
+                    
+                    let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.y * documentEditor.zoomFactor;
+                    let indicatorLineValue: number = startValue + pixelValue; // + 15;
+                    let lineSvg = document.getElementById(documentEditor.element.id + '_vRuler_indicator_svg');
+                    lineSvg.style.top = indicatorLineValue + 'px';
                 }
-                let startValue: number = documentEditor.documentHelper.currentPage.boundingRectangle.y * documentEditor.zoomFactor;
-                let indicatorLineValue: number = startValue + pixelValue; // + 15;
-                let lineSvg = document.getElementById(documentEditor.element.id + '_vRuler_indicator_svg');
-                lineSvg.style.top = indicatorLineValue + 'px';
+             
             });
             vRuler.addEventListener("mousedown", (e) => {
                 if (resizerEnabled) {
@@ -1142,7 +1148,12 @@ export class RulerHelper {
                         horizontalRulerMarginDiv.style.marginLeft = leftMarginValue + "px";
                     }
                     horizontalRulerMarginDiv.style.display = 'block';
-                    horizontalRulerMarginDiv.style.width = rulerMarginDivWidth + "px";
+                    if (documentEditor.layoutType === 'Continuous') {
+                        const paraWidth: number = !isNullOrUndefined(this.position.paragraph['absoluteXPosition']) ? parseFloat(this.position.paragraph['absoluteXPosition']['width'].toString()) : this.position.paragraph.width;
+                        horizontalRulerMarginDiv.style.width = (paraWidth * documentEditor.zoomFactor) + "px";
+                    } else {
+                        horizontalRulerMarginDiv.style.width = rulerMarginDivWidth + "px";
+                    }
                     skipLoop = true;
                 } else if ((columns.length >= i + 1) && documentEditor.layoutType === "Pages") {
                     if (paraBidi || tableBidi) {
@@ -2016,10 +2027,10 @@ export class RulerHelper {
                     let dragValue: number = this.position.paragraph.associatedCell.ownerTable.tableFormat.bidi ? (documentEditor.startXPosition - HelperMethods.convertPixelToPoint(e.clientX)) : (HelperMethods.convertPixelToPoint(e.clientX) - documentEditor.startXPosition);
                     documentEditor.editorModule.tableResize.handleResizing(cursorPoint, true, (dragValue / documentEditor.zoomFactor));
                     documentEditor.editorModule.tableResize.updateResizingHistory(documentEditor.viewer.findFocusedPage(cursorPoint, true, true));
-                }
-                documentEditor.isTableMarkerDragging = false;
-                let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
-                lineSvg.style.display = 'none';
+                    documentEditor.isTableMarkerDragging = false;
+                    let lineSvg = document.getElementById(documentEditor.element.id + '_hRuler_indicator_svg');
+                    lineSvg.style.display = 'none';
+                }        
             });
         }
     }
@@ -2049,7 +2060,7 @@ export class RulerHelper {
         if (isHorizontal) {
             rulerObj.style.marginLeft = (documentEditor.layoutType === 'Pages' ? documentEditor.selection.end.paragraph.bodyWidget.page.boundingRectangle.x : 0) + 'px';
         } else {
-            rulerObj.style.display = documentEditor.layoutType === 'Pages' ? 'block' : 'none';
+            rulerObj.parentElement.style.display = documentEditor.layoutType === 'Pages' ? 'block' : 'none';
             rulerObj.style.marginTop = documentEditor.selection.getPageTop(documentEditor.selection.end.paragraph.bodyWidget.page) + 'px';
         }
         if (rerenderRuler) {
@@ -2132,6 +2143,12 @@ export class RulerHelper {
             if (div) {
                 // eslint-disable-next-line
                 isHorizontal ? (div.style.height === ruler.thickness + 'px') : (div.style.width === ruler.thickness + 'px');
+            }
+        }
+        if (isHorizontal) {
+            if (this.hRulerBottom) {
+                const pageElement: HTMLElement = document.getElementById(documentEditor.element.id + '_pageContainer');
+                this.hRulerBottom.style.width = pageElement.getBoundingClientRect().width + 'px';
             }
         }
         // let vRulerDiv: HTMLElement = document.getElementById(documentEditor.element.id + '_vRuler');
@@ -2483,6 +2500,7 @@ export class RulerHelper {
                 if (isDragging && !isNullOrUndefined(currentTabStop)) {
                     if (!isNullOrUndefined(this.currentTabStopElement) && this.currentTabStopElement.style.display == 'none') {
                         documentEditor.editor.removeTabStops([currrentParagraph], [currentTabStop]);
+                        this.currentTabStopElement.parentNode.removeChild(this.currentTabStopElement);
                     } else {
                         let finalValue: number = HelperMethods.getNumberFromString(tabStopElement.style.left);
                         initialValue = finalValue;

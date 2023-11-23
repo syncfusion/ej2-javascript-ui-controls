@@ -1,9 +1,10 @@
 import { Spreadsheet } from '../base';
-import { getCellPosition, refreshImgCellObj, BeforeImageRefreshData, refreshChartCellObj, insertDesignChart, addDPRValue } from '../common/index';
-import { getRowIdxFromClientY, getColIdxFromClientX, overlayEleSize } from '../common/index';
+import { getCellPosition, refreshImgCellObj, BeforeImageRefreshData, refreshChartCellObj, insertDesignChart } from '../common/index';
+import { getRowIdxFromClientY, getColIdxFromClientX, overlayEleSize, getStartEvent, getMoveEvent, selectionStatus } from '../common/index';
+import { getEndEvent, getClientX, getClientY, addDPRValue, spreadsheetDestroyed, getPageX, getPageY, isTouchMove } from '../common/index';
 import { getRangeIndexes, SheetModel, refreshChartSize, focusChartBorder, getRowsHeight, getCellIndexes } from '../../workbook/index';
 import { getColumnsWidth, ChartModel } from '../../workbook/index';
-import { EventHandler, removeClass, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EventHandler, removeClass, closest, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 
 /**
  * Specifes to create or modify overlay.
@@ -41,6 +42,8 @@ export class Overlay {
      */
     constructor(parent: Spreadsheet) {
         this.parent = parent;
+        this.parent.on(selectionStatus, this.isOverlaySelected, this);
+        this.parent.on(spreadsheetDestroyed, this.destroy, this);
     }
 
     /**
@@ -154,10 +157,11 @@ export class Overlay {
 
     private addEventListener(div: HTMLElement): void {
         const overlayElem: Element = div;
-        EventHandler.add(overlayElem, 'mousedown', this.overlayClickHandler, this);
-        EventHandler.add(overlayElem, 'mousemove', this.overlayMouseMoveHandler, this);
-        EventHandler.add(this.parent.element.querySelector('#' + this.parent.element.id + '_sheet'), 'mousemove', this.overlayMouseMoveHandler, this);
-        EventHandler.add(document, 'mouseup', this.overlayMouseUpHandler, this);
+        EventHandler.add(overlayElem, getStartEvent(), this.overlayClickHandler, this);
+        EventHandler.add(overlayElem, getMoveEvent(), this.overlayMouseMoveHandler, this);
+        EventHandler.add(
+            this.parent.element.querySelector('#' + this.parent.element.id + '_sheet'), getMoveEvent(), this.overlayMouseMoveHandler, this);
+        EventHandler.add(document, getEndEvent(), this.overlayMouseUpHandler, this);
         this.parent.on(overlayEleSize, this.setOriginalSize, this);
     }
 
@@ -179,10 +183,13 @@ export class Overlay {
         let width2: number;
         let left: number;
         if (this.isOverlayClicked && this.isResizerClicked) {
+            if (isTouchMove(e)) {
+                e.preventDefault();
+            }
             switch (this.resizer) {
             case 'e-ss-overlay-t':
-                height1 = Math.max(this.originalMouseY - e.clientY + this.originalHeight, 20);
-                top = e.clientY - (this.originalMouseY - this.originalResizeTop);
+                height1 = Math.max(this.originalMouseY - getClientY(e) + this.originalHeight, 20);
+                top = getClientY(e) - (this.originalMouseY - this.originalResizeTop);
                 if (height1 > 20 && top > checkOffset[0]) {
                     overlayElem.style.height = height1 + 'px';
                     overlayElem.style.top = top + 'px';
@@ -193,7 +200,7 @@ export class Overlay {
                 }
                 break;
             case 'e-ss-overlay-r':
-                width1 = this.originalWidth + (e.pageX - this.originalMouseX);
+                width1 = this.originalWidth + (getPageX(e) - this.originalMouseX);
                 if (width1 > 20) {
                     overlayElem.style.width = width1 + 'px';
                     this.currentWidth = width1;
@@ -202,7 +209,7 @@ export class Overlay {
                 }
                 break;
             case 'e-ss-overlay-b':
-                height2 = this.originalHeight + (e.pageY - this.originalMouseY);
+                height2 = this.originalHeight + (getPageY(e) - this.originalMouseY);
                 if (height2 > 20) {
                     overlayElem.style.height = height2 + 'px';
                     this.currenHeight = height2;
@@ -211,8 +218,8 @@ export class Overlay {
                 }
                 break;
             case 'e-ss-overlay-l':
-                width2 = Math.max(this.originalMouseX - e.clientX + this.originalWidth, 20);
-                left = e.clientX - (this.originalMouseX - this.originalResizeLeft);
+                width2 = Math.max(this.originalMouseX - getClientX(e) + this.originalWidth, 20);
+                left = getClientX(e) - (this.originalMouseX - this.originalResizeLeft);
                 if (width2 > 20 && left > checkOffset[1]) {
                     overlayElem.style.width = width2 + 'px';
                     overlayElem.style.left = left + 'px';
@@ -224,10 +231,13 @@ export class Overlay {
                 break;
             }
         } else if (this.isOverlayClicked) {
+            if (isTouchMove(e)) {
+                e.preventDefault();
+            }
             if ((closest(target, '.e-sheet') && !target.classList.contains('e-sheet-content')) ||
                 target.classList.contains('e-cell')) {
                 if (!overlayElem) { return; }
-                const aX: number = e.clientX - this.diffX; const aY: number = e.clientY - this.diffY;
+                const aX: number = getClientX(e) - this.diffX; const aY: number = getClientY(e) - this.diffY;
                 if (aX > checkOffset[1]) {
                     overlayElem.style.left = aX + 'px';
                 }
@@ -341,7 +351,11 @@ export class Overlay {
         this.isOverlayClicked = false;
     }
 
-    private overlayClickHandler(e: MouseEvent): void {
+    private isOverlaySelected(args: { isOverlayClicked: boolean }): void {
+        args.isOverlayClicked = this.isOverlayClicked;
+    }
+
+    private overlayClickHandler(e: TouchEvent & MouseEvent): void {
         if (this.parent.getActiveSheet().isProtected) {
             return;
         }
@@ -372,8 +386,8 @@ export class Overlay {
         this.resizedReorderTop = parseFloat(overlayElem.style.top); // resized divTop
         this.originalResizeTop = this.originalReorderTop;
         this.originalResizeLeft = this.originalReorderLeft;
-        this.originalMouseX = e.clientX; // posX
-        this.originalMouseY = e.clientY; // posY
+        this.originalMouseX = getClientX(e); // posX
+        this.originalMouseY = getClientY(e); // posY
         this.diffX = this.originalMouseX - this.originalReorderLeft;
         this.diffY = this.originalMouseY - this.originalReorderTop;
         const actOverlayElem: HTMLElement = document.getElementsByClassName('e-ss-overlay-active')[0] as HTMLElement;
@@ -388,7 +402,7 @@ export class Overlay {
         if (overlayElem.classList.contains('e-datavisualization-chart')) {
             this.parent.notify(focusChartBorder, { id : overlayElem.id });
             if (!actOverlayElem) {
-                this.parent.notify(insertDesignChart, { id: overlayElem.id});
+                this.parent.notify(insertDesignChart, { id: overlayElem.id });
             }
         }
         const clientRect: ClientRect = overlayElem.getBoundingClientRect();
@@ -401,24 +415,27 @@ export class Overlay {
         let handleElem: HTMLElement;
         const overlay: Element = div;
         while (handles.length > i) {
-            handleElem = this.parent.createElement('div', {
-                attrs: { 'class': handles[i as number] + ' ' + 'e-ss-resizer' },
-                styles: 'width: 8px; height: 8px; border-radius: 4px;'
-            });
+            handleElem = this.parent.createElement(
+                'div', { className: handles[i as number] + ' ' + 'e-ss-resizer' + (Browser.isDevice ? ' e-ss-resizer-touch' : ''),
+                styles: 'width: 8px; height: 8px; border-radius: 4px;' });
             overlay.appendChild(handleElem);
             i++;
         }
     }
 
     private removeEventListener(): void {
-        const overlayElem: Element = this.parent.element.querySelector('#' + this.parent.element.id + '_overlay');
-        if (overlayElem) { // Added this condition temporarly to handle chart destroy from spec file.
-            EventHandler.remove(overlayElem, 'mousedown', this.overlayClickHandler);
-            EventHandler.remove(overlayElem, 'mousemove', this.overlayMouseMoveHandler);
+        const overlays: NodeList = this.parent.element.querySelectorAll('.e-ss-overlay');
+        if (overlays.length) { // Added this condition temporarly to handle chart destroy from spec file.
+            for (let idx: number = 0; idx < overlays.length; idx++) {
+                EventHandler.remove(<Element>overlays[idx as number], getStartEvent(), this.overlayClickHandler);
+                EventHandler.remove(<Element>overlays[idx as number], getMoveEvent(), this.overlayMouseMoveHandler);
+            }
         }
-        EventHandler.remove(this.parent.element.querySelector('#' + this.parent.element.id + '_sheet'), 'mousemove', this.overlayMouseMoveHandler);
-        EventHandler.remove(document, 'mouseup', this.overlayMouseUpHandler);
+        EventHandler.remove(this.parent.element.querySelector('#' + this.parent.element.id + '_sheet'), getMoveEvent(), this.overlayMouseMoveHandler);
+        EventHandler.remove(document, getEndEvent(), this.overlayMouseUpHandler);
         this.parent.off(overlayEleSize, this.setOriginalSize);
+        this.parent.off(selectionStatus, this.isOverlaySelected);
+        this.parent.off(spreadsheetDestroyed, this.destroy);
     }
 
     /**

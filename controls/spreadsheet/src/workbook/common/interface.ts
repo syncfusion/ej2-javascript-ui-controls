@@ -181,6 +181,7 @@ export interface AutoDetectInfo {
 export interface ExtendedSheet extends Sheet {
     isLocalData?: boolean;
     lastReqIdx?: number[];
+    isImportProtected?: boolean;
 }
 
 /**

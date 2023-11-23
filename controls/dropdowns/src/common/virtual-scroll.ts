@@ -111,11 +111,24 @@ export class VirtualScroll {
     private generateAndExecuteQueryAsync(query: Query, virtualItemStartIndex: number = 0, virtualItemEndIndex: number = 0, isQueryGenerated: boolean = false): void {
         let dataSource = this.parent.dataSource;
         if (!isQueryGenerated) {
-            query = this.getPageQuery(query, virtualItemStartIndex, virtualItemEndIndex);
+            if(!isNullOrUndefined((this.parent as any).query))
+            {
+                var newQuery = this.removeSkipAndTakeEvents((this.parent as any).query.clone());
+                query = this.getPageQuery(newQuery, virtualItemStartIndex, virtualItemEndIndex);
+            } else {
+                query = this.getPageQuery(query, virtualItemStartIndex, virtualItemEndIndex);
+            }
         }
         this.parent.resetList(dataSource, this.parent.fields, query);
     }
     
+    private removeSkipAndTakeEvents (query: Query) : Query {
+        query.queries = query.queries.filter(function (event) {
+            return event.fn !== 'onSkip' && event.fn !== 'onTake';
+        });
+        return query;
+    }
+
     public setCurrentViewDataAsync(): void {
         // eslint-disable-next-line
         let currentData: any = [];

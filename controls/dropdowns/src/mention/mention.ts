@@ -817,6 +817,9 @@ export class Mention extends DropDownBase {
                 const value: string | number | boolean = this.getFormattedValue(focusItem.getAttribute('data-value'));
                 this.selectEventCallback(focusItem, this.getDataByValue(value), value, true);
             }
+            if (this.beforePopupOpen) {
+                this.renderPopup();
+            }
         }
     }
     private setDataIndex(): void {

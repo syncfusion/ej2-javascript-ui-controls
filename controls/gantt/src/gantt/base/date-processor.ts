@@ -75,7 +75,7 @@ export class DateProcessor {
                     if (!this.parent.includeWeekend) {
                         const tempDate: Date = new Date(cloneStartDate.getTime());
                         cloneStartDate = this.getNextWorkingDay(cloneStartDate);
-                        if (tempDate.getTime() !== cloneStartDate.getTime()) {
+                        if (tempDate.getTime() !== cloneStartDate.getTime() && !validateAsMilestone) {
                             this.setTime(startTime, cloneStartDate);
                         }
                     }

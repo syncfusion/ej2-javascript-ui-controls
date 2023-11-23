@@ -3359,7 +3359,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 if (trg === this.getToolbarElement()) {
                     trg.setAttribute('tabindex', '-1');
                 }
-            } else if (closest(trg, '[aria-owns="' + this.getID() + '"]')) {
+            } else if (closest(trg, '[aria-owns="' + this.getID() + '"]') || closest(trg, '.' + classes.CLS_RTE_ELEMENTS)) {
                 this.isBlur = false;
             } else {
                 this.isBlur = true;
