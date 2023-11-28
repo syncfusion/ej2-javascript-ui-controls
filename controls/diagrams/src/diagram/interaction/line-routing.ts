@@ -566,7 +566,8 @@ export class LineRouting {
                     points[parseInt(j.toString(), 10)].y = points[j + 1].y = targetPoint.y;
                 }
             } else {
-                if (j === 0 && sourceWrapper) {
+                //EJ2-855805 - Connector target decorator is not proper in complexhierarchical layout when we call doLayout with line-routing 
+                if (j === 0 && connector.sourcePortID === '' && sourceWrapper) {
                     sourcePoint = (points[parseInt(j.toString(), 10)].y > points[j + 1].y) ? sourceWrapper.bounds.topCenter : sourceWrapper.bounds.bottomCenter;
                 }
                 if (j === points.length - 2 && connector.targetPortID === '' && targetWrapper) {

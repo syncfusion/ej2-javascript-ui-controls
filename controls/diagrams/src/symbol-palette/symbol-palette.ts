@@ -1321,7 +1321,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         }
         content.measure(new Size());
         content.arrange(content.desiredSize);
-        if ((content as Container).children) {
+        if ((content as Container).children && (content as Container).children.length > 0) {
             (content as Container).children[0].transform = Transform.Parent;
         }
     }

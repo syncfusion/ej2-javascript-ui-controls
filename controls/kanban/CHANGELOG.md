@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
-## 23.2.5 (2023-11-23)
+## 23.2.4 (2023-11-20)
 
 ### Kanban
 
 #### Bug Fixes
 
 `#I513537` - Now, localization of the "Cards" text was done. When you drag the multiple cards, it show up.
+
+`#I515897` - Now, when the `cancel` argument is set to true in the `dialogClose` event in the kanban, it works properly.
 
 ## 23.1.36 (2023-09-15)
 

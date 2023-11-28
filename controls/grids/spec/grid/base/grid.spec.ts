@@ -23,8 +23,9 @@ import { Group } from '../../../src/grid/actions/group';
 import { ColumnChooser } from '../../../src/grid/actions/column-chooser';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
+import { Filter } from '../../../src/grid/actions/filter';
 
-Grid.Inject(Aggregate, Page, Edit, Toolbar, Group, ColumnChooser, DetailRow);
+Grid.Inject(Aggregate, Page, Edit, Toolbar, Group, ColumnChooser, DetailRow, Filter);
 
 describe('Grid base module', () => {
     describe('Grid properties', () => {
@@ -2037,6 +2038,86 @@ describe('Grid base module', () => {
             gridObj = actionComplete = null;
         });
     });
+
+describe('EJ2-855141 - Height 100% is not working when dynamically changing properties', () => {
+    let gridObj: Grid;
+    let contentHeight: string;
+    let actionComplete: (args: Object) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 5),
+                allowFiltering: true,
+                allowPaging: true,
+                allowGrouping: true,
+                height: '100%',
+                toolbar: ['Search'],
+                columns: [{ field: 'OrderID', headerText: 'Order ID', width: 200 },
+                { field: 'CustomerID', headerText: 'CustomerID', visible: false },
+                { field: 'ShipCity', headerText: 'Ship City', width: 200 },
+                { field: 'Freight', width: 200 }],
+                aggregates: [{
+                    columns: [{
+                        type: 'Sum',
+                        field: 'Freight',
+                        footerTemplate: 'Sum: ${Sum}'
+                    }]
+                }]
+            }, done);
+    });
+    it('Get the initial height', () => {
+        contentHeight = (gridObj.element.querySelector('.e-gridcontent') as HTMLElement).style.height;
+        expect(contentHeight).not.toBeUndefined();
+    });
+    it('Change paging', (done: Function) => {
+        actionComplete = (args: Object) => {
+            let newHeight: string = (gridObj.element.querySelector('.e-gridcontent') as HTMLElement).style.height;
+            expect(contentHeight).not.toEqual(newHeight);
+            contentHeight = newHeight;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.allowPaging = false;
+    });
+    it('Code coverage1', (done: Function) => {
+        gridObj.actionComplete = null;
+        gridObj.filterSettings.type = 'Menu';
+        gridObj.filterSettings.type = 'FilterBar';
+        gridObj.groupSettings.showDropArea = false;
+        gridObj.groupSettings.showDropArea = true;
+        done();
+    });
+    it('Change filter', (done: Function) => {
+        actionComplete = (args: Object) => {
+            let newHeight: string = (gridObj.element.querySelector('.e-gridcontent') as HTMLElement).style.height;
+            expect(contentHeight).not.toEqual(newHeight);
+            contentHeight = newHeight;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.allowFiltering = false;
+    });
+    it('Change grouping', (done: Function) => {
+        actionComplete = (args: Object) => {
+            let newHeight: string = (gridObj.element.querySelector('.e-gridcontent') as HTMLElement).style.height;
+            expect(contentHeight).not.toEqual(newHeight);
+            contentHeight = newHeight;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.allowGrouping = false;
+    });
+    it('Code coverage2', (done: Function) => {
+        gridObj.actionComplete = null;
+        gridObj.aggregates = null;
+        gridObj.toolbar = null;
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = contentHeight = actionComplete = null;
+    });
+});
 
 // used for code coverage
 describe('get edit template =>', () => {

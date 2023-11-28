@@ -64,8 +64,10 @@ export class LinkCommand {
             }
             if (!isNOU(e.item.target)) {
                 anchorEle.setAttribute('target', e.item.target);
+                anchorEle.setAttribute('aria-label', e.item.ariaLabel);
             } else {
                 anchorEle.removeAttribute('target');
+                anchorEle.removeAttribute('aria-label');
             }
             if (linkText === e.item.text) {
                 e.item.selection.setSelectionText(this.parent.currentDocument, anchorEle, anchorEle, 1, 1);

@@ -1592,8 +1592,14 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     this.createContentHeader();
                     this.createContentBody();
                 }
+                if (this.getModuleName() === 'calendar') {
+                    const l10nLocale: object = { today: 'Today' };
+                    this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
+                }
                 this.l10.setLocale(this.locale);
-                this.updateFooter();
+                if (this.showTodayButton) {
+                    this.updateFooter();
+                }
                 break;
             case 'showTodayButton':
                 if (newProp.showTodayButton) {

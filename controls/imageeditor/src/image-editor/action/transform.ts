@@ -1404,7 +1404,8 @@ export class Transform {
     }
 
     private getCurrentZoomFactor(zoomFactor: number): number {
-        return (zoomFactor - this.prevZoomValue) * 0.1;
+        return zoomFactor >= 1 ? (this.prevZoomValue < 1 ? (zoomFactor - this.prevZoomValue) : (zoomFactor - this.prevZoomValue) * 0.1) :
+            (zoomFactor - this.prevZoomValue);
     }
 
     private setCurrPanRegion(region: string, type: number | string, obj: Object): void {

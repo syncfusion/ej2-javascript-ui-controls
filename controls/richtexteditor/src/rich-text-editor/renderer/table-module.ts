@@ -1397,7 +1397,7 @@ export class Table {
             value: 3,
             placeholder: tableRow,
             floatLabelType: 'Auto',
-            max: 50,
+            max: 1000,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale,
             cssClass: this.parent.cssClass
         });

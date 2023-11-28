@@ -227,6 +227,18 @@ describe('ProgressBar Control', () => {
             progress.loaded = loaded;
             progress.refresh();
         });
+        it('checking with  segmentColor with corner round for semicirculaprogres and secondary progressvalue above progress maximum', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_CircularProgressSegment1');
+                strokeColor = path.getAttribute('stroke');
+                expect(strokeColor === 'red').toBe(true);
+            }
+            progress.startAngle = 270;
+            progress.endAngle = 90;
+            progress.secondaryProgress = 120;
+            progress.loaded = loaded;
+            progress.refresh();
+        });
     });
     describe('ProgressBar rangeColor & gradient for linear', () => {
         let progress: ProgressBar;

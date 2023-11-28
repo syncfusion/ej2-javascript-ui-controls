@@ -218,6 +218,10 @@ export class PageRenderer{
                         }
                         // eslint-disable-next-line max-len
                         const shapes: ShapeAnnotationBase = annotRenderer.loadSquareAnnotation(annotation as PdfSquareAnnotation, height, width, pageRotation, shapeLabel);
+                        const name: string = shapes.AnnotName;
+                        if (isNullOrUndefined(name) || name === '') {
+                            shapes.AnnotName = this.setAnnotationName(pageNumber);
+                        }
                         if (!isNullOrUndefined(shapes)) {
                             if (shapes instanceof MeasureShapeAnnotationBase) {
                                 this.measureAnnotationList[this.measureAnnotationList.length] = shapes;

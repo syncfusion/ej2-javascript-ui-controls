@@ -2,8 +2,9 @@
  * Gantt predecessor base spec
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { Gantt, DurationUnit } from '../../src/index';
-import { destroyGantt, createGantt } from './gantt-util.spec';
+import { Gantt, DurationUnit, Selection, Toolbar, DayMarkers, Edit, Filter, ContextMenu } from '../../src/index';
+import { destroyGantt, createGantt, triggerMouseEvent } from './gantt-util.spec';
+import { ContextMenuClickEventArgs} from './../../src/gantt/base/interface';
 let columnTemplateData: Object[] = [
     {
         TaskID: 1,
@@ -966,6 +967,97 @@ describe('Predecessor does not render propely for FF type', () => {
     });
     it('FF type', () => {
         expect(document.getElementsByClassName('e-connector-line-arrow')[0].getAttribute('d')).toBe('M 595 420 L 587 415 L 587 424 Z');
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});
+describe('Bug -855406 -Dependency line not render after adding child record ', () => {
+    let ganttObj: Gantt;
+    let editingData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), Duration: 10,
+                    Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+                },
+                {
+                    TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2FF',
+                    resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                        'From an engineer or company specializing in soil testing'
+                },
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: editingData,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    child: 'subtasks'
+                },
+                enableContextMenu: true,
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                    allowAdding: true,
+                },
+                toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('Check the parent predecessor to be present', () => {
+        let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+        triggerMouseEvent(add, 'click');
+        let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
+        triggerMouseEvent(save, 'click');
+        let add1: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+        triggerMouseEvent(add1, 'click');
+        let save1: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
+        triggerMouseEvent(save1, 'click');
+        ganttObj.updatePredecessor(ganttObj.flatData[0].ganttProperties.taskId, '4FS');
+        ganttObj.selectRow(0);
+        let e: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Child' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        expect(ganttObj.currentViewData[0].ganttProperties.predecessor.length).toBe(1);
     });
     afterAll(() => {
         destroyGantt(ganttObj);

@@ -646,6 +646,8 @@ export class BaseHistoryInfo {
                     }
                 } else if (lastNode instanceof TableWidget) {
                     this.owner.editorModule.insertBlock(lastNode as TableWidget);
+                } else {
+                    this.insertRemovedNodes(deletedNodes, deletedNodes[deletedNodes.length - 1] as BlockWidget);
                 }
             } else {
                 let initialStart: string = start;
@@ -756,6 +758,7 @@ export class BaseHistoryInfo {
         }
     }
     private insertRemovedNodes(deletedNodes: IWidget[], block: BlockWidget): void {
+        let skipSelection: boolean = true;
         for (let i: number = deletedNodes.length - 1, index: number = 0; i > -1; i--) {
             let node: IWidget = deletedNodes[i];
             if (node instanceof ElementBox) {
@@ -772,7 +775,25 @@ export class BaseHistoryInfo {
                 } else if (block instanceof TableWidget) {
                     this.owner.editorModule.insertBlockTable(this.owner.selection, node as BlockWidget, block as TableWidget);
                 } else {
-                    this.owner.editorModule.insertBlock(node);
+                    if (node instanceof ParagraphWidget && !node.isInsideTable && this.action === 'RemoveRowTrack') {
+                        if (skipSelection) {
+                            this.owner.selection.moveToPreviousCharacter();
+                            skipSelection = false;
+                        }
+                        this.owner.editorModule.insertNewParagraphWidget(node, true);
+                        if (!isNullOrUndefined(node.lastChild) && node.lastChild instanceof LineWidget) {
+                            this.owner.selection.start.setPositionParagraph(node.lastChild as LineWidget, (node.lastChild as LineWidget).getEndOffset());
+                        }
+                    } else if (node instanceof TableWidget && this.action === 'RemoveRowTrack') {
+                        let block: BlockWidget = this.owner.selection.start.paragraph;
+                        if (block.nextRenderedWidget && block.nextRenderedWidget instanceof TableWidget) {
+                            let table: TableWidget = block.nextRenderedWidget as TableWidget;
+                            node = node.combineWidget(this.viewer) as BlockWidget;
+                            this.owner.editorModule.insertTableInternal(table as TableWidget, node as TableWidget, false);
+                        }
+                    } else {
+                        this.owner.editorModule.insertBlock(node);
+                    }
                 }
             } else if (node instanceof WCharacterFormat) {
                 let insertIndex: string = this.selectionStart;

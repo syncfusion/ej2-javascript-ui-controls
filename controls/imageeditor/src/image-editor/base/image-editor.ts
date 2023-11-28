@@ -1602,6 +1602,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter: '', isBrightAdjust: false,
                 aspectWidth: null, aspectHeight: null };
             this.afterCropActions = []; this.currentFilter = ''; this.tempFrameZoomLevel = null; this.cxtTbarHeight = null;
+            this.aspectWidth = this.aspectHeight = null;
             const obj: Object = {initialZoomValue: false };
             this.notify('draw', { prop: 'getInitialZoomValue', onPropertyChange: false, value: {obj: obj }});
             if (obj['initialZoomValue']) {

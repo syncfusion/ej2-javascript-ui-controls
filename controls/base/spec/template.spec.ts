@@ -36,6 +36,7 @@ let dsJSONArray: any = [{ name: 'one', info: { id: '01' } }, { name: 'two', info
 let dsSubArray: any = [{ name: 'one', items: ['AR Item1', 'AR Item2'] }, { name: 'two', items: ['AR Item1', 'AR Item2'] }];
 let dsJSONSubArray: any = [{ name: 'one', info: { id: '01', items: ['AR Item1', 'AR Item2'] } }, { name: 'two', info: { id: '02', items: ['AR Item1', 'AR Item2'] } }];
 let JSONArray: any = [{ name:'one   two', info: { id:'01' } }, { name:'two three', info: { id:'02' } }];
+let spaceDS: any = [{ name:'one   two', info: { id:'01' } }, { name:'two three   ', info: { id:'02' } }];
 
 let tempObj: any;
 
@@ -148,12 +149,20 @@ describe('Template', () => {
         expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
     });
 
-    it('JSON Array Input With multiple sapce between inner text', () => {
+    it('JSON Array Input With multiple space between inner text', () => {
         let templateStr: string = '<div class=" class1   class2    class3">${name}</div>';
         let result: Element[] = [];
         result.push(createElement('div', { innerHTML: 'one   two', className:' class1 class2 class3' }));
         result.push(createElement('div', { innerHTML: 'two three', className:' class1 class2 class3' }));
         expect(outDOM(template.compile(templateStr), JSONArray)).toEqual(result);
+    });
+
+    it('Multiple space between inner text template string', () => {
+        let templateStr: string = "<div>${name}</div>";
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'one   two' }));
+        result.push(createElement('div', { innerHTML: 'two three   ' }));
+        expect(outDOM(template.compile(templateStr), spaceDS)).toEqual(result);
     });
     
     it('JSON array input with href value with apostrophe', () => {
@@ -194,8 +203,8 @@ describe('Template', () => {
             </div>`;
         /* tslint:enable */
         let result: Element[] = [];
-        result.push(createElement('div', { innerHTML: '<span>one</span>01' }));
-        result.push(createElement('div', { innerHTML: '<span>two</span>02' }));
+        result.push(createElement('div', { innerHTML: ' <span>one</span>01 ' }));
+        result.push(createElement('div', { innerHTML: ' <span>two</span>02 ' }));
         expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
         template.expression(new RegExp('\\${([^}]*)}', 'g'));
     });

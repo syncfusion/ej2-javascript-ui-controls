@@ -10,7 +10,7 @@ import { PdfBrush } from './brushes/pdf-brush';
 import { PdfSolidBrush } from './brushes/pdf-solid-brush';
 import { PdfFont } from './fonts/pdf-font';
 import { PdfStandardFont } from './fonts/pdf-standard-font';
-import { PdfTransformationMatrix } from './pdf-transformation-matrix';
+import { PdfTransformationMatrix, Matrix } from './pdf-transformation-matrix';
 import { PointF, SizeF, RectangleF } from './../drawing/pdf-drawing';
 import { ProcedureSets } from './constants';
 import { PdfStream } from './../primitives/pdf-stream';
@@ -2390,7 +2390,12 @@ export class PdfGraphicsState {
     public constructor(graphics ?: PdfGraphics, matrix ?: PdfTransformationMatrix) {
         if (typeof graphics !== 'undefined') {
             this.pdfGraphics = graphics;
-            this.transformationMatrix = matrix;
+            const elements: number[] = [];
+            graphics.matrix.matrix.elements.forEach((element: number) => {
+                elements.push(element);
+            });
+            this.transformationMatrix = new PdfTransformationMatrix();
+            this.transformationMatrix.matrix = new Matrix(elements);
         }
     }
 }

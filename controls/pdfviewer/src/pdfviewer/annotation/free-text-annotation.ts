@@ -655,7 +655,7 @@ export class FreeTextAnnotation {
                 let newArray: IFreeTextAnnotation[] = [];
                 const pageAnnotationObject: IPageAnnotations = annotationCollection[i];
                 for(let k: number = 0; pageAnnotationObject.annotations.length > k; k++){
-                    if(!isNullOrUndefined(pageAnnotationObject.annotations[k])){
+                    if(!isNullOrUndefined(pageAnnotationObject.annotations[k]) && pageAnnotationObject.annotations[k].dynamicText && pageAnnotationObject.annotations[k].dynamicText.includes('\n')){
                         let noOfLines: number  = pageAnnotationObject.annotations[k].dynamicText.split("\n").length;
                         let newHeight: number  = noOfLines * pageAnnotationObject.annotations[k].fontSize * this.lineGap;
                         if (pageAnnotationObject.annotations[k].bounds.height < newHeight) {

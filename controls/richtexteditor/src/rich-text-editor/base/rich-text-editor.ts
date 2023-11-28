@@ -1912,10 +1912,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             switch ((e as KeyboardEventArgs).action) {
             case 'toolbar-focus':
-                if (this.toolbarSettings.enable) {
-                    // eslint-disable-next-line
-                    let selector: string = '.e-toolbar-item[title] [tabindex]';
-                    (this.toolbarModule.baseToolbar.toolbarObj.element.querySelector(selector) as HTMLElement).focus();
+                if (this.toolbarSettings.enable && this.getToolbarElement()) {
+                    const firstActiveItem: HTMLElement = this.getToolbarElement().querySelector('.e-toolbar-item:not(.e-overlay)[title]');
+                    (firstActiveItem.firstElementChild as HTMLElement).removeAttribute('tabindex');
+                    (firstActiveItem.firstElementChild as HTMLElement).focus();
                 }
                 break;
             case 'escape':
@@ -3268,15 +3268,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         }
-        if (!isNOU(this.getToolbarElement())) {
-            const toolbarItem: NodeList = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
-            for (let i: number = 0; i < toolbarItem.length; i++) {
-                if ((!(toolbarItem[i as number] as HTMLElement).classList.contains('e-rte-dropdown-btn') &&
-                !(toolbarItem[i as number] as HTMLElement).classList.contains('e-insert-table-btn')) &&
-                (!(toolbarItem[i as number] as HTMLElement).hasAttribute('tabindex') ||
-                (toolbarItem[i as number] as HTMLElement).getAttribute('tabindex') !== '-1')) {
-                    (toolbarItem[i as number] as HTMLElement).setAttribute('tabindex', '-1');
-                }
+        if (!this.readonly ) {
+            const currentFocus: string = this.getCurrentFocus(e);
+            if (currentFocus === 'editArea' || currentFocus === 'textArea' || currentFocus === 'sourceCode') {
+                this.resetToolbarTabIndex();
             }
         }
     }
@@ -3392,6 +3387,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         } else {
             this.isRTE = true;
         }
+        if (!this.readonly && this.getCurrentFocus(e) === 'outside') { this.resetToolbarTabIndex(); }
     }
 
     /**
@@ -3651,5 +3647,42 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.remove(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown);
         }
         this.unWireScrollElementsEvents();
+    }
+
+    /**
+     * 
+     * @param e Focus event
+     * @returns string Returns the current focus either `editArea` or `toolbar` or `textArea` or `sourceCode` or `outside` of the RichTextEditor.
+     * @hidden
+     */
+    private getCurrentFocus(e: FocusEvent): string {
+        if (e.target === this.inputElement && document.activeElement === this.inputElement) {
+            return 'editArea';
+        } else if (e.target === this.getToolbarElement() || (!isNOU(e.relatedTarget) && closest(e.relatedTarget as Element, '.e-rte-toolbar') === this.getToolbarElement())) {
+            return 'toolbar';
+        } else if (e.target === this.valueContainer && document.activeElement === this.valueContainer) {
+            return 'textArea';
+        } else if (!isNOU(e.target) && (e.target as HTMLElement).classList.contains(classes.CLS_RTE_SOURCE_CODE_TXTAREA) && document.activeElement === e.target) {
+            return 'sourceCode';
+        }
+        return 'outside';
+    }
+
+    /**
+     * @param {FocusEvent} e - specifies the event.
+     * @hidden
+     */
+    private resetToolbarTabIndex(): void {
+        if (this.getToolbarElement()) {
+            const toolbarItem: NodeList = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
+            for (let i: number = 0; i < toolbarItem.length; i++) {
+                if ((!(toolbarItem[i as number] as HTMLElement).classList.contains('e-rte-dropdown-btn') &&
+                !(toolbarItem[i as number] as HTMLElement).classList.contains('e-insert-table-btn')) &&
+                (!(toolbarItem[i as number] as HTMLElement).hasAttribute('tabindex') ||
+                (toolbarItem[i as number] as HTMLElement).getAttribute('tabindex') !== '-1')) {
+                    (toolbarItem[i as number] as HTMLElement).setAttribute('tabindex', '-1');
+                }
+            }
+        }
     }
 }

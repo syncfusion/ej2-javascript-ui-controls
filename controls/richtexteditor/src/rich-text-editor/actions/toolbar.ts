@@ -596,13 +596,6 @@ export class Toolbar {
         }
     }
 
-    private tbKeydownHandler(e: Event): void {
-        if ((e.target as HTMLElement).classList.contains('e-dropdown-btn') ||
-        (e.target as HTMLElement).getAttribute('id') === this.parent.getID() + '_toolbar_CreateTable') {
-            (e.target as HTMLElement).setAttribute('tabindex', '0');
-        }
-    }
-
     private toolbarClickHandler(e: ClickEventArgs): void {
         const trg: Element = closest(e.originalEvent.target as Element, '.e-hor-nav');
         if (trg && this.parent.toolbarSettings.type === ToolbarType.Expand && !isNOU(trg)) {
@@ -631,12 +624,10 @@ export class Toolbar {
             return;
         }
         EventHandler.add(this.tbElement, 'focusin', this.tbFocusHandler, this);
-        EventHandler.add(this.tbElement, 'keydown', this.tbKeydownHandler, this);
     }
 
     protected unWireEvents(): void {
         EventHandler.remove(this.tbElement, 'focusin', this.tbFocusHandler);
-        EventHandler.remove(this.tbElement, 'keydown', this.tbKeydownHandler);
     }
 
     protected addEventListener(): void {

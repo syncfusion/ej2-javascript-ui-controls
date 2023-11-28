@@ -3544,6 +3544,8 @@ export class Selection {
     private performEnterAction(e?: KeyboardEvent): void {
         const parent: ImageEditor = this.parent;
         if (parent.isResize) {
+            const isValue: boolean = this.isValueUpdated();
+            if (!isValue) {return; }
             const point: Point = this.getNumTextValue();
             const aspectRatioElement: HTMLInputElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_aspectratio') as HTMLInputElement);
             const blrAspRatElem: HTMLInputElement = (this.parent.element.querySelector('.e-ie-toolbar-aspect-ratio-btn') as HTMLInputElement);
@@ -3572,15 +3574,19 @@ export class Selection {
                 const aspectRatioHeight: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeHeight');
                 const aspectRatioWidth: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_resizeWidth');
                 if (isNullOrUndefined(aspectRatioElement)) {
-                    let elem: NumericTextBox = getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox;
-                    if (aspectRatioHeight && isNullOrUndefined(elem.value)) {
-                        elem.value = parseFloat(elem.placeholder);
-                        (aspectRatioHeight as HTMLInputElement).value = Math.floor(parent.img.destHeight).toString() + ' px';
+                    if (aspectRatioHeight) {
+                        const elem: NumericTextBox = getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox;
+                        if (aspectRatioHeight && isNullOrUndefined(elem.value)) {
+                            elem.value = parseFloat(elem.placeholder);
+                            (aspectRatioHeight as HTMLInputElement).value = Math.floor(parent.img.destHeight).toString() + ' px';
+                        }
                     }
-                    elem = getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox;
-                    if (aspectRatioWidth && isNullOrUndefined(elem.value)) {
-                        elem.value = parseFloat(elem.placeholder);
-                        (aspectRatioWidth as HTMLInputElement).value = Math.floor(parent.img.destWidth).toString() + ' px';
+                    if (aspectRatioWidth) {
+                        const elem: NumericTextBox = getComponent(aspectRatioWidth, 'numerictextbox') as NumericTextBox;
+                        if (aspectRatioWidth && isNullOrUndefined(elem.value)) {
+                            elem.value = parseFloat(elem.placeholder);
+                            (aspectRatioWidth as HTMLInputElement).value = Math.floor(parent.img.destWidth).toString() + ' px';
+                        }
                     }
                 }
             }
@@ -4474,5 +4480,22 @@ export class Selection {
             obj['width'] = width; obj['height'] = height;
         }
         return {x: width, y: height };
+    }
+
+    private isValueUpdated(): boolean {
+        let isValue: boolean = true; let widthElement: HTMLInputElement; let heightElement: HTMLInputElement;
+        if (!isBlazor()) {
+            widthElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_resizeWidth') as HTMLInputElement);
+            heightElement = (this.parent.element.querySelector('#' + this.parent.element.id + '_resizeHeight') as HTMLInputElement);
+        } else {
+            widthElement = this.parent.element.querySelector('.e-ie-toolbar-e-resize-width-input .e-numerictextbox');
+            heightElement = this.parent.element.querySelector('.e-ie-toolbar-e-resize-height-input .e-numerictextbox');
+        }
+        if (widthElement && heightElement) {
+            if (heightElement.value.replace(/,/g, '') === '' && widthElement.value.replace(/,/g, '') === '') {
+                isValue = false;
+            }
+        }
+        return isValue;
     }
 }

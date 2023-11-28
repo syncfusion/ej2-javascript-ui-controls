@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 23.2.5 (2023-11-23)
+## 23.2.6 (2023-11-28)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the undefined exception encountered during the continuous reloading of PDF documents with ink annotation.
+
+## 23.2.4 (2023-11-20)
 
 ### PDF Parser
 

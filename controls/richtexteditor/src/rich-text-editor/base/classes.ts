@@ -604,3 +604,8 @@ export const CLS_RTE_TB_ENABLED: string = 'e-rte-toolbar-enabled';
  * @deprecated
  */
 export const CLS_RTE_RES_WEST: string = 'e-south-west';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const CLS_RTE_SOURCE_CODE_TXTAREA: string = 'e-rte-srctextarea';

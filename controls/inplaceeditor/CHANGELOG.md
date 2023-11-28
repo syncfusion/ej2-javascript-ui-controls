@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.5 (2023-11-23)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- `#I501296` - Fixed an issue where the width of the in-place-editor was affected when attempting to remove values from it.
+
 ## 20.4.54 (2023-03-14)
 
 ### In-place Editor

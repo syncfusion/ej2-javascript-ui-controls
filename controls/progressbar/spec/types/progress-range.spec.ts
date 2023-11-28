@@ -57,7 +57,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 pathlength = (<SVGPathElement>path).getTotalLength();
-                expect(pathlength == 0).toBe(true);
+                expect(pathlength == 749).toBe(true);
             }
             progress.minimum = 10;
             progress.maximum = 70;
@@ -154,7 +154,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Circularprogress');
                 pathlength = (<SVGPathElement>path).getTotalLength();
-                expect(pathlength == 0).toBe(true);
+                expect(pathlength == 301.6273498535156).toBe(true);
             }
             progress.minimum = 10;
             progress.maximum = 70;

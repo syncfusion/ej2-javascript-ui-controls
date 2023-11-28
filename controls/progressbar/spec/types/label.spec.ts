@@ -143,7 +143,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_linearLabel');
                 pos = path.getAttribute('x');
-                expect(pos === '41' || pos === '10').toBe(true);
+                expect(pos === '41' || pos === '10'|| pos === '200').toBe(true);
             };
             progress.enableRtl = false;
             progress.minimum = 10;
@@ -315,7 +315,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_circularLabel');
                 pos = path.innerHTML;
-                expect(pos === '0%' ).toBe(true);
+                expect(pos === '150%' ).toBe(true);
             };
             progress.minimum = 10;
             progress.maximum = 70;

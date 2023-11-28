@@ -118,7 +118,7 @@ export class Search {
      * @returns {number} - Returns replaced text count.
      */
     public replace(replaceText: string, result: TextSearchResult, results: TextSearchResults): number {
-        if (isNullOrUndefined(this.viewer.owner) || this.viewer.owner.isReadOnlyMode || isNullOrUndefined(results)) {
+        if (isNullOrUndefined(this.viewer.owner) || this.viewer.owner.isReadOnlyMode  || !this.viewer.owner.editorModule.canEditContentControl || isNullOrUndefined(results)) {
             return 0;
         }
         if (!isNullOrUndefined(this.viewer)) {
@@ -211,12 +211,15 @@ export class Search {
             if (result.start.currentWidget.children.length === 0) {
                 results = this.textSearch.findAll(text);
                 i = results.length;
-             } else {
-                 this.navigate(result);
-                 let allowLayout: boolean = true;
-                 if(i > 0) {
-                     let previousResult: TextSearchResult = results.innerList[i - 1];
-                     if (previousResult.start.paragraph.equals(result.start.paragraph)) {
+            } else {
+                this.navigate(result);
+                if (this.viewer.owner.isReadOnlyMode || !this.viewer.owner.editorModule.canEditContentControl) {
+                    continue;
+                }
+                let allowLayout: boolean = true;
+                if (i > 0) {
+                    let previousResult: TextSearchResult = results.innerList[i - 1];
+                    if (previousResult.start.paragraph.equals(result.start.paragraph)) {
                         allowLayout = false;
                      }
                  }

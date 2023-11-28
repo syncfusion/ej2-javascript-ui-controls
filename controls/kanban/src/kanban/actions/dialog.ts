@@ -346,26 +346,28 @@ export class KanbanDialog {
         if (document.getElementById(id) && this.formObj.validate() &&
             (target.classList.contains('e-dialog-edit') || target.classList.contains('e-dialog-add'))) {
             this.dialogObj.hide();
-            if (target.classList.contains('e-dialog-edit')) {
-                const activeCard: CardClickEventArgs = this.parent.activeCardData;
-                let updateIndex: number;
-                if (activeCard.data[this.parent.keyField] === this.cardData[this.parent.keyField]
-                    && activeCard.element) {
-                    updateIndex = [].slice.call(activeCard.element.parentElement.children).indexOf(activeCard.element);
-                }
-                if (this.parent.enableHtmlSanitizer) {
-                    if (typeof this.cardData[this.parent.cardSettings.contentField] === 'string') {
-                        this.cardData[this.parent.cardSettings.contentField] =
-                        SanitizeHtmlHelper.sanitize(this.cardData[this.parent.cardSettings.contentField]);
+            if (!isNullOrUndefined(this.cardData)) {
+                if (target.classList.contains('e-dialog-edit')) {
+                    const activeCard: CardClickEventArgs = this.parent.activeCardData;
+                    let updateIndex: number;
+                    if (activeCard.data[this.parent.keyField] === this.cardData[this.parent.keyField]
+                        && activeCard.element) {
+                        updateIndex = [].slice.call(activeCard.element.parentElement.children).indexOf(activeCard.element);
                     }
+                    if (this.parent.enableHtmlSanitizer) {
+                        if (typeof this.cardData[this.parent.cardSettings.contentField] === 'string') {
+                            this.cardData[this.parent.cardSettings.contentField] =
+                                SanitizeHtmlHelper.sanitize(this.cardData[this.parent.cardSettings.contentField]);
+                        }
+                    }
+                    this.parent.crudModule.updateCard(this.cardData, updateIndex);
                 }
-                this.parent.crudModule.updateCard(this.cardData, updateIndex);
+                if (target.classList.contains('e-dialog-add')) {
+                    this.parent.crudModule.addCard(this.cardData);
+                }
+                this.parent.actionModule.SingleCardSelection(this.cardData);
+                this.cardData = null;
             }
-            if (target.classList.contains('e-dialog-add')) {
-                this.parent.crudModule.addCard(this.cardData);
-            }
-            this.parent.actionModule.SingleCardSelection(this.cardData);
-            this.cardData = null;
         }
         if (!target.classList.contains('e-dialog-edit') && !target.classList.contains('e-dialog-add')) {
             if (target.classList.contains('e-dialog-cancel')) {

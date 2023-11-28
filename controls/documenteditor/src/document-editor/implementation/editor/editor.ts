@@ -2427,7 +2427,9 @@ export class Editor {
                         // Here, the text is split based on the maximum character length of 90.
                         HelperMethods.splitWordByMaxLength(tempSpan, tempSpan.line);
                     }
-                    this.documentHelper.layout.reLayoutParagraph(insertPosition.paragraph, inline.line.indexInOwner, 0);
+                    if (!(!isNullOrUndefined(revisionType) && revisionType === 'Deletion' && !insertPosition.paragraph.isLayouted)) {
+                        this.documentHelper.layout.reLayoutParagraph(insertPosition.paragraph, inline.line.indexInOwner, 0);
+                    }
                 }
             }
             this.documentHelper.layout.allowLayout = true;
@@ -3411,16 +3413,14 @@ export class Editor {
 
                     }
                     if (!isNullOrUndefined(paraIndex) && !isNullOrUndefined(currentStart)) {
-                        if (currentStart.isExistBefore(paraIndex)) {
+                        if (currentStart.isExistBefore(paraIndex) && !(revision.range[0] instanceof WRowFormat)) {
                             isInserted = true;
                             this.owner.revisions.changes.splice(i, 0, revision);
-                            if (!(revision.range[0] instanceof WRowFormat)) {
-                                let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this.owner.trackChangesPane);
-                                this.owner.trackChangesPane.changesInfoDiv.insertBefore(currentChangeView.createSingleChangesDiv(revision), this.owner.trackChangesPane.changesInfoDiv.children[i + 1]);
-                                this.owner.trackChangesPane.revisions.splice(i, 0, revision);
-                                this.owner.trackChangesPane.changes.add(revision, currentChangeView);
-                                this.owner.trackChangesPane.renderedChanges.add(revision, currentChangeView);
-                            }
+                            let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this.owner.trackChangesPane);
+                            this.owner.trackChangesPane.changesInfoDiv.insertBefore(currentChangeView.createSingleChangesDiv(revision), this.owner.trackChangesPane.changesInfoDiv.children[i + 1]);
+                            this.owner.trackChangesPane.revisions.splice(i, 0, revision);
+                            this.owner.trackChangesPane.changes.add(revision, currentChangeView);
+                            this.owner.trackChangesPane.renderedChanges.add(revision, currentChangeView);
                             break;
                         }
                     }
@@ -12487,7 +12487,7 @@ export class Editor {
             if ((startOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget))) {
                 startOffset++;
             }
-            if (end.paragraph.isInsideTable) {
+            if (end.paragraph.isInsideTable && (!this.owner.enableTrackChanges || this.skipTracking())) {
                 isCombineNextParagraph = this.isEndInAdjacentTable(paragraph, end.paragraph);
             }
             if (!isCombineNextParagraph) {
@@ -12522,7 +12522,7 @@ export class Editor {
             (this.editorHistory && this.editorHistory.isUndoing && this.editorHistory.currentHistoryInfo &&
                 this.editorHistory.currentHistoryInfo.action === 'PageBreak' && block && block.isPageBreak()
                 && (startOffset === 0 && !start.currentWidget.isFirstLine || startOffset > 0)) ||
-            start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph || !isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && (this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change' || this.editorHistory.currentBaseHistoryInfo.action === 'Reject All') && start.paragraph === paragraph && end.paragraph != paragraph && startOffset >= paragraphStart) {
+            start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph || !isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && ((this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change' && start.paragraph === paragraph && end.paragraph != paragraph && startOffset >= paragraphStart) || (this.editorHistory.currentBaseHistoryInfo.action === 'Accept Change' && start.currentWidget.isLastLine() && start.currentWidget == end.currentWidget && start.offset + 1 == end.offset))) {
             isCombineNextParagraph = true;
         }
         if ((tempStartOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget))) {
@@ -12584,10 +12584,10 @@ export class Editor {
                             this.removeInlines(paragraph, startLine, startOffset, endLineWidget, endOffset, editAction);
                         }
                     } else {
-                        if (!start.currentWidget.isFirstLine() && paragraph.lastChild === end.currentWidget) {
+                        if (!start.currentWidget.isFirstLine() && paragraph.lastChild === end.currentWidget && !isCombineNextParagraph) {
                             this.removeInlines(paragraph, startLine, startOffset, endLineWidget, endOffset, editAction);
                         } else {
-                            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && (this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change' || this.editorHistory.currentBaseHistoryInfo.action === 'Reject All') && start.paragraph === paragraph && end.paragraph != paragraph && startOffset >= paragraphStart && isCombineNextParagraph) {
+                            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change' && start.paragraph === paragraph && end.paragraph != paragraph && startOffset >= paragraphStart && isCombineNextParagraph) {
                                 isCombineLastBlock = true;
                             }
                             currentParagraph = this.splitParagraph(paragraph, paragraph.firstChild as LineWidget, 0, startLine, startOffset, true);
@@ -13769,10 +13769,11 @@ export class Editor {
     }
     private deleteContainer(cell: TableCellWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number): void {
         let ownerTable: TableWidget = cell.ownerTable;
-        if (selection.containsRow(ownerTable.lastChild as TableRowWidget, end.paragraph.associatedCell)) {
+        if (selection.containsRow(ownerTable.lastChild as TableRowWidget, end.paragraph.associatedCell) && !this.owner.enableTrackChanges) {
             this.deleteContent(ownerTable, selection, editAction);
         } else {
             if (this.toCheckForTrack(ownerTable)) {
+                this.cloneTableToHistoryInfo(ownerTable);
                 for (let i: number = 0; i < ownerTable.childWidgets.length; i++) {
                     let inline: TableRowWidget = ownerTable.childWidgets[i] as TableRowWidget;
                     this.trackRowDeletion(inline);
@@ -13972,6 +13973,7 @@ export class Editor {
                 break;
             }
             if (endLine === lineWidget) {
+                paragraph.isLayouted = false;
                 isRemoved = true;
                 this.removeContent(lineWidget, 0, endOffset, editAction);
             } else if (startLine === lineWidget) {
@@ -13991,6 +13993,7 @@ export class Editor {
             this.selection.editPosition = editPosition;
         }
         if (isRemoved) {
+            paragraph.isLayouted = true;
             this.removeEmptyLine(paragraph);
             this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
         }
@@ -14395,6 +14398,8 @@ export class Editor {
         this.documentHelper.owner.isShiftingEnabled = true;
         this.layoutWholeDocument();
         this.documentHelper.owner.isShiftingEnabled = false;
+        this.startParagraph = undefined
+        this.endParagraph = undefined
     }
     /**
      * Applies bullets or numbering list

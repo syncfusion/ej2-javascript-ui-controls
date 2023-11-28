@@ -199,6 +199,7 @@ export let defaultLocale: { [key: string]: string } = {
     'emojiPickerTypeToFind': 'Type to find',
     'emojiPickerNoResultFound': 'No results found',
     'emojiPickerTrySomethingElse': 'Try something else',
+    'linkAriaLabel': 'Open in new window',
 };
 
 export let toolsLocale: { [key: string]: string } = {

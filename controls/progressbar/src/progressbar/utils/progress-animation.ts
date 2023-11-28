@@ -334,14 +334,14 @@ export class ProgressAnimation {
         }
         totalEnd = ((progress.argsData.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
         progress.annotateTotal = totalEnd =
-            (progress.argsData.value < progress.minimum || progress.argsData.value > progress.maximum) ? 0 : totalEnd;
+            (progress.argsData.value < progress.minimum) ? 0 : totalEnd;
         progress.annotateEnd = start + totalEnd;
         annotateValue = ((progress.argsData.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
-        annotateValue = (progress.argsData.value < progress.minimum || progress.argsData.value > progress.maximum) ? 0 :
+        annotateValue = (progress.argsData.value < progress.minimum) ? 0 :
             Math.round(annotateValue);
         const startValue: number = (!isNullOrUndefined(previousEnd)) ? previousEnd : start;
         const endValue: number = (!isNullOrUndefined(previousEnd)) ? totalEnd - previousTotal : totalEnd;
-        if (progress.argsData.value <= progress.minimum || progress.argsData.value > progress.maximum) {
+        if (progress.argsData.value <= progress.minimum) {
             annotatElementChanged.innerHTML = annotateValue + '%';
         } else {
             animation.animate((<HTMLElement>circularPath), {

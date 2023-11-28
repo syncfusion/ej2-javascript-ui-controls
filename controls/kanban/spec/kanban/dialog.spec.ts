@@ -629,6 +629,42 @@ describe('Dialog actions module', () => {
         });
     });
 
+    describe('855102- Script error throws when we set true to the cancel argument of dialogClose event in Kanban', () => {
+        let kanbanObj: Kanban;
+        let element1: HTMLElement;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                dialogSettings: {
+                    fields: [
+                        { text: 'ID', key: 'Id', type: 'Numeric' },
+                        { key: 'Status', type: 'DropDown' },
+                        { key: 'Assignee', type: 'DropDown' },
+                        { key: 'Estimate', type: 'Numeric' },
+                        { key: 'Summary', type: 'TextArea' }
+                    ]
+                },
+                dialogClose: function (args : any) {
+                    args.cancel = true;
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+        it('Checking the Script error throws, when we set true to the cancel argument of dialogClose event in Kanban', () => {
+            element1 = kanbanObj.element.querySelector('.e-card[data-id="5"]') as HTMLElement;
+            util.triggerMouseEvent(element1, 'dblclick');
+            let saveButton: HTMLElement = document.querySelector('.e-control.e-btn.e-lib.e-flat.e-dialog-edit.e-primary');
+            util.triggerMouseEvent(saveButton, 'click');
+            expect((kanbanObj.dialogModule as any).element).not.toBeNull;
+            let dialogWrapper: Element = document.getElementById("Kanban_dialog_wrapper"); 
+            let dialog: any = (dialogWrapper as EJ2Instance).ej2_instances[0];
+            dialog.destroy();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

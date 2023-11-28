@@ -2681,11 +2681,11 @@ export class PivotEngine {
         const field: IFieldOptions = fields[position as number];
         let showSubTotals: boolean = true;
         if (axis === 'column') {
-            // showSubTotals = this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showColumnSubTotals && field ? field.showSubTotals : true;
-            showSubTotals = this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showColumnSubTotals && field.showSubTotals;
+            showSubTotals = this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showColumnSubTotals &&
+                (field ? field.showSubTotals : true);
         } else {
-            // eslint-disable-next-line max-len
-            showSubTotals = this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showRowSubTotals && field ? field.showSubTotals : true;
+            showSubTotals = this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showRowSubTotals &&
+                (field ? field.showSubTotals : true);
         }
         while (lenCnt < headers.length) {
             if (axis === 'row') {

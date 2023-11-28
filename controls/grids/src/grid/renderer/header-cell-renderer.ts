@@ -21,7 +21,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
     private hTxtEle: Element = this.parent.createElement('span', { className: 'e-headertext' });
     private sortEle: Element = this.parent.createElement('div', { className: 'e-sortfilterdiv e-icons', attrs: {'aria-hidden': 'true'} });
     private gui: Element = this.parent.createElement('div');
-    private chkAllBox: Element = this.parent.createElement('input', { className: 'e-checkselectall', attrs: { 'type': 'checkbox', 'aria-label': this.localizer.getConstant('CheckBoxLabel') } });
+    private chkAllBox: Element = this.parent.createElement('input', { className: 'e-checkselectall', attrs: { 'type': 'checkbox', 'aria-label': this.localizer.getConstant('SelectAllCheckbox') } });
     /**
      * Function to return the wrapper for the TH content.
      *

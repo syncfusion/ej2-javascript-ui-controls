@@ -1964,9 +1964,11 @@ export function setDisplayValue(tr: Object, idx: number, displayVal: string, row
                 const index: number = idx + 1;
                 rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(index.toString(), 10)].visible = displayVal === '' ? true : false;
             } else {
-                rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(idx.toString(), 10)].visible = displayVal === '' ? true : false;
-                if (rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(idx.toString(), 10)].visible === false) {
-                    tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)].classList.add('e-hide');
+                if (!isNullOrUndefined(rows[trs[parseInt(i.toString(), 10)]])) {
+                    rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(idx.toString(), 10)].visible = displayVal === '' ? true : false;
+                    if (rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(idx.toString(), 10)].visible === false) {
+                        tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)].classList.add('e-hide');
+                    }
                 }
             }
             idx = actualIndex;

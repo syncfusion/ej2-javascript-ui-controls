@@ -5189,7 +5189,7 @@ export class PdfViewerBase {
         if (proxy.documentId === data.uniqueId) {
             proxy.pdfViewer.fireAjaxRequestSuccess('VirtualLoad', data);
             // eslint-disable-next-line
-            let pageValues: { pageCount: any; pageSizes: any; } = data;
+            let pageValues: { pageCount: any; pageSizes: any; pageRotation: any; } = data;
             if (proxy.pageSize[proxy.pageLimit - 1]) {
                 let topValue: number = proxy.pageSize[proxy.pageLimit - 1].top;
                 for (let i: number = proxy.pageLimit; i < proxy.pageCount; i++) {
@@ -5207,7 +5207,7 @@ export class PdfViewerBase {
                             topValue = proxy.pageGap + parseFloat(previousPageHeight) + topValue;
                         }
                         // eslint-disable-next-line max-len
-                        const size: ISize = { width: (parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].width) ? parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].width) : parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].Width)), height: (parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].height) ? parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].height) : parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].Height)), top: topValue };
+                        const size: ISize = { width: (parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].width) ? parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].width) : parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].Width)), height: (parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].height) ? parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].height) : parseFloat(pageValues.pageSizes[parseInt(i.toString(), 10)].Height)), top: topValue, rotation:  pageValues.pageRotation[i] };
                         proxy.pageSize.push(size);
                     }
                 }

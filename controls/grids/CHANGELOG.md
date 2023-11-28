@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 23.2.6 (2023-11-28)
+
+### Grid
+
+#### Bug fixes
+
+- `#I517762` - Resolved the issue with paste functionality of the Grid on Mac devices.
+- `#I520019` - The filter dialog `popup` is closed when no records are found during the search and press Enter key has been fixed.
+- `#I514004` - Fixed an issue with the space between the arrow in the tooltip and the content.
+- `#I511050` - Error thrown while sorting columns after filtering has been resolved.
+- `#I464878` - The issue where the focus style for checkbox items was not applying to the spreadsheet component has been resolved.
+- `#F185039` - Resolved a problem where the grid would not display all records when the filter was cleared.
+- `#I513685` - Aria-label for `SelectAllCheckbox` is now descriptive for accessibility.
+
 ## 23.2.4 (2023-11-20)
 
 ### Grid

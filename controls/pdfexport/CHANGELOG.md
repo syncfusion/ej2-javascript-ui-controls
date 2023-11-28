@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.6 (2023-11-28)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Resolved the linear gradient brush with rotated text preservation issue.
+
 ## 23.2.4 (2023-11-20)
 
 ### Pdf Export

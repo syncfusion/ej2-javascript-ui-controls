@@ -818,6 +818,9 @@ export class HtmlEditor {
      */
     protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         // On property code change here
+        if (!isNOU(e) && !isNOU(e.newProp.toolbarSettings) && !isNOU(e.newProp.toolbarSettings.enable)) {
+            this.toolbarUpdate = new HtmlToolbarStatus(this.parent);
+        }
         if (!isNullOrUndefined(e.newProp.formatter)) {
             const editElement: HTMLTextAreaElement = this.contentRenderer.getEditPanel() as HTMLTextAreaElement;
             const option: { [key: string]: number } = { undoRedoSteps: this.parent.undoRedoSteps,

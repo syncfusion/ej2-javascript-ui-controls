@@ -85,6 +85,8 @@ export class ExternalMessage implements IRender {
      * @hidden
      */
     public destroy(): void {
-        remove(this.element);
+        if (this.element && this.element.parentElement) {
+            remove(this.element);
+        }
     }
 }

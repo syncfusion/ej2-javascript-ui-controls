@@ -923,10 +923,16 @@ export class SpellChecker {
             this.addErrorCollection(span.text, span, suggestions);
 
             const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+            const para = elementBox.line.paragraph;
+            let lineY = para.y;
+            for (let i = 0; i < para.childWidgets.length; i++) {
+                if (para.childWidgets[i] == elementBox.line) break;
+                lineY += (para.childWidgets[i] as LineWidget).height;
+            }
             if (elementBox.isRightToLeft) {
-                this.documentHelper.render.renderWavyLine(span, span.end.location.x, span.end.location.y - elementBox.margin.top, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
+                this.documentHelper.render.renderWavyLine(span, span.end.location.x, lineY, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
             } else {
-                this.documentHelper.render.renderWavyLine(span, span.start.location.x, span.start.location.y - elementBox.margin.top, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
+                this.documentHelper.render.renderWavyLine(span, span.start.location.x, lineY, wavyLineY, color, 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
             }
             if (isLastItem) {
                 elementBox.isSpellChecked = true;
@@ -1040,7 +1046,8 @@ export class SpellChecker {
         element.height = errorElement.height;
         element.canTrigger = errorElement.canTrigger;
         element.characterFormat.copyFormat(errorElement.characterFormat);
-        element.width = this.documentHelper.textHelper.getWidth(element.text, errorElement.characterFormat, (errorElement as TextElementBox).scriptType);
+        // element.width = this.documentHelper.textHelper.getWidth(element.text, errorElement.characterFormat, (errorElement as TextElementBox).scriptType);
+        element.width = Math.abs(element.start.location.x - element.end.location.x);
         return element;
     }
     /**

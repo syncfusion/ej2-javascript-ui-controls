@@ -1138,6 +1138,7 @@ export class CheckBoxFilterBase {
             appendChildren(this.cBox.children[0], [].slice.call(cBoxes.children));
             if (btn) { btn.disabled = true; }
             disabled = true;
+            this.filterState = !btn.disabled;
         }
         if (btn && data.length) {
             this.filterState = !btn.disabled;

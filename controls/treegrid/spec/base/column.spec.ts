@@ -975,3 +975,104 @@ describe('853984- Resolved header check box not working properly in checkbox box
     destroy(gridObj);
   });
 });
+describe('858073-Dynamically changing columns from stacked to normal throws exception', () => {
+  let gridObj: TreeGrid;
+  const column2 = [
+  { headerText: 'Column 1', field: 'COLUMN_1' },
+  {
+    headerText: 'Column 2 normal',
+    field: 'COLUMN_2_NORMAL',
+  },
+  ];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+  dataSource: stackedData,
+  allowPaging: true,
+  childMapping: 'subtasks',
+  height: 350,
+  treeColumnIndex: 1,
+  pageSettings: { pageCount: 5 },
+  toolbar: [{ text: 'Normal', id: 'Normal' }],
+  columns: [
+    {
+      headerText: 'Order Details',
+      textAlign: 'Center',
+      columns: [
+        {
+          field: 'orderID',
+          headerText: 'Order ID',
+          textAlign: 'Right',
+          width: 90,
+        },
+        {
+          field: 'orderName',
+          headerText: 'Order Name',
+          textAlign: 'Left',
+          width: 170,
+        },
+        {
+          field: 'orderDate',
+          headerText: 'Order Date',
+          textAlign: 'Right',
+          width: 120,
+          format: 'yMd',
+        },
+      ],
+    },
+    {
+      headerText: 'Shipment Details',
+      textAlign: 'Center',
+      columns: [
+        {
+          field: 'shipMentCategory',
+          headerText: 'Shipment Category',
+          textAlign: 'Left',
+          width: 150,
+        },
+        {
+          field: 'shippedDate',
+          headerText: 'Shipped Date',
+          textAlign: 'Right',
+          width: 120,
+          format: 'yMd',
+        },
+        { field: 'units', headerText: 'Units', textAlign: 'Left', width: 85 },
+      ],
+    },
+    {
+      headerText: 'Price Details',
+      textAlign: 'Center',
+      columns: [
+        {
+          field: 'unitPrice',
+          headerText: 'Price per unit',
+          format: 'c2',
+          type: 'number',
+          width: 110,
+          textAlign: 'Right',
+        },
+        {
+          field: 'price',
+          headerText: 'Total Price',
+          width: 110,
+          format: 'c',
+          type: 'number',
+          textAlign: 'Right',
+        },
+      ],
+    },
+  ]
+  }, 
+  done
+    );
+  });
+  it('Changing columns dynamically', () => {
+    gridObj.columns = column2;
+    gridObj.refreshColumns();
+    expect(gridObj.getColumns().length == 2).toBe(true);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

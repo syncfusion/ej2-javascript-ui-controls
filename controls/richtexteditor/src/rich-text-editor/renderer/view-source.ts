@@ -1,7 +1,7 @@
 import { KeyboardEventArgs, removeClass, selectAll, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 import { IRichTextEditor, IRenderer } from '../base/interface';
 import * as events from '../base/constant';
-import { CLS_EXPAND_OPEN, CLS_TB_ITEM, CLS_ACTIVE } from '../base/classes';
+import { CLS_EXPAND_OPEN, CLS_TB_ITEM, CLS_ACTIVE, CLS_RTE_SOURCE_CODE_TXTAREA } from '../base/classes';
 import * as CONSTANT from '../../common/constant';
 import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
 import { RendererFactory } from '../services/renderer-factory';
@@ -59,7 +59,7 @@ export class ViewSource {
     }
 
     private getSourceCode(): HTMLElement | HTMLTextAreaElement | void {
-        return this.parent.createElement('textarea', { className: 'e-rte-srctextarea' + ' ' + this.parent.cssClass });
+        return this.parent.createElement('textarea', { className: CLS_RTE_SOURCE_CODE_TXTAREA + ' ' + this.parent.cssClass });
     }
     private wireEvent(element: HTMLElement): void {
         this.keyboardModule = new KeyboardEvents(element, {
@@ -96,9 +96,10 @@ export class ViewSource {
             event.preventDefault();
             break;
         case 'toolbar-focus':
-            if (this.parent.toolbarSettings.enable) {
-                const selector: string = '.e-toolbar-item[title] [tabindex]';
-                (this.parent.toolbarModule.baseToolbar.toolbarObj.element.querySelector(selector) as HTMLElement).focus();
+            if (this.parent.toolbarSettings.enable && this.parent.getToolbarElement()) {
+                const firstActiveItem: HTMLElement = this.parent.getToolbarElement().querySelector('.e-toolbar-item:not(.e-overlay)[title]');
+                (firstActiveItem.firstElementChild as HTMLElement).removeAttribute('tabindex');
+                (firstActiveItem.firstElementChild as HTMLElement).focus();
             }
             break;
         }

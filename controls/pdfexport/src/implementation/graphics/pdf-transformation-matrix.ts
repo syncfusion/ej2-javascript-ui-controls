@@ -239,7 +239,7 @@ export class Matrix {
      * `Clones` this instance of PdfTransformationMatrix class.
      * @private
      */
-    public clone() : Object {
+    public clone() : Matrix {
         let m : Matrix = new Matrix(this.metrixElements);
         return m;
     }

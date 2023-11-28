@@ -184,7 +184,8 @@ export class PeriodSelector {
                     });
                 }
                 if (!selectedPeriod && this.rootControl.getModuleName() !== 'stockChart') {
-                    this.selectedIndex = this.findSelectedIndex(this.control.startValue, this.control.endValue, buttons);
+                    const selectedIndex: number = this.findSelectedIndex(this.control.startValue, this.control.endValue, buttons);
+                    this.selectedIndex = selectedIndex ? selectedIndex : this.selectedIndex;
                 }
                 this.setSelectedStyle(this.selectedIndex);
             }

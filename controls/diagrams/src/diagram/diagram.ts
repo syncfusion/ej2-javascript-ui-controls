@@ -2330,7 +2330,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if(!this.isRefreshed){
             this.refreshDiagramLayer();
         }
-        this.refreshDiagramLayer();
+        //Bug 855677: After Serialization, Subprocess Node Dragging Faces Problems After Removing Child Node.
+        //Removed refreshDiagramLayer() method in this line as it causes the subprocess child node to be rendered twice in wrapper which causes the issue.
         if (this.scrollSettings.verticalOffset > 0 || this.scrollSettings.horizontalOffset > 0) {
             this.updateScrollOffset();
         }
@@ -5604,7 +5605,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const canEnableRouting: boolean = this.layout.enableRouting && this.layout.type === 'ComplexHierarchicalTree';
         const viewPort: PointModel = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
         if (this.layout.type !== 'None') {
-            if (canEnableRouting || ((this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) || this.layout.arrangement === 'Linear') {
+            if ((canEnableRouting && this.lineDistributionModule )|| ((this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) || (this.layout.arrangement === 'Linear' && this.lineDistributionModule)) {
                 this.lineDistributionModule.initLineDistribution((this.layout as Layout), this);
             }
             if (this.organizationalChartModule) {
@@ -11430,9 +11431,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let lane: NodeModel;
         const selectedSymbols: string = 'selectedSymbols';
         this.droppable = new Droppable(this.element);
+        let dragLeft: number = 5;
         // this.droppable.accept = '.e-dragclone';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.droppable.over = (args: any) => {
+            //Bug 855292: Swimlane dragging from palette jumps out of viewport when multiple page is set as true.
+            // Added below code to prevent the negative x value of swimlane bounds when multiple page and ruler is enabled to prevent swimlane jump.
+            if(this.rulerSettings.showRulers){
+                var vRuler = document.getElementById(this.element.id+'_vRuler');
+                var vRulerWidth = parseFloat(vRuler.style.width);
+                dragLeft = vRulerWidth + 1;
+            }
             //EJ2-59341- SelectionChange OldValue argument is null
             if (this.previousSelectedObjects.length === 0 && !this.currentSymbol) {
                 this.previousSelectedObjects = this.commandHandler.getSelectedObject();
@@ -11553,7 +11562,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                             header.height = (newNode.shape as SwimLane).lanes[0].header.height;
                                         }
                                         header.style = (newNode.shape as SwimLane).lanes[0].header.style;
-                                        header.offsetX = position.x + 5 + header.width / 2;
+                                        header.offsetX = position.x + dragLeft + header.width / 2;
                                         header.offsetY = position.y + header.height / 2;
                                         this.diagramActions |= DiagramAction.PreventCollectionChangeOnDragOver;
                                         header = this.add(header) as NodeModel;
@@ -11564,12 +11573,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                             lane.width = (newNode.shape as SwimLane).lanes[0].width - header.width;
                                             lane.height = (newNode.shape as SwimLane).lanes[0].height;
                                             // eslint-disable-next-line max-len
-                                            lane.offsetX = position.x + 5 + ((newNode.shape as SwimLane).lanes[0].header.width + (lane.width / 2));
+                                            lane.offsetX = position.x + dragLeft + ((newNode.shape as SwimLane).lanes[0].header.width + (lane.width / 2));
                                             lane.offsetY = position.y + lane.height / 2;
                                         } else {
                                             lane.width = (newNode.shape as SwimLane).lanes[0].width;
                                             lane.height = (newNode.shape as SwimLane).lanes[0].height - header.height;
-                                            lane.offsetX = position.x + 5 + lane.width / 2;
+                                            lane.offsetX = position.x + dragLeft + lane.width / 2;
                                             // eslint-disable-next-line max-len
                                             lane.offsetY = position.y + ((newNode.shape as SwimLane).lanes[0].header.height + (lane.height / 2));
                                         }
@@ -11593,7 +11602,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 if ((newNode.shape as SwimLane).isPhase) {
                                     isHorizontal = ((newNode.shape as SwimLane).orientation === 'Horizontal') ? true : false;
                                     if (isHorizontal) {
-                                        newNode.offsetX = position.x + 5 + (newNode.width || wrapper.actualSize.width) / 2;
+                                        newNode.offsetX = position.x + dragLeft + (newNode.width || wrapper.actualSize.width) / 2;
                                         newNode.offsetY = position.y;
                                         (newNode.shape as Path).data =
                                             'M' + 20 + ',' + (newNode.height / 2) + ' L' + (newNode.width - 20) + ',' +
@@ -11654,17 +11663,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                     header.height = laneObj.height;
                                     lane.width = laneObj.width - header.width;
                                     lane.height = laneObj.height;
-                                    lane.offsetX = position.x + 5 + (laneObj.header.width + (child2.width / 2));
+                                    lane.offsetX = position.x + dragLeft + (laneObj.header.width + (child2.width / 2));
                                     lane.offsetY = position.y + child2.height / 2;
                                 } else {
                                     header.width = laneObj.width;
                                     header.height = laneObj.header.height;
                                     lane.width = laneObj.width;
                                     lane.height = laneObj.height - header.height;
-                                    lane.offsetX = position.x + 5 + child2.width / 2;
+                                    lane.offsetX = position.x + dragLeft + child2.width / 2;
                                     lane.offsetY = position.y + (laneObj.header.height + (child2.height / 2));
                                 }
-                                header.offsetX = position.x + 5 + child1.width / 2;
+                                header.offsetX = position.x + dragLeft + child1.width / 2;
                                 header.offsetY = position.y + child1.height / 2;
                                 newObj.width = laneObj.width;
                                 newObj.height = laneObj.height;

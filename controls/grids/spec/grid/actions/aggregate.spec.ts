@@ -358,6 +358,223 @@ describe('Aggregates Functionality testing', () => {
         });
     });
 
+    // code coverage
+    describe('Fisrt column with caption aggreate function template', () => {
+        let grid: Grid;
+        let customSum: CustomSummaryType = (data: Object[], column: Object) => 'Best Employee: 1';
+        let groupCaption: Function = (data: Object[], column: Object) => 'Best Employee: 1';
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data.slice(0,4),
+                    allowGrouping: true,
+                    groupSettings: { columns: ['Verified'] },
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right',
+                            textAlign: 'Right'
+                        },
+                        { field: 'Verified', type: 'boolean' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Custom',
+                            field: 'OrderID',
+                            columnName: 'OrderID',
+                            customAggregate: customSum,
+                            groupCaptionTemplate: groupCaption,
+                        }]
+                    }]
+                },
+                done
+            );
+        });
+
+        it('check custom footer summary', (done: Function) => {
+            done();
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = groupCaption = customSum = null;
+        });
+    });
+
+    // code coverage
+    describe('Fisrt column with caption aggreate string template', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data.slice(0,4),
+                    allowGrouping: true,
+                    groupSettings: { columns: ['Verified'], captionTemplate: 'caption template' },
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right',
+                            textAlign: 'Right'
+                        },
+                        { field: 'Verified', type: 'boolean' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'OrderID',
+                            columnName: 'OrderID',
+                            groupCaptionTemplate: '${Sum}',
+                        }]
+                    }]
+                },
+                done
+            );
+        });
+
+        it('check summary', (done: Function) => {
+            done();
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
+
+    // code coverage
+    describe('Fisrt column with caption aggreate string template and group caption', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data.slice(0,4),
+                    allowGrouping: true,
+                    groupSettings: { columns: ['Verified'], captionTemplate: 'caption template' },
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right',
+                            textAlign: 'Right'
+                        },
+                        { field: 'Verified', type: 'boolean' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'OrderID',
+                            columnName: 'OrderID',
+                            groupCaptionTemplate: 'group caption',
+                        }]
+                    }]
+                },
+                done
+            );
+        });
+
+        it('check summary', (done: Function) => {
+            done();
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
+
+    // code coverage
+    describe('Fisrt column with caption aggreate react template', () => {
+        let grid: Grid;
+        let captionTemplate: Function = () => 'Best Employee: 1';
+        let groupCaption: Function = (data: Object[], column: Object) => 'Best Employee: 1';
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data.slice(0,4),
+                    allowGrouping: true,
+                    groupSettings: { columns: ['Verified'], captionTemplate: captionTemplate },
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right',
+                            textAlign: 'Right'
+                        },
+                        { field: 'Verified', type: 'boolean' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ],
+                    load: function() {
+                        this.isReact = true;
+                    },
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'OrderID',
+                            columnName: 'OrderID',
+                            groupCaptionTemplate: groupCaption,
+                        }]
+                    }]
+                },
+                done
+            );
+        });
+
+        it('check summary', (done: Function) => {
+            done();
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = groupCaption = captionTemplate = null;
+        });
+    });
+
+    // code coverage
+    describe('Fisrt column with caption aggreate vue template', () => {
+        let grid: Grid;
+        let captionTemplate: Function = () => 'Best Employee: 1';
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data.slice(0,4),
+                    allowGrouping: true,
+                    groupSettings: { columns: ['Verified'], captionTemplate: captionTemplate },
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right',
+                            textAlign: 'Right'
+                        },
+                        { field: 'Verified', type: 'boolean' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ],
+                    load: function() {
+                        this.isVue = true;
+                    },
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'OrderID',
+                            columnName: 'OrderID',
+                            groupCaptionTemplate: 'group caption',
+                        }]
+                    }]
+                },
+                done
+            );
+        });
+
+        it('check summary', (done: Function) => {
+            done();
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = captionTemplate = null;
+        });
+    });
+
     describe('Set Model', () => {
         describe('Enable summary', () => {
             let grid: Grid;

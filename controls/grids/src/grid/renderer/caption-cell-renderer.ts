@@ -5,7 +5,9 @@ import { ICellRenderer } from '../base/interface';
 import { CellRenderer } from './cell-renderer';
 import { IGrid } from '../base/interface';
 import { appendChildren, templateCompiler } from '../base/util';
+import { CellType } from '../base/enum';
 import { GroupedData } from '../services/group-model-generator';
+import { AggregateColumn } from '../models/aggregate';
 
 /**
  * GroupCaptionCellRenderer class which responsible for building group caption cell.
@@ -34,7 +36,7 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
         const domSetter: string = column.getDomSetter ? column.getDomSetter() : 'innerHTML';
         let result: Element[];
         let fKeyValue: string;
-        let gTemplateValue: string | Function;
+        let gTemplateValue: string | Function | NodeList;
         data.headerText = cell.column.headerText;
         if (cell.isForeignKey) {
             fKeyValue = this.format(cell.column, (cell.column.valueAccessor as Function)('foreignKey', data, cell.column));
@@ -45,15 +47,43 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
             for (let i: number = 0; i < gObj.aggregates[parseInt(j.toString(), 10)].columns.length; i++){
                 if (gObj.getVisibleColumns()[0].field === gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)]
                     .field && gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].groupCaptionTemplate) {
-                    if ((gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].groupCaptionTemplate as string).includes('$')) {
+                    const gCaptionTemp: string | Function = (gObj.aggregates[parseInt(j.toString(), 10)]
+                    .columns[parseInt(i.toString(), 10)].groupCaptionTemplate as string);
+                    if (typeof gCaptionTemp === 'string' && gCaptionTemp.includes('$')) {
                         gTemplateValue = (gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)]
                             .groupCaptionTemplate as string).split('$')[0] + data[gObj.getVisibleColumns()[0].field][gObj
-                            .aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].type] +
-                            (gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].groupCaptionTemplate as string).split('}')[1];
+                                .aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].type] +
+                            (gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)]
+                            .groupCaptionTemplate as string).split('}')[1];
                     }
                     else {
-                        gTemplateValue = gObj.aggregates[parseInt(j.toString(), 10)]
-                            .columns[parseInt(i.toString(), 10)].groupCaptionTemplate;
+                        const column: AggregateColumn = <AggregateColumn>(gObj.aggregates[parseInt(j.toString(), 10)]
+                            .columns[parseInt(i.toString(), 10)]);
+                        const tempObj: { fn: Function, property: string } = column.getTemplate(CellType.CaptionSummary);
+                        const tempID: string = '';
+                        if (!isNullOrUndefined(tempObj)) {
+                            const tempValue: NodeList = tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID);
+                            if (this.parent.isReact && typeof column.groupCaptionTemplate !== 'string') {
+                                this.parent.renderTemplates(function (): void {
+                                    if (tempValue && tempValue.length) {
+                                        if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
+                                            node.appendChild(tempValue[0]);
+                                        }
+                                        else {
+                                            (node as HTMLElement).innerText += ' ' + tempValue[0].textContent;
+                                        }
+                                    }
+                                });
+                            } else {
+                                if (tempValue && tempValue.length) {
+                                    if (!isNullOrUndefined(gObj.groupSettings.captionTemplate)) {
+                                        gTemplateValue = tempValue;
+                                    } else {
+                                        gTemplateValue = tempValue[0].textContent;
+                                    }
+                                }
+                            }
+                        }
                     }
                     break;
                 }
@@ -74,6 +104,9 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
             }
             if (!isReactCompiler && !isReactChild) {
                 appendChildren(node, result);
+                if (gTemplateValue && gTemplateValue.length && gTemplateValue[0].textContent) {
+                    node.appendChild(gTemplateValue[0]);
+                }
             }
         } else {
             if (gObj.groupSettings.enableLazyLoading) {

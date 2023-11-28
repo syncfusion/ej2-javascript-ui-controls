@@ -2686,6 +2686,60 @@ describe('EJ2-56656 - Wrong operator while filtering with Excel filter search bo
     });
 });
 
+describe('EJ2-857348 - Filter popup closed on pressing the Enter key when No record found.', () => {
+    let gridObj: Grid;
+    let checkBoxFilter: Element;
+    let searchElement : HTMLInputElement;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                allowFiltering: true,
+                filterSettings: { type: 'CheckBox' },
+                height: 500,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'EmployeeID', headerText: 'EmployeeID', width: 150, },
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+
+    it('OrderID filter dialog open testing', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if(args.requestType === 'filterafteropen'){
+                checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+    });
+
+    it('search not available value', (done: Function) => {
+        searchElement = gridObj.element.querySelector('.e-searchinput');
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterchoicerequest') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(1);
+                expect((gridObj.filterModule as any).filterModule.checkBoxBase.filterState).toBe(false);
+                actionComplete = null;
+                done();
+            }                                 
+        };
+        searchElement.value = '1000000';
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        checkBoxFilter = null;
+        searchElement = null;
+        gridObj = null;
+    });
+});
+
 describe('EJ2-58687 - template support for checkbox rendering in checkbox filter.', () => {
     let gridObj: Grid;
     let actionComplete: () => void;

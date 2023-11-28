@@ -6585,7 +6585,7 @@ export class Layout {
                                 //Creates new table widget for splitted rows.
                                 this.addTableWidget(viewer.clientActiveArea, tableWidgets, true);
                             }
-                        } else if (heightType === 'Exactly' && rowHeight + tableRowWidget.y + this.footHeight < viewer.clientArea.bottom && tableRowWidget.y === viewer.clientArea.y) {
+                        } else if (heightType === 'Exactly' && rowHeight + tableRowWidget.y + this.footHeight < viewer.clientArea.bottom && tableRowWidget.y >= viewer.clientArea.y) {
                             this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements);
                             count++;
                             continue;
@@ -10229,7 +10229,7 @@ export class Layout {
             lineWidget = paragraph.childWidgets[lineIndex] as LineWidget;
         }
         let lineToLayout: LineWidget;
-        if (paragraph.containerWidget instanceof BodyWidget && paragraph.containerWidget.sectionFormat.equalWidth) {
+        if (paragraph.containerWidget instanceof BodyWidget && paragraph.containerWidget.sectionFormat.numberOfColumns > 1 && paragraph.containerWidget.sectionFormat.equalWidth) {
             lineToLayout = lineWidget.previousLine;
         }
         if (isNullOrUndefined(lineToLayout)) {

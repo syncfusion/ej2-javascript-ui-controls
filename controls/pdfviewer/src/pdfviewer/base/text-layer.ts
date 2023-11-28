@@ -167,6 +167,7 @@ export class TextLayer {
                             this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation, bounds);
                         }
                         textLayer.appendChild(textDiv);
+                        // EJ2-855106- Optimize performance by eliminating unnecessary getBoundingClientRect usage in this method.
                         this.resizeExcessDiv(textLayer, textDiv);
                         // eslint-disable-next-line max-len
                         if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.pdfViewerBase.isTextSelectionDisabled && textDiv.className !== 'e-pdfviewer-formFields'
@@ -242,6 +243,7 @@ export class TextLayer {
                     }
                     this.applyTextRotation(scale, textDiv, rotation, bounds.Rotation, bounds);
                 }
+                // EJ2-855106- Optimize performance by eliminating unnecessary getBoundingClientRect usage in this method.
                 this.resizeExcessDiv(textLayer, textDiv);
             }
         } else {
@@ -438,16 +440,20 @@ export class TextLayer {
         }
     }
 
+    /**
+     * EJ2-855106- Optimize performance by eliminating unnecessary getBoundingClientRect usage in this method.
+     */
     private resizeExcessDiv(textLayer: HTMLElement, textDiv: HTMLElement): void {
-        const textLayerPosition: ClientRect = textLayer.getBoundingClientRect();
-        const textDivPosition: ClientRect = textDiv.getBoundingClientRect();
-        // eslint-disable-next-line max-len
-        if ((textDivPosition.width + textDivPosition.left) >= (textLayerPosition.width + textLayerPosition.left) || (textDivPosition.width > textLayerPosition.width)) {
-            // 'auto' width is set to reset the size of the div to its contents.
-            textDiv.style.width = 'auto';
-            // Client width gets reset by 'auto' width property which has the width of the content.
-            textDiv.style.width = textDiv.clientWidth + 'px';
-        }
+        // EJ2-855106- Optimize performance by eliminating unnecessary getBoundingClientRect usage in this method.
+        // const textLayerPosition: ClientRect = textLayer.getBoundingClientRect();
+        // const textDivPosition: ClientRect = textDiv.getBoundingClientRect();
+        // // eslint-disable-next-line max-len
+        // if ((textDivPosition.width + textDivPosition.left) >= (textLayerPosition.width + textLayerPosition.left) || (textDivPosition.width > textLayerPosition.width)) {
+        //     // 'auto' width is set to reset the size of the div to its contents.
+        //     textDiv.style.width = 'auto';
+        //     // Client width gets reset by 'auto' width property which has the width of the content.
+        //     textDiv.style.width = textDiv.clientWidth + 'px';
+        // }
     }
     /**
      * @private

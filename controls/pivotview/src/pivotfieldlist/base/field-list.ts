@@ -1298,7 +1298,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
 
     private getData(): void {
-        (this.dataSourceSettings.dataSource as DataManager).executeQuery(new Query()).then(this.executeQuery.bind(this));
+        if ((this.dataSourceSettings.dataSource as DataManager).defaultQuery) {
+            (this.dataSourceSettings.dataSource as DataManager).executeQuery((this.dataSourceSettings.dataSource as DataManager)
+                .defaultQuery).then(this.executeQuery.bind(this));
+        } else {
+            (this.dataSourceSettings.dataSource as DataManager).executeQuery(new Query()).then(this.executeQuery.bind(this));
+        }
     }
 
     private executeQuery(e: ReturnOption): void {

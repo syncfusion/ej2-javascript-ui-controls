@@ -752,7 +752,11 @@ export class BatchEdit {
         if (col && !col.isPrimaryKey && col.allowEditing) {
             const td: Element = getCellByColAndRowIndex(this.parent, col, rowIndex, index);
             const rowObj: Row<Column> = gObj.getRowObjectFromUID(td.parentElement.getAttribute('data-uid'));
-            if ((!rowObj.changes && rowObj.data[`${field}`] !== value) || (rowObj.changes && rowObj.changes[`${field}`] !== value)) {
+            if (gObj.isEdit ||
+                (!rowObj.changes && ((!(value instanceof Date) && rowObj.data["" + field] !== value) ||
+                    ((value instanceof Date) && new Date(rowObj.data["" + field]).toString() !== new Date(value).toString()))) ||
+                (rowObj.changes && ((!(value instanceof Date) && rowObj.changes["" + field] !== value) ||
+                    ((value instanceof Date) && new Date(rowObj.changes["" + field]).toString() !== new Date(value).toString())))) {
                 this.refreshTD(td, col, rowObj, value);
                 const isReactChild = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
                     this.parent.parentDetails.parentInstObj.isReact;

@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 23.2.6 (2023-11-28)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I515562` - Now, the swimlane renders properly while dragging it from palette with multiple page enabled.
+- `#515563`  - Exception while serializing the BPMN Group shape with child has been resolved.
+- `#I520515` - Now, the connector target decorator renders properly after calling doLayout with line-routing.
+- `#I518456` - Now, the Subprocess node and child node dragging is proper after serialization.
+
 ## 23.2.4 (2023-11-20)
 
 ### Diagram

@@ -381,6 +381,7 @@ export class Link {
             linkTitle = (linkEle.querySelector('.e-rte-linkTitle') as HTMLInputElement).value;
         }
         const target: string = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? '_blank' : null;
+        const linkLabel: string = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? (this as NotifyArgs).selfLink.i10n.getConstant('linkAriaLabel') : null;
         if (linkUrl === '') {
             (this as NotifyArgs).selfLink.checkUrl(true);
             return;
@@ -412,7 +413,7 @@ export class Link {
             (this as NotifyArgs).selectParent = proxy.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
         }
         const value: NotifyArgs = {
-            url: linkUrl, text: linkText, title: linkTitle, target: target,
+            url: linkUrl, text: linkText, title: linkTitle, target: target, ariaLabel: linkLabel,
             selection: (this as NotifyArgs).selection, selectParent: (this as NotifyArgs).selectParent
         };
         if (document.body.contains(proxy.dialogObj.element)) {

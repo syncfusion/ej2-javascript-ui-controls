@@ -1984,16 +1984,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private doCheckBoxAction(nodes: string[] | Element[], doCheck: boolean): void {
         let li : HTMLElement[] = selectAll('.' + LISTITEM, this.element);
         if (! isNOU(nodes) ) {
-            for (let len: number = nodes.length; len >= 0; len--) {
-                let liEle: Element;
-                if (nodes.length === 1) {
-                 liEle = this.getElement(nodes[len - 1]);
-                } else {
-                     liEle = this.getElement(nodes[len]);
-                }
+            for (let len: number = nodes.length - 1; len >= 0; len--) {
+                let liEle: Element = this.getElement(nodes[len]);
                 if (isNOU(liEle)) {
                     let node: string;
-                    node =  nodes[len - nodes.length] ? nodes[len - nodes.length].toString() :  nodes[len] ? nodes[len].toString() : null;
+                    node =  nodes[len - (nodes.length - 1)] ? nodes[len - (nodes.length - 1)].toString() :  nodes[len] ? nodes[len].toString() : null;
                     if (node !== '' && doCheck && node) {
                         this.setValidCheckedNode(node);
                         this.dynamicCheckState(node,  doCheck);
@@ -2040,7 +2035,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         if (nodes) {
-            for ( let j: number = 0; j < nodes.length; j++) {
+            for ( let j: number = 0; j < nodes.length - 1; j++) {
                 let node: string =  nodes[j] ? nodes[j].toString() : '';
                 if (! doCheck) {
                     this.updateField(this.treeData, this.fields, node, 'isChecked', null);

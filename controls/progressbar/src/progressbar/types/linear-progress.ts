@@ -75,9 +75,11 @@ export class Linear {
         let clipPathIndeterminate: Element; let linearProgressGroup: Element;
         let animationdelay: number;
         let segmentWidth: number;
-        let strippedStroke: string; const ismaximum: boolean = (progress.value === progress.maximum);
-        const previousProgressWidth: number = progress.progressRect.width * progress.calculateProgressRange(progress.value);
-        const progressWidth: number = progress.calculateProgressRange(progress.argsData.value);
+        let strippedStroke: string; const ismaximum: boolean = (progress.value >= progress.maximum);
+        const previousProgressWidth: number = progress.progressRect.width * progress.calculateProgressRange(
+            progress.value > progress.maximum ? progress.maximum : progress.value);
+        const progressWidth: number = progress.calculateProgressRange(progress.argsData.value > progress.maximum ?
+            progress.maximum : progress.argsData.value);
         this.linearProgressWidth = progress.progressRect.width *
                               ((progress.isIndeterminate && !progress.enableProgressSegments) ? 1 : progressWidth);
         if (!refresh) {
@@ -189,8 +191,9 @@ export class Linear {
         let linearBufferWidth: number;
         let option: PathOption;
         let segmentWidth: number;
-        const ismaximum: boolean = (progress.secondaryProgress === progress.maximum);
-        const secondaryProgressWidth: number = progress.calculateProgressRange(progress.secondaryProgress);
+        const ismaximum: boolean = (progress.secondaryProgress >= progress.maximum);
+        const secondaryProgressWidth: number = progress.calculateProgressRange(progress.secondaryProgress > progress.maximum ?
+            progress.maximum : progress.secondaryProgress);
         this.bufferWidth = linearBufferWidth = progress.progressRect.width * secondaryProgressWidth;
         const linearBufferGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearBufferGroup' });
         const thickness: number = progress.secondaryProgressThickness ? progress.secondaryProgressThickness
@@ -268,13 +271,14 @@ export class Linear {
         const textAlignment: TextAlignmentType = progress.labelStyle.textAlignment;
         const labelText: string = progress.labelStyle.text;
         const fontBackground: string = this.checkingLinearProgressColor();
-        const progressWidth: number = progress.progressRect.width * progress.calculateProgressRange(progress.value);
+        const progressWidth: number = progress.progressRect.width * progress.calculateProgressRange(progress.value > progress.maximum ?
+            progress.maximum : progress.value);
         const linearLabelGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_LinearLabelGroup' });
         if (document.getElementById(linearLabelGroup.id)) {
             document.getElementById(linearLabelGroup.id).remove();
         }
         const labelValue: number = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
-        const linearValue: number = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
+        const linearValue: number = (progress.value < progress.minimum) ? 0 : Math.round(labelValue);
         // Checking the font color
         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(fontBackground));
         const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);

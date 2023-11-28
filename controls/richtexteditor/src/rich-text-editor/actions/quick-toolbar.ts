@@ -180,7 +180,7 @@ export class QuickToolbar {
      * @deprecated
      */
     public showInlineQTBar(x: number, y: number, target: HTMLElement): void {
-        if (this.parent.readonly || target.tagName.toLowerCase() === 'img') {
+        if (isNOU(this.parent) || this.parent.readonly || target.tagName.toLowerCase() === 'img') {
             return;
         }
         this.inlineQTBar.showPopup(x, y, target);
@@ -560,7 +560,9 @@ export class QuickToolbar {
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.hidePopup, this.hideQuickToolbars);
-
+        if (this.deBouncer) {
+            clearTimeout(this.deBouncer);
+        }
     }
 
     /**

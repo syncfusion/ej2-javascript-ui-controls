@@ -1465,7 +1465,12 @@ export class TextSelection {
                     let textselection = newRange.toString();
                     selectionTexts.push(textselection);
                     newRange.detach();
-                    if (j === focusTextId) {
+                    if (textselection === '\r\n') {
+                        if (j === focusTextId + 1) {
+                            break;
+                        }
+                    }
+                    else if (j === focusTextId) {
                         break;
                     }
                 }

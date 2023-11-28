@@ -1735,7 +1735,7 @@ export class FormDesigner {
             inputElement.style.width = bounds.width + "px";
             inputElement.style.height = bounds.height + "px";
             this.updateRadioButtonFieldSettingProperties(drawingObject, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
-            this.updateRadioButtonProperties(drawingObject, inputElement);
+            this.updateRadioButtonProperties(drawingObject, inputElement, labelElement);
             labelElement.appendChild(inputElement);
             labelElement.appendChild(innerSpan);
             if (drawingObject.isRequired) {
@@ -1942,15 +1942,17 @@ export class FormDesigner {
                 let redoElement;
                 for (let j: number = 0; j < formFieldsData[i].FormField.radiobuttonItem.length; j++) {
                     if (formFieldsData[i].FormField.radiobuttonItem[j].id.split("_")[0] === (event.currentTarget as Element).id.split("_")[0]) {
-                        (this.pdfViewer.nameTable as any)[(event.currentTarget as Element).id.split("_")[0]].isSelected = true;
-                        formFieldsData[i].FormField.radiobuttonItem[j].isSelected = true;
-                        oldValue = this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].isSelected;
-                        if (!oldValue)
-                            undoElement = this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j];
-                        this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].isSelected = true;
-                        this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsData[i].FormField, this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, true, false, false,
-                            false, false, false, false, false, false, false, false,
-                            false, false, false, false, false, true);
+                        if(!(this.pdfViewer.nameTable as any)[(event.currentTarget as Element).id.split("_")[0]].isReadonly) {
+                            (this.pdfViewer.nameTable as any)[(event.currentTarget as Element).id.split("_")[0]].isSelected = true;
+                            formFieldsData[i].FormField.radiobuttonItem[j].isSelected = true;
+                            oldValue = this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].isSelected;
+                            if (!oldValue)
+                                undoElement = this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j];
+                            this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].isSelected = true;
+                            this.pdfViewer.fireFormFieldPropertiesChangeEvent("formFieldPropertiesChange", formFieldsData[i].FormField, this.pdfViewerBase.formFieldCollection[i].FormField.pageNumber, true, false, false,
+                                false, false, false, false, false, false, false, false,
+                                false, false, false, false, false, true);
+                        }
                     } else {
                         if ((this.pdfViewer.nameTable as any)[(event.currentTarget as Element).id.split("_")[0]].name === formFieldsData[i].FormField.radiobuttonItem[j].name) {
                             (this.pdfViewer.nameTable as any)[formFieldsData[i].FormField.radiobuttonItem[j].id.split("_")[0]].isSelected = false;
@@ -2693,22 +2695,6 @@ export class FormDesigner {
                 );
             }
         }
-        if (!isNullOrUndefined(options.isReadOnly)) {
-            if (formFieldObject.isReadonly !== options.isReadOnly) {
-                isReadOnlyChanged = true;
-                oldValue = formFieldObject.isReadonly;
-                newValue = options.isReadOnly;
-            }
-            formFieldObject.isReadonly = options.isReadOnly;
-            this.setReadOnlyToElement(formFieldObject, htmlElement, options.isReadOnly);
-            this.setReadOnlyToFormField(formFieldObject, options.isReadOnly);
-            htmlElement.style.pointerEvents = options.isReadOnly ? ((options as any).isMultiline ? 'auto' : 'none') : 'auto';
-            (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].isReadonly = options.isReadOnly;
-            if (isReadOnlyChanged) {
-                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
-                    false, false, false, false, false, false, isReadOnlyChanged, false, false, false, false, false, oldValue, newValue);
-            }
-        }
         if (!isNullOrUndefined(options.isRequired)) {
             if (formFieldObject.isRequired !== options.isRequired) {
                 isRequiredChanged = true;
@@ -2855,10 +2841,11 @@ export class FormDesigner {
                     oldValue = formFieldObject.value;
                     newValue = (options as TextFieldSettings).value;
                 }
+                formFieldObject.value = (options as TextFieldSettings).value ? (options as TextFieldSettings).value : formFieldObject.value;
                 if (formFieldObject.formFieldAnnotationType === "Textbox" && (options as TextFieldSettings).isMultiline) {
-                    this.addMultilineTextbox(selectedItem, "e-pv-formfield-input", true);
+                    this.addMultilineTextbox(formFieldObject, "e-pv-formfield-input", true);
                     this.multilineCheckboxCheckedState = true;
-                    document.getElementById(selectedItem.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(selectedItem) : this.updateFormFieldPropertiesInCollections(selectedItem);
+                    document.getElementById(formFieldObject.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(selectedItem) : this.updateFormFieldPropertiesInCollections(selectedItem);
                 }
                 formFieldObject.value = (options as TextFieldSettings).value ? (options as TextFieldSettings).value : formFieldObject.value;
                 if (!isNullOrUndefined((options as TextFieldSettings).isMultiline) && formFieldObject.isMultiline != (options as TextFieldSettings).isMultiline) {
@@ -2888,9 +2875,9 @@ export class FormDesigner {
                 }
             }
             else if (!(options as TextFieldSettings).isMultiline) {
-                this.renderTextbox(selectedItem);
+                this.renderTextbox(formFieldObject);
                 this.multilineCheckboxCheckedState = true;
-                document.getElementById(selectedItem.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(selectedItem) : this.updateFormFieldPropertiesInCollections(selectedItem);
+                document.getElementById(formFieldObject.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(formFieldObject) : this.updateFormFieldPropertiesInCollections(formFieldObject);
             }
             if ((options as any).fontSize) {
                 if (formFieldObject.fontSize !== (options as any).fontSize) {
@@ -3007,6 +2994,23 @@ export class FormDesigner {
                             isFontStyleChanged, false, false, false, false, false, false, false, false, false, false, false, oldFontStyle, newFontStyle);
                     }
                 }
+            }
+        }
+        // EJ2-856550 - the multiline true and add value programmattically. after setting the multiline value below code works.
+        if (!isNullOrUndefined(options.isReadOnly)) {
+            if (formFieldObject.isReadonly !== options.isReadOnly) {
+                isReadOnlyChanged = true;
+                oldValue = formFieldObject.isReadonly;
+                newValue = options.isReadOnly;
+            }
+            formFieldObject.isReadonly = options.isReadOnly;
+            this.setReadOnlyToElement(formFieldObject, htmlElement, options.isReadOnly);
+            this.setReadOnlyToFormField(formFieldObject, options.isReadOnly);
+            htmlElement.style.pointerEvents = options.isReadOnly ? ((options as any).isMultiline ? 'auto' : 'none') : 'auto';
+            (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].isReadonly = options.isReadOnly;
+            if (isReadOnlyChanged) {
+                this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
+                    false, false, false, false, false, false, isReadOnlyChanged, false, false, false, false, false, oldValue, newValue);
             }
         }
         if ((formFieldObject.formFieldAnnotationType === 'SignatureField' && (options as any).signatureIndicatorSettings) || (formFieldObject.formFieldAnnotationType === 'InitialField' && (options as any).initialIndicatorSettings)){
@@ -3280,12 +3284,10 @@ export class FormDesigner {
                             case 'ListBox':
                             case 'SignatureField':
                             case 'InitialField':
+                            // The radio element is not getting properly while working on this task '855079', so we modify it.
+                            case 'RadioButton':
                                 let inputElement:any = document.getElementById(collections[i].id + "_content_html_element").firstElementChild.firstElementChild;
                                 inputElement.style.pointerEvents = 'none'
-                                break;
-                            case 'RadioButton':
-                                let radioButtonDivDivElement:any = document.getElementById(collections[i].id + "_content_html_element").firstElementChild.firstElementChild.firstElementChild;
-                                radioButtonDivDivElement.style.pointerEvents = 'none';
                                 break;
                             case 'Checkbox':
                                 let checkboxDivElement:any = document.getElementById(collections[i].id + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;
@@ -3310,12 +3312,10 @@ export class FormDesigner {
                             case 'ListBox':
                             case 'SignatureField':
                             case 'InitialField':
+                            // The radio element is not getting properly while working on this task '855079', so we modify it.
+                            case 'RadioButton':
                                 let inputElement:any = document.getElementById(collections[i].id + "_content_html_element").firstElementChild.firstElementChild;
                                 inputElement.style.pointerEvents = collections[i].isReadonly ? (collections[i].isMultiline ? 'auto' : 'none') : 'auto';
-                                break;
-                            case 'RadioButton':
-                                let radioButtonDivDivElement:any = document.getElementById(collections[i].id + "_content_html_element").firstElementChild.firstElementChild.firstElementChild;
-                                radioButtonDivDivElement.style.pointerEvents = collections[i].isReadonly ? (collections[i].isMultiline ? 'auto' : 'none') : 'auto';
                                 break;
                             case 'Checkbox':
                                 let checkboxDivElement:any = document.getElementById(collections[i].id + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;
@@ -3629,14 +3629,19 @@ export class FormDesigner {
     /**
      * @private
     */
-    public updateRadioButtonProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement): void {
+    public updateRadioButtonProperties(obj: PdfFormFieldBaseModel, inputElement: HTMLElement, labelElement?: HTMLElement): void {
         let fillColor: any = '#daeaf7ff';
         (inputElement as IFormFieldProperty).name = obj.name ? obj.name : 'Radio Button' + this.setFormFieldIndex();
         (inputElement as IElement).checked = obj.isSelected ? true : false;
         inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
         inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
         inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
-        inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
+        if(!isNullOrUndefined(labelElement)){
+            labelElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
+        }
+        else {
+            inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
+        }
         inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
         if (obj.isReadonly) {
             (inputElement as HTMLInputElement).disabled = true;
@@ -4303,6 +4308,7 @@ export class FormDesigner {
                 wrapperElement.template = htmlElement.appendChild(inputElement);
             } else {
                 let textArea = this.createTextAreaElement(textAreaId);
+                textArea.value = selectedItem.value;
                 wrapperElement.template = htmlElement.appendChild(textArea);
             }
             let index: number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
@@ -4691,7 +4697,7 @@ export class FormDesigner {
         var data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         var formFieldsData = JSON.parse(data);
         let index: number = this.getFormFiledIndex(selectedItem.id.split('_')[0]);
-        if (this.pdfViewer.designerMode || isUndoRedo) {
+        if (this.pdfViewer.designerMode || isUndoRedo || this.isAddFormFieldProgrammatically) {
             if ((this.formFieldName && this.formFieldName.value) || isUndoRedo) {
                 this.updateNamePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
@@ -4883,9 +4889,14 @@ export class FormDesigner {
         } else {
             if (updateValue) {
                 isValueChanged = false;
-            } else {
+            } else if(!this.isAddFormFieldProgrammatically){ 
                 selectedItem.formFieldAnnotationType === "DropdownList" ? selectedItem.value = formFieldsData[index].FormField.value : selectedItem.value = this.formFieldValue ? this.formFieldValue.value : selectedItem.value;
                 selectedItem.formFieldAnnotationType === "DropdownList" ? element.value = formFieldsData[index].FormField.value : element.value = this.formFieldValue ? this.formFieldValue.value : selectedItem.value;
+            }
+            // EJ2-856550 - to get select item while add multiline programatically.
+            else{
+                selectedItem.formFieldAnnotationType === "DropdownList" ? selectedItem.value = formFieldsData[index].FormField.value : selectedItem.value = selectedItem.value;
+                selectedItem.formFieldAnnotationType === "DropdownList" ? element.value = formFieldsData[index].FormField.value : element.value = selectedItem.value;
             }
         }
         if (index > -1) {
@@ -5107,6 +5118,12 @@ export class FormDesigner {
         }
         if (isUndoRedo) {
             element.style.fontFamily = selectedItem.fontFamily;
+        }
+        // EJ2-856550 - to ge selectItem fontfamily when font family empty string in add multiline programattically
+        else if(fontFamily === "")
+        {
+            fontFamily = selectedItem.fontFamily;
+            element.style.fontFamily = fontFamily;
         } else {
             selectedItem.fontFamily = fontFamily
             element.style.fontFamily = fontFamily;
@@ -5277,6 +5294,13 @@ export class FormDesigner {
         }
     }
 
+    // Implemented this method to set the "ReadOnly" in the grouping elements. Task: 855079.
+    private setReadOnlyProperty(selectedItem: any, element: any) {
+        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].isReadonly = selectedItem.isReadonly;
+        this.setReadOnlyToElement(selectedItem, element, selectedItem.isReadonly);
+        this.setReadOnlyToFormField(selectedItem, selectedItem.isReadonly);
+    }
+
     private updateIsReadOnlyPropertyChange(selectedItem: any, element: any, isUndoRedo: boolean, index: number, formFieldsData: any) {
         let isReadOnlyChanged: boolean = false
         let oldValue: any, newValue: any;
@@ -5294,10 +5318,18 @@ export class FormDesigner {
         if (index > -1) {
             formFieldsData[index].FormField.isReadonly = selectedItem.isReadonly;
             this.pdfViewerBase.formFieldCollection[index].FormField.isReadonly = selectedItem.isReadonly;
+            if (this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem) {
+                for (let i: number = 0; i < this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem.length; i++) {
+                    this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem[i].isReadonly = selectedItem.isReadonly;
+                    (this.pdfViewer.nameTable as any)[this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem[i].id.split('_')[0]].isReadonly = selectedItem.isReadonly;
+                    let currentElement: any = document.getElementById(this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem[i].id.split('_')[0]);
+                    let currentItem: any = this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem[i];
+                    this.setReadOnlyProperty(currentItem, currentElement);
+                }
+                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
+            }
         }
-        (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].isReadonly = selectedItem.isReadonly;
-        this.setReadOnlyToElement(selectedItem, element, selectedItem.isReadonly);
-        this.setReadOnlyToFormField(selectedItem, selectedItem.isReadonly);
+        this.setReadOnlyProperty(selectedItem, element);
         if (isReadOnlyChanged) {
             this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
             this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", selectedItem, false, false, false,
@@ -6375,12 +6407,10 @@ export class FormDesigner {
                     case 'ListBox':
                     case 'SignatureField':
                     case 'InitialField':
+                    // The radio element is not getting properly while working on this task '855079', so we modify it.
+                    case 'RadioButton':
                         let inputElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild;
                         this.setReadOnlyToElement(formField, inputElement, isReadOnly);
-                        break;
-                    case 'RadioButton':
-                        let radioButtonDivDivElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild.firstElementChild;
-                        this.setReadOnlyToElement(formField, radioButtonDivDivElement, isReadOnly);
                         break;
                     case 'Checkbox':
                         let checkboxDivElement: Element = document.getElementById(formField.id + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;

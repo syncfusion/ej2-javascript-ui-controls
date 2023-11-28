@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 23.2.6 (2023-11-28)
+
+### ImageEditor
+
+#### Bug Fixes
+
+- Issue with "Zoom public method not working properly" has been resolved.
+- Issue with "Resize numeric textbox placeholder value not updated properly in rotated state" has been resolved.
+
 ## 23.2.5 (2023-11-23)
 
 ### ImageEditor

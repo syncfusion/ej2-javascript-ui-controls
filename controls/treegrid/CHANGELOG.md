@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 23.2.6 (2023-11-28)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#I522828` - Fixed an issue where the Excel export datasource properties were not being applied correctly for remote data binding.
+- `#I523652` - Fixed an issue where the cell saving functionality was not working correctly after pressing enter or update in the treegrid.
+
 ## 23.2.4 (2023-11-20)
 
 ### TreeGrid

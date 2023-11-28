@@ -6,6 +6,7 @@ import { FormValidator } from "@syncfusion/ej2-inputs";
 import { dispatchEvent } from '../../src/rich-text-editor/base/util';
 import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent as dispatchEve } from './../rich-text-editor/render.spec';
+import { NodeSelection } from '../../src/selection/selection';
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -2599,6 +2600,26 @@ describe('RTE CR issues', () => {
         });
     });
 
+    describe('855271 - Toolbar status not updated properly when we dynamically enable the toolbar in RichTextEditor', ()=> {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    enable: false,
+                }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Testing the html toolbar status class is null or undefined', () => {
+            expect((rteObj.htmlEditorModule as any).toolbarUpdate).toBe(undefined);;
+            rteObj.toolbarSettings.enable = true;
+            rteObj.dataBind();
+            expect((rteObj.htmlEditorModule as any).toolbarUpdate).not.toBe(undefined);
+        });
+    });
+
     describe('847097 - Image get duplicated when we press enter key next to the copy pasted image content from Word', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2751,6 +2772,51 @@ describe('RTE CR issues', () => {
           expect(rteObj.contentModule.getEditPanel().innerHTML === '<div>\n            <p>test</p>\n            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">\n              <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow"></circle>\n            </svg>\n          </div><p>text</p>').toBe(true);
         });
     });
+describe('854718 - Need to add the aria label attribute to the link in the Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({ value: '' });
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('link with the aria-label attribute', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+            let event: any = { preventDefault: function () { } };
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let selectParent: any = new NodeSelection().getParentNodeCollection(range)
+            let selectNode: any = new NodeSelection().getNodeCollection(range);
+            let evnArg = {
+                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
+                selectParent: selectParent, selectNode: selectNode
+            };
+            (<any>rteObj).linkModule.linkDialog(evnArg);
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'http://data';
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = 'Rich Text Editor';
+            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+            (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').focus();
+            args = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+            event = { preventDefault: function () { } };
+            range = new NodeSelection().getRange(document);
+            save = new NodeSelection().save(range, document);
+            selectParent = new NodeSelection().getParentNodeCollection(range);
+            selectNode = new NodeSelection().getNodeCollection(range);
+            evnArg = {
+                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save, selectNode: selectNode,
+                selectParent: selectParent
+            };
+            (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').target = '_blank';
+            (<any>rteObj).linkModule.editLink(evnArg);
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = 'Rich Text Editor';        
+            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+            expect((<any>rteObj).contentModule.getEditPanel().querySelector("a.e-rte-anchor").hasAttribute("aria-label")).toBe(true);
+        });
+    });
     describe('853959 - The anchor element was removed when removing the underline in the Rich Text Editor.', () => {
         let rteObj: RichTextEditor;
         beforeEach((done: Function) => {
@@ -2803,6 +2869,43 @@ describe('RTE CR issues', () => {
             const list: HTMLElement= document.querySelector('.e-list1');
             (rteObj as any).blurHandler({ relatedTarget: list });
             expect(rteObj.toolbarSettings.enable).toBe(true);
+        });
+    });
+    describe('854639 - Need to remove the max row count for the table in the Rich Text Editor.', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('table creation of row more than 50 ', () => {
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            rteEle.querySelector('.e-table-row').setAttribute('aria-valuenow','51');
+            rteEle.querySelector('.e-table-row').setAttribute('value','51');
+            rteEle.querySelector('.e-table-row').setAttribute('aria-valuenow', '51');
+            rteEle.querySelector('.e-table-row').setAttribute('value', '51');
+            (rteEle.querySelector('.e-table-row') as HTMLInputElement).value = '51';
+            rteEle.querySelectorAll('.e-numeric-hidden')[1].setAttribute('value', '51');
+            (rteEle.querySelectorAll('.e-numeric-hidden')[1] as HTMLInputElement).value = '51';
+            rteEle.querySelector('.e-table-row').dispatchEvent(new Event("change"));
+            (rteEle.querySelector('.e-table-row') as HTMLInputElement).blur();
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            target.dispatchEvent(clickEvent);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table.querySelectorAll('tr').length === 51).toBe(true);
         });
     });
 });

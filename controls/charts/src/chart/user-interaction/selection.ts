@@ -206,7 +206,7 @@ export class Selection extends BaseSelection {
                 this.findTrackballElements(selectedElements, seriesStyle);
                 const clusterIndex: number = series.marker.visible && series.isRectSeries ? 2 : 1;
                 if (!chart.isMultiSelect && selectedElements.length > 0 &&
-                    selectedElements[0].id !== clusters[clusters.length - clusterIndex].id) {
+                    selectedElements[0].id !== (clusters[clusters.length - clusterIndex] ? clusters[clusters.length - clusterIndex].id : '')) {
                     this.removeSelection(chart, index.series, selectedElements, seriesStyle, true);
                 }
             }
@@ -279,7 +279,7 @@ export class Selection extends BaseSelection {
                 isElement = (parentNodeId.indexOf('SeriesGroup') > 0 || parentNodeId.indexOf('SymbolGroup') > 0) ? true : false;
             }
             for (let i: number = 0; i < this.previousSelectedEle.length; i++) {
-                if (this.previousSelectedEle[i as number].hasAttribute('class')) {
+                if (this.previousSelectedEle[i as number] && this.previousSelectedEle[i as number].hasAttribute('class')) {
                     if (this.previousSelectedEle[i as number].getAttribute('class').indexOf('highlight') > -1 &&
                         (isElement || eventType === 'click')) {
                         this.previousSelectedEle[i as number].removeAttribute('class');
@@ -411,7 +411,7 @@ export class Selection extends BaseSelection {
                         pointIndex = chart.isMultiSelect ? this.selectedDataIndexes[i as number].point : index.point;
                         seriesIndex = series.index;
                         points = (<Series>series).points;
-                        if (!isNaN(pointIndex)) {
+                        if (!isNaN(pointIndex) && (pointIndex < points.length)) {
                             yValue = (series.type !== 'RangeArea' || 'SplineRangeArea' || 'RangeStepArea') ? points[pointIndex as number].yValue :
                                 points[pointIndex as number].regions[0].y;
                             selectedPointX = points[pointIndex as number].xValue;

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 23.2.6 (2023-11-28)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I520071` - Now, `cluster` selection is working properly in the scatter series.
+- `#I522808` - Fixed console error that was thrown when using the name property in the axis for a polar chart.
+- `#I523059` - Now, the period selector's selected index is highlighted properly whenever we resize the screen.
+
 ## 23.2.5 (2023-11-23)
 
 ### AccumulationChart

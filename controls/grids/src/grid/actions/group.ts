@@ -1131,6 +1131,9 @@ export class Group implements IAction {
                 } else {
                     this.element.style.display = 'none';
                 }
+                if (this.parent.height === '100%') {
+                    this.parent.scrollModule.refresh();
+                }
                 break;
             case 'showGroupedColumn':
                 this.updateGroupedColumn(this.groupSettings.showGroupedColumn);

@@ -2866,6 +2866,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             GroupedDrag: 'Drag the grouped column',
             GroupCaption: ' is groupcaption cell',
             CheckBoxLabel: 'checkbox',
+            SelectAllCheckbox: 'Select all checkbox',
             autoFitAll: 'Autofit all columns',
             autoFit: 'Autofit this column',
             AutoFitAll: 'Autofit all columns',
@@ -3677,7 +3678,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             switch (prop) {
             case 'allowPaging':
                 this.notify(events.uiUpdate, { module: 'pager', enable: this.allowPaging });
-                requireRefresh = true; break;
+                requireRefresh = true;
+                if (this.height === '100%') {
+                    this.scrollModule.refresh();
+                }
+                break;
             case 'pageSettings':
                 if (this.pageTemplateChange) {
                     this.pageTemplateChange = false;
@@ -3702,6 +3707,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 requireRefresh = true;
                 if (this.filterSettings.type !== 'FilterBar') {
                     this.refreshHeader();
+                } else {
+                    if (this.height === '100%') {
+                        this.scrollModule.refresh();
+                    }
                 } break;
             case 'height':
             case 'width':
@@ -3741,7 +3750,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.notify(events.uiUpdate, { module: 'group', enable: this.allowGrouping });
                 this.headerModule.refreshUI();
                 requireRefresh = true;
-                checkCursor = true; break;
+                checkCursor = true;
+                if (this.height === '100%') {
+                    this.scrollModule.refresh();
+                } break;
             case 'enableInfiniteScrolling':
             case 'childGrid':
                 requireRefresh = true;
@@ -3764,7 +3776,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.headerModule.refreshUI();
                 break;
             case 'toolbar':
-                this.notify(events.uiUpdate, { module: 'toolbar' }); break;
+                this.notify(events.uiUpdate, { module: 'toolbar' });
+                if (this.height === '100%') {
+                    this.scrollModule.refresh();
+                } break;
             case 'groupSettings':
                 this.notify(events.inBoundModelChanged, {
                     module: 'group', properties: newProp.groupSettings,
@@ -3774,7 +3789,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 if (!this.aggregates.length && this.allowGrouping && this.groupSettings.columns.length) {
                     requireRefresh = true;
                 }
-                this.notify(events.uiUpdate, { module: 'aggregate', properties: newProp }); break;
+                this.notify(events.uiUpdate, { module: 'aggregate', properties: newProp });
+                if (this.height === '100%') {
+                    this.scrollModule.refresh();
+                } break;
             case 'frozenColumns':
             case 'frozenRows':
             case 'enableVirtualization':
@@ -5845,7 +5863,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public updateExternalMessage(message: string): void {
-        if (this.pagerModule) {
+        if (this.pagerModule && !this.pagerTemplate) {
             this.pagerModule.updateExternalMessage(message);
         }
     }

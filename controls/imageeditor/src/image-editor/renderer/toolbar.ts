@@ -842,13 +842,17 @@ export class ToolbarModule {
     private getResizeToolbarItem(): ItemModel[] {
         const toolbarItems: ItemModel[] = [];
         const isResize: boolean = this.parent.aspectWidth && this.parent.aspectHeight ? true : false;
+        const width: string = this.parent.transform.degree % 90 === 0 && this.parent.transform.degree % 180 !== 0 ?
+            Math.ceil(this.parent.img.srcHeight).toString() : Math.ceil(this.parent.img.srcWidth).toString();
+        const height: string = this.parent.transform.degree % 90 === 0 && this.parent.transform.degree % 180 !== 0 ?
+            Math.ceil(this.parent.img.srcWidth).toString() : Math.ceil(this.parent.img.srcHeight).toString();
         const spanWidth: HTMLElement = document.createElement('span');
         spanWidth.innerHTML = this.l10n.getConstant('W');
         toolbarItems.push({ id: this.parent.element.id + '_width', cssClass: 'e-ie-resize-width', template: spanWidth, align: 'Center' });
         toolbarItems.push({ id: this.parent.element.id + '_resizeWidth', prefixIcon: 'e-icons e-anti-clock-wise',
             tooltipText: this.l10n.getConstant('Width'), align: 'Center', type: 'Input', template: new NumericTextBox({ width: 75, htmlAttributes: {  maxLength: "4" },
                 showSpinButton: false, value: isResize ? this.parent.aspectWidth : null,
-                placeholder: isResize ? null : Math.ceil(this.parent.img.srcWidth).toString(), format: '###.## px' })
+                placeholder: isResize ? null : width, format: '###.## px' })
         });
         const spanHeight: HTMLElement = document.createElement('span');
         spanHeight.innerHTML = this.l10n.getConstant('H');
@@ -856,7 +860,7 @@ export class ToolbarModule {
         toolbarItems.push({ id: this.parent.element.id + '_resizeHeight', prefixIcon: 'e-icons e-clock-wise',
             tooltipText: this.l10n.getConstant('Height'), align: 'Center', type: 'Input', template: new NumericTextBox({ width: 75, htmlAttributes: {  maxLength: "4" },
                 showSpinButton: false, value: isResize ? this.parent.aspectHeight : null,
-                placeholder: isResize ? null : Math.ceil(this.parent.img.srcHeight).toString(), format: '###.## px' })
+                placeholder: isResize ? null : height, format: '###.## px' })
         });
         if (!this.isAspectRatio) {
             toolbarItems.push({ id: this.parent.element.id + '_aspectratio', prefixIcon: 'e-icons e-lock', align: 'Center', tooltipText: this.l10n.getConstant('AspectRatio'), type: 'Button'});

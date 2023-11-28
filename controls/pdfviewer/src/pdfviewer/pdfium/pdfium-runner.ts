@@ -902,7 +902,9 @@ export function PdfiumRunner(): void {
     class DocumentInfo {
         public processor: Processor;
         public pages: any[] = [];
+        public wasmData: any;
         constructor(wasmData: any) {
+            this.wasmData = wasmData; 
             this.processor = new Processor(wasmData);
         }
 
@@ -912,7 +914,7 @@ export function PdfiumRunner(): void {
 
         public createAllPages() {
             for (let i = 0; i < this.pages.length; i++) {
-                this.pages[parseInt(i.toString(), 10)] = new Page(parseInt(i.toString(), 10), this.processor);
+                this.pages[parseInt(i.toString(), 10)] = new Page(parseInt(i.toString(), 10), new Processor(this.wasmData));
             }
         }
 

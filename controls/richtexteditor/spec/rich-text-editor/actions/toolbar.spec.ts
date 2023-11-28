@@ -6,6 +6,18 @@ import { RichTextEditor, ToolbarType } from "../../../src/rich-text-editor/index
 import { IToolbarStatus } from '../../../src/common/interface';
 import { renderRTE, destroy, dispatchEvent } from "./../render.spec";
 import { NodeSelection } from "../../../src/selection/index";
+const toolbarFocusShortCutEvent = new KeyboardEvent('keydown', {
+    key: "F10",
+    keyCode: 121,
+    which: 121,
+    code: "F10",
+    location: 0,
+    altKey: true,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    repeat: false
+} as EventInit);
 
  describe('Checking the customized NumberFormatListand BulletFormatList dropdownItems', () => {
         let rteObj: RichTextEditor;
@@ -1972,7 +1984,6 @@ describe("Toolbar - Actions Module", () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
         let editNode: HTMLElement;
-        let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
         let innerHTML: string = `<div><p class='first-p'>First p node-0</p><p class='second-p'>First p node-1</p></div>`;
         beforeAll(() => {
             rteObj = renderRTE({
@@ -1986,15 +1997,20 @@ describe("Toolbar - Actions Module", () => {
         });
 
         it('open drop down button using keyboard', () => {
-            let targetElm: HTMLElement = elem.querySelectorAll(".e-toolbar-item")[0].querySelector('button');
-            keyBoardEvent.ctrlKey = false;
-            keyBoardEvent.shiftKey = false;
-            keyBoardEvent.key = 'Enter';
-            keyBoardEvent.code = 'Enter';
-            keyBoardEvent.keyCode = 13;
-            keyBoardEvent.target = targetElm;
-            (rteObj as any).toolbarModule.tbKeydownHandler(keyBoardEvent);
-            expect(targetElm.getAttribute('tabindex') === '0').toBe(true);
+            rteObj.focusIn();
+            rteObj.contentModule.getEditPanel().dispatchEvent(toolbarFocusShortCutEvent);
+            const enterKeyDownEvent = new KeyboardEvent('keydown', {
+                ctrlKey: false,
+                shiftKey: false,
+                keyCode: 13,
+                which: 13,
+                key: 'Enter',
+                code: 'Enter',
+                bubbles: true,
+                cancelable: true
+            } as EventInit);
+            document.activeElement.dispatchEvent(enterKeyDownEvent);
+            expect(document.activeElement.getAttribute('tabindex') === '0').toBe(true);
         });
 
         afterAll(() => {
@@ -2422,5 +2438,158 @@ describe('EJ2-58542: Memory leak issue with Rich Text Editor component ', () => 
             detach(allDropDownPopups[i]);
         }
         done();
+    });
+});
+
+describe('849075 - The screen reader does not read the toolbar items in the Rich Text Editor', () => {
+    // Checking the tab index value on focus blur and toolbar navigation states.
+    const toolbarFocusShortCutEvent = new KeyboardEvent('keydown', {
+        key: "F10",
+        keyCode: 121,
+        which: 121,
+        code: "F10",
+        location: 0,
+        altKey: true,
+        ctrlKey: false,
+        metaKey: false,
+        shiftKey: false,
+        repeat: false
+    } as EventInit);
+    let editorObj: RichTextEditor;
+    let toolbarElement: HTMLElement;
+    beforeEach(() => {
+        editorObj = renderRTE( {
+            toolbarSettings: {
+                items: [ 'Undo', 'Redo', 'Bold', 'Italic', 'FontName', 'FontColor',
+                    'NumberFormatList', 'BulletFormatList', 'CreateLink', 'Image', 'CreateTable', 'SourceCode' ]
+            }
+        });
+    });
+    afterEach(() => {
+        destroy(editorObj);
+    });
+    it('Case 1: Checking the tab index on the focus action of the editor', () => {
+        editorObj.focusIn();
+        const toolbarItems: NodeListOf<Element> = document.querySelectorAll('.e-toolbar-item');
+        for (let i: number = 0; i < toolbarItems.length; i++) {
+            expect(toolbarItems[i].firstElementChild.getAttribute('tabindex') === '-1').toBe(true);
+        }
+    });
+    it('Case 2: Checking the tab index on the blur action of the editor', () => {
+        editorObj.focusIn();
+        editorObj.focusOut();
+        const toolbarItems: NodeListOf<Element> = document.querySelectorAll('.e-toolbar-item');
+        for (let i: number = 0; i < toolbarItems.length; i++) {
+            expect(toolbarItems[i].firstElementChild.getAttribute('tabindex') === '-1').toBe(true);
+        }
+    });
+    it('Case 3: Checking the tab index on the blur action of the editor - on document click', () => {
+        editorObj.focusIn();
+        document.body.click();
+        const toolbarItems: NodeListOf<Element> = document.querySelectorAll('.e-toolbar-item');
+        for (let i: number = 0; i < toolbarItems.length; i++) {
+            expect(toolbarItems[i].firstElementChild.getAttribute('tabindex') === '-1').toBe(true);
+        }
+    });
+    it('Case 4: Checking the tab index after the toolbar focus using shortcut keys', () => {
+        editorObj.focusIn();
+        editorObj.contentModule.getEditPanel().dispatchEvent(toolbarFocusShortCutEvent);
+        const toolbarItems: NodeListOf<Element> = document.querySelectorAll('.e-toolbar-item');
+        for (let i: number = 0; i < toolbarItems.length; i++) {
+            if (i == 2){
+                // Focus should be on Bold button instead the Undo and Redo button.
+                // Undo and Redo button are not focusable.
+                expect(toolbarItems[i].firstElementChild.getAttribute('tabindex') === null).toBe(true);
+            } else {
+                expect(toolbarItems[i].firstElementChild.getAttribute('tabindex') === '-1').toBe(true);
+            }
+        }
+    });
+    it ('Case 5: Checking the tab index on Source Code view', () => {
+        editorObj.focusIn();
+        const sourceCodeButton: HTMLElement = editorObj.element.querySelector('#' + editorObj.getID() + '_toolbar_SourceCode');
+        sourceCodeButton.click();
+        const sourceCodeTextArea: HTMLElement = editorObj.element.querySelector('.e-rte-srctextarea');
+        sourceCodeTextArea.focus();
+        sourceCodeTextArea.dispatchEvent(toolbarFocusShortCutEvent);
+        const toolbarItems: NodeListOf<Element> = document.querySelectorAll('.e-toolbar-item');
+        for (let i: number = 0; i < toolbarItems.length; i++) {
+            // Source code view toolbar items are focusable.
+            // Other toolbar items are not focusable.
+            if (toolbarItems[i].getAttribute('title') === 'Preview' || toolbarItems[i].getAttribute('title') === 'Minimize(Esc)'){
+                expect(toolbarItems[i].firstElementChild.getAttribute('tabindex') === null).toBe(true);
+            } else {
+                expect(toolbarItems[i].firstElementChild.getAttribute('tabindex') === '-1').toBe(true);
+            }
+        }
+    });
+});
+
+describe('849075 - Checking the tab index on navigating the toolbar items using arrow keys', () => {
+    // Checking the tab index value on focus blur and toolbar navigation states.
+    const rightArrowKeyDownEvent = new KeyboardEvent('keydown', {
+        bubbles: true,
+        key: "ArrowRight",
+        keyCode: 39,
+        which: 39,
+        code: "ArrowRight",
+        location: 0,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: false,
+        shiftKey: false,
+        repeat: false,
+    } as EventInit);
+    const rightArrowKeyUpEvent = new KeyboardEvent('keyup', {
+        bubbles: true,
+        key: "ArrowRight",
+        keyCode: 39,
+        which: 39,
+        code: "ArrowRight",
+        location: 0,
+        altKey: false,
+        ctrlKey: false,
+        metaKey: false,
+        shiftKey: false,
+        repeat: false,
+    } as EventInit);
+    let editorObj: RichTextEditor;
+    let toolbarElement: HTMLElement;
+    let toolbarItems: NodeListOf<Element>;
+    beforeAll(() => {
+        editorObj = renderRTE( {
+            toolbarSettings: {
+                items: [ 'Undo', 'Redo', 'Bold', 'Italic', 'FontName', 'FontColor',
+                    'NumberFormatList', 'BulletFormatList', 'CreateLink', 'Image', 'CreateTable', 'SourceCode' ]
+            }
+        });
+    });
+    afterAll(() => {
+        destroy(editorObj);
+    });
+    it('Case 1:', (done: DoneFn) => {
+        editorObj.focusIn();
+        editorObj.contentModule.getEditPanel().dispatchEvent(toolbarFocusShortCutEvent);
+        toolbarElement = document.querySelector('.e-rte-toolbar');
+        toolbarItems = document.querySelectorAll('.e-toolbar-item');
+        expect(toolbarItems[0].firstElementChild.getAttribute('tabindex') === '-1').toBe(true);
+        expect(toolbarItems[1].firstElementChild.getAttribute('tabindex') === '-1').toBe(true);
+        expect(toolbarItems[2].firstElementChild.getAttribute('tabindex') === null).toBe(true); // Normal item
+        toolbarItems[2].dispatchEvent(rightArrowKeyDownEvent);
+        toolbarItems[2].dispatchEvent(rightArrowKeyUpEvent);
+        setTimeout(() => {
+            expect(toolbarItems[2].firstElementChild.getAttribute('tabindex') === '-1').toBe(true);
+            expect(toolbarItems[3].firstElementChild.getAttribute('tabindex') === null).toBe(true); // Normal item
+            done();
+        }, 800);
+    });
+    it('Case 2:', (done: DoneFn) => {
+        toolbarItems[3].dispatchEvent(rightArrowKeyDownEvent);
+        toolbarItems[3].dispatchEvent(rightArrowKeyUpEvent);
+        setTimeout(() => {
+            expect(toolbarItems[3].firstElementChild.getAttribute('tabindex') === '-1').toBe(true);
+            expect(toolbarItems[4].firstElementChild.getAttribute('tabindex') === '0').toBe(true); // Template item
+            done();
+        }, 800);
     });
 });

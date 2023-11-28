@@ -331,11 +331,19 @@ export class RowDD {
                 }
                 if (this.dropPosition === 'middleSegment') {
                     if (droppedRecord.ganttProperties.predecessor) {
-                        this.parent.editModule.removePredecessorOnDelete(droppedRecord);
-                        droppedRecord.ganttProperties.predecessor = null;
-                        droppedRecord.ganttProperties.predecessorsName = null;
-                        droppedRecord[this.parent.taskFields.dependency] = null;
-                        droppedRecord.taskData[this.parent.taskFields.dependency] = null;
+                        const len: number = droppedRecord.ganttProperties.predecessor.length;
+                        for (let count: number = 0; count < len; count++) {
+                            const fromRecord: IGanttData = this.parent.getRecordByID(droppedRecord.ganttProperties.predecessor[count as number].from);
+                            const toRecord: IGanttData = this.parent.getRecordByID(droppedRecord.ganttProperties.predecessor[count as number].to)
+                            const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
+                            if (droppedRecord.ganttProperties.predecessor && !validPredecessor) {
+                                this.parent.editModule.removePredecessorOnDelete(droppedRecord);
+                                droppedRecord.ganttProperties.predecessor = null;
+                                droppedRecord.ganttProperties.predecessorsName = null;
+                                droppedRecord[this.parent.taskFields.dependency] = null;
+                                droppedRecord.taskData[this.parent.taskFields.dependency] = null;
+                            }
+                        }
                     }
                     if (droppedRecord.ganttProperties.isMilestone) {
                         this.parent.setRecordValue('isMilestone', false, droppedRecord.ganttProperties, true);

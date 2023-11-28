@@ -660,6 +660,9 @@ export class Filter implements IAction {
             case 'type':
                 this.parent.refreshHeader();
                 this.refreshFilterSettings();
+                if (this.parent.height === '100%') {
+                    this.parent.scrollModule.refresh();
+                }
                 break;
             }
         }

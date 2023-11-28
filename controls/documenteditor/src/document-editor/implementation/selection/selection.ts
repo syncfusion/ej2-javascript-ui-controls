@@ -10873,7 +10873,7 @@ export class Selection {
                         this.owner.trackChangesPane.isTrackingPageBreak = true;
                         endPosition.setPositionParagraph(currentPara.nextRenderedWidget.childWidgets[0] as LineWidget, 0);
                     } else {
-                        offset = (currentPara.lastChild as LineWidget).getEndOffset();
+                        offset = currentPara.getLength();
                         endPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset + 1);
                     }
                 } else {

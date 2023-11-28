@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.6 (2023-11-28)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I521739` - When no fields are bound to the column axis, the pivot table will now function properly when applying a filter.
+
 ## 23.2.5 (2023-11-23)
 
 ### PivotTable

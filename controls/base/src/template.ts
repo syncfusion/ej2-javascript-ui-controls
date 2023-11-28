@@ -2,7 +2,7 @@
  * Template Engine
  */
 
-const LINES: RegExp = new RegExp('\\n|\\r|\\s\\s+', 'g');
+const LINES: RegExp = new RegExp('[\\n\\r\\s]+', 'g');
 const QUOTES: RegExp = new RegExp(/'|"/g);
 const IF_STMT: RegExp = new RegExp('if ?\\(');
 const ELSEIF_STMT: RegExp = new RegExp('else if ?\\(');
@@ -126,7 +126,7 @@ function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?:
         });
     }
 
-    return str.replace(LINES, '').replace(DBL_QUOTED_STR, '\'$1\'').replace(
+    return str.replace(LINES, ' ').replace(DBL_QUOTED_STR, '\'$1\'').replace(
 
         exp,
         // eslint-disable-next-line

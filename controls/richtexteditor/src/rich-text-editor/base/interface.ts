@@ -276,6 +276,7 @@ export interface NotifyArgs {
     allowedStylePropertiesArray?: string[]
     formatPainterSettings?: FormatPainterSettingsModel
     emojiPickerSettings?: EmojiSettingsModel
+    ariaLabel?: string
 }
 
 /**

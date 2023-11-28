@@ -3790,6 +3790,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @hidden
      */
     public renderPivotGrid(): void {
+        this.isEmptyGrid = false;
+        this.notEmpty = true;
         this.clearTemplate();
         if (this.pivotChartModule) {
             this.pivotChartModule.engineModule = this.engineModule;

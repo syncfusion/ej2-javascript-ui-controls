@@ -115,6 +115,7 @@ export interface IHtmlItemArgs {
     captionClass?: string
     action?: string
     formatPainterAction?: IFormatPainterActionValue
+    ariaLabel?: string
 }
 /**
  * @deprecated

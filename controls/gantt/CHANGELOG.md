@@ -12,6 +12,7 @@
 - `#I515425` - Issue with observable data binding in Gantt chart issue has been fixed.
 - `#I520146` - Timeline render in advance the project start date while resizing taskbar issue has been fixed.
 - `#I521906` - Milestone not working properly while drop at weekend issue has been fixed.
+- `#I516954` - Dependency line not render after adding child record issue has been fixed.
 
 ## 23.2.4 (2023-11-20)
 

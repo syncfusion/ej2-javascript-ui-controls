@@ -219,12 +219,24 @@ export class PdfAnnotationCollection {
             }
             if (this._parsedAnnotations.has(index)) {
                 this._parsedAnnotations.delete(index);
+                this._reorderParsedAnnotations(index);
             }
             const crossReference: _PdfCrossReference = this._page._crossReference;
             if (crossReference && crossReference._cacheMap.has(reference)) {
                 crossReference._cacheMap.delete(reference);
             }
         }
+    }
+    _reorderParsedAnnotations(index: number): void {
+        const result: Map<number, PdfAnnotation> = new Map<number, PdfAnnotation>();
+        this._parsedAnnotations.forEach((value: PdfAnnotation, key: number) => {
+            if (key > index) {
+                result.set(key - 1, value);
+            } else {
+                result.set(key, value);
+            }
+        });
+        this._parsedAnnotations = result;
     }
     _updateCustomAppearanceResource(annotation: PdfAnnotation): void {
         if (annotation instanceof PdfRubberStampAnnotation && typeof annotation._appearance !== 'undefined') {

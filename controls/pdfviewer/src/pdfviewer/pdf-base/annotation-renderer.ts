@@ -2744,8 +2744,8 @@ export class AnnotationRenderer {
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
-        shapeAnnotation.StrokeColor = 'rgba(' + squareAnnot.color[0] + ',' + squareAnnot.color[1] + ',' + squareAnnot.color[2] + ',' + (squareAnnot.color[3] ? squareAnnot.color[3] : 1) + ')';
-        let fillOpacity: number = squareAnnot.color[3] ? squareAnnot.color[3] : 1;
+        shapeAnnotation.StrokeColor = !isNullOrUndefined(squareAnnot.color) ? 'rgba(' + squareAnnot.color[0] + ',' + squareAnnot.color[1] + ',' + squareAnnot.color[2] + ',' + (squareAnnot.color[3] ? squareAnnot.color[3] : 1) + ')' : 'rgba(0,0,0,1)';
+        let fillOpacity: number = (!isNullOrUndefined(squareAnnot.color) && squareAnnot.color[3]) ? squareAnnot.color[3] : 1;
         if (squareAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(squareAnnot._dictionary.get('FillOpacity'))) {
             fillOpacity = parseInt(squareAnnot._dictionary.get('FillOpacity').toString(), 10);
         }
@@ -2864,9 +2864,9 @@ export class AnnotationRenderer {
             const text: any = allowedInteractions[0];
             shapeAnnotation.AllowedInteractions = JSON.parse(text);
         }
-
-        shapeAnnotation.StrokeColor = 'rgba(' + lineAnnot.color[0] + ',' + lineAnnot.color[1] + ',' + lineAnnot.color[2] + ',' + (lineAnnot.color[3] ? lineAnnot.color[3] : 1) + ')';
-        let fillOpacity: number = lineAnnot.color[3] ? lineAnnot.color[3] : 1;
+        let color: any = !isNullOrUndefined(lineAnnot.color) ? lineAnnot.color : [0,0,0];
+        shapeAnnotation.StrokeColor = 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' + (color[3] ? color[3] : 1) + ')';
+        let fillOpacity: number = lineAnnot.color && lineAnnot.color[3] ? lineAnnot.color[3] : 1;
         if (lineAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(lineAnnot._dictionary.get('FillOpacity'))) {
             fillOpacity = parseInt(lineAnnot._dictionary.get('FillOpacity').toString(), 10);
         }
@@ -3766,8 +3766,8 @@ export class AnnotationRenderer {
         freeTextAnnotation.BorderColor = new AnnotColor(freeTextAnnot.borderColor[0], freeTextAnnot.borderColor[1], freeTextAnnot.borderColor[2]);
         let points: AnnotPoint[] = [{X: 100, Y: 400}, {X: 200, Y: 400}];
         freeTextAnnotation.CalloutLines = points;
-        freeTextAnnot.color = freeTextAnnot.color ? freeTextAnnot.color : freeTextAnnot.textMarkUpColor ? freeTextAnnot.textMarkUpColor: [0, 0, 0];
-        freeTextAnnotation.Color = new AnnotColor(freeTextAnnot.color[0], freeTextAnnot.color[1], freeTextAnnot.color[2]);
+        let backgroundColor: any = freeTextAnnot.color ? freeTextAnnot.color : [0, 0, 0];
+        freeTextAnnotation.Color = new AnnotColor(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
         freeTextAnnotation.Flatten = freeTextAnnot.flatten;
         freeTextAnnotation.FlattenPopups = !isNullOrUndefined(freeTextAnnot.flattenPopups) ? freeTextAnnot.flattenPopups : false; // returns undefined
         freeTextAnnotation.FontFamily = this.getFontFamilyString((freeTextAnnot.font as PdfStandardFont)._fontFamily);
@@ -3775,13 +3775,12 @@ export class AnnotationRenderer {
         freeTextAnnotation.Font = new FontBase(freeTextAnnot.font, freeTextAnnotation.FontFamily); // need to be checked
         freeTextAnnotation.Thickness = freeTextAnnot.border.width;
         freeTextAnnotation.StrokeColor = 'rgba(' + freeTextAnnot.borderColor[0] + ',' + freeTextAnnot.borderColor[1] + ',' + freeTextAnnot.borderColor[2] + ',' + (freeTextAnnot.borderColor[3] ? freeTextAnnot.borderColor[3] : 1) + ')';
-        let fillOpacity: number = freeTextAnnot.color[3] ? freeTextAnnot.color[3] : 1;
+        let fillOpacity: number;
         if (freeTextAnnot._dictionary.has('FillOpacity') && !isNullOrUndefined(freeTextAnnot._dictionary.get('FillOpacity'))) {
             fillOpacity = parseInt(freeTextAnnot._dictionary.get('FillOpacity').toString(), 10);
         }
-        fillOpacity = freeTextAnnot.color ? fillOpacity : 0;
-        freeTextAnnot.color = freeTextAnnot.color ? freeTextAnnot.color : [255, 255, 255];
-        freeTextAnnotation.FillColor = 'rgba(' + freeTextAnnot.color[0] + ',' + freeTextAnnot.color[1] + ',' + freeTextAnnot.color[2] + ',' + fillOpacity + ')';
+        fillOpacity = freeTextAnnot.color ? (!isNullOrUndefined(fillOpacity) ? fillOpacity : 0) : 0;
+        freeTextAnnotation.FillColor = 'rgba(' + backgroundColor[0] + ',' + backgroundColor[1] + ',' + backgroundColor[2] + ',' + fillOpacity + ')';
         freeTextAnnotation.Layer = freeTextAnnot._dictionary.has('Layer') ? freeTextAnnot._dictionary.get('Layer') : null;
         // freeTextAnnotation.Location = freeTextAnnot._dictionary.has('Location') ? freeTextAnnot._dictionary.get('Location') : JSON.stringify({X: freeTextAnnot.bounds.x ,Y: freeTextAnnot.bounds.y});
         freeTextAnnotation.Location = freeTextAnnot._dictionary.has('Location') ? freeTextAnnot._dictionary.get('Location') : '{X='+ freeTextAnnot.bounds.x + ',Y='+ freeTextAnnot.bounds.y + '}';
@@ -3813,7 +3812,7 @@ export class AnnotationRenderer {
             freeTextAnnotation.State = 'Unmarked';
             freeTextAnnotation.StateModel = 'None';
         }
-        freeTextAnnotation.FontColor = 'rgba(' + freeTextAnnot.textMarkUpColor[0] + ',' + freeTextAnnot.textMarkUpColor[1] + ',' + freeTextAnnot.textMarkUpColor[2] + ',' + (freeTextAnnot.textMarkUpColor[3] ? freeTextAnnot.textMarkUpColor[3] : 1) + ')';
+        freeTextAnnotation.FontColor = !isNullOrUndefined(freeTextAnnot.textMarkUpColor) ? 'rgba(' + freeTextAnnot.textMarkUpColor[0] + ',' + freeTextAnnot.textMarkUpColor[1] + ',' + freeTextAnnot.textMarkUpColor[2] + ',' + (freeTextAnnot.textMarkUpColor[3] ? freeTextAnnot.textMarkUpColor[3] : 1) + ')' : 'rgba(0, 0, 0, 1)';
         for (let i: number = 0; i < freeTextAnnot.reviewHistory.count; i++) {
             freeTextAnnotation.State = this.getStateString(freeTextAnnot.reviewHistory.at(parseInt(i.toString(), 10)).state);
             freeTextAnnotation.StateModel = this.getStateModelString(freeTextAnnot.reviewHistory.at(parseInt(i.toString(), 10)).stateModel);

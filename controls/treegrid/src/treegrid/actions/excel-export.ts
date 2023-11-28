@@ -140,7 +140,7 @@ export class ExcelExport {
         if (!this.isLocal()) {
             this.parent.flatData = [];
         }
-        if (property && property.dataSource && this.isLocal()) {
+        if (property && property.dataSource) {
             const flatsData: Object[] = this.parent.flatData;
             const dataSrc: Object = property.dataSource instanceof DataManager ? property.dataSource.dataSource.json : property.dataSource;
             this.parent.dataModule.convertToFlatData(dataSrc);

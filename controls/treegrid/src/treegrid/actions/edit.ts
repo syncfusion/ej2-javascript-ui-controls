@@ -394,7 +394,6 @@ export class Edit {
         if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
             args.cancel = true;
             const editModule: string = 'editModule';
-            setValue('isEdit', false, this.parent.grid);
             setValue('isEditCollapse', true, this.parent);
             args.rowData[args.columnName] = args.value;
             let row: HTMLTableRowElement;
@@ -443,6 +442,7 @@ export class Edit {
                         this.parent.grid.getDataModule()[`${eventPromise}`](editArgs, this.parent.grid.query);
                     } else {
                         this.updateCell(args, rowIndex);
+                        setValue('isEdit', false, this.parent.grid);
                         this.afterCellSave(args, row, rowIndex);
                     }
                 } else if (isRemoteData(this.parent) ||
@@ -450,6 +450,7 @@ export class Edit {
                     const query: Query = this.parent.grid.query;
                     if (this.parent['isGantt'] && !this.parent.loadChildOnDemand) {
                         this.updateCell(args, rowIndex);
+                        setValue('isEdit', false, this.parent.grid);
                         this.afterCellSave(args, row, rowIndex);
                     }
                     else {
@@ -462,6 +463,7 @@ export class Edit {
                                 args.rowData[args.columnName] = e[args.columnName];
                             }
                             this.updateCell(args, rowIndex);
+                            setValue('isEdit', false, this.parent.grid);
                             this.afterCellSave(args, row, rowIndex);
                         });
                     }

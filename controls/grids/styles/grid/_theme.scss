@@ -894,6 +894,10 @@
     }
   }
 
+  .e-spreadsheet .e-ftrchk.e-chkfocus {
+    background-color: $grid-hover-bg-color;
+  }
+
   .e-tooltip-wrap.e-griderror,
   .e-control.e-tooltip-wrap.e-popup.e-griderror {
     background-color: $grid-val-error-bg-color;

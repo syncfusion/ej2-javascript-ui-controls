@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.6 (2023-11-28)
+
+### Calendar
+
+#### Bug Fixes
+
+- `#I521911` - Fixed an issue where an exception was occurring when changing the culture dynamically.
+
 ## 23.1.41 (2023-10-17)
 
 ### DateRangePicker

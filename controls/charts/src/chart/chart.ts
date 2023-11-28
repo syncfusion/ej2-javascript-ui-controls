@@ -2623,9 +2623,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 if (this.chartAreaType !== 'PolarRadar') {
                     continue;
                 }
-                if (this.chartAreaType === 'PolarRadar' && ((series.xAxisName === null && series.yAxisName !== null) ||
-                        (series.xAxisName !== null && series.yAxisName === null) ||
-                        (series.xAxisName !== null && series.yAxisName !== null))) {
+                if (this.chartAreaType === 'PolarRadar' && ((series.xAxisName !== null && (this.primaryXAxis.name !== series.xAxisName)) ||
+                        (series.yAxisName !== null && (this.primaryYAxis.name !== series.yAxisName)))) {
                     continue;
                 }
                 break;

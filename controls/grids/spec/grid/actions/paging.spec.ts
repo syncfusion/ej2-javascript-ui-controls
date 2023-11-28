@@ -876,4 +876,46 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
             gridObj = actionBegin = null;
         });
     });
+    
+    describe('Grid Not Showing All Records when Filter is Cleared', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    pageSettings: {pageSizes: true, pageSize: 5},
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: {columns: [{field: 'OrderID', matchCase: false, operator: 'equal', predicate: 'and', value: 10248, }]},
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 150 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                    ],
+                }, done);
+        });
+
+        it('set pagesize all', (done: Function) => {
+            (gridObj.pageSettings.pageSize as any) = "All";
+            done();
+        });
+
+        it('clear Filtering testing', function (done: Function) {
+            gridObj.clearFiltering();
+            done();
+        });
+
+        it ('check pagesize after clearing', () => {
+            expect(gridObj.pageSettings.pageSize).toBe(15);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
 });

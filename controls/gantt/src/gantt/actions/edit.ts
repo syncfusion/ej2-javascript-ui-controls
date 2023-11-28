@@ -2574,33 +2574,41 @@ export class Edit {
         const predecessorCollection: IPredecessor[] = parentRecordTaskData.predecessor;
         let childRecord: IGanttData;
         let predecessorIndex: number;
+        let validPredecessor : boolean;
         const updatedPredecessor: IPredecessor[] = [];
         for (let count: number = 0; count < len; count++) {
-            if (predecessorCollection[count as number].to === parentRecordTaskData.rowUniqueID.toString()) {
-                childRecord = this.parent.getRecordByID(predecessorCollection[count as number].from);
-                predecessorIndex = getIndex(predecessorCollection[count as number], 'from', childRecord.ganttProperties.predecessor, 'to');
-                // eslint-disable-next-line
-                let predecessorCollections: IPredecessor[] = (extend([], childRecord.ganttProperties.predecessor, [], true)) as IPredecessor[];
-                predecessorCollections.splice(predecessorIndex, 1);
-                this.parent.setRecordValue('predecessor', predecessorCollections, childRecord.ganttProperties, true);
-            } else if (predecessorCollection[count as number].from === parentRecordTaskData.rowUniqueID.toString()) {
-                childRecord = this.parent.getRecordByID(predecessorCollection[count as number].to);
-                const prdcList: string[] = (childRecord.ganttProperties.predecessorsName.toString()).split(',');
-                const str: string = predecessorCollection[count as number].from + predecessorCollection[count as number].type;
-                const ind: number = prdcList.indexOf(str);
-                prdcList.splice(ind, 1);
-                this.parent.setRecordValue('predecessorsName', prdcList.join(','), childRecord.ganttProperties, true);
-                this.parent.setRecordValue(this.parent.taskFields.dependency, prdcList.join(','), childRecord);
-                predecessorIndex = getIndex(predecessorCollection[count as number], 'from', childRecord.ganttProperties.predecessor, 'to');
-                // eslint-disable-next-line
-                const temppredecessorCollection: IPredecessor[] = (extend([], childRecord.ganttProperties.predecessor, [], true)) as IPredecessor[];
-                temppredecessorCollection.splice(predecessorIndex, 1);
-                this.parent.setRecordValue('predecessor', temppredecessorCollection, childRecord.ganttProperties, true);
-                this.parent.predecessorModule.validatePredecessorDates(childRecord);
+            const fromRecord: IGanttData = this.parent.getRecordByID(predecessorCollection[count as number].from);
+            const toRecord: IGanttData = this.parent.getRecordByID(predecessorCollection[count as number].to)
+            validPredecessor = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
+            if(!validPredecessor){
+                if (predecessorCollection[count as number].to === parentRecordTaskData.rowUniqueID.toString()) {
+                    childRecord = this.parent.getRecordByID(predecessorCollection[count as number].from);
+                    predecessorIndex = getIndex(predecessorCollection[count as number], 'from', childRecord.ganttProperties.predecessor, 'to');
+                    // eslint-disable-next-line
+                    let predecessorCollections: IPredecessor[] = (extend([], childRecord.ganttProperties.predecessor, [], true)) as IPredecessor[];
+                    predecessorCollections.splice(predecessorIndex, 1);
+                    this.parent.setRecordValue('predecessor', predecessorCollections, childRecord.ganttProperties, true);
+                } else if (predecessorCollection[count as number].from === parentRecordTaskData.rowUniqueID.toString()) {
+                    childRecord = this.parent.getRecordByID(predecessorCollection[count as number].to);
+                    const prdcList: string[] = (childRecord.ganttProperties.predecessorsName.toString()).split(',');
+                    const str: string = predecessorCollection[count as number].from + predecessorCollection[count as number].type;
+                    const ind: number = prdcList.indexOf(str);
+                    prdcList.splice(ind, 1);
+                    this.parent.setRecordValue('predecessorsName', prdcList.join(','), childRecord.ganttProperties, true);
+                    this.parent.setRecordValue(this.parent.taskFields.dependency, prdcList.join(','), childRecord);
+                    predecessorIndex = getIndex(predecessorCollection[count as number], 'from', childRecord.ganttProperties.predecessor, 'to');
+                    // eslint-disable-next-line
+                    const temppredecessorCollection: IPredecessor[] = (extend([], childRecord.ganttProperties.predecessor, [], true)) as IPredecessor[];
+                    temppredecessorCollection.splice(predecessorIndex, 1);
+                    this.parent.setRecordValue('predecessor', temppredecessorCollection, childRecord.ganttProperties, true);
+                    this.parent.predecessorModule.validatePredecessorDates(childRecord);
+                }
             }
         }
-        this.parent.setRecordValue('predecessor', updatedPredecessor, parentRecord.ganttProperties, true);
-        this.parent.setRecordValue('predecessorsName', '', parentRecord.ganttProperties, true);
+        if(!validPredecessor){
+            this.parent.setRecordValue('predecessor', updatedPredecessor, parentRecord.ganttProperties, true);
+            this.parent.setRecordValue('predecessorsName', '', parentRecord.ganttProperties, true);
+        }
     }
 
     /**
@@ -3549,11 +3557,19 @@ export class Edit {
             }
             if (this.dropPosition === 'middleSegment') {
                 if (droppedRec.ganttProperties.predecessor) {
-                    this.parent.editModule.removePredecessorOnDelete(droppedRec);
-                    droppedRec.ganttProperties.predecessor = null;
-                    droppedRec.ganttProperties.predecessorsName = null;
-                    droppedRec[this.parent.taskFields.dependency] = null;
-                    droppedRec.taskData[this.parent.taskFields.dependency] = null;
+                    const len: number = droppedRec.ganttProperties.predecessor.length;
+                    for (let count: number = 0; count < len; count++) {
+                        const fromRecord: IGanttData = this.parent.getRecordByID(droppedRec.ganttProperties.predecessor[count as number].from);
+                        const toRecord: IGanttData = this.parent.getRecordByID(droppedRec.ganttProperties.predecessor[count as number].to)
+                        const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
+                        if (droppedRec.ganttProperties.predecessor && !validPredecessor) {
+                            this.parent.editModule.removePredecessorOnDelete(droppedRec);
+                            droppedRec.ganttProperties.predecessor = null;
+                            droppedRec.ganttProperties.predecessorsName = null;
+                            droppedRec[this.parent.taskFields.dependency] = null;
+                            droppedRec.taskData[this.parent.taskFields.dependency] = null;
+                        }
+                    }
                 }
                 if (droppedRec.ganttProperties.isMilestone) {
                     this.parent.setRecordValue('isMilestone', false, droppedRec.ganttProperties, true);

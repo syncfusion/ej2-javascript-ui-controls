@@ -3698,7 +3698,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 this.updateColumnsWidth((column as ColumnModel).columns);
             } else if ((column as ColumnModel).field) {
                 const currentColumn: GridColumn = this.grid.getColumnByField((column as ColumnModel).field);
-                (column as ColumnModel).width = currentColumn.width;
+                if (!isNullOrUndefined(currentColumn)){
+                    (column as ColumnModel).width = currentColumn.width;   
+                }
             }
         });
     }

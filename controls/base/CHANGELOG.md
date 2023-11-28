@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.6 (2023-11-28)
+
+### Common
+
+#### Bug Fixes
+
+- `#F47826` - Resolved the issue with parsing multiple white space in the template string.
+
 ## 23.2.4 (2023-11-20)
 
 ### Common

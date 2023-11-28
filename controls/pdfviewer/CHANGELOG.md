@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 23.2.6 (2023-11-28)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I518113` - Now, the provided document is properly loaded and scrolls without getting stuck or freezing.
+- `#I517738` - Now, the text selection is working properly while selecting the text from left to right.
+- `#I510393` - Now, the script error has been resolved while loading a provided PDF document.
+- `#I521831` - Now, The script error is resolved when the read only property of the form fields were updated as true.
+- `#I517119` - now, the Search does not highlights the wrong area after zoom in standalone PDF Viewer.
+
 ## 23.2.5 (2023-11-23)
 
 ### PDF Viewer
@@ -10,6 +22,7 @@
 
 - `#I517898` - Now, the radio button's background color does not shifts to white automatically.
 - `#I507874` - Now, circles with graphics are rendered properly when loading the specific document.
+- `#I517892` - Now, the read-only radio button does not gets automatically selected.
 - `#I517897` - Now, the background color is not changed for read-only dropdown, checkbox and radio button fields in other viewers while saving the document.
 
 ## 23.2.4 (2023-11-20)

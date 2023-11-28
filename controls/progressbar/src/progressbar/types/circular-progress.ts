@@ -94,7 +94,8 @@ export class Circular {
         }
         radius = stringToNumber(progress.innerRadius, this.availableSize);
         radius = (radius === null) ? 0 : radius;
-        progress.previousTotalEnd = progressEnd = progress.calculateProgressRange(progress.argsData.value);
+        progress.previousTotalEnd = progressEnd = progress.calculateProgressRange(progress.argsData.value > progress.maximum ?
+            progress.maximum : progress.argsData.value);
         const progressEndAngle: number = (progress.startAngle + ((progress.enableRtl) ? -progressEnd : progressEnd)) % 360;
         progress.previousEndAngle = endAngle = ((progress.isIndeterminate && !progress.enableProgressSegments) ? (progress.startAngle + (
             (progress.enableRtl) ? -progress.totalAngle : progress.totalAngle)) % 360 : progressEndAngle
@@ -185,7 +186,8 @@ export class Circular {
         let segmentWidth: number;
         let totalAngle: number;
         const circularBufferGroup: Element = progress.renderer.createGroup({ 'id': progress.element.id + '_ CircularBufferGroup' });
-        const bufferEnd: number = progress.calculateProgressRange(progress.secondaryProgress);
+        const bufferEnd: number = progress.calculateProgressRange(progress.secondaryProgress > progress.maximum ?
+            progress.maximum : progress.secondaryProgress);
         const endAngle: number = (progress.startAngle + ((progress.enableRtl) ? -bufferEnd : bufferEnd)) % 360;
         const circularPath: string = getPathArc(
             this.centerX, this.centerY, radius, progress.startAngle, endAngle, progress.enableRtl, progress.enablePieProgress
@@ -205,7 +207,8 @@ export class Circular {
             segmentWidth = (!progress.enableProgressSegments) ? progress.trackWidth : progress.progressWidth;
             circularBuffer = this.segment.createCircularSegment(
                 progress, '_CircularBufferSegment', this.centerX, this.centerY, radius,
-                progress.secondaryProgress, progress.themeStyle.bufferOpacity, strokeWidth, totalAngle, segmentWidth
+                progress.secondaryProgress > progress.maximum ? progress.maximum : progress.secondaryProgress,
+                progress.themeStyle.bufferOpacity, strokeWidth, totalAngle, segmentWidth
             );
         } else {
             circularBuffer = progress.renderer.drawPath(option);
@@ -244,7 +247,7 @@ export class Circular {
             document.getElementById(circularLabelGroup.id).remove();
         }
         const labelValue: number = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
-        const circularValue: number = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
+        const circularValue: number = (progress.value < progress.minimum) ? 0 : Math.round(labelValue);
         const argsData: ITextRenderEventArgs = {
             cancel: false, text: labelText ? labelText : String(circularValue) + '%', color: progress.labelStyle.color || progress.themeStyle.circularLabelFont.color
         };
@@ -263,7 +266,7 @@ export class Circular {
             circularLabelGroup.appendChild(circularLabel);
             if (((progress.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && !progress.isIndeterminate) {
                 end = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
-                end = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : end;
+                end = (progress.value < progress.minimum) ? 0 : end;
                 this.animation.doLabelAnimation(circularLabel, isProgressRefresh ? progress.previousWidth :
                     progress.startAngle, end, progress, this.delay);
             }

@@ -125,6 +125,29 @@ describe('ProgressBar Control', () => {
             progress.loaded = loaded;
             progress.refresh();
         });
+    
+        it('Checking the circular progress with buffer mode with secondary progressvalue above progress maximum ', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circularbuffer');
+                expect((<SVGPathElement>path).getTotalLength() != 0).toBe(true);
+            }
+            progress.secondaryProgress = 60;
+            progress.maximum = 50;
+            progress.loaded = loaded;
+            progress.enableRtl = false;
+            progress.refresh();
+        });
+
+        it('Checking the circular progress with buffer mode with secondary progressvalue and secondary progress color', () => {
+            loaded = (args: Object): void => {
+                path = document.getElementById('container_Circularbuffer');
+                expect(path.getAttribute('stroke') === 'red').toBe(true);
+            }
+            progress.secondaryProgressColor = 'red'
+            progress.loaded = loaded;
+            progress.enableRtl = false;
+            progress.refresh();
+        });
     });
     describe('startangle and endangle for circular', () => {
         let progress: ProgressBar;

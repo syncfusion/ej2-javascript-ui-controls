@@ -114,12 +114,12 @@
     position: relative;
     width: auto;
 
-    .e-input-group.e-numeric.e-control-wrapper .e-clear-icon.e-clear-icon-hide {
+    .e-input-group.e-control-wrapper .e-clear-icon.e-clear-icon-hide {
       display: block;
       visibility: hidden;
     }
 
-    .e-input-group.e-numeric.e-control-container .e-clear-icon.e-clear-icon-hide {
+    .e-input-group.e-control-container .e-clear-icon.e-clear-icon-hide {
       display: block;
       visibility: hidden;
     }
@@ -531,8 +531,8 @@
     &.e-tooltip-wrap {
       max-width: 100%;
 
-      .e-input-group.e-numeric.e-control-wrapper .e-clear-icon.e-clear-icon-hide,
-      .e-input-group.e-numeric.e-control-container .e-clear-icon.e-clear-icon-hide {
+      .e-input-group.e-control-wrapper .e-clear-icon.e-clear-icon-hide,
+      .e-input-group.e-control-container .e-clear-icon.e-clear-icon-hide {
         display: block;
         visibility: hidden;
       }

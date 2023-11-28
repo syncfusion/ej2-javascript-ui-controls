@@ -123,6 +123,8 @@ export class BpmnDiagrams {
             content = this.getBPMNShapes(node);
         }
         if (bpmnShape === 'Group') {
+            //854195 - bpmn group serialization issue
+            content = this.getBPMNGroup(node,diagram);
             content.style.strokeDashArray = '2 2 6 2';
             content.cornerRadius = 10;
         }
@@ -162,21 +164,25 @@ export class BpmnDiagrams {
         }
         return bpmnShape;
     }
+    //Method to add the children as canvas in the group node container
     /** @private */
-    // public getBPMNGroup(node: Node, diagram: Diagram): Container {
-    //     let group: Container = new Container();
-    //     group.id = node.id + '_group';
-    //     //group.style.strokeDashArray = '2 2 6 2';
-    //     if (!group.children) { group.children = []; }
-    //     let grp: BpmnGroup = ((node.shape as BpmnShape).group as BpmnGroup);
-    //     if ((node.shape as BpmnShape).group as BpmnGroup) {
-    //         for (let i: number = 0; i < grp.children.length; i++) {
-    //             let b: Node | Connector = diagram.nameTable[grp.children[i]];
-    //             group.children.push(b.wrapper);
-    //         }
-    //     }
-    //     return group;
-    // }
+    public getBPMNGroup(node: Node, diagram: Diagram): Container {
+        const group: Canvas = new Canvas();
+        group.id = node.id + '_group';
+        if (!group.children) {
+            group.children = [];
+        }
+        const groupShapeObj = ((node.shape as any).group);
+        if ((node.shape as any).group) {
+            for (let i: number = 0; i < groupShapeObj.children.length; i++) {
+                let child: Node | Connector = diagram.nameTable[groupShapeObj.children[parseInt(i.toString(), 10)]];
+                group.children.push(child.wrapper);
+            }
+        }
+        group.width = node.width;
+        group.height = node.height;
+        return group;
+    }
     /** @private */
     public getBPMNGatewayShape(node: Node): Canvas {
         const gatewayshape: Canvas = new Canvas();

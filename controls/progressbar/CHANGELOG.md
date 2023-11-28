@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.6 (2023-11-28)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I520806` - The progress bar now renders properly when it exceeds the `maximum` value.
+
 ## 23.2.5 (2023-11-23)
 
 ### ProgressBar
