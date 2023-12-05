@@ -2780,7 +2780,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.setProperties({ locale: newProp.locale }, true);
                 this.globalize = new Internationalization(this.locale);
                 this.l10n.setLocale(this.locale);
-                this.updatePlaceHolder();
+                if (this.timeOptions && this.timeOptions.placeholder == null) {
+                    this.updatePlaceHolder();
+                }
                 this.setValue(this.value);
                 if (this.enableMask) {
                     this.notify('createMask', {

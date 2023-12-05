@@ -1027,7 +1027,7 @@ export class EventWindow {
         this.eventData = this.eventCrudData ? this.eventData : eventData;
         const eventObj: Record<string, any> = <Record<string, any>>extend({}, eventData, null, true);
         const formElements: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
-        if ((this.parent as Record<string, any>).isReact && formElements.length < 1) {
+        if ((this.parent as Record<string, any>).isReact && formElements.length < 1 && !this.cellClickAction) {
             this.eventCrudData = eventObj;
             return;
         }

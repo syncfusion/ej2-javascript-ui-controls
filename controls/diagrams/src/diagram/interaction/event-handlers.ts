@@ -794,7 +794,7 @@ export class DiagramEventHandler {
     /** @private */
     public mouseUp(evt: PointerEvent): void {
         //EJ2-849817-Dropping nodes in swimlane does not consider as child in angular
-        if(this.eventArgs.target && this.eventArgs.target != this.hoverNode && this.eventArgs.target != this.lastObjectUnderMouse){
+        if(this.eventArgs && this.eventArgs.target && this.eventArgs.target != this.hoverNode && this.eventArgs.target != this.lastObjectUnderMouse){
             this.hoverNode = this.eventArgs.target;
             this.lastObjectUnderMouse = this.eventArgs.target;
         }
@@ -1088,7 +1088,10 @@ export class DiagramEventHandler {
                 } else {
                     offset = this.currentPosition.y - (swimlaneNode.wrapper.bounds.y + shape.header.height);
                 }
-                const phases: PhaseModel = { id: randomId(), offset: offset, header: { annotation: { content: 'Phase' } } } as PhaseModel;
+                const phases: PhaseModel = { id: randomId(), offset: offset, header: { annotation: {
+                    content: actualShape.phases[0].header  === undefined ? "Phase" : actualShape.phases[0].header.annotation.content,
+                    style: actualShape.phases[0].header === undefined ? {} : actualShape.phases[0].header.annotation.style
+                } } } as PhaseModel;
                 this.diagram.addPhases(swimlaneNode, [phases]);
             } else {
                 //const laneHeight: number = actualShape.lanes[0].header.height;
@@ -1139,7 +1142,14 @@ export class DiagramEventHandler {
                     type: 'SwimLane', header: {
                         annotation: { content: 'Header' }, height: 50, style: actualShape.lanes[0].header.style
                     },
-                    phases: [{ id: randomId(), header: { annotation: { content: 'Phase' } } }],
+                    phases: [{ id: randomId(),
+                        header: {
+                            annotation: {
+                                    content: actualShape.phases === undefined ? "Phase" : actualShape.phases[0].header.annotation.content,
+                                    style: actualShape.phases === undefined ? {} : actualShape.phases[0].header.annotation.style
+                                    },
+                                }
+                        }],
                     lanes: [{
                         id: randomId(), height: selectedNode.height, width: selectedNode.width, style: actualShape.lanes[0].style,
                         header: {

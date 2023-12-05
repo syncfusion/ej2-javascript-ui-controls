@@ -1,4 +1,4 @@
-import { addClass, append, Event, Collection, Complex, Component, EmitType, EventHandler, formatUnit, getInstance, getComponent, getUniqueID, closest, KeyboardEventArgs, KeyboardEvents } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, isNullOrUndefined, isUndefined, ModuleDeclaration, NotifyPropertyChanges, Property, remove, removeClass } from '@syncfusion/ej2-base';import { Tab, TabAnimationSettings, TabAnimationSettingsModel, TabItemModel, SelectEventArgs, SelectingEventArgs, HScroll, Toolbar } from '@syncfusion/ej2-navigations';import { RibbonTab, RibbonTabModel, RibbonGroupModel, RibbonCollectionModel, RibbonItemModel, FileMenuSettings, FileMenuSettingsModel, BackStageMenu, BackStageMenuModel, RibbonItem, RibbonCollection, RibbonGroup } from '../models/index';import { commonProperties, DisplayMode, ExpandCollapseEventArgs, itemProps, LauncherClickEventArgs, ribbonItemPropsList, RibbonLayout, ribbonTooltipData, TabSelectedEventArgs, TabSelectingEventArgs } from './interface';import { ItemOrientation, RibbonItemSize, RibbonItemType } from './interface';import { RibbonButton, RibbonComboBox, RibbonCheckBox, RibbonDropDown, RibbonColorPicker, RibbonSplitButton, RibbonGroupButton } from '../items/index';import { destroyControl, getCollection, getGroup, getIndex, getItem, getItemElement, updateCommonProperty, updateControlDisabled, isTooltipPresent, getTemplateFunction, createTooltip, destroyTooltip, updateTooltipProp } from './utils';import * as constants from './constant';import { RibbonFileMenu, RibbonBackstage } from '../modules/index';import { RibbonTooltipModel } from '../models/ribbon-tooltip-model';import { Popup } from '@syncfusion/ej2-popups';import { BeforeOpenCloseMenuEventArgs, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';import { CheckBox } from '@syncfusion/ej2-buttons';
+import { addClass, append, Event, Collection, Complex, Component, EmitType, EventHandler, formatUnit, getInstance, getComponent, getUniqueID, closest, KeyboardEventArgs, KeyboardEvents } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, isNullOrUndefined, isUndefined, ModuleDeclaration, NotifyPropertyChanges, Property, remove, removeClass } from '@syncfusion/ej2-base';import { Tab, TabAnimationSettings, TabAnimationSettingsModel, TabItemModel, SelectEventArgs, SelectingEventArgs, HScroll, Toolbar } from '@syncfusion/ej2-navigations';import { RibbonTab, RibbonTabModel, RibbonGroupModel, RibbonCollectionModel, RibbonItemModel, FileMenuSettings, FileMenuSettingsModel, BackStageMenu, BackStageMenuModel, RibbonItem, RibbonCollection, RibbonGroup } from '../models/index';import { commonProperties, DisplayMode, ExpandCollapseEventArgs, itemProps, LauncherClickEventArgs, OverflowPopupEventArgs, ribbonItemPropsList, RibbonLayout, ribbonTooltipData, TabSelectedEventArgs, TabSelectingEventArgs } from './interface';import { ItemOrientation, RibbonItemSize, RibbonItemType } from './interface';import { RibbonButton, RibbonComboBox, RibbonCheckBox, RibbonDropDown, RibbonColorPicker, RibbonSplitButton, RibbonGroupButton } from '../items/index';import { destroyControl, getCollection, getGroup, getIndex, getItem, getItemElement, updateCommonProperty, updateControlDisabled, isTooltipPresent, getTemplateFunction, createTooltip, destroyTooltip, updateTooltipProp } from './utils';import * as constants from './constant';import { RibbonFileMenu, RibbonBackstage } from '../modules/index';import { RibbonTooltipModel } from '../models/ribbon-tooltip-model';import { Popup } from '@syncfusion/ej2-popups';import { BeforeOpenCloseMenuEventArgs, DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';import { CheckBox } from '@syncfusion/ej2-buttons';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -149,5 +149,19 @@ export interface RibbonModel extends ComponentModel{
      * @event created
      */
     created?: EmitType<Event>;
+
+    /**
+     * Event triggers when the overflow popup opens.
+     *
+     * @event overflowPopupOpen
+     */
+    overflowPopupOpen?: EmitType<OverflowPopupEventArgs>;
+
+    /**
+     * Event triggers when the overflow popup closes.
+     *
+     * @event overflowPopupClose
+     */
+    overflowPopupClose?: EmitType<OverflowPopupEventArgs>;
 
 }

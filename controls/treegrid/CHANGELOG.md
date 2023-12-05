@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 23.2.7 (2023-12-05)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#I517211` - Exception throws on dynamically changing the stacked column and normal column.
+- `#FB48417` - Fixed the issue where a Script Error was thrown when searching for an invalid value and when rendering empty data.
+
 ## 23.2.6 (2023-11-28)
 
 ### TreeGrid

@@ -2088,7 +2088,7 @@ export class Selection implements IAction {
 
     private mouseUpHandler(e: MouseEventArgs): void {
         document.body.classList.remove('e-disableuserselect');
-        if (this.element) {
+        if (this.element && !isNullOrUndefined(this.element.parentElement)) {
             remove(this.element);
         }
         if (this.isDragged && this.selectedRowCellIndexes.length === 1 && this.selectedRowCellIndexes[0].cellIndexes.length === 1) {
@@ -3053,7 +3053,9 @@ export class Selection implements IAction {
                         || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result)) &&
                         !this.isPartialSelection && ((checkedLen === this.parent.totalDataRecordsCount) || this.isSelectAllRowCount(checkedLen)
                         || (checkedLen === this.totalRecordsCount && !this.parent.isPersistSelection))) ||
-                        (this.isPartialSelection && (this.isHdrSelectAllClicked || this.isSelectAllRowCount(checkedLen)))))))) {
+                        (this.isPartialSelection && (this.isHdrSelectAllClicked || this.isSelectAllRowCount(checkedLen)))))
+                        || (checkedLen === this.totalRecordsCount && this.totalRecordsCount && !this.isPartialSelection &&
+                            !this.parent.allowPaging && !this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling)))) {
                     addClass([spanEle], ['e-check']);
                     setChecked(input, true);
                     if (isInteraction) {

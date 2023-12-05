@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 23.2.7 (2023-12-05)
+
+### Grid
+
+#### Bug fixes
+
+- `#I517291` - Resolved an issue with calling the `hideColumns` method multiple times.
+- `#I517408` - The issue with the alignment of the text is not being at the centre when sorting is enabled in the grid has been resolved.
+- `#FB48215` - The problem with drag and drop rows not updating properly in the UI has been fixed.
+- `#I510993` - Resolved the script error when rendering the `captionTemplate` and aggregate `groupCaptionTemplate` simultaneously.
+- `#I518869` - The problem with header checkbox selection in remote data has been resolved.
+
 ## 23.2.6 (2023-11-28)
 
 ### Grid

@@ -822,6 +822,16 @@ describe('Chips', () => {
                 expect(chipCollection[5].innerText).toBe('chip6');
                 expect(chipCollection[5].children[1].classList.contains('icon')).toBe(true);
             });
+            it('chips property value testing', () => {
+                let chips1: ChipList;
+                let element1: HTMLElement = createElement('div', { id: 'chip1' });
+                document.body.appendChild(element1);
+                chips = new ChipList({}, '#chip');
+                chips1 = new ChipList({}, '#chip1');
+                chips.add('test');  
+                expect(chips.chips.length).toBe(1);
+                expect(chips1.chips.length).toBe(0);
+            });
             it('Remove method using index', () => {
                 let ds: string[] = stringArray.slice();
                 ds.push('chip4');

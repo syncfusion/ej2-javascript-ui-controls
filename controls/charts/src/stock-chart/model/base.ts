@@ -13,7 +13,7 @@ import { ConnectorType } from '../../accumulation-chart/model/enum';
 import { CornerRadius, Animation } from '../../common/model/base';
 import { TextOverflow, Alignment, Regions, Units, Position, FlagType } from '../../common/utils/enum';
 import { Theme } from '../../common/model/theme';
-import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel, IChartEventArgs, Font, FontModel } from '../../chart/index';
+import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel, IChartEventArgs, Font, FontModel, Border, BorderModel } from '../../chart/index';
 import {  StockChartBorderModel, StockChartConnectorModel, StockChartStripLineSettingsModel, StockSeriesModel } from './base-model';
 import { StockChartFontModel } from './base-model';
 
@@ -692,8 +692,8 @@ export class StockSeries extends ChildProperty<StockSeries> {
      * Options to customizing the border of the series. This is applicable only for `Column` and `Bar` type series.
      */
 
-    @Complex<StockChartBorderModel>({ color: 'transparent', width: 0 }, StockChartBorder)
-    public border: StockChartBorderModel;
+    @Complex<BorderModel>({ color: 'transparent', width: 0 }, Border)
+    public border: BorderModel;
 
     /**
      * The opacity of the series.

@@ -693,6 +693,9 @@ export class WordExport {
 
         writer.writeStartElement('w', 'document', this.wNamespace);
         this.writeCommonAttributeStrings(writer);
+        writer.writeStartElement('w', 'background', this.wNamespace);
+        writer.writeAttributeString('w','color', undefined,this.getColor(this.document[backgroundProperty[this.keywordIndex]][colorProperty[this.keywordIndex]]));
+        writer.writeEndElement();
         this.serializeDocumentBody(writer);
 
         writer.writeEndElement(); //end of document tag
@@ -3720,7 +3723,11 @@ export class WordExport {
             }
             if(shape[textFrameProperty[this.keywordIndex]][textVerticalAlignmentProperty[this.keywordIndex]]){
                 let vert: string;
-                vert = shape[textFrameProperty[this.keywordIndex]][textVerticalAlignmentProperty[this.keywordIndex]].toString().toLowerCase();
+                if (this.keywordIndex == 1) {
+                    vert = HelperMethods.getTextVerticalAlignment(shape[textFrameProperty[this.keywordIndex]][textVerticalAlignmentProperty[this.keywordIndex]]).toString().toLowerCase();
+                } else {
+                    vert = shape[textFrameProperty[this.keywordIndex]][textVerticalAlignmentProperty[this.keywordIndex]].toString().toLowerCase();
+                }
                 writer.writeAttributeString(undefined, 'anchor', undefined, this.getTextVerticalAlignmentProperty(vert));                          
             }
             writer.writeAttributeString(undefined, 'anchorCtr', undefined, '0');

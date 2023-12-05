@@ -289,7 +289,7 @@ export class PasteCleanup {
         const popupEle: HTMLElement = this.parent.createElement('div');
         this.parent.element.appendChild(popupEle);
         const contentEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
-            id: this.parent.element.id + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
+            id: this.parent.getID() + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
         });
         const offsetY: number = this.parent.iframeSettings.enable ? -50 : -90;
         this.popupObj = new Popup(popupEle, {
@@ -933,8 +933,10 @@ export class PasteCleanup {
     private findDetachEmptyElem(element: Element): HTMLElement {
         let removableElement: HTMLElement;
         if (!isNOU(element.parentElement)) {
-            if (element.parentElement.textContent.trim() === '' &&
-        element.parentElement.getAttribute('class') !== 'pasteContent') {
+            const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g) 
+                && element.parentElement.textContent.match(/\u00a0/g).length > 0;
+            if (!hasNbsp && element.parentElement.textContent.trim() === '' &&
+                element.parentElement.getAttribute('class') !== 'pasteContent') {
                 removableElement = this.findDetachEmptyElem(element.parentElement);
             } else {
                 removableElement = element as HTMLElement;

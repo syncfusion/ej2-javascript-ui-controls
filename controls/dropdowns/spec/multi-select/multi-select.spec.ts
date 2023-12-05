@@ -2698,7 +2698,7 @@ describe('MultiSelect', () => {
             });
             listObj.appendTo(element);
             (<any>listObj).renderPopup();
-            expect('<div class="head">Photo<span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
+            expect('<div class="head"> Photo <span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
             expect('<div class="Foot"> Total Items Count: 5 </div>').toBe((<any>listObj).footer.innerHTML);
             expect('<div><img class="eimg" src="../Employees/1.png" alt="employee"><div class="ename"> Mona Sak </div><div class="temp"> USA </div></div>').toBe((<any>listObj).ulElement.querySelector("li.e-list-item").innerHTML);
             mouseEventArgs.target = (<any>listObj).ulElement.querySelector("li.e-list-item");
@@ -2729,7 +2729,7 @@ describe('MultiSelect', () => {
             (<any>listObj).renderPopup();
             listObj.headerTemplate = '<div class="head">  Photo  <span style="padding-left:42px"> Contact Info </span></div>';
             listObj.dataBind();
-            expect('<div class="head">Photo<span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
+            expect('<div class="head"> Photo <span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
             listObj.footerTemplate = '<div class="Foot"> Total Items Count: 5 </div>';
             listObj.dataBind();
             expect('<div class="Foot"> Total Items Count: 5 </div>').toBe((<any>listObj).footer.innerHTML);
@@ -2753,7 +2753,7 @@ describe('MultiSelect', () => {
             (<any>listObj).renderPopup();
             listObj.headerTemplate = '<div class="head">  Photo  <span style="padding-left:42px"> Contact Info </span></div>';
             listObj.dataBind();
-            expect('<div class="head">Photo<span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
+            expect('<div class="head"> Photo <span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
             listObj.footerTemplate = '<div class="Foot"> Total Items Count: 5 </div>';
             listObj.dataBind();
             expect('<div class="Foot"> Total Items Count: 5 </div>').toBe((<any>listObj).footer.innerHTML);
@@ -3405,7 +3405,7 @@ describe('MultiSelect', () => {
             });
             listObj.appendTo(element);
             listObj.showPopup();
-            expect('<div class="head">Photo<span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
+            expect('<div class="head"> Photo <span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
             expect('<div class="Foot"> Total Items Count: 5 </div>').toBe((<any>listObj).footer.innerHTML);
             expect('<div><img class="eimg" src="../Employees/1.png" alt="employee"><div class="ename"> Mona Sak </div><div class="temp"> USA </div></div>').toBe((<any>listObj).ulElement.querySelector("li.e-list-item").innerHTML);
             (<any>listObj).inputElement.value = "RUBY";

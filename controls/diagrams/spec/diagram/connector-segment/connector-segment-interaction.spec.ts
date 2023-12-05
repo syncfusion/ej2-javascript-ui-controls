@@ -3,7 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Segments, ConnectorConstraints} from '../../../src/diagram/enum/enum';
+import { Segments, ConnectorConstraints, NodeConstraints} from '../../../src/diagram/enum/enum';
 import { Connector, OrthogonalSegment } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
@@ -2204,4 +2204,169 @@ describe('Connectors Segments - Add or Remove Segment Runtime', () => {
         done();
     });
 
+    describe('857928: Issue in connector selection while enabling segment thumb', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramConSeg' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                  id: 'node1',
+                  height: 30,
+                  width: 70,
+                  offsetX: 200,
+                  offsetY: 100,
+                  ports: getPorts(),
+                  constraints:
+                    NodeConstraints.Default &
+                    ~NodeConstraints.InConnect &
+                    ~NodeConstraints.OutConnect,
+                },
+                {
+                  id: 'node2',
+                  height: 30,
+                  width: 70,
+                  offsetX: 75,
+                  offsetY: 150,
+                  ports: getPorts(),
+                  constraints:
+                    NodeConstraints.Default &
+                    ~NodeConstraints.InConnect &
+                    ~NodeConstraints.OutConnect,
+                },
+                {
+                  id: 'node3',
+                  height: 30,
+                  width: 70,
+                  offsetX: 150,
+                  offsetY: 150,
+                  ports: getPorts(),
+                  constraints:
+                    NodeConstraints.Default &
+                    ~NodeConstraints.InConnect &
+                    ~NodeConstraints.OutConnect,
+                },
+                {
+                  id: 'node4',
+                  height: 30,
+                  width: 70,
+                  offsetX: 225,
+                  offsetY: 150,
+                  ports: getPorts(),
+                  constraints:
+                    NodeConstraints.Default &
+                    ~NodeConstraints.InConnect &
+                    ~NodeConstraints.OutConnect,
+                },
+                {
+                  id: 'node5',
+                  height: 30,
+                  width: 70,
+                  offsetX: 300,
+                  offsetY: 150,
+                  ports: getPorts(),
+                  constraints:
+                    NodeConstraints.Default &
+                    ~NodeConstraints.InConnect &
+                    ~NodeConstraints.OutConnect,
+                },
+              ];
+            
+              let connectors: ConnectorModel[] = [
+                {
+                  id: 'connector1',
+                  sourceID: 'node1',
+                  sourcePortID: 'port2',
+                  targetPortID: 'port4',
+                  connectorSpacing: 1,
+                  hitPadding: 5,
+                  bezierSettings: undefined,
+                  segmentThumbShape: 'Rhombus',
+                  targetID: 'node2',
+                  type: 'Orthogonal',
+                  constraints:
+                    ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb,
+                  maxSegmentThumb: 3,
+                  allowNodeOverlap: true,
+                },
+                {
+                  id: 'connector2',
+                  sourceID: 'node1',
+                  sourcePortID: 'port2',
+                  targetPortID: 'port4',
+                  connectorSpacing: 1,
+                  hitPadding: 5,
+                  bezierSettings: undefined,
+                  segmentThumbShape: 'Rhombus',
+                  targetID: 'node3',
+                  type: 'Orthogonal',
+                  constraints:
+                    ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb,
+                  maxSegmentThumb: 3,
+                  allowNodeOverlap: true,
+                },
+                {
+                  id: 'connector3',
+                  sourceID: 'node1',
+                  sourcePortID: 'port2',
+                  targetPortID: 'port4',
+                  connectorSpacing: 1,
+                  segmentThumbShape: 'Rhombus',
+                  hitPadding: 5,
+                  bezierSettings: undefined,
+                  targetID: 'node4',
+                  type: 'Orthogonal',
+                  constraints:
+                    ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb,
+                  maxSegmentThumb: 3,
+                  allowNodeOverlap: true,
+                },
+                {
+                  id: 'connector4',
+                  sourceID: 'node1',
+                  sourcePortID: 'port2',
+                  targetPortID: 'port4',
+                  segmentThumbShape: 'Rhombus',
+                  connectorSpacing: 1,
+                  hitPadding: 5,
+                  bezierSettings: undefined,
+                  targetID: 'node5',
+                  type: 'Orthogonal',
+                  constraints:
+                    ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb,
+                  maxSegmentThumb: 3,
+                  allowNodeOverlap: true,
+                },
+              ];
+              function getPorts(): PointPortModel[] {
+                let ports: PointPortModel[] = [
+                  { id: 'port1', shape: 'Circle', offset: { x: 0, y: 0.5 } },
+                  { id: 'port2', shape: 'Circle', offset: { x: 0.5, y: 1 } },
+                  { id: 'port3', shape: 'Circle', offset: { x: 1, y: 0.5 } },
+                  { id: 'port4', shape: 'Circle', offset: { x: 0.5, y: 0 } },
+                ];
+                return ports;
+              }
+            diagram = new Diagram({
+                width: '900px', height: '500px', nodes: nodes, connectors: connectors
+            });
+            diagram.appendTo('#diagramConSeg');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+       it('Checking connector selection while enabling segment thumb', function (done) {
+            diagram.select([diagram.connectors[0]]);
+            let firstConnectorId = diagram.selectedItems.connectors[0].id;
+            mouseEvents.clickEvent(diagramCanvas, 150, 130);
+            let secondConnectorId = diagram.selectedItems.connectors[0].id;
+            expect(firstConnectorId !== secondConnectorId).toBe(true);
+            done();
+        });
+    });
 }); 

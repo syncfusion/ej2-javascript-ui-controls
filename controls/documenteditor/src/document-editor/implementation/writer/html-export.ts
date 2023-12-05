@@ -283,7 +283,7 @@ export class HtmlExport {
                     blockStyle += '>';
                 }
                 if (this.fieldCheck === 2) {
-                    blockStyle += text;
+                    blockStyle += this.serializeSpan(text, inline[characterFormatProperty[this.keywordIndex]]);  
                 }
             }
             i++;

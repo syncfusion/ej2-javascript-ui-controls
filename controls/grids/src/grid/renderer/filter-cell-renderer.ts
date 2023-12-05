@@ -178,6 +178,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                 const col: PredicateModel = a[parseInt(i.toString(), 10)];
                 if (col.field === column.field){
                     operators = col.operator;
+                    break;
                 }
                 else{
                     operators = 'equal';

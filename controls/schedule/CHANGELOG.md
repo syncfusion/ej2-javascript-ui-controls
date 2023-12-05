@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.7 (2023-12-05)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I519049` - An issue related to events are overlapping when they are on same date in vertical year view has been resolved.
+
 ## 23.2.4 (2023-11-20)
 
 ### Schedule

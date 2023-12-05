@@ -143,12 +143,12 @@ export class ViewSource {
         this.parent.updateValueData();
         if (this.parent.iframeSettings.enable) {
             let rteContent: HTMLElement;
-            if (isNullOrUndefined(this.parent.element.querySelector('#' + this.parent.element.id + '_source-view'))) {
+            if (isNullOrUndefined(this.parent.element.querySelector('#' + this.parent.getID() + '_source-view'))) {
                 rteContent = this.parent.createElement('div', {
-                    className: 'e-source-content', id: this.parent.element.id + '_source-view'
+                    className: 'e-source-content', id: this.parent.getID() + '_source-view'
                 });
             } else {
-                rteContent = this.parent.element.querySelector('#' + this.parent.element.id + '_source-view') as HTMLElement;
+                rteContent = this.parent.element.querySelector('#' + this.parent.getID() + '_source-view') as HTMLElement;
             }
             rteContent.appendChild(this.previewElement);
             this.parent.element.appendChild(rteContent);

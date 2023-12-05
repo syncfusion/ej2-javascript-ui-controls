@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.7 (2023-12-05)
+
+### ImageEditor
+
+#### Bug Fixes
+
+- `#I518177` - Issue with "Pen stroke color is not updated in the toolbar while changing the color using the shapeChanging event" has been resolved.
+
 ## 23.2.6 (2023-11-28)
 
 ### ImageEditor

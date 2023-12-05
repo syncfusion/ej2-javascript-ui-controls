@@ -1018,6 +1018,7 @@ export class DocumentHelper {
         this.customXmlData.clear();
         this.images.clear();
         this.contentControlCollection = [];
+        this.backgroundColor='#FFFFFF';
         this.endnotes.clear();
         this.footnotes.clear();
         this.footnoteCollection = [];
@@ -3353,8 +3354,16 @@ export class DocumentHelper {
                     return this.selection.getLineWidgetBodyWidget(childWidgets, cursorPoint);
                 }
             } else {
-                let shapeInfo: ShapeInfo = this.checkFloatingItems(this.currentPage.bodyWidgets[0], cursorPoint, isMouseDragged, false);
-                let behindShapeInfo: ShapeInfo = this.checkFloatingItems(this.currentPage.bodyWidgets[0], cursorPoint, isMouseDragged, true);
+                let shapeInfo: ShapeInfo = undefined;
+                let behindShapeInfo: ShapeInfo = undefined;
+                for (var i = 0; i < this.currentPage.bodyWidgets.length; i++) {
+                    var bodyWidget = this.currentPage.bodyWidgets[i];
+                    shapeInfo = this.checkFloatingItems(bodyWidget, cursorPoint, isMouseDragged, false);
+                    behindShapeInfo = this.checkFloatingItems(bodyWidget, cursorPoint, isMouseDragged, true);
+                    if (shapeInfo.isShapeSelected || behindShapeInfo.isShapeSelected) {
+                        break;
+                    }
+                }
                 if (shapeInfo.isShapeSelected && !this.isEmptyShape(shapeInfo)) {
                     if (shapeInfo.isInShapeBorder) {
                         return shapeInfo.element.line;

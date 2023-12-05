@@ -597,6 +597,10 @@ export class SfdtReader {
             section.sectionFormat = new WSectionFormat(section);
             section.index = i;
             const item: any = data[i];
+            let breakCode: string = ''; 
+            const nextItem: any = data[i + 1];
+            let sectionFormat: any = nextItem && nextItem[sectionFormatProperty[this.keywordIndex]] ? nextItem[sectionFormatProperty[this.keywordIndex]] : undefined;
+            breakCode = sectionFormat && sectionFormat[breakCodeProperty[this.keywordIndex]] ? sectionFormat[breakCodeProperty[this.keywordIndex]] : 'NewPage';
             if (!isNullOrUndefined(item[sectionFormatProperty[this.keywordIndex]])) {
                 this.parseSectionFormat(this.keywordIndex, item[sectionFormatProperty[this.keywordIndex]], section.sectionFormat);
             }
@@ -605,7 +609,7 @@ export class SfdtReader {
             }
             this.documentHelper.headersFooters.push(this.parseHeaderFooter(item[headersFootersProperty[this.keywordIndex]], this.documentHelper.headersFooters));
             this.isParseHeader = false;
-            this.parseTextBody(item[blocksProperty[this.keywordIndex]], section, i + 1 < data.length);
+            this.parseTextBody(item[blocksProperty[this.keywordIndex]], section, i + 1 < data.length, breakCode);
             for (let i: number = 0; i < section.childWidgets.length; i++) {
                 (section.childWidgets[i] as BlockWidget).containerWidget = section;
             }
@@ -647,8 +651,8 @@ export class SfdtReader {
         }
         return hfs;
     }
-    private parseTextBody(data: any, section: Widget, isSectionBreak?: boolean): void {
-        this.parseBody(data, section.childWidgets as BlockWidget[], section, isSectionBreak);
+    private parseTextBody(data: any, section: Widget, isSectionBreak?: boolean, breakCode?: string): void {
+        this.parseBody(data, section.childWidgets as BlockWidget[], section, isSectionBreak, undefined, undefined, breakCode);
     }
     public addCustomStyles(data: any): void {
         if (!isNullOrUndefined(data[stylesProperty[this.keywordIndex]])) {
@@ -660,7 +664,7 @@ export class SfdtReader {
             }
         }
     }
-    public parseBody(data: any, blocks: BlockWidget[], container?: Widget, isSectionBreak?: boolean, contentControlProperties?: ContentControlProperties, styles?: any): void {
+    public parseBody(data: any, blocks: BlockWidget[], container?: Widget, isSectionBreak?: boolean, contentControlProperties?: ContentControlProperties, styles?: any, breakCode?: string): void {
         if (!isNullOrUndefined(data)) {
             for (let i: number = 0; i < data.length; i++) {
                 const block: any = data[i];
@@ -705,6 +709,13 @@ export class SfdtReader {
                         blocks.push(paragraph);
                     } else if (isSectionBreak && data.length === 1) {
                         blocks.push(paragraph);
+                    } else if (isSectionBreak && block === data[data.length - 1] && block[inlinesProperty[this.keywordIndex]].length === 0 && !hasValidElmts && breakCode != 'NoBreak') {
+                        var dataIndex = data.indexOf(block);
+                        var previousData = data[dataIndex - 1];
+                        if (!isNullOrUndefined(previousData) && previousData.hasOwnProperty(rowsProperty[this.keywordIndex])) {
+                            blocks.push(paragraph);
+                            paragraph.isSectionBreak = true;
+                        }
                     }
                     paragraph.index = blocks.length - 1;
                     paragraph.containerWidget = container;

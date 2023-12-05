@@ -40,6 +40,7 @@ export class DialogRenderer {
         let dlgObj: Dialog;
         e.beforeOpen = this.beforeOpen.bind(this);
         e.open = this.open.bind(this);
+        e.position = { X: 'center', Y: this.getDialogPosition() };
         if (isNOU(e.close)) {
             e.close = this.close.bind(this);
         }
@@ -83,6 +84,17 @@ export class DialogRenderer {
                 }
             }
         });
+    }
+
+    private getDialogPosition(): string {
+        let distanceFromVisibleTop: number = this.parent.element.getBoundingClientRect().top;
+        if (distanceFromVisibleTop < 0) {
+            distanceFromVisibleTop = Math.abs(distanceFromVisibleTop);
+            return distanceFromVisibleTop.toString();
+        }
+        else {
+            return 'top';
+        }
     }
     /**
      * dialog close method

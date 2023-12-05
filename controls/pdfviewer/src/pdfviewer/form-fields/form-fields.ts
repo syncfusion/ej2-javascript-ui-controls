@@ -1195,7 +1195,6 @@ export class FormFields {
         }
         let annot: PdfAnnotationBaseModel;
         if (this.pdfViewer.signatureFitMode === 'Default'){
-            {
                 let padding = Math.min(bounds.height /this. paddingDifferenceValue, bounds.width / this.paddingDifferenceValue);
                 let maxHeight = bounds.height - padding;
                 let maxWidth = bounds.width - padding;
@@ -1247,8 +1246,7 @@ export class FormFields {
                 if( annot.shapeAnnotationType === "SignatureImage"){                   
                     this.pdfViewer.fireSignatureAdd(annot.pageIndex, annot.id,annot.shapeAnnotationType, annot.bounds, annot.opacity, null, null, signString);                  
                 }
-                this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
-    }
+        this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
         this.pdfViewerBase.signatureModule.hideSignaturePanel();
         this.pdfViewerBase.drawSignatureWithTool = false;
         this.pdfViewer.isInitialFieldToolbarSelection = false;

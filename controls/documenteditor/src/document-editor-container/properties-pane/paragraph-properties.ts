@@ -466,6 +466,7 @@ export class Paragraph {
             cssClass: 'e-de-prop-dropdown',
             popupHeight: '240px',
             enableRtl: this.isRtl,
+            allowFiltering: true,
             query: new Query().select(['StyleName', 'Style', 'IconClass']),
             fields: { text: 'StyleName', value: 'StyleName' },
             showClearButton: false,
@@ -704,7 +705,10 @@ export class Paragraph {
     }
     private applyStyleValue(args: any): void {
         if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.applyStyle(this.documentEditor.stylesDialogModule.getStyleName(SanitizeHtmlHelper.sanitize(args.itemData.StyleName)), true);
+            let styleName: string = this.documentEditor.stylesDialogModule.getStyleName(SanitizeHtmlHelper.sanitize(args.itemData.StyleName));
+            if (!isNullOrUndefined(this.documentEditor.documentHelper.styles.findByName(styleName))) {
+                this.documentEditor.editor.applyStyle(styleName, true);
+            }
         }
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */

@@ -441,6 +441,10 @@ export class AutoComplete extends ComboBox {
                             highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType);
                         }, 0);
                     } else {
+                        const isHtmlElement: boolean = /<[^>]*>/g.test(e.item.innerText);
+                        if (isHtmlElement) {
+                            e.item.innerText = e.item.innerText.replace(/[\u00A0-\u9999<>&]/g, (match: string) => `&#${match.charCodeAt(0)};`);
+                        }
                         highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType);
                     }
                 }

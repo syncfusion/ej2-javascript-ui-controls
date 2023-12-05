@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 23.2.7 (2023-12-05)
+
+### GanttChart
+
+#### Bug Fixes
+
+- `#I514463` - Cell is in edited state even after opening context menu issue has been fixed.
+- `#I525741` - Timeline rendered wrongly when changing the timeline from Fit to view to other view issue has been fixed.
+- `#I522431` - Parent task duration not update while child task date is edited issue has been fixed.
+- `#I520506` - Switching from yearly to quarterly view gives white space issue has been fixed.
+- `#I521365` - Dates in tooltip not rendered correctly issue has been fixed.
+
 ## 23.2.5 (2023-11-23)
 
 ### GanttChart

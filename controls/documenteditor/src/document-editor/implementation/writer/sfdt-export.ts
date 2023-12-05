@@ -293,6 +293,7 @@ export class SfdtExport {
                 this.writePage(page);
             }
         }
+        this.document[backgroundProperty[this.keywordIndex]]={[colorProperty[this.keywordIndex]]:this.documentHelper.backgroundColor};
         this.writeStyles(this.documentHelper);
         this.writeLists(this.documentHelper);
         this.writeComments(this.documentHelper);
@@ -384,6 +385,9 @@ export class SfdtExport {
         let islastEmptyParagraph: boolean;
         if (!isNullOrUndefined(bodyWidget.lastChild) && bodyWidget.lastChild instanceof ParagraphWidget) {
             islastEmptyParagraph = (bodyWidget.lastChild as ParagraphWidget).isEmpty();
+            if (bodyWidget.lastChild.isSectionBreak && !isNullOrUndefined(bodyWidget.lastChild.previousRenderedWidget) && bodyWidget.lastChild.previousRenderedWidget instanceof TableWidget) {
+                islastEmptyParagraph = false;
+            }
         } 
         if (!isNullOrUndefined(next) && next instanceof BodyWidget && bodyWidget.sectionIndex !== next.sectionIndex && islastEmptyParagraph && !this.isWordExport) {
             var paragraph = {};
@@ -1506,14 +1510,16 @@ export class SfdtExport {
     private createParagraph(paragraphWidget: ParagraphWidget): any {
         let paragraph: any = {};
         let isParaSelected: boolean = false;
+        let isListPara: boolean = false;
         if (this.documentHelper.selection && !this.documentHelper.selection.isEmpty && !this.isExport) {
             let endPos: TextPosition = this.documentHelper.selection.end;
             if (!this.documentHelper.selection.isForward) {
                 endPos = this.documentHelper.selection.start;
             }
             let lastLine: LineWidget = endPos.paragraph.childWidgets[endPos.paragraph.childWidgets.length - 1] as LineWidget;
+            isListPara = !isNullOrUndefined(paragraphWidget.paragraphFormat.listFormat.list);
             isParaSelected = this.documentHelper.selection.isParagraphLastLine(lastLine) && endPos.currentWidget === lastLine
-                && endPos.offset === this.documentHelper.selection.getLineLength(lastLine) + 1;
+            && (endPos.offset === this.documentHelper.selection.getLineLength(lastLine) + 1 || (!(paragraphWidget.indexInOwner == endPos.paragraph.indexInOwner) && isListPara));
         } else {
             isParaSelected = true;
         }

@@ -384,7 +384,7 @@ export class GanttChart {
         if (this.parent.editSettings.allowTaskbarEditing && this.parent.element.querySelector('.e-left-resize-gripper')) {
             isTaskbarEdited = true;
         }
-        if (!isTaskbarEdited) {
+        if (!isTaskbarEdited || e.button == 2) {
             if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
                 this.parent.treeGrid.endEdit();
             }

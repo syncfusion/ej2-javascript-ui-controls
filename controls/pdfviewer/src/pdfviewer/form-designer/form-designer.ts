@@ -2204,7 +2204,7 @@ export class FormDesigner {
                 (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : "None";
                 obj.name = !isNullOrUndefined(options.name) ? options.name : 'Signature' + this.formFieldIndex;
                 obj.isRequired = options.isRequired ? options.isRequired : false;
-                obj.isReadonly = options.isReadOnly ? options.isReadOnly : false;
+                obj.isReadonly = this.pdfViewer.signatureFieldSettings.isReadOnly ? this.pdfViewer.signatureFieldSettings.isReadOnly : (options.isReadOnly ? options.isReadOnly : false);
                 obj.thickness = !isNullOrUndefined((options as any).thickness) ? (options as any).thickness : 1;
                 let indicatorSettings: any = (options as SignatureFieldSettings).signatureIndicatorSettings ? (options as SignatureFieldSettings).signatureIndicatorSettings : (options as InitialFieldSettings).initialIndicatorSettings;
                 obj.signatureIndicatorSettings = indicatorSettings ? {opacity: indicatorSettings.opacity ? indicatorSettings.opacity: 1 ,
@@ -2221,7 +2221,7 @@ export class FormDesigner {
                 (obj as any).fontStyle = !isNullOrUndefined((options as TextFieldSettings).fontStyle) ? (options as TextFieldSettings).fontStyle : "None";
                 (obj as any).name = !isNullOrUndefined(options.name) ? options.name : 'Initial' + this.formFieldIndex;
                 (obj as any).isRequired = options.isRequired ? options.isRequired : false;
-                (obj as any).isReadonly = options.isReadOnly ? options.isReadOnly : false;
+                (obj as any).isReadonly = this.pdfViewer.initialFieldSettings.isReadOnly ? this.pdfViewer.initialFieldSettings.isReadOnly : (options.isReadOnly ? options.isReadOnly : false);
                 (obj as any).isInitialField = true;
                 let indicatorSettingsInitial: any = (options as InitialFieldSettings).initialIndicatorSettings ? (options as InitialFieldSettings).initialIndicatorSettings : (options as SignatureFieldSettings).signatureIndicatorSettings;
                 obj.signatureIndicatorSettings = indicatorSettingsInitial ? { opacity: indicatorSettingsInitial.opacity ? indicatorSettingsInitial.opacity : 1,
@@ -2847,7 +2847,6 @@ export class FormDesigner {
                     this.multilineCheckboxCheckedState = true;
                     document.getElementById(formFieldObject.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(selectedItem) : this.updateFormFieldPropertiesInCollections(selectedItem);
                 }
-                formFieldObject.value = (options as TextFieldSettings).value ? (options as TextFieldSettings).value : formFieldObject.value;
                 if (!isNullOrUndefined((options as TextFieldSettings).isMultiline) && formFieldObject.isMultiline != (options as TextFieldSettings).isMultiline) {
                     isValueChanged = true;
                     formFieldObject.isMultiline = (options as TextFieldSettings).isMultiline;
@@ -2874,7 +2873,7 @@ export class FormDesigner {
                         false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue);
                 }
             }
-            else if (!(options as TextFieldSettings).isMultiline) {
+            else if (!isNullOrUndefined(options as TextFieldSettings) && !isNullOrUndefined((options as TextFieldSettings).isMultiline) && !(options as TextFieldSettings).isMultiline) {
                 this.renderTextbox(formFieldObject);
                 this.multilineCheckboxCheckedState = true;
                 document.getElementById(formFieldObject.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(formFieldObject) : this.updateFormFieldPropertiesInCollections(formFieldObject);
@@ -3006,7 +3005,12 @@ export class FormDesigner {
             formFieldObject.isReadonly = options.isReadOnly;
             this.setReadOnlyToElement(formFieldObject, htmlElement, options.isReadOnly);
             this.setReadOnlyToFormField(formFieldObject, options.isReadOnly);
-            htmlElement.style.pointerEvents = options.isReadOnly ? ((options as any).isMultiline ? 'auto' : 'none') : 'auto';
+            if (formFieldObject.formFieldAnnotationType === 'RadioButton') {
+                htmlElement.parentElement.style.pointerEvents = options.isReadOnly ? ((options as any).isMultiline ? 'auto' : 'none') : 'auto';
+            }
+            else {
+                htmlElement.style.pointerEvents = options.isReadOnly ? ((options as any).isMultiline ? 'auto' : 'none') : 'auto';
+            }
             (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].isReadonly = options.isReadOnly;
             if (isReadOnlyChanged) {
                 this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,

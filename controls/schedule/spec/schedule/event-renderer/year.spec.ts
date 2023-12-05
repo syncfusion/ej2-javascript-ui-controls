@@ -1229,6 +1229,85 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
+    describe('EJ2-855763 - Overlapping different appointments when they are on same date in vertical year view', () => {
+        let schObj: Schedule;
+        const events: Record<string, any>[] = [
+            {
+                Id: 1736,
+                Subject: 'Project 1',
+                StartTime: new Date(2023, 5, 10, 10, 30),
+                EndTime: new Date(2023, 6, 10, 11, 0),
+                ProjectId: 1,
+                TaskId: 1,
+                IsAllDay: false,
+            },
+            {
+                Id: 1735,
+                Subject: 'Project 2',
+                StartTime: new Date(2023, 5, 10, 10, 30),
+                EndTime: new Date(2023, 6, 10, 11, 0),
+                ProjectId: 1,
+                TaskId: 1,
+                IsAllDay: false,
+            },
+        ];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2023, 5, 10),
+                height: '100%', width: '100%',
+                views: [
+                    { option: 'TimelineYear', displayName: 'Vertical Year', orientation: 'Vertical' }
+                ],
+                eventSettings: { dataSource: events },
+                group: {
+                    resources: ['Projects', 'Categories']
+                },
+                resources: [
+                    {
+                        field: 'ProjectId', title: 'Choose Project', name: 'Projects',
+                        dataSource: [
+                            { text: 'PROJECT 1', id: 1, color: '#cb6bb2' },
+                            { text: 'PROJECT 2', id: 2, color: '#56ca85' },
+                            { text: 'PROJECT 3', id: 3, color: '#df5286' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }, {
+                        field: 'TaskId', title: 'Category',
+                        name: 'Categories', allowMultiple: true,
+                        dataSource: [
+                            { text: 'Nancy', id: 1, groupId: 1, color: '#df5286' },
+                            { text: 'Steven', id: 2, groupId: 2, color: '#7fa900' },
+                            { text: 'Robert', id: 3, groupId: 3, color: '#ea7a57' },
+                            { text: 'Smith', id: 4, groupId: 1, color: '#5978ee' },
+                            { text: 'Micheal', id: 5, groupId: 2, color: '#df5286' },
+                            { text: 'Root', id: 6, groupId: 3, color: '#00bdae' }
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
+                    },
+                ],
+                dataBound: () => {
+                    util.disableScheduleAnimation(schObj);
+                    done();
+                }
+            };
+            const parentElement: HTMLElement = createElement('div', { id: 'ScheduleParent', styles: 'height: 1297px; width: 1250px;' });
+            const schEle: HTMLElement = createElement('div', { id: 'Schedule' });
+            parentElement.appendChild(schEle);
+            schObj = new Schedule(model, schEle);
+            document.body.appendChild(parentElement);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            remove(document.getElementById('ScheduleParent'));
+        });
+
+        it('Checking appointment rendering in year view vertical orientation', () => {
+            const eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElements[0].offsetTop != eventElements[1].offsetTop).toEqual(true);
+            
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -474,7 +474,9 @@ export class InsertHtml {
     private static findDetachEmptyElem(element: Element): HTMLElement {
         let removableElement: HTMLElement;
         if (!isNOU(element.parentElement)) {
-            if (element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true' &&
+            const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g) 
+                && element.parentElement.textContent.match(/\u00a0/g).length > 0;
+            if (!hasNbsp && element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true' &&
                 isNOU(element.parentElement.querySelector('img'))) {
                 removableElement = this.findDetachEmptyElem(element.parentElement);
             } else {

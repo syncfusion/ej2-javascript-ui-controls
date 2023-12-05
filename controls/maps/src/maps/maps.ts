@@ -3065,8 +3065,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 navigationLine = layer.navigationLineSettings;
                 for (const navigation of navigationLine) {
                     if (navigation.visible) {
-                        isSelection = navigation.highlightSettings.enable || isSelection;
-                        isHighlight = navigation.selectionSettings.enable || isHighlight;
+                        isSelection = (!isNullOrUndefined(navigation.highlightSettings) && navigation.highlightSettings.enable) || isSelection;
+                        isHighlight = (!isNullOrUndefined(navigation.selectionSettings) && navigation.selectionSettings.enable) || isHighlight;
                     }
                 }
                 for (const marker of markers) {

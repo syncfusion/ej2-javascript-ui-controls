@@ -22,6 +22,34 @@
         box-shadow: none;
         outline: 0;
       }
+
+      &.e-blazor-toast-close-icon:focus,
+      &.e-blazor-toast-close-icon:hover {
+        @if $skin-name == 'Material3' {
+          background: $toast-close-icon-hover-bg-color;
+        }
+        @else {
+          background-color: $toast-close-icon-hover-bg-color;
+        }
+        color: $toast-close-icon-hover-color;
+      }
+    }
+    
+    .e-toast-close-icon.e-icons:hover,
+    .e-toast-close-icon.e-icons:focus{
+      @if $skin-name == 'Material3' {
+        background: $toast-close-icon-hover-bg-color;
+        border-radius: $toast-icon-hover-border-radius;
+        height: 32px;
+        margin-top: -6px;
+      }
+      @else {
+        background-color: $toast-close-icon-hover-bg-color;
+      }
+      @if $skin-name == 'material' {
+        border-radius: $toast-icon-hover-border-radius;
+      }
+      color: $toast-close-icon-hover-color;
     }
 
     &.e-toast-success {

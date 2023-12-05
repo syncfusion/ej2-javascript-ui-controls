@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 23.2.7 (2023-12-05)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I525285`- Now, when copying content from a Word document and pasting it into the Rich Text Editor, it would not remove the non-breaking space.
+
+- `#I515735`- Now, the alternative dialog opens based on the image position, preventing unwanted scrolling.
+
+- `#I517343`- Now, the table style status is updated properly in the table quick toolbar dropdown items in the Rich Text Editor.
+
+- `#I524361`- Now, pressing the enter key when `enterKey` is configured as `BR` and the cursor is at the start of the line works properly.
+
+-`#I518641` - Now, the RichTextEditor is working properly when click the full screen toolbar icon.
+
 ## 23.2.6 (2023-11-28)
 
 ### RichTextEditor
@@ -11,6 +27,8 @@
 - `#I515378` - Now, the toolbar status will be properly updated when the toolbar is enabled dynamically in the Rich Text Editor.
 
 - `#I512106` - Now, the quick toolbar will be destroyed without any script errors during page navigation.
+
+- `#I521260` - When clicking the escape key, the table creation popup closes properly in the RichTextEditor component.
 
 ## 23.2.5 (2023-11-23)
 

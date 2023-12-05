@@ -6366,6 +6366,9 @@ export class Selection {
                         && point.y <= floatWidget.y + floatWidget.height && point.y >= floatWidget.y) {
                         return this.getLineWidgetTableWidget(floatWidget, point);
                     }
+                } else if (floatWidget instanceof ShapeBase && floatWidget.x <= point.x && (floatWidget.x + floatWidget.width) >= point.x
+                    && floatWidget.y <= point.y && (floatWidget.y + floatWidget.height) >= point.y) {
+                    return floatWidget.line;
                 }
             }
         }
@@ -6895,6 +6898,9 @@ export class Selection {
                                         let curIndex: number = children.indexOf(element);
                                         if (!(children[curIndex - 1] instanceof ListTextElementBox) && !isRtlText) {
                                             element = children[curIndex - 1];
+                                            if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline' && charIndex == 0 && !isNullOrUndefined(element.previousElement)) {
+                                                element = children[children.indexOf(element) - 1];
+                                            }
                                             charIndex = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
                                         }
                                     }
@@ -6947,6 +6953,9 @@ export class Selection {
                 }
                 if (inline instanceof EditRangeEndElementBox) {
                     index = 0;
+                }
+                if (!isNullOrUndefined(inline.previousElement) && inline.previousElement instanceof ShapeBase && inline.previousElement.textWrappingStyle !== 'Inline' && index == 0) {
+                    inline = inline.previousElement;
                 }
                 let inlineObj: ElementInfo = this.validateTextPosition(inline, index);
                 inline = inlineObj.element;
@@ -10604,7 +10613,7 @@ export class Selection {
                     if (bookmrkEnd instanceof BookmarkElementBox && !excludeBookmarkStartEnd) {
                         if (!isNullOrUndefined(bookmrkEnd.properties)) {
                             if (bookmrkEnd.properties['isAfterParagraphMark']) {
-                                endoffset = bookmrkEnd.line.getOffset(bookmrkEnd, 2)
+                                endoffset = bookmrkEnd.line.getOffset(bookmrkEnd, 1)
                             }
                         }
                     }

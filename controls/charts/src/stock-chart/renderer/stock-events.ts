@@ -106,7 +106,7 @@ export class StockEvents extends BaseTooltip {
             point = series.points[k as number];
             if (closeIndex === point.xValue && point.visible) {
                 pointData = new PointData(point, series);
-            } else if (k !== 0 && k !== series.points.length) {
+            } else if (k !== 0 && k !== series.points.length - 1) {
                 if (closeIndex > series.points[k - 1].xValue && closeIndex < series.points[k + 1].xValue) {
                     pointData = new PointData(point, series);
                 }

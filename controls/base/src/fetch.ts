@@ -139,7 +139,7 @@ export class Fetch {
                 }
                 let responseType: string = 'text';
                 for (const key of Object.keys(contentTypes)) {
-                    if ((response.headers.get('Content-Type') as string).indexOf(key) !== -1) {
+                    if (response.headers.get('Content-Type') && (response.headers.get('Content-Type') as string).indexOf(key) !== -1) {
                         responseType = contentTypes[key as string];
                     }
                 }

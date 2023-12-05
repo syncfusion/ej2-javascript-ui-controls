@@ -2,7 +2,7 @@ import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateForma
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget, TableRowWidget, TableCellWidget, TableWidget } from '../viewer/page';
 import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults, WList, WAbstractList, Revision } from '../index';
-import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride, BreakClearType, LineStyle, TextAlignment, LineSpacingType, OutlineLevel } from '../../base/types';
+import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride, BreakClearType, LineStyle, TextAlignment, LineSpacingType, OutlineLevel, VerticalAlignment } from '../../base/types';
 import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { Dictionary } from '../..';
 import { WBorder, WBorders, WParagraphFormat } from '../format';
@@ -357,6 +357,19 @@ export class HelperMethods {
             }
         }
         return color;
+    }
+
+    public static getTextVerticalAlignment(textVerticalAlignment: number | VerticalAlignment): VerticalAlignment {
+        switch (textVerticalAlignment) {
+            case 0:
+                return 'Top';
+            case 1:
+                return 'Center';
+            case 2:
+                return 'Bottom';
+            default:
+                return textVerticalAlignment as VerticalAlignment;
+        }
     }
 
     public static convertPointToPixel(point: number): number {

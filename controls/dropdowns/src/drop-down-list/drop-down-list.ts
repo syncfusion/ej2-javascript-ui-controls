@@ -1410,6 +1410,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.isDocumentClick = true;
                 const isActive: boolean = this.isRequested;
                 this.hidePopup(e);
+                this.isInteracted = false;
                 if (!isActive) {
                     this.onFocusOut();
                     this.inputWrapper.container.classList.remove(dropDownListClasses.inputFocus);
@@ -1612,12 +1613,22 @@ export class DropDownList extends DropDownBase implements IInput {
             this.setSelectOptions(li, e);
             if (this.enableVirtualization) {
                 const fields: string = (this.fields.value) ? this.fields.value : '';
-                const getItem: any = <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
-                    this.dataSource as DataOptions | JSON[]).executeLocal(new Query().where(new Predicate(fields, 'equal', this.value)));
-
-                if (getItem && getItem.length > 0) {
-                    this.itemData = getItem[0];
-                    this.setProperties({ 'text': getItem[0].text, 'value': getItem[0].value }, true);
+                if (this.dataSource instanceof DataManager) {
+                    this.dataSource.executeQuery(new Query().where(new Predicate(fields, 'equal', this.value)))
+                        .then((e: Object) => {
+                            if ((e as ResultData).result.length > 0) {
+                                this.itemData = (e as ResultData).result[0];
+                                this.setProperties({ 'text': (e as ResultData).result[0].text, 'value': (e as ResultData).result[0].value }, true);
+                            }
+                        });
+                }
+                else{
+                    const getItem: any = <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
+                        this.dataSource as DataOptions | JSON[]).executeLocal(new Query().where(new Predicate(fields, 'equal', this.value)));
+                    if (getItem && getItem.length > 0) {
+                        this.itemData = getItem[0];
+                        this.setProperties({ 'text': getItem[0].text, 'value': getItem[0].value }, true);
+                    }
                 }
             }
         }
@@ -3387,7 +3398,7 @@ export class DropDownList extends DropDownBase implements IInput {
             EventHandler.add(this.list, 'scroll', this.setFloatingHeader, this);
         }
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
-            || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0))) || !(props.dataSource === [])) {
+            || (!(props.dataSource instanceof DataManager) && props.dataSource.length === 0))) || !(Array.isArray(props.dataSource) && props.dataSource.length === 0)) {
             this.typedString = '';
             this.resetList(this.dataSource);
         }
@@ -3700,7 +3711,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 });
             }
         }
-        this.invokeRenderPopup(e);
+        if (this.beforePopupOpen) {
+            this.invokeRenderPopup(e);
+        }
         if (this.enableVirtualization && !this.allowFiltering && this.selectedValueInfo != null && this.selectedValueInfo.startIndex > 0 && this.value != null)
         {
             this.notify("dataProcessAsync", {
@@ -3763,7 +3776,6 @@ export class DropDownList extends DropDownBase implements IInput {
             this.isSelectCustom = false;
             this.clearAll(e);
         }
-        this.isInteracted = false;
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-param */
     /**

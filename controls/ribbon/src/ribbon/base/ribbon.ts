@@ -3,7 +3,7 @@ import { INotifyPropertyChanged, isNullOrUndefined, isUndefined, ModuleDeclarati
 import { Tab, TabAnimationSettings, TabAnimationSettingsModel, TabItemModel, SelectEventArgs, SelectingEventArgs, HScroll, Toolbar } from '@syncfusion/ej2-navigations';
 import { RibbonTab, RibbonTabModel, RibbonGroupModel, RibbonCollectionModel, RibbonItemModel, FileMenuSettings, FileMenuSettingsModel, BackStageMenu, BackStageMenuModel, RibbonItem, RibbonCollection, RibbonGroup } from '../models/index';
 import { RibbonModel } from './ribbon-model';
-import { commonProperties, DisplayMode, ExpandCollapseEventArgs, itemProps, LauncherClickEventArgs, ribbonItemPropsList, RibbonLayout, ribbonTooltipData, TabSelectedEventArgs, TabSelectingEventArgs } from './interface';
+import { commonProperties, DisplayMode, ExpandCollapseEventArgs, itemProps, LauncherClickEventArgs, OverflowPopupEventArgs, ribbonItemPropsList, RibbonLayout, ribbonTooltipData, TabSelectedEventArgs, TabSelectingEventArgs } from './interface';
 import { ItemOrientation, RibbonItemSize, RibbonItemType } from './interface';
 import { RibbonButton, RibbonComboBox, RibbonCheckBox, RibbonDropDown, RibbonColorPicker, RibbonSplitButton, RibbonGroupButton } from '../items/index';
 import { destroyControl, getCollection, getGroup, getIndex, getItem, getItemElement, updateCommonProperty, updateControlDisabled, isTooltipPresent, getTemplateFunction, createTooltip, destroyTooltip, updateTooltipProp } from './utils';
@@ -182,6 +182,22 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
      */
     @Event()
     public created: EmitType<Event>;
+
+    /**
+     * Event triggers when the overflow popup opens.
+     *
+     * @event overflowPopupOpen
+     */
+    @Event()
+    public overflowPopupOpen: EmitType<OverflowPopupEventArgs>;
+
+    /**
+     * Event triggers when the overflow popup closes.
+     *
+     * @event overflowPopupClose
+     */
+    @Event()
+    public overflowPopupClose: EmitType<OverflowPopupEventArgs>;
 
     /**
      * The `ribbonButtonModule` is used to create and manipulate buttons in ribbon item.
@@ -1763,9 +1779,22 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             locale: this.locale,
             enableRtl: this.enableRtl,
             enablePersistence: this.enablePersistence,
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs) => {
+                const eventArgs: OverflowPopupEventArgs = { element: args.element, event: args.event, cancel: args.cancel };
+                this.trigger('overflowPopupOpen', eventArgs, (ribbonArgs: OverflowPopupEventArgs) => {
+                    if (ribbonArgs.cancel) {
+                        args.cancel = true;
+                    }
+                });
+            },
             beforeClose: (args: BeforeOpenCloseMenuEventArgs) => {
                 const ele: Element = args.event ? closest(args.event.target as HTMLElement, '.' + constants.RIBBON_POPUP_CONTROL) : null;
-                if (ele) { args.cancel = true; }
+                const eventArgs: OverflowPopupEventArgs = { element: args.element, event: args.event, cancel: args.cancel };
+                this.trigger('overflowPopupClose', eventArgs, (ribbonArgs: OverflowPopupEventArgs) => {
+                    if (ele || ribbonArgs.cancel) {
+                        args.cancel = true;
+                    }
+                });
             }
         }, overflowButton);
         this.element.classList.add(constants.RIBBON_OVERFLOW);

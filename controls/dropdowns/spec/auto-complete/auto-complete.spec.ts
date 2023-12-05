@@ -1594,6 +1594,37 @@ describe('AutoComplete', () => {
             }, 450);
         });
     });
+    describe('Highlight search with HTML data: EJ2-857692', () => {
+        let atcObj: any;
+        let e: any = { preventDefault: function () { }, target: null, type: null, action: 'down' };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'autocomplete' });
+        let htmlData: string[] = ['<div class="e-item"><img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Test-Logo.svg" /></div>'];
+        beforeAll(() => {
+            document.body.appendChild(element);
+            atcObj = new AutoComplete({
+                dataSource: htmlData,
+                fields: {text: 'text', value: 'id'},
+                highlight: true,
+            });['']
+            atcObj.appendTo(element);
+        });
+        afterAll(() => {
+            atcObj.destroy();
+            element.remove();
+        });
+        it('Highlight search with HTML data', (done) => {
+            atcObj.dataBind()
+            e.keyCode = 65;
+            atcObj.inputElement.value = 'a';
+            atcObj.onInput(e);
+            atcObj.onFilterUp(e);
+            setTimeout(() => {
+                let highlight: string = atcObj.liCollections[0].innerText;
+                expect(highlight === '<div class="e-item"><img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Test-Logo.svg" /></div>').toBe(true);
+                done();
+            }, 450);
+        });
+    });
     describe('GetItems related bug', () => {
         let element: HTMLInputElement;
         let element1: HTMLInputElement;

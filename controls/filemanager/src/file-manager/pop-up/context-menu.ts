@@ -19,6 +19,7 @@ export class ContextMenu {
     private targetElement: HTMLElement;
     public contextMenu: Menu;
     public menuTarget: HTMLElement;
+    public isMenuItemClicked: boolean = false;
     private keyConfigs: { [key: string]: string };
     private keyboardModule: KeyboardEvents;
     private menuType: string;
@@ -78,6 +79,12 @@ export class ContextMenu {
 
     public onBeforeClose(): void {
         this.menuTarget = null;
+        if(!this.isMenuItemClicked && this.parent.pathId.length > 1){
+            this.parent.pathId.pop();
+            this.parent.pathId.push(Object.keys(this.parent.feParent)[Object.keys.length]);
+            this.parent.navigationpaneModule.treeObj.selectedNodes = [this.parent.pathId[this.parent.pathId.length-1]];
+        }
+        this.isMenuItemClicked = false;
     }
 
     /* istanbul ignore next */
@@ -338,6 +345,7 @@ export class ContextMenu {
         this.parent.trigger('menuClick', eventArgs, (menuClickArgs: MenuClickEventArgs) => {
             let sItems: string[];
             if (!menuClickArgs.cancel) {
+                this.isMenuItemClicked = true;
                 // eslint:disable-next-line
                 switch (itemText) {
                 case 'cut':

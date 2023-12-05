@@ -1341,9 +1341,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         const size: Size = this.getSymbolSize(symbol, symbolInfo);
         const width: number = size.width + 1;
         const height: number = size.height + 1;
+        //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
+        // If the shape is to be rendered in search palette, then the id of the shape is appended with 'SearchSymbol'
+        // To create a unique id for the shape in search palette to avoid tooltip issue.
+        const symbolId = parentDiv.id === 'SearchPalette' ? symbol.id+'SearchSymbol':symbol.id;
         const container: HTMLElement = createHtmlElement(
             'div', {
-                id: symbol.id + '_container',
+                id: symbolId + '_container',
                 style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
                 // title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
             });
@@ -1354,18 +1358,18 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (symbol.shape.type === 'Native') {
             canvas = createSvgElement(
                 'svg', {
-                    id: symbol.id,
+                    id: symbolId,
                     width: Math.ceil(symbol.wrapper.actualSize.width) + 1,
                     height: Math.ceil(symbol.wrapper.actualSize.height) + 1
                 });
-            gElement = createSvgElement('g', { id: symbol.id + '_g' });
+            gElement = createSvgElement('g', { id: symbolId + '_g' });
             canvas.appendChild(gElement);
             container.appendChild(canvas);
             this.updateSymbolSize(symbol);
             this.svgRenderer.renderElement(symbol.wrapper, gElement, undefined, undefined, canvas as SVGSVGElement);
         } else if (symbol.shape.type === 'HTML') {
             div = this.getHtmlSymbol(
-                symbol, canvas, container, symbol.wrapper.actualSize.height, symbol.wrapper.actualSize.width, false);
+                symbol, canvas, container, symbol.wrapper.actualSize.height, symbol.wrapper.actualSize.width, false, parentDiv.id === 'SearchPalette');
         } else {
             if ((symbol as NodeModel).children &&
                 (symbol as NodeModel).children.length > 0 && groupHasType(symbol as Node, 'HTML', this.childTable)) {
@@ -1374,7 +1378,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     container, symbol.wrapper.actualSize.height, symbol.wrapper.actualSize.width, false);
             } else {
                 canvas = CanvasRenderer.createCanvas(
-                    symbol.id, Math.ceil((symbol.wrapper.actualSize.width + symbol.style.strokeWidth) * 2) + 1,
+                    symbolId, Math.ceil((symbol.wrapper.actualSize.width + symbol.style.strokeWidth) * 2) + 1,
                     Math.ceil((symbol.wrapper.actualSize.height + symbol.style.strokeWidth) * 2) + 1);
                 container.appendChild(canvas);
                 let index: number = 2;
@@ -1449,23 +1453,27 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     private getHtmlSymbol(
         symbol: NodeModel | ConnectorModel, canvas: HTMLCanvasElement | SVGElement,
-        container: HTMLElement, height: number, width: number, isPreview: boolean
+        container: HTMLElement, height: number, width: number, isPreview: boolean, isSearchSymbol?: boolean
     ): HTMLElement {
+        //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
+        // If the shape is to be rendered in search palette, then the id of the shape is appended with 'SearchSymbol'
+        // To create a unique id for the shape in search palette to avoid tooltip issue.
+        const symbolId = isSearchSymbol ? symbol.id + 'SearchSymbol' : symbol.id;
         const div: HTMLElement = createHtmlElement(
             'div', {
-                'id': symbol.id + (isPreview ? '_html_div_preview' : '_html_div')
+                'id': symbolId + (isPreview ? '_html_div_preview' : '_html_div')
             }
         );
         const htmlLayer: HTMLElement = createHtmlElement(
             'div', {
-                'id': symbol.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
+                'id': symbolId + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
                 'style': 'width:' + Math.ceil(width + 1) + 'px;' +
                 'height:' + Math.ceil(height + 1) + 'px;position:absolute',
                 'class': 'e-html-layer'
             });
         const htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
-                'id': symbol.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
+                'id': symbolId + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
                 'style': 'width:' + Math.ceil(width + 1) + 'px;' +
                 'height:' + Math.ceil(height + 1) + 'px;position:absolute'
             });
@@ -1481,7 +1489,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         + 'px;';
         style += 'transform:scale(.5,.5);position:absolute';
         canvas = CanvasRenderer.createCanvas(
-            symbol.id, Math.ceil((symbol.wrapper.actualSize.width + symbol.style.strokeWidth) * 2) + 1,
+            symbolId, Math.ceil((symbol.wrapper.actualSize.width + symbol.style.strokeWidth) * 2) + 1,
             Math.ceil((symbol.wrapper.actualSize.height + symbol.style.strokeWidth) * 2) + 1);
         container.appendChild(canvas);
         canvas.getContext('2d').setTransform(2, 0, 0, 2, 0, 0);
@@ -1581,7 +1589,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**
      * To open the Tooltip element relevant to the target and relative mode */ 
-    private elementEnter(mousePosition: PointModel, elementOver: boolean): void {
+    private elementEnter(mousePosition: PointModel, elementOver: boolean, isSearchSymbol?:boolean): void {
         if (!elementOver) {
             //set the collision target element to given position if enabled
             (this.symbolTooltipObject as Tooltip).windowCollision = true;
@@ -1613,7 +1621,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     this.symbolTooltipObject.offsetY = 0;
                 }
             }
-            const targetEle: HTMLElement = document.getElementById(this.hoverElement.id);
+            //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
+            // To render tooltip for the symbol in search palette, the id of the shape is appended with 'SearchSymbol'.
+            const targetId = isSearchSymbol ? this.hoverElement.id + 'SearchSymbol' : this.hoverElement.id;
+            const targetEle = document.getElementById(targetId);
             if (this.hoverElement.tooltip.openOn === 'Auto' && this.hoverElement.tooltip.content !== '') {
                 (this.symbolTooltipObject as Tooltip).close();
                 (this.symbolTooltipObject as TooltipModel).opensOn = (this.hoverElement.tooltip as DiagramTooltipModel).openOn;
@@ -1637,13 +1648,20 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.highlightedSymbol.style.backgroundColor = '';
             this.highlightedSymbol = null;
         }
-        const id: string = (<HTMLElement>e.target).id.split('_container')[0];
-        if (this.symbolTable[`${id}`]) {
+        let id: string = (<HTMLElement>e.target).id.split('_container')[0];
+        //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
+        // To render highlighter for the search symbols while hovering over the symbol in search palette.
+        if (this.symbolTable[`${id}`] || (id !== 'SearchPalette' && e.target && (e.target as HTMLElement).id.includes('SearchSymbol'))) {
             const container: HTMLElement = document.getElementById(id + '_container');
             container.classList.add('e-symbol-hover');
             this.highlightedSymbol = container;
         }
         e.preventDefault();
+        let isSearchSymbol = false;
+        if(e.target && (e.target as HTMLElement).id.includes('SearchSymbol')){
+            isSearchSymbol = true;
+            id = id.split('SearchSymbol')[0]
+        };
         //EJ2-66311-tooltip support for Symbolpalette
         const obj: any = this.symbolTable[`${id}`];
         if (this.symbolTable[`${id}`] && obj !== this.hoverElement) {
@@ -1658,7 +1676,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 content = this.hoverElement.id;
             }
             if (this.hoverElement.tooltip && content !== '') {
-                this.elementEnter(this.currentPosition, false);
+                this.elementEnter(this.currentPosition, false, isSearchSymbol);
             }
         }
         if (obj === undefined && this.hoverElement && !this.hoverElement.tooltip.isSticky && this.hoverElement.tooltip.openOn === 'Auto') {
@@ -1748,11 +1766,24 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     }
 
     private mouseDown(evt: PointerEvent): void {
-        const id: string = (<HTMLElement>evt.target).id.split('_container')[0];
+        let id: string = (<HTMLElement>evt.target).id.split('_container')[0];
+        var isSearchSymbol = false;
+        //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
+        // To split the original id of shape to find it in symbol table.
+        if(id.includes('SearchSymbol')){
+            id = id.split('SearchSymbol')[0];
+            isSearchSymbol = true;
+        }
         if (this.selectedSymbol) {
             const oldSymbol: HTMLElement = document.getElementById(this.selectedSymbol.id + '_container');
-            if (id !== this.selectedSymbol.id && oldSymbol) {
+            //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
+            // To highlight and remove highlight of the selected symbol in search palette on mouse down.
+            const oldSearchSymbol = document.getElementById(this.selectedSymbol.id + 'SearchSymbol' + '_container');
+            if ((oldSymbol || oldSearchSymbol)) {
                 oldSymbol.classList.remove('e-symbol-selected');
+                if(oldSearchSymbol){
+                    oldSearchSymbol.classList.remove('e-symbol-selected');
+                }
             }
             const container: HTMLElement = document.getElementById(this.selectedSymbol.id + '_container');
             if (container) {
@@ -1761,7 +1792,11 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.selectedSymbol = null;
         }
         if (this.symbolTable[`${id}`]) {
-            const container: HTMLElement = document.getElementById(id + '_container');
+            let containerId = id;
+            if(isSearchSymbol){
+                containerId = id+'SearchSymbol';
+            }
+            const container: HTMLElement = document.getElementById(containerId + '_container');
             container.classList.add('e-symbol-selected');
             this.selectedSymbol = this.symbolTable[`${id}`];
             evt.preventDefault();
@@ -1985,8 +2020,15 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private updatePalettes(): void {
         for (let i: number = 0; i < this.palettes.length; i++) {
             const symGroup: PaletteModel = this.palettes[parseInt(i.toString(), 10)];
-            this.initSymbols(symGroup);
-            this.renderPalette(symGroup);
+            //Bug 857693: Collapsing the palettes after searching shapes throws wrong arguments in paletteExpanding event.
+            //To remove search palette from palette collection.
+            if(symGroup.id === 'search_palette'){
+                this.palettes.splice(i, 1);
+                i--;
+            }else{
+                this.initSymbols(symGroup);
+                this.renderPalette(symGroup);
+            }
         }
     }
     private createTextbox(): void {
@@ -2027,6 +2069,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             for (let k: number = element.children.length - 1; k >= 0; k--) {
                 element.removeChild(element.children[parseInt(k.toString(), 10)]);
             }
+            //Bug 857693: Collapsing the palettes after searching shapes throws wrong arguments in paletteExpanding event.
+            //To remove search palette from palette collection. 
+            this.palettes.splice(0, 1);
         }
         //add the searched item in array collection
         for (let i: number = 0; i < this.palettes.length; i++) {
@@ -2045,7 +2090,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (this.ignoreSymbolsOnSearch && this.ignoreSymbolsOnSearch.length > 0) {
             symbolGroup = this.getFilterSymbol(symbolGroup);
         }
-
+        //Bug 857693: Collapsing the palettes after searching shapes throws wrong arguments in paletteExpanding event.
+        //To render search palette and add it to the palettes collection. 
+        if(value !== ''){
+            const searchPalette = { id: 'search_palette', expanded: true, symbols: symbolGroup, title: 'Search Shapes' };
+            const palette = new Palette(this, 'palettes', searchPalette, true);
+            this.palettes.splice(0, 0, palette);
+        }
         //create a palette collection
         if (!element && !isBlazor()) {
             paletteDiv = this.createSearchPalette(paletteDiv);

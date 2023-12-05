@@ -55,6 +55,7 @@ export class MaskedDateTime {
     private isDateZero: boolean = false;
     private isMonthZero: boolean = false;
     private isYearZero: boolean = false;
+    private isLeadingZero: boolean = false;
     private dayTypeCount: number = 0;
     private monthTypeCount: number = 0;
     private hourTypeCount: number = 0;
@@ -324,7 +325,18 @@ export class MaskedDateTime {
                 }
                 if (month >= 1) {
                     newDateValue.setMonth(month - 1);
-                    this.isNavigate = month.toString().length === 2;
+                    if (month >= 10 || month == 1) {
+                        if ( this.isLeadingZero && month == 1) {
+                            this.isNavigate = month.toString().length === 1;
+                            this.isLeadingZero = false;
+                        }
+                        else {
+                            this.isNavigate = month.toString().length === 2;
+                        }
+                    }
+                    else {
+                        this.isNavigate = month.toString().length === 1;
+                    }
                     if (newDateValue.getMonth() !== month - 1) {
                         newDateValue.setDate(1);
                         newDateValue.setMonth(month - 1);
@@ -342,6 +354,7 @@ export class MaskedDateTime {
                     this.monthTypeCount = this.monthTypeCount + 1;
                 } else {
                     newDateValue.setMonth(0);
+                    this.isLeadingZero = true;
                     this.isMonthPart = false;
                     this.monthTypeCount = this.isMonthZero ? this.monthTypeCount + 1 : this.monthTypeCount;
                 }

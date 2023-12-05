@@ -11757,6 +11757,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if ((this.currentSymbol.shape as SwimLaneModel).isPhase) {
                     isPhase = true;
                     orientation = (this.currentSymbol.shape as SwimLaneModel).orientation;
+                    ((clonedObject as Node).shape as SwimLaneModel).phases = (this.currentSymbol.shape as SwimLaneModel).phases;
                 }
                 this.removePreviewChildren(this.currentSymbol as Node);
                 delete this.nameTable[this.currentSymbol.id]; this.currentSymbol = null;

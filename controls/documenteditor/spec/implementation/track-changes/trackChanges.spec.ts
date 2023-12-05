@@ -113,5 +113,39 @@ describe('Track changes in Table validation', () => {
 
 });
 
-
+describe('Track changes Select all and replace text', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true, enableRtl: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Track changes Select all and replace text and insert new para validation', () => {
+        console.log('Track changes Select all and replace text and insert new para validation');
+        container.enableTrackChanges = true;
+        container.editor.insertText("Hello");
+        container.selection.selectAll();
+        container.editor.insertText("Hello");
+        container.editor.onEnter();
+        container.editor.insertText("World");
+        var count = container.revisions.changes.length;
+        expect(count).toBe(1);
+    });
+});
 

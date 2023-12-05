@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.7 (2023-12-05)
+
+### TreeView
+
+#### Bug fixes
+
+- `#I525899` - The issue with the React TreeView filtering operation has been resolved.
+
 ## 23.2.5 (2023-11-23)
 
 ### Sidebar

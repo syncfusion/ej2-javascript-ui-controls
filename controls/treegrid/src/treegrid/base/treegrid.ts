@@ -4762,11 +4762,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private treeColumnRowTemplate(): void {
         let rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
         rows = [].slice.call(rows);
+        let rowsObject: Row<GridColumn>[] = this.grid.getRowsObject();
         for (let i: number = 0; i < rows.length; i++) {
             const rcell: HTMLElement = (this.grid.getContentTable() as HTMLTableElement).rows[parseInt(i.toString(), 10)]
                 .cells[this.treeColumnIndex];
             const row: Object = rows[parseInt(i.toString(), 10)];
-            const rowData: Object = this.grid.getRowsObject()[parseInt(i.toString(), 10)].data;
+            const rowData: Object = rowsObject.length != 0 ? rowsObject[parseInt(i.toString(), 10)].data : new Object();
             const arg: Object = { data: rowData, row: row, cell: rcell, column: this.getColumns()[this.treeColumnIndex] };
             this.renderModule.cellRender(arg);
         }

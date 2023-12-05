@@ -554,6 +554,11 @@ export class YearEvent extends TimelineEvent {
                 (util.resetTime(appStart).getTime() >= dateStart) && (util.resetTime(appEnd).getTime() <= dateEnd)) {
                 appointmentsList.push(app);
             }
+            else if(this.parent.activeViewOptions.orientation === 'Vertical') {
+                if (util.resetTime(appStart).getTime() >= dateStart && util.resetTime(appEnd).getTime() >= dateEnd) {
+                    appointmentsList.push(app);
+                }
+            }
         }
         return appointmentsList;
     }

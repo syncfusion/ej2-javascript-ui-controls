@@ -278,7 +278,7 @@ export class StickyNotesAnnotation {
             let annotationName: string;
             // eslint-disable-next-line max-len
             const author: string = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stickyNotesSettings.author;
-            const subject: string = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.stickyNotesSettings.subject ? this.pdfViewer.stickyNotesSettings.subject : 'Sticky Note';
+            const subject: string = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.stickyNotesSettings.subject ? this.pdfViewer.stickyNotesSettings.subject : 'Sticky Note';
             if (annotation) {
                 annot = {
                     // eslint-disable-next-line max-len

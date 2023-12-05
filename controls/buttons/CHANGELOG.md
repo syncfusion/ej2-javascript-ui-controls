@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.7 (2023-12-05)
+
+### Chip
+
+#### Bug Fixes
+
+- `#I525416` - The issue when updating the `chips` property when multiple chip component rendered in the page has been resolved.
+
 ## 23.1.43 (2023-10-31)
 
 ### RadioButton

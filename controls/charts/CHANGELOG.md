@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 23.2.7 (2023-12-05)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I522567` - The chart `height` has now been updated properly.
+- `#I523917` - Now, the marker renders properly when animating the series after changing data through the period selector.
+
+### StockChart
+
+#### Bug Fixes
+
+- `#I522065` - Now, the series `border` is working properly.
+- `#I523535` - Now, stock event renders properly.
+
 ## 23.2.6 (2023-11-28)
 
 ### Chart

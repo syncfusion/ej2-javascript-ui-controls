@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 23.2.7 (2023-12-05)
+
+### Ribbon
+
+#### Features
+
+`#I512188` - Provided overflow popup open/close event support for the Ribbon overflow popup.
+
 ## 23.2.5 (2023-11-23)
 
 ### Ribbon

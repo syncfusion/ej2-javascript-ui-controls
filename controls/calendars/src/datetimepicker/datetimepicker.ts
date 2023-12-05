@@ -1885,8 +1885,10 @@ export class DateTimePicker extends DatePicker {
             case 'locale':
                 this.globalize = new Internationalization(this.locale);
                 this.l10n.setLocale(this.locale);
-                this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
-                Input.setPlaceholder(this.l10n.getConstant('placeholder'), this.inputElement);
+                if (this.dateTimeOptions && this.dateTimeOptions.placeholder == null) {
+                    this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
+                    Input.setPlaceholder(this.l10n.getConstant('placeholder'), this.inputElement);
+                }
                 this.dateTimeFormat = this.cldrDateTimeFormat();
                 super.updateInput();
                 break;

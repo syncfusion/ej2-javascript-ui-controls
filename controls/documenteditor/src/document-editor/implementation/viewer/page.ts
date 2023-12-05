@@ -1069,6 +1069,10 @@ export class ParagraphWidget extends BlockWidget {
     /**
      * @private
      */
+    public isSectionBreak: boolean = false;
+    /**
+     * @private
+     */
     public isChangeDetected: boolean = false;
     /**
      * @private

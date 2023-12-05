@@ -186,5 +186,3 @@ console.log('Multiple undo and redo after remove Hyperlink validation');
     });
 });
 
-
-

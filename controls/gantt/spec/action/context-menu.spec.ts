@@ -132,6 +132,34 @@ describe('Context-', () => {
             expect((ganttObj.flatData[10] as IGanttData).taskData[ganttObj.taskFields.id]).toBe(10);
         });
     });
+    describe('Context menu while editing', () => {
+        let ganttObj: any; // Assuming ganttObj is of type any for simplicity
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(selfGanttModel, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('indent record', (done: Function) => {
+            ganttObj.selectionModule.selectRow(1);
+            let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(5)') as HTMLElement;
+            triggerMouseEvent(taskName, 'dblclick');
+            const mouseDownEvent = new MouseEvent('mousedown', {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            });
+            ganttObj.chartPane.dispatchEvent(mouseDownEvent);
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
+            setTimeout(() => {
+                triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+                expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedbatchcell').length).toBe(0);
+                done();
+            }, 100);
+        }, 500);
+    });
     describe('Indent and adding record -', () => {
         beforeAll((done: Function) => {
             ganttObj = createGantt(selfGanttModel, done);

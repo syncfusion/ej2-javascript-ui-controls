@@ -1025,7 +1025,6 @@ export class Image {
                 width: '290px',
                 header: this.parent.localeObj.getConstant('imageInsertLinkHeader'),
                 content: linkWrap,
-                position: { X: 'center', Y: 'center' },
                 buttons: [{
                     // eslint-disable-next-line
                     click: (e: MouseEvent) => {
@@ -1075,7 +1074,7 @@ export class Image {
                 alt: inputAlt
             };
             this.dialogObj.setProperties({
-                height: 'inherit', width: '290px', header: altHeader, content: altWrap, position: { X: 'center', Y: 'center' },
+                height: 'inherit', width: '290px', header: altHeader, content: altWrap,
                 buttons: [{
                     // eslint-disable-next-line
                     click: (e: MouseEvent) => {
@@ -1305,7 +1304,7 @@ export class Image {
             const dialogContent: HTMLElement = this.imgsizeInput(e);
             const selectObj: IImageNotifyArgs = { args: e.args, selfImage: this, selection: e.selection, selectNode: e.selectNode };
             this.dialogObj.setProperties({
-                height: (Browser.isDevice) ? '300px' : 'inherit', width: '290px', header: imgSizeHeader, content: dialogContent, position: { X: 'center', Y: 'center' },
+                height: (Browser.isDevice) ? '300px' : 'inherit', width: '290px', header: imgSizeHeader, content: dialogContent,
                 buttons: [{
                     // eslint-disable-next-line
                     click: (e: MouseEvent) => {
@@ -1370,7 +1369,6 @@ export class Image {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px',
-            position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             isModal: (Browser.isDevice as boolean),
             buttons: [{
                 click: this.insertImageUrl.bind(selectObj),

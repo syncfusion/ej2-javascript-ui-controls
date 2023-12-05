@@ -2238,6 +2238,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (this.isFilteredData) {
             this.filterObj.value = '';
             this.treeObj.fields = this.getTreeFields(this.fields);
+            if((this as any).isReact) this.refresh();
             this.isFilterRestore = true;
             this.isFilteredData = false;
             this.hideCheckAll(false);

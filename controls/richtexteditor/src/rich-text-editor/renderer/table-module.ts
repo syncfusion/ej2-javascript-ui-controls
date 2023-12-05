@@ -77,6 +77,7 @@ export class Table {
         this.parent.on(events.tableToolbarAction, this.onToolbarAction, this);
         this.parent.on(events.dropDownSelect, this.dropdownSelect, this);
         this.parent.on(events.keyDown, this.keyDown, this);
+        this.parent.on(events.keyUp, this.keyUp, this);
         this.parent.on(events.mouseUp, this.selectionTable, this);
         this.parent.on(events.tableModulekeyUp, this.tableModulekeyUp, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
@@ -100,6 +101,7 @@ export class Table {
         this.parent.off(events.dropDownSelect, this.dropdownSelect);
         this.parent.off(events.mouseDown, this.cellSelect);
         this.parent.off(events.tableColorPickerChanged, this.setBGColor);
+        this.parent.off(events.keyUp, this.keyUp);
         this.parent.off(events.keyDown, this.keyDown);
         this.parent.off(events.mouseUp, this.selectionTable);
         this.parent.off(events.tableModulekeyUp, this.tableModulekeyUp);
@@ -208,7 +210,12 @@ export class Table {
         this.parent.formatter.process(this.parent, e, e, { selection: selectCell, subCommand: (e.item as IDropDownItemModel).subCommand });
         this.hideTableQuickToolbar();
     }
-
+    private keyUp (e: NotifyArgs): void {
+        const target: HTMLElement = <HTMLElement>(e.args as KeyboardEventArgs).target;
+        if ((e.args as KeyboardEventArgs).key.toLocaleLowerCase() === 'escape' && target && target.classList && (this.popupObj && !closest(target, '[id=' + "'" + this.popupObj.element.id + "'" +']')) && this.popupObj) {
+            this.popupObj.hide();
+        }
+    }
     private keyDown(e: NotifyArgs): void {
         const event: KeyboardEventArgs = e.args as KeyboardEventArgs;
         // eslint-disable-next-line

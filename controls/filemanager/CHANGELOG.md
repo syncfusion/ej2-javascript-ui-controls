@@ -8,6 +8,14 @@
 
 #### Bug Fixes
 
+- `#I519514` - The folder creation issue in the File Manager component navigation pane has been resolved.
+
+## 23.2.4 (2023-11-20)
+
+### FileManager
+
+#### Bug Fixes
+
 - `#I519501` - The Details dialog having incorrect values while opening it using the navigation pane in the File Manager component has been resolved.
 
 ### FileManager

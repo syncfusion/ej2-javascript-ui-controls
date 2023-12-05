@@ -3307,7 +3307,7 @@ export class Layout {
         if (this.viewer instanceof PageLayoutViewer
             && this.viewer.clientActiveArea.height < beforeSpacing + maxHeight
             && this.viewer.clientActiveArea.y !== this.viewer.clientArea.y
-            && !(lineWidget.isFirstLine() && isNullOrUndefined(lineWidget.paragraph.previousWidget))) {
+            && !(lineWidget.isFirstLine() && isNullOrUndefined(lineWidget.paragraph.previousWidget))&& !paragraph.isSectionBreak) {
             this.moveToNextPage(this.viewer, lineWidget);
         }
         //Gets line spacing.
@@ -3726,7 +3726,7 @@ export class Layout {
                 } else {
                     let rangeIndex: number = currentRevision.range.indexOf(item);
                     currentRevision.range.splice(rangeIndex, 1);
-                    currentRevision.range.push(splittedElement);
+                    currentRevision.range.splice(rangeIndex, 0, splittedElement);
                     splittedElement.revisions.push(currentRevision);
                 }
             }
@@ -7637,15 +7637,28 @@ export class Layout {
             if (cellWidget.childWidgets[i] instanceof ParagraphWidget) {
                 const para: ParagraphWidget = cellWidget.childWidgets[i] as ParagraphWidget;
                 contentHeight += (cellWidget.childWidgets[i] as ParagraphWidget).height;
+                if (!isDisplacement) {
+                    let totalShapeHeight: number = this.getFloatingItemsHeight(para, cellWidget);
+                    contentHeight += totalShapeHeight;
+                }
                 for (let k: number = 0; k < para.floatingElements.length; k++) {
                     considerShapeHeight = true;
                     const floatElement: ShapeBase = para.floatingElements[k];
-                    if ((cellWidget.y + cellWidget.containerWidget.height) > (floatElement.y + floatElement.height)
-                        && (floatElement.y + floatElement.height) > withShapeBottom) {
-                        withShapeContentHeight = Math.abs(cellY - (floatElement.y + floatElement.height));
-                        withShapeBottom = floatElement.y + floatElement.height;
+                    const textWrappingStyle: TextWrappingStyle = floatElement.textWrappingStyle;
+                    const shapeBottom: number = floatElement.y + floatElement.height;
+                    const paraBottom: number = para.y + para.height;
+                    if ((cellY + cellWidget.containerWidget.height) > shapeBottom && shapeBottom > withShapeBottom) {
+                        withShapeContentHeight = Math.abs(cellY - shapeBottom);
+                        withShapeBottom = shapeBottom;
                         considerAsTop = false;
-                    } else {
+                    } else if (shapeBottom > paraBottom && para.x + para.width > floatElement.x && shapeBottom > withShapeBottom
+                        && textWrappingStyle !== 'InFrontOfText' && textWrappingStyle !== 'Behind'
+                        && (this.documentHelper.compatibilityMode === 'Word2013' || para.floatingElements[k].layoutInCell)) {
+                        let height: number = (withShapeBottom === 0) ? shapeBottom - paraBottom : shapeBottom - withShapeBottom;
+                        contentHeight += height;
+                        withShapeBottom = shapeBottom;
+                    }
+                    else {
                         considerAsTop = true;
                     }
                 }
@@ -7660,6 +7673,24 @@ export class Layout {
         }
         return (isDisplacement && considerShapeHeight) ? withShapeContentHeight :
             (isDisplacement && considerAsTop ? cellWidget.ownerRow.height : contentHeight);
+    }
+    private getFloatingItemsHeight(paragraph: ParagraphWidget, cellWidget: TableCellWidget): number {
+        let withShapeBottom: number = 0;
+        let totalShapeHeight: number = 0;
+        for (let i: number = 0; i < paragraph.floatingElements.length; i++) {
+            const floatElement: ShapeBase = paragraph.floatingElements[i];
+            const textWrappingStyle: TextWrappingStyle = floatElement.textWrappingStyle;
+            const shapeBottom: number = floatElement.y + floatElement.height;
+            const paraBottom: number = paragraph.y + paragraph.height;
+            if (floatElement.y !== paragraph.y && paraBottom > shapeBottom && paragraph.x + paragraph.width > floatElement.x && shapeBottom > withShapeBottom
+                && textWrappingStyle !== 'InFrontOfText' && textWrappingStyle !== 'Behind' && textWrappingStyle !== 'Inline'
+                && (this.documentHelper.compatibilityMode === 'Word2013' || paragraph.floatingElements[i].layoutInCell)) {
+                let height: number = (withShapeBottom === 0) ? shapeBottom - cellWidget.y : shapeBottom - withShapeBottom;
+                totalShapeHeight += height;
+                withShapeBottom = shapeBottom;
+            }
+        }
+        return totalShapeHeight;
     }
     private considerPositionTableHeight(cellWidget: TableCellWidget, nestedWrapTable: TableWidget): boolean {
         if (nestedWrapTable.isLayouted && nestedWrapTable.wrapTextAround) {

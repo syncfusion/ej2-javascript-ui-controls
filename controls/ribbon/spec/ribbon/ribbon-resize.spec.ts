@@ -1,10 +1,10 @@
 import { createElement, isNullOrUndefined, remove } from "@syncfusion/ej2-base";
 import { ItemModel } from "@syncfusion/ej2-splitbuttons";
-import { ItemOrientation, Ribbon, RibbonItemSize, RibbonItemType, RibbonLayout } from "../../src/ribbon/base/index";
+import { ItemOrientation, OverflowPopupEventArgs, Ribbon, RibbonItemSize, RibbonItemType, RibbonLayout } from "../../src/ribbon/base/index";
 import { getMemoryProfile, inMB, profile } from "./common.spec";
 import { RibbonTabModel } from "../../src/ribbon/models/ribbon-tab-model";
 import { RibbonCollectionModel, RibbonGroupModel, RibbonItemModel } from "../../src/ribbon/models/index";
-import { RibbonColorPicker, RibbonFileMenu } from "../../src/index";
+import { RibbonColorPicker, RibbonFileMenu, DisplayMode } from "../../src/index";
 
 Ribbon.Inject(RibbonColorPicker, RibbonFileMenu);
 
@@ -470,6 +470,174 @@ describe('Ribbon', () => {
             //For Coverage
             containerEle.style.width = '1600px';
             ribbon.refreshLayout();
+        });
+        it('Overflow popup events', () => {
+            ribbon = new Ribbon({
+                activeLayout: 'Simplified',
+                tabs : [{
+                    header: 'Home',
+                    groups: [{
+                        header: 'Large items',
+                        groupIconCss: 'e-icons e-paste',
+                        showLauncherIcon: true,
+                        orientation: ItemOrientation.Row,
+                        id: 'large',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large ,
+                                splitButtonSettings: {
+                                    content: 'Paste',
+                                    cssClass: 'test-css',
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }]
+                                }
+                            }, {
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large ,
+                                id: 'largetable',
+                                dropDownSettings: {
+                                    content: 'Table',
+                                    iconCss: 'e-icons e-table',
+                                    cssClass: 'test-css',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                id: 'largecut',
+                                allowedSizes: RibbonItemSize.Large ,
+                                cssClass: 'test-css',
+                                buttonSettings: {
+                                    content: 'cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: 'Font',
+                        orientation: 'Row',
+                        groupIconCss: 'e-icons e-bold',
+                        cssClass: 'font-group',
+                        id: 'font',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.CheckBox,
+                                id: 'fontbold',
+                                checkBoxSettings: {
+                                    cssClass: 'test-css',
+                                    label: 'Ruler',
+                                    checked: false
+                                }
+                            }, {
+                                type: RibbonItemType.ColorPicker,
+                                id: 'fontcolor',
+                                colorPickerSettings: {
+                                    cssClass: 'test-css',
+                                    value: '#123456'
+                                }
+                            } ]
+                        }]
+                    }, {
+                        header: 'GroupOverflow btn',
+                        groupIconCss: 'e-icons e-paste',
+                        showLauncherIcon: true,
+                        orientation: ItemOrientation.Row,
+                        enableGroupOverflow: true,
+                        id: 'groupoverflow1',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                id: 'groupoverflowpaste',
+                                allowedSizes: RibbonItemSize.Large ,
+                                splitButtonSettings: {
+                                    content: 'Paste',
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                }
+                            }, {
+                                type: RibbonItemType.DropDown,
+                                displayOptions: DisplayMode.Overflow,
+                                id: 'groupoverflowtable',
+                                allowedSizes: RibbonItemSize.Large ,
+                                dropDownSettings: {
+                                    content: 'Table',
+                                    iconCss: 'e-icons e-table',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                id: 'groupoverflowcut',
+                                allowedSizes: RibbonItemSize.Large ,
+                                buttonSettings: {
+                                    content: 'cut',
+                                    iconCss: 'e-icons e-cut'
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: 'CmnOverflow btn',
+                        groupIconCss: 'e-icons e-paste',
+                        id: 'CmnOverflow1',
+                        showLauncherIcon: true,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                id: 'commonoverflowpaste',
+                                allowedSizes: RibbonItemSize.Large ,
+                                splitButtonSettings: {
+                                    content: 'Paste',
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                }
+                            }, {
+                                type: RibbonItemType.DropDown,
+                                displayOptions: DisplayMode.Overflow,
+                                id: 'commonoverflowtable',
+                                allowedSizes: RibbonItemSize.Large ,
+                                dropDownSettings: {
+                                    content: 'Table',
+                                    iconCss: 'e-icons e-table',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                id: 'commonoverflowcut',
+                                allowedSizes: RibbonItemSize.Large ,
+                                buttonSettings: {
+                                    content: 'cut',
+                                    iconCss: 'e-icons e-cut'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            ribbon.overflowPopupOpen = (args: OverflowPopupEventArgs) => {
+                args.cancel = true;
+            };
+            (document.getElementById('ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup')).classList.contains('e-popup-open')).toBe(false);
+            containerEle.style.width = '500';
+            ribbon.refreshLayout();
+            (document.getElementById('groupoverflow1_sim_grp_overflow') as HTMLElement).click();
+            expect((document.querySelector('#groupoverflow1_sim_grp_overflow-popup')).classList.contains('e-popup-open')).toBe(false);
+            ribbon.overflowPopupOpen = null;
+            ribbon.overflowPopupClose = (args: OverflowPopupEventArgs) => {
+                args.cancel = true;
+            };
+            (document.getElementById('ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            (document.body as HTMLElement).click();
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup')).classList.contains('e-popup-open')).toBe(true);
         });
     });
 

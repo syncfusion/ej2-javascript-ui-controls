@@ -280,7 +280,7 @@ export class StampAnnotation {
         let annot: PdfAnnotationBaseModel;
         // eslint-disable-next-line
         let annotation: any = this.currentStampAnnotation;
-        let subject: string = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.stampSettings.subject ? this.pdfViewer.stampSettings.subject : !isNullOrUndefined(annotation) ? annotation.iconName : "";
+        let subject: string = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.stampSettings.subject ? this.pdfViewer.stampSettings.subject : !isNullOrUndefined(annotation) ? annotation.iconName : "";
         if (annotation && annotation.shapeAnnotationType === 'Image') {
             annot = {
                 // eslint-disable-next-line max-len
@@ -492,7 +492,7 @@ export class StampAnnotation {
                 annotation.ModifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                 // eslint-disable-next-line max-len
                 annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.stampSettings.author ? this.pdfViewer.stampSettings.author : 'Guest';
-                annotation.Subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.stampSettings.subject ? this.pdfViewer.stampSettings.subject : annotation.iconName;
+                annotation.Subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.stampSettings.subject ? this.pdfViewer.stampSettings.subject : annotation.iconName;
             }
             // eslint-disable-next-line
             let collectionData: any = processPathData(annotation.pathdata);
@@ -610,7 +610,7 @@ export class StampAnnotation {
         if (annotation.shapeAnnotationType === 'Image') {
             // eslint-disable-next-line max-len
             annotation.Author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.customStampSettings.author ? this.pdfViewer.customStampSettings.author : 'Guest';
-            annotation.Subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.customStampSettings.subject ? this.pdfViewer.customStampSettings.subject : "";
+            annotation.Subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.customStampSettings.subject ? this.pdfViewer.customStampSettings.subject : "";
             annotation.isPrint = this.pdfViewer.customStampSettings.isPrint;
             this.customStampName = this.customStampName ? this.customStampName : (this.currentStampAnnotation && this.currentStampAnnotation.signatureName) ? this.currentStampAnnotation.signatureName : annotation.id;
             annotationObject = {
@@ -725,13 +725,13 @@ export class StampAnnotation {
             }
             if (subject === null) {
                 // eslint-disable-next-line max-len
-                subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.customStampSettings.subject ? this.pdfViewer.customStampSettings.subject : "";
+                subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.customStampSettings.subject ? this.pdfViewer.customStampSettings.subject : "";
             }
         } else {
             annotationName = this.pdfViewer.annotation.createGUID();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.customStampSettings.author ? this.pdfViewer.customStampSettings.author : 'Guest';
-            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.customStampSettings.subject ? this.pdfViewer.customStampSettings.subject : "";
+            subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.customStampSettings.subject ? this.pdfViewer.customStampSettings.subject : "";
             isCommentsLock = false;
         }
         if (!modifiedDate) {

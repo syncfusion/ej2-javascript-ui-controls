@@ -213,6 +213,24 @@ export interface ClickGroupButtonEventArgs extends BaseEventArgs {
     selectedItems: RibbonGroupButtonItemModel[];
 }
 
+/**
+ * Triggers before open / close of overflow popup menu.
+ */
+export interface OverflowPopupEventArgs extends BaseEventArgs {
+    /**
+     *  Provides the HTML element of the overflow popup.
+     */
+    element: HTMLElement;
+    /**
+     *  Defines the original event arguments.
+     */
+    event: Event;
+    /**
+     *  Defines whether to cancel the  overflow popup open or close.
+     */
+    cancel?: boolean;
+}
+
 /** @hidden */
 export interface itemProps {
     item?: RibbonItemModel;

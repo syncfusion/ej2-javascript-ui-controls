@@ -368,7 +368,9 @@ export class MsWordPaste {
                         isNOU(allElements[i as number].nextElementSibling)))) {
                 const detachableElement: HTMLElement = this.findDetachElem(allElements[i as number]);
                 const brElement: HTMLElement = createElement('br') as HTMLElement;
-                if (!isNOU(detachableElement.parentElement)) {
+                const hasNbsp: boolean = detachableElement.textContent.length > 0 && detachableElement.textContent.match(/\u00a0/g) 
+                    && detachableElement.textContent.match(/\u00a0/g).length > 0;
+                if (!hasNbsp && !isNOU(detachableElement.parentElement)) {
                     detachableElement.parentElement.insertBefore(brElement, detachableElement);
                     detach(detachableElement);
                 }
@@ -409,7 +411,9 @@ export class MsWordPaste {
     private findDetachEmptyElem(element: Element): HTMLElement {
         let removableElement: HTMLElement;
         if (!isNOU(element.parentElement)) {
-            if (element.parentElement.textContent.trim() === '' &&
+            const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g) 
+                && element.parentElement.textContent.match(/\u00a0/g).length > 0;
+            if (!hasNbsp && element.parentElement.textContent.trim() === '' &&
                 element.parentElement.getAttribute('id') !== 'MSWord-Content' &&
                 !(this.hasParentWithClass(element as HTMLElement, 'MsoListParagraph')) &&
                 isNOU(element.parentElement.querySelector('img'))) {

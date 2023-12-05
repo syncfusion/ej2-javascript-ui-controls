@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 23.2.7 (2023-12-05)
+
+### Maps
+
+#### Bug Fixes
+
+- `#519916` - When set as an object in the array, the `navigationLineSettings` property will now be updated.
+
 ## 23.1.42 (2023-10-24)
 
 ### Maps

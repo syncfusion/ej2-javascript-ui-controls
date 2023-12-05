@@ -421,7 +421,7 @@ export class EnterKeyAction {
                                     let newElem: Node;
                                     const outerBRElem: HTMLElement = this.parent.createElement('br');
                                     if (this.range.startOffset === 0 && this.range.endOffset === 0 &&
-                                        !isNOU(currentParent.previousSibling) && currentParent.previousSibling.nodeName === 'BR') {
+                                        !isNOU(currentParent.previousSibling) && currentParent.previousSibling.nodeName === 'BR' && currentParent.nodeName !== 'P' && currentParent.nodeName !== 'DIV') {
                                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                         newElem = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                                             this.range, currentParent, false).cloneNode(true);

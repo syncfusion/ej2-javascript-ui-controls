@@ -419,7 +419,7 @@ export class MeasureAnnotation {
             const modifiedDateDist: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.distanceSettings.author ? this.pdfViewer.distanceSettings.author : 'Guest';
-            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.distanceSettings.subject ? this.pdfViewer.distanceSettings.subject : 'Distance calculation';
+            subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.distanceSettings.subject ? this.pdfViewer.distanceSettings.subject : 'Distance calculation';
             this.pdfViewer.drawingObject = {
                 sourceDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.distanceStartHead),
                 taregetDecoraterShapes: this.pdfViewer.annotation.getArrowType(this.distanceEndHead), measureType: 'Distance',
@@ -435,7 +435,7 @@ export class MeasureAnnotation {
             const modifiedDatePeri: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.perimeterSettings.author ? this.pdfViewer.perimeterSettings.author : 'Guest';
-            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.perimeterSettings.subject ? this.pdfViewer.perimeterSettings.subject : 'Perimeter calculation';
+            subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.perimeterSettings.subject ? this.pdfViewer.perimeterSettings.subject : 'Perimeter calculation';
             this.pdfViewer.drawingObject = {
                 // eslint-disable-next-line max-len
                 shapeAnnotationType: 'LineWidthArrowHead', fillColor: this.perimeterFillColor, notes: '', strokeColor: this.perimeterStrokeColor, opacity: this.perimeterOpacity,
@@ -451,7 +451,7 @@ export class MeasureAnnotation {
             const modifiedDateArea: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.areaSettings.author ? this.pdfViewer.areaSettings.author : 'Guest';
-            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.areaSettings.subject ? this.pdfViewer.areaSettings.subject : 'Area calculation';
+            subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.areaSettings.subject ? this.pdfViewer.areaSettings.subject : 'Area calculation';
             this.pdfViewer.drawingObject = {
                 // eslint-disable-next-line max-len
                 shapeAnnotationType: 'Polygon', fillColor: this.areaFillColor, notes: '', strokeColor: this.areaStrokeColor,
@@ -466,7 +466,7 @@ export class MeasureAnnotation {
             const modifiedDateRad: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.radiusSettings.author ? this.pdfViewer.radiusSettings.author : 'Guest';
-            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.radiusSettings.subject ? this.pdfViewer.radiusSettings.subject : 'Radius calculation';
+            subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.radiusSettings.subject ? this.pdfViewer.radiusSettings.subject : 'Radius calculation';
             this.pdfViewer.drawingObject = {
                 // eslint-disable-next-line max-len
                 shapeAnnotationType: 'Radius', fillColor: this.radiusFillColor, notes: '', strokeColor: this.radiusStrokeColor, opacity: this.radiusOpacity,
@@ -480,7 +480,7 @@ export class MeasureAnnotation {
             const modifiedDateVol: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.volumeSettings.author ? this.pdfViewer.volumeSettings.author : 'Guest';
-            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.volumeSettings.subject ? this.pdfViewer.volumeSettings.subject : 'Volume calculation';
+            subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.volumeSettings.subject ? this.pdfViewer.volumeSettings.subject : 'Volume calculation';
             this.pdfViewer.drawingObject = {
                 // eslint-disable-next-line max-len
                 shapeAnnotationType: 'Polygon', notes: '', fillColor: this.volumeFillColor, strokeColor: this.volumeStrokeColor,

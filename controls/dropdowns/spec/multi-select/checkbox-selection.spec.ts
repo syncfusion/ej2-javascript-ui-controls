@@ -713,7 +713,7 @@ describe('MultiSelect', () => {
             listObj.appendTo(element);
             listObj.showPopup();
             setTimeout(() => {
-                expect('<div class="head">Photo<span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
+                expect('<div class="head"> Photo <span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
                 expect('<div class="Foot"> Total Items Count: 5 </div>').toBe((<any>listObj).footer.innerHTML);
                 expect((<any>listObj).checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
                 expect((<any>listObj).checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
@@ -760,7 +760,7 @@ describe('MultiSelect', () => {
             listObj.appendTo(element);
             listObj.showPopup();
             setTimeout(function () {
-                expect('<div class="head">Photo<span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
+                expect('<div class="head"> Photo <span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
                 expect('<div class="Foot"> Total Items Count: 5 </div>').toBe((<any>listObj).footer.innerHTML);
                 expect((<any>listObj).checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
                 expect((<any>listObj).isPopupOpen()).toBe(true);

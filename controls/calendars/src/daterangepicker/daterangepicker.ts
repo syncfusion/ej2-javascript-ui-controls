@@ -4628,8 +4628,10 @@ export class DateRangePicker extends CalendarBase {
     private setLocale(): void {
         this.globalize = new Internationalization(this.locale);
         this.l10n.setLocale(this.locale);
-        this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
-        Input.setPlaceholder(this.placeholder, this.inputElement);
+        if (this.dateRangeOptions && this.dateRangeOptions.placeholder == null) {
+            this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
+            Input.setPlaceholder(this.placeholder, this.inputElement);
+        }
         this.updateInput();
         this.updateHiddenInput();
         this.changeTrigger();
@@ -4779,8 +4781,10 @@ export class DateRangePicker extends CalendarBase {
             case 'locale':
                 this.globalize = new Internationalization(this.locale);
                 this.l10n.setLocale(this.locale);
-                this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
-                Input.setPlaceholder(this.placeholder, this.inputElement);
+                if (this.dateRangeOptions && this.dateRangeOptions.placeholder == null) {
+                    this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
+                    Input.setPlaceholder(this.placeholder, this.inputElement);
+                }
                 this.setLocale();
                 break;
             case 'htmlAttributes':

@@ -78,6 +78,10 @@ export class Timeline {
             this.parent.updateProjectDates(
                 this.parent.cloneProjectStartDate, this.parent.cloneProjectEndDate, this.parent.isTimelineRoundOff);
         }
+        const timelineContainer: number = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
+        this.parent.element.getElementsByClassName('e-gridcontent')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+        // eslint-disable-next-line
+        this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
     }
 
     /**
@@ -288,6 +292,7 @@ export class Timeline {
         }
         this.changeTimelineSettings(newTimeline);
         this.parent.isTimelineRoundOff = isNullOrUndefined(this.parent.projectStartDate) ? true : false;
+        this.isZoomToFit = false;
     }
     
     private bottomTierCellWidthCalc(mode: string, zoomLevel: ZoomTimelineSettings, date: Date) {

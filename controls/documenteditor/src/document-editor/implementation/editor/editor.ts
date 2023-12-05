@@ -31,7 +31,7 @@ import {
     LineSpacingType, TextAlignment, ListLevelPattern, RowPlacement, ColumnPlacement,
     FollowCharacterType, HeaderFooterType, TrackChangeEventArgs, protectionTypeChangeEvent, imagesProperty, abstractListIdProperty
 } from '../../base/index';
-import { SelectionCharacterFormat } from '../index';
+import { SelectionCharacterFormat, SelectionParagraphFormat } from '../index';
 import { Action } from '../../index';
 import { PageLayoutViewer, SfdtReader } from '../index';
 import { WCharacterStyle } from '../format/style';
@@ -2258,7 +2258,7 @@ export class Editor {
                 this.owner.search.isRepalceTracking = false;
                 this.selection.start.setPositionInternal(this.selection.start);
                 this.selection.end.setPositionInternal(endPosition);
-            } else if (endOffset > 0) {
+            } else if (endOffset > 0 && endOffset <= paragraphLength) {
                 let updatedParagraphLength: number = endParagraphInfo.paragraph.getLength();
                 if (paragraphLength !== updatedParagraphLength) {
                     endOffset -= paragraphLength - updatedParagraphLength;
@@ -5280,13 +5280,13 @@ export class Editor {
         let element: ElementBox = this.selection.getPreviousValidElement(currentInline.element);
         let insertFormat: WCharacterFormat = element ? element.characterFormat :
             this.copyInsertFormat(startParagraph.characterFormat, false);
-        let insertParaFormat: WParagraphFormat = this.documentHelper.selection.copySelectionParagraphFormat();
+        let insertParaFormat: SelectionParagraphFormat = this.documentHelper.selection.paragraphFormat;
         for (let k: number = 0; k < bodyWidgets.length; k++) {
             let widgets: BlockWidget[] = bodyWidgets[k].childWidgets as BlockWidget[];
             for (let i: number = 0; i < widgets.length; i++) {
                 let widget: BlockWidget = widgets[i];
                 if (widget instanceof ParagraphWidget) {
-                    widget.paragraphFormat.copyFormat(insertParaFormat);
+                    this.applyParaFormatInternal(widget.paragraphFormat, insertParaFormat);
                     this.applyFormatInternal(widget, insertFormat);
                 } else {
                     for (let j: number = 0; j < widget.childWidgets.length; j++) {
@@ -5300,6 +5300,65 @@ export class Editor {
                     }
                 }
             }
+        }
+    }
+
+    private applyParaFormatInternal(paragraphFormat: WParagraphFormat, insertedParaFormat: SelectionParagraphFormat): void {
+        if (!isNullOrUndefined(insertedParaFormat.leftIndent)) {
+            paragraphFormat.leftIndent = insertedParaFormat.leftIndent;
+        }
+        if (!isNullOrUndefined(insertedParaFormat.rightIndent)) {
+            paragraphFormat.rightIndent = insertedParaFormat.rightIndent;
+        }
+        if (!isNullOrUndefined(insertedParaFormat.firstLineIndent)) {
+            paragraphFormat.firstLineIndent = insertedParaFormat.firstLineIndent;
+        }
+        if (!isNullOrUndefined(insertedParaFormat.textAlignment)) {
+            paragraphFormat.textAlignment = insertedParaFormat.textAlignment;
+        } else {
+            paragraphFormat.textAlignment = 'Left';
+        }
+        if (insertedParaFormat.beforeSpacing === -1) {
+            paragraphFormat.beforeSpacing = 0;
+        } else {
+            paragraphFormat.beforeSpacing = insertedParaFormat.beforeSpacing;
+        }
+        if (insertedParaFormat.afterSpacing === -1) {
+            paragraphFormat.afterSpacing = 0;
+        } else {
+            paragraphFormat.afterSpacing = insertedParaFormat.afterSpacing;
+        }
+        if (insertedParaFormat.lineSpacing === 0) {
+            paragraphFormat.lineSpacing = 1;
+        } else {
+            paragraphFormat.lineSpacing = insertedParaFormat.lineSpacing;
+        }
+        if (!isNullOrUndefined(insertedParaFormat.lineSpacingType)) {
+            paragraphFormat.lineSpacingType = insertedParaFormat.lineSpacingType;
+        }
+        if (!isNullOrUndefined(insertedParaFormat.bidi)) {
+            paragraphFormat.bidi = insertedParaFormat.bidi;
+        }
+        if (!isNullOrUndefined(insertedParaFormat.spaceAfterAuto)) {
+            paragraphFormat.spaceAfterAuto = insertedParaFormat.spaceAfterAuto;
+        }
+        if (!isNullOrUndefined(insertedParaFormat.spaceBeforeAuto)) {
+            paragraphFormat.spaceBeforeAuto = insertedParaFormat.spaceBeforeAuto;
+        }
+        if (!isNullOrUndefined(insertedParaFormat.keepWithNext)) {
+            paragraphFormat.keepWithNext = insertedParaFormat.keepWithNext;
+        }
+        if (!isNullOrUndefined(insertedParaFormat.keepLinesTogether)) {
+            paragraphFormat.keepLinesTogether = insertedParaFormat.keepLinesTogether;
+        }
+        if (!isNullOrUndefined(insertedParaFormat.widowControl)) {
+            paragraphFormat.widowControl = insertedParaFormat.widowControl;
+        }
+        if (!isNullOrUndefined(insertedParaFormat.contextualSpacing)) {
+            paragraphFormat.contextualSpacing = insertedParaFormat.contextualSpacing;
+        }
+        if (paragraphFormat.tabs) {
+            paragraphFormat.tabs = [];
         }
     }
 
@@ -5318,6 +5377,37 @@ export class Editor {
                     }
                     if (characterFormat.underline !== 'None') {
                         lineWidget.children[k].characterFormat.underline = characterFormat.underline;
+                    }
+                    if (this.currentPasteOptions === 'MergeWithExistingFormatting' && !isNullOrUndefined(insertFormat)) {
+                        if (insertFormat.bold) {
+                            lineWidget.children[k].characterFormat.bold = insertFormat.bold;
+                        }
+                        if (insertFormat.italic) {
+                            lineWidget.children[k].characterFormat.italic = insertFormat.italic;
+                        }
+                        if (insertFormat.underline !== 'None') {
+                            lineWidget.children[k].characterFormat.underline = insertFormat.underline;
+                        }
+                        if (lineWidget.children[k].characterFormat.fontColor !== insertFormat.fontColor) {
+                            lineWidget.children[k].characterFormat.fontColor = insertFormat.fontColor;
+                        }
+                        if (lineWidget.children[k].characterFormat.fontSize !== insertFormat.fontSize) {
+                            lineWidget.children[k].characterFormat.fontSize = insertFormat.fontSize;
+                            lineWidget.children[k].characterFormat.fontSizeBidi = insertFormat.fontSizeBidi;
+                        }
+                        if (lineWidget.children[k].characterFormat.fontFamily !== insertFormat.fontFamily) {
+                            lineWidget.children[k].characterFormat.fontFamily = insertFormat.fontFamily;
+                            lineWidget.children[k].characterFormat.fontFamilyBidi = insertFormat.fontFamilyBidi;
+                        }
+                        if (lineWidget.children[k].characterFormat.fontFamilyAscii !== insertFormat.fontFamilyAscii) {
+                            lineWidget.children[k].characterFormat.fontFamilyAscii = insertFormat.fontFamilyAscii;
+                        }
+                        if (lineWidget.children[k].characterFormat.fontFamilyFarEast !== insertFormat.fontFamilyFarEast) {
+                            lineWidget.children[k].characterFormat.fontFamilyFarEast = insertFormat.fontFamilyFarEast;
+                        }
+                        if (lineWidget.children[k].characterFormat.fontFamilyAscii !== insertFormat.fontFamilyAscii) {
+                            lineWidget.children[k].characterFormat.fontFamilyAscii = insertFormat.fontFamilyAscii;
+                        }
                     }
                 }
             }
@@ -5438,7 +5528,6 @@ export class Editor {
                     newImages[newIndex] = images[img];
                     this.pasteImageIndex.add(img, newIndex.toString());
                 }
-                content[imagesProperty[this.keywordIndex]] = newImages;
                 images = newImages;
             } 
             this.documentHelper.owner.parser.parseImages(images);
@@ -7967,7 +8056,7 @@ export class Editor {
                 count += startIndex;
             }
             if (startIndex === 0 && endIndex === inline.length) {
-                if (inline instanceof ShapeElementBox) {
+                if (inline instanceof ShapeBase && inline.textWrappingStyle !== 'Inline') {
                     let shapeIndex: number = lineWidget.paragraph.floatingElements.indexOf(inline);
                     if (shapeIndex !== -1) {
                         lineWidget.paragraph.floatingElements.splice(shapeIndex, 1);
@@ -12813,7 +12902,7 @@ export class Editor {
     private checkAndInsertBlock(block: BlockWidget, start: TextPosition, end: TextPosition, editAction: number, previousParagraph: BlockWidget): ParagraphWidget {
         if (block instanceof ParagraphWidget && block === start.paragraph || block instanceof TableWidget) {
             let newParagraph: ParagraphWidget; //Adds an empty paragraph, to ensure minimal content.
-            if (isNullOrUndefined(block.nextWidget) && (isNullOrUndefined(previousParagraph) || previousParagraph.nextRenderedWidget instanceof TableWidget)) {
+            if (isNullOrUndefined(block.nextRenderedWidget) && (isNullOrUndefined(previousParagraph) || previousParagraph.nextRenderedWidget instanceof TableWidget)) {
                 newParagraph = new ParagraphWidget();
                 if (editAction === 1 && block instanceof ParagraphWidget && !isNullOrUndefined(block.paragraphFormat.baseStyle) && block.paragraphFormat.baseStyle.name === 'Normal') {
                     newParagraph.characterFormat.copyFormat(block.characterFormat);
@@ -14769,7 +14858,7 @@ export class Editor {
         paragraph.childWidgets.push(lineWidget);
         //Cop ies the format to new paragraph.
         paragraph.paragraphFormat.ownerBase = paragraph;
-        if (currentLine === paragraphAdv.lastChild && offset === selection.getLineLength(currentLine)) {
+        if (currentLine === paragraphAdv.lastChild && offset === selection.getLineLength(currentLine) && !currentPara.isContainsShapeAlone()) {
 
             if (paragraphAdv.paragraphFormat.baseStyle
                 && paragraphAdv.paragraphFormat.baseStyle.name !== 'Normal' && paragraphAdv.paragraphFormat.baseStyle.next instanceof WParagraphStyle) {
@@ -14818,7 +14907,7 @@ export class Editor {
         } else {
             paragraph.paragraphFormat.copyFormat(paragraphAdv.paragraphFormat);
             paragraph.characterFormat.copyFormat(paragraphAdv.characterFormat);
-            if (offset > 0 || !currentLine.isFirstLine()) {
+            if ((offset > 0 || !currentLine.isFirstLine()) && !currentPara.isContainsShapeAlone()) {
                 paragraphAdv = paragraphAdv.combineWidget(this.owner.viewer) as ParagraphWidget;
                 this.moveInlines(paragraphAdv, paragraph, 0, 0, paragraphAdv.firstChild as LineWidget, offset, currentLine);
                 if (this.owner.enableTrackChanges) {
@@ -16763,6 +16852,12 @@ export class Editor {
                         nextParagraph.childWidgets.splice(i, 1);
                         paragraph.childWidgets.push(inline);
                         inline.paragraph = paragraph;
+                        i--;
+                    }
+                    for (let i: number = 0; i < nextParagraph.floatingElements.length; i++) {
+                        var inline = nextParagraph.floatingElements[i];
+                        nextParagraph.floatingElements.splice(i, 1);
+                        paragraph.floatingElements.push(inline);
                         i--;
                     }
                     if (nextParagraph.bodyWidget.index !== paragraph.bodyWidget.index) {

@@ -9,6 +9,7 @@
 #### Bug Fixes
 
 - `#F47826` - Resolved the issue with parsing multiple white space in the template string.
+- `#I521836` - The issue with "A script error occurs when the 'Content-Type' header is not present" has been resolved.
 
 ## 23.2.4 (2023-11-20)
 

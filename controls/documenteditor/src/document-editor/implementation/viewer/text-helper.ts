@@ -153,6 +153,11 @@ export class TextHelper {
         if (characterFormat.allCaps) {
             text = text.toUpperCase();
         }
+         //ES-853789:For combine character we need  to add the base character to get the width of the text.
+         if( text == "\u0336")
+         {
+           text += "A";
+         }
         return Math.abs(this.context.measureText(text).width * scaleFactor);
     }
 

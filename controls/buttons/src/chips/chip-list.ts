@@ -648,7 +648,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         if (this.type !== 'chip') {
             const fieldData: string[] | number[] | ChipModel[] = chipsData instanceof Array ?
                 chipsData : <string[] | number[] | ChipModel[]>[chipsData as string | number | ChipModel];
-            (<ChipModel[]>this.chips).push(...fieldData as ChipModel[]);
+            this.chips = [].slice.call(this.chips).concat(...fieldData as ChipModel[]);
             this.chipCreation(fieldData);
         }
     }

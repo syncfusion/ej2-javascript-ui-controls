@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 23.2.7 (2023-12-05)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I506991` - Fixed the connector selection issue that occurred when the segment thumb was enabled.
+- `#I522256` - Now, the palette expanding event arguments are correct when expanding the palette.
+- `#I522219` - Fixed issue with symbol palette tooltip rendering inaccurately after searching symbols and hovering over palette shapes.
+- `#F185333` - Now, the style property of phase at run-time can be customized.
+
 ## 23.2.6 (2023-11-28)
 
 ### Diagram

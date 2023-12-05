@@ -232,7 +232,10 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
                         if (length >= 50) {
                             segPoint.x = ((segment.points[parseInt(j.toString(), 10)].x + segment.points[j + 1].x) / 2);
                             segPoint.y = ((segment.points[parseInt(j.toString(), 10)].y + segment.points[j + 1].y) / 2);
-                            if (contains(position, segPoint, 30)) {
+                            //Bug 857928: Issue in connector selection while enabling segment thumb.
+                            //Instead of setting static value 30, we have set the hit padding of connector.
+                            const padding: number = conn.hitPadding ? conn.hitPadding : 10;
+                            if (contains(position, segPoint, padding)) {
                                 return 'OrthoThumb';
                             }
                         }

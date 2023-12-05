@@ -57,7 +57,7 @@ export class ToolbarRenderer implements IRenderer {
 
     private destroyTooltip(): void {
         if (!isNullOrUndefined(document.querySelector('.e-tooltip-wrap')) && !isNullOrUndefined(document.querySelector( ' [data-tooltip-id]'))) {
-            const tooltipTargetEle: HTMLElement = <HTMLElement> document.querySelector('#' + (this.parent.element).id + ' [data-tooltip-id]');
+            const tooltipTargetEle: HTMLElement = this.parent.element.querySelector('[data-tooltip-id]');
             const event: MouseEvent = new MouseEvent('mouseleave', {bubbles: true, cancelable: true});
             tooltipTargetEle.dispatchEvent(event);
         }
@@ -228,16 +228,83 @@ export class ToolbarRenderer implements IRenderer {
                     return;
                 }
                 // eslint-disable-next-line
-            for (let index: number = 0; index < args.element.childNodes.length; index++) {
-                    const divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
-                    divNode.innerHTML = dropDown.content.trim();
-                    if ( divNode.textContent .trim() !== ''
-                && args.element.childNodes[index as number].textContent.trim() === divNode.textContent .trim()) {
-                        if (!(args.element.childNodes[index as number] as HTMLElement).classList.contains('e-active')) {
-                            addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                 // Table styles dropdown preselect
+                 if (proxy.parent.editorMode !== 'Markdown') {
+                    const startNode : HTMLElement = proxy.parent.getRange().startContainer.parentElement;
+                    const tableEle : HTMLElement = startNode.closest('table');
+                    const trow : HTMLElement = startNode.closest('tr');
+                    if (!isNOU(tableEle) && tableEle.classList.contains('e-dashed-border')) {
+                        for (let index: number = 0; index < args.element.childNodes.length; index++) {
+                            if ((args.element.childNodes[index as number] as HTMLElement).classList.contains('e-dashed-borders')) {
+                                addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                            }
                         }
-                    } else {
-                        removeClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                    }
+                    else if (!isNOU(tableEle) && !tableEle.classList.contains('e-dashed-border') && tableEle.classList.contains('e-alternate-rows') && window.getComputedStyle(trow).backgroundColor !== '') {
+                        for (let index: number = 0; index < args.element.childNodes.length; index++) {
+                            if ((args.element.childNodes[index as number] as HTMLElement).classList.contains('e-alternate-rows')) {
+                                addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                            }
+                        }
+                    }
+                    //Alignments preselect
+                    let alignEle : Node = proxy.parent.getRange().startContainer;
+                    while (alignEle !== proxy.parent.element.querySelector('.e-content') && !isNOU(alignEle.parentElement)) {
+                        if (alignEle.nodeName === '#text') {
+                            alignEle = alignEle.parentElement;
+                        }
+                        const alignStyle : string = window.getComputedStyle(alignEle as HTMLElement).textAlign;
+                        if ((args.items[0 as number] as any).command === 'Alignments') {
+                            if ((args.items[0 as number].text === 'Align Left' && (alignStyle === 'left') || alignStyle === 'start')) {
+                                addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
+                                break;
+                            }
+                            else if (args.items[1 as number].text === 'Align Center' && alignStyle === 'center') {
+                                addClass([args.element.childNodes[1 as number]] as Element[], 'e-active');
+                                break;
+                            }
+                            else if (args.items[2 as number].text === 'Align Right' && alignStyle === 'right') {
+                                addClass([args.element.childNodes[2 as number]] as Element[], 'e-active');
+                                break;
+                            }
+                            else if (args.items[3 as number].text === 'Align Justify' && alignStyle === 'justify') {
+                                addClass([args.element.childNodes[3 as number]] as Element[], 'e-active');
+                                break;
+                            }
+                        }
+                        alignEle = alignEle.parentElement;
+                    }
+                    //image preselect
+                    const imageEle : HTMLElement = startNode.closest('img') ? startNode.closest('img') : startNode.querySelector('img');
+                    if ((args.items[0 as number] as any).command === 'Images') {
+                        if (!isNOU(imageEle)) {
+                            let index: number;
+                            if (imageEle.classList.contains('e-imgleft') || imageEle.classList.contains('e-imginline')) {
+                                index = 0;
+                            } else if (imageEle.classList.contains('e-imgcenter') || imageEle.classList.contains('e-imgbreak')) {
+                                index = 1;
+                            } else if (imageEle.classList.contains('e-imgright')) {
+                                index = 2;
+                            }
+                            if (!isNOU(args.element.childNodes[index as number] as HTMLElement)) {
+                                addClass([args.element.childNodes[index as number] as Element], 'e-active');
+                            }
+                        }
+                    }
+                    //Formats preselect
+                    if ((args.items[0 as number] as any).command === 'Formats') {
+                        for (let index: number = 0; index < args.element.childNodes.length; index++) {
+                            const divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
+                            divNode.innerHTML = dropDown.content.trim();
+                            if (divNode.textContent.trim() !== ''
+                                && args.element.childNodes[index as number].textContent.trim() === divNode.textContent.trim()) {
+                                if (!(args.element.childNodes[index as number] as HTMLElement).classList.contains('e-active')) {
+                                    addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                                }
+                            } else {
+                                removeClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                            }
+                        }
                     }
                 }
                 proxy.parent.notify(events.beforeDropDownOpen, args);

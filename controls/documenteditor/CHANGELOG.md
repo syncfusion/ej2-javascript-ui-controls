@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 23.2.6 (2023-11-28)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I515528` - Resolved the strange behaviour of track changes on backspace and delete action.
+- `#I517039` - Resolved the cut issue in table when track changes is enabled.
+- `#I518614` - Resolved the hyperlink removing issue.
+- `#I513222` - Resolved the script error issue when opening attached document.
+- `#I513443` - Resolved the Exception issue when disable toolbar in blazor.
+- `#I507772` - Resolved the spellcheck underline issue on editing text.
+- `#I518011` - Resolved the find and replace issue for restricted document.
+
 ## 23.2.5 (2023-11-23)
 
 ### DocumentEditor

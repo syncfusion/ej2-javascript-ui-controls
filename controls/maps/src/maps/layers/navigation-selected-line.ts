@@ -54,17 +54,17 @@ export class NavigationLine {
                 id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_line_Group'
             }));
             for (let i: number = 0; i < navigation.length; i++) {
-                latitude = navigation[i as number]['properties']['latitude'];
-                longitude = navigation[i as number]['properties']['longitude'];
-                visible = navigation[i as number]['properties']['visible'];
-                angle = navigation[i as number]['angle'];
-                width = navigation[i as number]['width'] || 1;
-                color = navigation[i as number]['color'];
-                dashArray = navigation[i as number]['properties']['dashArray'];
-                arrowSettings = navigation[i as number]['properties']['arrowSettings'];
-                showArrow = (isNullOrUndefined(arrowSettings)) ? false : arrowSettings['properties']['showArrow'];
-                if (longitude['length'] === latitude['length'] && visible) {
-                    for (let i: number = 0; i < longitude['length']; i++) {
+                latitude = navigation[i as number].latitude;
+                longitude = navigation[i as number].longitude;
+                visible = !isNullOrUndefined(navigation[i as number].visible) ? navigation[i as number].visible : false;
+                angle = !isNullOrUndefined(navigation[i as number].angle) ? navigation[i as number].angle : 0;
+                width = navigation[i as number].width || 1;
+                color = navigation[i as number].color;
+                dashArray = navigation[i as number].dashArray;
+                arrowSettings = navigation[i as number].arrowSettings;
+                showArrow = !isNullOrUndefined(arrowSettings) ? arrowSettings.showArrow : false;
+                if (longitude.length === latitude.length && visible) {
+                    for (let i: number = 0; i < longitude.length; i++) {
                         const location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                             new Point(longitude[i as number], latitude[i as number]), factor, this.maps.tileTranslatePoint, true
                         ) : convertGeoToPoint(latitude[i as number], longitude[i as number], factor, layer, this.maps);
@@ -74,7 +74,7 @@ export class NavigationLine {
                 navigationGroup = (this.maps.renderer.createGroup({
                     id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_NavigationGroup' + i + ''
                 }));
-                for (let j: number = 0; j < point['length'] - 1; j++) {
+                for (let j: number = 0; j < point.length - 1; j++) {
                     angle = (-1 > angle) ? -1 : angle;
                     angle = (1 < angle) ? 1 : angle;
                     const arcId: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_NavigationIndex_' + i + '_Line' + j + '';
@@ -92,11 +92,11 @@ export class NavigationLine {
                         }
                     }
                     if (showArrow) {
-                        arrowColor = arrowSettings['properties']['color'];
-                        arrowSize = arrowSettings['properties']['size'];
-                        offSetValue = (arrowSettings['properties']['offSet'] === undefined) ? 0 : arrowSettings['properties']['offSet'];
+                        arrowColor = arrowSettings.color;
+                        arrowSize = arrowSettings.size;
+                        offSetValue = !isNullOrUndefined(arrowSettings.offSet) ? arrowSettings.offSet : 0;
                         const divide: number = (Math.round(arrowSize / 2));
-                        arrowPosition = arrowSettings['properties']['position'];
+                        arrowPosition = arrowSettings.position;
                         startArrow = (arrowPosition === 'Start') ? 'url(#triangle' + i + ')' : null;
                         endArrow = (arrowPosition === 'End') ? 'url(#triangle' + i + ')' : null;
                         if (offSet !== 0 && angle === 0) {

@@ -37,7 +37,7 @@ import { Logarithmic } from './axis/logarithmic-axis';
 import { Rect, measureText, TextOption, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { ChartData } from './utils/get-data';
 import { SelectionMode, HighlightMode, LineType, ZoomMode, ToolbarItems, ChartTheme } from './utils/enum';
-import { Series, SeriesBase } from './series/chart-series';
+import { Points, Series, SeriesBase } from './series/chart-series';
 import { SeriesModel } from './series/chart-series-model';
 import { Data } from '../common/model/data';
 import { LineSeries } from './series/line-series';
@@ -1938,6 +1938,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.redraw = true;
         this.animated = true; //used to set duration as 1000 for animation at default 300
         this.duration = duration ? duration : 1000;
+        if (this.tooltipModule) {
+            this.tooltipModule.removeHighlightedMarker(<PointData[]>this.tooltipModule.previousPoints, true);
+        }
+        else if (this.markerRender.previousPoints) {
+            for (let previousPoint: number = 0; previousPoint < this.markerRender.previousPoints.length; previousPoint++)
+                this.markerRender.removeHighlightedMarker(this.markerRender.previousPoints[previousPoint as number].series as Series,
+                                                          this.markerRender.previousPoints[previousPoint as number].point as Points);
+        }
     }
 
     /**
@@ -4544,9 +4552,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
-                        }
-                        if (this.availableSize && this.element) {
-                            this.element.style.height = (!this.element.style.height || this.element.style.height == 'inherit') ? (this.availableSize.height + 'px') : this.element.style.height;
                         }
                         if (seriesRefresh) {
                             this.calculateVisibleSeries();

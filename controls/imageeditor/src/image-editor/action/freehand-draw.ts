@@ -1012,8 +1012,14 @@ export class FreehandDrawing {
         if (isBlazor() && parent.events && parent.events.shapeChanging.hasDelegate === true) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape',  shapeChangingArgs) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
-                parent.activeObj.strokeSettings.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
                 this.penStrokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
+                if (parent.activeObj.strokeSettings.strokeColor !== shapeChangingArgs.currentShapeSettings.strokeColor) {
+                    parent.activeObj.strokeSettings.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
+                    const penColorElement: HTMLElement = parent.element.querySelector('.e-ie-toolbar-e-pen-color .e-dropdownbtn-preview') as HTMLElement;
+                    if (penColorElement) {
+                        penColorElement.style.background = shapeChangingArgs.currentShapeSettings.strokeColor;
+                    }
+                }
                 if (this.fhdSelID) {
                     parent.pointColl[this.fhdSelIdx].strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
                     parent.pointColl[this.fhdSelIdx].strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
@@ -1027,8 +1033,11 @@ export class FreehandDrawing {
             });
         } else {
             parent.trigger('shapeChanging', shapeChangingArgs);
-            parent.activeObj.strokeSettings.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
             this.penStrokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
+            if (parent.activeObj.strokeSettings.strokeColor !== shapeChangingArgs.currentShapeSettings.strokeColor) {
+                parent.activeObj.strokeSettings.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
+                parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false });
+            }
             if (this.fhdSelID) {
                 parent.pointColl[this.fhdSelIdx].strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
                 parent.pointColl[this.fhdSelIdx].strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;

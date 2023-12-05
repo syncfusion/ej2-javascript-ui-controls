@@ -98,6 +98,10 @@ $toast-danger-hover-bg-color: rgba($danger-dark) !default;
 $toast-danger-hover-color: rgba($danger-bg-color) !default;
 $toast-danger-hover-box-shadow: rgba($shadow) !default;
 
+$toast-close-icon-hover-bg-color: rgba($grey-white, .18) !default;
+$toast-close-icon-hover-color: rgba($on-primary) !default;
+$toast-icon-hover-border-radius: 50% !default;
+
 // Toast Type Definitions End
 //icon Variable
 $toast-close-icon: '\e7e7' !default;

@@ -184,7 +184,7 @@ export class Video {
             const dialogContent: HTMLElement = this.vidsizeInput(e);
             const selectObj: IImageNotifyArgs = { args: e.args, selfVideo: this, selection: e.selection, selectNode: e.selectNode };
             this.dialogObj.setProperties({
-                height: 'inherit', width: '290px', header: vidSizeHeader, content: dialogContent, position: { X: 'center', Y: 'center' },
+                height: 'inherit', width: '290px', header: vidSizeHeader, content: dialogContent,
                 buttons: [{
                     // eslint-disable-next-line
                     click: (e: MouseEvent) => {
@@ -1087,7 +1087,6 @@ export class Video {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px',
-            position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             isModal: (Browser.isDevice as boolean),
             buttons: [{
                 click: this.insertVideoUrl.bind(selectObj),

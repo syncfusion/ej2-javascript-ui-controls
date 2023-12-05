@@ -2130,6 +2130,22 @@ margin: $grid-group-animator-cell-margin;
       padding: $grid-headercelldiv-padding;
     }
 
+    .e-gridheader .e-sortfilter .e-centeralign.e-headercell[aria-sort="none"],
+    .e-gridheader .e-sortfilter .e-centeralign.e-headercell:not([aria-sort]) {
+      .e-headercelldiv,
+      .e-stackedheadercelldiv {
+        padding-right: $grid-headercelldiv-sort-centeralign-padding-right;
+      }
+    }
+
+    &.e-rtl .e-gridheader .e-sortfilter .e-centeralign.e-headercell[aria-sort="none"],
+    &.e-rtl .e-gridheader .e-sortfilter .e-centeralign.e-headercell:not([aria-sort]) {
+      .e-headercelldiv,
+      .e-stackedheadercelldiv {
+        padding-left: $grid-headercelldiv-sort-centeralign-padding-right;
+      }
+    }
+
     .e-gridheader .e-headercell .e-headercelldiv.e-headerchkcelldiv {
       @if $grid-skin == 'bootstrap5' {
         padding-left: 8px;

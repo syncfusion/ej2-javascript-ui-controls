@@ -2399,8 +2399,10 @@ export function findAnnotation(node: NodeModel | ConnectorModel, id: string): Sh
  */
 export function findPort(node: NodeModel | ConnectorModel, id: string): PointPortModel {
     let port: PointPortModel;
-    const portId: string[] = id.split('_');
-    id = portId[portId.length - 1];
+    if(id){
+        const portId: string[] = id.split('_');
+        id = portId[portId.length - 1];
+    }
     if (node as NodeModel) {
         node = node as NodeModel;
         for (let i: number = 0; i < node.ports.length; i++) {

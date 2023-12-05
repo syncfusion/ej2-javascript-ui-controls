@@ -2262,8 +2262,10 @@ export class DatePicker extends Calendar implements IInput {
             case 'locale':
                 this.globalize = new Internationalization(this.locale);
                 this.l10n.setLocale(this.locale);
-                this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
-                Input.setPlaceholder(this.placeholder, this.inputElement);
+                if(this.datepickerOptions && this.datepickerOptions.placeholder == null) {
+                    this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
+                    Input.setPlaceholder(this.placeholder, this.inputElement);
+                }
                 this.updateInput();
                 if (this.enableMask) {
                     this.notify('createMask', {

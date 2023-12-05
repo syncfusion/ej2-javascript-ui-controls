@@ -1861,15 +1861,15 @@
     font-size: 18px;
   }
 
-  .e-pv-annotation-color-container .e-btn,
-  .e-pv-annotation-opacity-container .e-btn,
-  .e-pv-annotation-stroke-container .e-btn,
-  .e-pv-custom-annotation-thickness-container .e-btn,
-  .e-pv-custom-annotation-opacity-container .e-btn,
-  .e-pv-annotation-thickness-container .e-btn,
-  .e-pv-annotation-textcolor-container .e-btn,
-  .e-pv-annotation-textalign-container .e-btn,
-  .e-pv-annotation-textprop-container .e-btn {
+  .e-pv-annotation-color-container.e-icon-btn,
+  .e-pv-annotation-opacity-container.e-icon-btn,
+  .e-pv-annotation-stroke-container.e-icon-btn,
+  .e-pv-custom-annotation-thickness-container.e-icon-btn,
+  .e-pv-custom-annotation-opacity-container.e-icon-btn,
+  .e-pv-annotation-thickness-container.e-icon-btn,
+  .e-pv-annotation-textcolor-container.e-icon-btn,
+  .e-pv-annotation-textalign-container.e-icon-btn,
+  .e-pv-annotation-textprop-container.e-icon-btn {
     height: $pv-annotation-drop-down-height;
     width: $pv-annotation-drop-down-width;
   }

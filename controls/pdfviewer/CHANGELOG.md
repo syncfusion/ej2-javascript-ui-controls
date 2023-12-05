@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 23.2.6 (2023-11-28)
+## 23.2.7 (2023-12-05)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I526059` - Now, the export Annotations is working in the presence of subject property in `annotationSettings`.
+- `#I525692` - Now, the stretch fit mode has been appropriately implemented for the signature image content within the signature and initial field. 
+
+## 23.2.6 (2023-11-29)
 
 ### PDF Viewer
 
@@ -13,6 +22,7 @@
 - `#I510393` - Now, the script error has been resolved while loading a provided PDF document.
 - `#I521831` - Now, The script error is resolved when the read only property of the form fields were updated as true.
 - `#I517119` - now, the Search does not highlights the wrong area after zoom in standalone PDF Viewer.
+- `#I521824` - now, when the read-only radio button is clicked, the undo button does not get automatically enabled.
 
 ## 23.2.5 (2023-11-23)
 

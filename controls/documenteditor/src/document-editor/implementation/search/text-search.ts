@@ -4,7 +4,7 @@ import { FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import {
     LineWidget, ElementBox, TextElementBox, ParagraphWidget,
-    BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget, HeaderFooters, ShapeElementBox, TextFrame
+    BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget, HeaderFooters, ShapeElementBox, TextFrame, FootnoteElementBox
 } from '../viewer/page';
 import { ElementInfo, TextInLineInfo } from '../editor/editor-helper';
 import { TextSearchResult } from './text-search-result';
@@ -262,6 +262,25 @@ export class TextSearch {
                     if (!isNullOrUndefined(headerFooter) && !isNullOrUndefined(headerFooter.page)) {
                         this.findInlineText(headerFooter, pattern, findOption, isFirstMatch, results, selectionEnd);
                     }
+                }
+            }
+        }
+        // (EJ2-854069) - Added below code to add the search results of the endnote and footnote in the results.
+        let endNoteCollection: FootnoteElementBox[] = this.documentHelper.endnoteCollection;
+        for(let i: number = 0; i < endNoteCollection.length; i++ ) {
+            let endNote: FootnoteElementBox = endNoteCollection[parseInt(i.toString(), 10)];
+            if (endNote) {
+                if (!isNullOrUndefined(endNote) && !isNullOrUndefined(endNote.bodyWidget.page)) {
+                    this.findInlineText(endNote.bodyWidget, pattern, findOption, isFirstMatch, results, selectionEnd);
+                }
+            }
+        }
+        let footNoteCollection: FootnoteElementBox[] = this.documentHelper.footnoteCollection;
+        for(let i: number = 0; i < footNoteCollection.length; i++ ) {
+            let footNote: FootnoteElementBox = footNoteCollection[parseInt(i.toString(), 10)];
+            if (footNote) {
+                if (!isNullOrUndefined(footNote) && !isNullOrUndefined(footNote.bodyWidget.page)) {
+                    this.findInlineText(footNote.bodyWidget, pattern, findOption, isFirstMatch, results, selectionEnd);
                 }
             }
         }

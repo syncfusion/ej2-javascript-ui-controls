@@ -344,7 +344,7 @@ export class ShapeAnnotation {
             const modifiedDateLine: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.lineSettings.author ? this.pdfViewer.lineSettings.author : 'Guest';
-            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.lineSettings.subject ? this.pdfViewer.lineSettings.subject : 'Line';
+            subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.lineSettings.subject ? this.pdfViewer.lineSettings.subject : 'Line';
             this.pdfViewer.drawingObject = {
                 // eslint-disable-next-line max-len
                 shapeAnnotationType: this.setShapeType('Line'), fillColor: this.lineFillColor, notes: '', strokeColor: this.lineStrokeColor, opacity: this.lineOpacity,
@@ -360,7 +360,7 @@ export class ShapeAnnotation {
             // eslint-disable-next-line max-len
             const modifiedDateArrow: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.arrowSettings.author ? this.pdfViewer.arrowSettings.author : 'Guest';
-            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.arrowSettings.subject ? this.pdfViewer.arrowSettings.subject : 'Arrow';
+            subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.arrowSettings.subject ? this.pdfViewer.arrowSettings.subject : 'Arrow';
             this.pdfViewer.drawingObject = {
                 shapeAnnotationType: this.setShapeType('Arrow'), opacity: this.arrowOpacity,
                 // eslint-disable-next-line max-len
@@ -380,7 +380,7 @@ export class ShapeAnnotation {
             const modifiedDateRect: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.rectangleSettings.author ? this.pdfViewer.rectangleSettings.author : 'Guest';
-            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.rectangleSettings.subject ? this.pdfViewer.rectangleSettings.subject : 'Rectangle';
+            subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.rectangleSettings.subject ? this.pdfViewer.rectangleSettings.subject : 'Rectangle';
             this.pdfViewer.drawingObject = {
                 shapeAnnotationType: this.setShapeType('Rectangle'), strokeColor: this.rectangleStrokeColor,
                 fillColor: this.rectangleFillColor, opacity: this.rectangleOpacity, notes: '',
@@ -395,7 +395,7 @@ export class ShapeAnnotation {
             const modifiedDateCir: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.circleSettings.author ? this.pdfViewer.circleSettings.author : 'Guest';
-            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.circleSettings.subject ? this.pdfViewer.circleSettings.subject : 'Circle';
+            subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.circleSettings.subject ? this.pdfViewer.circleSettings.subject : 'Circle';
             this.pdfViewer.drawingObject = {
                 shapeAnnotationType: this.setShapeType('Circle'), strokeColor: this.circleStrokeColor,
                 fillColor: this.circleFillColor, opacity: this.circleOpacity, notes: '',
@@ -410,7 +410,7 @@ export class ShapeAnnotation {
             const modifiedDatePolygon: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
             // eslint-disable-next-line max-len
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.polygonSettings.author ? this.pdfViewer.polygonSettings.author : 'Guest';
-            subject = (this.pdfViewer.annotationSettings.subject !== "") ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.polygonSettings.subject ? this.pdfViewer.polygonSettings.subject : 'Polygon';
+            subject = (this.pdfViewer.annotationSettings.subject !== "" && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.polygonSettings.subject ? this.pdfViewer.polygonSettings.subject : 'Polygon';
             this.pdfViewer.drawingObject = {
                 strokeColor: this.polygonStrokeColor, fillColor: this.polygonFillColor,
                 opacity: this.polygonOpacity, thickness: this.polygonThickness, borderDashArray: '0',

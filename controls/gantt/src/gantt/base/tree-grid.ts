@@ -680,7 +680,7 @@ export class GanttTreeGrid {
             else {
                 column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('duration');
             }
-            column.valueAccessor = column.valueAccessor ? column.valueAccessor : !isNullOrUndefined(column.edit) ? null :
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : !isNullOrUndefined(column.edit) && !isNullOrUndefined(column.edit.read) ? null :
                 this.durationValueAccessor.bind(this);
             column.editType = column.editType ? column.editType : 'stringedit';
             column.type = column.type ? column.type : 'string';
