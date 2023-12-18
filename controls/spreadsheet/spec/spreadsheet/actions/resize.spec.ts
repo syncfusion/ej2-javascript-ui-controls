@@ -908,4 +908,22 @@ describe('Resize ->', () => {
             });
         });
     });
+    describe('EJ2-859445 ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.setRowsHeight(20, ['5:10']);
+                }
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Selection issue occurs while apply the cosmic Sans font family with the custom height applied rows', (done: Function) => {
+            helper.getInstance().cellFormat({ fontFamily: 'Comic Sans MS' }, 'A5:A10');
+            expect(helper.invoke('getCell', [9, 0]).style.lineHeight).not.toBe('');
+            done();
+        });
+    });
 });

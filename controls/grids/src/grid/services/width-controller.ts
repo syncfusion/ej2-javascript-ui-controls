@@ -130,7 +130,7 @@ export class ColumnWidthService {
         } else if (contentCol && clear) {
             contentCol.style.width = '';
         }
-        if (!this.parent.enableColumnVirtualization) {
+        if (!this.parent.enableColumnVirtualization && this.parent.isEdit) {
             const edit: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
             const editTableCol: HTMLTableColElement[] = [];
             for (let i: number = 0; i < edit.length; i++) {

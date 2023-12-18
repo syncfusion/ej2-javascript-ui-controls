@@ -5,9 +5,9 @@
 /* eslint-disable valid-jsdoc */
 import { ChartLocation, getUnicodeText, textTrim, withInBounds } from '../../common/utils/helper';
 import { ILegendRegions } from '../../common/model/interface';
-import { BaseLegend, LegendOptions, Location } from '../../common/legend/legend';
-import { ChartDrawType, ChartSeriesType, LegendMode, LegendPosition } from '../../chart/utils/enum';
-import { Alignment, LegendTitlePosition } from '../../common/utils/enum';
+import { BaseLegend, LegendOptions } from '../../common/legend/legend';
+import { ChartDrawType, ChartSeriesType, LegendMode } from '../../chart/utils/enum';
+import { Alignment, LegendPosition, LegendTitlePosition } from '../../common/utils/enum';
 import { Size, measureText, Rect } from '@syncfusion/ej2-svg-base';
 import { Series } from '../../chart/series/chart-series';
 import { legendClick, legendRender, regSub, regSup } from '../../common/model/constants';
@@ -17,7 +17,7 @@ import { StockChart, Chart } from '../../stock-chart/index';
 import { Axis } from '../../chart/axis/axis';
 import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
 import { Theme } from '../../common/model/theme';
-import { ContainerPadding } from '../../common/model/base';
+import { ContainerPadding, Location } from '../../common/model/base';
 import { ContainerPaddingModel } from '../../common/model/base-model';
 import { StockChartLegendSettingsModel } from './legend-model';
 import { StockChartFontModel, StockChartBorderModel, StockMarginModel } from '../model/base-model';

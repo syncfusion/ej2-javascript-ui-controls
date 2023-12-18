@@ -184,7 +184,7 @@ export class CommentReviewPane {
         const commentHeader: HTMLElement = createElement('div', { innerHTML: localValue.getConstant('Comments') });
         const changesHeader: HTMLElement = createElement('div', { innerHTML: localValue.getConstant('Changes') });
         this.parentPaneElement = createElement('div', { styles: 'height:100%;overflow:auto;display:none', className: 'e-de-review-pane' });
-        this.element = createElement('div', { className: 'e-de-property-tab', id:this.owner.element.id + 'Review Tab' });
+        this.element = createElement('div', { className: 'e-de-property-tab', id:this.owner.element.id + 'Review_Tab' });
         const items: TabItemModel[] = [{ header: { text: commentHeader }, content: this.reviewPane }, { header: { text: changesHeader } }] as TabItemModel[];
         this.reviewTab = new Tab({ items: items, selected: this.onTabSelection, animation: { previous: { effect: 'None' }, next: { effect: 'None' } } });
         this.reviewTab.appendTo(this.element);
@@ -460,6 +460,7 @@ export class CommentReviewPane {
     }
     public clear(): void {
         this.previousSelectedCommentInt = undefined;
+        this.isNewComment = false;
         this.isUserClosed = false;
         this.isNewComment = false;
         this.commentPane.clear();
@@ -1046,9 +1047,11 @@ export class CommentView {
 
     private updateReplyTextAreaHeight(): void {
         setTimeout(() => {
+            if (!isNullOrUndefined(this.replyViewTextBox)) {
             this.replyViewTextBox.style.height = 'auto';
             const scrollHeight: number = this.replyViewTextBox.scrollHeight;
             this.replyViewTextBox.style.height = scrollHeight + 'px';
+            }
         });
     }
     private enableDisableReplyPostButton(): void {
@@ -1087,7 +1090,7 @@ export class CommentView {
         this.cancelReply();
         this.updateReplyTextAreaHeight();
         this.owner.editorModule.replyComment(this.comment, replyText);
-        if (!this.owner.editor.isSkipOperationsBuild) {
+        if (!this.owner.editor.isSkipOperationsBuild && !this.owner.editor.isRemoteAction) {
             this.owner.fireContentChange();
         }
         this.owner.editor.isSkipOperationsBuild = false;
@@ -1218,7 +1221,9 @@ export class CommentView {
         if (!isNullOrUndefined(this.replyViewContainer)) {
             this.replyViewContainer.style.display = '';
         }
-        this.owner.fireContentChange();
+        if (!this.owner.editor.isSkipOperationsBuild && !this.owner.editor.isRemoteAction) {
+            this.owner.fireContentChange();
+        }
     }
 
     public showCommentView(): void {
@@ -1236,7 +1241,10 @@ export class CommentView {
             if (this.commentPane && this.commentPane.parentPane) {
                 this.commentPane.parentPane.isNewComment = false;
             }
+            let documentEditor: DocumentEditor = this.owner;
+            documentEditor.editor.isSkipOperationsBuild = true;
             this.commentPane.parentPane.discardComment(this.comment);
+            documentEditor.editor.isSkipOperationsBuild = false;
         }
     }
 

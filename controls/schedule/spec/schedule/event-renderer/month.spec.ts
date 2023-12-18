@@ -523,6 +523,139 @@ describe('Month Event Render Module', () => {
         });
     });
 
+    describe('Schedule Month view with maxEventsPerRow property when the row have enough height', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const moreIndicatorData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Event 1',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 2,
+                Subject: 'Event 2',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 3,
+                Subject: 'Event 3',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 4,
+                Subject: 'Event 4',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            }];
+            const model: ScheduleModel = {
+                currentView: 'Month',
+                selectedDate: new Date(2023, 10, 6),
+                views: [{ option: 'Month', maxEventsPerRow: 2 }]
+            };
+            schObj = util.createSchedule(model, moreIndicatorData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('elements in DOM based on maxEventsPerRow', () => {
+            const appointmentList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(appointmentList.length).toEqual(2);
+            (schObj.element.querySelectorAll('.e-more-indicator')[0] as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            const moreEvent: HTMLElement = (schObj.element.querySelector('.e-more-popup-wrapper').querySelector('.e-more-appointment-wrapper'));
+            const moreAppointmentList: Element[] = [].slice.call(moreEvent.querySelectorAll('.e-appointment'));
+            expect(moreAppointmentList.length).toEqual(4);
+            (schObj.element.querySelector('.e-close-icon') as HTMLElement).click();
+        });
+
+        it('elements in DOM with rowAutoHeight enabled', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(4);
+                done();
+            };
+            schObj.rowAutoHeight = true;
+            schObj.dataBind();
+
+        });
+    });
+
+    describe('Schedule Month view with maxEventsPerRow property when the row does not have enough height', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const moreIndicatorData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Event 1',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 2,
+                Subject: 'Event 2',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 3,
+                Subject: 'Event 3',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 4,
+                Subject: 'Event 4',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            }];
+            const model: ScheduleModel = {
+                currentView: 'Month',
+                selectedDate: new Date(2023, 10, 6),
+                views: [{ option: 'Month', maxEventsPerRow: 3 }]
+            };
+            schObj = util.createSchedule(model, moreIndicatorData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('elements in DOM based on maxEventsPerRow', () => {
+            const appointmentList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(appointmentList.length).toEqual(3);
+            (schObj.element.querySelectorAll('.e-more-indicator')[0] as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            const moreEvent: HTMLElement = (schObj.element.querySelector('.e-more-popup-wrapper').querySelector('.e-more-appointment-wrapper'));
+            const moreAppointmentList: Element[] = [].slice.call(moreEvent.querySelectorAll('.e-appointment'));
+            expect(moreAppointmentList.length).toEqual(4);
+            (schObj.element.querySelector('.e-close-icon') as HTMLElement).click();
+            const heightValue: string = (schObj.element.querySelector('.e-content-table tr td') as HTMLElement).style.height;
+            expect(heightValue).toEqual('110px');
+        });
+
+        it('elements in DOM with rowAutoHeight enabled', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(4);
+                const heightValue: string = (schObj.element.querySelector('.e-content-table tr td') as HTMLElement).style.height;
+                expect(heightValue).toEqual('100.6px');
+                done();
+            };
+            schObj.rowAutoHeight = true;
+            schObj.dataBind();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

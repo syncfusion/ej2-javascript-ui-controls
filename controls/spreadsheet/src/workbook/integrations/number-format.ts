@@ -1,4 +1,4 @@
-import { getRangeIndexes, NumberFormatType, updateCell, applyCellFormat, CellFormatArgs } from '../common/index';
+import { getRangeIndexes, NumberFormatType, updateCell, applyCellFormat, CellFormatArgs, currencyFormat } from '../common/index';
 import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook, getColorCode, getCustomColors } from '../base/index';
 import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined, IntlBase } from '@syncfusion/ej2-base';
 import { cldrData } from '@syncfusion/ej2-base';
@@ -16,6 +16,12 @@ export class WorkbookNumberFormat {
     private groupSep: string;
     constructor(parent: Workbook) {
         this.parent = parent;
+        if (this.localeObj) {
+            currencyFormat.currency = ['$#,##0.00', '$#,##0', '$#,##0_);[Red]($#,##0)', '$#,##0.00_);($#,##0.00)', '$#,##0_);($#,##0)',
+                '$#,##0.00_);[Red]($#,##0.00)'];
+            currencyFormat.accounting = ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)',
+                '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)'];
+        }
         this.localeObj = getNumericObject(this.parent.locale) as { decimal: string, group: string, timeSeparator: string,
             dateSeparator: string };
         this.decimalSep = this.localeObj.decimal;
@@ -28,6 +34,55 @@ export class WorkbookNumberFormat {
         } else {
             this.localeObj.am = 'AM';
             this.localeObj.pm = 'PM';
+        }
+        const option: { currency?: string } = {};
+        const intl: Internationalization = new Internationalization();
+        intl.getNumberFormat(option);
+        const curSym: string = getNumberDependable(this.parent.locale, option.currency);
+        if (curSym !== '$') {
+            const formatStr: string = intl.getNumberPattern({ currency: '$', useGrouping: true, format: 'c0' }, true);
+            if (formatStr && formatStr.endsWith('$')) {
+                const curSpacing: string = formatStr[formatStr.indexOf('$') - 1].trim().length ? '' : ' ';
+                currencyFormat.currency.forEach((format: string, index: number) => {
+                    if (format.includes('$#,##0')) {
+                        let decimalFormat: string = '';
+                        const decimalPart: string = format.split('$#,##0.')[1];
+                        if (decimalPart) {
+                            let decimalCount: number = 0;
+                            while (decimalPart[decimalCount as number] == '0') {
+                                decimalFormat += '0';
+                                decimalCount++;
+                            }
+                        }
+                        if (decimalFormat) {
+                            decimalFormat = `.${decimalFormat}`;
+                        }
+                        currencyFormat.currency[index as number] = format.split(
+                            `$#,##0${decimalFormat}`).join(`#,##0${decimalFormat}${curSpacing}$`);
+                    }
+                });
+                currencyFormat.accounting.forEach((format: string, index: number) => {
+                    if (format.slice(0, format.indexOf('#')).includes('$')) {
+                        const formatArr: string[] = format.split(';');
+                        let replaceIdx: number;
+                        formatArr.forEach((formatStr: string, index: number) => {
+                            if (formatStr.includes('$')) {
+                                formatStr = formatStr.replace('$', '');
+                                if (formatStr.includes('0)')) {
+                                    replaceIdx = formatStr.indexOf('0)') + 2;
+                                } else {
+                                    replaceIdx = formatStr.lastIndexOf(
+                                        formatStr.includes('0') ? '0' : (formatStr.includes('?') ? '?' : (formatStr.includes('"-"') ? '"' : '#'))) + 1;
+                                }
+                                if (replaceIdx > 0) {
+                                    formatArr[index as number] = formatStr.slice(0, replaceIdx) + curSpacing + '$' + formatStr.slice(replaceIdx);
+                                }
+                            }
+                        });
+                        currencyFormat.accounting[index as number] = formatArr.join(';');
+                    }
+                });
+            }
         }
         this.addEventListener();
     }
@@ -292,6 +347,7 @@ export class WorkbookNumberFormat {
             }
             return '';
         };
+        custFormat = custFormat.split('_(').join(' ').split('_)').join(' ');
         if (cell.format.indexOf('h') > -1) {
             custFormat = custFormat.split('h').join('H');
             type = 'time';
@@ -512,7 +568,7 @@ export class WorkbookNumberFormat {
             }
             if (customFormat.indexOf('"') > -1 || customFormat.indexOf('\\') > -1) {
                 customFormat = this.processText(customFormat);
-                isZeroFormat = cellValue === 0 && !customFormat.includes('#') && !customFormat.includes('0') && !customFormat.includes('?');
+                isZeroFormat = cellValue === 0 && !customFormat.includes('#') && !customFormat.includes('0');
                 if (isZeroFormat) { customFormat += '#'; }
             }
             const separatorCount: number = this.getSeparatorCount(cell);
@@ -598,7 +654,9 @@ export class WorkbookNumberFormat {
             case 'General':
                 options = { args: args, currencySymbol: currencySymbol, fResult: fResult, intl: intl, isRightAlign: isRightAlign,
                     curCode: currencyCode, cell: cell, rowIdx: Number(args.rowIndex), colIdx: Number(args.colIndex), sheet: sheet };
-                this.autoDetectGeneralFormat(options);
+                if (!(options.fResult.toString().startsWith('\n') || options.fResult.toString().endsWith('\n '))) {
+                    this.autoDetectGeneralFormat(options);
+                }
                 fResult = options.fResult;
                 isRightAlign = options.isRightAlign;
                 break;
@@ -707,10 +765,7 @@ export class WorkbookNumberFormat {
                     prevVal = null;
                     if (options.args.cell.formula.includes('RANDBETWEEN')) {
                         options.fResult = cellVal = decIndex < 7 ? cellVal : (parseFloat(cellVal)).toFixed(0);
-                    } else {
-                        options.fResult = cellVal = decIndex < 11 ? Number(parseFloat(cellVal).toFixed(11 - decIndex)).toString() :
-                            parseFloat(cellVal).toFixed(0);
-                    }
+                    } 
                 }
                 const cellValArr: string[] = cellVal.split('.');
                 if (cellValArr[0].length > 11) {
@@ -720,8 +775,9 @@ export class WorkbookNumberFormat {
                         options.fResult = this.scientificFormat(options.args, digitLen > 5 ? 5 : digitLen);
                     }
                 } else if (cellValArr[1]) {
-                    if (cellValArr[1].length > 9) {
-                        options.fResult = options.intl.formatNumber(Number(cellVal), { format: '0.000000000' });
+                    if (cellVal.length > 11) {
+                        let rightDigitLen: number = 10 - (cellValArr[0].length - (Math.sign(Number(cellVal)) < 0 ? 1 : 0)); //Subtract with 10 to neglect the decimal point.
+                        options.fResult = options.intl.formatNumber(Number(cellVal), { format: rightDigitLen > 0 ? `0.${'0'.repeat(rightDigitLen)}` : '0' });
                         if (options.fResult) {
                             options.fResult = Number(options.fResult).toString();
                         }
@@ -928,7 +984,16 @@ export class WorkbookNumberFormat {
             args.format = this.getFormatForOtherCurrency(args.format);
             args.formatApplied = true;
             if (cellVal === 0) {
-                return (args.format.includes(` ${currencySymbol}`) ? ' ' : '') + currencySymbol + '- ';
+                args.format = this.processText(args.format.split('*').join(' ').split('?').join(' '));
+                if (!args.format.includes('#') && !args.format.includes('0')) {
+                    args.format += '#';
+                    let formattedText: string = intl.formatNumber(cellVal, { format: args.format, currency: currencyCode });
+                    if (formattedText.includes('0')) {
+                        formattedText = formattedText.replace('0', '');
+                    }
+                    return formattedText;
+                }
+                return intl.formatNumber(cellVal, { format: args.format, currency: currencyCode });
             } else {
                 return intl.formatNumber(cellVal, { format: args.format, currency: currencyCode });
             }
@@ -1269,6 +1334,12 @@ export class WorkbookNumberFormat {
             }
             return { val: 'Invalid', format: '' };
         }
+        if (this.parent.isEdit && cellFormat && (cellFormat.includes('dd-MM-yy') || cellFormat.includes('dd/MM/yy')) && (val && (val.indexOf('/') > -1 ||
+            val.indexOf('-') > 0)) && (!this.parent.locale || this.parent.locale.startsWith('en'))) {
+            let dateValColl: string[] = val.split(separator);
+            [dateValColl[0], dateValColl[1]] = [dateValColl[1], dateValColl[0]];
+            val = dateValColl.join(separator);
+        }
         const dateArr: string[] = val.split(separator);
         let format: string = ''; const formatArr: string[] = [];
         const updateFormat: Function = (): void => {
@@ -1488,10 +1559,10 @@ export function getFormatFromType(type: NumberFormatType): string {
         code = '0.00';
         break;
     case 'Currency':
-        code = '$#,##0.00';
+        code = currencyFormat.currency[0];
         break;
     case 'Accounting':
-        code = '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)';
+        code = currencyFormat.accounting[0];
         break;
     case 'ShortDate':
         code = 'mm-dd-yyyy';
@@ -1521,9 +1592,10 @@ export function getFormatFromType(type: NumberFormatType): string {
 /**
  * @hidden
  * @param {string} format -  Specidfies the format.
+ * @param {boolean} isRibbonUpdate - Specifies where we are updating the type in the number format button.
  * @returns {string} - To get type from format.
  */
-export function getTypeFromFormat(format: string): string {
+export function getTypeFromFormat(format: string, isRibbonUpdate?: boolean): string {
     let code: string = 'General';
     switch (format) {
     // case '0.00':
@@ -1544,8 +1616,6 @@ export function getTypeFromFormat(format: string): string {
     case '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)':
     case '_ $ * #,##0.00_ ;_ $ * -#,##0.00_ ;_ $ * "-"??_ ;_ @_ ':
     case '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)':
-    case '_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)':
-    case '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)':
         code = 'Accounting';
         break;
     case 'mm-dd-yyyy':
@@ -1574,17 +1644,27 @@ export function getTypeFromFormat(format: string): string {
         break;
     default:
         if (format) {
-            if (format.includes('?/?')) {
+            if (currencyFormat.currency.indexOf(format) > -1) {
+                code = 'Currency';
+            } else if (currencyFormat.accounting.indexOf(format) > -1 || format === '_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)' ||
+                format === '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)') {
+                code = 'Accounting';
+            } else if (format.includes('?/?')) {
                 code = 'Fraction';
-            } else if (format.indexOf('[$') > -1) {
-                if (format.indexOf('* ') > -1){
+            } else if (format.includes('[$')) {
+                if (format.includes('* ')) {
                     code = 'Accounting';
                 } else {
                     code = 'Currency';
                 }
             }
+            isRibbonUpdate = false;
         }
         break;
+    }
+    if (isRibbonUpdate && ((code === 'Currency' && currencyFormat.currency[0] !== '$#,##0.00') || (code === 'Accounting' &&
+        currencyFormat.accounting[0] !== '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)'))) {
+        code = 'General';
     }
     return code;
 }

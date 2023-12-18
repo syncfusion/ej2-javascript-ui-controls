@@ -810,6 +810,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
 
     private raiseChangeEvent(event?: Event): void {
+        this.inputValue = (isNullOrUndefined(this.inputValue) || isNaN(this.inputValue)) ? null : this.inputValue;
         if (this.prevValue !== this.value || this.prevValue !== this.inputValue) {
             const eventArgs: Object = {};
             this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteracted: this.isInteract,

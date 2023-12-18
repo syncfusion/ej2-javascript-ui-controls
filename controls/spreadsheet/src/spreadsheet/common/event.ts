@@ -242,7 +242,7 @@ export const forRefSelRender: string = 'forRefSelRender';
 /** @hidden */
 export const insertImage: string = 'insertImage';
 /** @hidden */
-export const refreshImgElem: string = 'refreshImgElem';
+export const refreshOverlayElem: string = 'refreshOverlayElem';
 /** @hidden */
 export const refreshImgCellObj: string = 'refreshImgCellObj';
 /** @hidden */

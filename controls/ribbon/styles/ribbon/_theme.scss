@@ -85,6 +85,15 @@
       .e-ribbon-help-template {
         border-color: $ribbon-border-color;
       }
+
+      .e-ribbon-template {
+
+        &:focus-visible {
+          background: $ribbon-items-focus-background-color;
+          color: $ribbon-items-focus-color;
+          border-color: $ribbon-items-focus-border-color;
+        }
+      }
     }
 
     .e-ribbon-tab.e-focused .e-tab-header {
@@ -356,14 +365,19 @@
   }
 
   .e-ribbon-group-overflow-ddb {
-    &.e-dropdown-popup {
-      background: $ribbon-header-bg-color;
-      border-color: $ribbon-border-color;
-    }
+    .e-ribbon-item {
+      .e-ribbon-combobox-label,
+      .e-ribbon-colorpicker-label {
+        color: $ribbon-text-color;
+      }
 
-    .e-ribbon-overflow-target {
-      .e-ribbon-of-tab {
-        box-shadow: $ribbon-overflow-box-shadow;
+      .e-ribbon-template {
+
+        &:focus-visible {
+          background: $ribbon-items-focus-background-color;
+          color: $ribbon-items-focus-color;
+          border-color: $ribbon-items-focus-border-color;
+        }
       }
     }
   }
@@ -390,17 +404,24 @@
     }
   }
 
-  .e-bigger .e-ribbon-group-overflow-ddb {
+  .e-ribbon-file-menu,
+  .e-ribbon-vertical-center,
+  .e-ribbon-group-overflow-ddb,
+  .e-ribbon-dropdown-group-button {
     &.e-dropdown-popup {
-      background: $ribbon-header-bg-color;
-      border-color: $ribbon-border-color;
+      background: $ribbon-popup-common-bg-color;
+      box-shadow: $ribbon-popup-common-box-shadow;
+      border-color: $ribbon-popup-common-border-color;
+
+      .e-btn:not(.e-ribbon-file-menu),
+      .e-btn-group .e-btn.e-ribbon-group-button,
+      .e-ribbon-group-of-btn {
+        background: transparent;
+      }
     }
   }
 
   .e-dropdown-popup.e-ribbon-dropdown-group-button {
-    background: $ribbon-group-button-dropdown-popup-background;
-    box-shadow: $ribbon-group-button-dropdown-popup-box-shadow;
-    border-color: $ribbon-group-button-dropdown-popup-border-color;
     .e-btn-icon {
       color: $ribbon-items-icon-color;
     }

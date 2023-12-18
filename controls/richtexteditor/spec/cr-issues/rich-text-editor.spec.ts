@@ -1630,18 +1630,14 @@ describe('RTE CR issues', () => {
 
     describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 1' , () => {
         let rteObject : RichTextEditor ;
-        let defaultRTE : HTMLElement = createElement('div',{id :'defaultRTE'});
         beforeEach( () => {
-            document.body.appendChild(defaultRTE);
-            rteObject = new RichTextEditor({ 
+            rteObject = renderRTE({ 
                 toolbarSettings : { items: ['Bold', 'Italic', 'Underline', 'StrikeThrough', 'FontSize','SuperScript', 'SubScript', 'FontColor']
                 } ,value:'Testing'
             });
-            rteObject.appendTo('#defaultRTE');
         })
         afterEach( () => {
-            destroy( rteObject );
-            detach( defaultRTE );
+            destroy(rteObject);
         })
         it('should add span element with font size to around the text node', (done: Function) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('.e-content');
@@ -1685,19 +1681,15 @@ describe('RTE CR issues', () => {
 
     describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 2' , () => {
         let rteObject : RichTextEditor ;
-        let defaultRTE : HTMLElement = createElement('div',{id :'defaultRTE'});
         beforeEach( () => {
-            document.body.appendChild(defaultRTE);
-            rteObject = new RichTextEditor({ 
+            rteObject = renderRTE({ 
                 toolbarSettings : { items: ['Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
                 'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
                 } ,value:'Testing'
             });
-            rteObject.appendTo('#defaultRTE');
         })
         afterEach( () => {
             destroy( rteObject );
-            detach( defaultRTE );
         })
         it('should add span element with font size to around the text node', (done : Function) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('.e-content');
@@ -1739,20 +1731,16 @@ describe('RTE CR issues', () => {
     
     describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 3 Table Element' , () => {
         let rteObject : RichTextEditor ;
-        let defaultRTE: HTMLElement = createElement( 'div', { id: 'defaultRTE' } );
         let innerHTML: string = '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 33.3333%;" class=""><span style="text-decoration: underline;"><span style="text-decoration: line-through;">Testing</span></span></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table>';
         beforeEach( () => {
-            document.body.appendChild(defaultRTE);
-            rteObject = new RichTextEditor({ 
+            rteObject = renderRTE({ 
                 toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
                 'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
                 } ,value: innerHTML
             });
-            rteObject.appendTo('#defaultRTE');
         })
         afterEach( () => {
             destroy( rteObject );
-            detach( defaultRTE );
         })
         it('should add span element with font size to around the span node', (done : Function) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('span[style="text-decoration: underline;"],span[style="text-decoration: line-through;"]');
@@ -1771,20 +1759,16 @@ describe('RTE CR issues', () => {
     
     describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 4 Link Element' , () => {
         let rteObject : RichTextEditor ;
-        let defaultRTE: HTMLElement = createElement( 'div', { id: 'defaultRTE' } );
         let innerHTML: string = '<p><span><a classname="e-rte-anchor" href="https://syncfusion.atlassian.net/browse/EJ2-65567" title="https://syncfusion.atlassian.net/browse/EJ2-65567" target="_blank"><span style="text-decoration: underline;">https://syncfusion.atlassian.net/browse/EJ2-65567</span> </a></span><br></p>';
         beforeEach( () => {
-            document.body.appendChild(defaultRTE);
-            rteObject = new RichTextEditor({ 
+            rteObject = renderRTE({ 
                 toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
                 'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
                 } ,value: innerHTML
             });
-            rteObject.appendTo('#defaultRTE');
         })
         afterEach( () => {
             destroy( rteObject );
-            detach( defaultRTE );
         })
         it( 'should add span element with font size to around the span node', ( done: Function ) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('a');
@@ -1803,20 +1787,16 @@ describe('RTE CR issues', () => {
     
     describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 5 Code Block' , () => {
         let rteObject : RichTextEditor ;
-        let defaultRTE: HTMLElement = createElement( 'div', { id: 'defaultRTE' } );
         let innerHTML: string = '<pre><span style="text-decoration: line-through;"><span style="text-decoration: underline;">Testing﻿﻿</span></span><br></pre>';
         beforeEach( () => {
-            document.body.appendChild(defaultRTE);
-            rteObject = new RichTextEditor({ 
+            rteObject = renderRTE({ 
                 toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
                 'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
                 } ,value: innerHTML
             });
-            rteObject.appendTo('#defaultRTE');
         })
         afterEach( () => {
             destroy( rteObject );
-            detach( defaultRTE );
         })
         it('should add span element with font size to around the span node', (done : Function) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('pre');
@@ -1835,20 +1815,16 @@ describe('RTE CR issues', () => {
 
     describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 6 Heading' , () => {
         let rteObject : RichTextEditor ;
-        let defaultRTE: HTMLElement = createElement( 'div', { id: 'defaultRTE' } );
         let innerHTML: string = '<h1><span style="text-decoration: line-through;"><strong>Testing 1</strong></span></h1><h2><span style="text-decoration: underline;"><strong>Testing 2</strong></span></h2><h3><span style="text-decoration: line-through;"><em><span style="text-decoration: underline;">Testing 3</span></em></span></h3><h4><strong><em><span style="text-decoration: underline;">Testing 4</span></em></strong></h4>';
         beforeAll( () => {
-            document.body.appendChild(defaultRTE);
-            rteObject = new RichTextEditor({ 
+            rteObject = renderRTE({ 
                 toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
                 'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
                 } ,value: innerHTML
             });
-            rteObject.appendTo('#defaultRTE');
         })
         afterAll( () => {
             destroy( rteObject );
-            detach( defaultRTE );
         })
         it('should wrap font size span element immediate to h1 node', (done : Function) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('h1');
@@ -1907,20 +1883,16 @@ describe('RTE CR issues', () => {
 
     describe(' EJ2-65567 - Underline and Strikethrough toolbar styles doesnt work properly CASE 7 Image Element Alt Text' , () => {
         let rteObject : RichTextEditor ;
-        let defaultRTE: HTMLElement = createElement( 'div', { id: 'defaultRTE' } );
         let innerHTML: string = '<p><span class="e-img-caption e-rte-img-caption null e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap null"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize" alt="RTEImage-Feather.png" width="auto" height="auto" style="min-width: 0px; max-width: 1277px; min-height: 0px;"><span class="e-img-inner null" contenteditable="true">Caption</span></span></span> </p>';
         beforeEach( () => {
-            document.body.appendChild(defaultRTE);
-            rteObject = new RichTextEditor({ 
+            rteObject = renderRTE({ 
                 toolbarSettings : { items: [ 'Underline', 'StrikeThrough', '|',
                 'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
                 } ,value: innerHTML
             });
-            rteObject.appendTo('#defaultRTE');
         })
         afterEach( () => {
             destroy( rteObject );
-            detach( defaultRTE );
         })
         it('should wrap span element with font size to around the style span node', (done : Function) => {
             const contentElem : HTMLElement = rteObject.element.querySelector('.e-img-inner');
@@ -1939,20 +1911,16 @@ describe('RTE CR issues', () => {
 
     describe('EJ2-68448 - Alignment issue occurs when copy and pasting contents from word to RTE', () => {
         let rteObject : RichTextEditor ;
-        let defaultRTE : HTMLElement = createElement('div',{id :'defaultRTE'});
         let innerHTML: string = `<html xmlns:v="urn:schemas-microsoft-com:vml"\r\nxmlns:o="urn:schemas-microsoft-com:office:office"\r\nxmlns:w="urn:schemas-microsoft-com:office:word"\r\nxmlns:m="http://schemas.microsoft.com/office/2004/12/omml"\r\nxmlns="http://www.w3.org/TR/REC-html40">\r\n\r\n<head>\r\n<meta http-equiv=Content-Type content="text/html; charset=utf-8">\r\n<meta name=ProgId content=Word.Document>\r\n<meta name=Generator content="Microsoft Word 15">\r\n<meta name=Originator content="Microsoft Word 15">\r\n<link rel=File-List\r\nhref="file:///C:/Users/GOKULR~1/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml">\r\n<link rel=Edit-Time-Data\r\nhref="file:///C:/Users/GOKULR~1/AppData/Local/Temp/msohtmlclip1/01/clip_editdata.mso">\r\n\x3C!--[if !mso]>\r\n<style>\r\nv\\:* {behavior:url(#default#VML);}\r\no\\:* {behavior:url(#default#VML);}\r\nw\\:* {behavior:url(#default#VML);}\r\n.shape {behavior:url(#default#VML);}\r\n</style>\r\n<![endif]-->\x3C!--[if gte mso 9]><xml>\r\n <o:OfficeDocumentSettings>\r\n  <o:AllowPNG/>\r\n </o:OfficeDocumentSettings>\r\n</xml><![endif]-->\r\n<link rel=themeData\r\nhref="file:///C:/Users/GOKULR~1/AppData/Local/Temp/msohtmlclip1/01/clip_themedata.thmx">\r\n<link rel=colorSchemeMapping\r\nhref="file:///C:/Users/GOKULR~1/AppData/Local/Temp/msohtmlclip1/01/clip_colorschememapping.xml">\r\n\x3C!--[if gte mso 9]><xml>\r\n <w:WordDocument>\r\n  <w:View>Normal</w:View>\r\n  <w:Zoom>0</w:Zoom>\r\n  <w:TrackMoves>false</w:TrackMoves>\r\n  <w:TrackFormatting/>\r\n  <w:PunctuationKerning/>\r\n  <w:ValidateAgainstSchemas/>\r\n  <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>\r\n  <w:IgnoreMixedContent>false</w:IgnoreMixedContent>\r\n  <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>\r\n  <w:DoNotPromoteQF/>\r\n  <w:LidThemeOther>EN-US</w:LidThemeOther>\r\n  <w:LidThemeAsian>X-NONE</w:LidThemeAsian>\r\n  <w:LidThemeComplexScript>X-NONE</w:LidThemeComplexScript>\r\n  <w:Compatibility>\r\n   <w:BreakWrappedTables/>\r\n   <w:SnapToGridInCell/>\r\n   <w:WrapTextWithPunct/>\r\n   <w:UseAsianBreakRules/>\r\n   <w:DontGrowAutofit/>\r\n   <w:SplitPgBreakAndParaMark/>\r\n   <w:EnableOpenTypeKerning/>\r\n   <w:DontFlipMirrorIndents/>\r\n   <w:OverrideTableStyleHps/>\r\n  </w:Compatibility>\r\n  <m:mathPr>\r\n   <m:mathFont m:val="Cambria Math"/>\r\n   <m:brkBin m:val="before"/>\r\n   <m:brkBinSub m:val="&#45;-"/>\r\n   <m:smallFrac m:val="off"/>\r\n   <m:dispDef/>\r\n   <m:lMargin m:val="0"/>\r\n   <m:rMargin m:val="0"/>\r\n   <m:defJc m:val="centerGroup"/>\r\n   <m:wrapIndent m:val="1440"/>\r\n   <m:intLim m:val="subSup"/>\r\n   <m:naryLim m:val="undOvr"/>\r\n  </m:mathPr></w:WordDocument>\r\n</xml><![endif]-->\x3C!--[if gte mso 9]><xml>\r\n <w:LatentStyles DefLockedState="false" DefUnhideWhenUsed="false"\r\n  DefSemiHidden="false" DefQFormat="false" DefPriority="99"\r\n  LatentStyleCount="376">\r\n  <w:LsdException Locked="false" Priority="0" QFormat="true" Name="Normal"/>\r\n  <w:LsdException Locked="false" Priority="9" QFormat="true" Name="heading 1"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 2"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 3"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 4"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 5"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 6"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 7"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 8"/>\r\n  <w:LsdException Locked="false" Priority="9" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="heading 9"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 6"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 7"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 8"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index 9"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 1"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 2"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 3"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 4"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 5"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 6"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 7"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 8"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="toc 9"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Normal Indent"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="footnote text"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="annotation text"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="header"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="footer"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="index heading"/>\r\n  <w:LsdException Locked="false" Priority="35" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="caption"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="table of figures"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="envelope address"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="envelope return"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="footnote reference"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="annotation reference"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="line number"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="page number"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="endnote reference"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="endnote text"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="table of authorities"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="macro"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="toa heading"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Bullet"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Number"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Bullet 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Bullet 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Bullet 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Bullet 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Number 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Number 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Number 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Number 5"/>\r\n  <w:LsdException Locked="false" Priority="10" QFormat="true" Name="Title"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Closing"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Signature"/>\r\n  <w:LsdException Locked="false" Priority="1" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="Default Paragraph Font"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text Indent"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Continue"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Continue 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Continue 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Continue 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="List Continue 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Message Header"/>\r\n  <w:LsdException Locked="false" Priority="11" QFormat="true" Name="Subtitle"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Salutation"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Date"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text First Indent"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text First Indent 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Note Heading"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text Indent 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Body Text Indent 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Block Text"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Hyperlink"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="FollowedHyperlink"/>\r\n  <w:LsdException Locked="false" Priority="22" QFormat="true" Name="Strong"/>\r\n  <w:LsdException Locked="false" Priority="20" QFormat="true" Name="Emphasis"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Document Map"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Plain Text"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="E-mail Signature"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Top of Form"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Bottom of Form"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Normal (Web)"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Acronym"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Address"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Cite"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Code"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Definition"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Keyboard"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Preformatted"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Sample"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Typewriter"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="HTML Variable"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Normal Table"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="annotation subject"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="No List"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Outline List 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Outline List 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Outline List 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Simple 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Simple 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Simple 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Classic 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Classic 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Classic 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Classic 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Colorful 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Colorful 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Colorful 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Columns 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Columns 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Columns 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Columns 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Columns 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 6"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 7"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Grid 8"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 4"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 5"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 6"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 7"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table List 8"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table 3D effects 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table 3D effects 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table 3D effects 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Contemporary"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Elegant"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Professional"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Subtle 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Subtle 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Web 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Web 2"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Web 3"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Balloon Text"/>\r\n  <w:LsdException Locked="false" Priority="39" Name="Table Grid"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Table Theme"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" Name="Placeholder Text"/>\r\n  <w:LsdException Locked="false" Priority="1" QFormat="true" Name="No Spacing"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 1"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" Name="Revision"/>\r\n  <w:LsdException Locked="false" Priority="34" QFormat="true"\r\n   Name="List Paragraph"/>\r\n  <w:LsdException Locked="false" Priority="29" QFormat="true" Name="Quote"/>\r\n  <w:LsdException Locked="false" Priority="30" QFormat="true"\r\n   Name="Intense Quote"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="60" Name="Light Shading Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="61" Name="Light List Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="62" Name="Light Grid Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="63" Name="Medium Shading 1 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="64" Name="Medium Shading 2 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="65" Name="Medium List 1 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="66" Name="Medium List 2 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="67" Name="Medium Grid 1 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="68" Name="Medium Grid 2 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="69" Name="Medium Grid 3 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="70" Name="Dark List Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="71" Name="Colorful Shading Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="72" Name="Colorful List Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="73" Name="Colorful Grid Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="19" QFormat="true"\r\n   Name="Subtle Emphasis"/>\r\n  <w:LsdException Locked="false" Priority="21" QFormat="true"\r\n   Name="Intense Emphasis"/>\r\n  <w:LsdException Locked="false" Priority="31" QFormat="true"\r\n   Name="Subtle Reference"/>\r\n  <w:LsdException Locked="false" Priority="32" QFormat="true"\r\n   Name="Intense Reference"/>\r\n  <w:LsdException Locked="false" Priority="33" QFormat="true" Name="Book Title"/>\r\n  <w:LsdException Locked="false" Priority="37" SemiHidden="true"\r\n   UnhideWhenUsed="true" Name="Bibliography"/>\r\n  <w:LsdException Locked="false" Priority="39" SemiHidden="true"\r\n   UnhideWhenUsed="true" QFormat="true" Name="TOC Heading"/>\r\n  <w:LsdException Locked="false" Priority="41" Name="Plain Table 1"/>\r\n  <w:LsdException Locked="false" Priority="42" Name="Plain Table 2"/>\r\n  <w:LsdException Locked="false" Priority="43" Name="Plain Table 3"/>\r\n  <w:LsdException Locked="false" Priority="44" Name="Plain Table 4"/>\r\n  <w:LsdException Locked="false" Priority="45" Name="Plain Table 5"/>\r\n  <w:LsdException Locked="false" Priority="40" Name="Grid Table Light"/>\r\n  <w:LsdException Locked="false" Priority="46" Name="Grid Table 1 Light"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark"/>\r\n  <w:LsdException Locked="false" Priority="51" Name="Grid Table 6 Colorful"/>\r\n  <w:LsdException Locked="false" Priority="52" Name="Grid Table 7 Colorful"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="Grid Table 1 Light Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="Grid Table 6 Colorful Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="Grid Table 7 Colorful Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="Grid Table 1 Light Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="Grid Table 6 Colorful Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="Grid Table 7 Colorful Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="Grid Table 1 Light Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="Grid Table 6 Colorful Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="Grid Table 7 Colorful Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="Grid Table 1 Light Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="Grid Table 6 Colorful Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="Grid Table 7 Colorful Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="Grid Table 1 Light Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="Grid Table 6 Colorful Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="Grid Table 7 Colorful Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="Grid Table 1 Light Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="Grid Table 2 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="Grid Table 3 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="Grid Table 4 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="Grid Table 5 Dark Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="Grid Table 6 Colorful Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="Grid Table 7 Colorful Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="46" Name="List Table 1 Light"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark"/>\r\n  <w:LsdException Locked="false" Priority="51" Name="List Table 6 Colorful"/>\r\n  <w:LsdException Locked="false" Priority="52" Name="List Table 7 Colorful"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="List Table 1 Light Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="List Table 6 Colorful Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="List Table 7 Colorful Accent 1"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="List Table 1 Light Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="List Table 6 Colorful Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="List Table 7 Colorful Accent 2"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="List Table 1 Light Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="List Table 6 Colorful Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="List Table 7 Colorful Accent 3"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="List Table 1 Light Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="List Table 6 Colorful Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="List Table 7 Colorful Accent 4"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="List Table 1 Light Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="List Table 6 Colorful Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="List Table 7 Colorful Accent 5"/>\r\n  <w:LsdException Locked="false" Priority="46"\r\n   Name="List Table 1 Light Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="47" Name="List Table 2 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="48" Name="List Table 3 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="49" Name="List Table 4 Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="50" Name="List Table 5 Dark Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="51"\r\n   Name="List Table 6 Colorful Accent 6"/>\r\n  <w:LsdException Locked="false" Priority="52"\r\n   Name="List Table 7 Colorful Accent 6"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Mention"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Smart Hyperlink"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Hashtag"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Unresolved Mention"/>\r\n  <w:LsdException Locked="false" SemiHidden="true" UnhideWhenUsed="true"\r\n   Name="Smart Link"/>\r\n </w:LatentStyles>\r\n</xml><![endif]-->\r\n<style>\r\n\x3C!--\r\n /* Font Definitions */\r\n @font-face\r\n\t{font-family:"Cambria Math";\r\n\tpanose-1:2 4 5 3 5 4 6 3 2 4;\r\n\tmso-font-charset:0;\r\n\tmso-generic-font-family:roman;\r\n\tmso-font-pitch:variable;\r\n\tmso-font-signature:-536869121 1107305727 33554432 0 415 0;}\r\n@font-face\r\n\t{font-family:Calibri;\r\n\tpanose-1:2 15 5 2 2 2 4 3 2 4;\r\n\tmso-font-charset:0;\r\n\tmso-generic-font-family:swiss;\r\n\tmso-font-pitch:variable;\r\n\tmso-font-signature:-469750017 -1073732485 9 0 511 0;}\r\n@font-face\r\n\t{font-family:"Open Sans";\r\n\tmso-font-alt:"Segoe UI";\r\n\tmso-font-charset:0;\r\n\tmso-generic-font-family:swiss;\r\n\tmso-font-pitch:variable;\r\n\tmso-font-signature:-536870161 1073750107 40 0 415 0;}\r\n@font-face\r\n\t{font-family:"Noto Sans";\r\n\tmso-font-alt:"Nirmala UI";\r\n\tmso-font-charset:0;\r\n\tmso-generic-font-family:swiss;\r\n\tmso-font-pitch:variable;\r\n\tmso-font-signature:-536837377 1073772799 33 0 415 0;}\r\n /* Style Definitions */\r\n p.MsoNormal, li.MsoNormal, div.MsoNormal\r\n\t{mso-style-unhide:no;\r\n\tmso-style-qformat:yes;\r\n\tmso-style-parent:"";\r\n\tmargin-top:0in;\r\n\tmargin-right:0in;\r\n\tmargin-bottom:8.0pt;\r\n\tmargin-left:0in;\r\n\tline-height:107%;\r\n\tmso-pagination:widow-orphan;\r\n\tfont-size:11.0pt;\r\n\tfont-family:"Calibri",sans-serif;\r\n\tmso-ascii-font-family:Calibri;\r\n\tmso-ascii-theme-font:minor-latin;\r\n\tmso-fareast-font-family:Calibri;\r\n\tmso-fareast-theme-font:minor-latin;\r\n\tmso-hansi-font-family:Calibri;\r\n\tmso-hansi-theme-font:minor-latin;\r\n\tmso-bidi-font-family:"Times New Roman";\r\n\tmso-bidi-theme-font:minor-bidi;}\r\np.li, li.li, div.li\r\n\t{mso-style-name:li;\r\n\tmso-style-unhide:no;\r\n\tmso-style-parent:"";\r\n\tmargin-top:0in;\r\n\tmargin-right:0in;\r\n\tmargin-bottom:7.5pt;\r\n\tmargin-left:30.0pt;\r\n\tmso-pagination:widow-orphan lines-together;\r\n\tfont-size:9.0pt;\r\n\tfont-family:"Noto Sans",sans-serif;\r\n\tmso-fareast-font-family:"Noto Sans";\r\n\tmso-ansi-language:DA;\r\n\tmso-fareast-language:DA;}\r\np.p1, li.p1, div.p1\r\n\t{mso-style-name:p_1;\r\n\tmso-style-unhide:no;\r\n\tmso-style-parent:"";\r\n\tmargin-top:10.05pt;\r\n\tmargin-right:0in;\r\n\tmargin-bottom:10.05pt;\r\n\tmargin-left:30.0pt;\r\n\tmso-pagination:widow-orphan;\r\n\tfont-size:9.0pt;\r\n\tfont-family:"Noto Sans",sans-serif;\r\n\tmso-fareast-font-family:"Noto Sans";\r\n\tmso-ansi-language:DA;\r\n\tmso-fareast-language:DA;}\r\n.MsoChpDefault\r\n\t{mso-style-type:export-only;\r\n\tmso-default-props:yes;\r\n\tfont-family:"Calibri",sans-serif;\r\n\tmso-ascii-font-family:Calibri;\r\n\tmso-ascii-theme-font:minor-latin;\r\n\tmso-fareast-font-family:Calibri;\r\n\tmso-fareast-theme-font:minor-latin;\r\n\tmso-hansi-font-family:Calibri;\r\n\tmso-hansi-theme-font:minor-latin;\r\n\tmso-bidi-font-family:"Times New Roman";\r\n\tmso-bidi-theme-font:minor-bidi;}\r\n.MsoPapDefault\r\n\t{mso-style-type:export-only;\r\n\tmargin-bottom:8.0pt;\r\n\tline-height:107%;}\r\n@page WordSection1\r\n\t{size:8.5in 11.0in;\r\n\tmargin:1.0in 1.0in 1.0in 1.0in;\r\n\tmso-header-margin:.5in;\r\n\tmso-footer-margin:.5in;\r\n\tmso-paper-source:0;}\r\ndiv.WordSection1\r\n\t{page:WordSection1;}\r\n /* List Definitions */\r\n @list l0\r\n\t{mso-list-id:2020347421;\r\n\tmso-list-template-ids:633142248;}\r\n@list l0:level1\r\n\t{mso-level-tab-stop:0in;\r\n\tmso-level-number-position:right;\r\n\tmargin-left:0in;\r\n\ttext-indent:-10.5pt;\r\n\tmso-pagination:widow-orphan lines-together;\r\n\tmso-ansi-font-size:9.0pt;\r\n\tmso-bidi-font-size:9.0pt;\r\n\tcolor:black;}\r\n@list l0:level2\r\n\t{mso-level-start-at:0;\r\n\tmso-level-text:"";\r\n\tmso-level-tab-stop:none;\r\n\tmso-level-number-position:left;\r\n\tmargin-left:0in;\r\n\ttext-indent:0in;}\r\n@list l0:level3\r\n\t{mso-level-start-at:0;\r\n\tmso-level-text:"";\r\n\tmso-level-tab-stop:none;\r\n\tmso-level-number-position:left;\r\n\tmargin-left:0in;\r\n\ttext-indent:0in;}\r\n@list l0:level4\r\n\t{mso-level-start-at:0;\r\n\tmso-level-text:"";\r\n\tmso-level-tab-stop:none;\r\n\tmso-level-number-position:left;\r\n\tmargin-left:0in;\r\n\ttext-indent:0in;}\r\n@list l0:level5\r\n\t{mso-level-start-at:0;\r\n\tmso-level-text:"";\r\n\tmso-level-tab-stop:none;\r\n\tmso-level-number-position:left;\r\n\tmargin-left:0in;\r\n\ttext-indent:0in;}\r\n@list l0:level6\r\n\t{mso-level-start-at:0;\r\n\tmso-level-text:"";\r\n\tmso-level-tab-stop:none;\r\n\tmso-level-number-position:left;\r\n\tmargin-left:0in;\r\n\ttext-indent:0in;}\r\n@list l0:level7\r\n\t{mso-level-start-at:0;\r\n\tmso-level-text:"";\r\n\tmso-level-tab-stop:none;\r\n\tmso-level-number-position:left;\r\n\tmargin-left:0in;\r\n\ttext-indent:0in;}\r\n@list l0:level8\r\n\t{mso-level-start-at:0;\r\n\tmso-level-text:"";\r\n\tmso-level-tab-stop:none;\r\n\tmso-level-number-position:left;\r\n\tmargin-left:0in;\r\n\ttext-indent:0in;}\r\n@list l0:level9\r\n\t{mso-level-start-at:0;\r\n\tmso-level-text:"";\r\n\tmso-level-tab-stop:none;\r\n\tmso-level-number-position:left;\r\n\tmargin-left:0in;\r\n\ttext-indent:0in;}\r\nol\r\n\t{margin-bottom:0in;}\r\nul\r\n\t{margin-bottom:0in;}\r\n-->\r\n</style>\r\n\x3C!--[if gte mso 10]>\r\n<style>\r\n /* Style Definitions */\r\n table.MsoNormalTable\r\n\t{mso-style-name:"Table Normal";\r\n\tmso-tstyle-rowband-size:0;\r\n\tmso-tstyle-colband-size:0;\r\n\tmso-style-noshow:yes;\r\n\tmso-style-priority:99;\r\n\tmso-style-parent:"";\r\n\tmso-padding-alt:0in 5.4pt 0in 5.4pt;\r\n\tmso-para-margin-top:0in;\r\n\tmso-para-margin-right:0in;\r\n\tmso-para-margin-bottom:8.0pt;\r\n\tmso-para-margin-left:0in;\r\n\tline-height:107%;\r\n\tmso-pagination:widow-orphan;\r\n\tfont-size:11.0pt;\r\n\tfont-family:"Calibri",sans-serif;\r\n\tmso-ascii-font-family:Calibri;\r\n\tmso-ascii-theme-font:minor-latin;\r\n\tmso-hansi-font-family:Calibri;\r\n\tmso-hansi-theme-font:minor-latin;\r\n\tmso-bidi-font-family:"Times New Roman";\r\n\tmso-bidi-theme-font:minor-bidi;}\r\n</style>\r\n<![endif]-->\r\n</head>\r\n\r\n<body lang=EN-US style='tab-interval:.5in;word-wrap:break-word'>\r\n\x3C!--StartFragment-->\r\n\r\n<p class=li style='margin-top:8.0pt;text-indent:-30.0pt;mso-text-indent-alt:\r\n-10.5pt;mso-list:l0 level1 lfo1;tab-stops:list 0in'><![if !supportLists]><span\r\nlang=DA style='color:black'><span style='mso-list:Ignore'><span\r\nstyle='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span></span></span><![endif]><strong><span lang=DA style='font-size:10.5pt;\r\nfont-family:"Open Sans",sans-serif;color:black;background:white'>Lorem Ipsum</span></strong><span\r\nlang=DA style='font-size:10.5pt;font-family:"Open Sans",sans-serif;color:black;\r\nbackground:white'>&nbsp;is simply dummy text of the printing and typesetting\r\nindustry.</span><span lang=DA><o:p></o:p></span></p>\r\n\r\n<p class=p1><span lang=DA style='mso-no-proof:yes'>\x3C!--[if gte vml 1]><v:shapetype\r\n id="_x0000_t75" coordsize="21600,21600" o:spt="75" o:preferrelative="t"\r\n path="m@4@5l@4@11@9@11@9@5xe" filled="f" stroked="f">\r\n <v:stroke joinstyle="miter"/>\r\n <v:formulas>\r\n  <v:f eqn="if lineDrawn pixelLineWidth 0"/>\r\n  <v:f eqn="sum @0 1 0"/>\r\n  <v:f eqn="sum 0 0 @1"/>\r\n  <v:f eqn="prod @2 1 2"/>\r\n  <v:f eqn="prod @3 21600 pixelWidth"/>\r\n  <v:f eqn="prod @3 21600 pixelHeight"/>\r\n  <v:f eqn="sum @0 0 1"/>\r\n  <v:f eqn="prod @6 1 2"/>\r\n  <v:f eqn="prod @7 21600 pixelWidth"/>\r\n  <v:f eqn="sum @8 21600 0"/>\r\n  <v:f eqn="prod @7 21600 pixelHeight"/>\r\n  <v:f eqn="sum @10 21600 0"/>\r\n </v:formulas>\r\n <v:path o:extrusionok="f" gradientshapeok="t" o:connecttype="rect"/>\r\n <o:lock v:ext="edit" aspectratio="t"/>\r\n</v:shapetype><v:shape id="Picture_x0020_9" o:spid="_x0000_i1025" type="#_x0000_t75"\r\n alt="Open the Settings window in Siveillance Video Client." style='width:153pt;\r\n height:87.75pt;visibility:visible;mso-wrap-style:square'>\r\n <v:imagedata src="file:///C:/Users/GOKULR~1/AppData/Local/Temp/msohtmlclip1/01/clip_image001.png"\r\n  o:title="Open the Settings window in Siveillance Video Client"/>\r\n <o:lock v:ext="edit" aspectratio="f"/>\r\n</v:shape><![endif]--><![if !vml]><img width=204 height=117\r\nsrc="file:///C:/Users/GOKULR~1/AppData/Local/Temp/msohtmlclip1/01/clip_image002.png"\r\nalt="Open the Settings window in Siveillance Video Client." v:shapes="Picture_x0020_9"><![endif]></span><span\r\nlang=DA><o:p></o:p></span></p>\r\n\r\n<p class=li style='text-indent:-30.0pt;mso-text-indent-alt:-10.5pt;mso-list:\r\nl0 level1 lfo1;tab-stops:list 0in'><![if !supportLists]><span lang=DA\r\nstyle='color:black'><span style='mso-list:Ignore'><span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span>2.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span></span></span><![endif]><span lang=DA style='font-size:10.5pt;\r\nfont-family:"Open Sans",sans-serif;color:black;background:white'>It was\r\npopularised in the 1960s with the release of Letraset sheets containing Lorem\r\nIpsum passages, and more recently with desktop publishing software like Aldus\r\nPageMaker including versions of Lorem Ipsum</span><span lang=DA\r\nstyle='color:black'>.</span><span lang=DA><o:p></o:p></span></p>\r\n\r\n<p class=li style='text-indent:-30.0pt;mso-text-indent-alt:-10.5pt;mso-list:\r\nl0 level1 lfo1;tab-stops:list 0in'><![if !supportLists]><span lang=DA\r\nstyle='color:black'><span style='mso-list:Ignore'><span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span>3.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span></span></span><![endif]><span lang=DA style='font-size:10.5pt;\r\nfont-family:"Open Sans",sans-serif;color:black;background:white'>Contrary to\r\npopular belief, Lorem Ipsum is not simply random text</span><span lang=DA><o:p></o:p></span></p>\r\n\r\n<p class=li style='margin-bottom:10.05pt;text-indent:-30.0pt;mso-text-indent-alt:\r\n-10.5pt;mso-list:l0 level1 lfo1;tab-stops:list 0in'><![if !supportLists]><span\r\nlang=DA style='color:black'><span style='mso-list:Ignore'><span\r\nstyle='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span>4.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\r\n</span></span></span><![endif]><span lang=DA style='font-size:10.5pt;\r\nfont-family:"Open Sans",sans-serif;color:black;background:white'>The first line\r\nof Lorem Ipsum, &quot;Lorem ipsum dolor sit amet..&quot;, comes from a line in\r\nsection 1.10.32.</span><span lang=DA><o:p></o:p></span></p>\r\n\r\n\x3C!--EndFragment-->\r\n</body>\r\n\r\n</html>\r\n`;
         beforeEach( () => {
-            document.body.appendChild(defaultRTE);
-            rteObject = new RichTextEditor({
+            rteObject = renderRTE({
                 pasteCleanupSettings: {
                     prompt: true
                 }, value: ''
         });
-            rteObject.appendTo('#defaultRTE');
         });
         afterEach( () => {
             destroy(rteObject);
-            detach(defaultRTE);
         });
         it('Test for margin-left and start attribute', (done : Function) => {
             let keyBoardEvent: any = {
@@ -1990,19 +1958,15 @@ describe('RTE CR issues', () => {
 
     describe(' EJ2-68542: Font size not applied properly for the Numbered lists in RichTextEditor' , () => {
         let rteObject : RichTextEditor ;
-        let defaultRTE: HTMLElement = createElement( 'div', { id: 'defaultRTE' } );
         const innerHTML: string = '<p style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br /></p><p style="text-align:center; margin-bottom: 5px; "><font face="Calibri"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></font><br /></p><p style="text-align: center; margin-bottom: 2px; "><font face="Calibri"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br/></font></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;"></span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; "></span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></p>';
         beforeEach( () => {
-            document.body.appendChild(defaultRTE);
-            rteObject = new RichTextEditor({ 
+            rteObject = renderRTE({ 
                 toolbarSettings : { items: [ 'FontSize','OrderedList']
                 } ,value: innerHTML
             });
-            rteObject.appendTo('#defaultRTE');
         })
         afterEach( () => {
             destroy( rteObject );
-            detach( defaultRTE );
         })
         it('check the font size apply on list items', (done : Function) => {
             const nodeList : NodeList = rteObject.inputElement.querySelectorAll('p');
@@ -2010,7 +1974,7 @@ describe('RTE CR issues', () => {
             range.setStart( nodeList[0], 0 );
             range.setEnd( nodeList[4], 1 );
             rteObject.formatter.editorManager.nodeSelection.setRange(document, range);
-            let orderNumberListBtn: HTMLElement = document.querySelector("#defaultRTE_toolbar_OrderedList");
+            let orderNumberListBtn: HTMLElement = document.querySelectorAll(".e-toolbar-item")[1] as HTMLElement;
             orderNumberListBtn.click();
             const dropButton : NodeList= document.body.querySelectorAll('.e-dropdown-btn'); 
             ( dropButton[0] as HTMLElement ).click(); // Font Size
@@ -2022,19 +1986,15 @@ describe('RTE CR issues', () => {
     });
     describe(' EJ2-68542: Font size not applied properly for the Numbered lists in RichTextEditor' , () => {
         let rteObject : RichTextEditor ;
-        let defaultRTE: HTMLElement = createElement( 'div', { id: 'defaultRTE' } );
         const innerHTML: string = '<ol><li style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br><ol><li style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">r﻿ichtexteditor</span></strong></span></li><li style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">WYSIWYG&nbsp;</span></strong></span><ol><li style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">create and edit</span></strong></span></li><li style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; "><b style="box-sizing: border-box; color: rgb(33, 37, 41); font-family: system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, &quot;Noto Sans&quot;, &quot;Liberation Sans&quot;, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;, &quot;Noto Color Emoji&quot;; font-size: 14px; text-align: start;">Toolbar</b>﻿<br></span></strong></span></li></ol></li></ol></li><li style="text-align:center; margin-bottom: 5px; "><font face="Calibri"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></font><br></li><li style="text-align: center; margin-bottom: 2px; "><font face="Calibri"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br></font></li><li style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;">​</span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></li><li style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></li></ol>';
         beforeEach( () => {
-            document.body.appendChild(defaultRTE);
-            rteObject = new RichTextEditor({ 
+            rteObject = renderRTE({ 
                 toolbarSettings : { items: [ 'FontSize','OrderedList']
                 } ,value: innerHTML
             });
-            rteObject.appendTo('#defaultRTE');
         })
         afterEach( () => {
             destroy( rteObject );
-            detach( defaultRTE );
         })
         it('check the font size apply on nested list items', (done : Function) => {
             const nodeList : NodeList = rteObject.inputElement.querySelectorAll('li');
@@ -2055,12 +2015,10 @@ describe('RTE CR issues', () => {
     describe("EJ2-69957: Quick toolbar tooltip remains in the open state after close the toolbar", () => {
         let rteObj: RichTextEditor;
         let originalTimeout: number;
-        let divEle = createElement('div',{id:'rteDiv',className:'RTEtooltip'});
         beforeAll((done: Function) => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            document.body.appendChild(divEle);
-            rteObj = new RichTextEditor({
+            rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Undo', 'Redo', '|',
                 'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
@@ -2078,7 +2036,6 @@ describe('RTE CR issues', () => {
                 <p><b>Image.</b></p><ol><li><p>Allows you to insert images from an online source as well as the local computer </p> </li><li><p>You can upload an image </p></li><li> 
                 <p>Provides an option to customize the quick toolbar for an image </p> </li></ol><img alt="Logo" src="//ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;">`
             });
-            rteObj.appendTo('#rteDiv');
             done();
         });
     
@@ -2088,7 +2045,7 @@ describe('RTE CR issues', () => {
         });
     
         it('check undo tooltip content', (done: Function) => {
-            const undoEle = document.querySelectorAll('#rteDiv.RTEtooltip .e-toolbar-item')[0];
+            const undoEle = document.querySelectorAll('.e-toolbar-item')[0];
             let mouseEve = new MouseEvent("mouseover", {bubbles: true,cancelable: true,view: window});
             undoEle.dispatchEvent(mouseEve);
             setTimeout(() => {
@@ -2306,6 +2263,7 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+
     describe('846885 - NumberFormatList and BulletFormatList not apply in Safari browser', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
@@ -2338,7 +2296,6 @@ describe('RTE CR issues', () => {
             trg.dispatchEvent(event);
             (document.querySelector('[title="Number Format List (Ctrl+Shift+O)"]').childNodes[0] as HTMLElement).click();
             (document.querySelector('.e-dropdown-popup').childNodes[0].childNodes[1] as HTMLElement).click();
-            
             let result = true;
             expect((editNode.querySelector('.first-p') as HTMLElement).innerHTML == `<li>description</li>`).toBe(true)
         });
@@ -2347,6 +2304,7 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+
     describe('847101 - The image focus and resize class names are not removed when the editor in focused out. - ', () => {
         let rteObj: RichTextEditor;
         beforeEach((done: Function) => {
@@ -2387,78 +2345,6 @@ describe('RTE CR issues', () => {
         });
     });
 
-    describe('EJ2-847108 - When pasting contents into the RichTextEditor, the focus gets lost and script error thrown', () => {
-        let rteObject : RichTextEditor ;
-        let defaultRTE : HTMLElement = createElement('div',{id :'defaultRTE'});
-        let innerHTML: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><table class="table-container" style="box-sizing: border-box; border-collapse: collapse; overflow-y: hidden; table-layout: fixed; width: 998.4px; border-bottom: 0px !important; border-right: 0px !important; border-top: 0px !important; color: rgb(0, 0, 0); font-family: Roboto, &quot;open sans&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><tbody style="box-sizing: border-box;"><tr class="public-comment-border" style="box-sizing: border-box; border-radius: 0px; border-left: 4px solid rgb(203, 210, 224) !important;"><td class="width-2 flex-horizontal bd-table-td py-1" style="box-sizing: border-box; padding: 0px 0px 0px 36px; align-items: center; display: flex; flex-direction: row; border: 0px; height: auto; width: 947.4px; color: rgb(45, 55, 72) !important;"><div class="user-detail-container flex-vertical" style="box-sizing: border-box; display: flex; flex-direction: column; width: 656.2px;"><div class="app-user-name primary flex-horizontal" style="box-sizing: border-box; color: var(--primary-color); font-family: var(--font-style) !important; align-items: center; display: flex; flex-direction: row; font-weight: 400; overflow-wrap: anywhere;"><div class="ellipsis no-wrap font-14 font-500 user-preview-section" style="box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; font-size: 14px !important; max-width: 40%;"><span data-title="Divya Ananthanathan" style="box-sizing: border-box;">Divya Ananthanathan</span></div><div class="ellipsis no-wrap" style="box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="secondary-text-color font-13 pl-1 user-detail-container-label" data-title="<span>replied via Customer Portal</span>" style="box-sizing: border-box; padding-left: 0.25rem !important; font-size: 13px !important; color: rgb(96, 111, 133); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><span class="replied-text" style="box-sizing: border-box; color: rgb(96, 111, 133);">replied<span> </span></span>via Customer Portal</span></div></div><div class="date-detail secondary-text-color font-13 ellipsis no-wrap" style="box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px !important; color: rgb(96, 111, 133); width: auto;"><span style="box-sizing: border-box;"><app-date-time suffixstring=")" _nghost-mil-c21="" style="box-sizing: border-box;"><span _ngcontent-mil-c21="" data-non-elliptical="true" data-title="Created on : Sep 07, 2023 05:26 PM (UTC +05:30)" style="box-sizing: border-box;">Sep 07, 2023 05:26 PM ( 3 weeks ago )</span></app-date-time></span></div></div><div id="comments-options" class="align-right flex-horizontal" style="box-sizing: border-box; align-items: center; display: flex; flex-direction: row; float: right; margin-left: auto;"><span class="parma-link mt-1" style="box-sizing: border-box; margin-top: 0.25rem !important;"><i class="bd-icon bd-icon-link action-square-button cursor-pointer padding-8" data-title="Copy Link" style="box-sizing: border-box; cursor: pointer; padding: 6px; align-items: center; color: rgb(74, 85, 104); font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 1; speak: none; text-transform: none; font-family: &quot;Bold desk&quot; !important; list-style-type: none; border-radius: 20px;"></i></span><span class="parma-link flex-horizontal" style="box-sizing: border-box; align-items: center; display: flex; flex-direction: row;"><span style="box-sizing: border-box;"><span class="e-btn e-flat icon-design e-icon-btn more-option-button no-padding no-border" style="box-sizing: border-box; -webkit-font-smoothing: antialiased; border: 1px solid rgb(160, 174, 192); border-radius: 50%; cursor: pointer; display: inline-block; font-family: Roboto, &quot;open sans&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-weight: 500; justify-content: center; line-height: 34px; outline: 0px; padding: 0px 11px; text-align: center; text-decoration: none; text-transform: none; user-select: none; vertical-align: middle; white-space: nowrap; -webkit-tap-highlight-color: transparent; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; background-color: inherit; box-shadow: none; color: rgb(45, 55, 72); transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1) 0s; letter-spacing: 0.3px; height: 32px; width: 32px;"><i class="hd-icon hd-vertical-menu" style="box-sizing: border-box; align-items: center; color: rgba(0, 0, 0, 0.54); font-size: 13px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 1; padding: 5px; speak: none; text-transform: none; font-family: hd-icon !important;"></i></span></span></span></div></td></tr><tr class="public-comment-border" style="box-sizing: border-box; border-radius: 0px; border-left: 4px solid rgb(203, 210, 224) !important;"><td class="width-1 bd-table-td align-baseline" style="box-sizing: border-box; vertical-align: baseline !important; width: 45px; border: 0px; height: auto; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 24px !important;"><span style="box-sizing: border-box;"></span></td><td class="width-2 bd-table-td" style="box-sizing: border-box; border: 0px; height: auto; padding: 0px 0px 0px 36px; width: 949.4px; color: rgb(45, 55, 72) !important;"><div appimageloader="" appimagepreview="" class="detail-summary" style="box-sizing: border-box; padding-top: 10px; padding-right: 10px; padding-bottom: 0px !important; padding-left: 0px; overflow-x: auto;"><div class="table-content" style="box-sizing: border-box; padding-top: 10px;"><div class="comments-description show-more-description primary font-14 e-rte-content" style="box-sizing: border-box; color: var(--primary-color); font-family: var(--font-style) !important; font-size: 14px !important; font-weight: 400;"><p class="show-more-description-child-element" style="box-sizing: border-box; margin: 0px 0px 10px; color: rgb(45, 55, 72); position: relative;"><p style="box-sizing: border-box; margin: 0px 0px 10px;">Hi Team, <br style="box-sizing: border-box;"><br style="box-sizing: border-box;">We are facing an issue while pasting elements into RTE. We have attached a sample and video for your reference.</p></p></div></div></div></td></tr></tbody></table>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
-        beforeEach( () => {
-            document.body.appendChild(defaultRTE);
-            rteObject = new RichTextEditor({
-                pasteCleanupSettings: {
-                    prompt: true
-                }, value: ''
-        });
-            rteObject.appendTo('#defaultRTE');
-        });
-        afterEach( () => {
-            destroy(rteObject);
-            detach(defaultRTE);
-        });
-        it('Test for pasteCleanup', (done : Function) => {
-            let keyBoardEvent: any = {
-                preventDefault: () => { },
-                type: 'keydown',
-                stopPropagation: () => { },
-                ctrlKey: false,
-                shiftKey: false,
-                action: null,
-                which: 64,
-                key: ''
-              };
-            rteObject.dataBind();
-            keyBoardEvent.clipboardData = {
-            getData: () => {
-                return innerHTML;
-            },
-            items: []
-            };
-            setCursorPoint((rteObject as any).inputElement.firstElementChild, 0);
-            rteObject.onPaste(keyBoardEvent);
-            setTimeout(() => {
-                if (rteObject.pasteCleanupSettings.prompt) {
-                    let keepFormat: any = document.getElementById(rteObject.getID() + '_pasteCleanupDialog').getElementsByClassName('e-rte-keepformat');
-                    keepFormat[0].click();
-                    let pasteOK: any = document.getElementById(rteObject.getID() + '_pasteCleanupDialog').getElementsByClassName('e-rte-pasteok');
-                    pasteOK[0].click();
-                }
-                expect(window.getSelection().getRangeAt(0).startContainer.nodeName === 'BR').toEqual(true);
-                expect(window.getSelection().getRangeAt(0).endContainer.nodeName === 'BR').toEqual(true);
-                done();
-            }, 400);
-        });
-    });
-
-    describe("848049 - The change event value contains the table resize helper element in the Rich Text Editor", function () {
-        var rteObj: RichTextEditor;
-        beforeAll(function () {
-            rteObj = renderRTE({
-                toolbarSettings: {
-                    items: ['CreateTable']
-                },
-                value: `<table class=\"e-rte-table\" style=\"width: 100%; min-width: 0px;\"><tbody><tr><td class=\"\" style=\"width: 14.687%;\"><br></td><td style=\"width: 51.9262%;\"><br></td><td style=\"width: 33.3333%;\"><br></td></tr><tr><td style=\"width: 14.687%;\"><br></td><td style=\"width: 51.9262%;\"><br></td><td style=\"width: 33.3333%;\"><br></td></tr></tbody></table><p>RTE</p><div class=\"e-table-rhelper null e-column-helper\" style=\"height: 50px; top: 16px; left: 198px;\"></div>`
-            });
-        });
-        afterAll(function () {
-            destroy(rteObj);
-        });
-        it("The value contains the table resize helper element in Rich Text Editor", function (done) {
-            rteObj.focusIn();
-            rteObj.tableModule.removeResizeElement();
-            expect(rteObj.inputElement.querySelector(".e-table-rhelper") == null).toBe(true);
-            done();
-        });
-    });
-  
     describe('849657 - Cancelling undo and redo actions using actionBegin events cancel argument is not working in RichTextEditor', () => {
         let isCancelled: boolean = false;
         let rteObj: RichTextEditor;
@@ -2652,6 +2538,53 @@ describe('RTE CR issues', () => {
         });
     });
 
+    describe('EJ2-847108 - When pasting contents into the RichTextEditor, the focus gets lost and script error thrown', () => {
+        let rteObject : RichTextEditor ;
+        let innerHTML: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><table class="table-container" style="box-sizing: border-box; border-collapse: collapse; overflow-y: hidden; table-layout: fixed; width: 998.4px; border-bottom: 0px !important; border-right: 0px !important; border-top: 0px !important; color: rgb(0, 0, 0); font-family: Roboto, &quot;open sans&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><tbody style="box-sizing: border-box;"><tr class="public-comment-border" style="box-sizing: border-box; border-radius: 0px; border-left: 4px solid rgb(203, 210, 224) !important;"><td class="width-2 flex-horizontal bd-table-td py-1" style="box-sizing: border-box; padding: 0px 0px 0px 36px; align-items: center; display: flex; flex-direction: row; border: 0px; height: auto; width: 947.4px; color: rgb(45, 55, 72) !important;"><div class="user-detail-container flex-vertical" style="box-sizing: border-box; display: flex; flex-direction: column; width: 656.2px;"><div class="app-user-name primary flex-horizontal" style="box-sizing: border-box; color: var(--primary-color); font-family: var(--font-style) !important; align-items: center; display: flex; flex-direction: row; font-weight: 400; overflow-wrap: anywhere;"><div class="ellipsis no-wrap font-14 font-500 user-preview-section" style="box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; font-size: 14px !important; max-width: 40%;"><span data-title="Divya Ananthanathan" style="box-sizing: border-box;">Divya Ananthanathan</span></div><div class="ellipsis no-wrap" style="box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><span class="secondary-text-color font-13 pl-1 user-detail-container-label" data-title="<span>replied via Customer Portal</span>" style="box-sizing: border-box; padding-left: 0.25rem !important; font-size: 13px !important; color: rgb(96, 111, 133); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><span class="replied-text" style="box-sizing: border-box; color: rgb(96, 111, 133);">replied<span> </span></span>via Customer Portal</span></div></div><div class="date-detail secondary-text-color font-13 ellipsis no-wrap" style="box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px !important; color: rgb(96, 111, 133); width: auto;"><span style="box-sizing: border-box;"><app-date-time suffixstring=")" _nghost-mil-c21="" style="box-sizing: border-box;"><span _ngcontent-mil-c21="" data-non-elliptical="true" data-title="Created on : Sep 07, 2023 05:26 PM (UTC +05:30)" style="box-sizing: border-box;">Sep 07, 2023 05:26 PM ( 3 weeks ago )</span></app-date-time></span></div></div><div id="comments-options" class="align-right flex-horizontal" style="box-sizing: border-box; align-items: center; display: flex; flex-direction: row; float: right; margin-left: auto;"><span class="parma-link mt-1" style="box-sizing: border-box; margin-top: 0.25rem !important;"><i class="bd-icon bd-icon-link action-square-button cursor-pointer padding-8" data-title="Copy Link" style="box-sizing: border-box; cursor: pointer; padding: 6px; align-items: center; color: rgb(74, 85, 104); font-size: 16px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 1; speak: none; text-transform: none; font-family: &quot;Bold desk&quot; !important; list-style-type: none; border-radius: 20px;"></i></span><span class="parma-link flex-horizontal" style="box-sizing: border-box; align-items: center; display: flex; flex-direction: row;"><span style="box-sizing: border-box;"><span class="e-btn e-flat icon-design e-icon-btn more-option-button no-padding no-border" style="box-sizing: border-box; -webkit-font-smoothing: antialiased; border: 1px solid rgb(160, 174, 192); border-radius: 50%; cursor: pointer; display: inline-block; font-family: Roboto, &quot;open sans&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-weight: 500; justify-content: center; line-height: 34px; outline: 0px; padding: 0px 11px; text-align: center; text-decoration: none; text-transform: none; user-select: none; vertical-align: middle; white-space: nowrap; -webkit-tap-highlight-color: transparent; background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; background-color: inherit; box-shadow: none; color: rgb(45, 55, 72); transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1) 0s; letter-spacing: 0.3px; height: 32px; width: 32px;"><i class="hd-icon hd-vertical-menu" style="box-sizing: border-box; align-items: center; color: rgba(0, 0, 0, 0.54); font-size: 13px; font-style: normal; font-variant: normal; font-weight: 400; line-height: 1; padding: 5px; speak: none; text-transform: none; font-family: hd-icon !important;"></i></span></span></span></div></td></tr><tr class="public-comment-border" style="box-sizing: border-box; border-radius: 0px; border-left: 4px solid rgb(203, 210, 224) !important;"><td class="width-1 bd-table-td align-baseline" style="box-sizing: border-box; vertical-align: baseline !important; width: 45px; border: 0px; height: auto; padding-top: 0px; padding-right: 0px; padding-bottom: 0px; padding-left: 24px !important;"><span style="box-sizing: border-box;"></span></td><td class="width-2 bd-table-td" style="box-sizing: border-box; border: 0px; height: auto; padding: 0px 0px 0px 36px; width: 949.4px; color: rgb(45, 55, 72) !important;"><div appimageloader="" appimagepreview="" class="detail-summary" style="box-sizing: border-box; padding-top: 10px; padding-right: 10px; padding-bottom: 0px !important; padding-left: 0px; overflow-x: auto;"><div class="table-content" style="box-sizing: border-box; padding-top: 10px;"><div class="comments-description show-more-description primary font-14 e-rte-content" style="box-sizing: border-box; color: var(--primary-color); font-family: var(--font-style) !important; font-size: 14px !important; font-weight: 400;"><p class="show-more-description-child-element" style="box-sizing: border-box; margin: 0px 0px 10px; color: rgb(45, 55, 72); position: relative;"><p style="box-sizing: border-box; margin: 0px 0px 10px;">Hi Team, <br style="box-sizing: border-box;"><br style="box-sizing: border-box;">We are facing an issue while pasting elements into RTE. We have attached a sample and video for your reference.</p></p></div></div></div></td></tr></tbody></table>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+        beforeEach( () => {
+            rteObject = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: true
+                }, value: ''
+            });
+        });
+        afterEach( () => {
+            destroy(rteObject);
+        });
+        it('Test for pasteCleanup', (done : Function) => {
+            let keyBoardEvent: any = {
+                preventDefault: () => { },
+                type: 'keydown',
+                stopPropagation: () => { },
+                ctrlKey: false,
+                shiftKey: false,
+                action: null,
+                which: 64,
+                key: ''
+              };
+            rteObject.dataBind();
+            keyBoardEvent.clipboardData = {
+            getData: () => {
+                return innerHTML;
+            },
+            items: []
+            };
+            setCursorPoint((rteObject as any).inputElement.firstElementChild, 0);
+            rteObject.onPaste(keyBoardEvent);
+            setTimeout(() => {
+                if (rteObject.pasteCleanupSettings.prompt) {
+                    let keepFormat: any = document.getElementById(rteObject.getID() + '_pasteCleanupDialog').getElementsByClassName('e-rte-keepformat');
+                    keepFormat[0].click();
+                    let pasteOK: any = document.getElementById(rteObject.getID() + '_pasteCleanupDialog').getElementsByClassName('e-rte-pasteok');
+                    pasteOK[0].click();
+                }
+                expect(window.getSelection().getRangeAt(0).startContainer.nodeName === 'BR').toEqual(true);
+                expect(window.getSelection().getRangeAt(0).endContainer.nodeName === 'BR').toEqual(true);
+                done();
+            }, 400);
+        });
+    });
+    
     describe('847097 - Image get duplicated when we press enter key next to the copy pasted image content from Word', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2676,6 +2609,7 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+
     describe('853088 - Script error throws when clicking preview toolbar while using itemConfigs with ToolbarSettings in RichTextEditor', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2804,7 +2738,7 @@ describe('RTE CR issues', () => {
           expect(rteObj.contentModule.getEditPanel().innerHTML === '<div>\n            <p>test</p>\n            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">\n              <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow"></circle>\n            </svg>\n          </div><p>text</p>').toBe(true);
         });
     });
-describe('854718 - Need to add the aria label attribute to the link in the Rich Text Editor', () => {
+    describe('854718 - Need to add the aria label attribute to the link in the Rich Text Editor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({ value: '' });
@@ -2895,6 +2829,7 @@ describe('854718 - Need to add the aria label attribute to the link in the Rich 
         });
         afterEach(() => {
             destroy(rteObj);
+            detach(toolbarEle);
         });
         it("Custom toolbar", () => {
             rteObj.focusIn();
@@ -2941,6 +2876,17 @@ describe('854718 - Need to add the aria label attribute to the link in the Rich 
         });
     });
     describe("855947 - Table creation popup doesn't get closed when clicking Esc key in RichTextEditor", () => {
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            key: "Escape",
+            charCode: 0,
+            keyCode: 27,
+            which: 27,
+            code: "Escape",
+        };
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
         let innerHTML: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="MsoNormal"><b><span lang="EN-IN"><a href="https://en.wikipedia.org/wiki/Forest_ecology"><i><span class="targetSpan"style="font-size: 10.5pt; line-height: 107%; font-family: Arial, sans-serif; color: rgb(51, 102, 204); background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;">Forest ecology</span></i></a><o:p></o:p></span></b></p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>  `;
@@ -3130,6 +3076,133 @@ describe('854718 - Need to add the aria label attribute to the link in the Rich 
                     done();
                 }, 40);
             }, 40);
+        });
+    });
+    describe('857054 - MaxLength property is not working properly in RichTextEditor, when pasting contents into the Editor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: "keydown",
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ""
+        };
+        const targetElm: HTMLElement = createElement('div', { className: 'target' });
+        beforeEach(() => {
+            rteObj = new RichTextEditor({
+                toolbarSettings: {
+                    items: ['Formats'],
+                }, value: '',
+                inlineMode: {
+                    enable: true,
+                    onSelection: true,
+                },
+                maxLength: 1000,
+                showCharCount: true,
+            });
+            document.body.appendChild(targetElm);
+            rteObj.appendTo(targetElm);
+        });
+        afterEach(() => {
+            rteObj.destroy();
+            detach(targetElm);
+        })
+        it("The MaxLength property doesn't count the character correctly.", (done: Function) => {
+            rteObj.focusIn();
+            keyBoardEvent.clipboardData = {
+                getData: (e: any) => {
+                    if (e === "text/plain") {
+                        return `This is the one note test description gikhdkkaegdhyfgfkahlakhoalhkwjadea,adtgfiakhleduhieygeuqgdiekdheqodn,\r\n\r\nThisis the one note test descriptiongikhdkkaegdhyfgfkahlakhoalhkwjadea,adtgfiakhleduhieygeuqgdiekdheqodn\r\n\r\nThisis the one note test descriptiongikhdkkaegdhyfgfkahlakhoalhkwjadea,adtgfiakhleduhieygeuqgdiekdheqodn\r\n\r\n \r\n\r\nThis is the one note test description gikhdkkaegdhyfgfkahlakhoalhkwjadea,adtgfiakhleduhieygeuqgdiekdheqodn,\r\n\r\nThisis the one note test descriptiongikhdkkaegdhyfgfkahlakhoalhkwjadea,adtgfiakhleduhieygeuqgdiekdheqodn\r\n\r\nThisis the one note test descriptiongikhdkkaegdhyfgfkahlakhoalhkwjadea,adtgfiakhleduhieygeuqgdiekdheqodn\r\n\r\n \r\n\r\nThis is the one note test description gikhdkkaegdhyfgfkahlakhoalhkwjadea,adtgfiakhleduhieygeuqgdiekdheqodn,\r\n\r\nThisis the one note test descriptiongikhdkkaegdhyfgfkahlakhoalhkwjadea,adtgfiakhleduhieygeuqgdiekdheqodn\r\n\r\nThisis the one note test descriptiongikhdkkaegdhyfgfkahlakhoalhkwjadea,adtgfiakhleduhieygeuqgdiekdheqodn\r\n\r\nrfuwyeouwehrfyiwhowrufiwufwoiyrfgiwr`;
+                    } else {
+                        return '';
+                    }
+                },
+                items: []
+            }
+            rteObj.onPaste(keyBoardEvent);
+            expect(rteObj.maxLength >= rteObj.getCharCount()).toBe(true);
+            done();
+        });
+    });
+    describe('859382 - ImageRemoving event arguments are not properly passed in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let propertyCheck: boolean;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                insertImageSettings: {
+                    saveUrl: "https://ej2.syncfusion.com/services/api/uploadbox/Save",
+                    path: "../Images/"
+                },
+                imageRemoving: function (args) {
+                    if (args.cancel != null && args.customFormData != null && args.event != null && args.filesData != null && args.postRawFile != null) {
+                        propertyCheck = true;
+                    }
+                },
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it("The imageRemiving event doesn't have the args property.", (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            let fileObj: File = new File(["Nice One"], "sample.jpg", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            (document.querySelector(".e-richtexteditor .e-upload-files .e-file-remove-btn") as any).click();
+            setTimeout(() => {
+                expect(propertyCheck).toBe(true);
+                done();
+            }, 300);
+
+        });
+    });
+    describe('855622 - Font styles are not applied to the numbered and bullet format list items in RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'Italic','FontName']
+                },
+                value: `<ol><li>normal</li><li>list</li><li>normal</li><li>list</li></ol>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('check Bold', () => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelectorAll('li')[0].firstChild, rteObj.element.querySelectorAll('li')[3].firstChild, 3, 3);
+            (rteObj.element.querySelectorAll('.e-toolbar-item')[0] as HTMLElement).click();
+            expect(rteEle.querySelectorAll('li')[1].style.fontWeight === "bold").toBe(true);
+        });
+        it('check Italic', () => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelectorAll('li')[0].firstChild, rteObj.element.querySelectorAll('li')[3].firstChild, 3, 3);
+            (rteObj.element.querySelectorAll('.e-toolbar-item')[1] as HTMLElement).click();
+            expect(rteEle.querySelectorAll('li')[1].style.fontStyle === "italic").toBe(true);
+        });
+        it('check fontname', () => {
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelectorAll('li')[0].firstChild, rteObj.element.querySelectorAll('li')[3].firstChild, 3, 3);
+            let node: HTMLElement = (rteObj.element.querySelectorAll('.e-toolbar-item')[2] as HTMLElement);
+            (node.firstChild  as HTMLElement).click();
+            (document.querySelectorAll('.e-dropdown-popup.e-rte-elements li')[3] as HTMLElement).click();
+            expect((document.querySelectorAll('.e-content li')[2] as HTMLElement).style.fontFamily === 'Impact, Charcoal, sans-serif').toBe(true);
         });
     });
 });

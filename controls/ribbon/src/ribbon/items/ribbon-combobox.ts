@@ -86,6 +86,15 @@ export class RibbonComboBox {
      * @hidden
      */
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
+        const comboBoxSettings: RibbonComboBoxSettingsModel = item.comboBoxSettings;
+        if (comboBoxSettings.label && this.parent.activeLayout === 'Simplified') {
+            const label: HTMLElement = this.parent.createElement('div', {
+                className: 'e-ribbon-combobox-label',
+                id: item.id + '_label',
+                innerHTML: comboBoxSettings.label
+            });
+            itemEle.insertBefore(label, itemEle.firstChild);
+        }
         const inputEle: HTMLElement = itemEle.querySelector('#' + item.id);
         inputEle.setAttribute('data-control', item.type.toString());
         const comboBoxObj: ComboBox = getComponent(inputEle, ComboBox);
@@ -107,6 +116,13 @@ export class RibbonComboBox {
      * @hidden
      */
     public removeOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement): void {
+        const comboBoxSettings: RibbonComboBoxSettingsModel = item.comboBoxSettings;
+        if (comboBoxSettings.label) {
+            const label: HTMLElement = itemEle.querySelector('#' + item.id + '_label');
+            if (label) {
+                label.remove();
+            }
+        }
         const inputEle: HTMLElement = itemEle.querySelector('#' + item.id);
         const comboBoxObj: ComboBox = getComponent(inputEle, ComboBox);
         let cssClass: string[] = comboBoxObj.cssClass.split(SPACE);

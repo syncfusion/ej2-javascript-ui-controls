@@ -730,12 +730,17 @@ export const emojiPicker: string = 'emojiPicker';
  * @hidden
  * @deprecated
  */
-export const maximizeMinimizeClick: string = 'maximizeMinimizeClick';
+export const destroyTooltip: string = 'destroyTooltip';
 /**
  * @hidden
  * @deprecated
  */
 export const hidePopup: string = 'hidePopup';
+/**
+ * @hidden
+ * @deprecated
+ */
+export const cleanupResizeElements: string = 'cleanupResizeElements';
 /**
  * @hidden
  * @deprecated

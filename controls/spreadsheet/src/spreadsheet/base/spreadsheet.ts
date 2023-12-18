@@ -2,14 +2,14 @@
 /// <reference path='../../workbook/base/workbook-model.d.ts'/>
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, Event, isUndefined, attributes } from '@syncfusion/ej2-base';
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
-import { detach, select, closest, setStyleAttribute, EventHandler, getComponent, remove } from '@syncfusion/ej2-base';
+import { detach, select, closest, setStyleAttribute, EventHandler, getComponent } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
 import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement } from '../common/index';
 import { performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage, removeHyperlink } from '../common/index';
-import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit, created } from '../common/index';
+import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
 import { ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs, addFileMenuItems, getSiblingsHeight } from '../common/index';
-import { defaultLocale, locale, setAriaOptions, setResize, initiateFilterUI, clearFilter, focus } from '../common/index';
+import { defaultLocale, locale, setResize, initiateFilterUI, clearFilter, focus } from '../common/index';
 import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation, addRibbonTabs } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange, addToolbarItems } from '../common/index';
 import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetChanged, refreshFormulaDatasource } from '../common/index';
@@ -44,11 +44,11 @@ import { DataValidation } from '../actions/index';
 import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndReplace, WorkbookAutoFill } from '../../workbook/actions/index';
 import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel, ImageModel, getFormattedCellObject } from './../../workbook/common/index';
 import { ConditionalFormatting } from '../actions/conditional-formatting';
-import { WorkbookImage, WorkbookChart, initiateChart, updateView } from '../../workbook/index';
+import { WorkbookImage, WorkbookChart, updateView } from '../../workbook/index';
 import { WorkbookProtectSheet } from '../../workbook/actions/index';
-import { contentLoaded, completeAction, freeze, getScrollBarWidth, ConditionalFormatEventArgs } from '../common/index';
+import { contentLoaded, completeAction, freeze, ConditionalFormatEventArgs } from '../common/index';
 import { beginAction, sheetsDestroyed, workbookFormulaOperation, getRangeAddress, cellValidation } from './../../workbook/common/index';
-import { updateScroll, SelectionMode, clearCopy, isImported, clearUndoRedoCollection, removeDesignChart } from '../common/index';
+import { updateScroll, SelectionMode, clearCopy, isImported, clearUndoRedoCollection } from '../common/index';
 /**
  * Represents the Spreadsheet component.
  *
@@ -893,7 +893,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     protected render(): void {
         super.render();
         this.element.setAttribute('tabindex', '0');
-        setAriaOptions(this.element, { role: 'grid' });
         this.renderModule = new Render(this);
         this.renderSpreadsheet();
         this.wireEvents();
@@ -1675,7 +1674,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 }
                 if (sheet === this.getActiveSheet()) {
                     this.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
-                        cellIdx, false, false, false, false, isImported(this));
+                        cellIdx, false, false, false, true, isImported(this));
                     for (let i: number = 0; i < classList.length; i++) {
                         if (!this.getCell(cellIdx[0], cellIdx[1]).classList.contains(classList[i as number])) {
                             this.getCell(cellIdx[0], cellIdx[1]).classList.add(classList[i as number]);
@@ -2174,17 +2173,31 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 const spanElem: Element = select('#' + this.element.id + '_currency', td);
                 if (spanElem) { detach(spanElem); }
                 if (args.type === 'Accounting' && isNumber(args.value) && args.result.includes(args.curSymbol)) {
-                    const curSymbol: string = args.result.includes(' ' + args.curSymbol) ? ' ' + args.curSymbol : args.curSymbol;
-                    if (td.querySelector('a')) {
-                        td.querySelector('a').textContent = args.result.split(curSymbol).join('');
+                    let curSymbol: string; let result: string; let setVal: boolean;
+                    if (args.result.trim().endsWith(args.curSymbol)) {
+                        result = args.result;
                     } else {
+                        curSymbol = args.result.includes(' ' + args.curSymbol) ? ' ' + args.curSymbol : args.curSymbol;
+                        result = args.result.split(curSymbol).join('');
+                    }
+                    const dataBarVal: HTMLElement = td.querySelector('.e-databar-value');
+                    let tdContainer: Element = td;
+                    if (dataBarVal) {
+                        this.refreshNode(dataBarVal, { result: result });
+                        tdContainer = td.querySelector('.e-cf-databar') || td;
+                    } else if (td.querySelector('a')) {
+                        td.querySelector('a').textContent = result;
+                    } else {
+                        setVal = true;
                         (td as HTMLElement).innerText = '';
                     }
-                    const curSymEle: HTMLElement = this.createElement('span', { id: this.element.id + '_currency', styles: 'float: left' });
-                    curSymEle.innerText = curSymbol;
-                    td.appendChild(curSymEle);
-                    if (!td.querySelector('a')) {
-                        td.innerHTML += args.result.split(curSymbol).join('');
+                    if (curSymbol) {
+                        const curr: HTMLElement = this.createElement('span', { id: this.element.id + '_currency', styles: 'float: left' });
+                        curr.innerText = curSymbol;
+                        tdContainer.appendChild(curr);
+                    }
+                    if (setVal) {
+                        td.innerHTML += result;
                     }
                     td.classList.add('e-right-align');
                     return;
@@ -2945,6 +2958,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 break;
             case 'allowFreezePane':
                 this.notify(ribbon, { prop: 'allowFreezePane', onPropertyChange: true });
+                break;
+            case 'allowImage':
+            case 'allowChart':
+                this.renderModule.refreshSheet();
+                this.notify(ribbon, { prop: prop, onPropertyChange: true });
                 break;
             }
         }

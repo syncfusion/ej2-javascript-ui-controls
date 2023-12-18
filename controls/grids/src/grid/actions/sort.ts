@@ -333,6 +333,7 @@ export class Sort implements IAction {
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.evtHandlers = [{ event: events.setFullScreenDialog, handler: this.setFullScreenDialog },
+            { event: events.renderResponsiveChangeAction, handler: this.renderResponsiveChangeAction },
             { event: events.contentReady, handler: this.initialEnd },
             { event: events.sortComplete, handler: this.onActionComplete },
             { event: events.inBoundModelChanged, handler: this.onPropertyChanged },
@@ -545,6 +546,10 @@ export class Sort implements IAction {
         this.addSortIcons();
         this.isMultiSort = false;
         this.updateAriaAttr();
+    }
+
+    private renderResponsiveChangeAction(args: { action?: number }): void {
+        this.responsiveDialogRenderer.action = args.action;
     }
 
     /**

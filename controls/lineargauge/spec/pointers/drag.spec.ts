@@ -90,7 +90,7 @@ describe('Linear gauge control', () => {
 
         it('checking drag and drop - Cursor-style', (done: Function): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0').children[0];                
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointer_0');                
                 trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
                 let container: HTMLElement = document.getElementById('container');
                 expect(container.style.cursor == 'auto').toBe(true);
@@ -195,6 +195,23 @@ describe('Linear gauge control', () => {
             gauge.axes[0].pointers[0].enableDrag = true;
             gauge.axes[0].pointers[0].type = 'Marker';
             gauge.axes[0].pointers[0].markerType = 'Diamond';
+            gauge.refresh();
+        });
+
+        it('checking drag and drop - Text-pointer', (done: Function): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = <HTMLElement>document.getElementById('container_AxisIndex_0_MarkerPointerGroup_0').children[0];
+                let x: string = svg.getAttribute('y');
+                trigger.dragAndDropEvent(svg, 511.5, 63.75, 511.5, 100, '', gauge);
+                expect(x != svg.getAttribute('y')).toBe(true);
+                done();
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].pointers[0].value = 0;
+            gauge.axes[0].pointers[0].enableDrag = true;
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Text';
+            gauge.axes[0].pointers[0].text = 'One'; 
             gauge.refresh();
         });
 

@@ -15,6 +15,7 @@ export class BookmarkView {
     private isBookmarkViewDiv: boolean;
     private treeObj: TreeView;
     private bookmarkRequestHandler: AjaxHandler;
+    private isKeyboardNavigation: boolean = false;
     // eslint-disable-next-line
     public bookmarks: any;
     // eslint-disable-next-line
@@ -173,6 +174,7 @@ export class BookmarkView {
                         function (data: any): string { return bookmarkIconView.outerHTML.replace('${Title}', data.Title); }
                     ),
                     nodeClicked: this.nodeClick.bind(this),
+                    keyPress: this.bookmarkKeypress.bind(this),
                     drawNode: this.bookmarkPanelBeforeOpen.bind(this)
                 });
                 this.treeObj.isStringTemplate = true;
@@ -249,6 +251,14 @@ export class BookmarkView {
         }
         return false;
     };
+    private bookmarkKeypress = (args: any): void => {
+        // eslint-disable-next-line max-len
+        if (args.event && args.event.pointerType !== 'mouse' && args.event.pointerType !== 'touch' && (args.event.key === "Enter" || args.event.key === " ")) {
+            this.isKeyboardNavigation = true;
+            this.nodeClick(args);
+            this.isKeyboardNavigation = false;
+        }
+    }
     private bookmarkPanelBeforeOpen = (args: DrawNodeEventArgs): void => {
         if (this.pdfViewer.enableBookmarkStyles) {
             for (let k: number = 0; k < this.bookmarkStyles.length; k++) {
@@ -378,7 +388,10 @@ export class BookmarkView {
             this.pdfViewerBase.mobileScrollerContainer.style.display = '';
             this.pdfViewerBase.updateMobileScrollerPosition();
         }
-        proxy.pdfViewerBase.focusViewerContainer();
+        if (!this.isKeyboardNavigation) {
+            this.pdfViewerBase.focusViewerContainer();
+        }
+        this.isKeyboardNavigation = false;
         return false;
     }
 

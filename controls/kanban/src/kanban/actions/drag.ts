@@ -114,7 +114,7 @@ export class DragAndDrop {
                     this.dragObj.cloneElement.innerHTML = '';
                     const drag: Element = createElement('div', {
                         className: 'e-multi-card-text',
-                        innerHTML: (<HTMLElement[]>this.dragObj.selectedCards).length + ' ' + this.parent.localeObj.getConstant("cards")
+                        innerHTML: (<HTMLElement[]>this.dragObj.selectedCards).length + ' ' + this.parent.localeObj.getConstant('cards')
                     });
                     this.dragObj.cloneElement.appendChild(drag);
                     classList(this.dragObj.cloneElement, ['e-multi-card-clone'], [cls.CARD_SELECTION_CLASS]);
@@ -154,7 +154,7 @@ export class DragAndDrop {
         let targetEle: HTMLElement =  e.target as HTMLElement;
         const firstCloneCard: HTMLElement = this.parent.element.querySelector('.e-target-dropped-clone');
         let previousSiblingCard: HTMLElement = null;
-        if(!isNoU(firstCloneCard)) {
+        if (!isNoU(firstCloneCard)) {
             previousSiblingCard = firstCloneCard.previousSibling as HTMLElement;
         }
         if (!isNoU((e.target as HTMLElement).parentElement)) {
@@ -217,7 +217,8 @@ export class DragAndDrop {
                     } else {
                         target.querySelector('.' + cls.CARD_WRAPPER_CLASS).appendChild(this.dragObj.targetClone);
                     }
-                } else if ((target.classList.contains(cls.CARD_WRAPPER_CLASS) || target.classList.contains(cls.CARD_VIRTUAL_WRAPPER_CLASS)) &&
+                } else if ((target.classList.contains(cls.CARD_WRAPPER_CLASS) ||
+                    target.classList.contains(cls.CARD_VIRTUAL_WRAPPER_CLASS)) &&
                     !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)
                     && contentCell.querySelectorAll('.' + cls.CARD_CLASS).length === 0) {
                     target.appendChild(this.dragObj.targetClone);

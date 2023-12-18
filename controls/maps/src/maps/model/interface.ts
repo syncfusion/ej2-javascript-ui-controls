@@ -29,9 +29,30 @@ export interface IPrintEventArgs extends IMapsEventArgs {
     htmlContent: Element;
 }
 /**
+ * This class contains the minimum and maximum latitude and longitude coordinates of the map's visible area
+ */
+export interface IMinMaxLatitudeLongitude {
+    /**
+     * Gets the minimum latitude value from the visible map area.
+     */
+    minLatitude: number;
+    /**
+     * Gets the maximum latitude value from the visible map area.
+     */
+    maxLatitude: number;
+    /**
+     * Gets the minimum longitude value from the visible map area.
+     */
+    minLongitude: number;
+    /**
+     * Gets the maximum longitude value from the visible map area.
+     */
+    maxLongitude: number;
+}
+/**
  * Specifies the event arguments for the loaded event in maps.
  */
-export interface ILoadedEventArgs extends IMapsEventArgs {
+export interface ILoadedEventArgs extends IMinMaxLatitudeLongitude, IMapsEventArgs {
     /**
      * Defines the current maps instance.
      *
@@ -60,7 +81,7 @@ export interface ILoadEventArgs extends IMapsEventArgs {
 export interface IDataLabelArgs extends IMapsEventArgs {
     /**
      * Defines the current maps instance.
-     * 
+     *
      * @deprecated
      */
     maps: Maps;
@@ -373,7 +394,7 @@ export interface IMarkerRenderingEventArgs extends IMapsEventArgs {
 
     /**
      * Defines the template of the marker.
-     * 
+     *
      * @aspType string
      */
     template?: string | Function;
@@ -578,7 +599,7 @@ export interface ILabelRenderingEventArgs extends IMapsEventArgs {
     fill: string;
     /**
      * Defines the template for the data-label.
-     * 
+     *
      * @aspType string
      */
     template: string | Function;
@@ -712,7 +733,7 @@ export interface IAnnotationRenderingEventArgs extends IMapsEventArgs {
     maps?: Maps;
     /**
      * Defines the content of the annotation which is being rendered.
-     * 
+     *
      * @aspType string
      */
     content?: string | Function;
@@ -725,7 +746,7 @@ export interface IAnnotationRenderingEventArgs extends IMapsEventArgs {
 /**
  * Specifies the event arguments for the pan event in maps.
  */
-export interface IMapPanEventArgs extends IMapsEventArgs {
+export interface IMapPanEventArgs extends IMinMaxLatitudeLongitude, IMapsEventArgs {
     /**
      * Defines the current maps instance.
      *
@@ -761,7 +782,7 @@ export interface IMapPanEventArgs extends IMapsEventArgs {
 /**
  * Specifies the event arguments for zoom event in maps.
  */
-export interface IMapZoomEventArgs extends IMapsEventArgs {
+export interface IMapZoomEventArgs extends IMinMaxLatitudeLongitude, IMapsEventArgs {
     /**
      * Defines the current maps instance.
      *

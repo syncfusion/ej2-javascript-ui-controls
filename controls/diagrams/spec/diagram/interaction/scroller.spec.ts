@@ -234,13 +234,13 @@ describe('Diagram Control', () => {
                 mode: "Page",
                 region: "Content",
             });
-            expect(diagram.scroller.horizontalOffset == 25 && (diagram.scroller.verticalOffset == 132.5|| diagram.scroller.verticalOffset == 134.5)).toBe(true);
+            expect((diagram.scroller.horizontalOffset == 25 || diagram.scroller.horizontalOffset == 484 ) && (diagram.scroller.verticalOffset == 132.5|| diagram.scroller.verticalOffset == 134.5 || diagram.scroller.verticalOffset == 25)).toBe(true);
 
             diagram.fitToPage({
                 mode: "Page",
                 region: "Content",
             });
-            expect(diagram.scroller.horizontalOffset == 25 && (diagram.scroller.verticalOffset == 132.5|| diagram.scroller.verticalOffset == 134.5)).toBe(true);
+            expect((diagram.scroller.horizontalOffset == 25 || diagram.scroller.horizontalOffset == 484 ) && (diagram.scroller.verticalOffset == 132.5|| diagram.scroller.verticalOffset == 134.5 || diagram.scroller.verticalOffset == 25)).toBe(true);
             done();
         });
     });

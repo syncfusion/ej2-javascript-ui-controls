@@ -297,13 +297,13 @@ export class HeaderRender implements IRenderer {
         if (this.getTable()) {
             remove(this.getTable());
         }
-        const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '0.25px', role: 'grid' } });
+        const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '0.25px', role: 'presentation' } });
         const findHeaderRow: { thead: Element, rows: Row<Column>[] } = this.createHeaderContent(tableName);
         const thead: Element = findHeaderRow.thead;
         const tbody: Element = this.parent.createElement( literals.tbody, { className: this.parent.frozenRows ? '' : 'e-hide', attrs: { role: 'rowgroup' } });
         this.caption = this.parent.createElement('caption', { innerHTML: this.parent.element.id + '_header_table', className: 'e-hide' });
         const colGroup: Element = this.parent.createElement(literals.colGroup);
-        const rowBody: Element = this.parent.createElement('tr');
+        const rowBody: Element = this.parent.createElement('tr', { attrs: { role: 'row' } });
         let bodyCell: Element;
         const rows: Row<Column>[] = this.rows = findHeaderRow.rows;
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
@@ -321,7 +321,6 @@ export class HeaderRender implements IRenderer {
         table.appendChild(thead);
         table.appendChild(tbody);
         table.appendChild(this.caption);
-        this.ariaService.setOptions(table as HTMLElement, { colcount: gObj.getColumns().length.toString() });
         return table;
     }
 
@@ -338,7 +337,7 @@ export class HeaderRender implements IRenderer {
         const gObj: IGrid = this.parent;
         const columns: Column[] = <Column[]>gObj.getColumns();
         const thead: Element = this.parent.createElement('thead', { attrs: { 'role': 'rowgroup' } });
-        const colHeader: Element = this.parent.createElement('tr', { className: 'e-columnheader' });
+        const colHeader: Element = this.parent.createElement('tr', { className: 'e-columnheader', attrs: { role: 'row' } });
         const rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, CellType.Header, gObj);
         rowRenderer.element = colHeader;
         let rows: Row<Column>[] = [];

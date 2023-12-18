@@ -222,7 +222,7 @@ export class DropDownButtons {
             }
         });
         if (this.parent.inlineMode.enable) {
-            this.setCssClass({cssClass: this.parent.cssClass});
+            this.setCssClass({cssClass: this.parent.getCssClass()});
         }
     }
 
@@ -557,7 +557,9 @@ export class DropDownButtons {
     }
 
     private onIframeMouseDown(): void {
-        dispatchEvent(document, 'mousedown');
+        if (this.parent.getToolbarElement().querySelectorAll('.e-rte-dropdown-btn[aria-expanded="true"]').length > 0) {
+            dispatchEvent(document, 'mousedown');
+        }
     }
 
     protected removeEventListener(): void {

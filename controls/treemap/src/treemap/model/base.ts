@@ -293,7 +293,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Sets and gets the options to customize the text style of legend in the treemap.
      */
-    @Complex<FontModel>({ size: '12px', fontFamily: null , fontWeight: null}, Font)
+    @Complex<FontModel>({ size: null, fontFamily: null , fontWeight: null}, Font)
     public textStyle: FontModel;
     /**
      * Sets and gets the shape color of legend in the treemap.
@@ -356,7 +356,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Sets and gets the options to customize the text style of the legend item text in the treemap.
      */
-    @Complex<FontModel>({ size: '14px' }, Font)
+    @Complex<FontModel>({ size: null, fontFamily: null, fontWeight: null }, Font)
     public titleStyle: FontModel;
     /**
      * Sets and gets the position of legend in the treemap.
@@ -608,7 +608,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Sets and gets the options for customizing the text style of tooltip of the treemap.
      */
-    @Complex<FontModel>({fontFamily: defaultFont, size: null, fontWeight: null }, Font)
+    @Complex<FontModel>({fontFamily: null, size: null, fontWeight: null }, Font)
     public textStyle: FontModel;
 }
 /**

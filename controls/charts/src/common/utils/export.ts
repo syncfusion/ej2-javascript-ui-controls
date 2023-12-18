@@ -4,7 +4,7 @@ import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { removeElement } from '../utils/helper';
 import { ExportType } from '../utils/enum';
-import { IAfterExportEventArgs } from '../../chart/model/chart-interface';
+import { IAfterExportEventArgs } from '../../common/model/interface';
 import { afterExport } from '../model/constants';
 import {
     PdfPageOrientation, PdfDocument, PdfBitmap, SizeF, PdfMargins, PdfStandardFont, PdfPageTemplateElement,
@@ -14,6 +14,7 @@ import { RangeNavigator } from '../..';
 import { StockChart } from '../../stock-chart/stock-chart';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
 import { IPDFArgs } from '../../common/model/interface';
+import { Chart3D } from '../../chart3d';
 
 /**
  * Export Functionalities
@@ -25,7 +26,7 @@ interface IControlValue {
     svg: Element;
 }
 export class ExportUtils {
-    private control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart;
+    private control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart | Chart3D;
 
     /**
      * Constructor for chart and accumulation annotation
@@ -33,7 +34,7 @@ export class ExportUtils {
      * @param control
      */
 
-    constructor(control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart) {
+    constructor(control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart | Chart3D) {
         this.control = control;
     }
 
@@ -47,7 +48,7 @@ export class ExportUtils {
     public export(
         type: ExportType, fileName: string,
         orientation?: PdfPageOrientation,
-        controls?: (Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart)[],
+        controls?: (Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart | Chart3D)[],
         width?: number, height?: number, isVertical?: boolean,
         header?: IPDFArgs, footer?: IPDFArgs, exportToMultiplePage?: boolean
     ): void {
@@ -140,7 +141,7 @@ export class ExportUtils {
      * @param chart
      */
 
-    public getDataUrl(chart: Chart | AccumulationChart): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string } {
+    public getDataUrl(chart: Chart | AccumulationChart | Chart3D ): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string } {
         const controlValue: IControlValue[] = this.getControlsValue([chart]);
         let element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
         const isCanvas: boolean = (this.control as Chart).enableCanvas;
@@ -214,7 +215,7 @@ export class ExportUtils {
      */
 
     // eslint-disable-next-line max-len
-    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart)[], isVertical?: boolean, isMultiPages?: boolean, type?: ExportType): IControlValue[] {
+    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart | Chart3D)[], isVertical?: boolean, isMultiPages?: boolean, type?: ExportType): IControlValue[] {
         let width: number = 0;
         let height: number = 0;
         let svgObject: Element = new SvgRenderer('').createSvg({

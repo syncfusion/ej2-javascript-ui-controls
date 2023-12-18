@@ -192,8 +192,12 @@ export class WCharacterFormat {
                 return charStyleValue;
             } else {
                 if (!isNullOrUndefined(this.baseCharStyle)) {
-                    const paragraph: any = (this.ownerBase as TextElementBox).paragraph;
-                    const line: LineWidget = (this.ownerBase as TextElementBox).line;
+                    let paragraph: any = undefined;
+                    let line: LineWidget = undefined;
+                    if (!isNullOrUndefined(this.ownerBase)) {
+                        paragraph = (this.ownerBase as TextElementBox).paragraph;
+                        line = (this.ownerBase as TextElementBox).line;
+                    }
                     if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(line)) {
                         const length: number = line.children.length;
                         for (let i: number = 0; i < length; i++) {

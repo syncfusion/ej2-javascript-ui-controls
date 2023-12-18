@@ -2,71 +2,15 @@
 
 ## [Unreleased]
 
-## 23.2.7 (2023-12-05)
+## 24.1.41 (2023-12-18)
 
 ### ImageEditor
 
-#### Bug Fixes
+#### Features
 
-- `#I518177` - Issue with "Pen stroke color is not updated in the toolbar while changing the color using the shapeChanging event" has been resolved.
+- Provided support for image straightening allows users to adjust an image by rotating it clockwise or counter clockwise. The rotating degree value should be within the range of -45 to +45 degrees for accurate straightening. Positive values indicate clockwise rotation, while negative values indicate counter clockwise rotation.
 
-## 23.2.6 (2023-11-28)
-
-### ImageEditor
-
-#### Bug Fixes
-
-- Issue with "Zoom public method not working properly" has been resolved.
-- Issue with "Resize numeric textbox placeholder value not updated properly in rotated state" has been resolved.
-
-## 23.2.5 (2023-11-23)
-
-### ImageEditor
-
-#### Bug Fixes
-
-- Issue with "Resize numeric textbox not updated properly while applying with placeholder value" has been resolved.
-
-## 23.1.43 (2023-10-31)
-
-### ImageEditor
-
-#### Bug Fixes
-
-- Resolved the SVG type image not load through uploader toolbar button in image editor.
-
-## 23.1.41 (2023-10-17)
-
-### ImageEditor
-
-#### Bug Fixes
-
-- Changed the required parameters in the "drawFrame" method to optional parameters.
-
-### ImageEditor
-
-#### Bug Fixes
-
-- `#I505985` - Provide the alert dialog for unsupported files and selecting multiple images in the Image Editor uploader.
-- `#I507638` - Provide the support to hide the uploader toolbar item in the Image Editor.
-
-## 23.1.39 (2023-10-04)
-
-### ImageEditor
-
-#### Bug Fixes
-
-- `#I495933` - Resolved the GetImageData method does not return values properly in blazor image editor.
-- `#I507638` - Resolved the image not opening in ImageEditor while the image file name has two dots.
-
-## 23.1.38 (2023-09-26)
-
-### ImageEditor
-
-#### Bug Fixes
-
-- `#I499689` - Provided the "ShapeChanging" event trigger support for pen action annotation.
-- `#I495011` - Provided the "ShapeChanged" event trigger support for after shapes are changed and applied to canvas.
+- Provided support to add additional font families for text annotation.
 
 ## 23.1.36 (2023-09-15)
 

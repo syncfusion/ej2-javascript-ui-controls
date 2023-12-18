@@ -258,14 +258,18 @@ export class Revision {
         if (item instanceof ElementBox && removeChanges) {
             let currentPara: ParagraphWidget = item.line.paragraph;
             this.removeRevisionItemsFromRange(item);
-            if(item instanceof FootnoteElementBox) {
-                if(item.footnoteType === 'Footnote') {
+            if (item instanceof FootnoteElementBox) {
+                if (item.footnoteType === 'Footnote') {
                     this.owner.editor.removeFootnote(item);
                 }
             }
             this.removeItem(item);
             this.isContentRemoved = true;
             this.owner.documentHelper.layout.reLayoutParagraph(currentPara, 0, 0);
+            if (isNullOrUndefined(currentPara.childWidgets)) {
+                const textPosition: TextPosition = this.owner.selection.getTextPosBasedOnLogicalIndex(this.owner.selection.editPosition);
+                this.owner.selection.selectContent(textPosition, true);
+            }
         } else if (item instanceof WCharacterFormat && removeChanges) {
             this.isContentRemoved = true;
             this.skipUnLinkElement = false;

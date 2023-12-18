@@ -906,7 +906,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
                 ele.appendChild(value as HTMLElement);
                 if (this.trgtEle) {
                     (<HTMLElement>ele.firstElementChild).style.display = '';
-                }            
+                }             
             } else {
                 templateFn = templateCompiler(value);
             }

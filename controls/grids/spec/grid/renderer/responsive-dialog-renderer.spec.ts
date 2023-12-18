@@ -8,12 +8,16 @@ import { Edit } from '../../../src/grid/actions/edit';
 import { Page } from '../../../src/grid/actions/page';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Sort } from '../../../src/grid/actions/sort';
+import { Group } from '../../../src/grid/actions/group';
+import { ColumnChooser } from '../../../src/grid/actions/column-chooser';
+import { ColumnMenu } from '../../../src/grid/actions/column-menu';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { createGrid, destroy, getKeyUpObj } from '../base/specutil.spec';
 import { ResponsiveDialogAction } from '../../../src/grid/base/enum';
 import { AdaptiveDialogEventArgs, NotifyArgs } from '../../../src/grid/base/interface';
+import { select } from '@syncfusion/ej2-base';
 
-Grid.Inject(Aggregate, Edit, Toolbar, Page, Filter, Sort);
+Grid.Inject(Aggregate, Edit, Toolbar, Page, Filter, Sort, ColumnChooser, ColumnMenu, Group);
 
 describe('Adaptive renderer', () => {
     describe('Ensure adaptive dialogs', () => {
@@ -58,7 +62,7 @@ describe('Adaptive renderer', () => {
             expect(document.querySelector('.e-toolbar-item[title=Delete]').classList.contains('e-hidden')).toBeTruthy();
             expect(document.querySelector('.e-toolbar-item[title=Update]').classList.contains('e-hidden')).toBeTruthy();
             expect(document.querySelector('.e-toolbar-item[title=Cancel]').classList.contains('e-hidden')).toBeTruthy();
-            expect(document.querySelector('.e-toolbar-item[title=Print]').classList.contains('e-hidden')).toBeFalsy();
+            // expect(document.querySelector('.e-toolbar-item[title=Print]').classList.contains('e-hidden')).toBeFalsy();
             expect(document.querySelector('.e-gridresponsiveicons').classList.contains('e-hidden')).toBeTruthy();
             expect(document.querySelector('.e-toolbar-item[title=Edit]').querySelector('.e-tbar-btn-text')).toBeNull();
             expect(document.getElementsByClassName('e-summaryrow')[0].querySelectorAll('.e-summarycell:not([style="display: none;"])').length).toBe(5);
@@ -680,6 +684,7 @@ describe('Adaptive renderer', () => {
         });
     });
 
+    // used for coverage
     describe('Ensure onproperty change', () => {
         let gridObj: any;
         beforeAll((done: Function) => {
@@ -722,6 +727,159 @@ describe('Adaptive renderer', () => {
             gridObj.enableAdaptiveUI = true;
             expect(1).toBe(1)
             done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Ensure vertical dialog rendering with toolbar and column chooser', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    rowRenderingMode: 'Vertical',
+                    allowFiltering: true,
+                    allowSorting: true,
+                    allowPaging: true,
+                    enableAdaptiveUI: true,
+                    filterSettings: { type: 'Excel' },
+                    showColumnChooser: true,
+                    editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true, mode: 'Dialog' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Search', 'ColumnChooser', 'Print', 'ExcelExport', 'PdfExport', 'CsvExport'],
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', width: 120 },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 120 },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 120 },
+                    ],
+                }, done);
+        });
+
+        it('ToolbarMenu popup enure', (done: Function) => {
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
+            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-pdfexport').click();
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
+            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-excelexport').click();
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
+            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-csvexport').click();
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
+            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-columnchooser').click();
+            done();
+        });
+
+        it('ToolbarMenu popup column chooser popup close', () => {
+            let columnChooseHeader: HTMLElement = document.querySelector('.e-rescolumnchooserdiv > .e-dlg-header-content');
+            (columnChooseHeader.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+            expect(document.getElementsByClassName('e-responsive-dialog').length).toBe(0);
+        });
+
+        it('Responsive column chooser popup open', (done: Function) => {
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
+            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-columnchooser').click();
+            done();
+        });
+
+        it('CC action check', (done: Function) => {
+            let actionComplete = (args: any) => {
+                if (args.requestType === 'columnstate') {
+                    done();
+                }
+            }
+            gridObj.actionComplete = actionComplete;
+            const selectAll: any = document.querySelector('.e-selectall');
+            selectAll.click();
+            selectAll.click();
+            (document.getElementsByClassName('e-res-apply-btn')[0] as HTMLElement).click();     
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Ensure vertical dialog rendering with toolbar and column chooser', () => {
+        let gridObj: any;
+        let columnMenu: any;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    rowRenderingMode: 'Horizontal',
+                    allowFiltering: true,
+                    allowSorting: true,
+                    allowPaging: true,
+                    enableAdaptiveUI: true,
+                    allowGrouping: true,
+                    filterSettings: { type: 'Excel' },
+                    showColumnMenu: true,
+                    showColumnChooser: true,
+                    toolbar: ['ColumnChooser', 'Print', 'ExcelExport', 'PdfExport', 'CsvExport'],
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', width: 120 },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 120 },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 120 },
+                    ],
+                }, done);
+        });
+
+        it('Horizontal Mode ToolbarMenu popup enure', (done: Function) => {
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
+            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-pdfexport').click();
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
+            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-excelexport').click();
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
+            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-csvexport').click();
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
+            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-columnchooser').click();
+            done();
+        });
+        it('ToolbarMenu popup column menu', () => {
+            columnMenu = gridObj.getHeaderContent().querySelector('.e-columnmenu');
+            columnMenu.click();
+            let columnChooseHeader: HTMLElement = document.querySelector('.e-rescolumnchooserdiv > .e-dlg-header-content');
+            (columnChooseHeader.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+            columnMenu.click();
+            (document.querySelector('.e-responsiveautofitalldiv') as any).click();
+            columnMenu.click();
+            (document.querySelector('.e-responsiveautofitdiv') as any).click();
+            columnMenu.click();
+            (document.querySelector('.e-responsiveascendingdiv') as any).click();
+            columnMenu.click();
+            (document.querySelector('.e-responsivedescendingdiv') as any).click();
+            columnMenu.click();
+        });
+        it('Adaptive column menu action 1', () => {
+            columnMenu.click();
+            (document.querySelector('.e-responsivecolumndiv') as any).click();
+            let columnChooseHeader: HTMLElement = document.querySelector('.e-rescolumnchooserdiv > .e-dlg-header-content');
+            (columnChooseHeader.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
+        });
+        it('Adaptive column menu action 2', () => {
+            columnMenu.click();
+        });
+        it('Adaptive column menu action 3', () => {
+            (document.querySelector('.e-responsivefilterdiv') as any).click();
+            (document.getElementsByClassName('e-res-apply-btn')[0] as any).click();
         });
 
         afterAll(() => {

@@ -6,13 +6,13 @@ import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-ba
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Alignment, LegendPosition, LegendType, LegendMode, ShapeLayerType, Type, MarkerType, Orientation, MapAjax } from '../../index';
 import { SmartLabelMode, IntersectAction } from '../../index';
-import { BorderModel, ColorMappingSettingsModel, FontModel, CommonTitleSettingsModel, NavigationLineSettingsModel, ZoomToolbarTooltipSettingsModel } from './base-model';
+import { BorderModel, ColorMappingSettingsModel, FontModel, CommonTitleSettingsModel, NavigationLineSettingsModel, PolygonSettingsModel, ZoomToolbarTooltipSettingsModel } from './base-model';
 import { MarkerSettingsModel, MarkerClusterSettingsModel, ShapeSettingsModel, BubbleSettingsModel, ArrowModel } from './base-model';
-import { DataLabelSettingsModel, TooltipSettingsModel, SubTitleSettingsModel, SelectionSettingsModel } from './base-model';
+import { DataLabelSettingsModel, TooltipSettingsModel, SubTitleSettingsModel, SelectionSettingsModel, PolygonSettingModel } from './base-model';
 import { HighlightSettingsModel, ToggleLegendSettingsModel, ConnectorLineSettingsModel} from './base-model';
 import { InitialShapeSelectionSettingsModel, InitialMarkerSelectionSettingsModel, ZoomToolbarSettingsModel, ZoomToolbarButtonSettingsModel } from './base-model';
 import { Theme } from './theme';
-import { Point, GeoLocation } from '../utils/helper';
+import { Point, GeoLocation, Coordinate } from '../utils/helper';
 import { BingMapType, LegendArrangement, LegendShape, BubbleType, StaticMapType, ToolbarItem } from '../utils/enum';
 import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction } from '../index';
 
@@ -25,7 +25,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Gets or sets the content for the annotation in maps.
-     * 
+     *
      * @default ''
      * @aspType string
      */
@@ -34,7 +34,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Gets or sets the x position of the annotation in pixel or percentage format.
-     * 
+     *
      * @default '0px'
      */
     @Property('0px')
@@ -42,7 +42,7 @@ export class Annotation extends ChildProperty<Annotation> {
 
     /**
      * Gets or sets the y position of the annotation in pixel or percentage format.
-     * 
+     *
      * @default '0px'
      */
     @Property('0px')
@@ -78,35 +78,35 @@ export class Annotation extends ChildProperty<Annotation> {
 export class Arrow extends ChildProperty<Arrow> {
     /**
      * Gets or sets the type of the position to place the arrow in navigation lines.
-     * 
+     *
      * @default 'Start'
      */
     @Property('Start')
     public position: string;
     /**
      * Enables or disables the visibility of the arrow in navigation line.
-     * 
+     *
      * @default false
      */
     @Property('false')
     public showArrow: boolean;
     /**
      * Gets or sets the size of the arrow in navigation line in maps.
-     * 
+     *
      * @default 2
      */
     @Property(2)
     public size: number;
     /**
      * Gets or sets the color for the arrow in navigation line.
-     * 
+     *
      * @default 'black'
      */
     @Property('black')
     public color: string;
     /**
      * Gets or sets the offset value to position the arrow from the navigation line.
-     * 
+     *
      * @default 0
      */
     @Property(0)
@@ -288,26 +288,26 @@ export class ZoomToolbarTooltipSettings extends ChildProperty<ZoomToolbarTooltip
      * Gets or sets the font family of the text in the tooltip of the zoom toolbar.
      *
      * @default ''
-    */
+     */
     @Property('')
     public fontFamily: string;
     /**
      * Gets or sets the font style of the text in the tooltip of the zoom toolbar.
      *
      * @default ''
-    */
+     */
     @Property('')
     public fontStyle: string;
     /**
      * Gets or sets the font weight of the text in the tooltip of the zoom toolbar.
      *
      * @default ''
-    */
+     */
     @Property('')
     public fontWeight: string;
     /**
      * Gets or sets the size of the text in the tooltip of the zoom toolbar.
-     * 
+     *
      * @default ''
      */
     @Property('')
@@ -316,7 +316,7 @@ export class ZoomToolbarTooltipSettings extends ChildProperty<ZoomToolbarTooltip
      * Gets or sets the font opacity of the text in the tooltip of the zoom toolbar.
      *
      * @default 1
-    */
+     */
     @Property(1)
     public fontOpacity: number;
 }
@@ -614,7 +614,7 @@ export class MarkerClusterSettings extends ChildProperty<MarkerClusterSettings> 
     public offset: Point;
     /**
      * Gets or sets the URL path for the marker cluster when the cluster shape is set as image in maps.
-     * 
+     *
      * @default ''
      */
     @Property('')
@@ -864,6 +864,76 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
     @Complex<BorderModel>({ color: 'transparent', width: 0 }, Border)
     public border: BorderModel;
 
+}
+/**
+ * Defines the properties for a single polygon shape to render over the Maps, such as coordinates, fill, border, and opacity.
+ */
+export class PolygonSetting extends ChildProperty<PolygonSettings> {
+    /**
+     * Gets or sets the width of the border of the polygon shape.
+     *
+     * @default 1
+     */
+    @Property(1)
+    public borderWidth: number;
+    /**
+     * Gets or sets the opacity of the border of the polygon shape.
+     *
+     * @default 1
+     */
+    @Property(1)
+    public borderOpacity: number;
+    /**
+     * Gets or sets the opacity of the polygon shape.
+     *
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
+    /**
+     * Gets or sets the color to be used in the border of the polygon shape.
+     *
+     * @default 'black'
+     */
+    @Property('#FF471A')
+    public borderColor: string;
+    /**
+     * Gets or sets the color to be filled in the polygon shape.
+     *
+     * @default 'black'
+     */
+    @Property('#FF471A')
+    public fill: string;
+    /**
+     * Gets or sets the points that define the polygon shape.
+     * This property holds a collection of coordinates that define the polygon shape.
+     *
+     * @default []
+     */
+    @Property([])
+    public points: Coordinate[];
+}
+
+/**
+ * Defines the properties of the polygon shapes that will be rendered on a map layer.
+ * The selection and highlight settings for polygon shapes can also be defined.
+ */
+export class PolygonSettings extends ChildProperty<PolygonSettings> {
+    /**
+     * Gets or sets the properties of all the polygon shapes that will be displayed in a layer.
+     */
+    @Collection<PolygonSettingModel>([], PolygonSetting)
+    public polygons: PolygonSettingModel[];
+    /**
+     * Gets or sets the properties for selecting polygon shapes in a map layer.
+     */
+    @Complex<SelectionSettingsModel>({}, SelectionSettings)
+    public selectionSettings: SelectionSettingsModel;
+    /**
+     * Gets or sets the properties for highlighting polygon shapes in a map layer.
+     */
+    @Complex<HighlightSettingsModel>({}, HighlightSettings)
+    public highlightSettings: HighlightSettingsModel;
 }
 /**
  * Gets or sets the options to customize the navigation lines in maps which is used to connect different locations.
@@ -1156,7 +1226,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 
     /**
      * Gets or sets the color for the toolbar in maps.
-     * 
+     *
      * @default null
      * @deprecated
      */
@@ -1164,7 +1234,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public color: string;
     /**
      * Gets or sets the color for the zoom toolbar when the mouse has hovered on toolbar element in maps.
-     * 
+     *
      * @default null
      * @deprecated
      */
@@ -1172,7 +1242,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public highlightColor: string;
     /**
      * Gets or sets the color for the zooming toolbar when clicking the zooming toolbar in maps.
-     * 
+     *
      * @default null
      * @deprecated
      */
@@ -1254,14 +1324,14 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public minZoom: number;
     /**
      * Enables or disables the ability to zoom based on the marker position while rendering the maps.
-     * 
+     *
      * @default false
      */
     @Property(false)
     public shouldZoomInitially: boolean;
     /**
      * Enables or disables the zoom to set to the initial State.
-     * 
+     *
      * @default true
      */
     @Property(true)
@@ -1356,7 +1426,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 
     /**
      * Enables or disables the visibility of the inverted pointer in interactive legend in maps.
-     * 
+     *
      * @default false
      */
     @Property(false)
@@ -1486,7 +1556,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 
     /**
      * Gets or sets the color of the legend in maps.
-     * 
+     *
      * @default null
      */
     @Property(null)
@@ -1556,14 +1626,14 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public border: BorderModel;
     /**
      * Gets or sets the background color for the data labels in maps.
-     * 
+     *
      * @default 'black'
      */
     @Property('black')
     public fill: string;
     /**
      * Gets or sets the opacity of the data labels in maps.
-     * 
+     *
      * @default 1
      */
     @Property(1)
@@ -2075,6 +2145,12 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     @Collection<NavigationLineSettingsModel>([], NavigationLineSettings)
     public navigationLineSettings: NavigationLineSettingsModel[];
     /**
+     * Gets or sets the properties of the polygon shapes that will be rendered on a map layer.
+     * The selection and highlight settings for polygon shapes can also be defined.
+     */
+    @Complex<PolygonSettingsModel>({}, PolygonSettings)
+    public polygonSettings: PolygonSettingsModel;
+    /**
      * Gets or sets the options for customizing the tooltip of the layers in maps.
      */
     @Complex<TooltipSettingsModel>({}, TooltipSettings)
@@ -2152,7 +2228,7 @@ export class Tile {
 export class MapsAreaSettings extends ChildProperty<MapsAreaSettings> {
     /**
      * Gets or sets the background color for the map area.
-     * 
+     *
      * @default null
      */
     @Property(null)

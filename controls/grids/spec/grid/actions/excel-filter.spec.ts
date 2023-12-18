@@ -1,7 +1,7 @@
 /**
  * Grid Filtering spec document
  */
-import { ChildProperty, L10n } from '@syncfusion/ej2-base';
+import { ChildProperty, EventHandler, L10n } from '@syncfusion/ej2-base';
 import { getValue } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Filter } from '../../../src/grid/actions/filter';
@@ -545,7 +545,6 @@ describe('Excel Filter =>', () => {
         });
     });
 
-    // used for code coverage
     describe('Excel filter with Rtl mode', () => {
         let gridObj: Grid;
         let dataBound: () => void;
@@ -1236,6 +1235,326 @@ describe('EJ2-52360 => In lazyload grouping enabled grid while hiding columns in
         }
         gridObj.actionComplete = actionComplete;
         (gridObj.element.getElementsByClassName('e-filtermenudiv e-icons e-icon-filter')[1] as any).click();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Excel Filter on demand load and selection maintain for filter', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 23),
+                allowFiltering: true,
+                filterSettings: { type: 'Excel', enableInfiniteScrolling: true, itemsCount: 5 },
+                height: 500,
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'EmployeeID', headerText: 'EmployeeID', width: 150, },
+                ],
+                actionComplete: actionComplete
+            }, done);
+    });
+
+    it('OrderID filter dialog open testing', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+    });
+
+    it('filter for display no records', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            expect(gridObj.filterSettings.columns.length).toBe(2);
+            gridObj.filterModule.filterModule.closeDialog();
+            gridObj.actionComplete = null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterModule.excelFilterBase.filterByColumn("OrderID", "equal", 10248, 'and', true, true, 'notequal', 10248);
+    });
+
+    it('OrderID filter dialog open testing - 1', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(0);
+                expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-uncheck').length).toBe(1);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(0);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteUnloadParentExistPred.length).toBe(0);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+    });
+
+    it('OrderID filter dialog open testing and down scroll', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(0);
+                expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-uncheck').length).toBe(1);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(0);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteUnloadParentExistPred.length).toBe(0);
+                // gridObj.filterModule.filterModule.closeDialog();
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+        (<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteScrollHandler();
+        setTimeout(done, 1000);
+    });
+
+    it('filter in between', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            expect(gridObj.filterSettings.columns.length).toBe(2);
+            gridObj.filterModule.filterModule.closeDialog();
+            gridObj.actionComplete = null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterModule.excelFilterBase.filterByColumn("OrderID", "greaterthanorequal", 10263, 'and', true, true, 'lessthanorequal', 10265);
+    });
+
+    it('OrderID filter dialog open testing - 2', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(0);
+                expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(0);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteUnloadParentExistPred.length).toBe(2);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        setTimeout(done, 1000);
+    });
+
+    it('OrderID filter dialog open testing and down scroll - 1', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(3);
+                expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(0);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteUnloadParentExistPred.length).toBe(2);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+        (<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteScrollHandler();
+        setTimeout(done, 1000);
+    });
+
+    it('checkbox selection', () => {
+        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        let checkBox: Element = checkBoxList.children[10].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.excelFilterBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(1);
+        checkBox = checkBoxList.children[11].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.excelFilterBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(2);
+        checkBox = checkBoxList.children[12].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.excelFilterBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(0);
+        expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-uncheck').length).toBe(1);
+    });
+
+    it('filter greaterthan', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            expect(gridObj.filterSettings.columns.length).toBe(1);
+            gridObj.filterModule.filterModule.closeDialog();
+            gridObj.actionComplete = null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterModule.excelFilterBase.filterByColumn("OrderID", "greaterthan", 10247, 'or', true, true);
+    });
+
+    it('OrderID filter dialog open testing - 3', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-check').length).toBe(1);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(0);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteUnloadParentExistPred.length).toBe(0);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        setTimeout(done, 1000);
+    });
+
+    it('filter greaterthan not loaded data', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            expect(gridObj.filterSettings.columns.length).toBe(1);
+            gridObj.filterModule.filterModule.closeDialog();
+            gridObj.actionComplete = null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterModule.excelFilterBase.filterByColumn("OrderID", "greaterthan", 10262, 'or', true, true);
+    });
+
+    it('OrderID filter dialog open testing - 4', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(0);
+                expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(0);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteUnloadParentExistPred.length).toBe(1);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        setTimeout(done, 1000);
+    });
+
+    it('checkbox selection all data one by one', () => {
+        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        for (let i: number = 0; i < 15; i++) {
+            let checkBox: Element = checkBoxList.children[i].querySelector('input');
+            (<any>gridObj.filterModule).filterModule.excelFilterBase.clickHandler({ target: checkBox });
+            if (i === 14) {
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(0);
+            } else {
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(i + 1);
+            }
+        }
+    });
+
+    it('OrderID filter dialog open testing and down scroll - 2', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(gridObj.filterSettings.itemsCount * 3);
+                // expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
+                // expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-check').length).toBe(1);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(0);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteUnloadParentExistPred.length).toBe(0);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+        (<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteScrollHandler();
+        setTimeout(done, 1000);
+    });
+
+    it('filter lessthan', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            expect(gridObj.filterSettings.columns.length).toBe(1);
+            gridObj.filterModule.filterModule.closeDialog();
+            gridObj.actionComplete = null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterModule.excelFilterBase.filterByColumn("OrderID", "lessthan", 10271, 'or', true, true);
+    });
+
+    it('OrderID filter dialog open testing - 5', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-check').length).toBe(1);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(0);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteUnloadParentExistPred.length).toBe(0);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        setTimeout(done, 1000);
+    });
+
+    it('filter lessthan not loaded data', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            expect(gridObj.filterSettings.columns.length).toBe(1);
+            gridObj.filterModule.filterModule.closeDialog();
+            gridObj.actionComplete = null;
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterModule.excelFilterBase.filterByColumn("OrderID", "lessthan", 10263, 'or', true, true);
+    });
+
+    it('OrderID filter dialog open testing - 6', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(0);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteUnloadParentExistPred.length).toBe(1);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        setTimeout(done, 1000);
+    });
+
+    it('checkbox unselect all loaded data one by one', () => {
+        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        for (let i: number = 0; i < 15; i++) {
+            let checkBox: Element = checkBoxList.children[i].querySelector('input');
+            (<any>gridObj.filterModule).filterModule.excelFilterBase.clickHandler({ target: checkBox });
+            if (i === 14) {
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(0);
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteUnloadParentExistPred.length).toBe(0);
+            } else {
+                expect((<any>gridObj.filterModule).filterModule.excelFilterBase.infiniteManualSelectMaintainPred.length).toBe(i + 1);
+            }
+        }
     });
 
     afterAll(() => {

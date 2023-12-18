@@ -59,7 +59,7 @@ describe('Schedule year view', () => {
 
         it('work cells', () => {
             expect(schObj.element.querySelectorAll('.e-work-cells')[0].getAttribute('data-date')).toEqual(new Date(2020, 11, 27).getTime().toString());
-            expect(schObj.element.querySelectorAll('.e-work-cells')[0].innerHTML).toEqual('<span class="e-day" title="Sunday, December 27, 2020">27</span>');
+            expect(schObj.element.querySelectorAll('.e-work-cells')[0].innerHTML).toEqual('<span class="e-day" title="Sunday, December 27, 2020" aria-disabled="true">27</span>');
         });
 
         it('check week number', () => {

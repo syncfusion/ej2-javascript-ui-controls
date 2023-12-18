@@ -392,13 +392,20 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
                 this.unWireEvents();
             }
         }
-        this.wrapper = null;
         this.primaryBtnObj.destroy();
         this.secondaryBtnObj.destroy();
         super.destroy();
-        if (!this.element.getAttribute('class')) {
+        if (this.element && !this.element.getAttribute('class')) {
             this.element.removeAttribute('class');
         }
+        if (this.refreshing && (this as any).isAngular) {
+            this.element = this.wrapper as HTMLButtonElement;
+            ['e-control', 'e-split-btn', 'e-lib'].forEach((key: string) => {
+                this.element.classList.add(key);
+            });
+            setValue('ej2_instances', [this], this.element);
+        }
+        this.wrapper = null;
     }
 
     protected wireEvents(): void {

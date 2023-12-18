@@ -8,7 +8,7 @@ import { ChartLocation, ControlPoints } from '../../common/utils/helper';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
-import { IntervalType } from '../../chart/utils/enum';
+import { IntervalType } from '../../common/utils/enum';
 import { LineBase } from './line-base';
 import { AnimationModel } from '../../common/model/base-model';
 

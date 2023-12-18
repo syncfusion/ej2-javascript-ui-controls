@@ -51,7 +51,7 @@ export interface ProgressBarModel extends ComponentModel{
     /**
      * maximum progress value
      *
-     * @default 0
+     * @default 100
      */
     maximum?: number;
 

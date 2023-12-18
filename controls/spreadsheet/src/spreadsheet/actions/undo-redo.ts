@@ -114,12 +114,16 @@ export class UndoRedo {
     }
 
     private performUndoRedo(
-        args: { isUndo: boolean, isPublic: boolean, preventEvt?: boolean, preventReSelect?: boolean, isFromUpdateAction?: boolean }): void {
+        args: { isUndo: boolean, isPublic: boolean, preventEvt?: boolean, preventReSelect?: boolean, isFromUpdateAction?: boolean,
+            setCollection?: boolean, undoArgs?: object }): void {
         let undoRedoArgs: CollaborativeEditArgs;
         if (args.isFromUpdateAction) {
             undoRedoArgs = args as unknown as CollaborativeEditArgs;
         } else {
             undoRedoArgs = args.isUndo ? this.undoCollection.pop() : this.redoCollection.pop();
+            if (args.setCollection) {
+                args.undoArgs = undoRedoArgs;
+            }
         }
         this.isUndo = args.isUndo; let preventEvt: boolean;
         if (undoRedoArgs) {

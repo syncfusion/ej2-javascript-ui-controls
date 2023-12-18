@@ -43,7 +43,7 @@ export class Search implements IAction {
             return;
         }
         if (searchString !== gObj.searchSettings.key) {
-             // Check searchString is decimal or integer and parseFloat to remove trailing zeros
+            // Check searchString is decimal or integer and parseFloat to remove trailing zeros
             /* eslint-disable-next-line */
             gObj.searchSettings.key = /^\d+(\.\d+)?$/.test(searchString) ? parseFloat(searchString).toString() : searchString.toString();
             gObj.dataBind();

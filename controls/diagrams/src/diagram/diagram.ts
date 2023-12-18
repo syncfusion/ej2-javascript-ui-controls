@@ -43,24 +43,24 @@ import { StackEntryObject, IExpandStateChangeEventArgs } from './objects/interfa
 import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel, IEditSegmentOptions } from './objects/interface/interfaces';
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { Container } from './core/containers/container';
-import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape } from './objects/node';
+import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape, UmlClassMethod, MethodArguments, UmlEnumerationMember, UmlClassAttribute } from './objects/node';
 import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex, selectionHasConnector } from './utility/diagram-util';
 import { checkBrowserInfo } from './utility/diagram-util';
 import { updateDefaultValues, getCollectionChangeEventArguements } from './utility/diagram-util';
 import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults, getPreviewSize } from './utility/diagram-util';
 import { Segment } from './interaction/scroller';
 import { Connector, BezierSegment, StraightSegment } from './objects/connector';
-import { ConnectorModel, BpmnFlowModel, OrthogonalSegmentModel } from './objects/connector-model';
+import { ConnectorModel, BpmnFlowModel, OrthogonalSegmentModel, RelationShipModel } from './objects/connector-model';
 import { SnapSettings } from './diagram/grid-lines';
 import { RulerSettings } from './diagram/ruler-settings';
 import { removeRulerElements, updateRuler, getRulerSize } from './ruler/ruler';
 import { renderRuler, renderOverlapElement } from './ruler/ruler';
 import { RulerSettingsModel } from './diagram/ruler-settings-model';
 import { SnapSettingsModel } from './diagram/grid-lines-model';
-import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel, HtmlModel } from './objects/node-model';
+import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel, HtmlModel, UmlClassMethodModel, UmlClassAttributeModel, UmlEnumerationMemberModel, UmlClassModel, UmlClassifierShapeModel } from './objects/node-model';
 import { UmlActivityShapeModel, SwimLaneModel, LaneModel, PhaseModel } from './objects/node-model';
 import { Size } from './primitives/size';
-import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, ScrollActions } from './enum/enum';
+import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, ScrollActions, TextWrap, UmlClassChildType } from './enum/enum';
 import { RendererAction, State } from './enum/enum';
 import { BlazorAction } from './enum/enum';
 import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';
@@ -165,6 +165,7 @@ import { NodeProperties } from './load-utility/nodeProperties';
 import { ConnectorProperties } from './load-utility/connectorProperties';
 import { PortProperties } from './load-utility/portProperties';
 import { LabelProperties } from './load-utility/labelProperties';
+import { getClassAttributesChild, getClassMembersChild, getClassNodesChild } from './utility/uml-util';
 /**
  * Represents the Diagram control
  * ```html
@@ -3588,7 +3589,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {PointModel} position - defines the position. The child element under this position will be found.
      * @param {number} padding - A number representing the padding for the search area around the position.
      */
-    public findElementUnderMouse(obj: IElement, position: PointModel, diagram : Diagram, padding?: number): DiagramElement {
+    public findElementUnderMouse(obj: IElement, position: PointModel, diagram: Diagram, padding?: number): DiagramElement {
         return this.eventHandler.findElementUnderMouse(obj, position, diagram, padding);
     }
 
@@ -4285,6 +4286,40 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.updateSelector();
         if (isBlazor() && isHistoryAdded) { this.commandHandler.getBlazorOldValues(); }
     }
+
+    /**
+     * Removes the specified diagram object from the specified group node.
+     *
+     * @returns { void }     Removes the specified diagram object from the specified group node.\
+     * @param {NodeModel} group - The group node to which the diagram object will be removed.
+     * @param {string | NodeModel | ConnectorModel} child - The diagram object to be removed from the group.
+     */
+        public removeChildFromGroup(group: NodeModel, child: string | NodeModel | ConnectorModel): void {
+            const severDataBind: boolean = this.allowServerDataBinding;
+            this.enableServerDataBinding(false);
+            const propChange: boolean = this.isProtectedOnChange; this.protectPropertyChange(true);
+            group = this.getObject(group.id) as NodeModel;
+            const undoGroup : NodeModel = cloneObject(group);
+            const isHistoryAdded: boolean = (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group) &&
+            !(this.diagramActions & DiagramAction.PreventHistory));
+            if (isHistoryAdded) {
+                this.startGroupAction();
+            }
+            const id: string = this.removeChild(group, child);
+            if (isHistoryAdded) {
+                const childTable: object = {};
+                childTable[`${id}`] = cloneObject(this.getObject(id));
+                const entry: HistoryEntry = {
+                    type: 'RemoveChildFromGroupNode', changeType: 'Remove', undoObject: cloneObject(undoGroup),
+                    redoObject: cloneObject(group), category: 'Internal', objectId: id, childTable: childTable
+                };
+                this.addHistoryEntry(entry);
+                this.endGroupAction();
+            }
+            this.protectPropertyChange(propChange);
+            this.enableServerDataBinding(severDataBind);
+            this.updateSelector();
+        }
     /**
      * Retrieves the history stack values for either undo or redo actions.
      *
@@ -5344,6 +5379,61 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
+     * removeChild method \
+     *
+     * @returns { string }     removeChild method .\
+     * @param {NodeModel} node - provide the node value.
+     * @param {string | NodeModel | ConnectorModel} child - provide the child value.
+     *
+     * @private
+     */
+     public removeChild(node: NodeModel, child: string | NodeModel | ConnectorModel): string {
+        let id: string;
+        const parentNode: NodeModel = this.nameTable[node.id];
+        if (!parentNode.children) { parentNode.children = []; }
+        if (parentNode.children) {
+            if (typeof child === 'string') {
+                if (this.nameTable[`${child}`]) {
+                    id = child;
+                }
+            } else {
+                id = child.id = child.id || randomId();
+            }
+            if (id && (!(child as Node).umlIndex || (child as Node).umlIndex === -1)) {
+                const childNode: NodeModel | ConnectorModel = this.nameTable[`${id}`];
+                (childNode as Node | Connector).parentId = "";
+                if (parentNode.container && parentNode.container.type === 'Stack') {
+                    this.updateStackProperty(parentNode as Node, childNode as Node);
+                }
+                for (let i: number = 0; i < parentNode.children.length; i++) {
+                    if (parentNode.children[parseInt(i.toString(), 10)] === id) {
+                        parentNode.children.splice(i, 1);
+                        for (let j: number = 0; j < parentNode.wrapper.children.length; j++) {
+                            if (parentNode.wrapper.children[parseInt(j.toString(), 10)] === childNode.wrapper) {
+                                parentNode.wrapper.children.splice(j, 1);
+                            }
+                        }
+                    }
+                }
+                parentNode.wrapper.measure(new Size());
+                parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
+                if (!(parentNode as Node).isLane) {
+                    this.nameTable[node.id].width = parentNode.wrapper.actualSize.width;
+                    this.nameTable[node.id].height = parentNode.wrapper.actualSize.height;
+                    this.nameTable[node.id].offsetX = parentNode.wrapper.offsetX;
+                    this.nameTable[node.id].offsetY = parentNode.wrapper.offsetY;
+                }
+                if (!(parentNode as Node).parentId ||
+                    ((this.nameTable[(parentNode as Node).parentId] as Node) &&
+                        (this.nameTable[(parentNode as Node).parentId] as Node).shape.type !== 'SwimLane')) {
+                    this.updateDiagramObject(parentNode);
+                }
+            }
+        }
+        return id;
+    }
+
+    /**
      * Clears all nodes and objects in the diagram, effectively resetting the diagram to an empty state.
      *
      * @returns { void }     Clears all nodes and objects in the diagram, effectively resetting the diagram to an empty state.\
@@ -5605,7 +5695,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const canEnableRouting: boolean = this.layout.enableRouting && this.layout.type === 'ComplexHierarchicalTree';
         const viewPort: PointModel = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
         if (this.layout.type !== 'None') {
-            if ((canEnableRouting && this.lineDistributionModule )|| ((this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) || (this.layout.arrangement === 'Linear' && this.lineDistributionModule)) {
+            if ((canEnableRouting && this.lineDistributionModule) || ((this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) || (this.layout.arrangement === 'Linear' && this.lineDistributionModule)) {
                 this.lineDistributionModule.initLineDistribution((this.layout as Layout), this);
             }
             if (this.organizationalChartModule) {
@@ -6076,6 +6166,57 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.protectPropertyChange(false);
     }
 
+    /**
+     *addChildToUmlNode - Add methods, members and attributes into a UML class runtime. \
+     *
+     * @returns { void } Add.
+     * @param {NodeModel} node - Specifies the existing UmlClass node in the diagram to which you intend to add child elements.
+     * @param {UmlClassMethodModel | UmlClassAttributeModel | UmlEnumerationMemberModel} child - Specify the child elements, such as attributes, members, or methods, to be added to the UML class.
+     * @param {UmlClassChildType} umlChildType - Specify the enum that you intend to add to the UML class.
+     *
+    */
+    public addChildToUmlNode(node:NodeModel,child:UmlClassMethodModel | UmlClassAttributeModel | UmlEnumerationMemberModel ,umlChildType: UmlClassChildType):void{
+        let classifier: UmlClassModel;
+        let method: UmlClassMethodModel;
+        let attribute: UmlClassAttributeModel;
+        let member: UmlEnumerationMemberModel;
+        let textWrap: TextWrap = 'NoWrap';
+        //Members and attributes are exclusively added to the classShape and interfaceShape within the UML node
+        if ((node.shape as UmlClassifierShapeModel).classifier === 'Class' || (node.shape as UmlClassifierShapeModel).classifier === 'Interface') {
+            if (umlChildType === 'Method') {
+                method = new UmlClassMethod(node as MethodArguments, '', child);
+                if ((node.shape as UmlClassifierShapeModel).classifier === 'Class') {
+                    (node.shape as UmlClassifierShapeModel).classShape.methods.push(method);
+                    classifier = (node.shape as UmlClassifierShapeModel).classShape;
+                } else if ((node.shape as UmlClassifierShapeModel).classifier === 'Interface') {
+                    (node.shape as UmlClassifierShapeModel).interfaceShape.methods.push(method);
+                    classifier = (node.shape as UmlClassifierShapeModel).interfaceShape;
+                }
+                //this method triggers for adding methods at runtime
+                getClassMembersChild(node as Node, this, classifier, textWrap);
+            } else if (umlChildType === 'Attribute') {
+                attribute = new UmlClassAttribute(node as MethodArguments, '', child);
+                if ((node.shape as UmlClassifierShapeModel).classifier === 'Class') {
+                    (node.shape as UmlClassifierShapeModel).classShape.attributes.push(attribute);
+                    classifier = (node.shape as UmlClassifierShapeModel).classShape;
+                } else if ((node.shape as UmlClassifierShapeModel).classifier === 'Interface') {
+                    (node.shape as UmlClassifierShapeModel).interfaceShape.attributes.push(attribute);
+                    classifier = (node.shape as UmlClassifierShapeModel).interfaceShape;
+                }
+                //this method triggers for adding attributes at runtime
+                getClassAttributesChild(node as Node, this, classifier, textWrap);
+            }
+        } else if ((node.shape as UmlClassifierShapeModel).classifier === 'Enumeration' && umlChildType === 'Member') {
+            member = new UmlEnumerationMember(node as UmlEnumerationMember, '', child);
+            (node.shape as UmlClassifierShapeModel).enumerationShape.members.push(member);
+            classifier = (node.shape as UmlClassifierShapeModel).enumerationShape;
+            //this method triggers for adding members at runtime
+            getClassNodesChild(node as Node, this, classifier, textWrap);
+        }
+        //The clearSelection methods is invoked to update the newly added child type dynamically at runtime
+        this.clearSelection();
+        this.updateSelector();
+    }
 
 
     /**
@@ -10006,7 +10147,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (node.expandIcon !== undefined || node.collapseIcon !== undefined || node.isExpanded !== undefined) {
             this.updateIcon(actualObject); this.updateDefaultLayoutIcons(actualObject);
-            if (node.isExpanded !== undefined) {
+            if (node.isExpanded !== undefined) { 
                 this.canExpand = true; 
                 //EJ2-844814 - Expand and collapse not working properly at runtime
                 this.diagramActions |= DiagramAction.PreventIconsUpdate;
@@ -10839,7 +10980,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (changedObject.visibility !== undefined) {
                 annotationWrapper.visible = (nodes.visible && changedObject.visibility) ? true : false;
-                (annotationWrapper as TextElement).annotationVisibility =  annotationWrapper.visible ? 'Visible' : 'Collapsed';
+                (annotationWrapper as TextElement).annotationVisibility = annotationWrapper.visible ? 'Visible' : 'Collapsed';
             }
             if (changedObject.constraints !== undefined) {
                 const updateSelector: boolean = false;
@@ -11617,6 +11758,35 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                         newNode.width = 1;
                                     }
                                 }
+                                if (newNode.shape.type === 'UmlClassifier') {
+                                    //When dragging a node from the palette to the diagram, set the children, width, and height values to undefined to avoid incorrect values.
+                                    newNode.children = newNode.width = newNode.height = undefined;
+                                    (clonedObject as Node).children = undefined;
+                                    //An empty child type is added during drag enter for every node if no child types are specified in the palette.
+                                    if((newNode.shape as UmlClassifierShapeModel).classifier == "Class"){
+                                        if((newNode.shape as UmlClassifierShapeModel).classShape.methods.length <= 0 && (newNode.shape as UmlClassifierShapeModel).classShape.attributes.length<=0){
+                                            (newNode.shape as UmlClassifierShapeModel).classShape.attributes = [
+                                                { name: 'Name', type: 'Type', style: {} },
+                                            ]
+                                        }
+                                    }
+                                    if((newNode.shape as UmlClassifierShapeModel).classifier == "Enumeration"){
+                                        if((newNode.shape as UmlClassifierShapeModel).enumerationShape.members.length <= 0){
+                                            (newNode.shape as UmlClassifierShapeModel).enumerationShape.members = [
+                                                {
+                                                    name: 'Name'
+                                                },
+                                            ]
+                                        }
+                                    }
+                                    if((newNode.shape as UmlClassifierShapeModel).classifier == "Interface"){
+                                        if((newNode.shape as UmlClassifierShapeModel).interfaceShape.methods.length <= 0 && (newNode.shape as UmlClassifierShapeModel).interfaceShape.attributes.length<=0){
+                                            (newNode.shape as UmlClassifierShapeModel).interfaceShape.attributes = [
+                                                { name: 'Name', type: 'Type', style: {} },
+                                            ]
+                                        }
+                                    }
+                                }
                                 newObj = newNode;
                                 if ((clonedObject as Node).children) {
                                     const parentNode: Node = (clonedObject as Node);
@@ -11771,6 +11941,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                         this.eventHandler.addSwimLaneObject(clonedObject);
                     }
+                    //The following condition is designed to ensure that only UML nodes are added to the diagram during the drop operation
+                    if(clonedObject && (clonedObject as Node).shape.type === "UmlClassifier" && !((clonedObject as Node).shape as RelationShipModel).relationship){
+                        (clonedObject as Node).children=undefined;
+                        this.clearSelectorLayer();
+                        this.add(clonedObject);
+                    }
                     if (((clonedObject as Node).shape as BpmnShape).type === 'Bpmn' && ((clonedObject as Node).shape as BpmnShape).annotation
                         && clonedObject['hasTarget']) {
                         const nodeId: string = (((clonedObject as Node).shape as BpmnShape).annotation as BpmnAnnotation).nodeId;
@@ -11778,7 +11954,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.addTextAnnotation(((clonedObject as Node).shape as BpmnShape).annotation, this.nameTable[`${nodeId}`]);
                         (clonedObject as BpmnAnnotation).nodeId = '';
                     }
-                    if (!((clonedObject as Node).shape as SwimLaneModel).isLane && !isPhase) {
+                    if (!((clonedObject as Node).shape as SwimLaneModel).isLane && !isPhase && ((clonedObject as Connector).type !=undefined || (clonedObject as Node).shape.type != "UmlClassifier")){
                         if ((clonedObject as Node).children) {
                             this.addChildNodes(clonedObject);
                         }

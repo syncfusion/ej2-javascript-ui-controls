@@ -319,6 +319,14 @@ export const defaultLocale: object = {
     INTERCEPT: 'Calculates the point of the Y-intercept line via linear regression.',
     UNIQUE: 'Returns a unique values from a range or array',
     SLOPE: 'Returns the slope of the line from linear regression of the data points.',
+    LOOKUP: 'Looks for a value in a one-row or one-column range, then returns a value from the same position in a second one-row or one-column range.',
+    HLOOKUP: 'Looks for a value in the top row of the array of values and then returns a value in the same column from a row in the array that you specify.',
+    VLOOKUP: 'Looks for a specific value in the first column of a lookup range and returns a corresponding value from a different column within the same row.',
+    NOT: 'Returns the inverse of a given logical expression.',
+    EOMONTH: 'Returns the last day of the month that is a specified number of months before or after an initially supplied start date.',
+    SQRT: 'Returns the square root of a positive number.',
+    ROUNDDOWN: 'Rounds a number down, toward zero.',
+    RSQ: 'Returns the square of the Pearson product moment correlation coefficient based on data points in known_y\'s and known_x\'s.',
     DefineNameExists: 'This name already exists, try different name.',
     DefineNameInValid: 'The name that you entered is not valid.',
     CircularReference: 'When a formula refers to one or more circular references, this may result in an incorrect calculation.',
@@ -613,5 +621,6 @@ export const defaultLocale: object = {
     Requires3Arguments: 'We found that you typed a formula which requires 3 arguments.',
     MismatchedStringQuotes : 'We found that you typed a formula with a mismatched quotes.',
     FormulaCircularRef : 'We found that you typed a formula with a circular reference.',
-    AddCurrentSelection : 'Add current selection to filter'
+    AddCurrentSelection : 'Add current selection to filter',
+    ExternalWorkbook : 'An imported excel file contains an external workbook reference. Do you want to import that file?'
 };

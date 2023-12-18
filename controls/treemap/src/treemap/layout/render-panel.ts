@@ -545,7 +545,7 @@ export class LayoutPanel {
                     itemGroup.setAttribute('aria-label', item['name']);
                     if ((this.treemap.enableDrillDown && isLeafItem) || (this.treemap.selectionSettings.enable || this.treemap.highlightSettings.enable)) {
                         itemGroup.setAttribute('role', 'button');
-                        itemGroup.setAttribute('tabindex', (this.treemap.tabIndex + i + 2).toString());
+                        itemGroup.setAttribute('tabindex', this.treemap.tabIndex.toString());
                         (itemGroup as HTMLElement).style.cursor = this.treemap.highlightSettings.enable && !this.treemap.selectionSettings.enable && (this.treemap.enableDrillDown && item['groupIndex'] == (this.treemap.levels.length - 1)) ? 'default' : 
                             this.treemap.highlightSettings.enable && !this.treemap.selectionSettings.enable && !this.treemap.enableDrillDown ? 'default' : 'pointer';
                     } else {

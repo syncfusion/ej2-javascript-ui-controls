@@ -57,7 +57,9 @@ export class ConnectorLine {
             id: this.parent.element.id + '_svg'
         });
         this.svgObject.setAttribute('height', '100%');
-        this.svgObject.setAttribute('width', '100%');
+        if (!this.parent.enableTimelineVirtualization){
+            this.svgObject.setAttribute('width', '100%');
+        }
     }
 
     /**
@@ -200,6 +202,7 @@ export class ConnectorLine {
             for (let j: number = 0; j < innerChild.length; j++) {
                 const ariaString: string = 'Connector Line ' + this.parent.connectorLineModule.generateAriaLabel(ariaConnector[i as number]);
                 (<HTMLElement>innerChild[j as number]).setAttribute('aria-label', ariaString);
+                (<HTMLElement>innerChild[j as number]).setAttribute('role', 'img');
             }
         }
         this.parent.ganttChartModule.chartBodyContent.insertBefore(this.dependencyViewContainer, this.parent.ganttChartModule.chartBodyContent.lastChild);
@@ -555,8 +558,7 @@ export class ConnectorLine {
         }
         if (this.getParentPosition(data)) {
             // Create the group element
-            this.transform = this.parent.enableRtl ? `translate(${this.parent.timelineModule.totalTimelineWidth}, 0) scale(-1, 1)` : '';
-            this.connectorId = "ConnectorLine" + data.connectorLineId;
+            this.transform = this.parent.enableRtl ? `translate(${(this.parent.enableTimelineVirtualization ? this.parent.timelineModule.wholeTimelineWidth : this.parent.timelineModule.totalTimelineWidth)}, 0) scale(-1, 1)` : '';            this.connectorId = "ConnectorLine" + data.connectorLineId;
             this.groupObject = this.renderer.createGroup({
                 id: this.connectorId,
                 transform: this.transform,
@@ -902,11 +904,11 @@ export class ConnectorLine {
      */
     public getConnectorLineTooltipInnerTd(
         fromTaskName: string, fromPredecessorText: string, toTaskName?: string, toPredecessorText?: string): string {
-            let innerTd: string = '<tr  id="fromPredecessor"><td style="padding: 4px;width: 30px;">' + this.parent.localeObj.getConstant('from') + '</td><td> ';
-            innerTd = innerTd + fromTaskName + ' </td><td style="padding: 2px;"> ' + this.parent.localeObj.getConstant(fromPredecessorText) + ' </td> </tr>';
-            innerTd = innerTd + '<tr id="toPredecessor"><td style="padding: 4px;">' + this.parent.localeObj.getConstant('to') + '</td><td> ' + toTaskName;
-            innerTd = innerTd + ' </td><td style="padding: 2px;width: 30px;"> ' + this.parent.localeObj.getConstant(toPredecessorText) + ' </td></tr></tbody><table>';
-            return innerTd;
+        let innerTd: string = '<tr  id="fromPredecessor"><td style="padding: 2px;">' + this.parent.localeObj.getConstant('from') + '</td><td> ';
+        innerTd = innerTd + fromTaskName + ' </td><td style="padding: 2px;"> ' + this.parent.localeObj.getConstant(fromPredecessorText) + ' </td> </tr>';
+        innerTd = innerTd + '<tr id="toPredecessor"><td style="padding: 2px;">' + this.parent.localeObj.getConstant('to') + '</td><td> ' + toTaskName;
+        innerTd = innerTd + ' </td><td style="padding: 2px;"> ' + this.parent.localeObj.getConstant(toPredecessorText) + ' </td></tr></tbody><table>';
+        return innerTd;
     }
     /**
      * Generate aria-label for connectorline

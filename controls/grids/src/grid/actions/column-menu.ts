@@ -13,6 +13,8 @@ import { Sort } from '../actions/sort';
 import { SortDescriptorModel } from '../base/grid-model';
 import { Filter } from '../actions/filter';
 import { Resize } from '../actions/resize';
+import { ResponsiveDialogAction } from '../base/enum';
+import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 import * as literals from '../base/string-literals';
 
 /**
@@ -24,8 +26,6 @@ export class ColumnMenu implements IAction {
     //internal variables
     private element: HTMLUListElement;
     private gridID: string;
-    private parent: IGrid;
-    private serviceLocator: ServiceLocator;
     private columnMenu: Menu;
     private l10n: L10n;
     private defaultItems: { [key: string]: ColumnMenuItemModel } = {};
@@ -46,25 +46,45 @@ export class ColumnMenu implements IAction {
     private WRAP: string = 'e-col-menu';
     private COL_POP: string = 'e-colmenu-popup';
     private CHOOSER: string = '_chooser_';
+    //Module declarations
+    /** @hidden */
+    public parent: IGrid;
+    /** @hidden */
+    public responsiveDialogRenderer: ResponsiveDialogRenderer;
+    /** @hidden */
+    public serviceLocator: ServiceLocator;
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.gridID = parent.element.id;
         this.serviceLocator = serviceLocator;
         this.addEventListener();
+        if (this.parent.enableAdaptiveUI) {
+            this.setFullScreenDialog();
+        }
     }
 
     private wireEvents(): void {
-        const elements: HTMLElement[] = this.getColumnMenuHandlers();
-        for (let i: number = 0; i < elements.length; i++) {
-            EventHandler.add(elements[parseInt(i.toString(), 10)], 'mousedown', this.columnMenuHandlerDown, this);
+        if (!this.parent.enableAdaptiveUI) { 
+            const elements: HTMLElement[] = this.getColumnMenuHandlers();
+            for (let i: number = 0; i < elements.length; i++) {
+                EventHandler.add(elements[parseInt(i.toString(), 10)], 'mousedown', this.columnMenuHandlerDown, this);
+            }
         }
     }
 
     private unwireEvents(): void {
-        const elements: HTMLElement[] = this.getColumnMenuHandlers();
-        for (let i: number = 0; i < elements.length; i++) {
-            EventHandler.remove(elements[parseInt(i.toString(), 10)], 'mousedown', this.columnMenuHandlerDown);
+        if (!this.parent.enableAdaptiveUI) { 
+            const elements: HTMLElement[] = this.getColumnMenuHandlers();
+            for (let i: number = 0; i < elements.length; i++) {
+                EventHandler.remove(elements[parseInt(i.toString(), 10)], 'mousedown', this.columnMenuHandlerDown);
+            } 
+        }
+    }
+
+    private setFullScreenDialog(): void {
+        if (this.serviceLocator) {
+            this.serviceLocator.registerAdaptiveService(this, this.parent.enableAdaptiveUI, ResponsiveDialogAction.isColMenu);
         }
     }
 
@@ -77,27 +97,38 @@ export class ColumnMenu implements IAction {
     public destroy(): void {
         const gridElement: Element = this.parent.element;
         if (!gridElement.querySelector( '.' + literals.gridContent) && (!gridElement.querySelector('.' + literals.gridHeader)) || !gridElement) { return; }
-        this.columnMenu.destroy();
+        if (this.columnMenu) {
+            this.columnMenu.destroy();
+        }
         this.removeEventListener();
         this.unwireFilterEvents();
         this.unwireEvents();
-        if (this.element.parentNode) {
+        if (!this.parent.enableAdaptiveUI && this.element.parentNode) {
             remove(this.element);
         }
     }
 
     public columnMenuHandlerClick(e: Event): void {
         if ((e.target as HTMLElement).classList.contains('e-columnmenu')) {
-            this.columnMenu.items = this.getItems();
-            this.columnMenu.dataBind();
-            if ((this.isOpen && this.headerCell !== this.getHeaderCell(
-                e as { target: EventTarget, preventDefault?: Function })) || document.querySelector('.e-grid-menu .e-menu-parent.e-ul')) {
-                this.columnMenu.close();
-                this.openColumnMenu(e as { target: EventTarget, preventDefault?: Function });
-            } else if (!this.isOpen) {
-                this.openColumnMenu(e as { target: EventTarget, preventDefault?: Function });
+            if (this.parent.enableAdaptiveUI) {
+                this.headerCell = this.getHeaderCell(e);
+                const col: Column = this.getColumn();
+                this.responsiveDialogRenderer.isCustomDialog = true;
+                this.parent.notify(events.renderResponsiveChangeAction, { action: 4 });
+                this.parent.notify(events.filterOpen, { col: col, target: e.target, isClose: null, id: null });
+                this.responsiveDialogRenderer.showResponsiveDialog(null, col);
             } else {
-                this.columnMenu.close();
+                this.columnMenu.items = this.getItems();
+                this.columnMenu.dataBind();
+                if ((this.isOpen && this.headerCell !== this.getHeaderCell(e as { target: EventTarget, preventDefault?: Function })) ||
+                    document.querySelector('.e-grid-menu .e-menu-parent.e-ul')) {
+                    this.columnMenu.close();
+                    this.openColumnMenu(e as { target: EventTarget, preventDefault?: Function });
+                } else if (!this.isOpen) {
+                    this.openColumnMenu(e as { target: EventTarget, preventDefault?: Function });
+                } else {
+                    this.columnMenu.close();
+                }
             }
         }
     }
@@ -175,6 +206,8 @@ export class ColumnMenu implements IAction {
         if (this.isFilterItemAdded()) {
             this.parent.on(events.filterDialogCreated, this.filterPosition, this);
         }
+        this.parent.on(events.setFullScreenDialog, this.setFullScreenDialog, this);
+        this.parent.on(events.renderResponsiveChangeAction, this.renderResponsiveChangeAction, this);
         this.parent.on(events.click, this.columnMenuHandlerClick, this);
         this.parent.on(events.afterFilterColumnMenuClose, this.afterFilterColumnMenuClose, this);
         this.parent.on(events.keyPressed, this.keyPressHandler, this);
@@ -193,6 +226,8 @@ export class ColumnMenu implements IAction {
         if (this.isFilterItemAdded()) {
             this.parent.off(events.filterDialogCreated, this.filterPosition);
         }
+        this.parent.off(events.setFullScreenDialog, this.setFullScreenDialog);
+        this.parent.off(events.renderResponsiveChangeAction, this.renderResponsiveChangeAction);
         this.parent.off(events.click, this.columnMenuHandlerClick);
         this.parent.on(events.afterFilterColumnMenuClose, this.afterFilterColumnMenuClose);
         this.parent.off(events.keyPressed, this.keyPressHandler);
@@ -216,11 +251,14 @@ export class ColumnMenu implements IAction {
                 this.columnMenu.destroy();
                 remove(this.element);
             }
-            this.render();
+            if (!this.parent.enableAdaptiveUI) {
+                this.render();
+            }
         }
     }
 
     private render(): void {
+        if (this.parent.enableAdaptiveUI) { return; }
         this.l10n = this.serviceLocator.getService<L10n>('localization');
         this.element = this.parent.createElement('ul', { id: this.gridID + '_columnmenu', className: 'e-colmenu' }) as HTMLUListElement;
         this.element.setAttribute('aria-label', this.l10n.getConstant('ColumnMenuDialogARIA'));
@@ -252,7 +290,7 @@ export class ColumnMenu implements IAction {
     }
 
     private unwireFilterEvents(): void {
-        if (!Browser.isDevice && this.isFilterItemAdded()) {
+        if (!Browser.isDevice && this.isFilterItemAdded() && !this.parent.enableAdaptiveUI) {
             EventHandler.remove(this.element, 'mouseover', this.appendFilter);
         }
     }
@@ -603,6 +641,7 @@ export class ColumnMenu implements IAction {
 
     private filterPosition(): void {
         const filterPopup: HTMLElement = this.getFilterPop();
+        if (this.parent.enableAdaptiveUI) { return; }
         filterPopup.classList.add(this.WRAP);
         if (!Browser.isDevice) {
             const disp: string = filterPopup.style.display;
@@ -652,5 +691,9 @@ export class ColumnMenu implements IAction {
     private isFilterItemAdded(): boolean {
         return (this.parent.columnMenuItems &&
             (this.parent.columnMenuItems as string[]).indexOf('Filter') >= 0) || !this.parent.columnMenuItems;
+    }
+
+    private renderResponsiveChangeAction(args: { action?: number }): void {
+        this.responsiveDialogRenderer.action = args.action;
     }
 }

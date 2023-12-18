@@ -97,6 +97,12 @@ export class Splitter {
         });
         this.parent.element.appendChild(this.parent.splitterElement);
         this.splitterObject.appendTo(this.parent.splitterElement);
+        const splitterLeftPane = this.splitterObject.element.querySelector('.e-split-bar');
+        if (splitterLeftPane) {
+            const numericValue = parseFloat(splitterPosition.replace('%', ''));
+            const ariaValueNow = Math.min(100, Math.max(0, numericValue));
+            splitterLeftPane.setAttribute('aria-valuenow', ariaValueNow.toString());
+        }
     }
     /**
      * @param {SplitterSettingsModel} splitter .

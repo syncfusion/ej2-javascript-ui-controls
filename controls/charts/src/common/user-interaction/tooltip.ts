@@ -14,6 +14,9 @@ import { FontModel } from '../../common/model/base-model';
 import { Tooltip as SVGTooltip, ITooltipAnimationCompleteArgs } from '@syncfusion/ej2-svg-base';
 import { ChartShape } from '../../chart/utils/enum';
 import { AccumulationSelection } from '../../accumulation-chart';
+import { Chart3D, Tooltip3D} from '../../chart3d';
+import { Chart3DSeries, Chart3DPoint } from '../../chart3d/series/chart-series';
+import {Point3D} from '../../common/utils/helper';
 
 /**
  * Tooltip Module used to render the tooltip for series.
@@ -29,9 +32,9 @@ export class BaseTooltip extends ChartData {
     public inverted: boolean;
     public formattedText: string[];
     public header: string;
-    /** 
+    /**
      * @aspType string
-     * @private 
+     * @private
      */
     public template: string | Function;
 
@@ -40,7 +43,7 @@ export class BaseTooltip extends ChartData {
     /** @private */
     public valueY: number;
 
-    public control: AccumulationChart | Chart;
+    public control: AccumulationChart | Chart | Chart3D;
     public text: string[];
     public svgTooltip: SVGTooltip;
     public headerText: string;
@@ -50,7 +53,7 @@ export class BaseTooltip extends ChartData {
      * @private
      */
 
-    constructor(chart: Chart | AccumulationChart) {
+    constructor(chart: Chart | AccumulationChart | Chart3D) {
         super(chart as Chart);
         this.element = this.chart.element;
         this.textStyle = chart.tooltip.textStyle;
@@ -74,7 +77,7 @@ export class BaseTooltip extends ChartData {
     public getTooltipElement(isTooltip: boolean): HTMLDivElement {
         this.inverted = this.chart.requireInvertedAxis;
         this.header = (this.control.tooltip.header === null) ?
-            ((this.control.tooltip.shared) ? '${point.x}' : '${series.name}')
+            (((this.control as Chart | AccumulationChart).tooltip.shared) ? '${point.x}' : '${series.name}')
             : (this.control.tooltip.header);
         this.formattedText = [];
         const tooltipDiv: HTMLElement = document.getElementById(this.chart.element.id + '_tooltip');
@@ -95,9 +98,13 @@ export class BaseTooltip extends ChartData {
     }
 
 
-    public pushData(data: PointData | AccPointData, isFirst: boolean, tooltipDiv: HTMLDivElement, isChart: boolean): boolean {
+    public pushData(data: PointData | AccPointData | Point3D, isFirst: boolean, tooltipDiv: HTMLDivElement,
+                    isChart: boolean, enable3D?: boolean): boolean {
         if (data.series.enableTooltip) {
-            if (isChart) {
+            if (enable3D) {
+                (<Point3D[]>this.currentPoints).push(<Point3D>data);
+            }
+            else if (isChart) {
                 (<PointData[]>this.currentPoints).push(<PointData>data);
             } else {
                 (<AccPointData[]>this.currentPoints).push(<AccPointData>data);
@@ -116,7 +123,7 @@ export class BaseTooltip extends ChartData {
     }
 
     public removeHighlight(): void {
-        let item: PointData | AccPointData;
+        let item: PointData | AccPointData | Point3D;
         let series: Series;
         for (let i: number = 0, len: number = this.previousPoints.length; i < len; i++) {
             item = this.previousPoints[i as number];
@@ -130,7 +137,7 @@ export class BaseTooltip extends ChartData {
         }
     }
 
-    public highlightPoint(series: Series | AccumulationSeries, pointIndex: number, highlight: boolean): void {
+    public highlightPoint(series: Series | AccumulationSeries | Chart3DSeries, pointIndex: number, highlight: boolean): void {
         const element: HTMLElement = this.getElement(this.element.id + '_Series_' + series.index + '_Point_' + pointIndex);
         const selectionModule: AccumulationSelection = (this.control as AccumulationChart).accumulationSelectionModule;
         const isSelectedElement: boolean = selectionModule && selectionModule.selectedDataIndexes.length > 0 ? true : false;
@@ -152,20 +159,21 @@ export class BaseTooltip extends ChartData {
     public highlightPoints(): void {
         for (const item of this.currentPoints) {
             if (item.series.isRectSeries && item.series.category === 'Series') {
-                this.highlightPoint(item.series, item.point.index, true);
+                this.highlightPoint(item.series as Series | AccumulationSeries, item.point.index, true);
             }
         }
     }
 
     // tslint:disable-next-line:max-func-body-length
     public createTooltip(
-        chart: Chart | AccumulationChart, isFirst: boolean, location: ChartLocation, clipLocation: ChartLocation,
-        point: Points | AccPoints, shapes: ChartShape[], offset: number, bounds: Rect,
+        chart: Chart | AccumulationChart | Chart3D, isFirst: boolean, location: ChartLocation, clipLocation: ChartLocation,
+        point: Points | AccPoints | Chart3DPoint, shapes: ChartShape[], offset: number, bounds: Rect,
         crosshairEnabled: boolean = false, extraPoints: PointData[] = null,
-        templatePoint: Points | Points[] | AccPoints = null, customTemplate?: string
+        templatePoint: Points | Points[] | AccPoints | Chart3DPoint| Chart3DPoint[] = null, customTemplate?: string
     ): void {
         const series: Series = <Series>this.currentPoints[0].series;
-        const module: AccumulationTooltip | Tooltip = (<Chart>chart).tooltipModule || (<AccumulationChart>chart).accumulationTooltipModule;
+        const module: AccumulationTooltip | Tooltip | Tooltip3D = (<Chart>chart).tooltipModule || (<Chart3D>chart).tooltip3DModule ||
+         (<AccumulationChart>chart).accumulationTooltipModule;
         if (!module || location === null) { // For the tooltip enable is false.
             removeElement(this.chart.element.id + '_tooltip');
             return;
@@ -181,7 +189,7 @@ export class BaseTooltip extends ChartData {
                     border: chart.tooltip.border,
                     enableAnimation: chart.tooltip.enableAnimation,
                     location: location,
-                    shared: chart.tooltip.shared,
+                    shared: (this.control as Chart | AccumulationChart).tooltip.shared,
                     crosshair: crosshairEnabled,
                     shapes: shapes,
                     clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
@@ -194,10 +202,11 @@ export class BaseTooltip extends ChartData {
                     textStyle: chart.tooltip.textStyle,
                     isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
                     inverted: this.chart.requireInvertedAxis && series.isRectSeries,
-                    arrowPadding: this.text.length > 1 || this.chart.stockChart ? 0 : 7,
+                    arrowPadding: this.text.length > 1 || this.chart.stockChart || (this.chart.tooltip.location.x !== null || this.chart.tooltip.location.y !== null ) ? 0 : 7,
                     availableSize: chart.availableSize,
                     duration: this.chart.tooltip.duration,
                     isCanvas: this.chart.enableCanvas,
+                    isFixed: (this.chart.tooltip.location.x !== null || this.chart.tooltip.location.y !== null),
                     isTextWrap: chart.tooltip.enableTextWrap && chart.getModuleName() === 'chart',
                     blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
                     controlInstance: this.chart,
@@ -231,7 +240,7 @@ export class BaseTooltip extends ChartData {
                 this.svgTooltip.textStyle = chart.tooltip.textStyle;
                 this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
                 this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
-                this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 7;
+                this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart || (this.chart.tooltip.location.x !== null || this.chart.tooltip.location.y !== null) ? 0 : 7;
                 this.svgTooltip.allowHighlight = chart.getModuleName() === 'chart' && !series.marker.allowHighlight;
                 this.svgTooltip.dataBind();
             }
@@ -248,7 +257,7 @@ export class BaseTooltip extends ChartData {
         return colors;
     }
 
-    private findColor(data: PointData | AccPointData, series: Series) : string {
+    private findColor(data: PointData | AccPointData | Point3D, series: Series) : string {
         if (series.isRectSeries && (series.type === 'Candle' || series.type === 'Hilo' || series.type === 'HiloOpenClose')) {
             return data.point.color;
         } else {

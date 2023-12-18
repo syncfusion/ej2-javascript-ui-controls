@@ -1,6 +1,7 @@
 import { EventHandler, extend, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ActivePoint } from '@syncfusion/ej2-inputs';
-import { CurrentObject, FreehandDraw, ImageEditor, Point, SelectionPoint, ShapeChangeEventArgs, ShapeSettings, ShapeType, StrokeSettings } from '../index';
+import { FreehandDraw, Point, SelectionPoint, ShapeChangeEventArgs, ShapeSettings, ShapeType, StrokeSettings } from '../index';
+import { CurrentObject, ImageDimension, ImageEditor } from '../index';
 
 export class FreehandDrawing {
     private parent: ImageEditor;
@@ -21,6 +22,9 @@ export class FreehandDrawing {
     private fhdSelID: string;
     private tempFHDStyles: StrokeSettings = {strokeColor: null, fillColor: null, strokeWidth: null};
     private fhdSelIdx: number;
+    private straightenPoint: Point = {x: null, y: null, ratioX: null, ratioY: null };
+    private prevStraightenObj: SelectionPoint;
+    private straightenPointAngle: number = 0;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -97,7 +101,11 @@ export class FreehandDrawing {
             this.panFHDColl(args.value['xDiff'], args.value['yDiff'], args.value['panRegion']);
             break;
         case 'updateFHDColl':
-            this.updateFHDColl();
+            if (args.value && args.value['isPreventApply']) {
+                this.updateFHDColl(args.value['isPreventApply']);
+            } else {
+                this.updateFHDColl();
+            }
             break;
         case 'zoomFHDColl':
             this.zoomFHDColl(args.value['isPreventApply']);
@@ -159,6 +167,27 @@ export class FreehandDrawing {
         case 'getFreehandSelectedIndex':
             args.value['obj']['freehandSelectedIndex'] = this.fhdSelIdx;
             break;
+        case 'setCenterSelPoints':
+            this.setCenterSelPoints();
+            break;
+        case 'getStraightenPoint':
+            args.value['obj']['straightenPoint'] = extend({}, this.straightenPoint, {}, true);
+            break;
+        case 'setStraightenPoint':
+            this.straightenPoint.x = args.value['x'];
+            this.straightenPoint.y = args.value['y'];
+            if (args.value['ratioX'] && args.value['ratioY']) {
+                this.straightenPoint.ratioX = args.value['ratioX'];
+                this.straightenPoint.ratioY = args.value['ratioY'];
+            }
+            break;
+        case 'resetStraightenPoint':
+            this.straightenPoint = {x: null, y: null, ratioX: null, ratioY: null };
+            this.prevStraightenObj = null; this.straightenPointAngle = 0;
+            break;
+        case 'getStraightenPointAngle':
+            args.value['obj']['angle'] = this.straightenPointAngle;
+            break;
         case 'reset':
             this.reset();
             break;
@@ -174,10 +203,11 @@ export class FreehandDrawing {
     private reset(): void {
         this.fhdObj = {lastWidth: 0, lastVelocity: 0, time: 0, pointX: 0, pointY: 0};
         this.isFreehandDrawing = this.isFreehandPointMoved = false; this.selPoints = []; this.dummyPoints = [];
-        this.freehandDownPoint = {x: 0, y: 0}; this.selPointColl = {};
+        this.freehandDownPoint = {x: 0, y: 0}; this.selPointColl = {}; this.straightenPointAngle = 0;
         this.fhdHovIdx = null; this.pointCounter = 0; this.fhdSelID = null;
         this.penStrokeWidth = undefined; this.currFHDIdx = 0; this.fhdSelIdx = null;
         this.tempFHDStyles = {strokeColor: null, fillColor: null, strokeWidth: null};
+        this.straightenPoint = {x: null, y: null, ratioX: null, ratioY: null }; this.prevStraightenObj = null;
     }
 
     public getModuleName(): string {
@@ -186,10 +216,6 @@ export class FreehandDrawing {
 
     private hoverFhd(fillStyle?: string, strokeWidth?: number): void {
         const parent: ImageEditor = this.parent;
-        parent.lowerCanvas = document.querySelector('#' + parent.element.id + '_lowerCanvas');
-        this.lowerContext = parent.lowerCanvas.getContext('2d');
-        parent.upperCanvas = document.querySelector('#' + parent.element.id + '_upperCanvas');
-        this.upperContext = parent.upperCanvas.getContext('2d');
         const context: CanvasRenderingContext2D = this.upperContext;
         let idx: number = -1;
         if (this.fhdHovIdx > -1) {idx = this.fhdHovIdx; }
@@ -235,10 +261,11 @@ export class FreehandDrawing {
     }
 
     private freehandDownHandler(e: MouseEvent & TouchEvent, canvas: HTMLCanvasElement): void {
-        this.parent.lowerCanvas = document.querySelector('#' + this.parent.element.id + '_lowerCanvas');
-        this.lowerContext = this.parent.lowerCanvas.getContext('2d');
-        this.parent.upperCanvas = document.querySelector('#' + this.parent.element.id + '_upperCanvas');
-        this.upperContext = this.parent.upperCanvas.getContext('2d');
+        const parent: ImageEditor = this.parent;
+        parent.lowerCanvas = document.querySelector('#' + parent.element.id + '_lowerCanvas');
+        this.lowerContext = parent.lowerCanvas.getContext('2d');
+        parent.upperCanvas = document.querySelector('#' + parent.element.id + '_upperCanvas');
+        this.upperContext = parent.upperCanvas.getContext('2d');
         this.fhdObj.time = new Date().getTime();
         this.isFreehandDrawing = true;
         if (e.type === 'mousedown') {this.freehandDownPoint = {x: e.clientX, y: e.clientY}; }
@@ -247,9 +274,8 @@ export class FreehandDrawing {
         EventHandler.add(canvas, 'mousemove touchmove', this.freehandMoveHandler, this);
         const shapeSettings: ShapeSettings = {id: 'pen_' + (this.currFHDIdx + 1), type: ShapeType.FreehandDraw,
             startX: this.freehandDownPoint.x, startY: this.freehandDownPoint.y,
-            strokeColor: this.parent.activeObj.strokeSettings.strokeColor, strokeWidth: this.penStrokeWidth,
-            points: null };
-        const shapeChangingArgs: ShapeChangeEventArgs = {action: 'draw-start', previousShapeSettings: shapeSettings,
+            strokeColor: parent.activeObj.strokeSettings.strokeColor, strokeWidth: this.penStrokeWidth, points: null };
+        const shapeChangingArgs: ShapeChangeEventArgs = {cancel: false, action: 'draw-start', previousShapeSettings: shapeSettings,
             currentShapeSettings: shapeSettings};
         this.triggerShapeChanging(shapeChangingArgs);
     }
@@ -277,19 +303,13 @@ export class FreehandDrawing {
         prevObj.pointColl = extend([], parent.pointColl, [], true) as Point[];
         prevObj.afterCropActions = extend([], parent.afterCropActions, [], true) as string[];
         const selPointCollObj: Object = {selPointColl: null };
-        parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
-            value: {obj: selPointCollObj }});
+        parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false, value: {obj: selPointCollObj }});
         prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
         const fhCnt: number = parent.freehandCounter;
-        parent.pointColl[fhCnt as number] = {};
-        parent.pointColl[fhCnt as number].points = extend([], parent.points);
-        parent.pointColl[fhCnt as number].strokeColor = parent.activeObj.strokeSettings.strokeColor;
-        parent.pointColl[fhCnt as number].strokeWidth = this.penStrokeWidth;
-        parent.pointColl[fhCnt as number].flipState = parent.transform.currFlipState;
-        parent.pointColl[fhCnt as number].id = 'pen_' + (this.currFHDIdx + 1);
+        parent.pointColl[fhCnt as number] = { points: extend([], parent.points), strokeColor: parent.activeObj.strokeSettings.strokeColor,
+            strokeWidth: this.penStrokeWidth, flipState: parent.transform.currFlipState, id: 'pen_' + (this.currFHDIdx + 1)};
         parent.points = []; this.dummyPoints = [];
-        this.selPointColl[fhCnt as number] = {};
-        this.selPointColl[fhCnt as number].points = extend([], this.selPoints);
+        this.selPointColl[fhCnt as number] = { points: extend([], this.selPoints) };
         this.selPoints = []; this.pointCounter = 0;
         parent.freehandCounter++;
         this.isFreehandDrawing = false;
@@ -300,9 +320,9 @@ export class FreehandDrawing {
                 currentText: null, previousFilter: null, isCircleCrop: null}});
         const shapeSettings: ShapeSettings = {id: 'pen_' + (this.currFHDIdx + 1), type: ShapeType.FreehandDraw,
             startX: this.freehandDownPoint.x, startY: this.freehandDownPoint.y,
-            strokeColor: this.parent.activeObj.strokeSettings.strokeColor, strokeWidth: this.penStrokeWidth,
-            points: this.parent.pointColl[this.currFHDIdx].points };
-        const shapeChangingArgs: ShapeChangeEventArgs = {action: 'draw-end', previousShapeSettings: shapeSettings,
+            strokeColor: parent.activeObj.strokeSettings.strokeColor, strokeWidth: this.penStrokeWidth,
+            points: parent.pointColl[this.currFHDIdx].points };
+        const shapeChangingArgs: ShapeChangeEventArgs = {cancel: false, action: 'draw-end', previousShapeSettings: shapeSettings,
             currentShapeSettings: shapeSettings};
         this.triggerShapeChanging(shapeChangingArgs);
         this.currFHDIdx++;
@@ -331,8 +351,7 @@ export class FreehandDrawing {
         let controlPoint1: Point; let controlPoint2: Point;
         let startPoint: Point; let endPoint: Point;
         this.selPoints.push({x: x, y: y, ratioX: (x - parent.img.destLeft) / parent.img.destWidth,
-            ratioY: (y - parent.img.destTop) / parent.img.destHeight,
-            time: this.fhdObj.time });
+            ratioY: (y - parent.img.destTop) / parent.img.destHeight, time: this.fhdObj.time });
         if (!lastPoint || !(lastPoint && isLastPointTooClose) || mouseDown) {
             this.fhdObj.time = new Date().getTime();
             parent.points.push({x: x, y: y, ratioX: (x - parent.img.destLeft) / parent.img.destWidth,
@@ -458,8 +477,9 @@ export class FreehandDrawing {
     }
 
     private drawArc(x: number, y: number, size: number, context: CanvasRenderingContext2D): void {
-        if ((x > this.parent.img.destLeft && y > this.parent.img.destTop && x < (this.parent.img.destLeft + this.parent.img.destWidth) &&
-            y < (this.parent.img.destTop + this.parent.img.destHeight) ||
+        const img: ImageDimension = this.parent.img;
+        if ((x > img.destLeft && y > img.destTop && x < (img.destLeft + img.destWidth) &&
+            y < (img.destTop + img.destHeight) ||
             (context !== this.lowerContext && context !== this.upperContext))) {
             context.moveTo(x, y); context.arc(x, y, size, 0, 2 * Math.PI, false);
         }
@@ -467,17 +487,10 @@ export class FreehandDrawing {
 
     private freehandRedraw(context: CanvasRenderingContext2D, points?: Point[]): void {
         const parent: ImageEditor = this.parent;
-        parent.lowerCanvas = document.querySelector('#' + parent.element.id + '_lowerCanvas');
-        this.lowerContext = parent.lowerCanvas.getContext('2d');
-        parent.upperCanvas = document.querySelector('#' + parent.element.id + '_upperCanvas');
-        this.upperContext = parent.upperCanvas.getContext('2d');
         const temp: string = context.filter; context.filter = 'none';
         if (points) {
-            parent.pointColl[parent.freehandCounter] = {};
-            parent.pointColl[parent.freehandCounter].points = points;
-            parent.pointColl[parent.freehandCounter].strokeColor = parent.activeObj.strokeSettings.strokeColor;
-            parent.pointColl[parent.freehandCounter].strokeWidth = this.penStrokeWidth;
-            parent.pointColl[parent.freehandCounter].flipState = parent.transform.currFlipState;
+            parent.pointColl[parent.freehandCounter] = { points: points, strokeColor: parent.activeObj.strokeSettings.strokeColor,
+                strokeWidth: this.penStrokeWidth, flipState: parent.transform.currFlipState };
             parent.freehandCounter++;
         }
         if (parent.freehandCounter > 0) {
@@ -512,7 +525,7 @@ export class FreehandDrawing {
                 }
                 context.closePath();
             }
-            if (context !== this.upperContext) {
+            if (context === this.lowerContext) {
                 parent.notify('draw', {prop: 'applyFrame', value: {ctx: this.lowerContext, frame: parent.frameObj.type, preventImg: true}});
                 this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
             }
@@ -581,22 +594,26 @@ export class FreehandDrawing {
 
     private cancelFhd(): void {
         const parent: ImageEditor = this.parent;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const selectedPoint: any = parent.pointColl[this.fhdSelIdx];
         if (!isBlazor()) {
             parent.notify('toolbar', {prop: 'setSelectedFreehandColor', value: {color: '#42a5f5' } });
         }
         this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
+        this.lowerContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
         this.pointCounter = 0;
-        if (parent.pointColl[this.fhdSelIdx]) {
-            parent.pointColl[this.fhdSelIdx].strokeColor = this.tempFHDStyles.strokeColor;
-            parent.pointColl[this.fhdSelIdx].strokeWidth = this.tempFHDStyles.strokeWidth;
-            parent.pointColl[this.fhdSelIdx].isSelected = false;
+        if (selectedPoint) {
+            selectedPoint.strokeColor = this.tempFHDStyles.strokeColor;
+            selectedPoint.strokeWidth = this.tempFHDStyles.strokeWidth;
+            selectedPoint.isSelected = false;
         }
         this.fhdHovIdx = this.fhdSelIdx = this.fhdSelID = null;
         parent.notify('selection', {prop: 'resetFreehandDrawVariables'});
         parent.activeObj.strokeSettings.strokeColor = this.tempFHDStyles.strokeColor;
         parent.activeObj.strokeSettings.strokeWidth = this.penStrokeWidth = this.tempFHDStyles.strokeWidth;
         this.tempFHDStyles = {strokeColor: null, strokeWidth: null, fillColor: null};
-        if (!isBlazor()) { 
+        parent.notify('draw', {prop: 'render-image', value: {isMouseWheel: null } });
+        if (!isBlazor()) {
             parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false}); 
         } else {
             parent.updateToolbar(parent.element, 'imageLoaded');
@@ -616,11 +633,11 @@ export class FreehandDrawing {
             }
         }
         this.fhdSelIdx = this.fhdHovIdx;
-        parent.pointColl[this.fhdSelIdx].isSelected = true;
-        this.fhdSelID = parent.pointColl[this.fhdSelIdx].id;
-        if (parent.pointColl[this.fhdHovIdx].strokeColor !== '#42a5f5') {
-            parent.activeObj.strokeSettings.strokeColor = this.tempFHDStyles.strokeColor =
-                parent.pointColl[this.fhdHovIdx].strokeColor;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const point: any = parent.pointColl[this.fhdSelIdx];
+        point.isSelected = true; this.fhdSelID = point.id;
+        if (point.strokeColor !== '#42a5f5') {
+            parent.activeObj.strokeSettings.strokeColor = this.tempFHDStyles.strokeColor = point.strokeColor;
         }
         parent.activeObj.strokeSettings.strokeWidth = this.tempFHDStyles.strokeWidth =
             parent.pointColl[this.fhdHovIdx].strokeWidth;
@@ -628,14 +645,17 @@ export class FreehandDrawing {
         parent.notify('selection', { prop: 'getFreehandDrawEditing', onPropertyChange: false, value: {obj: obj }});
         if (obj['bool']) {
             const shapeSettings: ShapeSettings = {id: 'pen_' + (this.fhdSelIdx + 1), type: ShapeType.FreehandDraw,
-                startX: parent.pointColl[this.fhdSelIdx].points[0].x, startY: parent.pointColl[this.fhdSelIdx].points[0].y,
-                strokeColor: parent.pointColl[this.fhdSelIdx].strokeColor, strokeWidth: parent.pointColl[this.fhdSelIdx].strokeWidth,
-                points: parent.pointColl[this.fhdSelIdx].points };
-            const shapeChangingArgs: ShapeChangeEventArgs = {action: 'select', previousShapeSettings: shapeSettings,
+                startX: point.points[0].x, startY: point.points[0].y, strokeColor: point.strokeColor,
+                strokeWidth: point.strokeWidth, points: point.points, opacity: point.opacity };
+            const shapeChangingArgs: ShapeChangeEventArgs = {cancel: false, action: 'select', previousShapeSettings: shapeSettings,
                 currentShapeSettings: shapeSettings};
             this.triggerShapeChanging(shapeChangingArgs);
         } else {
             parent.okBtn();
+        }
+        if (isBlazor()) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (parent as any).getShapeValue('pen');
         }
     }
 
@@ -643,7 +663,7 @@ export class FreehandDrawing {
         const parent: ImageEditor = this.parent;
         if (this.isFHDIdx(index)) {
             this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
-            // eslint-disable-next-line
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const tempPointColl: any = extend({}, parent.pointColl, {}, true);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const tempSelPointColl: any = extend({}, this.selPointColl, {}, true);
@@ -684,17 +704,28 @@ export class FreehandDrawing {
 
     private zoomFHDColl(isPreventApply?: boolean): void {
         const parent: ImageEditor = this.parent;
-        // Updating point collection for zoom
+        const destPoints: ActivePoint = {startX: parent.img.destLeft, startY: parent.img.destTop,
+            width: parent.img.destWidth, height: parent.img.destHeight};
+        parent.notify('shape', { prop: 'straightenShapes', onPropertyChange: false});
         for (let n: number = 0; n < parent.freehandCounter; n++) {
             parent.points = extend([], parent.pointColl[n as number].points, []) as Point[];
             this.pointCounter = 0; const len: number = parent.points.length;
             for (let l: number = 0; l < len; l++) {
-                parent.points[l as number].x = this.zoomX(parent.points[l as number].ratioX);
-                parent.points[l as number].y = this.zoomY(parent.points[l as number].ratioY);
+                const point: Point = parent.points[l as number];
+                point.x = this.zoomX(point.ratioX);
+                point.y = this.zoomY(point.ratioY);
             }
         }
-        // Updating each points for cursor styles for zoom
         this.updateFHDCurPts();
+        if (this.straightenPoint.x && this.straightenPoint.y) {
+            this.straightenPoint.x = this.zoomX(this.straightenPoint.ratioX);
+            this.straightenPoint.y = this.zoomY(this.straightenPoint.ratioY);
+        }
+        if (parent.transform.straighten !== 0) {
+            parent.notify('shape', { prop: 'straightenFHD', onPropertyChange: false});
+        }
+        parent.img.destLeft = destPoints.startX; parent.img.destTop = destPoints.startY;
+        parent.img.destWidth = destPoints.width; parent.img.destHeight = destPoints.height;
         if (isNullOrUndefined(isPreventApply)) {
             this.freehandRedraw(this.lowerContext, null);
         }
@@ -707,8 +738,9 @@ export class FreehandDrawing {
                 this.selPoints = extend([], this.selPointColl[n as number].points, []) as Point[];
                 this.pointCounter = 0; const len: number = this.selPoints.length;
                 for (let l: number = 0; l < len; l++) {
-                    this.selPoints[l as number].x = this.zoomX(this.selPoints[l as number].ratioX);
-                    this.selPoints[l as number].y = this.zoomY(this.selPoints[l as number].ratioY);
+                    const point: Point = this.selPoints[l as number];
+                    point.x = this.zoomX(point.ratioX);
+                    point.y = this.zoomY(point.ratioY);
                 }
             }
         }
@@ -716,30 +748,29 @@ export class FreehandDrawing {
 
     private rotateFhdColl(): void {
         const parent: ImageEditor = this.parent;
-        // Update rotation points for point collection
+        const { destLeft, destTop, destWidth, destHeight } = parent.img;
         for (let n: number = 0; n < parent.freehandCounter; n++) {
             parent.points = extend([], parent.pointColl[n as number].points, []) as Point[];
             this.pointCounter = 0; const len: number = parent.points.length;
             for (let l: number = 0; l < len; l++) {
-                parent.points[l as number].y = parent.img.destTop + (parent.img.destHeight * parent.points[l as number].ratioX);
-                parent.points[l as number].x = (parent.img.destLeft + parent.img.destWidth) - (parent.img.destWidth *
-                    parent.points[l as number].ratioY);
-                parent.points[l as number].ratioX = (parent.points[l as number].x - parent.img.destLeft) / parent.img.destWidth;
-                parent.points[l as number].ratioY = (parent.points[l as number].y - parent.img.destTop) / parent.img.destHeight;
+                const point: Point = parent.points[l as number];
+                point.y = destTop + (destHeight * point.ratioX);
+                point.x = (destLeft + destWidth) - (destWidth * point.ratioY);
+                point.ratioX = (point.x - destLeft) / destWidth;
+                point.ratioY = (point.y - destTop) / destHeight;
             }
         }
-        // Update rotation points for each point for cursor styles
         for (let n: number = 0; n < parent.freehandCounter; n++) {
             if (this.selPointColl[n as number]) {
                 this.selPoints = extend([], this.selPointColl[n as number].points, []) as Point[];
                 this.pointCounter = 0;
                 const len: number = this.selPoints.length;
                 for (let l: number = 0; l < len; l++) {
-                    this.selPoints[l as number].y = parent.img.destTop + (parent.img.destHeight * this.selPoints[l as number].ratioX);
-                    this.selPoints[l as number].x = (parent.img.destLeft + parent.img.destWidth) - (parent.img.destWidth *
-                        this.selPoints[l as number].ratioY);
-                    this.selPoints[l as number].ratioX = (this.selPoints[l as number].x - parent.img.destLeft) / parent.img.destWidth;
-                    this.selPoints[l as number].ratioY = (this.selPoints[l as number].y - parent.img.destTop) / parent.img.destHeight;
+                    const point: Point = this.selPoints[l as number];
+                    point.y = destTop + (destHeight * point.ratioX);
+                    point.x = (destLeft + destWidth) - (destWidth * point.ratioY);
+                    point.ratioX = (point.x - destLeft) / destWidth;
+                    point.ratioY = (point.y - destTop) / destHeight;
                 }
             }
         }
@@ -763,27 +794,25 @@ export class FreehandDrawing {
 
     private pointsHorizontalFlip(): void {
         const parent: ImageEditor = this.parent;
-        // Update flip value for point collection
+        const { destLeft, destTop, destWidth, destHeight } = parent.img;
         for (let n: number = 0; n < parent.freehandCounter; n++) {
             if (parent.pointColl[n as number].shapeFlip !== parent.transform.currFlipState) {
                 parent.points = extend([], parent.pointColl[n as number].points, []) as Point[];
                 this.pointCounter = 0;
                 const len: number = parent.points.length;
                 for (let l: number = 0; l < len; l++) {
-                    if (parent.points[l as number].x <= parent.img.destLeft + (parent.img.destWidth / 2)) {
-                        parent.points[l as number].x = (parent.img.destLeft + parent.img.destWidth) - (parent.points[l as number].x
-                            - parent.img.destLeft);
-                    } else if (parent.points[l as number].x >= parent.img.destLeft + (parent.img.destWidth / 2)) {
-                        parent.points[l as number].x = parent.img.destLeft + (parent.img.destLeft + parent.img.destWidth -
-                            parent.points[l as number].x);
+                    const point: Point = parent.points[l as number];
+                    if (point.x <= destLeft + (destWidth / 2)) {
+                        point.x = (destLeft + destWidth) - (point.x - destLeft);
+                    } else if (point.x >= destLeft + (destWidth / 2)) {
+                        point.x = destLeft + (destLeft + destWidth - point.x);
                     }
-                    parent.points[l as number].ratioX = (parent.points[l as number].x - parent.img.destLeft) / parent.img.destWidth;
-                    parent.points[l as number].ratioY = (parent.points[l as number].y - parent.img.destTop) / parent.img.destHeight;
+                    point.ratioX = (point.x - destLeft) / destWidth;
+                    point.ratioY = (point.y - destTop) / destHeight;
                 }
                 parent.pointColl[n as number].shapeFlip = parent.transform.currFlipState;
             }
         }
-        // Update flip value for each points for cursor styles
         for (let n: number = 0; n < parent.freehandCounter; n++) {
             if (this.selPointColl[n as number]) {
                 if (this.selPointColl[n as number].shapeFlip !== parent.transform.currFlipState) {
@@ -791,15 +820,14 @@ export class FreehandDrawing {
                     this.pointCounter = 0;
                     const len: number = this.selPoints.length;
                     for (let l: number = 0; l < len; l++) {
-                        if (this.selPoints[l as number].x <= parent.img.destLeft + (parent.img.destWidth / 2)) {
-                            this.selPoints[l as number].x = (parent.img.destLeft + parent.img.destWidth) - (this.selPoints[l as number].x -
-                                parent.img.destLeft);
-                        } else if (this.selPoints[l as number].x >= parent.img.destLeft + (parent.img.destWidth / 2)) {
-                            this.selPoints[l as number].x = parent.img.destLeft + (parent.img.destLeft + parent.img.destWidth -
-                                this.selPoints[l as number].x);
+                        const point: Point = this.selPoints[l as number];
+                        if (point.x <= destLeft + (destWidth / 2)) {
+                            point.x = (destLeft + destWidth) - (point.x - destLeft);
+                        } else if (point.x >= destLeft + (destWidth / 2)) {
+                            point.x = destLeft + (destLeft + destWidth - point.x);
                         }
-                        this.selPoints[l as number].ratioX = (this.selPoints[l as number].x - parent.img.destLeft) / parent.img.destWidth;
-                        this.selPoints[l as number].ratioY = (this.selPoints[l as number].y - parent.img.destTop) / parent.img.destHeight;
+                        point.ratioX = (point.x - destLeft) / destWidth;
+                        point.ratioY = (point.y - destTop) / destHeight;
                     }
                 }
             }
@@ -809,27 +837,25 @@ export class FreehandDrawing {
 
     private pointsVerticalFlip(): void {
         const parent: ImageEditor = this.parent;
-        // Update flip value for point collection
+        const { destLeft, destTop, destWidth, destHeight } = parent.img;
         for (let n: number = 0; n < parent.freehandCounter; n++) {
             if (parent.pointColl[n as number].shapeFlip !== parent.transform.currFlipState) {
                 parent.points = extend([], parent.pointColl[n as number].points, []) as Point[];
                 this.pointCounter = 0;
                 const len: number = parent.points.length;
                 for (let l: number = 0; l < len; l++) {
-                    if (parent.points[l as number].y <= parent.img.destTop + (parent.img.destHeight / 2)) {
-                        parent.points[l as number].y = (parent.img.destTop + parent.img.destHeight) -
-                        (parent.points[l as number].y - parent.img.destTop);
-                    } else if (parent.points[l as number].y >= parent.img.destTop + (parent.img.destHeight / 2)) {
-                        parent.points[l as number].y = parent.img.destTop + (parent.img.destTop + parent.img.destHeight -
-                            parent.points[l as number].y);
+                    const point: Point = parent.points[l as number];
+                    if (point.y <= destTop + (destHeight / 2)) {
+                        point.y = (destTop + destHeight) - (point.y - destTop);
+                    } else if (point.y >= destTop + (destHeight / 2)) {
+                        point.y = destTop + (destTop + destHeight - point.y);
                     }
-                    parent.points[l as number].ratioX = (parent.points[l as number].x - parent.img.destLeft) / parent.img.destWidth;
-                    parent.points[l as number].ratioY = (parent.points[l as number].y - parent.img.destTop) / parent.img.destHeight;
+                    point.ratioX = (point.x - destLeft) / destWidth;
+                    point.ratioY = (point.y - destTop) / destHeight;
                 }
                 parent.pointColl[n as number].shapeFlip = parent.transform.currFlipState;
             }
         }
-        // Update flip value for each points for cursor styles
         for (let n: number = 0; n < parent.freehandCounter; n++) {
             if (this.selPointColl[n as number]) {
                 if (this.selPointColl[n as number].shapeFlip !== parent.transform.currFlipState) {
@@ -837,15 +863,14 @@ export class FreehandDrawing {
                     this.pointCounter = 0;
                     const len: number = this.selPoints.length;
                     for (let l: number = 0; l < len; l++) {
-                        if (this.selPoints[l as number].y <= parent.img.destTop + (parent.img.destHeight / 2)) {
-                            this.selPoints[l as number].y = (parent.img.destTop + parent.img.destHeight) - (this.selPoints[l as number].y -
-                                parent.img.destTop);
-                        } else if (this.selPoints[l as number].y >= parent.img.destTop + (parent.img.destHeight / 2)) {
-                            this.selPoints[l as number].y = parent.img.destTop + (parent.img.destTop + parent.img.destHeight -
-                                this.selPoints[l as number].y);
+                        const point: Point = this.selPoints[l as number];
+                        if (point.y <= destTop + (destHeight / 2)) {
+                            point.y = (destTop + destHeight) - (point.y - destTop);
+                        } else if (point.y >= destTop + (destHeight / 2)) {
+                            point.y = destTop + (destTop + destHeight - point.y);
                         }
-                        this.selPoints[l as number].ratioX = (this.selPoints[l as number].x - parent.img.destLeft) / parent.img.destWidth;
-                        this.selPoints[l as number].ratioY = (this.selPoints[l as number].y - parent.img.destTop) / parent.img.destHeight;
+                        point.ratioX = (point.x - destLeft) / destWidth;
+                        point.ratioY = (point.y - destTop) / destHeight;
                     }
                 }
             }
@@ -853,32 +878,52 @@ export class FreehandDrawing {
         this.updateFHDCurPts();
     }
 
-    private updateFHDColl(): void {
+    private updateFHDColl(isPreventApply?: boolean): void {
         const parent: ImageEditor = this.parent;
-        for (let i: number = 0; i < parent.objColl.length; i++) {
-            parent.objColl[i as number].imageRatio = {startX: ((parent.objColl[i as number].activePoint.startX - parent.img.destLeft) /
-            parent.img.destWidth), startY: ((parent.objColl[i as number].activePoint.startY - parent.img.destTop) / parent.img.destHeight),
-            endX: ((parent.objColl[i as number].activePoint.endX - parent.img.destLeft) / parent.img.destWidth),
-            endY: ((parent.objColl[i as number].activePoint.endY - parent.img.destTop) / parent.img.destHeight),
-            width: parent.img.destWidth / parent.objColl[i as number].activePoint.width, height: parent.img.destHeight /
-            parent.objColl[i as number].activePoint.height };
-            if (parent.objColl[i as number].shape === 'path') {
-                for (let j: number = 0; j < parent.objColl[i as number].pointColl.length; j++) {
-                    parent.objColl[i as number].pointColl[j as number].ratioX =
-                        (parent.objColl[i as number].pointColl[j as number].x - parent.img.destLeft) / parent.img.destWidth;
-                    parent.objColl[i as number].pointColl[j as number].ratioY =
-                        (parent.objColl[i as number].pointColl[j as number].y - parent.img.destTop) / parent.img.destHeight;
+        const destPoints: ActivePoint = {startX: parent.img.destLeft, startY: parent.img.destTop,
+            width: parent.img.destWidth, height: parent.img.destHeight};
+        parent.notify('shape', { prop: 'straightenShapes', onPropertyChange: false});
+        const { destLeft, destTop, destWidth, destHeight } = parent.img;
+        for (let i: number = 0, iLen: number = parent.objColl.length; i < iLen; i++) {
+            const currObj: SelectionPoint = parent.objColl[i as number];
+            if (currObj.shape === 'line' || currObj.shape === 'arrow') {
+                parent.notify('shape', { prop: 'straightenShapePoints', value: {obj: currObj, isReverse: true }});
+            } else if (currObj.shape === 'path') {
+                const temp: number = parent.transform.straighten;
+                parent.transform.straighten = -parent.transform.straighten;
+                parent.notify('shape', { prop: 'straightenPath', onPropertyChange: false, value: {obj: currObj }});
+                parent.transform.straighten = temp;
+            }
+            currObj.imageRatio = {startX: ((currObj.activePoint.startX - destLeft) /
+            destWidth), startY: ((currObj.activePoint.startY - destTop) / destHeight),
+            endX: ((currObj.activePoint.endX - destLeft) / destWidth),
+            endY: ((currObj.activePoint.endY - destTop) / destHeight),
+            width: destWidth / currObj.activePoint.width, height: destHeight /
+            currObj.activePoint.height };
+            if (currObj.shape === 'path') {
+                for (let j: number = 0, jLen: number = currObj.pointColl.length; j < jLen; j++) {
+                    currObj.pointColl[j as number].ratioX =
+                        (currObj.pointColl[j as number].x - destLeft) / destWidth;
+                    currObj.pointColl[j as number].ratioY =
+                        (currObj.pointColl[j as number].y - destTop) / destHeight;
                 }
             }
             parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
         }
+        if (parent.freehandCounter > 0 && parent.transform.straighten !== 0) {
+            const temp: number = parent.transform.straighten;
+            parent.transform.straighten = -parent.transform.straighten;
+            parent.notify('shape', { prop: 'straightenFHD', onPropertyChange: false});
+            parent.transform.straighten = temp;
+        }
         for (let n: number = 0; n < parent.freehandCounter; n++) {
             parent.points = extend([], parent.pointColl[n as number].points, []) as Point[];
             this.pointCounter = 0;
             const len: number = parent.points.length;
             for (let l: number = 0; l < len; l++) {
-                parent.points[l as number].ratioX = (parent.points[l as number].x - parent.img.destLeft) / parent.img.destWidth;
-                parent.points[l as number].ratioY = (parent.points[l as number].y - parent.img.destTop) / parent.img.destHeight;
+                const point: Point = parent.points[l as number];
+                point.ratioX = (point.x - destLeft) / destWidth;
+                point.ratioY = (point.y - destTop) / destHeight;
             }
         }
         for (let n: number = 0; n < parent.freehandCounter; n++) {
@@ -887,53 +932,75 @@ export class FreehandDrawing {
                 this.pointCounter = 0;
                 const len: number = this.selPoints.length;
                 for (let l: number = 0; l < len; l++) {
-                    this.selPoints[l as number].ratioX = (this.selPoints[l as number].x - parent.img.destLeft) / parent.img.destWidth;
-                    this.selPoints[l as number].ratioY = (this.selPoints[l as number].y - parent.img.destTop) / parent.img.destHeight;
+                    const point: Point = this.selPoints[l as number];
+                    point.ratioX = (point.x - destLeft) / destWidth;
+                    point.ratioY = (point.y - destTop) / destHeight;
                 }
             }
         }
+        if (this.straightenPoint.x && this.straightenPoint.y) {
+            this.straightenPoint.ratioX = (this.straightenPoint.x - destLeft) / destWidth;
+            this.straightenPoint.ratioY = (this.straightenPoint.y - destTop) / destHeight;
+        }
+        parent.img.destLeft = destPoints.startX; parent.img.destTop = destPoints.startY;
+        parent.img.destWidth = destPoints.width; parent.img.destHeight = destPoints.height;
+        parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: { isPreventApply: isPreventApply } });
+        parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: { isPreventApply: isPreventApply } });
     }
 
     private panFHDColl(xDiff: number, yDiff: number, panRegion: string): void {
         const parent: ImageEditor = this.parent;
-        // Updating point collection for panning
         for (let n: number = 0; n < parent.freehandCounter; n++) {
             parent.points = extend([], parent.pointColl[n as number].points, []) as Point[];
             this.pointCounter = 0;
             const len: number = parent.points.length;
             for (let l: number = 0; l < len; l++) {
+                const point: Point = parent.points[l as number];
                 if (panRegion === '' || panRegion === 'vertical') {
-                    parent.points[l as number].x += xDiff;
+                    point.x += xDiff;
                 } else {
-                    parent.points[l as number].x -= xDiff;
+                    point.x -= xDiff;
                 }
                 if (panRegion === '' || panRegion === 'horizontal') {
-                    parent.points[l as number].y += yDiff;
+                    point.y += yDiff;
                 }
                 else {
-                    parent.points[l as number].y -= yDiff;
+                    point.y -= yDiff;
                 }
             }
         }
-        // Updating each points for cursor styles for panning
         for (let n: number = 0; n < parent.freehandCounter; n++) {
             if (this.selPointColl[n as number]) {
                 this.selPoints = extend([], this.selPointColl[n as number].points, []) as Point[];
                 this.pointCounter = 0;
                 const len: number = this.selPoints.length;
                 for (let l: number = 0; l < len; l++) {
+                    const point: Point = this.selPoints[l as number];
                     if (panRegion === '' || panRegion === 'vertical') {
-                        this.selPoints[l as number].x += xDiff;
+                        point.x += xDiff;
                     } else {
-                        this.selPoints[l as number].x -= xDiff;
+                        point.x -= xDiff;
                     }
                     if (panRegion === '' || panRegion === 'horizontal') {
-                        this.selPoints[l as number].y += yDiff;
+                        point.y += yDiff;
                     }
                     else {
-                        this.selPoints[l as number].y -= yDiff;
+                        point.y -= yDiff;
                     }
                 }
+            }
+        }
+        if (this.straightenPoint.x && this.straightenPoint.y) {
+            if (panRegion === '' || panRegion === 'vertical') {
+                this.straightenPoint.x += xDiff;
+            } else {
+                this.straightenPoint.x -= xDiff;
+            }
+            if (panRegion === '' || panRegion === 'horizontal') {
+                this.straightenPoint.y += yDiff;
+            }
+            else {
+                this.straightenPoint.y -= yDiff;
             }
         }
         this.freehandRedraw(this.lowerContext, null);
@@ -955,7 +1022,7 @@ export class FreehandDrawing {
                 parent.activeObj.strokeSettings = obj['strokeSettings'];
             }
             if (isNullOrUndefined(parent.activeObj.strokeSettings.strokeWidth)) {
-                parent.activeObj.strokeSettings.strokeWidth =  4;
+                parent.activeObj.strokeSettings.strokeWidth = 2;
             }
             if (!isBlazor()) {
                 parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'pen',
@@ -990,7 +1057,7 @@ export class FreehandDrawing {
     }
 
     private updateCropPtsForSel(): void {
-        const parent: ImageEditor = this.parent;
+        const parent: ImageEditor = this.parent; const actPoint: ActivePoint = parent.activeObj.activePoint;
         for (let n: number = 0; n < parent.freehandCounter; n++) {
             const obj: Object = {selPointColl: extend([], this.selPointColl) };
             if (obj['selPointColl'][n as number]) {
@@ -998,20 +1065,20 @@ export class FreehandDrawing {
                 this.pointCounter = 0;
                 const len: number = this.selPoints.length;
                 for (let l: number = 0; l < len; l++) {
-                    this.selPoints[l as number].ratioX = (this.selPoints[l as number].x -
-                                                       parent.activeObj.activePoint.startX) / parent.activeObj.activePoint.width;
-                    this.selPoints[l as number].ratioY = (this.selPoints[l as number].y -
-                                                       parent.activeObj.activePoint.startY) / parent.activeObj.activePoint.height;
+                    const point: Point = this.selPoints[l as number];
+                    point.ratioX = (point.x - actPoint.startX) / actPoint.width;
+                    point.ratioY = (point.y - actPoint.startY) / actPoint.height;
                 }
             }
         }
     }
 
     private triggerShapeChanging(shapeChangingArgs: ShapeChangeEventArgs) : void {
-        const parent: ImageEditor = this.parent;
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const parent: ImageEditor = this.parent; const point: any = parent.pointColl[this.fhdSelIdx];
         if (isBlazor() && parent.events && parent.events.shapeChanging.hasDelegate === true) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape',  shapeChangingArgs) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
+            (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape',  shapeChangingArgs, null) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
                 this.penStrokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
                 if (parent.activeObj.strokeSettings.strokeColor !== shapeChangingArgs.currentShapeSettings.strokeColor) {
                     parent.activeObj.strokeSettings.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
@@ -1021,9 +1088,10 @@ export class FreehandDrawing {
                     }
                 }
                 if (this.fhdSelID) {
-                    parent.pointColl[this.fhdSelIdx].strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
-                    parent.pointColl[this.fhdSelIdx].strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
-                    parent.pointColl[this.fhdSelIdx].points = shapeChangingArgs.currentShapeSettings.points;
+                    point.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
+                    point.strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
+                    point.points = shapeChangingArgs.currentShapeSettings.points;
+                    point.opacity = shapeChangingArgs.currentShapeSettings.opacity;
                 }
                 if (shapeChangingArgs.action === 'select') {
                     this.freehandRedraw(this.upperContext);
@@ -1039,9 +1107,10 @@ export class FreehandDrawing {
                 parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false });
             }
             if (this.fhdSelID) {
-                parent.pointColl[this.fhdSelIdx].strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
-                parent.pointColl[this.fhdSelIdx].strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
-                parent.pointColl[this.fhdSelIdx].points = shapeChangingArgs.currentShapeSettings.points;
+                point.strokeColor = shapeChangingArgs.currentShapeSettings.strokeColor;
+                point.strokeWidth = shapeChangingArgs.currentShapeSettings.strokeWidth;
+                point.points = shapeChangingArgs.currentShapeSettings.points;
+                point.opacity = shapeChangingArgs.currentShapeSettings.opacity;
             }
             if (shapeChangingArgs.action === 'select') {
                 this.freehandRedraw(this.upperContext);
@@ -1049,5 +1118,25 @@ export class FreehandDrawing {
                     isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
             }
         }
+    }
+
+    private setCenterSelPoints(): void {
+        const parent: ImageEditor = this.parent;
+        const destPoints: ActivePoint = {startX: parent.img.destLeft, startY: parent.img.destTop,
+            width: parent.img.destWidth, height: parent.img.destHeight};
+        parent.notify('shape', { prop: 'straightenShapes', onPropertyChange: false});
+        const { destLeft, destTop, destWidth, destHeight } = parent.img;
+        const actPoint: ActivePoint = parent.activeObj.activePoint;
+        if (isNullOrUndefined(this.prevStraightenObj) ||
+            (JSON.stringify(this.prevStraightenObj.activePoint) !== JSON.stringify(actPoint))) {
+            this.straightenPoint = { x: actPoint.startX + (actPoint.width / 2),
+                y: actPoint.startY + (actPoint.height / 2),
+                ratioX: (actPoint.startX + (actPoint.width / 2) - destLeft) / destWidth,
+                ratioY: (actPoint.startY + (actPoint.height / 2) - destTop) / destHeight };
+            this.prevStraightenObj = extend({}, parent.activeObj, {}, true) as SelectionPoint;
+            this.straightenPointAngle = parent.transform.straighten;
+        }
+        parent.img.destLeft = destPoints.startX; parent.img.destTop = destPoints.startY;
+        parent.img.destWidth = destPoints.width; parent.img.destHeight = destPoints.height;
     }
 }

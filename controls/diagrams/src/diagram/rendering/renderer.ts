@@ -470,65 +470,69 @@ export class DiagramRenderer {
         const nodeWidth: number = element.actualSize.width * currentZoom;
         const nodeHeight: number = element.actualSize.height * currentZoom;
         if (!nodeConstraints && canDrawThumbs(this.rendererActions) && (!avoidDrawSelector(this.rendererActions))) {
-            if (nodeWidth >= 40 && nodeHeight >= 40) {
-                //Hide corners when the size is less than 40
-                if (selectorConstraints & SelectorConstraints.ResizeNorthWest) {
-                    this.renderCircularHandle(
-                        'resizeNorthWest', element, left, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthWest'),
-                        constraints & ThumbsConstraints.ResizeNorthWest, transform, undefined,
-                        canMask, { 'aria-label': 'Thumb to resize the selected object on top left side direction' },
-                        undefined, 'e-diagram-resize-handle e-northwest', handleSize);
+            //Bug 860033: Bpmn text annotation path size not rendered properly while dragging.
+            //Added below condition to prevent the resize thumbs for bpmn text annotation.
+            if(!(element as any).isTextAnnotation){
+                if (nodeWidth >= 40 && nodeHeight >= 40) {
+                    //Hide corners when the size is less than 40
+                    if (selectorConstraints & SelectorConstraints.ResizeNorthWest) {
+                        this.renderCircularHandle(
+                            'resizeNorthWest', element, left, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthWest'),
+                            constraints & ThumbsConstraints.ResizeNorthWest, transform, undefined,
+                            canMask, { 'aria-label': 'Thumb to resize the selected object on top left side direction' },
+                            undefined, 'e-diagram-resize-handle e-northwest', handleSize);
+                    }
+                    if (selectorConstraints & SelectorConstraints.ResizeNorthEast) {
+                        this.renderCircularHandle(
+                            'resizeNorthEast', element, left + width, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthEast'),
+                            constraints & ThumbsConstraints.ResizeNorthEast, transform, undefined,
+                            canMask, { 'aria-label': 'Thumb to resize the selected object on top right side direction' },
+                            undefined, 'e-diagram-resize-handle e-northeast', handleSize);
+                    }
+                    if (selectorConstraints & SelectorConstraints.ResizeSouthWest) {
+                        this.renderCircularHandle(
+                            'resizeSouthWest', element, left, top + height, canvas, canShowCorner(selectorConstraints, 'ResizeSouthWest'),
+                            constraints & ThumbsConstraints.ResizeSouthWest, transform, undefined,
+                            canMask, { 'aria-label': 'Thumb to resize the selected object on bottom left side direction' },
+                            undefined,
+                            'e-diagram-resize-handle e-southwest', handleSize);
+                    }
+                    if (selectorConstraints & SelectorConstraints.ResizeSouthEast) {
+                        this.renderCircularHandle(
+                            'resizeSouthEast', element, left + width, top + height, canvas,
+                            canShowCorner(selectorConstraints, 'ResizeSouthEast'), constraints & ThumbsConstraints.ResizeSouthEast, transform,
+                            undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on bottom right side direction' },
+                            undefined, 'e-diagram-resize-handle e-southeast', handleSize);
+                    }
                 }
-                if (selectorConstraints & SelectorConstraints.ResizeNorthEast) {
+                if (selectorConstraints & SelectorConstraints.ResizeNorth) {
                     this.renderCircularHandle(
-                        'resizeNorthEast', element, left + width, top, canvas, canShowCorner(selectorConstraints, 'ResizeNorthEast'),
-                        constraints & ThumbsConstraints.ResizeNorthEast, transform, undefined,
-                        canMask, { 'aria-label': 'Thumb to resize the selected object on top right side direction' },
-                        undefined, 'e-diagram-resize-handle e-northeast', handleSize);
+                        'resizeNorth', element, left + width / 2, top, canvas,
+                        canShowCorner(selectorConstraints, 'ResizeNorth'), constraints & ThumbsConstraints.ResizeNorth, transform, undefined,
+                        canMask, { 'aria-label': 'Thumb to resize the selected object on top side direction' }, undefined,
+                        'e-diagram-resize-handle e-north', handleSize);
                 }
-                if (selectorConstraints & SelectorConstraints.ResizeSouthWest) {
+                if (selectorConstraints & SelectorConstraints.ResizeSouth) {
                     this.renderCircularHandle(
-                        'resizeSouthWest', element, left, top + height, canvas, canShowCorner(selectorConstraints, 'ResizeSouthWest'),
-                        constraints & ThumbsConstraints.ResizeSouthWest, transform, undefined,
-                        canMask, { 'aria-label': 'Thumb to resize the selected object on bottom left side direction' },
-                        undefined,
-                        'e-diagram-resize-handle e-southwest', handleSize);
+                        'resizeSouth', element, left + width / 2, top + height, canvas,
+                        canShowCorner(selectorConstraints, 'ResizeSouth'), constraints & ThumbsConstraints.ResizeSouth, transform, undefined,
+                        canMask, { 'aria-label': 'Thumb to resize the selected object on bottom side direction' }, undefined,
+                        'e-diagram-resize-handle e-south', handleSize);
                 }
-                if (selectorConstraints & SelectorConstraints.ResizeSouthEast) {
+                if (selectorConstraints & SelectorConstraints.ResizeWest) {
                     this.renderCircularHandle(
-                        'resizeSouthEast', element, left + width, top + height, canvas,
-                        canShowCorner(selectorConstraints, 'ResizeSouthEast'), constraints & ThumbsConstraints.ResizeSouthEast, transform,
-                        undefined, canMask, { 'aria-label': 'Thumb to resize the selected object on bottom right side direction' },
-                        undefined, 'e-diagram-resize-handle e-southeast', handleSize);
+                        'resizeWest', element, left, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeWest'),
+                        constraints & ThumbsConstraints.ResizeWest, transform, undefined,
+                        canMask, { 'aria-label': 'Thumb to resize the selected object on left side direction' }, undefined,
+                        'e-diagram-resize-handle e-west', handleSize);
                 }
-            }
-            if (selectorConstraints & SelectorConstraints.ResizeNorth) {
-                this.renderCircularHandle(
-                    'resizeNorth', element, left + width / 2, top, canvas,
-                    canShowCorner(selectorConstraints, 'ResizeNorth'), constraints & ThumbsConstraints.ResizeNorth, transform, undefined,
-                    canMask, { 'aria-label': 'Thumb to resize the selected object on top side direction' }, undefined,
-                    'e-diagram-resize-handle e-north', handleSize);
-            }
-            if (selectorConstraints & SelectorConstraints.ResizeSouth) {
-                this.renderCircularHandle(
-                    'resizeSouth', element, left + width / 2, top + height, canvas,
-                    canShowCorner(selectorConstraints, 'ResizeSouth'), constraints & ThumbsConstraints.ResizeSouth, transform, undefined,
-                    canMask, { 'aria-label': 'Thumb to resize the selected object on bottom side direction' }, undefined,
-                    'e-diagram-resize-handle e-south', handleSize);
-            }
-            if (selectorConstraints & SelectorConstraints.ResizeWest) {
-                this.renderCircularHandle(
-                    'resizeWest', element, left, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeWest'),
-                    constraints & ThumbsConstraints.ResizeWest, transform, undefined,
-                    canMask, { 'aria-label': 'Thumb to resize the selected object on left side direction' }, undefined,
-                    'e-diagram-resize-handle e-west', handleSize);
-            }
-            if (selectorConstraints & SelectorConstraints.ResizeEast) {
-                this.renderCircularHandle(
-                    'resizeEast', element, left + width, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeEast'),
-                    constraints & ThumbsConstraints.ResizeEast, transform, undefined,
-                    canMask, { 'aria-label': 'Thumb to resize the selected object on right side direction' }, undefined,
-                    'e-diagram-resize-handle e-east', handleSize);
+                if (selectorConstraints & SelectorConstraints.ResizeEast) {
+                    this.renderCircularHandle(
+                        'resizeEast', element, left + width, top + height / 2, canvas, canShowCorner(selectorConstraints, 'ResizeEast'),
+                        constraints & ThumbsConstraints.ResizeEast, transform, undefined,
+                        canMask, { 'aria-label': 'Thumb to resize the selected object on right side direction' }, undefined,
+                        'e-diagram-resize-handle e-east', handleSize);
+                }
             }
         }
     }

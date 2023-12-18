@@ -8,9 +8,9 @@ import { Matrix, identityMatrix, rotateMatrix, transformPointByMatrix } from '..
 import { MouseEvents } from './mouseevents.spec';
 import { TextAlign, Orientation, NodeConstraints, PortVisibility } from '../../../src/diagram/enum/enum';
 import { Node } from '../../../src/diagram/objects/node';
-import { SnapConstraints } from '../../../src/diagram/index';
+import { ComplexHierarchicalTree, SnapConstraints } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
-Diagram.Inject(UndoRedo);
+Diagram.Inject(UndoRedo,ComplexHierarchicalTree);
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 /**
@@ -791,7 +791,7 @@ describe('Checking Node Constraints - multiple selecion', () => {
         diagram.clearSelection();
         diagram.select(diagram.connectors, true);
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.dragAndDropEvent(diagramCanvas, 500, 150, 400, 150);
+        mouseEvents.dragAndDropEvent(diagramCanvas, 500 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop -1, 400, 150);
         expect(diagram.connectors[0].sourcePoint.x < 500 && diagram.connectors[0].sourcePoint.y == 100).toBe(true);
         expect(diagram.connectors[1].sourcePoint.x < 700 && diagram.connectors[1].sourcePoint.y == 100 &&
             diagram.connectors[1].targetPoint.x == 800 && diagram.connectors[1].targetPoint.y == 200).toBe(true);

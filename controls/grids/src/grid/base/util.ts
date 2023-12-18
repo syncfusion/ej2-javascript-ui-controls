@@ -1131,7 +1131,7 @@ export function getExpandedState(gObj: IGrid, hierarchyPrintMode: HierarchyGridP
         if (row.isExpand && !row.isDetailRow) {
             const index: number = gObj.allowPaging && gObj.printMode === 'AllPages' ? row.index +
                 (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : row.index;
-            if (index) {
+            if (!isNullOrUndefined(index)) {
                 obj[parseInt(index.toString(), 10)] = {};
                 obj[parseInt(index.toString(), 10)].isExpand = true;
                 if (gObj.childGrid) {

@@ -1355,6 +1355,8 @@ export class DateRangePicker extends CalendarBase {
             }
         }
         this.popupWrapper = createElement('div', { id: this.element.id + '_popup', className: ROOT + ' ' + POPUP });
+        this.popupWrapper.setAttribute( 'aria-label', this.element.id );
+        this.popupWrapper.setAttribute( 'role', 'dialog' );
         this.adjustLongHeaderWidth();
         const isPreset: boolean = (!this.isCustomRange || this.isMobile);
         if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label) && isPreset) {
@@ -1544,8 +1546,8 @@ export class DateRangePicker extends CalendarBase {
                 if (range.length > 1) {
                     this.invalidValueString = null;
                     const dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
-                    const start : Date = new Date(range[0]);
-                    const end : Date = new Date(range[1]);
+                    const start : Date = this.globalize.parseDate(range[0], dateOptions);
+                    const end : Date = this.globalize.parseDate(range[1], dateOptions);
                     const startDate: Date = this.getStartEndDate(start, false, range, dateOptions);
                     const endDate: Date = this.getStartEndDate(end, true, range, dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
@@ -3426,7 +3428,7 @@ export class DateRangePicker extends CalendarBase {
         if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label)) {
             this.presetElement = this.createElement('div', { className: PRESETS, attrs: { 'tabindex': '0' } });
             const listTag: HTMLElement = ListBase.createList(this.createElement, this.presetsItem, null, true);
-            attributes(listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options', 'tabindex': '0' });
+            attributes(listTag, { 'role': 'listbox', 'aria-hidden': 'false', 'id': this.element.id + '_options', 'tabindex': '0', 'aria-label': 'daterangepicker-preset' });
             this.presetElement.appendChild(listTag);
             this.popupWrapper.appendChild(this.presetElement);
             const customElement: HTMLElement = this.presetElement.querySelector('#custom_range');
@@ -3511,7 +3513,7 @@ export class DateRangePicker extends CalendarBase {
                         EventHandler.add(<HTMLElement>this.calendarElement.querySelector(".e-content.e-month"), "touchstart", this.touchStartRangeHandler, this)
                     }
                 }
-                attributes(this.inputElement, { 'aria-expanded': 'true', 'aria-owns': this.inputElement.id + '_options' });
+                attributes(this.inputElement, { 'aria-expanded': 'true', 'aria-owns': this.element.id, 'aria-controls': this.inputElement.id });
                 if (this.value){
                     attributes(this.inputElement, { 'aria-activedescendant': this.inputElement.id});
                 }
@@ -3573,6 +3575,7 @@ export class DateRangePicker extends CalendarBase {
             close: () => {
                 attributes(this.inputElement, { 'aria-expanded': 'false' });
                 this.inputElement.removeAttribute('aria-owns');
+                this.inputElement.removeAttribute('aria-controls');
                 this.inputElement.removeAttribute('aria-activedescendant');
                 removeClass([this.inputWrapper.buttons[0]], ACTIVE);
                 if (this.isRangeIconClicked) {
@@ -3593,7 +3596,7 @@ export class DateRangePicker extends CalendarBase {
                 }
             }, targetExitViewport: () => {
                 let popupEle: HTMLElement = this.popupObj && this.popupObj.element;
-                if (!Browser.isDevice && popupEle &&  popupEle.getBoundingClientRect().height < popupEle.parentElement.getBoundingClientRect().height) {
+                if (!Browser.isDevice && popupEle &&  popupEle.getBoundingClientRect().height < window.innerHeight) {
                     this.hide();
                 }
             }
@@ -3921,10 +3924,10 @@ export class DateRangePicker extends CalendarBase {
             'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
         });
-        Input.addAttributes({ 'aria-label': 'select' }, this.inputWrapper.buttons[0]);
-        if (!isNullOrUndefined(this.placeholder) && this.placeholder.trim() !== '') {
-            Input.addAttributes({ 'aria-placeholder': this.placeholder }, this.inputElement);
-        }
+        Input.addAttributes({ 'aria-label': 'select', 'role': 'button' }, this.inputWrapper.buttons[0]);
+        // if (!isNullOrUndefined(this.placeholder) && this.placeholder.trim() !== '') {
+        //     Input.addAttributes({ 'aria-placeholder': this.placeholder }, this.inputElement);
+        // }
         this.setEleWidth(this.width);
         addClass([this.inputWrapper.container], DATERANGEWRAPPER);
         if (isNullOrUndefined(this.inputElement.getAttribute('name'))) {

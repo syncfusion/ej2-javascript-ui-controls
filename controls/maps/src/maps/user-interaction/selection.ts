@@ -79,6 +79,11 @@ export class Selection {
                 data = this.maps.layers[layerIndex as number].markerSettings[markerIndex as number].dataSource[dataIndex as number];
                 this.selectionsettings = this.maps.layers[layerIndex as number].markerSettings[markerIndex as number].selectionSettings;
                 this.selectionType = 'Marker';
+            }  else if (targetElement.id.indexOf('_PolygonIndex_') > -1) {
+                dataIndex = parseInt(targetElement.id.split('_PolygonIndex_')[1].split('_')[0], 10);
+                data = this.maps.layers[layerIndex as number].polygonSettings.polygons[dataIndex as number].points;
+                this.selectionsettings = this.maps.layers[layerIndex as number].polygonSettings.selectionSettings;
+                this.selectionType = 'Polygon';
             } else if (targetElement.id.indexOf('NavigationIndex') > -1){
                 const index: number = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                 shapeData = null;
@@ -256,6 +261,10 @@ export class Selection {
                         this.maps.navigationSelectionClass = getElement(this.selectionType + 'selectionMap');
                         this.maps.selectedNavigationElementId.push(targetElement.getAttribute('id'));
                     }
+                    if (targetElement.getAttribute('class') === 'PolygonselectionMapStyle') {
+                        this.maps.polygonSelectionClass = getElement(this.selectionType + 'selectionMap');
+                        this.maps.selectedPolygonElementId.push(targetElement.getAttribute('id'));
+                    }
                 }
             }
         });
@@ -295,6 +304,9 @@ export class Selection {
         }
         if (this.selectionType === 'navigationline') {
             this.maps.selectedBubbleElementId.splice(this.maps.selectedBubbleElementId.indexOf(targetElement.getAttribute('id')), 1);
+        }
+        if (this.selectionType === 'Polygon') {
+            this.maps.selectedPolygonElementId.splice(this.maps.selectedPolygonElementId.indexOf(targetElement.getAttribute('id')), 1);
         }
     }
 

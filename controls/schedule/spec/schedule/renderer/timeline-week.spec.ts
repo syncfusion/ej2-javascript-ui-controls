@@ -4447,6 +4447,382 @@ describe('Schedule Timeline Week view', () => {
         });
     });
 
+    describe('Schedule TimelineWeek view with maxEventsPerRow property when the row have enough height', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const moreIndicatorData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Event 1',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 2,
+                Subject: 'Event 2',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 3,
+                Subject: 'Event 3',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 4,
+                Subject: 'Event 4',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            }];
+            const model: ScheduleModel = {
+                currentView: 'TimelineWeek',
+                selectedDate: new Date(2023, 10, 6),
+                views: [{ option: 'TimelineWeek', maxEventsPerRow: 2 }]
+            };
+            schObj = util.createSchedule(model, moreIndicatorData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('elements in DOM based on maxEventsPerRow', () => {
+            const appointmentList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(appointmentList.length).toEqual(2);
+            (schObj.element.querySelectorAll('.e-more-indicator')[0] as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            const moreEvent: HTMLElement = (schObj.element.querySelector('.e-more-popup-wrapper').querySelector('.e-more-appointment-wrapper'));
+            const moreAppointmentList: Element[] = [].slice.call(moreEvent.querySelectorAll('.e-appointment'));
+            expect(moreAppointmentList.length).toEqual(4);
+            (schObj.element.querySelector('.e-close-icon') as HTMLElement).click();
+        });
+
+        it('elements in DOM with rowAutoHeight enabled', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(4);
+                done();
+            };
+            schObj.rowAutoHeight = true;
+            schObj.dataBind();
+
+        });
+    });
+
+    describe('Schedule TimelineWeek view with maxEventsPerRow property when the row does not have enough height', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const moreIndicatorData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Event 1',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 2,
+                Subject: 'Event 2',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 3,
+                Subject: 'Event 3',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 4,
+                Subject: 'Event 4',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true
+            }];
+            const model: ScheduleModel = {
+                currentView: 'TimelineWeek',
+                selectedDate: new Date(2023, 10, 6),
+                views: [{ option: 'TimelineWeek', maxEventsPerRow: 3 }]
+            };
+            schObj = util.createSchedule(model, moreIndicatorData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('elements in DOM based on maxEventsPerRow', () => {
+            const appointmentList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(appointmentList.length).toEqual(3);
+            (schObj.element.querySelectorAll('.e-more-indicator')[0] as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            const moreEvent: HTMLElement = (schObj.element.querySelector('.e-more-popup-wrapper').querySelector('.e-more-appointment-wrapper'));
+            const moreAppointmentList: Element[] = [].slice.call(moreEvent.querySelectorAll('.e-appointment'));
+            expect(moreAppointmentList.length).toEqual(4);
+            (schObj.element.querySelector('.e-close-icon') as HTMLElement).click();
+            const heightValue: string = (schObj.element.querySelector('.e-content-table tr td') as HTMLElement).style.height;
+            expect(heightValue).toEqual('139px');
+        });
+
+        it('elements in DOM with rowAutoHeight enabled', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(4);
+                const heightValue: string = (schObj.element.querySelector('.e-content-table tr td') as HTMLElement).style.height;
+                expect(heightValue).toEqual('');
+                done();
+            };
+            schObj.rowAutoHeight = true;
+            schObj.dataBind();
+        });
+    });
+
+    describe('Schedule TimelineWeek view with maxEventsPerRow property and multiple resource grouping', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const moreIndicatorData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Event 1',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true,
+                RoomId: 1,
+                OwnerId: 1
+            },
+            {
+                Id: 2,
+                Subject: 'Event 2',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true,
+                RoomId: 1,
+                OwnerId: 1
+            },
+            {
+                Id: 3,
+                Subject: 'Event 3',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true,
+                RoomId: 1,
+                OwnerId: 1
+            },
+            {
+                Id: 4,
+                Subject: 'Event 4',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true,
+                RoomId: 1,
+                OwnerId: 1
+            }];
+            const model: ScheduleModel = {
+                currentView: 'TimelineWeek',
+                selectedDate: new Date(2023, 10, 6),
+                views: [{ option: 'TimelineWeek', maxEventsPerRow: 2 }],    
+                group: {
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [{
+                    field: 'RoomId', title: 'Room',
+                    name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                        ],
+                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                    }, {
+                    field: 'OwnerId', title: 'Owner',
+                    name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
+            };
+            schObj = util.createSchedule(model, moreIndicatorData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('elements in DOM based on maxEventsPerRow with multiple resources', () => {
+            const appointmentList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(appointmentList.length).toEqual(2);
+            (schObj.element.querySelectorAll('.e-more-indicator')[0] as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            const moreEvent: HTMLElement = (schObj.element.querySelector('.e-more-popup-wrapper').querySelector('.e-more-appointment-wrapper'));
+            const moreAppointmentList: Element[] = [].slice.call(moreEvent.querySelectorAll('.e-appointment'));
+            expect(moreAppointmentList.length).toEqual(4);
+            (schObj.element.querySelector('.e-close-icon') as HTMLElement).click();
+        });
+
+        it('elements in DOM with ignoreWhiteSpace property', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(4);
+                const heightValue: string = (schObj.element.querySelector('.e-content-table tr td') as HTMLElement).style.height;
+                expect(heightValue).toEqual('');               
+                done();
+            };
+            schObj.rowAutoHeight = true;
+            schObj.eventSettings.ignoreWhitespace = true;
+            schObj.dataBind();
+        });
+    });
+
+    describe('Schedule TimelineWeek view with maxEventsPerRow property when the row does not have enough height', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const moreIndicatorData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Event 1',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true,
+                RoomId: 1,
+                OwnerId: 1
+            },
+            {
+                Id: 2,
+                Subject: 'Event 2',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true,
+                RoomId: 1,
+                OwnerId: 1
+            },
+            {
+                Id: 3,
+                Subject: 'Event 3',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true,
+                RoomId: 1,
+                OwnerId: 1
+            },
+            {
+                Id: 4,
+                Subject: 'Event 4',
+                StartTime: new Date(2023, 10, 6, 0, 0),
+                EndTime: new Date(2023, 10, 7, 0, 0),
+                IsAllDay: true,
+                RoomId: 1,
+                OwnerId: 1
+            }];
+            const model: ScheduleModel = {
+                currentView: 'TimelineWeek',
+                selectedDate: new Date(2023, 10, 6),
+                views: [{ option: 'TimelineWeek', maxEventsPerRow: 3 }],    
+                group: {
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [{
+                    field: 'RoomId', title: 'Room',
+                    name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                        ],
+                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                    }, {
+                    field: 'OwnerId', title: 'Owner',
+                    name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }],
+            };
+            schObj = util.createSchedule(model, moreIndicatorData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('elements in DOM based on maxEventsPerRow', () => {
+            const appointmentList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(appointmentList.length).toEqual(3);
+            (schObj.element.querySelectorAll('.e-more-indicator')[0] as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            const moreEvent: HTMLElement = (schObj.element.querySelector('.e-more-popup-wrapper').querySelector('.e-more-appointment-wrapper'));
+            const moreAppointmentList: Element[] = [].slice.call(moreEvent.querySelectorAll('.e-appointment'));
+            expect(moreAppointmentList.length).toEqual(4);
+            (schObj.element.querySelector('.e-close-icon') as HTMLElement).click();
+            const heightValue: string = (schObj.element.querySelector('.e-content-table tr td') as HTMLElement).style.height;
+            expect(heightValue).toEqual('139px');
+            const resourceHeightValue: string = (schObj.element.querySelector('.e-resource-column-table tr td') as HTMLElement).style.height;
+            expect(resourceHeightValue).toEqual('139px');
+        });
+    });
+
+    describe('EJ2-853941 - Appointments positioned incorrectly when using firstDayOfWeek with different time slot intervals', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Explosion of Betelgeuse Star',
+            Location: 'Space Centre USA',
+            StartTime: new Date(2019, 0, 6, 12, 0),
+            EndTime: new Date(2019, 1, 6, 15, 0),
+            RoomId: 1,
+            OwnerId: 1
+        }, {
+            Id: 2,
+            Subject: 'Thule Air Crash Report',
+            Location: 'Newyork City',
+            StartTime: new Date(2019, 0, 6, 13, 0),
+            EndTime: new Date(2019, 0, 6, 15, 0),
+            RoomId: 1,
+            OwnerId: 3
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                selectedDate: new Date(2019, 0, 6),
+                currentView: 'TimelineWeek', views: [ 'TimelineWeek'],
+                timeScale: { enable: true, interval: 300, slotCount: 4 },
+                firstDayOfWeek: 1,
+                eventSettings: { dataSource: data },
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms', allowMultiple: true,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', RoomId: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', RoomId: 2, RoomGroupId: 1, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'RoomId', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', OwnerId: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', OwnerId: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', OwnerId: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'OwnerId', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                }]
+            };
+            schObj = util.createSchedule(schOptions, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checking appointment rendering', () => {
+            expect(schObj.eventsData.length).toEqual(2);
+            const eventList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventList[0].style.left).toBe('6180px');
+            expect(eventList[1].style.left).toBe('6220px');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

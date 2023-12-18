@@ -276,7 +276,7 @@ describe('numberParser', () => {
         });
     });
 });
-    describe('Currency filtering ,changeCurrencySymbol function', () => {
+describe('Currency filtering ,changeCurrencySymbon function', () => {
     it('negative currency filtering for format -#,##0.00 ¤', () => {
         let result: string = IntlBase.changeCurrencySymbol(" $","");
         expect(result).toBe("")

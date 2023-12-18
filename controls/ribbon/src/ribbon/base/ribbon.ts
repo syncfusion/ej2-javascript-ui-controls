@@ -198,7 +198,6 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
      */
     @Event()
     public overflowPopupClose: EmitType<OverflowPopupEventArgs>;
-
     /**
      * The `ribbonButtonModule` is used to create and manipulate buttons in ribbon item.
      */
@@ -371,7 +370,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             e.preventDefault();
         }
         const activeContent: HTMLElement = this.tabObj.element.querySelector('#' + this.tabs[this.selectedTab].id + constants.CONTENT_ID);
-        const ribbonControls: NodeListOf<Element> = activeContent.querySelectorAll('.e-control');
+        const controlElements: Array<Element> = Array.prototype.slice.call(activeContent.querySelectorAll('.e-control'));
+        const templateElements: Array<Element> =  Array.prototype.slice.call(activeContent.querySelectorAll('.e-ribbon-template'));
+        const ribbonControls = controlElements.concat(templateElements);
         const comboBoxElements: NodeListOf<Element> = activeContent.querySelectorAll('.e-combobox');
         let comboBoxEle: HTMLElement;
         if (comboBoxElements) {
@@ -400,7 +401,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         if ((e.target as HTMLElement).classList.contains('e-control') || (e.target as HTMLElement).classList.contains('e-ribbon-launcher-icon') ||
                 (e.target as HTMLElement).classList.contains('e-ribbon-collapse-btn') || (e.target as HTMLElement).classList.contains('e-ribbon-last-item') ||
                     (e.target as HTMLElement).classList.contains('e-ribbon-first-item') || (e.target as HTMLElement).classList.contains('e-ribbon-group-of-btn') ||
-                        (e.target as HTMLElement).classList.contains('e-ribbon-overall-of-btn')) {
+                        (e.target as HTMLElement).classList.contains('e-ribbon-overall-of-btn') || (e.target as HTMLElement).classList.contains('e-ribbon-template')) {
             switch (e.action) {
             case 'rightarrow':
                 this.handleNavigation(e, !this.enableRtl, ribbonControls);
@@ -424,7 +425,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    private handleNavigation(e: Event, enableRtl: boolean, ribbonControls: NodeListOf<Element>): void {
+    private handleNavigation(e: Event, enableRtl: boolean, ribbonControls: Element[]): void {
         let groupContainer: HTMLElement;
         let prevGroupId: string;
         if (enableRtl) {
@@ -438,7 +439,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
         }
         if ((!enableRtl && (this.currentControlIndex > 0)) || (enableRtl && (this.currentControlIndex < ribbonControls.length - 1))) {
-            if (!(e.target as HTMLElement).classList.contains('e-combobox') && (e.target as HTMLElement).classList.contains('e-control') && !(e.target as HTMLElement).classList.contains('e-ribbon-last-item')) {
+            if (!(e.target as HTMLElement).classList.contains('e-combobox') && ((e.target as HTMLElement).classList.contains('e-control') || (e.target as HTMLElement).classList.contains('e-ribbon-template')) && !(e.target as HTMLElement).classList.contains('e-ribbon-last-item')) {
                 if (enableRtl) { this.currentControlIndex++; }
                 else {
                     const prevGroupContainer: HTMLElement = ribbonControls[parseInt(this.currentControlIndex.toString(), 10)].closest('.' + constants.RIBBON_GROUP_CONTAINER) as HTMLElement;
@@ -466,7 +467,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                         if (groupContainer) { launcherIconEle = groupContainer.querySelector('.e-ribbon-launcher-icon') as HTMLElement; }
                         if (launcherIconEle) {
                             const items: NodeListOf<Element> = groupContainer.querySelectorAll('.e-ribbon-item');
-                            items[items.length - 1].querySelector('.e-control').classList.add('e-ribbon-last-item');
+                            const elem = items[items.length - 1].querySelector('.e-control');
+                            if (elem) { elem.classList.add('e-ribbon-last-item'); }
                         }
                     }
                     else {
@@ -572,6 +574,15 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.scrollModule) {
             const scrollEle: HTMLElement = this.tabObj.element.querySelector('.' + constants.HORIZONTAL_SCROLLBAR);
             this.scrollModule.scrollStep = scrollEle.offsetWidth;
+        }
+        if (this.activeLayout === 'Simplified') {
+            const activePopup: NodeListOf<Element> = document.querySelectorAll('.e-ribbon .e-dropdown-btn.e-active, .e-ribbon-group-overflow-ddb .e-dropdown-btn.e-active');
+            if (activePopup.length) {
+                for (let i: number = 0; i < activePopup.length; i++) {
+                    const dropDownBtn: DropDownButton = getInstance(activePopup[parseInt(i.toString(), 10)] as HTMLElement, DropDownButton) as DropDownButton;
+                    dropDownBtn.toggle();
+                }
+            }
         }
     }
 
@@ -892,7 +903,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
             if (overflowDDB) {
                 if (group.enableGroupOverflow) {
-                    if (overflowtarget.childElementCount === 0) { this.removeOverflowButton(overflowDDB); }
+                    if (overflowtarget.childElementCount === 0 || (overflowtarget.childElementCount === 1 && this.isHeaderVisible(overflowtarget, group.id))) { this.removeOverflowButton(overflowDDB); }
                 } else {
                     const ofGroupContainer: HTMLElement = overflowtarget.querySelector('#' + group.id + constants.CONTAINER_ID);
                     if (ofGroupContainer && ofGroupContainer.childElementCount === 1) { ofGroupContainer.remove(); }
@@ -911,7 +922,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 this.removeOverflowButton(this.overflowDDB);
                 this.overflowDDB = null;
             }
-        }
+        }        
     }
 
     private checkOverflowHiddenItems(isGroupOF: boolean, tabIndex: number, groupId?: string): void {
@@ -962,6 +973,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     private createOverflowPopup(item: RibbonItemModel, tabIndex: number, isGroupOF: boolean, groupId: string, groupHeader: string
         , itemEle: HTMLElement, groupContainer: HTMLElement, isResize?: boolean): void {
         let overflowButton: DropDownButton;
+        const itemProp: itemProps = getGroup(this.tabs, groupId);
         const contentEle: HTMLElement = this.tabObj.items[parseInt(tabIndex.toString(), 10)].content as HTMLElement;
         const groupEle: HTMLElement = contentEle.querySelector('#' + groupId);
         if (isGroupOF) {
@@ -974,6 +986,17 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 overflowButton = getInstance(overflowDDB, DropDownButton) as DropDownButton;
             }
             const overflowBtnTarget: HTMLElement = overflowButton.target as HTMLElement;
+            let headerEle: HTMLElement = overflowBtnTarget.querySelector('#' + groupId + constants.GROUPOF_BUTTON_ID + constants.HEADER_ID);
+            if (!headerEle) {
+                if (itemProp.group.overflowHeader) {
+                    const groupHeader: HTMLElement = this.createElement('div', {
+                        className: constants.RIBBON_OVERFLOW_HEADER,
+                        id: groupId + constants.GROUPOF_BUTTON_ID + constants.HEADER_ID,
+                        innerHTML: itemProp.group.overflowHeader
+                    });
+                    overflowBtnTarget.append(groupHeader);
+                }
+            }            
             if (groupEle) {
                 if (groupEle.classList.contains('e-disabled')) {
                     overflowBtnTarget.classList.add('e-disabled');
@@ -1002,7 +1025,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 if (ofTabContainer) {
                     let ofGroupContainer: HTMLElement = overflowEle.querySelector('#' + groupId + constants.CONTAINER_ID);
                     if (!ofGroupContainer) {
-                        ofGroupContainer = this.createGroupContainer(groupId, groupHeader);
+                        ofGroupContainer = itemProp.group.overflowHeader ? this.createGroupContainer(groupId, itemProp.group.overflowHeader) : this.createGroupContainer(groupId, groupHeader);
                         if (groupEle) {
                             if (groupEle.classList.contains('e-disabled')) {
                                 ofGroupContainer.classList.add('e-disabled');
@@ -1015,8 +1038,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                             }
                         }
                         ofTabContainer.append(ofGroupContainer);
-                    }
-                    isResize ? ofGroupContainer.insertBefore(itemEle, ofGroupContainer.querySelector('.' + constants.RIBBON_ITEM)) : ofGroupContainer.append(itemEle);
+                    }                        
+                    isResize ? ofGroupContainer.insertBefore(itemEle, ofGroupContainer.querySelector('.' + constants.RIBBON_ITEM)) : ofGroupContainer.append(itemEle);                                           
                 }
                 else {
                     this.createOfTabContainer(groupId, groupHeader, itemEle, tabIndex);
@@ -1049,7 +1072,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             break;
         case 'GroupButton':
             if (this.activeLayout === 'Simplified') {
-                this.ribbonGroupButtonModule.addOverFlowEvents(item, itemEle);
+                this.ribbonGroupButtonModule.addOverFlowEvents(item, itemEle, overflowButton);
                 break;
             }
         }
@@ -1062,7 +1085,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         });
         const overflowtarget: HTMLElement = this.overflowDDB.target as HTMLElement;
         overflowtarget.append(ofTabContainer);
-        const ofGroupContainer: HTMLElement = this.createGroupContainer(groupId, groupHeader);
+        const itemProp: itemProps = getGroup(this.tabs, groupId);
+        let ofGroupContainer: HTMLElement = itemProp.group.overflowHeader ? this.createGroupContainer(groupId, itemProp.group.overflowHeader) : this.createGroupContainer(groupId, groupHeader);
         ofGroupContainer.append(itemEle);
         ofTabContainer.append(ofGroupContainer);
         if (tabIndex === this.selectedTab) { ofTabContainer.classList.add(constants.RIBBON_TAB_ACTIVE); }
@@ -1789,9 +1813,10 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             },
             beforeClose: (args: BeforeOpenCloseMenuEventArgs) => {
                 const ele: Element = args.event ? closest(args.event.target as HTMLElement, '.' + constants.RIBBON_POPUP_CONTROL) : null;
+                const groupButtonEle = args.event ? closest(args.event.target as HTMLElement, '.e-ribbon-group-button-overflow-popup') : null;
                 const eventArgs: OverflowPopupEventArgs = { element: args.element, event: args.event, cancel: args.cancel };
                 this.trigger('overflowPopupClose', eventArgs, (ribbonArgs: OverflowPopupEventArgs) => {
-                    if (ele || ribbonArgs.cancel) {
+                    if (ele || ribbonArgs.cancel || groupButtonEle) {
                         args.cancel = true;
                     }
                 });
@@ -1812,21 +1837,30 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             const currentList: HTMLElement = target.querySelector('.e-ribbon-of-tab.e-ribbon-active');
             items = currentList.getElementsByClassName('e-ribbon-item');
         }
-        const comboBoxEle: HTMLElement = items[(!this.itemIndex || this.itemIndex < 0) ? 0 : this.itemIndex].querySelector('.e-control').classList.contains('e-combobox') ? items[(!this.itemIndex || this.itemIndex < 0) ? 0 : this.itemIndex].querySelector('.e-combobox') : null;
+        const control: HTMLElement = items[(!this.itemIndex || this.itemIndex < 0) ? 0 : this.itemIndex].querySelector('.e-control');
+        const comboBoxEle = control && control.classList.contains('e-combobox') ? items[(!this.itemIndex || this.itemIndex < 0) ? 0 : this.itemIndex].querySelector('.e-combobox') : null;
         let ribbonItem: HTMLElement;
+        let templateEle: HTMLElement;
         if (comboBoxEle === null || (e.key === 'Tab') || this.itemIndex < 0) {
             if (e.key === 'ArrowDown' || (!e.shiftKey && e.key === 'Tab')) {
                 if ((!this.itemIndex && this.itemIndex !== 0) || this.itemIndex < 0 || this.itemIndex === items.length - 1) {
                     this.itemIndex = 0;
                     ribbonItem = items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement;
                     this.findDisabledItem(ribbonItem, items, true);
-                    if (comboBoxEle && e.key === 'Tab') { e.preventDefault(); (items[this.itemIndex].querySelector('.e-control') as HTMLElement).focus(); }
+                    if (comboBoxEle && e.key === 'Tab') { 
+                        e.preventDefault(); 
+                        const item = (items[this.itemIndex].querySelector('.e-control') as HTMLElement);
+                        if (item) { item.focus(); }
+                    }
+                    templateEle = items[this.itemIndex].querySelector('.e-ribbon-template');
                 }
                 else if (this.itemIndex < items.length - 1 && this.itemIndex >= 0) {
                     this.itemIndex++;
                     ribbonItem = items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement;
                     this.findDisabledItem(ribbonItem, items, true);
+                    templateEle = items[this.itemIndex].querySelector('.e-ribbon-template');
                 }
+                if (templateEle) { templateEle.focus(); }
             }
             else if (e.key === 'ArrowUp' || (e.shiftKey && e.key === 'Tab')) {
                 if (comboBoxEle === null || (e.key === 'Tab')) {
@@ -1834,19 +1868,28 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                         this.itemIndex = items.length - 1;
                         ribbonItem = items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement;
                         this.findDisabledItem(ribbonItem, items, false);
-                        if (comboBoxEle && (e.shiftKey && e.key === 'Tab')) { e.preventDefault(); (items[this.itemIndex].querySelector('.e-control') as HTMLElement).focus(); }
+                        if (comboBoxEle && (e.shiftKey && e.key === 'Tab')) { 
+                            e.preventDefault(); 
+                            const item = (items[this.itemIndex].querySelector('.e-control') as HTMLElement);
+                            if (item) { item.focus(); }
+                        }
+                        templateEle = items[this.itemIndex].querySelector('.e-ribbon-template');
                     }
                     else if (this.itemIndex <= items.length - 1 && this.itemIndex > 0) {
                         this.itemIndex--;
                         ribbonItem = items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement;
                         this.findDisabledItem(ribbonItem, items, false);
+                        templateEle = items[this.itemIndex].querySelector('.e-ribbon-template');
                     }
+                    if (templateEle) { templateEle.focus(); }
                 }
             }
             target.setAttribute('index', this.itemIndex.toString());
         }
         const currentItemIndex: number = parseInt(target.getAttribute('index'), 10);
-        const itemType: string = items[parseInt(currentItemIndex.toString(), 10)] ? items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-control').getAttribute('data-control') : null;
+        let itemType: string = "";
+        const controlItem: HTMLElement = items[parseInt(currentItemIndex.toString(), 10)] ? items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-control') : null;
+        if (controlItem) { itemType = controlItem.getAttribute('data-control'); }
         if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === ' ' || e.key === 'Tab') {
             if (itemType === 'ColorPicker') {
                 if (e.key === 'Tab') { e.preventDefault(); }
@@ -1854,7 +1897,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
             else {
                 if (e.key === 'Tab') { e.preventDefault(); }
-                (items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-control') as HTMLElement).focus();
+                const elem = (items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-control') as HTMLElement);
+                if (elem) { elem.focus(); }
             }
             if (e.key === ' ' && (itemType === 'CheckBox')) {
                 const checkBoxEle: HTMLElement = items[parseInt(currentItemIndex.toString(), 10)].querySelector('.e-control') as HTMLElement;
@@ -2213,7 +2257,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                                 this.setItemSize(ele, item);
                             }
                             if (group.enableGroupOverflow && overflowDDB) {
-                                if (overflowtarget.childElementCount === 0) { this.removeOverflowButton(overflowDDB); }
+                                if (overflowtarget.childElementCount === 0 || (overflowtarget.childElementCount === 1 && this.isHeaderVisible(overflowtarget, group.id))) {
+                                    this.removeOverflowButton(overflowDDB);
+                                }
                             }
                         }
                     }
@@ -2490,7 +2536,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     private createTemplateContent(item: RibbonItemModel, itemElement: HTMLElement): void {
         const itemEle: HTMLElement = this.createElement('div', {
             className: item.cssClass ? (constants.RIBBON_TEMPLATE + constants.SPACE + item.cssClass) : constants.RIBBON_TEMPLATE,
-            id: item.id
+            id: item.id,
+            attrs: { 'tabindex': '-1' }
         });
         if (item.disabled) {
             itemEle.classList.add(constants.DISABLED_CSS);
@@ -2941,7 +2988,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
             if (this.activeLayout === RibbonLayout.Simplified) {
                 if (itemProp.group.enableGroupOverflow) {
-                    if ((dropdown.target as HTMLElement).childElementCount === 0) { this.removeOverflowButton(dropdown); }
+                    if ((dropdown.target as HTMLElement).childElementCount === 0 || ((dropdown.target as HTMLElement).childElementCount === 1 && this.isHeaderVisible(dropdown.target as HTMLElement, itemProp.group.id))) {
+                        this.removeOverflowButton(dropdown);
+                    }
                 } else {
                     const ofGroupContainer: HTMLElement = (dropdown.target as HTMLElement).querySelector('#' + itemProp.group.id + constants.CONTAINER_ID);
                     if (ofGroupContainer && ofGroupContainer.childElementCount === 1) { ofGroupContainer.remove(); }
@@ -2956,6 +3005,10 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         ribbonGroups.splice(itemProp.groupIndex, 1);
         (this.tabs[itemProp.tabIndex] as RibbonTab).setProperties({ groups: ribbonGroups }, true);
         if (this.selectedTab === itemProp.tabIndex) { this.refreshLayout(); }
+    }
+
+    private isHeaderVisible(headerEle: HTMLElement, groupID: string): boolean {
+        return headerEle.querySelector('#' + groupID + constants.GROUPOF_BUTTON_ID + constants.HEADER_ID) ? true : false;
     }
 
     /**
@@ -3382,7 +3435,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     for (const collection of group.collections) {
                         for (const item of collection.items) {
                             let ele: HTMLElement = dropdownElement ? this.ribbonDropDownModule.getDDBItemElement(dropdownElement, item.id) : contentEle.querySelector('#' + item.id);
-                            if (item.type === RibbonItemType.GroupButton && this.activeLayout === 'Classic') {                            
+                            if (item.type === RibbonItemType.GroupButton && this.activeLayout === 'Classic') {
                                 ele = dropdownElement ? this.ribbonDropDownModule.getDDBItemElement(dropdownElement, item.id + constants.RIBBON_GROUP_BUTTON_ID) :
                                     contentEle.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID);
                             }
@@ -3476,7 +3529,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
             if (this.activeLayout === RibbonLayout.Simplified) {
                 if (itemProp.group.enableGroupOverflow) {
-                    if ((dropdown.target as HTMLElement).childElementCount === 0) { this.removeOverflowButton(dropdown); }
+                    if ((dropdown.target as HTMLElement).childElementCount === 0 || ((dropdown.target as HTMLElement).childElementCount === 1 && this.isHeaderVisible(dropdown.target as HTMLElement, itemProp.group.id))) {
+                        this.removeOverflowButton(dropdown);
+                    }
                 } else {
                     const ofGroupContainer: HTMLElement = (dropdown.target as HTMLElement).querySelector('#' + itemProp.group.id + constants.CONTAINER_ID);
                     if (ofGroupContainer && ofGroupContainer.childElementCount === 1) { ofGroupContainer.remove(); }
@@ -3662,7 +3717,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
             this.createRibbonItem(ribbonItem, itemContainer);
             if (this.activeLayout === 'Simplified' && itemProp.group.enableGroupOverflow) {
-                if ((dropdown.target as HTMLElement).childElementCount === 0) { this.removeOverflowButton(dropdown); }
+                if ((dropdown.target as HTMLElement).childElementCount === 0 || ((dropdown.target as HTMLElement).childElementCount === 1 && this.isHeaderVisible(dropdown.target as HTMLElement, itemProp.group.id))) {
+                    this.removeOverflowButton(dropdown);
+                }
             }
             if (this.selectedTab === itemProp.tabIndex) { this.refreshLayout(); }
             if (item.cssClass) { itemContainer.classList.add(ribbonItem.cssClass); }

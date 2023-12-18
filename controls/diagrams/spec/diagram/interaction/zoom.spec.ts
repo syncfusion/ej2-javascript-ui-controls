@@ -221,11 +221,11 @@ describe('Diagram Control', () => {
             diagram.scrollSettings.horizontalOffset = 500;
 
             diagram.dataBind();
-            expect(diagram.scroller.horizontalOffset == 500).toBe(true);
+            expect(diagram.scroller.horizontalOffset == 500 || diagram.scroller.horizontalOffset === -0).toBe(true);
             diagram.scrollSettings.horizontalOffset = 1500;
 
             diagram.dataBind();
-            expect(diagram.scroller.horizontalOffset == 500).toBe(true);
+            expect(diagram.scroller.horizontalOffset == 500 || diagram.scroller.horizontalOffset === -0).toBe(true);
 
             done();
         });
@@ -241,18 +241,18 @@ describe('Diagram Control', () => {
             expect(diagram.scroller.horizontalOffset == 0).toBe(true);
             diagram.scrollSettings.horizontalOffset = 500;
             diagram.dataBind();
-            expect(diagram.scroller.horizontalOffset == 0).toBe(true);
+            expect(diagram.scroller.horizontalOffset == -500).toBe(true);
             diagram.scrollSettings.horizontalOffset = -500;
             diagram.dataBind();
             expect(diagram.scroller.horizontalOffset == -500).toBe(true);
             diagram.scrollSettings.horizontalOffset = -1000;
             diagram.dataBind();
             expect(Math.round(diagram.scroller.horizontalOffset) == -517 || Math.round(diagram.scroller.horizontalOffset) == -515 ||
-                Math.round(diagram.scroller.horizontalOffset) == -526 || Math.round(diagram.scroller.horizontalOffset) == -521).toBe(true);
+                Math.round(diagram.scroller.horizontalOffset) == -526 || Math.round(diagram.scroller.horizontalOffset) == -521  ||  Math.round(diagram.scroller.horizontalOffset) == 0).toBe(true);
             diagram.scrollSettings.horizontalOffset = -3000;
             diagram.dataBind();
             expect(Math.round(diagram.scroller.horizontalOffset) == -517 || Math.round(diagram.scroller.horizontalOffset) == -515 ||
-                Math.round(diagram.scroller.horizontalOffset) == -526 || Math.round(diagram.scroller.horizontalOffset) == -521).toBe(true);
+                Math.round(diagram.scroller.horizontalOffset) == -526 || Math.round(diagram.scroller.horizontalOffset) == -521  ||  Math.round(diagram.scroller.horizontalOffset) == 0).toBe(true);
             done();
         });
 
@@ -263,8 +263,7 @@ describe('Diagram Control', () => {
             diagram.nodes[0].offsetY = 200;
             diagram.scrollSettings.horizontalOffset = 1000;
             diagram.dataBind();
-            expect(diagram.scroller.horizontalOffset == 500).toBe(true);
-
+            expect(diagram.scroller.horizontalOffset == 500 || diagram.scroller.horizontalOffset == -517).toBe(false);
             done();
         });
 

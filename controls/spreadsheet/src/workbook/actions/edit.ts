@@ -137,7 +137,7 @@ export class WorkbookEdit {
                     cell.formula = <string>eventArgs.value;
                     value = cell.value;
                     const formula: string = cell.formula.toLowerCase();
-                    if (formula === '=now()' && !cell.format) {
+                    if (formula === '=now()' && (!cell.format || cell.format === 'General')) {
                         cell.format = 'M/d/yyyy h:mm';
                     } else if (formula.includes('=time(') && !cell.format) {
                         cell.format = 'h:mm AM/PM';

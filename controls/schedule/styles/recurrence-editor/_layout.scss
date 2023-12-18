@@ -72,6 +72,7 @@
     .e-input-wrapper.e-end-on-date,
     .e-input-wrapper.e-end-on-count {
       padding-right: 0;
+      margin-top: $recurrence-end-on-date-margin-top;
     }
 
     &.e-rtl {
@@ -173,15 +174,6 @@
       width: 50%;
 
       &.e-end-on {
-
-        .e-end-on-label {
-          float: none;
-          font-size: $recurrence-label-font-nrml-size;
-          font-weight: $recurrence-label-font-weight;
-          margin-bottom: $recurrence-month-label-bottom;
-          padding-right: 16px;
-        }
-
         .e-end-on-left {
           padding-right: 16px;
         }
@@ -249,7 +241,8 @@
 
       .e-input-wrapper-side.e-non-week > .e-month-expander-label {
         font-size: $recurrence-label-font-bgr-size;
-        margin-bottom: 0;
+        margin-bottom: $recurrence-month-label-bottom-bgr;
+        font-weight: $recurrence-label-font-weight;
       }
 
       .e-input-wrapper-side.e-end-on .e-end-on-left {

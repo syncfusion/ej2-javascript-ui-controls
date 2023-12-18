@@ -75,14 +75,14 @@ describe('Dynamic data binding - ', () => {
         let ranges: RangeModel[] = [].slice.call(spreadsheet.sheets[0].ranges);
         ranges.push({ dataSource: formulaData, startCell: 'O2' });
         spreadsheet.sheets[0].ranges = ranges;
+        spreadsheet.dataBind();
         setTimeout(() => {
-            setTimeout(() => {
-                expect(spreadsheet.getCell(1, 14).innerText).toBe('Platform');
-                expect(spreadsheet.getCell(6, 18).innerText).toBe('0.512858796');
-                // checking new row added in another range
-                // expect(spreadsheet.getCell(10, 0).innerText).toBe('Shirts'); Check this now
-                done();
-            });
+            expect(spreadsheet.getCell(1, 14).innerText).toBe('Platform');
+            expect(spreadsheet.getCell(6, 18).innerText).toBe('12:18:31 PM');
+            expect(spreadsheet.sheets[0].rows[6].cells[18].format).toBe('h:mm:ss AM/PM');
+            expect(spreadsheet.sheets[0].rows[6].cells[18].value).toBe('0.51285879629629627');
+            expect(spreadsheet.getCell(10, 0).innerText).toBe('Shirts');
+            done();
         });
     });
 

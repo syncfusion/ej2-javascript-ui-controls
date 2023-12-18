@@ -9,3 +9,4 @@ export * from './range-navigator/index';
 export * from './bullet-chart/index';
 export * from './smithchart/index';
 export * from './sparkline/index';
+export * from './chart3d/index';

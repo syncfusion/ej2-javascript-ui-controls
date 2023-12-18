@@ -29,6 +29,7 @@ import { Dialog } from '../services';
 import { Dialog as FindDialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { findDlg, insertDesignChart, removeDesignChart, isImported } from '../common/index';
 import { refreshRibbonIcons, ChartTheme, beginAction, count, setCFRule, addFormatToCustomFormatDlg } from '../../workbook/common/index';
+import { currencyFormat } from '../../workbook/common/index';
 
 /**
  * Represents Ribbon for Spreadsheet.
@@ -119,9 +120,8 @@ export class Ribbon {
                     htmlAttributes: { 'aria-label': l10n.getConstant('Cut') }, id: id + '_cut'},
                 { prefixIcon: 'e-copy-icon', tooltipText: `${l10n.getConstant('Copy')} (Ctrl+C)`,
                     htmlAttributes: { 'aria-label': l10n.getConstant('Copy') }, id: id + '_copy' },
-                { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn(id),
-                    htmlAttributes: { 'aria-label': l10n.getConstant('Paste') }, id: id + '_paste', disabled: true},
-                { type: 'Separator', id: id + '_separator_2' },
+                { tooltipText: `${l10n.getConstant('Paste')} (Ctrl+V)`, template: this.getPasteBtn(id, l10n), id: id + '_paste',
+                    disabled: true }, { type: 'Separator', id: id + '_separator_2' },
                 { template: this.getNumFormatDDB(id, l10n), tooltipText: l10n.getConstant('NumberFormat'), id: id + '_number_format' },
                 { type: 'Separator', id: id + '_separator_3' },
                 { template: this.getFontNameDDB(id), tooltipText: l10n.getConstant('Font'), id: id + '_font_name' },
@@ -236,10 +236,9 @@ export class Ribbon {
         return items;
     }
 
-    private getPasteBtn(id: string): Element {
+    private getPasteBtn(id: string, l10n: L10n): Element {
         const btn: HTMLElement = this.parent.element.appendChild(
             this.parent.createElement('button', { id: id + '_paste', attrs: { 'type': 'button' } }));
-        const l10n: L10n = this.parent.serviceLocator.getService(locale);
         this.pasteSplitBtn = new SplitButton(
             {
                 iconCss: 'e-icons e-paste-icon',
@@ -370,7 +369,7 @@ export class Ribbon {
     private removeDesignChart(): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const tabIdx: number = this.ribbon.items.length - 1;
-        if (this.parent.allowChart && this.ribbon.items[tabIdx as number] && this.ribbon.items[tabIdx as number].header.text ===
+        if (this.ribbon.items[tabIdx as number] && this.ribbon.items[tabIdx as number].header.text ===
             l10n.getConstant('ChartDesign')) {
             this.ribbon.tabObj.select(this.preTabIdx + 1);
             this.parent.hideRibbonTabs([l10n.getConstant('ChartDesign')], true);
@@ -413,23 +412,21 @@ export class Ribbon {
     }
     private tabSelecting(args: SelectingEventArgs): void {
         if (args.selectingIndex !== this.ribbon.selectedTab) {
-            if (this.parent.allowChart) {
-                const l10n: L10n = this.parent.serviceLocator.getService(locale);
-                if (this.ribbon.items[args.selectingIndex] && this.ribbon.items[args.selectingIndex].header.text ===
-                    l10n.getConstant('Insert')) {
-                    this.createChartDdb(document.getElementById(this.parent.element.id + '_chart-btn'), true);
-                }
-                if (this.ribbon.items[args.selectedIndex] && this.ribbon.items[args.selectedIndex].header.text ===
-                    l10n.getConstant('Insert')) {
-                    const ribbonContent: TlbItemModel[] = this.ribbon.items[args.selectedIndex].content;
-                    for (let i: number = ribbonContent.length - 1; i >= 0; i--) {
-                        if (ribbonContent[i as number].id === this.parent.element.id + '_chart') {
-                            const chartBtn: HTMLElement = ribbonContent[i as number].template as HTMLElement;
-                            if (chartBtn && chartBtn.classList.contains('e-dropdown-btn')) {
-                                this.destroyComponent(chartBtn, 'dropdown-btn');
-                            }
-                            break;
+            const l10n: L10n = this.parent.serviceLocator.getService(locale);
+            if (this.ribbon.items[args.selectingIndex] && this.ribbon.items[args.selectingIndex].header.text ===
+                l10n.getConstant('Insert')) {
+                this.createChartDdb(document.getElementById(this.parent.element.id + '_chart-btn'), true);
+            }
+            if (this.ribbon.items[args.selectedIndex] && this.ribbon.items[args.selectedIndex].header.text ===
+                l10n.getConstant('Insert')) {
+                const ribbonContent: TlbItemModel[] = this.ribbon.items[args.selectedIndex].content;
+                for (let i: number = ribbonContent.length - 1; i >= 0; i--) {
+                    if (ribbonContent[i as number].id === this.parent.element.id + '_chart') {
+                        const chartBtn: HTMLElement = ribbonContent[i as number].template as HTMLElement;
+                        if (chartBtn && chartBtn.classList.contains('e-dropdown-btn')) {
+                            this.destroyComponent(chartBtn, 'dropdown-btn');
                         }
+                        break;
                     }
                 }
             }
@@ -497,11 +494,11 @@ export class Ribbon {
         numFormatText.innerText = l10n.getConstant('General');
         numFormatBtn.appendChild(numFormatText);
         const customFormatData: string[] = ['General', '0', '0.00', '#,##0', '#,##0.00', '#,##0_);(#,##0)', '#,##0_);[Red](#,##0)',
-            '#,##0.00_);(#,##0.00)', '#,##0.00_);[Red](#,##0.00)', '$#,##0_);($#,##0)', '$#,##0_);[Red]($#,##0)', '$#,##0.00_);($#,##0.00)',
-            '$#,##0.00_);[Red]($#,##0.00)','0%', '0.00%', '0.00E+00', '##0.0E+0', '# ?/?', '# ??/??', 'dd-MM-yy', 'dd-MMM-yy', 'dd-MMM',
-            'MMM-yy', 'h:mm AM/PM', 'h:mm:ss AM/PM', 'h:mm', 'h:mm:ss', 'dd-MM-yy h:mm', 'mm:ss', 'mm:ss.0', '@', '[h]:mm:ss',
-            '_($* #,##0_);_($* (#,##0);_($* "-"_);_(@_)', '_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)',
-            '_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'];
+            '#,##0.00_);(#,##0.00)', '#,##0.00_);[Red](#,##0.00)', currencyFormat.currency[4], currencyFormat.currency[2],
+            currencyFormat.currency[3], currencyFormat.currency[5],'0%', '0.00%', '0.00E+00', '##0.0E+0', '# ?/?', '# ??/??', 'dd-MM-yy',
+            'dd-MMM-yy', 'dd-MMM', 'MMM-yy', 'h:mm AM/PM', 'h:mm:ss AM/PM', 'h:mm', 'h:mm:ss', 'dd-MM-yy h:mm', 'mm:ss', 'mm:ss.0', '@',
+            '[h]:mm:ss', currencyFormat.accounting[1], '_(* #,##0_);_(* (#,##0);_(* "-"_);_(@_)', currencyFormat.accounting[0],
+            '_(* #,##0.00_);_(* (#,##0.00);_(* "-"??_);_(@_)'];
         this.numFormatDDB = new DropDownButton({
             items: this.getNumFormatDdbItems(id),
             createPopupOnClick: true,
@@ -549,7 +546,7 @@ export class Ribbon {
                 this.parent.notify(setCellFormat, eventArgs);
                 if (!eventArgs.cancel) { this.fontSizeDdb.content = eventArgs.style.fontSize.split('pt')[0]; this.fontSizeDdb.dataBind(); }
                 this.fontSizeDdb.element.setAttribute('aria-label', args.item.text);
-            },
+            }
         });
         this.fontSizeDdb.createElement = this.parent.createElement;
         this.fontSizeDdb.appendTo(
@@ -565,7 +562,6 @@ export class Ribbon {
             const chartBtnSpan: HTMLElement = this.parent.createElement('span', { id: id + '_chart' });
             chartBtnSpan.innerText = l10n.getConstant('Chart');
             chartBtn.appendChild(chartBtnSpan);
-            
         } else {
             chartBtn = this.parent.createElement('button', { id: id + '_chart-type-btn', attrs: { 'type': 'button' } });
             const chartBtnSpan: HTMLElement = this.parent.createElement('span', { id: id + '_chart_type' });
@@ -1763,7 +1759,7 @@ export class Ribbon {
                 select(`#${this.parent.element.id}_findbtn`, this.ribbon.element)) as HTMLButtonElement;
             if (findBtn) {
                 if (disable) {
-                    findBtn.classList.add('e-disabled')
+                    findBtn.classList.add('e-disabled');
                 } else {
                     findBtn.classList.remove('e-disabled');
                 }
@@ -1860,7 +1856,8 @@ export class Ribbon {
             const tbarEle: HTMLElement = this.parent.createElement('div', { className: 'e-find-toolbar' });
             toolbarObj.createElement = this.parent.createElement;
             toolbarObj.appendTo(tbarEle);
-            dialogDiv = this.parent.createElement('div', { className: 'e-dlg-div' });
+            dialogDiv = this.parent.createElement(
+                'div', { className: 'e-dlg-div', attrs: { 'aria-label': l10n.getConstant('FindValue') } });
             this.findDialog = new FindDialog({
                 cssClass: 'e-findtool-dlg', content: tbarEle, visible: false, enableRtl: this.parent.enableRtl,
                 target: <HTMLElement>this.parent.element.getElementsByClassName('e-sheet')[0],
@@ -2235,7 +2232,7 @@ export class Ribbon {
         const actCell: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const cell: CellModel = getCell(actCell[0], actCell[1], this.parent.getActiveSheet()) || {};
-        let type: string = getTypeFromFormat(cell.format ? cell.format : 'General');
+        let type: string = getTypeFromFormat(cell.format || 'General', true);
         if (this.numFormatDDB) {
             if (sheet.isProtected && !sheet.protectSettings.formatCells) {
                 type = 'General';
@@ -2998,6 +2995,17 @@ export class Ribbon {
                 this.initialize(true);
             } else if (this.ribbon) {
                 this.destroy();
+            }
+            break;
+        case 'allowImage':
+            this.ribbon.enableItems(
+                l10.getConstant('Insert'), [`${id}_image`], this.parent.allowImage);
+            break;
+        case 'allowChart':
+            this.ribbon.enableItems(
+                l10.getConstant('Insert'), [`${id}_chart`], this.parent.allowChart);
+            if (!this.parent.allowChart) {
+                this.removeDesignChart();
             }
             break;
         }

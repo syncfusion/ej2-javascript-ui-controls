@@ -4,7 +4,7 @@
  */
 import { remove, createElement } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
-import { ChartSeriesType, ChartRangePadding, ValueType } from '../../../src/chart/utils/enum';
+import { ChartSeriesType } from '../../../src/chart/utils/enum';
 import { LineSeries } from '../../../src/chart/series/line-series';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Category } from '../../../src/chart/axis/category-axis';

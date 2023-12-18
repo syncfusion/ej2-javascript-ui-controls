@@ -268,7 +268,7 @@ export class VirtualLayoutRender extends MobileLayout {
         const cardRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-content-row:not(.e-swimlane-row)'));
         const isCRUD: boolean = (requestType === 'cardChanged' || requestType === 'cardCreated' || requestType === 'cardRemoved')
             && !isNoU(crudKeyField);
-        cardRows.forEach((tr: HTMLElement, index: number) => {
+        cardRows.forEach((tr: HTMLElement) => {
             for (const column of this.parent.columns) {
                 if (this.isColumnVisible(column) && (column.keyField === draggedColumnKey || column.keyField === droppedColumnKey)
                     || isCRUD) {
@@ -316,7 +316,6 @@ export class VirtualLayoutRender extends MobileLayout {
     }
 
     private renderCards(): void {
-        const rows: HeaderArgs[] = this.kanbanRows;
         const cardRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-content-row:not(.e-swimlane-row)'));
         const swimlaneRows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-content-row.e-swimlane-row'));
         const removeTrs: HTMLElement[] = [];
@@ -641,7 +640,7 @@ export class VirtualLayoutRender extends MobileLayout {
         return extend(data, state.pvtData);
     }
 
-    private dataManagerSuccess(e: ReturnType, type?: string, offlineArgs?: ActionEventArgs, index?: number): Record<string, any>[] {
+    private dataManagerSuccess(e: ReturnType, type?: string): Record<string, any>[] {
         let resultData: Record<string, any>[];
         if (type) {
             resultData = extend([], !isNoU((e.result as any).result) ?
@@ -948,21 +947,21 @@ export class VirtualLayoutRender extends MobileLayout {
         let indexes: number[];
         if (info.scrollDirection === 'down') {
             indexes = index >= maxPage ? [max(index, 1), --index, --index].reverse() :
-            (index + 1 >= maxPage ? [max(index - 1, 1),  index, ++index] :
-            [max(index, 1), ++index, ++index]);
+                (index + 1 >= maxPage ? [max(index - 1, 1),  index, ++index] :
+                    [max(index, 1), ++index, ++index]);
         } else {
             indexes = index === maxPage ? [max(index - 2, 1), max(index - 1, 1), index] :
                 [max(index - 1, 1), index, index + 1];
         }
+        // eslint-disable-next-line
         return indexes.filter(indexRemoveZero => indexRemoveZero > 0);
     }
 
     private getInfoFromView(scrollStatus: VirtualScrollInfo): VirtualScrollInfo {
         let isBlockAdded: boolean = false;
-        let tempBlocks: number[] = [];
         const infoType: VirtualScrollInfo = scrollStatus;
         infoType.page = this.getPageFromTop(scrollStatus);
-        infoType.newBlockIndex = tempBlocks = this.getBlockIndexes(infoType.page);
+        infoType.newBlockIndex = this.getBlockIndexes(infoType.page);
         const blocks: number[] = this.ensureBlocks(infoType);
         if (infoType.newBlockIndex.toString() !== blocks.toString()) {
             // To avoid dupilcate row index problem in key focus support

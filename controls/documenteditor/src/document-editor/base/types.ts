@@ -354,6 +354,10 @@ export type ListLevelPattern =
      */
     'Special' |
     /**
+     * Specifies the Japanese counting pattern for the list level.
+     */
+    'KanjiDigit' |
+    /**
      * Specifies no pattern for the list level.
      */
     'None';

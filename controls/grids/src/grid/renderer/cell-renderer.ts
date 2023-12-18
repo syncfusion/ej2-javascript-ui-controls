@@ -27,9 +27,8 @@ export class CellRenderer implements ICellRenderer<Column> {
         this.localizer = locator.getService<L10n>('localization');
         this.formatter = locator.getService<IValueFormatter>('valueFormatter');
         this.parent = parent;
-        this.element = this.parent.createElement('TD', { className: literals.rowCell, attrs: { tabindex: '-1' } });
-        this.rowChkBox = this.parent.createElement('input', { className: 'e-checkselect', attrs: { 'type': 'checkbox',
-            'aria-label': this.localizer.getConstant('CheckBoxLabel') } });
+        this.element = this.parent.createElement('TD', { className: literals.rowCell, attrs: { role: 'gridcell', tabindex: '-1' } });
+        this.rowChkBox = this.parent.createElement('input', { className: 'e-checkselect', attrs: { 'type': 'checkbox' } });
     }
     /**
      * Function to return the wrapper for the TD content
@@ -154,7 +153,8 @@ export class CellRenderer implements ICellRenderer<Column> {
         } else {
             const node: Element = this.refreshCell(cell, data, attributes, isEdit);
             td.innerHTML = '';
-            td.setAttribute('aria-label', node.getAttribute('aria-label'));
+            const arialabelText = node.getAttribute('aria-label');
+            arialabelText ? td.setAttribute('aria-label', arialabelText) : null;
             const elements: Element[] = [].slice.call(node.childNodes);
             for (const elem of elements) {
                 td.appendChild(elem);
@@ -204,12 +204,10 @@ export class CellRenderer implements ICellRenderer<Column> {
         const fromFormatter: Object = this.invokeFormatter(column, value, data);
 
         innerHtml = !isNullOrUndefined(column.formatter) ? isNullOrUndefined(fromFormatter) ? '' : fromFormatter.toString() : innerHtml;
-        node.setAttribute('aria-label', innerHtml + this.localizer.getConstant('ColumnHeader') + cell.column.headerText);
         if (this.evaluate(node, cell, data, attributes, fData, isEdit) && column.type !== 'checkbox') {
             this.appendHtml(node, this.parent.sanitize(innerHtml), column.getDomSetter ? column.getDomSetter() : 'innerHTML');
         } else if (column.type === 'checkbox') {
             node.classList.add(literals.gridChkBox);
-            node.setAttribute('aria-label', this.localizer.getConstant('CheckBoxLabel'));
             if (this.parent.selectionSettings.persistSelection) {
                 value = value === 'true';
             } else {
@@ -240,11 +238,11 @@ export class CellRenderer implements ICellRenderer<Column> {
                 addClass([checkWrap], [this.parent.cssClass]);
             }
             node.appendChild(checkWrap);
-            node.setAttribute('aria-label', checked + this.localizer.getConstant('ColumnHeader') + cell.column.headerText);
         }
         if (node.classList.contains('e-summarycell') && !(<{key?: string}>data).key) {
             const uid: string = node.getAttribute('e-mappinguid');
             column = this.parent.getColumnByUid(uid);
+            node.setAttribute('aria-label', innerHtml + this.localizer.getConstant('ColumnHeader') + cell.column.headerText);
         }
         if (this.parent.isFrozenGrid() && (!data || (data && !(<{key?: string}>data).key))) {
             addStickyColumnPosition(this.parent, column, node);

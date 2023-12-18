@@ -218,7 +218,7 @@ export interface TreeMapModel extends ComponentModel{
     /**
      * Sets and gets the tab index value for treemap.
      *
-     * @default 1
+     * @default 0
      */
     tabIndex?: number;
 

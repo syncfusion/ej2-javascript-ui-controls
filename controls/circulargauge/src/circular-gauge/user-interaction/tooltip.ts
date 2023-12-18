@@ -9,6 +9,7 @@ import { TooltipSettings } from '../model/base';
 import { FontModel, BorderModel } from '../model/base-model';
 import { Browser, createElement, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { tooltipRender } from '../model/constants';
+import { titleTooltip } from '../utils/helper-legend';
 
 /**
  * Sets and gets the module that handles the tooltip of the circular gauge
@@ -321,6 +322,9 @@ export class GaugeTooltip {
             this.gauge.trigger(tooltipRender, annotationTooltipArgs, annotationTooltip);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).renderReactTemplates();
+        } else if ((target.id === (this.gauge.element.id + '_CircularGaugeTitle') || target.id.indexOf('_gauge_legend_') > -1) &&
+            ((<HTMLElement>e.target).textContent.indexOf('...') > -1)) {
+            titleTooltip(e, pageX, pageY, this.gauge, false);
         } else {
             const isTooltipRemoved: boolean = this.removeTooltip();
             if (isTooltipRemoved) {
@@ -377,7 +381,8 @@ export class GaugeTooltip {
             fill: fill || gauge.themeStyle.tooltipFillColor,
             textStyle: textStyle,
             availableSize: gauge.availableSize,
-            border: border
+            border: border,
+            enableShadow: true
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (((gauge as any).isVue || (gauge as any).isVue3)) {
@@ -510,6 +515,7 @@ export class GaugeTooltip {
     }
 
     public mouseUpHandler(e: PointerEvent): void {
+        this.removeTooltip();
         this.renderTooltip(e);
         clearTimeout(this.clearTimeout);
         this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);

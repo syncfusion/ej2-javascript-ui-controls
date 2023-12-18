@@ -1,17 +1,18 @@
 import { TaskFieldsModel } from './../models/task-fields-model.d';
-import { PdfFontFamily } from '@syncfusion/ej2-pdf-export';
+import { PdfFontFamily, PdfTextWebLink, PdfImage } from '@syncfusion/ej2-pdf-export';
 import { PdfStringFormat, PdfPageCountField, PdfPageNumberField } from '@syncfusion/ej2-pdf-export';
 import { PdfPageTemplateElement, RectangleF, PdfCompositeField, PointF } from '@syncfusion/ej2-pdf-export';
 import { PdfVerticalAlignment, PdfTextAlignment, PdfFont, PdfStandardFont, PdfTrueTypeFont } from '@syncfusion/ej2-pdf-export';
-import { PdfFontStyle, PdfColor, PdfPen, PdfBrush, PdfSolidBrush, PdfDocument } from '@syncfusion/ej2-pdf-export';
+import { PdfFontStyle, PdfColor, PdfPen, PdfBrush, PdfSolidBrush, PdfDocument, SizeF, PdfBitmap,PdfGridCell  } from '@syncfusion/ej2-pdf-export';
 import { PdfTreeGridColumn, PdfTreeGridRow, PdfTreeGridCell, PdfBorders, PdfPaddings } from './pdf-base/index';
 import { ColumnModel } from './../models/column';
+import { PdfPageNumberType, PdfDashStyle } from '../base/enum';
 import { PdfGantt } from './pdf-gantt';
 import {
     IGanttData, PdfExportProperties, PdfQueryCellInfoEventArgs,
     ITaskData, IGanttStyle, IConnectorLineObject, PdfGanttCellStyle, ITaskbarStyle, PdfColumnHeaderQueryCellInfoEventArgs,
     PdfQueryTaskbarInfoEventArgs,
-    ZoomTimelineSettings
+    ZoomTimelineSettings, PdfHeader, PdfHeaderFooterContent
 } from './../base/interface';
 import { Gantt } from './../base/gantt';
 import { isNullOrUndefined, DateFormatOptions, Internationalization, getValue, extend } from '@syncfusion/ej2-base';
@@ -71,7 +72,7 @@ export class ExportHelper {
             this.parent.zoomingProjectStartDate = this.parent.cloneProjectStartDate;
             this.parent.zoomingProjectEndDate = this.parent.cloneProjectEndDate;
         }
-        if (this.parent.zoomingProjectStartDate > this.parent.cloneProjectStartDate){
+        if (this.parent.zoomingProjectStartDate > this.parent.cloneProjectStartDate) {
             this.parent.cloneProjectStartDate = new Date(this.parent.allowUnscheduledTasks ? this.parent.zoomingProjectStartDate : this.parent.cloneProjectStartDate);
         }
         this.parent.dataOperation.calculateProjectDates();
@@ -79,9 +80,9 @@ export class ExportHelper {
         const totalDays: number = (timeDifference / (1000 * 3600 * 24));
         let chartsideWidth: number;
         let gridWidth: number;
-            if (this.exportProps.fitToWidthSettings.gridWidth) {
-               gridWidth = parseInt(this.exportProps.fitToWidthSettings.gridWidth.split('%')[0]);
-            }
+        if (this.exportProps.fitToWidthSettings.gridWidth) {
+            gridWidth = parseInt(this.exportProps.fitToWidthSettings.gridWidth.split('%')[0]);
+        }
         if (this.exportProps.fitToWidthSettings.chartWidth) {
             chartsideWidth = parseInt(this.exportProps.fitToWidthSettings.chartWidth.split('%')[0]);
         }
@@ -90,10 +91,10 @@ export class ExportHelper {
                 chartsideWidth = 100 - gridWidth;
             }
             else {
-               chartsideWidth = 70;
+                chartsideWidth = 70;
             }
         }
-        const pdfwidth: number = (this.parent.pdfExportModule['pdfPageDimensions'].width * chartsideWidth)/100;
+        const pdfwidth: number = (this.parent.pdfExportModule['pdfPageDimensions'].width * chartsideWidth) / 100;
         const chartWidth: number = pdfwidth;
         const perDayWidth: number = chartWidth / totalDays;
         let zoomingLevel: ZoomTimelineSettings;
@@ -212,8 +213,7 @@ export class ExportHelper {
 
     private isColumnVisible(column: ColumnModel): boolean {
         const visibleColumn: boolean = column.visible || this.exportProps.includeHiddenColumn;
-        const templateColumn: boolean = !isNullOrUndefined(column.template) ? false : true;
-        return (visibleColumn && templateColumn);
+        return (visibleColumn);
     }
 
     private processGanttContent(): void {
@@ -232,7 +232,7 @@ export class ExportHelper {
                 }
                 if (this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth) {
                     this.row.height = 33.33;
-                  }
+                }
                 this.rowIndex++;
             });
         }
@@ -243,14 +243,23 @@ export class ExportHelper {
      * @returns {void} .
      */
     private processTimeline(): void {
+        if (this.parent.enableTimelineVirtualization) {
+            this.parent.timelineModule.createTimelineSeries();
+        }
         const timelineSettings: Timeline = this.parent.timelineModule;
         this.gantt.chartHeader.topTierHeight = this.gantt.chartHeader.bottomTierHeight
             = (this.parent.timelineModule.isSingleTier ? 45 : 60 / 2);
         this.gantt.chartHeader.topTierCellWidth = timelineSettings.topTierCellWidth;
         this.gantt.chartHeader.bottomTierCellWidth = timelineSettings.bottomTierCellWidth;
-        this.gantt.chartHeader.topTier = extend([], [], timelineSettings.topTierCollection, true) as [];
-        this.gantt.chartHeader.bottomTier = extend([], [], timelineSettings.bottomTierCollection, true) as [];
-        this.gantt.chartHeader.width = timelineSettings.totalTimelineWidth;
+        this.gantt.chartHeader.topTier = extend([], [], this.parent.enableTimelineVirtualization ? timelineSettings.pdfExportTopTierCollection : timelineSettings.topTierCollection, true) as [];
+        this.gantt.chartHeader.bottomTier = extend([], [], this.parent.enableTimelineVirtualization ? timelineSettings.pdfExportBottomTierCollection : timelineSettings.bottomTierCollection, true) as [];
+        if (this.exportProps && this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth && this.parent.enableTimelineVirtualization) {
+            const tier: string = timelineSettings.topTier === 'None' ? 'bottomTier' : 'topTier';
+            this.gantt.chartHeader.width = timelineSettings['calculateWidthBetweenTwoDate'](tier, timelineSettings.timelineStartDate, timelineSettings.timelineEndDate);
+        }
+        else {
+            this.gantt.chartHeader.width = this.parent.enableTimelineVirtualization ? this.parent.timelineModule.wholeTimelineWidth : timelineSettings.totalTimelineWidth;
+        }
         this.gantt.chartHeader.height = this.gantt.rows.getRow(0).height;
         this.gantt.timelineStartDate = new Date(timelineSettings.timelineStartDate.getTime());
     }
@@ -275,7 +284,7 @@ export class ExportHelper {
                 predecessor.type = data.type;
                 predecessor.milestoneParent = data.milestoneParent;
                 predecessor.milestoneChild = data.milestoneChild;
-                predecessor.parentEndPoint=data.parentEndPoint;
+                predecessor.parentEndPoint = data.parentEndPoint;
                 predecessor.lineWidth = this.parent.connectorLineWidth > 5 ? pixelToPoint(5) : pixelToPoint(this.parent.connectorLineWidth);
                 if (data.isCritical) {
                     predecessor.connectorLineColor = this.ganttStyle.criticalConnectorLineColor;
@@ -316,6 +325,9 @@ export class ExportHelper {
         } else {
             cell.value = !isNullOrUndefined(data[column.field]) ? data[column.field].toString() : '';
         }
+        const cellValueString = !isNullOrUndefined(cell.value) ? cell.value.toString() : '';
+        const cellValue: string = cellValueString;
+        let value: string = !isNullOrUndefined(cellValue) ? cellValue : '';
         cell.isHeaderCell = false;
         cell.style.padding = new PdfPaddings();
         this.copyStyles(this.ganttStyle.cell, cell, row.isParentRow);
@@ -324,18 +336,39 @@ export class ExportHelper {
         } else {
             cell.style.format.paragraphIndent = cell.row.level * 10;
         }
-            const args: PdfQueryCellInfoEventArgs = {
-                data: data,
-                value: cell.value,
-                column: column,
-                style: cell.style,
-                cell: cell
-            };
-            args.value = this.exportValueFormatter.formatCellValue(args);
-            if (this.parent.pdfQueryCellInfo) {
-                this.parent.trigger('pdfQueryCellInfo', args);
-            }
-            cell.value = args.value;
+        const args: PdfQueryCellInfoEventArgs = {
+            data: data,
+            value: value,
+            column: column,
+            style: cell.style,
+            cell: cell
+        };
+        args.value = this.exportValueFormatter.formatCellValue(args);
+        if (this.parent.pdfQueryCellInfo) {
+            this.parent.trigger('pdfQueryCellInfo', args);
+        }
+        if (!isNullOrUndefined(args.image) && !isNullOrUndefined(args.image.base64)) {
+            args.value = new PdfBitmap(args.image.base64);
+            args.value.height = (<{ height?: number }>args.image).height || args.value.height;
+            args.value.width = (<{ width?: number }>args.image).width || args.value.width;
+        }
+        cell.value = args.value;
+        if (!isNullOrUndefined(args.hyperLink) && !isNullOrUndefined(args.hyperLink.displayText)) {
+            cell.value = this.setHyperLink(args);
+        }
+    }
+    private setHyperLink(args: PdfQueryCellInfoEventArgs): PdfTextWebLink {
+        // create the Text Web Link
+        const textLink: PdfTextWebLink = new PdfTextWebLink();
+        // set the hyperlink
+        textLink.url = args.hyperLink.target;
+        // set the link text
+        textLink.text = args.hyperLink.displayText || args.hyperLink.target;
+        // set the font
+        textLink.font = new PdfStandardFont(PdfFontFamily.Helvetica, 9.75);
+        // set the brush and pen for the text color
+        textLink.brush = new PdfSolidBrush(new PdfColor(51, 102, 187));
+        return textLink;
     }
     /**
      * Method for create the taskbar collection for rendering
@@ -382,6 +415,16 @@ export class ExportHelper {
                 }
                 taskbar.height = height;
             }
+            taskbar.indicators = ganttProp.indicators;
+            taskbar.autoStartDate = ganttProp.autoStartDate;
+            taskbar.autoEndDate = ganttProp.autoEndDate;
+            taskbar.isAutoSchedule = ganttProp.isAutoSchedule;
+            taskbar.autoWidth = ganttProp.autoWidth;
+            taskbar.autoLeft = ganttProp.autoLeft;
+            taskbar.segment = ganttProp.segments;
+            taskbar.isSpliterTask = (isNullOrUndefined(ganttProp.segments) || ganttProp.segments.length === 0) ? false : true;
+            if(taskbar.isSpliterTask){
+                taskbar.segmentCollection = taskbar.segment.map( (obj :any) => ({ ...obj }));}
             taskbar.baselineTop = this.parent.chartRowsModule.baselineTop;
             taskbar.isMilestone = ganttProp.isMilestone;
             taskbar.baselineStartDate = ganttProp.baselineStartDate;
@@ -425,11 +468,20 @@ export class ExportHelper {
                     taskbar.taskBorderColor = new PdfColor(this.ganttStyle.taskbar.taskBorderColor);
                 }
             }
+            taskbar.manualParentBorder = new PdfColor(this.ganttStyle.taskbar.manualParentBorder);
+            taskbar.manualChildBorder = new PdfColor(this.ganttStyle.taskbar.manualChildBorder);
+            taskbar.manuallineColor = new PdfColor(this.ganttStyle.taskbar.manualLineColor);
+            taskbar.unscheduledTaskBarColor = new PdfColor(this.ganttStyle.taskbar.unscheduledTaskBarColor);
+            taskbar.manualParentBackground = new PdfColor(this.ganttStyle.taskbar.manualParentBackground);
+            taskbar.manualParentProgress = new PdfColor(this.ganttStyle.taskbar.manualParentProgress);
+            taskbar.manualChildBackground = new PdfColor(this.ganttStyle.taskbar.manualChildBackground);
+            taskbar.manualChildProgress = new PdfColor(this.ganttStyle.taskbar.manualChildProgress);
+            taskbar.splitLineBackground = new PdfColor(this.ganttStyle.taskbar.splitLineBackground);
             taskbar.baselineColor = new PdfColor(this.ganttStyle.taskbar.baselineColor);
             taskbar.baselineBorderColor = new PdfColor(this.ganttStyle.taskbar.baselineBorderColor);
             taskbar.gridLineColor = new PdfColor(this.ganttStyle.chartGridLineColor);
             this.gantt.taskbarCollection.push(taskbar);
-            const taskStyle: ITaskbarStyle   = {};
+            const taskStyle: ITaskbarStyle = {};
             taskStyle.progressFontColor = taskbar.progressFontColor;
             taskStyle.taskColor = taskbar.taskColor;
             taskStyle.taskBorderColor = taskbar.taskBorderColor;
@@ -439,7 +491,8 @@ export class ExportHelper {
             taskStyle.baselineBorderColor = taskbar.baselineBorderColor;
             const args: PdfQueryTaskbarInfoEventArgs = {
                 taskbar: taskStyle,
-                data: data
+                data: data,
+                indicators:data.ganttProperties.indicators
             };
             if (this.parent.pdfQueryTaskbarInfo) {
                 this.parent.trigger('pdfQueryTaskbarInfo', args);
@@ -450,6 +503,7 @@ export class ExportHelper {
                 taskbar.milestoneColor = args.taskbar.milestoneColor;
                 taskbar.baselineColor = args.taskbar.baselineColor;
                 taskbar.baselineBorderColor = args.taskbar.baselineBorderColor;
+                taskbar.indicators = args.indicators; 
             }
         });
     }
@@ -466,18 +520,18 @@ export class ExportHelper {
             format = new PdfStringFormat();
         }
         switch (textAlign) {
-        case 'Right':
-            format.alignment = PdfTextAlignment.Right;
-            break;
-        case 'Center':
-            format.alignment = PdfTextAlignment.Center;
-            break;
-        case 'Justify':
-            format.alignment = PdfTextAlignment.Justify;
-            break;
-        case 'Left':
-            format.alignment = PdfTextAlignment.Left;
-            break;
+            case 'Right':
+                format.alignment = PdfTextAlignment.Right;
+                break;
+            case 'Center':
+                format.alignment = PdfTextAlignment.Center;
+                break;
+            case 'Justify':
+                format.alignment = PdfTextAlignment.Justify;
+                break;
+            case 'Left':
+                format.alignment = PdfTextAlignment.Left;
+                break;
         }
         return format;
     }
@@ -496,31 +550,31 @@ export class ExportHelper {
             format = this.getHorizontalAlignment(textAlign, format);
         }
         switch (verticalAlign) {
-        case 'Bottom':
-            format.lineAlignment = PdfVerticalAlignment.Bottom;
-            break;
-        case 'Middle':
-            format.lineAlignment = PdfVerticalAlignment.Middle;
-            break;
-        case 'Top':
-            format.lineAlignment = PdfVerticalAlignment.Top;
-            break;
+            case 'Bottom':
+                format.lineAlignment = PdfVerticalAlignment.Bottom;
+                break;
+            case 'Middle':
+                format.lineAlignment = PdfVerticalAlignment.Middle;
+                break;
+            case 'Top':
+                format.lineAlignment = PdfVerticalAlignment.Top;
+                break;
         }
         return format;
     }
 
     private getFontFamily(fontFamily: string): number {
         switch (fontFamily) {
-        case 'TimesRoman':
-            return 2;
-        case 'Courier':
-            return 1;
-        case 'Symbol':
-            return 3;
-        case 'ZapfDingbats':
-            return 4;
-        default:
-            return 0;
+            case 'TimesRoman':
+                return 2;
+            case 'Courier':
+                return 1;
+            case 'Symbol':
+                return 3;
+            case 'ZapfDingbats':
+                return 4;
+            default:
+                return 0;
         }
     }
 
@@ -573,7 +627,7 @@ export class ExportHelper {
         cell.style.fontSize = style.fontSize;
         cell.style.fontStyle = style.fontStyle;
         /* eslint-disable-next-line */
-        cell.style.format  = (<any>Object).assign(new PdfStringFormat(), style.format);
+        cell.style.format = (<any>Object).assign(new PdfStringFormat(), style.format);
         cell.style.borders = new PdfBorders();
         cell.style.borders.all = new PdfPen(cell.style.borderColor);
         cell.style.padding = new PdfPaddings();
@@ -605,10 +659,10 @@ export class ExportHelper {
         const widths: number[] = [];
         const treeColumnIndex: number = 0;
         const tWidth: number = (this.pdfDoc.pageSettings.width - 82);
-        if(this.exportProps && this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth) {
+        if (this.exportProps && this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth) {
             let gridWidth: number;
             if (this.exportProps.fitToWidthSettings.gridWidth) {
-               gridWidth = parseInt(this.exportProps.fitToWidthSettings.gridWidth.split('%')[0]);
+                gridWidth = parseInt(this.exportProps.fitToWidthSettings.gridWidth.split('%')[0]);
             }
             else {
                 if (this.exportProps.fitToWidthSettings.chartWidth) {
@@ -619,9 +673,9 @@ export class ExportHelper {
                     gridWidth = 30;
                 }
             }
-            const pdfwidth: number = (this.parent.pdfExportModule['pdfPageDimensions'].width * gridWidth)/100;
+            const pdfwidth: number = (this.parent.pdfExportModule['pdfPageDimensions'].width * gridWidth) / 100;
             const perColumnWidth: number = pdfwidth / this.gantt.columns.columns.length;
-            for(let i: number=0;i<this.gantt.columns.columns.length;i++) {
+            for (let i: number = 0; i < this.gantt.columns.columns.length; i++) {
                 this.gantt.columns.getColumn(i as number).width = perColumnWidth;
             }
         }
@@ -650,6 +704,242 @@ export class ExportHelper {
             compositeField.bounds = bounds;
             compositeField.draw(footer.graphics, new PointF(0, 0));
             pdfDoc.template.bottom = footer;
+        }
+        // code for draw header content
+        if (!isNullOrUndefined(this.exportProps.header)) {
+            const clientSize: SizeF = this.pdfDoc.pageSettings.size;
+            const headerProp: PdfHeader = this.exportProps.header;
+            const position: PointF = new PointF(0, headerProp.fromTop);
+            const size: SizeF = new SizeF((clientSize.width * 1.1), ((headerProp && headerProp.height) ? headerProp.height * 0.75 : 50));
+            const bounds: RectangleF = new RectangleF(position, size);
+            pdfDoc.template.top = this.drawPageTemplate(new PdfPageTemplateElement(bounds), headerProp);
+
+        }
+        // code for customization of footer
+        if (!this.exportProps.enableFooter && !isNullOrUndefined(this.exportProps.footer)) {
+            const clientSize: any = this.pdfDoc.pageSettings.size;
+            const footer: any = this.exportProps.footer;
+            const position: PointF = new PointF(0, ((clientSize.width - 80) - ((footer && footer.fromBottom) ?
+                footer.fromBottom * 0.75 : 0)));
+            const size: SizeF = new SizeF((clientSize.width * 1.1), ((footer && footer.height) ? footer.height * 0.75 : 50));
+            const bounds: RectangleF = new RectangleF(position, size);
+            this.pdfDoc.template.bottom = this.drawPageTemplate(new PdfPageTemplateElement(bounds), footer);
+        }
+    }
+    private drawPageTemplate(template: PdfPageTemplateElement, element: PdfHeader): PdfPageTemplateElement {
+        for (const content of element.contents) {
+            switch (content.type) {
+                case 'Text':
+                    if (content.value === '' || content.value === undefined || content.value === null || typeof content.value !== 'string') {
+                        throw new Error('please enter the valid input value in text content...');
+                    }
+                    this.drawText(template, content);
+                    break;
+                case 'PageNumber':
+                    this.drawPageNumber(template, content);
+                    break;
+                case 'Image':
+                    if (content.src === undefined || content.src === null || content.src === '') {
+                        throw new Error('please enter the valid base64 string in image content...');
+                    }
+                    this.drawImage(template, content);
+                    break;
+                case 'Line':
+                    this.drawLine(template, content);
+                    break;
+                default:
+                    throw new Error('Please set valid content type...');
+            }
+        }
+        return template;
+    }
+    // code for draw text
+    private drawText(pageTemplate: PdfPageTemplateElement, content: any): void {
+        const font: PdfFont = this.getFont(content);
+        let brush: PdfSolidBrush = this.getBrushFromContent(content);
+        let pen: PdfPen = null;
+        if (!isNullOrUndefined(content.style.textPenColor)) {
+            const penColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.textPenColor);
+            pen = new PdfPen(new PdfColor(penColor.r, penColor.g, penColor.b));
+        }
+        if (brush == null && pen == null) {
+            brush = new PdfSolidBrush(new PdfColor(0, 0, 0));
+        }
+        const value: string = content.value.toString();
+        const x: number = content.position.x * 0.75;
+        const y: number = content.position.y * 0.75;
+        const format: PdfStringFormat = new PdfStringFormat();
+        if (!isNullOrUndefined(content.style.stringFormat)) {
+            format.alignment = content.style.stringFormat.alignment;
+        }
+        const result: { format: PdfStringFormat, size: SizeF } = this.setContentFormat(content, format);
+        if (result !== null && !isNullOrUndefined(result.format) && !isNullOrUndefined(result.size)) {
+            pageTemplate.graphics.drawString(value, font, pen, brush, x, y, result.size.width, result.size.height, result.format);
+        } else {
+            pageTemplate.graphics.drawString(value, font, pen, brush, x, y, format);
+        }
+    }
+    // code for draw pagenumber
+    private drawPageNumber(documentHeader: PdfPageTemplateElement, content: any): void {
+        const font: PdfFont = this.getFont(content);
+        let brush: PdfSolidBrush = null;
+        if (!isNullOrUndefined(content.style.textBrushColor)) {
+            const brushColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.textBrushColor);
+            brush = new PdfSolidBrush(new PdfColor(brushColor.r, brushColor.g, brushColor.b));
+        } else {
+            brush = new PdfSolidBrush(new PdfColor(0, 0, 0));
+        }
+        const pageCounts = this.pdfDoc.pages.count;
+        const pageNumber: PdfPageNumberField = new PdfPageNumberField(font, brush);
+        pageNumber.numberStyle = this.getPageNumberStyle(content.pageNumberType);
+        let compositeField: PdfCompositeField;
+        let format: string;
+        if (!isNullOrUndefined(content.format)) {
+            const total: string = '$total';
+            const current: string = '$current';
+            if ((content.format as string).indexOf(total) !== -1 && (content.format as string).indexOf(current) !== -1) {
+                const pageCount: PdfPageCountField = new PdfPageCountField(font);
+                pageCount.numberStyle = this.getPageNumberStyle(content.pageNumberType);
+                if ((content.format as string).indexOf(total) > (content.format as string).indexOf(current)) {
+                    format = (content.format as string).replace(current, '0');
+                    format = format.replace(total, '1');
+                } else {
+                    format = (content.format as string).replace(current, '1');
+                    format = format.replace(total, '0');
+                }
+                compositeField = new PdfCompositeField(font, brush, format, pageNumber, pageCount);
+            } else if ((content.format as string).indexOf(current) !== -1 && (content.format as string).indexOf(total) === -1) {
+                format = (content.format as string).replace(current, '0');
+                compositeField = new PdfCompositeField(font, brush, format, pageNumber);
+            } else {
+                const pageCount: PdfPageCountField = new PdfPageCountField(font);
+                format = (content.format as string).replace(total, '0');
+                compositeField = new PdfCompositeField(font, brush, format, pageCount);
+            }
+        } else {
+            format = '{0}';
+            compositeField = new PdfCompositeField(font, brush, format, pageNumber);
+        }
+        const x: number = content.position.x * 0.75;
+        const y: number = content.position.y * 0.75;
+        const result: { format: PdfStringFormat, size: SizeF } = this.setContentFormat(content, compositeField.stringFormat);
+        if (result !== null && !isNullOrUndefined(result.format) && !isNullOrUndefined(result.size)) {
+            compositeField.stringFormat = result.format;
+            compositeField.bounds = new RectangleF(x, y, result.size.width, result.size.height);
+        }
+        compositeField.draw(documentHeader.graphics, x, y);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // code for draw image
+    private drawImage(documentHeader: PdfPageTemplateElement, content: any): void {
+        const x: number = content.position.x * 0.75;
+        const y: number = content.position.y * 0.75;
+        const width: number = (!isNullOrUndefined(content.size) && !isNullOrUndefined(content.size.width)) ?
+            (content.size.width * 0.50) : undefined;
+        const height: number = (!isNullOrUndefined(content.size) && !isNullOrUndefined(content.size.height)) ?
+            (content.size.height * 0.75) : undefined;
+
+        const image: PdfBitmap = new PdfBitmap(content.src);
+        if (!isNullOrUndefined(width)) {
+            documentHeader.graphics.drawImage(image, x, y, width, height);
+        } else {
+            documentHeader.graphics.drawImage(image, x, y);
+        }
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // code for draw line
+    private drawLine(documentHeader: PdfPageTemplateElement, content: any): void {
+        const x1: number = content.points.x1 * 0.75;
+        const y1: number = content.points.y1 * 0.75;
+        const x2: number = content.points.x2 * 0.75;
+        const y2: number = content.points.y2 * 0.75;
+        const pen: PdfPen = this.getPenFromContent(content);
+        if (!isNullOrUndefined(content.style)) {
+            if (!isNullOrUndefined(content.style.penSize) && typeof content.style.penSize === 'number') {
+                pen.width = content.style.penSize * 0.75;
+            }
+            pen.dashStyle = this.getDashStyle(content.style.dashStyle);
+        }
+        documentHeader.graphics.drawLine(pen, x1, y1, x2, y2);
+    }
+    private getPenFromContent(content: PdfHeaderFooterContent): PdfPen {
+        let pen: PdfPen = new PdfPen(new PdfColor(0, 0, 0));
+        if (!isNullOrUndefined(content.style) && content.style !== null && !isNullOrUndefined(content.style.penColor)) {
+            const penColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.penColor);
+            pen = new PdfPen(new PdfColor(penColor.r, penColor.g, penColor.b));
+        }
+        return pen;
+    }
+    private getDashStyle(dashStyle: PdfDashStyle): number {
+        switch (dashStyle) {
+            case 'Dash':
+                return 1;
+            case 'Dot':
+                return 2;
+            case 'DashDot':
+                return 3;
+            case 'DashDotDot':
+                return 4;
+            default:
+                return 0;
+        }
+    }
+    private getBrushFromContent(content: PdfHeaderFooterContent): PdfSolidBrush {
+        let brush: PdfSolidBrush = null;
+        if (!isNullOrUndefined(content.style.textBrushColor)) {
+            /* tslint:disable-next-line:max-line-length */
+            const brushColor: { r: number, g: number, b: number } = this.hexToRgb(content.style.textBrushColor);
+            brush = new PdfSolidBrush(new PdfColor(brushColor.r, brushColor.g, brushColor.b));
+        }
+        return brush;
+    }
+    private hexToRgb(hex: string): { r: number, g: number, b: number } {
+        if (hex === null || hex === '' || hex.length !== 7) {
+            throw new Error('please set valid hex value for color...');
+        }
+        hex = hex.substring(1);
+        const bigint: number = parseInt(hex, 16);
+        const r: number = (bigint >> 16) & 255;
+        const g: number = (bigint >> 8) & 255;
+        const b: number = bigint & 255;
+        return { r: r, g: g, b: b };
+    }
+    private setContentFormat(content: PdfHeaderFooterContent, format: PdfStringFormat): { format: PdfStringFormat, size: SizeF } {
+        const width: number = (content.size) ? content.size.width * 0.75 : this.pdfDoc.pageSettings.size.width;
+        const height: number = (content.size) ? content.size.height * 0.75 : this.exportProps.footer.height * 0.50;
+        format = new PdfStringFormat(PdfTextAlignment.Left, PdfVerticalAlignment.Middle);
+        if (!isNullOrUndefined(content.style.hAlign)) {
+            switch (content.style.hAlign) {
+                case 'Right':
+                    format.alignment = PdfTextAlignment.Right;
+                    break;
+                case 'Center':
+                    format.alignment = PdfTextAlignment.Center;
+                    break;
+                case 'Justify':
+                    format.alignment = PdfTextAlignment.Justify;
+                    break;
+                default:
+                    format.alignment = PdfTextAlignment.Left;
+            }
+        }
+        if (!isNullOrUndefined(content.style.vAlign)) {
+            format = this.getVerticalAlignment(content.style.vAlign, format);
+        }
+        return { format: format, size: new SizeF(width, height) };
+    }
+    private getPageNumberStyle(pageNumberType: PdfPageNumberType): number {
+        switch (pageNumberType) {
+            case 'LowerLatin':
+                return 2;
+            case 'LowerRoman':
+                return 3;
+            case 'UpperLatin':
+                return 4;
+            case 'UpperRoman':
+                return 5;
+            default:
+                return 1;
         }
     }
 }

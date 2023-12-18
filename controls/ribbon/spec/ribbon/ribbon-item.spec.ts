@@ -10,6 +10,14 @@ import { BeforeCloseEventArgs } from "@syncfusion/ej2-popups";
 
 Ribbon.Inject(RibbonColorPicker,RibbonFileMenu);
 
+let dropDownButtonItems: ItemModel[] = [
+    { text: 'New tab' },
+    { text: 'New window' },
+    { text: 'New incognito window' },
+    { separator: true },
+    { text: 'Print' },
+    { text: 'Cast' },
+    { text: 'Find' }];
 let fontStyle: string[] = ['Algerian', 'Arial', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Courier New', 'Georgia', 'Impact', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Symbol', 'Times New Roman', 'Verdana', 'Windings'
 ];
 describe('Ribbon Items', () => {
@@ -1019,6 +1027,62 @@ describe('Ribbon Items', () => {
             expect(outputEle.innerText.toLowerCase()).toBe('commonoverflow algerian');
             expect(isCloseCalled).toBe(false);
         });
+        it('Combobox label', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: 'Column',
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    cssClass:'testClass',
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }, {
+                                id: "item2",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Small,
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            },{
+                                id: "item3",
+                                type: RibbonItemType.ComboBox,
+                                comboBoxSettings: {
+                                    label: 'Font Style',
+                                    dataSource: fontStyle,
+                                    index: 1
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(document.querySelector('#item3').classList.contains('e-ribbon-combobox-label')).toBe(false);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn')as HTMLElement).click();
+            containerEle.style.width = '300px';
+            ribbon.refreshLayout();
+            (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            expect(document.querySelector('#item3_container').querySelector('.e-ribbon-combobox-label') !== null).toBe(true);
+            expect(document.querySelector('#item3_container').querySelector('.e-ribbon-combobox-label').innerHTML).toBe('Font Style');
+            (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            containerEle.style.width = '600px';
+            ribbon.refreshLayout();
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn')as HTMLElement).click();
+            expect(document.querySelector('#item3_container').querySelector('.e-ribbon-combobox-label') === null).toBe(true);
+        });
         it('Coverage- ComboBox Css Class', () => {
                 ribbon = new Ribbon({
                 tabs: tabs,
@@ -1121,11 +1185,9 @@ describe('Ribbon Items', () => {
             let splitBtn: HTMLElement = document.getElementById('fontcolor').parentElement.querySelector('.e-split-colorpicker');
             (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
             let popup: HTMLElement = document.getElementById(splitBtn.id+'_dropdownbtn-popup');
-            let hexinput: HTMLInputElement = popup.querySelector('.e-hex');
-            hexinput.value = '#12911291';
-            hexinput.dispatchEvent(new Event('input'));
+            (document.querySelectorAll('.e-row')[9].children[9] as HTMLElement).click();
             (popup.querySelector('.e-apply') as HTMLElement).click();
-            expect(outputEle.innerText.toLowerCase()).toBe('font #12911291');
+            expect(outputEle.innerText.toLowerCase()).toBe('font #f57f17ff');
             containerEle.style.width = '600px';
             ribbon.refreshLayout();
             outputEle.innerText = '';
@@ -1133,11 +1195,9 @@ describe('Ribbon Items', () => {
             splitBtn = document.getElementById('fontcolor').parentElement.querySelector('.e-split-colorpicker');
             (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
             popup = document.getElementById(splitBtn.id+'_dropdownbtn-popup');
-            hexinput = popup.querySelector('.e-hex');
-            hexinput.value = '#33333391';
-            hexinput.dispatchEvent(new Event('input'));
+            (document.querySelectorAll('.e-row')[9].children[8] as HTMLElement).click();
             (popup.querySelector('.e-apply') as HTMLElement).click();
-            expect(outputEle.innerText.toLowerCase()).toBe('font #33333391');
+            expect(outputEle.innerText.toLowerCase()).toBe('font #004d40ff');
         });
         it('Simplfied ColorPicker', () => { 
             ribbon =  new Ribbon({
@@ -1148,11 +1208,9 @@ describe('Ribbon Items', () => {
             let splitBtn: HTMLElement = document.getElementById('fontcolor').parentElement.querySelector('.e-split-colorpicker');
             (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
             let popup: HTMLElement = document.getElementById(splitBtn.id+'_dropdownbtn-popup');
-            let hexinput: HTMLInputElement = popup.querySelector('.e-hex');
-            hexinput.value = '#12911291';
-            hexinput.dispatchEvent(new Event('input'));
+            (document.querySelectorAll('.e-row')[9].children[9] as HTMLElement).click();            
             (popup.querySelector('.e-apply') as HTMLElement).click();
-            expect(outputEle.innerText.toLowerCase()).toBe('font #12911291');
+            expect(outputEle.innerText.toLowerCase()).toBe('font #f57f17ff');
         });
         it('Group Overflow ColorPicker', () => { 
                 ribbon = new Ribbon({
@@ -1164,11 +1222,9 @@ describe('Ribbon Items', () => {
             let splitBtn: HTMLElement = document.getElementById('groupoverflowfontcolor').parentElement.querySelector('.e-split-colorpicker');
             (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
             let popup: HTMLElement = document.getElementById(splitBtn.id+'_dropdownbtn-popup');
-            let hexinput: HTMLInputElement = popup.querySelector('.e-hex');
-            hexinput.value = '#12911291';
-            hexinput.dispatchEvent(new Event('input'));
+            (document.querySelectorAll('.e-row')[9].children[9] as HTMLElement).click();
             (popup.querySelector('.e-apply') as HTMLElement).click();
-            expect(outputEle.innerText.toLowerCase()).toBe('groupoverflow #12911291');
+            expect(outputEle.innerText.toLowerCase()).toBe('groupoverflow #f57f17ff');
         });
         it('OverAll Overflow ColorPicker', () => { 
                 ribbon = new Ribbon({
@@ -1180,11 +1236,64 @@ describe('Ribbon Items', () => {
             let splitBtn: HTMLElement = document.getElementById('commonoverflowfontcolor').parentElement.querySelector('.e-split-colorpicker');
             (splitBtn.parentElement.querySelector('.e-dropdown-btn') as HTMLElement).click();
             let popup: HTMLElement = document.getElementById(splitBtn.id+'_dropdownbtn-popup');
-            let hexinput: HTMLInputElement = popup.querySelector('.e-hex');
-            hexinput.value = '#12911291';
-            hexinput.dispatchEvent(new Event('input'));
+            (document.querySelectorAll('.e-row')[9].children[9] as HTMLElement).click();
             (popup.querySelector('.e-apply') as HTMLElement).click();
-            expect(outputEle.innerText.toLowerCase()).toBe('commonoverflow #12911291');
+            expect(outputEle.innerText.toLowerCase()).toBe('commonoverflow #f57f17ff');
+        });
+        it('Colorpicker label', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: 'Column',
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    cssClass:'testClass',
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }, {
+                                id: "item2",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Small,
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            },{
+                                id: "item3",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    label: 'Colors',
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(document.querySelector('#item3').classList.contains('e-ribbon-colorpicker-label')).toBe(false);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn')as HTMLElement).click();
+            containerEle.style.width = '200px';
+            ribbon.refreshLayout();
+            (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            expect(document.querySelector('#item3_container').querySelector('.e-ribbon-colorpicker-label') !== null).toBe(true);
+            expect(document.querySelector('#item3_container').querySelector('.e-ribbon-colorpicker-label').innerHTML).toBe('Colors');
+            (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            containerEle.style.width = '600px';
+            ribbon.refreshLayout();
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn')as HTMLElement).click();
+            expect(document.querySelector('#item3_container').querySelector('.e-ribbon-colorpicker-label') === null).toBe(true);
         });
         it('Coverage- ColorPicker Css Class', () => {
                 ribbon = new Ribbon({

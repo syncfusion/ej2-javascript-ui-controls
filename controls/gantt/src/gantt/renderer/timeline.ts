@@ -1,4 +1,4 @@
-import { TimelineFormat } from './../base/interface';
+import { TimelineFormat, ITaskData } from './../base/interface';
 import { createElement, isNullOrUndefined, getValue, addClass, removeClass, extend } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { TimelineSettingsModel } from '../models/timeline-settings-model';
@@ -30,6 +30,13 @@ export class Timeline {
     public isZoomToFit: boolean = false;
     public topTierCollection: TimelineFormat[] = [];
     public bottomTierCollection: TimelineFormat[] = [];
+    public pdfExportTopTierCollection: TimelineFormat[] = [];
+    public pdfExportBottomTierCollection: TimelineFormat[] = [];
+    public wholeTimelineWidth: number;
+    public restrictRender: boolean = true;
+    public weekendEndDate: Date;
+    private performedTimeSpanAction: boolean = false;
+    public isZoomedToFit: boolean = false;
     constructor(ganttObj?: Gantt) {
         this.parent = ganttObj;
         this.initProperties();
@@ -118,6 +125,7 @@ export class Timeline {
      */
     public processZooming(isZoomIn: boolean): void {
         this.isZoomToFit = false;
+        this.isZoomedToFit = false;
         if(!this.parent['isProjectDateUpdated']){
             this.parent.dateValidationModule.calculateProjectDates();
         }
@@ -220,7 +228,13 @@ export class Timeline {
                 this.parent.hideSpinner();
             }
         }
-
+        let tier: string = this.topTier === 'None' ? 'bottomTier' : 'topTier';
+        if (this.parent.enableTimelineVirtualization && (!this.parent.pdfExportModule || this.parent.pdfExportModule && !this.parent.pdfExportModule.isPdfExport)) {
+            this.wholeTimelineWidth = this.calculateWidthBetweenTwoDate(tier, this.parent.timelineModule.timelineStartDate, this.parent.timelineModule.timelineEndDate);
+            this.parent.element.querySelectorAll(".e-chart-scroll-container")[0].querySelector(".e-virtualtrack")['style'].width = this.wholeTimelineWidth + 'px';
+            this.parent.element.querySelectorAll(".e-timeline-header-container")[0].querySelector(".e-virtualtrack")['style'].width = this.wholeTimelineWidth + 'px';
+            this.parent.ganttChartModule.updateWidthAndHeight();
+        }
     }
     /**
      * To perform the zoom to fit operation in Gantt.
@@ -231,6 +245,7 @@ export class Timeline {
     public processZoomToFit(): void {
         this.isZoomToFit = true;
         this.isZooming = false;
+        this.isZoomedToFit = true;
         if (!this.parent.zoomingProjectStartDate) {
             this.parent.zoomingProjectStartDate = this.parent.cloneProjectStartDate;
             this.parent.zoomingProjectEndDate = this.parent.cloneProjectEndDate;
@@ -628,45 +643,144 @@ export class Timeline {
         }
     }
 
+    private dateByLeftValue(left: number,isMilestone?:boolean,property?:ITaskData): Date {
+        let pStartDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
+        const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
+        pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
+        /* To render the milestone in proper date while editing */
+        if (isMilestone && !isNullOrUndefined(property.predecessorsName) && property.predecessorsName !== '') {
+            pStartDate.setDate(pStartDate.getDate()-1);
+            this.parent.dateValidationModule.setTime(this.parent.defaultEndTime,pStartDate);
+            pStartDate = this.parent.dateValidationModule.checkStartDate(pStartDate,property,true)
+        }
+        const tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.topTier :
+            this.parent.timelineModule.bottomTier;
+        if (tierMode !== 'Hour' && tierMode !== 'Minutes') {
+            if (this.parent.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) && !this.parent.isInDst(pStartDate)) {
+                pStartDate.setTime(pStartDate.getTime() + (60 * 60 * 1000));
+            } else if (!this.parent.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) && this.parent.isInDst(pStartDate)) {
+                pStartDate.setTime(pStartDate.getTime() - (60 * 60 * 1000));
+            }
+        }
+        return pStartDate;
+    }
+
     /**
      * To create timeline header template.
      *
      * @returns {void}
      * @private
      */
-    public createTimelineSeries(): void {
+    public createTimelineSeries(): void {           
         let tr: Element;
         let td: Element;
         let div: Element;
         let table: HTMLElement;
         let thead: Element;
+        let virtualTableDiv: HTMLElement;
+        let virtualTrackDiv: HTMLElement;
         const loopCount: number = this.isSingleTier ? 1 : 2;
         let tier: string = this.topTier === 'None' ? 'bottomTier' : 'topTier';
-        this.updateTimelineHeaderHeight();
         this.topTierCollection = [];
         this.bottomTierCollection = [];
-        for (let count: number = 0; count < loopCount; count++) {
-            table = createElement(
-                'table', { className: cls.timelineHeaderTableContainer, styles: 'display: block;' });
-            thead = createElement('thead', { className: cls.timelineHeaderTableBody, styles: 'display:block; border-collapse:collapse' });
-            tr = createElement('tr', { innerHTML: this.createTimelineTemplate(tier) });
-            if (!this.parent.pdfExportModule || (this.parent.pdfExportModule && !this.parent.pdfExportModule.isPdfExport) || (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.pdfExportModule.helper.exportProps && !this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth)) {
-                td = createElement('th');
+        if (this.restrictRender == true){        
+            this.updateTimelineHeaderHeight();
+            this.wholeTimelineWidth = this.calculateWidthBetweenTwoDate(tier, this.parent.timelineModule.timelineStartDate, this.parent.timelineModule.timelineEndDate);
+        }
+        if (this.parent.enableTimelineVirtualization && (this.wholeTimelineWidth > this.parent.element.offsetWidth * 3)) {
+            for (let count: number = 0; count < loopCount; count++) {
+                table = createElement('table', { className: cls.timelineHeaderTableContainer, styles: 'display: block;' });
+                table.setAttribute('role', 'presentation');
+                thead = createElement('thead', { className: cls.timelineHeaderTableBody, styles: 'display:block; border-collapse:collapse' });
+                tr = createElement('tr', { innerHTML: this.createTimelineTemplate(tier) });
+                td = createElement('td');
+                div = createElement('div', { styles: 'width: 20px' });
+                virtualTableDiv = createElement('div', { className: cls.virtualTable });
+                virtualTrackDiv = createElement('div', { className: cls.virtualTrack });
+                td.appendChild(div);
+                tr.appendChild(td);
+                virtualTableDiv.appendChild(tr);
+                thead.appendChild(virtualTableDiv);
+                thead.appendChild(virtualTrackDiv);
+                table.appendChild(thead);
+                this.parent.ganttChartModule.chartTimelineContainer.appendChild(table);
+                tier = 'bottomTier';
+                tr = null;
+                this.restrictRender = false;
+            }
+            if (this.parent.height === "Auto" || this.parent.timelineModule.isSingleTier) {
+                var timelineContainer = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
+                this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+                if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-gridcontent')[0])) {
+                    this.parent.treeGrid.element.getElementsByClassName('e-gridcontent')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+                }
+            }
+            this.timelineVirtualizationStyles();
+        }
+        else {
+            for (let count: number = 0; count < loopCount; count++) {
+                table = createElement('table', { className: cls.timelineHeaderTableContainer, styles: 'display: block;' });
+                table.setAttribute('role', 'presentation');
+                thead = createElement('thead', { className: cls.timelineHeaderTableBody, styles: 'display:block; border-collapse:collapse' });
+                tr = createElement('tr', { innerHTML: this.createTimelineTemplate(tier) });
+                td = createElement('td');
                 div = createElement('div', { styles: 'width: 20px' });
                 td.appendChild(div);
                 tr.appendChild(td);
                 thead.appendChild(tr);
                 table.appendChild(thead);
                 this.parent.ganttChartModule.chartTimelineContainer.appendChild(table);
+                tier = 'bottomTier';
+                tr = null;
             }
-            tier = 'bottomTier';
-            tr = null;
+            if (this.parent.height === "Auto" || this.parent.timelineModule.isSingleTier) {
+                var timelineContainer = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
+                this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+                if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-gridcontent')[0])) {
+                    this.parent.treeGrid.element.getElementsByClassName('e-gridcontent')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+                }
+            }
         }
-        if (this.parent.height === "Auto" || this.parent.timelineModule.isSingleTier) {
-            var timelineContainer = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
-            this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
-            if (!isNullOrUndefined(this.parent.element.getElementsByClassName('e-gridcontent')[0])) {
-                this.parent.treeGrid.element.getElementsByClassName('e-gridcontent')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+    }
+
+    public timelineVirtualizationStyles(): void {
+        let translateXValue: number = 0;
+        let translateYValue: number = 0;
+        let trackWidth: number = this.wholeTimelineWidth;
+        if (this.parent.enableTimelineVirtualization) {
+            //e-content styles updating
+            translateXValue = (this.parent.enableTimelineVirtualization && !isNullOrUndefined(this.parent.ganttChartModule.scrollObject.element.scrollLeft)
+                && this.parent.ganttChartModule.scrollObject.element.scrollLeft != 0) ? this.parent.ganttChartModule.scrollObject.getTimelineLeft() : 0;
+            if (this.parent.enableRtl) {
+               translateXValue = -(translateXValue);
+            }
+            let contentVirtualTable: HTMLElement = this.parent.element.querySelectorAll(".e-chart-scroll-container")[0].querySelector(".e-virtualtable");
+            contentVirtualTable.style.transform = `translate(${translateXValue}px, ${translateYValue}px)`;
+            let contentVirtualTrack: HTMLElement = this.parent.element.querySelectorAll(".e-chart-scroll-container")[0].querySelector(".e-virtualtrack");
+            contentVirtualTrack.style.position = "relative";
+            contentVirtualTrack.style.width = trackWidth + 'px';
+            //timeline styles updating
+            if (this.parent.ganttChartModule.scrollObject['isSetScrollLeft']) {
+                let virtualTableStylesT: HTMLElement = this.parent.element.querySelectorAll(".e-timeline-header-table-container")[0].querySelector(".e-virtualtable");
+                let virtualTableStylesB: HTMLElement = this.parent.element.querySelectorAll(".e-timeline-header-table-container")[1].querySelector(".e-virtualtable");
+                virtualTableStylesT.style.transform = `translate(${translateXValue}px, ${translateYValue}px)`;
+                virtualTableStylesB.style.transform = `translate(${translateXValue}px, ${translateYValue}px)`;
+            }
+            let virtualTrackStylesT: HTMLElement = this.parent.element.querySelectorAll(".e-timeline-header-table-container")[0].querySelector(".e-virtualtrack");
+            let virtualTrackStylesB: HTMLElement = this.parent.element.querySelectorAll(".e-timeline-header-table-container")[1].querySelector(".e-virtualtrack");
+            virtualTrackStylesT.style.position = "relative";
+            virtualTrackStylesB.style.position = "relative";
+            virtualTrackStylesT.style.width = trackWidth + 'px';
+            virtualTrackStylesB.style.width = trackWidth + 'px';
+            //dependency viewer styles updating
+            let dependencyViewer: Element = this.parent.connectorLineModule.svgObject;
+            dependencyViewer['style'].width = trackWidth + 'px';
+            // timeline header container width updating
+            let timelineHeader: HTMLElement = this.parent.element.querySelector('.' + cls.timelineHeaderContainer);
+            timelineHeader['style'].width = 'calc(100% - ' + 17 + 'px)';
+            if (this.parent.timelineModule.isZooming || this.parent.timelineModule.isZoomToFit) {
+                this.parent.ganttChartModule.scrollElement.scrollLeft = 0;
+                this.parent.ganttChartModule.scrollObject.updateChartElementStyles();
             }
         }
     }
@@ -878,7 +992,11 @@ export class Timeline {
             if (this.parent.locale === 'zh') {
                 dateString = dateString.slice(1);
             } else {
-                dateString = dateString.slice(0, 1);
+                if (this.parent.locale === 'ar') {
+                    dateString = dateString;
+                }else{
+                    dateString = dateString.slice(0, 1);
+                }
             }
         } else {
             dateString = this.parent.globalize.formatDate(date, { format: dayFormat });
@@ -920,9 +1038,14 @@ export class Timeline {
             parent.timelineModule.customTimelineSettings.bottomTier.count;
         let increment: number;
         let newTime: number;
-        const startDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
+        let leftValueForStartDate: number = (this.parent.enableTimelineVirtualization && this.parent.ganttChartModule.scrollObject.element.scrollLeft != 0)
+            ? this.parent.ganttChartModule.scrollObject.getTimelineLeft() : null;
+        let startDate: Date = (this.parent.enableTimelineVirtualization && !isNullOrUndefined(leftValueForStartDate))
+            ? new Date((this.dateByLeftValue(leftValueForStartDate)).toString()) : new Date(this.parent.timelineModule.timelineStartDate.toString());
         const endDate: Date = new Date(this.timelineRoundOffEndDate.toString());
         const scheduleDateCollection: Date[] = [];
+        let width: number = 0;
+        let WidthForVirtualTable: number = this.parent.element.offsetWidth * 3;
         do {
             // PDf export collection
             const timelineCell: TimelineFormat = {};
@@ -940,7 +1063,7 @@ export class Timeline {
             }
             isFirstCell = false;
             startDate.setTime(newTime);
-            if (startDate.getHours() === 5 && count === 2 && tier === 'bottomTier' && 
+            if (startDate.getHours() === 5 && count === 2 && tier === 'bottomTier' &&
                 this.parent.timelineSettings.bottomTier.unit === 'Hour') {
                 startDate.setTime(startDate.getTime() - (1000 * 60 * 60));
             }
@@ -951,10 +1074,24 @@ export class Timeline {
             parentTh = parentTh + parentTr;
             const tierCollection: TimelineFormat[] = tier === 'topTier' ? this.topTierCollection : this.bottomTierCollection;
             timelineCell.endDate = new Date(startDate.getTime());
-            tierCollection.push(timelineCell);
-        } while ((startDate < endDate));
+            if (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.enableTimelineVirtualization) {
+                if(tier == 'topTier') {
+                    this.pdfExportTopTierCollection.push(timelineCell);
+                }
+                else {
+                    this.pdfExportBottomTierCollection.push(timelineCell);
+                }
+            }
+            else {
+                 tierCollection.push(timelineCell);
+            }
+            width += timelineCell.width;
+            this.weekendEndDate = timelineCell.endDate >= endDate ? endDate : timelineCell.endDate;
+        }
+        while ((this.parent.enableTimelineVirtualization && (!this.parent.pdfExportModule || this.parent.pdfExportModule && !this.parent.pdfExportModule.isPdfExport)) ? (width < WidthForVirtualTable) && (startDate < endDate) : (startDate < endDate));
         return parentTh;
-    }   
+    }
+   
     public updateTimelineAfterZooming(endDate: Date, resized: boolean) {
         let timeDiff: number;
         let perDayWidth: number;
@@ -1421,9 +1558,10 @@ export class Timeline {
                 const validEndLeft: number = this.parent.dataOperation.getTaskLeft(validEndDate, false);
                 let isChanged: string;
                 let taskbarModule: TaskbarEdit = this.parent.editModule.taskbarEditModule;
-                if (!isNullOrUndefined(maxStartLeft) && ((!isNullOrUndefined(taskbarModule)) && (!isNullOrUndefined(taskbarModule.taskBarEditAction)
+                if (!isNullOrUndefined(maxStartLeft) && (((!isNullOrUndefined(taskbarModule)) && (!isNullOrUndefined(taskbarModule.taskBarEditAction)
                    && taskbarModule.taskBarEditAction !== 'ProgressResizing' &&
-                   taskbarModule.taskBarEditAction !== 'RightResizing' && taskbarModule.taskBarEditAction !== 'LeftResizing')) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
+                   taskbarModule.taskBarEditAction !== 'RightResizing' && taskbarModule.taskBarEditAction !== 'LeftResizing')) ||((taskbarModule)
+                    && isNullOrUndefined(taskbarModule.taskBarEditAction))) && (maxStartLeft < this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
                     isChanged = 'prevTimeSpan';
                     minStartDate = minStartDate > this.timelineStartDate ? this.timelineStartDate : minStartDate;
                 } else {
@@ -1472,18 +1610,25 @@ export class Timeline {
         }
         const args: ITimeSpanEventArgs = this.timeSpanActionEvent('actionBegin', type, isFrom);
         if (!args.cancel) {
+            this.restrictRender = true;
+            this.performedTimeSpanAction = true;
+            const previousScrollLeft: number = this.parent.ganttChartModule.scrollElement.scrollLeft;
             this.parent.updateProjectDates(args.projectStartDate, args.ProjectEndDate, args.isTimelineRoundOff, isFrom);
             if (type === 'prevTimeSpan' && isFrom === 'publicMethod') {
                 this.parent.ganttChartModule.updateScrollLeft(0);
                 this.parent.timelineModule.isZoomToFit = false;
             } else if (type === 'nextTimeSpan' && isFrom === 'publicMethod') {
-                this.parent.ganttChartModule.updateScrollLeft(this.parent.timelineModule.totalTimelineWidth);
+                this.parent.ganttChartModule.updateScrollLeft(this.parent.enableTimelineVirtualization? this.wholeTimelineWidth : this.totalTimelineWidth);
                 this.parent.timelineModule.isZoomToFit = false;
             } else if (type === 'nextTimeSpan' && isFrom === 'TaskbarEditing') {
                 let currentScrollLeft: number = document.getElementsByClassName('e-chart-scroll-container e-content')[0].scrollLeft;
                 this.parent.element.querySelector('.e-timeline-header-container').scrollLeft = currentScrollLeft;
                 this.parent.timelineModule.isZoomToFit = false;
             }
+            if (isFrom === 'TaskbarEditing' && this.parent.enableTimelineVirtualization && this.wholeTimelineWidth > this.parent.element.offsetWidth * 3) {
+                this.parent.ganttChartModule.scrollObject.setScrollLeft(previousScrollLeft);
+                this.parent.ganttChartModule.scrollObject.updateContent();
+             }
             this.parent.timelineModule.timeSpanActionEvent('actionComplete', type, isFrom);
         } else {
             this.parent.cloneProjectStartDate = projectStartDate;

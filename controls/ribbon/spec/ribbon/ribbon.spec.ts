@@ -1401,7 +1401,6 @@ describe('Ribbon', () => {
             expect((ribbon.element.querySelectorAll('.e-ribbon-group-header')[0] as HTMLElement).innerText).toBe('group1Header');
             expect((ribbon.element.querySelectorAll('.e-ribbon-group-header')[1] as HTMLElement).innerText).toBe('group2Header');
             ribbon.addGroup('tab5', group);
-
         });
         it('add/remove collection', () => {
             ribbon = new Ribbon({
@@ -4917,11 +4916,11 @@ describe('Ribbon', () => {
             expect(ribbon.element.querySelector('#item1').parentElement.querySelectorAll('button').length).toBe(2);
             let splitId: string = (ribbon.element.querySelector('#item1').parentElement.querySelector('.e-split-colorpicker')).id;
             expect(document.querySelector('#' + splitId + '_dropdownbtn-popup') !== null).toBe(true);
-            expect(document.querySelector('#' + splitId + '_dropdownbtn-popup').querySelector('.e-color-picker') !== null).toBe(false);
+            expect(document.querySelector('#' + splitId + '_dropdownbtn-popup').querySelector('.e-color-palette') !== null).toBe(false);
             expect((ribbon.element.querySelector('#' + splitId + '_dropdownbtn') as HTMLElement).classList.contains('e-active')).toBe(false);
             ribbon.ribbonColorPickerModule.toggle('item1');//open
             expect((ribbon.element.querySelector('#' + splitId + '_dropdownbtn') as HTMLElement).classList.contains('e-active')).toBe(true);
-            expect(document.querySelector('#' + splitId + '_dropdownbtn-popup').querySelector('.e-color-picker') !== null).toBe(true);
+            expect(document.querySelector('#' + splitId + '_dropdownbtn-popup').querySelector('.e-color-palette') !== null).toBe(true);
             ribbon.ribbonColorPickerModule.toggle('item1');//close
             expect((ribbon.element.querySelector('#' + splitId + '_dropdownbtn') as HTMLElement).classList.contains('e-active')).toBe(false);
             expect(document.querySelector('#' + splitId + '_dropdownbtn-popup') === null).toBe(false);
@@ -5825,29 +5824,28 @@ describe('Ribbon', () => {
                             }]
                         }]
                     }]
-                },
-                {
-                    id: "tab3",
-                    header: "tab3",
-                    groups: [{
-                        id: "group23",
-                        header: "group3Header",
-                        priority: 1,
-                        orientation: ItemOrientation.Row,
-                        collections: [{
-                            id: "collection23",
-                            items: [{
-                                id: "item23",
-                                type: RibbonItemType.Button,
-                                allowedSizes: RibbonItemSize.Medium,
-                                buttonSettings: {
-                                    content: 'button26',
-                                    iconCss: 'e-icons e-cut',
-                                }
+                }, {
+                        id: "tab3",
+                        header: "tab3",
+                        groups: [{
+                            id: "group23",
+                            header: "group3Header",
+                            priority: 1,
+                            orientation: ItemOrientation.Row,
+                            collections: [{
+                                id: "collection23",
+                                items: [{
+                                    id: "item23",
+                                    type: RibbonItemType.Button,
+                                    allowedSizes: RibbonItemSize.Medium,
+                                    buttonSettings: {
+                                        content: 'button26',
+                                        iconCss: 'e-icons e-cut',
+                                    }
+                                }]
                             }]
                         }]
                     }]
-                }]
             }, ribbonEle);
             expect(ribbon.element.querySelectorAll('.e-ribbon-row').length).toBe(0);
             expect(ribbon.element.querySelectorAll('.e-ribbon-group-header').length).toBe(0);
@@ -6448,6 +6446,170 @@ describe('Ribbon', () => {
             (document.body.querySelector('#item3') as any).ej2_instances[0].openPopUp();
             (document.body.querySelector('#item3') as any).ej2_instances[0].closePopup();
             (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as any).ej2_instances[0].closePopup();
+        });
+        it('Overall overflow header', () => {
+            ribbon = new Ribbon({
+                activeLayout: "Simplified",
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },
+                            {
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [{
+                                id: "item3",
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            },
+                            {
+                                id: "item5",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group2",
+                        header: "group2Header",
+                        overflowHeader: "GroupHeader",
+                        enableGroupOverflow: true,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item6",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },
+                            {
+                                id: 'item7',
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Auto,
+                                checkBoxSettings: {
+                                    label: 'Check1',
+                                    checked: true,
+                                }
+                            }, {
+                                id: 'item8',
+                                type: RibbonItemType.CheckBox,
+                                checkBoxSettings: {
+                                    label: 'Check2',
+                                    checked: true,
+                                }
+                            }, {
+                                id: 'item9',
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    },
+                    {
+                        id: "group3",
+                        header: "group3Header",
+                        overflowHeader: "OverAllHeader",
+                        collections: [{
+                            id: "collection4",
+                            items: [{
+                                id: "item10",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Medium,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            },
+                            {
+                                id: "item11",
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Auto,
+                                checkBoxSettings: {
+                                    label: 'Check1',
+                                    checked: true,
+                                }
+                            }]
+                        },
+                        {
+                            id: "collection5",
+                            items: [{
+                                id: "item12",
+                                type: RibbonItemType.CheckBox,
+                                checkBoxSettings: {
+                                    label: 'Check2',
+                                    checked: true,
+                                }
+                            },
+                            {
+                                id: "item13",
+                                type: RibbonItemType.CheckBox,
+                                checkBoxSettings: {
+                                    label: 'Check3',
+                                    checked: true,
+                                }
+                            },
+                            {
+                                id: "item43",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Medium,
+                                splitButtonSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '200px';
+            ribbon.refreshLayout();
+            (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('#group3_header').innerHTML = 'OverAllHeader';
+            (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            (ribbon.element.querySelector('#group2_sim_grp_overflow') as HTMLElement).click();
+            document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-header').innerHTML = 'GroupHeader';
+            (ribbon.element.querySelector('#group2_sim_grp_overflow') as HTMLElement).click();
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn')as HTMLElement).click();
+            containerEle.style.width = '800px';
+            ribbon.refreshLayout();
+            expect(ribbon.element.querySelector('#group3_header').innerHTML).toBe('group3Header');
+            expect(ribbon.element.querySelector('#group2_header').innerHTML).toBe('group2Header');
+
         });
     });
 
@@ -9964,6 +10126,59 @@ describe('Ribbon', () => {
             expect((document.querySelector('#group2_sim_grp_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
             
         });
+
+        it('Keyboard Navigation with template items', () => {
+            let template1 = '<button id="btn1" class="tempContent">Button1</button>';
+            let template2 = createElement('button', { id: 'btn2', className: 'tempContent2', innerHTML: 'Button2' });
+            ribbon = new Ribbon({
+                tabs: [{
+                    header: "Home",
+                    groups: [{
+                        header: "Templates",
+                        orientation: ItemOrientation.Column,
+                        groupIconCss:'e-icons e-paste',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.Template,
+                                allowedSizes: RibbonItemSize.Medium,
+                                itemTemplate: template1
+                            }, {
+                                type: RibbonItemType.Template,
+                                allowedSizes: RibbonItemSize.Medium,
+                                itemTemplate: template2.outerHTML
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            containerEle.style.width = '1500px';
+            ribbon.refreshLayout();
+            let tabEle: HTMLElement = document.querySelector('.e-tab-wrap');
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Enter'}));
+            tabEle.dispatchEvent(new KeyboardEvent('keydown',{'key':'Tab'}));
+            (ribbonEle.querySelector('#ribbon_tab0_group1_collection2_item3')as HTMLElement).focus();
+            expect(document.activeElement.classList.contains('e-ribbon-template')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group1_collection2_item3');
+            keyboardEventArgs.target = document.activeElement;
+            keyboardEventArgs.action = 'rightarrow';
+            (ribbon as any).keyActionHandler(keyboardEventArgs);
+            expect(document.activeElement.classList.contains('e-ribbon-template')).toBe(true);
+            expect((document.activeElement as HTMLElement).getAttribute('id')).toBe('ribbon_tab0_group1_collection2_item4');
+            containerEle.style.width = '100px';
+            ribbon.setProperties({ activeLayout: 'Simplified' });
+            ribbon.refreshLayout();
+            (document.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            let target: HTMLElement = document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').children[0] as HTMLElement;
+            let ddb: DropDownButton = (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as any).ej2_instances[0];
+            keyboardEventArgs.target = target;
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('0');
+            keyboardEventArgs.key = 'ArrowDown';
+            (ribbon as any).upDownKeyHandler(keyboardEventArgs, target, false, ddb);
+            expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').querySelector('.e-ribbon-overflow-target') as HTMLElement).getAttribute('index')).toBe('1');
+        });
+    
     });
 
     describe('Items allowedSizes and actualSize', () => {
@@ -10565,7 +10780,7 @@ describe('Ribbon', () => {
                             id: "collection1",
                         }]
                     }]
-                }],
+                },],
                 ribbonExpanding: (args: ExpandCollapseEventArgs) => {
                     isRibbonExpanding = true;
                 },

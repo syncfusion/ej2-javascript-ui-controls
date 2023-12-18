@@ -408,6 +408,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     private fullTemplateFunction: Function;
     private tooltipOpen: boolean;
     private isReact?: boolean;
+    private isTouchSelected: boolean;
 
     /**
      * Constructor for creating the widget
@@ -431,6 +432,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
             space: 'space'
         };
         this.tooltipOpen = false;
+        this.isTouchSelected = false;
     }
 
     public render(): void {
@@ -498,6 +500,11 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private touchMoveHandler(e: Event): void {
+        if (!this.isTouchSelected) {
+            this.wrapper.classList.add("e-rating-touch");
+            this.isTouchSelected = true;
+        }
+        this.wrapper.classList.add("e-touch-select");
         const rect: DOMRect = this.ratingItemList.getBoundingClientRect() as DOMRect;
         const x: number = (e as TouchEvent).touches[0].clientX - rect.x;
         let currValue: number = (x / rect.width) * this.itemsCount;
@@ -526,6 +533,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
 
     private touchEndHandler(): void {
         this.closeRatingTooltip();
+        this.wrapper.classList.remove("e-touch-select");
     }
 
     private updateTemplateFunction(): void {
@@ -797,6 +805,10 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private mouseMoveHandler(index: number, e: Event): void {
+        if (this.isTouchSelected) {
+            this.wrapper.classList.remove("e-rating-touch");
+            this.isTouchSelected = false;
+        } 
         let currValue: number = this.calculateCurrentValue(index, e as MouseEventArgs);
         currValue = this.validateValue(currValue);
         const element: HTMLElement = this.itemElements[parseInt((index - 1).toString(), 10)];

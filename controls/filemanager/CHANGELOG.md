@@ -2,65 +2,7 @@
 
 ## [Unreleased]
 
-## 23.2.6 (2023-11-28)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I519514` - The folder creation issue in the File Manager component navigation pane has been resolved.
-
-## 23.2.4 (2023-11-20)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I519501` - The Details dialog having incorrect values while opening it using the navigation pane in the File Manager component has been resolved.
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I506576` - The issue with the incorrect drag and drop operation in the `Details` view, with ID-based files in the File Manager component has been resolved.
-
-## 23.1.43 (2023-10-31)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I503129` - The issue with the `Details` view header alignment in the File Manager component has been resolved.
-- `#I506586` - The issue with the sequential server-side API requests when opening searched folder in the File Manager component has been resolved.
-
-## 23.1.40 (2023-10-10)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I506921` - The issue with the breadcrumb bar path in the File Manager component has been resolved.
-- `#I503082` - The issue with the search placeholder is not updated properly after drag and drop in File Manager has been resolved.
-
-## 23.1.39 (2023-10-04)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I499313` - The issue with the file renaming in the File Manager component has been resolved.
-
-## 23.1.38 (2023-09-26)
-
-### FileManager
-
-#### Bug Fixes
-
-- `#I492922` - The issue with the drag and drop support for the File Manager component in mobile mode has been resolved.
-
-- `#I495435` - Duplicate folders issue in the navigation pane of the File Manager while switching root folders frequently has been resolved.
-
-## 23.1.36 (2023-09-15)
+## 24.1.41 (2023-12-18)
 
 ### FileManager
 
@@ -68,29 +10,25 @@
 
 - `#FB44788` - Provided template support to customize toolbar items. In earlier versions, Toolbar item customization was limited to a predefined set of options. With this new feature, you can now define your own templates to completely customize the appearance and functionality of toolbar items.
 
-#### Bug Fixes
-
-- `#I493055` - The issue arising from the `expandOn` property set to `Click` in the Navigation Pane of the File Manager component has been resolved.
-
 ## 19.2.56 (2021-08-17)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- `#I337431` - The issue with "`filterFiles` method in file manager component" has been resolved.
+- `#I337431` - The issue with "`filterFiles` method in FileManager component" has been resolved.
 
 ## 19.2.48 (2021-07-20)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- `#F166908` - The issue with "When pressing Ctrl+A key, the scroll bar is moved to last item in File Manager detail view" has been resolved.
+- `#F166908` - The issue with "When pressing Ctrl+A key, the scroll bar is moved to last item in FileManager detail view" has been resolved.
 
 ## 19.2.44 (2021-06-30)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -98,41 +36,41 @@
 
 ## 19.1.66 (2021-06-01)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- `#F165213` - The issue with "The Details view path column is not removed when refreshing the File Manager files" has been resolved.
+- `#F165213` - The issue with "The Details view path column is not removed when refreshing the FileManager files" has been resolved.
 - `#F160683` - The issue with "Error dialog shown while quickly clicking on the folders when enabling drag and drop support" has been resolved.
 
 ## 19.1.63 (2021-05-13)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- `#I323484` - Now, the warning dialog will be displayed while dropping the searched file into the same source location in the File Manager component.
+- `#I323484` - Now, the warning dialog will be displayed while dropping the searched file into the same source location in the FileManager component.
 
 ## 19.1.58 (2021-04-27)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- `#I321258`, `#I320950` - The issue with "Error as occurred while sorting the path column at second time in File Manager component" has been fixed.
-- `#I318476`, `#I320950` - Resolved the script error that occurred while dragging and dropping an item without selecting it in details view of the File Manager component.
+- `#I321258`, `#I320950` - The issue with "Error as occurred while sorting the path column at second time in FileManager component" has been fixed.
+- `#I318476`, `#I320950` - Resolved the script error that occurred while dragging and dropping an item without selecting it in details view of the FileManager component.
 
 ## 18.4.41 (2021-02-02)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- `#305138` - The issue with "Incorrect message is displayed in delete dialog for File Manager Component" has been resolved.
+- `#305138` - The issue with "Incorrect message is displayed in delete dialog for FileManager Component" has been resolved.
 
 ## 18.3.42 (2020-10-20)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -140,7 +78,7 @@
 
 ## 18.2.57 (2020-09-08)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -148,15 +86,15 @@
 
 ## 18.2.56 (2020-09-01)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- Resolved the incorrect delete confirmation dialog content for file in details view of the File Manager component.
+- Resolved the incorrect delete confirmation dialog content for file in details view of the FileManager component.
 
 ## 18.2.48 (2020-08-04)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -164,15 +102,15 @@
 
 ## 18.2.47 (2020-07-28)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- Resolved the issue with the incorrect delete confirmation dialog heading and content of the File Manager component.
+- Resolved the issue with the incorrect delete confirmation dialog heading and content of the FileManager component.
 
 ## 18.2.44 (2020-07-07)
 
-### File Manager
+### FileManager
 
 #### New Features
 
@@ -182,12 +120,12 @@
 - Added the upload customization support for Firebase Realtime Database File Provider.
 - `#151112`, `#152443` - Added the access control support for SQL Server File Provider.
 - `#260977`, `#263918` - Added the file provider support in ASP.NET MVC for Amazon S3(Simple Storage Service) bucket storage service.
-- `#275878` - Provided an option to prevent default sorting of the files and folders in the File Manager component.
-- Provided the support to display the File Manager's dialog at the user specified target.
+- `#275878` - Provided an option to prevent default sorting of the files and folders in the FileManager component.
+- Provided the support to display the FileManager's dialog at the user specified target.
 
 ## 18.1.56 (2020-06-09)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -195,32 +133,32 @@
 
 ## 18.1.55 (2020-06-02)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- The issue with "The toolbar is not updated when selecting the root folder in the File Manager component" has been resolved.
+- The issue with "The toolbar is not updated when selecting the root folder in the FileManager component" has been resolved.
 
 ## 18.1.53 (2020-05-19)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- Resolved the script error thrown from the File Manager component when resizing the window.
+- Resolved the script error thrown from the FileManager component when resizing the window.
 
 ## 18.1.46 (2020-04-28)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
 - The issue with `Unable to localize the error message in the access control actions` has been fixed.
-- `#269976` - Now, The File Manager UI will be refreshed properly when resizing the browser window.
+- `#269976` - Now, The FileManager UI will be refreshed properly when resizing the browser window.
 
 ## 18.1.36-beta (2020-03-19)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -235,7 +173,7 @@
 
 ## 17.4.51 (2020-02-25)
 
-### File Manager
+### FileManager
 
 #### New Features
 
@@ -243,7 +181,7 @@
 
 ## 17.4.50 (2020-02-18)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -252,15 +190,15 @@
 
 ## 17.4.44 (2021-01-21)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- Resolved the script error when navigate any folder after changing the toolbar settings dynamically in the file manager component.
+- Resolved the script error when navigate any folder after changing the toolbar settings dynamically in the FileManager component.
 
 ## 17.4.43 (2020-01-14)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -269,7 +207,7 @@
 
 ## 17.4.41 (2020-01-07)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -277,7 +215,7 @@
 
 ## 17.4.39 (2019-12-17)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -291,7 +229,7 @@
 
 ## 17.3.28 (2019-11-19)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -299,19 +237,19 @@
 
 ## 17.3.27 (2019-11-12)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- `#148827` - New event `fileSelection` have been included to restrict the file selection in file manager.
+- `#148827` - New event `fileSelection` have been included to restrict the file selection in FileManager.
 
 ## 17.3.26 (2019-11-05)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- The issue `file manager throws script error when navigate to the different folder after sorting the path column in details view` has been fixed.
+- The issue `FileManager throws script error when navigate to the different folder after sorting the path column in details view` has been fixed.
 
 #### New Features
 
@@ -324,15 +262,15 @@
 
 ## 17.3.17 (2019-10-15)
 
-### File Manager
+### FileManager
 
 #### Breaking Changes
 
-- Now, the rename dialog shows or hides the file name extension based on the `showFileExtension` property value in the file manager.
+- Now, the rename dialog shows or hides the file name extension based on the `showFileExtension` property value in the FileManager.
 
 ## 17.3.14 (2019-10-03)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -340,54 +278,54 @@
 
 ## 17.3.9-beta (2019-09-20)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- The issue `file manager’s details view contains the unnecessary scrollbar and eclipsis in Chrome browser (version 76.0.3809.132)` has been fixed.
+- The issue `FileManager’s details view contains the unnecessary scrollbar and eclipsis in Chrome browser (version 76.0.3809.132)` has been fixed.
 
 #### Breaking Changes
 
-- Support has been provided in asp core platform for customizing the columns of file manager's details view. We have also limited the `columns` attributes of the `detailsViewSettings` property instead of accessing the all attributes from the `Grid` sub component.
+- Support has been provided in asp core platform for customizing the columns of FileManager's details view. We have also limited the `columns` attributes of the `detailsViewSettings` property instead of accessing the all attributes from the `Grid` sub component.
 
 ## 17.2.49 (2019-09-04)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- The issue `the file manager throws script error when performing sorting in details view when the SortBy button is not present in toolbar` has been fixed.
-- The issue `the file manager throws script error when return null response from server for search operation` has been fixed.
+- The issue `the FileManager throws script error when performing sorting in details view when the SortBy button is not present in toolbar` has been fixed.
+- The issue `the FileManager throws script error when return null response from server for search operation` has been fixed.
 
 #### New Features
 
-- New events have been provided to customize the dialog in file manager.
-- New methods have been provided to select all files and clear the selection in current path of the file manager.
-- New methods have been provided to customize the context menu items in file manager.
+- New events have been provided to customize the dialog in FileManager.
+- New methods have been provided to select all files and clear the selection in current path of the FileManager.
+- New methods have been provided to customize the context menu items in FileManager.
 
 ## 17.2.47 (2019-08-27)
 
-### File Manager
+### FileManager
 
 #### New Features
 
-- Methods have been provided to perform file operations such as create, upload, download, delete, rename, and open in file manager.
+- Methods have been provided to perform file operations such as create, upload, download, delete, rename, and open in FileManager.
 
 ## 17.2.41 (2019-08-14)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
-- The issue with the `file manager that throws script error while accessing the shared folder in physical file provider` has been fixed.
+- The issue with the `FileManager that throws script error while accessing the shared folder in physical file provider` has been fixed.
 
 #### New Features
 
-- A method has been provided to customize the filtering support in file manager.
+- A method has been provided to customize the filtering support in FileManager.
 
 ## 17.2.40 (2019-08-06)
 
-### File Manager
+### FileManager
 
 #### New Features
 
@@ -395,7 +333,7 @@
 
 ## 17.2.36 (2019-07-24)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -403,7 +341,7 @@
 
 ## 17.2.35 (2019-07-17)
 
-### File Manager
+### FileManager
 
 #### Bug Fixes
 
@@ -411,7 +349,7 @@
 
 ## 17.2.34 (2019-07-11)
 
-### File Manager
+### FileManager
 
 #### New Features
 
@@ -419,7 +357,7 @@
 
 ## 17.2.28-beta (2019-06-27)
 
-### File Manager
+### FileManager
 
 #### New Features
 
@@ -432,7 +370,7 @@
 
 ## 17.1.48 (2019-05-21)
 
-### File Manager
+### FileManager
 
 #### New Features
 
@@ -440,7 +378,7 @@
 
 ## 17.1.42 (2019-04-23)
 
-### File Manager
+### FileManager
 
 #### New Features
 
@@ -448,7 +386,7 @@
 
 ## 17.1.40 (2019-04-09)
 
-### File Manager
+### FileManager
 
 #### Breaking Changes
 
@@ -462,9 +400,9 @@
 
 ## 17.1.32-beta (2019-03-13)
 
-### File Manager
+### FileManager
 
-The `File Manager` is a graphical user interface component used to manage the file system. It enables the user to perform common file operations such as accessing, editing, uploading, downloading, and sorting files and folders. This component also allows easy navigation for browsing or selecting a file or folder from the file system.
+The `FileManager` is a graphical user interface component used to manage the file system. It enables the user to perform common file operations such as accessing, editing, uploading, downloading, and sorting files and folders. This component also allows easy navigation for browsing or selecting a file or folder from the file system.
 
 - **Different Views** - Provides detailed and large icon views.
 - **Context menu support** - Provides detailed and large icon views.

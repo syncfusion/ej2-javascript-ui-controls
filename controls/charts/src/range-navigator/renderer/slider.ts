@@ -8,12 +8,13 @@ import { PeriodsModel, RangeNavigator, RangeValueType } from '../index';
 import { animationMode, Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { RectOption, drawSymbol, linear } from '../../common/utils/helper';
 import { getXLocation, getExactData, getRangeValueXByPoint, DataPoint, getNearestValue } from '../utils/helper';
-import { VisibleRangeModel, VisibleLabels, Axis } from '../../chart/axis/axis';
+import { VisibleLabels, Axis } from '../../chart/axis/axis';
 import { PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { IChangedEventArgs, IRangeStyle } from '../model/range-navigator-interface';
 import { ThumbSettingsModel, StyleSettingsModel } from '../model/range-base-model';
 import { PeriodSelector } from '../../common';
+import { VisibleRangeModel } from '../../common/model/interface';
 
 /**
  * Class for slider

@@ -127,6 +127,9 @@ export class EditTooltip {
             } else {
                 this.toolTipObj.content = this.getTooltipText(segmentIndex);
                 this.toolTipObj.refresh(this.taskbarEdit.taskBarEditElement);
+                if (this.parent.enableRtl && this.toolTipObj['tooltipEle']) {
+                    this.toolTipObj['tooltipEle'].style.left = this.parent.editModule.taskbarEditModule['tooltipValue']  + 10 + 'px';
+                }
                 if (this.taskbarEdit.taskBarEditAction === 'LeftResizing') {
                     if (this.parent.enableRtl) {
                         this.toolTipObj.offsetX = 0;

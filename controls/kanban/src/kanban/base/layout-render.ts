@@ -76,12 +76,13 @@ export class LayoutRender extends MobileLayout {
         const headerWrap: HTMLElement = createElement('div', { className: this.parent.swimlaneSettings.keyField ? cls.SWIMLANE_CLASS : '' });
         header.appendChild(headerWrap);
         const headerTable: HTMLElement = createElement('table', {
-            className: cls.TABLE_CLASS + ' ' + cls.HEADER_TABLE_CLASS,
-            attrs: { 'role': 'table','aria-label': 'Kanban board header' }
+            className: cls.TABLE_CLASS + ' ' + cls.HEADER_TABLE_CLASS
         });
         headerWrap.appendChild(headerTable);
         this.renderColGroup(headerTable);
         const tableHead: HTMLElement = createElement('thead');
+        const tableBody: HTMLElement = createElement('tbody', { className: 'e-hide', innerHTML: '<tr><td></td></tr>', attrs: {'role': 'rowgroup'} });
+        headerTable.appendChild(tableBody);
         headerTable.appendChild(tableHead);
         if (this.parent.stackedHeaders.length > 0) {
             tableHead.appendChild(this.createStackedRow(this.parent.stackedHeaders));
@@ -93,7 +94,7 @@ export class LayoutRender extends MobileLayout {
                 const index: number = this.parent.actionModule.columnToggleArray.indexOf(column.keyField.toString());
                 const th: HTMLElement = createElement('th', {
                     className: index === -1 ? cls.HEADER_CELLS_CLASS : cls.HEADER_CELLS_CLASS + ' ' + cls.COLLAPSED_CLASS,
-                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField.toString(), 'scope': 'row' }
+                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField.toString() , 'scope': 'col'}
                 });
                 const classList: string[] = [];
                 if (column.allowToggle) {
@@ -157,13 +158,18 @@ export class LayoutRender extends MobileLayout {
         const contentWrap: HTMLElement = createElement('div', { className: this.parent.swimlaneSettings.keyField ? cls.SWIMLANE_CLASS : '' });
         content.appendChild(contentWrap);
         const contentTable: HTMLElement = createElement('table', {
-            className: cls.TABLE_CLASS + ' ' + cls.CONTENT_TABLE_CLASS,
-            attrs: { 'role': 'presentation' }
+            className: cls.TABLE_CLASS + ' ' + cls.CONTENT_TABLE_CLASS, attrs: { 'role': 'presentation' }
         });
         contentWrap.appendChild(contentTable);
         this.renderColGroup(contentTable);
-        const tBody: HTMLElement = createElement('tbody');
-        tBody.setAttribute('role', 'rowgroup');
+        const tHead: HTMLElement = createElement('thead', { className: 'e-hide', attrs: {'role': 'none'}});
+        for (const column of this.parent.columns) {
+            const thElem: HTMLElement = createElement('th', {id: column.keyField as string , innerHTML: column.keyField as string, attrs: { 'scope': 'col'}});
+            thElem.style.display = 'none';
+            tHead.appendChild(thElem);
+        }
+        contentTable.appendChild(tHead);
+        const tBody: HTMLElement = createElement('tbody', {attrs: { 'role': 'treegrid' , 'aria-label': 'Kanban Content'}});
         contentTable.appendChild(tBody);
         let isCollaspsed: boolean = false;
         this.swimlaneRow = this.kanbanRows;
@@ -182,7 +188,8 @@ export class LayoutRender extends MobileLayout {
 
     private renderSingleContent(tBody: HTMLElement, row: HeaderArgs, isCollaspsed: boolean): void {
         const className: string = isCollaspsed ? cls.CONTENT_ROW_CLASS + ' ' + cls.COLLAPSED_CLASS : cls.CONTENT_ROW_CLASS;
-        const tr: HTMLElement = createElement('tr', { className: className, attrs: { 'aria-expanded': 'true', 'role': 'row' }});
+        const tr: HTMLElement = createElement('tr', { className: className,
+            attrs: {'role': 'row', 'aria-label' : row.keyField as string + 'row content'}});
         for (const column of this.parent.columns) {
             if (this.isColumnVisible(column)) {
                 const index: number = this.parent.actionModule.columnToggleArray.indexOf(column.keyField.toString());
@@ -190,9 +197,8 @@ export class LayoutRender extends MobileLayout {
                 const dragClass: string = (column.allowDrag ? ' ' + cls.DRAG_CLASS : '') + (column.allowDrop ? ' ' + cls.DROP_CLASS
                     + ' ' + cls.DROPPABLE_CLASS : '');
                 const td: HTMLElement = createElement('td', {
-                    className: className + dragClass,
-                    attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField.toString(),
-                        'tabindex': '0', 'role': 'treegrid', 'aria-label': column.keyField.toString() }
+                    className: className + dragClass, attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField.toString(), 'tabindex': '0',
+                        'aria-describedby': column.keyField.toString(), 'role': 'gridcell'}
                 });
                 if (column.allowToggle && !column.isExpanded || index !== -1) {
                     addClass([td], cls.COLLAPSED_CLASS);
@@ -234,20 +240,17 @@ export class LayoutRender extends MobileLayout {
         const name: string = cls.CONTENT_ROW_CLASS + ' ' + cls.SWIMLANE_ROW_CLASS;
         const className: string = isCollapsed ? ' ' + cls.COLLAPSED_CLASS : '';
         const tr: HTMLElement = createElement('tr', {
-            className: name + className, attrs: { 'data-key': row.keyField as string , 'aria-expanded': (!isCollapsed).toString(), 'role': 'row' }
-        });
+            className: name + className, attrs: { 'aria-label': row.keyField as string + ' row header',
+                'role': 'row', 'data-key': row.keyField as string , 'aria-expanded': (!isCollapsed).toString()}});
         const col: number = this.parent.columns.length - this.parent.actionModule.hideColumnKeys.length;
-        const td: HTMLElement = createElement('td', {
-            className: cls.CONTENT_CELLS_CLASS, attrs: { 'data-role': 'kanban-column', 'colspan': col.toString() }
-        });
+        const td: HTMLElement = createElement('td', { className: cls.CONTENT_CELLS_CLASS,
+            attrs: { 'data-role': 'kanban-column', 'role': 'gridcell', colspan: col.toString() }});
         const swimlaneHeader: HTMLElement = createElement('div', { className: cls.SWIMLANE_HEADER_CLASS });
         td.appendChild(swimlaneHeader);
         const iconClass: string = isCollapsed ? cls.SWIMLANE_ROW_COLLAPSE_CLASS : cls.SWIMLANE_ROW_EXPAND_CLASS;
         const iconDiv: HTMLElement = createElement('div', {
             className: cls.ICON_CLASS + ' ' + iconClass, attrs: {
-                'tabindex': '0',
-                'role': 'button',
-                'aria-label': isCollapsed ? row.keyField + ' Collapse' : row.keyField + ' Expand'
+                'tabindex': '0', 'role': 'button', 'aria-label': isCollapsed ? row.keyField + ' Collapse' : row.keyField + ' Expand'
             }
         });
         swimlaneHeader.appendChild(iconDiv);
@@ -304,8 +307,9 @@ export class LayoutRender extends MobileLayout {
                     dataCount += columnData.length;
                     const columnWrapper: HTMLElement = tr.querySelector('[data-key="' + column.keyField + '"]');
                     const cardWrapper: HTMLElement = createElement('div', {
-                        className: cls.CARD_WRAPPER_CLASS, attrs: { 'role': 'listbox', 'tabindex': '0', 'aria-label': column.keyField.toString() }
-                    });
+                        className: cls.CARD_WRAPPER_CLASS, attrs: { 'role': 'listbox' , 'tabindex': '0',
+                            'aria-label': column.keyField.toString()
+                        }});
                     if (column.transitionColumns.length > 0) {
                         columnTransition = true;
                     }
@@ -350,11 +354,9 @@ export class LayoutRender extends MobileLayout {
     private renderCard(data: { [key: string]: string }): HTMLElement {
         const cardElement: HTMLElement = createElement('div', {
             className: cls.CARD_CLASS,
-            attrs: {
-                'data-id': data[this.parent.cardSettings.headerField], 'data-key': data[this.parent.keyField],
-                'aria-selected': 'false', 'tabindex': '-1', 'role': 'option'
-            }
-        });
+            attrs: { 'data-id': data[this.parent.cardSettings.headerField], 'data-key': data[this.parent.keyField],
+                'aria-selected': 'false', 'tabindex': '-1', 'role': 'option', 'aria-roledescription': 'Card'
+            }});
         if (this.parent.cardHeight !== 'auto') {
             cardElement.style.height = formatUnit(this.parent.cardHeight);
         }
@@ -412,8 +414,8 @@ export class LayoutRender extends MobileLayout {
 
     private renderEmptyCard(): HTMLElement {
         const emptyCard: HTMLElement = createElement('span', {
-            className: cls.EMPTY_CARD_CLASS,
-            innerHTML: this.parent.localeObj.getConstant('noCard')
+            className: cls.EMPTY_CARD_CLASS, innerHTML: this.parent.localeObj.getConstant('noCard'),
+            attrs: {'aria-label': this.parent.localeObj.getConstant('noCard'), 'role': 'option'}
         });
         return emptyCard;
     }
@@ -512,7 +514,7 @@ export class LayoutRender extends MobileLayout {
             const div: HTMLElement = createElement('div', { className: cls.HEADER_TEXT_CLASS, innerHTML: stackedHeaders[h as number] });
             const th: HTMLElement = createElement('th', {
                 className: cls.HEADER_CELLS_CLASS + ' ' + cls.STACKED_HEADER_CELL_CLASS,
-                attrs: { 'colspan': colSpan.toString(),'scope': 'row'}
+                attrs: { 'colspan': colSpan.toString(), 'scope': 'col' }
             });
             tr.appendChild(th).appendChild(div);
             h += colSpan - 1;

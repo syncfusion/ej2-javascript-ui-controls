@@ -1116,10 +1116,10 @@ export function showTooltip(
             (y - (size.height + 6) - 10).toString() + 'px' : tooltip.style.top; // 6 and 7 are padding and border width
     }
     if (isTouch) {
-        if (this.tooltipTimer) {
-            window.clearTimeout(this.tooltipTimer);
+        if (!isNullOrUndefined(heatmap.tooltipTimer)) {
+            window.clearTimeout(heatmap.tooltipTimer);
         }
-        this.tooltipTimer = setTimeout(() => { removeElement(id); }, 1500);
+        heatmap.tooltipTimer = setTimeout(() => { removeElement(id); }, 1500);
     }
 }
 

@@ -121,7 +121,11 @@ $schedule-bgr-event-popup-header-icon-size: 30px !default;
 $schedule-bgr-rtl-event-popup-date-time-icon-padding-right: 13px !default;
 $schedule-multiple-event-popup-icon-bg-color: transparent !default;
 $schedule-multiple-event-popup-icon-color: rgba($icon-color) !default;
-$schedule-multiple-event-popup-subject-padding: 5px 5px 0 8px !default;
+$schedule-multiple-event-popup-subject-padding: 2px 5px !default;
+$schedule-multiple-event-popup-icon-height: 35px !default;
+$schedule-multiple-event-popup-icon-font-size: $text-base !default;
+$schedule-bgr-multiple-event-popup-subject-padding: 2px 5px !default;
+$schedule-bgr-multiple-event-popup-icon-height: 35px !default;
 
 // schedule toolbar definitions
 $border-size: 1px;
@@ -229,7 +233,7 @@ $schedule-timezone-enable-nrml-height: 60px !default;
 $schedule-timezone-enable-bgr-height: 66px !default;
 $schedule-header-cells-padding: 3px 3px 2px !default;
 $schedule-time-scale-width: 85px !default;
-$schedule-device-time-scale-width: 44px !default;
+$schedule-device-time-scale-width: 60px !default;
 $border-type: solid !default;
 $schedule-alternate-cell-border: dashed !default;
 $schedule-header-hover-border-radius: 4px !default;

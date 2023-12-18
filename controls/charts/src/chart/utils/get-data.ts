@@ -4,7 +4,7 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
-import { withInBounds, PointData, getValueXByPoint, getValueYByPoint, AccPointData, sort } from '../../common/utils/helper';
+import { withInBounds, PointData, getValueXByPoint, getValueYByPoint, AccPointData, sort, Point3D } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { Series, Points } from '../series/chart-series';
 
@@ -18,9 +18,9 @@ export class ChartData {
     public chart: Chart;
     public lierIndex: number;
     /** @private */
-    public currentPoints: PointData[] | AccPointData[] = [];
+    public currentPoints: PointData[] | AccPointData[] | Point3D[] = [];
     /** @private */
-    public previousPoints: PointData[] | AccPointData[] = [];
+    public previousPoints: PointData[] | AccPointData[] | Point3D[] = [];
     public insideRegion: boolean = false;
     public commonXvalues: number[] = [];
 

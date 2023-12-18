@@ -1,12 +1,12 @@
 import { EventHandler, KeyboardEventArgs, getComponent, remove } from '@syncfusion/ej2-base';
 import { Ribbon } from '../base/ribbon';
-import { RibbonGroupButtonItemModel, RibbonGroupButtonSettingsModel, RibbonItemModel } from '../models';
+import { RibbonGroupButtonItem, RibbonGroupButtonItemModel, RibbonGroupButtonSettingsModel, RibbonItem, RibbonItemModel } from '../models';
 import * as constants from '../base/constant';
 import { Button } from '@syncfusion/ej2-buttons';
 import { BeforeClickGroupButtonEventArgs, ClickGroupButtonEventArgs, RibbonGroupButtonSelection, RibbonItemSize } from '../base/interface';
-import { BeforeOpenCloseMenuEventArgs, DropDownButton, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { createTooltip, isTooltipPresent, setCustomAttributes } from '../base/utils';
-import { Tooltip } from '@syncfusion/ej2-popups';
+import { Popup, Tooltip } from '@syncfusion/ej2-popups';
 
 /**
  * Defines the items of Ribbon.
@@ -121,31 +121,37 @@ export class RibbonGroupButton {
                 }
                 count++;
             }
-            new DropDownButton({
+            const dropdown = new DropDownButton({
                 iconCss: dropdownIcon,
                 target: btnContainerEle,
                 enableRtl: this.parent.enableRtl,
                 cssClass: 'e-ribbon-dropdown-group-button',
                 disabled: item.disabled
             }, buttonEle);
+            if (groupBtnSettings.header) {
+                const dropDownPopup: Popup = dropdown.dropDown;
+                this.addGroupButtonHeader(item.id, groupBtnSettings, dropDownPopup.element);
+            }
             buttonEle.onclick = buttonEle.onkeydown = () => {
-                if (itemElement.querySelector('#'+ item.id).classList.contains('e-active')) {
+                if (itemElement.querySelector('#' + item.id).classList.contains('e-active')) {
                     (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + 0) as HTMLElement).focus();
                     this.grpBtnIndex = 0;
-                }                
+                }
             };
             btnContainerEle.onkeydown = (e: KeyboardEventArgs) => {
                 if (this.parent.activeLayout === 'Simplified') {
                     this.handleGroupButtonNavigation(e, item);
                 }
-            }
+            };
             createTooltip(btnContainerEle, this.parent);
             this.isSelected = false;
         }
     }
 
     private groupButtonClicked(itemIndex: number, item: RibbonItemModel, grpBtnSettings: RibbonGroupButtonSettingsModel): void {
-        const previousItems: RibbonGroupButtonItemModel[] = [] , selectingItems: RibbonGroupButtonItemModel[] = [] , selectedItems: RibbonGroupButtonItemModel[] = [];
+        const previousItems: RibbonGroupButtonItemModel[] = [];
+        const selectingItems: RibbonGroupButtonItemModel[] = [];
+        const selectedItems: RibbonGroupButtonItemModel[] = [];
         let groupButtonEle: HTMLButtonElement;
         let dropdown: DropDownButton;
         for (let j: number = 0; j < grpBtnSettings.items.length; j++) {
@@ -176,9 +182,11 @@ export class RibbonGroupButton {
                 for (let j: number = 0; j < grpBtnSettings.items.length; j++) {
                     if (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + j) && document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + j).classList.contains('e-active')) {
                         document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + j).classList.remove('e-active');
+                        (grpBtnSettings.items[parseInt(j.toString(), 10)] as RibbonGroupButtonItem).selected = false;
                     }
                 }
                 document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.toggle('e-active');
+                (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).selected = true;
                 if (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.contains('e-active') && this.parent.activeLayout === 'Simplified') {
                     this.grpBtnIndex = itemIndex;
                     groupButtonEle = document.querySelector('#' + item.id);
@@ -194,6 +202,12 @@ export class RibbonGroupButton {
                     document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID).classList.add(constants.RIBBON_MULTIPLE_BUTTON_SELECTION);
                 }
                 document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.toggle('e-active');
+                if (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.contains('e-active')) {
+                    (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).selected = true;
+                }
+                else {
+                    (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).selected = false;
+                }
                 let activeEleCount: number = 0;
                 for (let n: number = 0; n < grpBtnSettings.items.length; n++) {
                     if (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + n) && document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + n).classList.contains('e-active') && this.parent.activeLayout === 'Simplified' && n !== itemIndex) {
@@ -282,24 +296,28 @@ export class RibbonGroupButton {
                 }
                 itemsCount++;
             }
-            new DropDownButton({
+            const dropdown = new DropDownButton({
                 iconCss: dropdownIcon,
                 target: containerEle,
                 enableRtl: this.parent.enableRtl,
                 cssClass: 'e-ribbon-dropdown-group-button',
                 disabled: item.disabled
             }, buttonEle);
+            if (groupBtnSettings.header) {
+                const dropDownPopup: Popup = dropdown.dropDown;
+                this.addGroupButtonHeader(item.id, groupBtnSettings, dropDownPopup.element);
+            }
             buttonEle.onclick = buttonEle.onkeydown = () => {
-                if (itemElement.querySelector('#'+ item.id).classList.contains('e-active')) {
+                if (itemElement.querySelector('#' + item.id).classList.contains('e-active')) {
                     (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + 0) as HTMLElement).focus();
                     this.grpBtnIndex = 0;
-                }                
+                }
             };
             containerEle.onkeydown = (e: KeyboardEventArgs) => {
                 if (this.parent.activeLayout === 'Simplified') {
                     this.handleGroupButtonNavigation(e, item);
                 }
-            }
+            };
             createTooltip(containerEle, this.parent);
         }
         else {
@@ -313,6 +331,15 @@ export class RibbonGroupButton {
         }
     }
 
+    private addGroupButtonHeader(itemID: string, groupBtnSettings: RibbonGroupButtonSettingsModel, popupEle: HTMLElement): void {        
+        const groupButtonHeader: HTMLElement = this.parent.createElement('div', {
+            className: 'e-ribbon-groupbutton-header',
+            id: itemID + constants.HEADER_ID,
+            innerHTML: groupBtnSettings.header
+        });
+        popupEle.insertBefore(groupButtonHeader, popupEle.firstChild);
+    }
+
     private handleGroupButtonNavigation(e: KeyboardEventArgs, item: RibbonItemModel): void {
         const groupButtonEle: HTMLElement = document.querySelector('#' + item.id) as HTMLElement;
         const dropdown: DropDownButton = getComponent(groupButtonEle, DropDownButton);
@@ -322,7 +349,7 @@ export class RibbonGroupButton {
             isOverflowPopup = true;
         }
         if (e.key === 'Tab') { e.preventDefault(); }
-        const groupBtnSettings: RibbonGroupButtonSettingsModel = item.groupButtonSettings;        
+        const groupBtnSettings: RibbonGroupButtonSettingsModel = item.groupButtonSettings;
         if ((e.key === 'ArrowRight' && !isOverflowPopup) || (e.key === 'ArrowDown' && isOverflowPopup)) {
             if (!this.parent.enableRtl || (e.key === 'ArrowDown' && isOverflowPopup)) {
                 this.grpBtnIndex++;
@@ -377,17 +404,30 @@ export class RibbonGroupButton {
      * @returns {void}
      * @hidden
      */
-    public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement): void {
+    public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
+        const groupBtnSettings: RibbonGroupButtonSettingsModel = item.groupButtonSettings;
+        let isIconOnly: boolean = true;
         const groupButtonEle: HTMLElement = itemEle.querySelector('#' + item.id) as HTMLElement;
         const dropdown: DropDownButton = getComponent(groupButtonEle, DropDownButton);
-        dropdown.setProperties({ cssClass: dropdown.cssClass + constants.SPACE + constants.RIBBON_GROUP_BUTTON_OVERFLOW_POPUP });
+        dropdown.setProperties({ cssClass: dropdown.cssClass + constants.SPACE + constants.RIBBON_GROUP_BUTTON_OVERFLOW_POPUP, content: groupBtnSettings.header ? groupBtnSettings.header : ''});
         const targetEle: HTMLElement = dropdown.target as HTMLElement;
+        if (targetEle.children.length) {
+            for (let i: number = 0; i < targetEle.children.length; i++) {
+                if (groupBtnSettings.items[parseInt(i.toString(), 10)].content) {
+                    isIconOnly = false;
+                    break;
+                }
+            }
+            if (isIconOnly) {
+                targetEle.classList.add('e-icon-btn');
+            }
+        }
         targetEle.onclick = () => {
             if (this.parent.activeLayout === 'Simplified' && targetEle.closest('.e-ribbon-dropdown-group-button').classList.contains(constants.RIBBON_GROUP_BUTTON_OVERFLOW_POPUP)) {
-                dropdown.element.focus();
-                dropdown.toggle();                
-            }            
-        }
+                dropdown.toggle();
+                overflowButton.toggle();
+            }
+        };
     }
 
     /**
@@ -402,9 +442,13 @@ export class RibbonGroupButton {
         const groupButtonEle: HTMLElement = itemEle.querySelector('#' + item.id) as HTMLElement;
         if (groupButtonEle) {
             const dropdown: DropDownButton = getComponent(groupButtonEle, DropDownButton);
+            const targetEle: HTMLElement = dropdown.target as HTMLElement;
+            if (targetEle.classList.contains('e-icon-btn')) {
+                targetEle.classList.remove('e-icon-btn');
+            }
             let cssClass: string[] = dropdown.cssClass.split(constants.SPACE);
             cssClass = cssClass.filter((value: string) => value !== constants.RIBBON_GROUP_BUTTON_OVERFLOW_POPUP);
-            dropdown.setProperties({ cssClass: cssClass.join(constants.SPACE) });
+            dropdown.setProperties({ cssClass: cssClass.join(constants.SPACE), content: '' });
         }
     }
 

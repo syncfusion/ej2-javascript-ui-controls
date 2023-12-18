@@ -1338,8 +1338,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private setDisabledMode(): void {
         if (this.disabled) {
             this.element.classList.add(DISABLED);
+            this.element.setAttribute('aria-disabled', 'true');
         } else {
             this.element.classList.remove(DISABLED);
+            this.element.setAttribute('aria-disabled', 'false');
         }
     }
     private setEnableRtl(): void {
@@ -1365,11 +1367,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setMultiSelect(isEnabled: boolean): void {
-        const firstUl: Element = select('.' + PARENTITEM, this.element);
         if (isEnabled) {
-            firstUl.setAttribute('aria-multiselectable', 'true');
+            this.element.setAttribute('aria-multiselectable', 'true');
         } else {
-            firstUl.removeAttribute('aria-multiselectable');
+            this.element.setAttribute('aria-multiselectable', 'false');
         }
     }
 
@@ -1730,7 +1731,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.showCheckBox) {
             let checkboxEle: Element = createCheckBox(this.createElement, true, { cssClass: this.touchClass });
             checkboxEle.setAttribute('role', 'checkbox');
-            checkboxEle.setAttribute('aria-label', 'checkbox');
+            checkboxEle.setAttribute('aria-label', e.text);
             let icon: Element = select('div.' + ICON, e.item);
             let id: string = e.item.getAttribute('data-uid');
             e.item.childNodes[0].insertBefore(checkboxEle, e.item.childNodes[0].childNodes[isNOU(icon) ? 0 : 1]);

@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue, animationMode } from '@syncfusion/ej2-base';import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement } from '../../common/utils/helper';import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue } from '../../common/utils/helper';import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType, ShapeType, StepPosition } from '../utils/enum';import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';import { ConnectorModel } from '../../common/model/base-model';import { CornerRadiusModel, DragSettingsModel } from '../../common/model/base-model';import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes } from '../utils/enum';import { Border, Font, Margin, Animation, EmptyPointSettings, CornerRadius, Connector, DragSettings } from '../../common/model/base';import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';import { Chart } from '../chart';import { Axis, Column, Row } from '../axis/axis';import { Data } from '../../common/model/data';import { Offset } from '../../common/model/base';import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';import { seriesRender } from '../../common/model/constants';import { Alignment, SeriesCategories } from '../../common/utils/enum';import { BoxPlotMode, Segment } from '../utils/enum';import { sort, getVisiblePoints, setRange } from '../../common/utils/helper';import { Browser } from '@syncfusion/ej2-base';import { StockSeries } from '../../stock-chart/index';
+import { Property, ChildProperty, Complex, Collection, DateFormatOptions, getValue, animationMode } from '@syncfusion/ej2-base';import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, appendClipElement } from '../../common/utils/helper';import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue } from '../../common/utils/helper';import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { ChartSeriesType, ChartShape, SeriesValueType, SplineType, StepPosition } from '../utils/enum';import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';import { ConnectorModel } from '../../common/model/base-model';import { CornerRadiusModel, DragSettingsModel } from '../../common/model/base-model';import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes } from '../utils/enum';import { Border, Font, Margin, Animation, EmptyPointSettings, CornerRadius, Connector, DragSettings } from '../../common/model/base';import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';import { Chart } from '../chart';import { Axis, Column, Row } from '../axis/axis';import { Data } from '../../common/model/data';import { Offset } from '../../common/model/base';import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';import { seriesRender } from '../../common/model/constants';import { Alignment, EmptyPointMode, LabelPosition, LegendShape, SeriesCategories, ShapeType } from '../../common/utils/enum';import { BoxPlotMode, Segment } from '../utils/enum';import { sort, getVisiblePoints, setRange } from '../../common/utils/helper';import { Browser } from '@syncfusion/ej2-base';import { StockSeries } from '../../stock-chart/index';
 
 /**
  * Interface for a class DataLabelSettings
@@ -684,8 +684,8 @@ export interface SeriesBaseModel {
     volume?: string;
 
     /**
-     * The DataSource field that contains the color value of point
-     * It is applicable for series
+     * The DataSource field that contains the color value of point.
+     * It is applicable for series.
      *
      * @default ''
      */
@@ -693,7 +693,7 @@ export interface SeriesBaseModel {
     pointColorMapping?: string;
 
     /**
-     * Specifies the visibility of series.
+     * Specifies the visibility of the series.
      *
      * @default true
      */
@@ -765,7 +765,7 @@ export interface SeriesBaseModel {
     animation?: AnimationModel;
 
     /**
-     * The fill color for the series that accepts value in hex and rgba as a valid CSS color string.
+     * The fill color for the series, which can accept values in hex or rgba as a valid CSS color string.
      * It also represents the color of the signal lines in technical indicators.
      * For technical indicators, the default value is 'blue' and for series, it has null.
      *
@@ -792,7 +792,7 @@ export interface SeriesBaseModel {
     dashArray?: string;
 
     /**
-     * Specifies the DataSource for the series. It can be an array of JSON objects or an instance of DataManager.
+     * Specifies the data source for the series. It can be an array of JSON objects or an instance of DataManager.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -820,7 +820,7 @@ export interface SeriesBaseModel {
     dataSource?: Object | DataManager;
 
     /**
-     * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
+     * Specifies a query to select data from the DataSource. This property is applicable only when the DataSource is an `ej.DataManager`.
      *
      * @default ''
      */
@@ -851,7 +851,7 @@ export interface SeriesBaseModel {
 export interface SeriesModel extends SeriesBaseModel{
 
     /**
-     * The name of the series visible in legend.
+     * The name of the series as displayed in the legend.
      *
      * @default ''
      */
@@ -1040,28 +1040,28 @@ export interface SeriesModel extends SeriesBaseModel{
     trendlines?: TrendlineModel[];
 
     /**
-     * If set true, the Tooltip for series will be visible.
+     * Enable tooltip for the chart series.
      *
      * @default true
      */
     enableTooltip?: boolean;
 
     /**
-     * user can format now each series tooltip format separately.
+     * Format of the tooltip content.
      *
      * @default ''
      */
     tooltipFormat?: string;
 
     /**
-     * The provided value will be considered as a Tooltip name
+     * The data source field that contains the tooltip value.
      *
      * @default ''
      */
     tooltipMappingName?: string;
 
     /**
-     * The shape of the legend. Each series has its own legend shape. They are,
+     * The shape of the legend. Each series has its own legend shape, which can be one of the following:
      * * Circle
      * * Rectangle
      * * Triangle
@@ -1159,7 +1159,7 @@ export interface SeriesModel extends SeriesBaseModel{
     boxPlotMode?: BoxPlotMode;
 
     /**
-     * To render the column series points with particular column width. If the series type is histogram the
+     * Render the column series points with a particular column width. If the series type is histogram the
      * default value is 1 otherwise 0.7.
      *
      * @default null

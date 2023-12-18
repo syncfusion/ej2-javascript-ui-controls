@@ -97,7 +97,14 @@ export class Column {
      * @default 'stringedit'
      */
     public editType: string;
-                
+
+    /**
+     * Defines rules to validate data before creating and updating.
+     *
+     * @default null
+     */
+    public validationRules: Object;
+
     /**
      * Defines the custom sort comparer function.
      */
@@ -276,6 +283,13 @@ export interface ColumnModel {
      */
     allowFiltering?: boolean;
 
+    /**
+     * Defines rules to validate data before creating and updating.
+     *
+     * @default null
+     */
+    validationRules?: Object;
+    
     /**
      * It is used to customize the default filter options for a specific columns.
      * * ui - to render custom component for specific column it has following functions.

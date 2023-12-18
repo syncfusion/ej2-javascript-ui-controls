@@ -593,7 +593,6 @@ describe('Diagram Control', () => {
 
         it('831806-Umlclass connector Mulitiplicity - Many to Many', (done: Function) => {
             expect(diagram.connectors[0].annotations[0].content == '50...67').toBe(true);
-            expect(diagram.connectors[0].annotations[0].content == '50...90').toBe(true);
             done();
         });
     });

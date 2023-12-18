@@ -465,6 +465,7 @@ $grid-drag-move-icon: 10px !default;
 $grid-drag-area-border: 1px solid !default;
 $grid-dragdrop-padding: 2px !default;
 $grid-dragborder-box-shadow: 0 2px 0 0 $primary-border-color !default;
+$grid-dragborder-cell-dashed: 1px dashed $primary-border-color !default;
 $grid-dragborder-position: relative !default;
 $grid-dragborder-z-index: 5 !default;
 $grid-dragicon-cell-border: 1px 0 0 0 !default;
@@ -575,6 +576,7 @@ $grid-responsive-toolbar-filter-font-size: $grid-bigger-icons-font-size !default
 $grid-responsive-tbar-btn-bgr-padding: 0 !default;
 $grid-responsive-btn-top: -10px !default;
 $grid-responsive-apply-btn-top: 4px !default;
+$grid-responsive-column-menu-icon-margin-top: 4px !default;
 
 $grid-rtl-headercelldiv-left-align-margin: 10px !default;
 $grid-rtl-filtermenudiv-left-align-margin: -2px !default;
@@ -628,6 +630,7 @@ $grid-rtl-group-span-padding: 0 8px !default;
 $grid-ungroup-rtl-padding-left: 8px !default;
 $grid-column-reorder-icon-color: $primary !default;
 $grid-bigger-headercell-top-padding: 10px !default;
+$grid-bigger-headercell-autofit-padding: 10px 6px 10px !default;
 $grid-bigger-icon-font-size: $text-base !default;
 $grid-rtl-mselect-dd-indicator-left: -6px !default;
 $grid-toolbar-text-opacity: .6 !default;

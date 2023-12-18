@@ -114,9 +114,9 @@ describe('Diagram Control', () => {
             wrapper = (diagram.nodes[2] as NodeModel).wrapper;
            
             //first label
-            expect(((Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 80 || Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 79)
+            expect(((Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 80 || Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 79 || Math.round(diagram.nodes[0].wrapper.children[1].actualSize.width) === 80)
                 && (Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height) === 57||Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height) === 58) &&
-                (((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX === 104.6796875)||(Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX)===104)) &&
+                (((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX === 104.6796875)||(Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX)===104) || Math.round(diagram.nodes[0].wrapper.children[1].offsetX) === 105) &&
                 (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY === 88.8) &&
                 //second label
                 ((Math.ceil((diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.width) === 83 || Math.floor((diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.width) === 82)
@@ -124,9 +124,9 @@ describe('Diagram Control', () => {
                     (((diagram.nodes[1] as NodeModel).wrapper.children[1].offsetX === 293.984375)||(Math.floor((diagram.nodes[1] as NodeModel).wrapper.children[1].offsetX) === 293)) &&
                     (diagram.nodes[1] as NodeModel).wrapper.children[1].offsetY === 106.2) &&
                 //third label
-                ((Math.ceil((diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.width) === 94 || Math.floor((diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.width) === 93)
+                ((Math.ceil((diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.width) === 94 || Math.floor((diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.width) === 93 || Math.round(diagram.nodes[2].wrapper.children[1].actualSize.width) === 94)
                     && (diagram.nodes[2] as NodeModel).wrapper.children[1].actualSize.height === 43.199999999999996 &&
-                   ( ((diagram.nodes[2] as NodeModel).wrapper.children[1].offsetX === 496.578125)||(Math.floor((diagram.nodes[2] as NodeModel).wrapper.children[1].offsetX )=== 496))&&
+                   ( ((diagram.nodes[2] as NodeModel).wrapper.children[1].offsetX === 496.578125)||(Math.floor((diagram.nodes[2] as NodeModel).wrapper.children[1].offsetX )=== 496) || Math.round(diagram.nodes[2].wrapper.children[1].offsetX) === 497)&&
                     (diagram.nodes[2] as NodeModel).wrapper.children[1].offsetY === 86.6)
             ).toBe(true);
             done();

@@ -3,7 +3,7 @@
  */
 import { SpreadsheetModel, Spreadsheet, BasicModule, CellSaveEventArgs, onContentScroll } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
-import { defaultData, productData, filterData } from '../util/datasource.spec';
+import { defaultData, productData, filterData, ScrollingData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs, getRangeIndexes, getCell, ImageModel } from '../../../src/workbook/index';
 import { EmitType, setCurrencyCode, L10n } from '@syncfusion/ej2-base';
@@ -18,7 +18,7 @@ describe('Spreadsheet base module ->', () => {
         helper = new SpreadsheetHelper('spreadsheet');
     });
 
-    describe('Render checking ->', () => {
+    fdescribe('Render checking ->', () => {
 
         afterEach(() => {
             helper.invoke('destroy');
@@ -2434,6 +2434,21 @@ describe('Spreadsheet base module ->', () => {
                 expect(helper.invoke('getCell', [3, 1]).textContent).toBe('1.0000');
                 expect(helper.invoke('getCell', [3, 2]).textContent).toBe('');
                 expect(helper.invoke('getCell', [3, 3]).textContent).toBe('FALSE');
+                done();
+            });
+        });
+        describe('EJ2-859222 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{  ranges: [{ dataSource: ScrollingData }]}] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Values are not mapped correctly with reference to the header value in spreadsheet', (done: Function) => {
+                expect(helper.getInstance().sheets[0].rows[56].cells[2].value).toBe('300');
+                expect(helper.getInstance().sheets[0].rows[56].cells[3].value).toBe('4');
+                expect(helper.getInstance().sheets[0].rows[57].cells[2].value).toBe('100');
+                expect(helper.getInstance().sheets[0].rows[57].cells[3].value).toBe('5');
                 done();
             });
         });

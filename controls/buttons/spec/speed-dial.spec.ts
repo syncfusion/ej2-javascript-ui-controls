@@ -1187,14 +1187,19 @@ describe('Floating Action Button', () => {
     });
     describe('Keyboard Actions', () => {
         let speedDial: SpeedDial;
-        let speedDialEle: HTMLElement
-        let tarEle: HTMLElement
+        let speedDial1: SpeedDial;
+        let speedDialEle: HTMLElement;
+        let speedDialEle1: HTMLElement;
+        let tarEle: HTMLElement;
         let keyboardEventArgs: any;
+        let keyboardEventArgs1: any;
 
         beforeAll(() => {
             SpeedDial.Inject(SpeedDial);
             speedDialEle = createElement('button', { id: 'speedDial' });
             document.body.appendChild(speedDialEle);
+            speedDialEle1 = createElement('button', { id: 'speedDial1' });
+            document.body.appendChild(speedDialEle1);
             tarEle = createElement('div', { id: 'speedDialtarget', styles: "margin:10px;border:1px solid red; height:400px; width:400px; position: relative;" });
             document.body.appendChild(tarEle);
 
@@ -1204,15 +1209,28 @@ describe('Floating Action Button', () => {
                 target: speedDialEle,
                 stopImmediatePropagation: (): void => { },
             };
+
+            keyboardEventArgs1 = {
+                preventDefault: (): void => { },
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => { },
+            };
+
         })
         afterEach(() => {
             if (speedDial) {
                 speedDial.destroy();
                 speedDial = undefined;
             }
+            if (speedDial1) {
+                speedDial1.destroy();
+                speedDial1 = undefined;
+            }
         });
         afterAll(() => {
             remove(speedDialEle);
+            remove(speedDialEle1);
             remove(tarEle);
         });
         it('Enter Key', () => {
@@ -1237,6 +1255,34 @@ describe('Floating Action Button', () => {
             (speedDial as any).keyActionHandler(keyboardEventArgs);
             expect(isClicked).toBe(true);
             expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(true);
+        });
+        it('Switching between two speedDial', () => {
+            speedDial = new SpeedDial({
+                items: data, openIconCss: "open-icon", position: "TopLeft", target: "#speedDialtarget", animation: NoAnimation
+            });
+            speedDial.appendTo('#speedDial');
+            speedDial1 = new SpeedDial({
+                items: data, openIconCss: "open-icon", position: "TopCenter", target: "#speedDialtarget", animation: NoAnimation
+            });
+            speedDial1.appendTo('#speedDial1');
+            let popupEle = (speedDial as any).popupEle;
+            expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(true);
+            let popupEle1 = (speedDial1 as any).popupEle;
+            expect(popupEle1.classList.contains("e-speeddial-hidden")).toBe(true);
+            keyboardEventArgs1.action = 'enter';
+            (speedDial as any).popupKeyActionHandler(keyboardEventArgs1);
+            (speedDial1 as any).popupKeyActionHandler(keyboardEventArgs1);
+            (speedDial as any).keyActionHandler(keyboardEventArgs1);
+            expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(false);
+            expect(popupEle1.classList.contains("e-speeddial-hidden")).toBe(true);
+            (speedDial as any).popupKeyActionHandler(keyboardEventArgs1);
+            (speedDial1 as any).popupKeyActionHandler(keyboardEventArgs1);
+            (speedDial1 as any).keyActionHandler(keyboardEventArgs1);
+            expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(true);
+            expect(popupEle1.classList.contains("e-speeddial-hidden")).toBe(false);
+            (speedDial1 as any).keyActionHandler(keyboardEventArgs1);
+            expect(popupEle.classList.contains("e-speeddial-hidden")).toBe(true);
+            expect(popupEle1.classList.contains("e-speeddial-hidden")).toBe(true);
         });
         it('esc Key', () => {
             speedDial = new SpeedDial({ items: data, position: "TopLeft", target: "#speedDialtarget", animation: NoAnimation });

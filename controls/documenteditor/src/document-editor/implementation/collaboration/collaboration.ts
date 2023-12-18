@@ -1,26 +1,17 @@
 /* eslint-disable */
-import { DocumentEditor, Selection, TextPosition, Point, Page, CaretHeightInfo, ParagraphInfo, HelperMethods, Operation, ParagraphWidget, BlockWidget, TableWidget, TableRowWidget, TableCellWidget, ImageData, AbsolutePositionInfo, AbsoluteParagraphInfo, CONTROL_CHARACTERS, SectionBreakType, ElementBox, BookmarkElementBox, LineWidget, ListTextElementBox, ShapeElementBox, FootnoteElementBox, EditRangeStartElementBox, CommentElementBox, CommentCharacterElementBox, CommentView, MarkerData, FieldElementBox, FormField, FormFieldType, WCharacterFormat, ElementInfo, ImageElementBox, WParagraphFormat, WParagraphStyle, WCharacterStyle, WTableFormat, WRowFormat, WCellFormat, AutoFitType, WSectionFormat, HeaderFooterWidget, HeaderFooterType, Revision, WList, WAbstractList, listIdProperty, WStyle, WStyles, abstractListsProperty, listsProperty, abstractListIdProperty, nsidProperty } from '../../index'
+import { DocumentEditor, Selection, TextPosition, Point, Page, CaretHeightInfo, ParagraphInfo, HelperMethods, Operation, ParagraphWidget, BlockWidget, TableWidget, TableRowWidget, TableCellWidget, ImageInfo, AbsolutePositionInfo, AbsoluteParagraphInfo, CONTROL_CHARACTERS, SectionBreakType, ElementBox, BookmarkElementBox, LineWidget, ListTextElementBox, ShapeElementBox, FootnoteElementBox, EditRangeStartElementBox, CommentElementBox, CommentCharacterElementBox, CommentView, MarkerInfo, FieldElementBox, FormField, FormFieldType, WCharacterFormat, ElementInfo, ImageElementBox, WParagraphFormat, WParagraphStyle, WCharacterStyle, WTableFormat, WRowFormat, WCellFormat, AutoFitType, WSectionFormat, HeaderFooterWidget, HeaderFooterType, Revision, WList, WAbstractList, listIdProperty, WStyle, WStyles, abstractListsProperty, listsProperty, abstractListIdProperty, nsidProperty } from '../../index'
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement } from '@syncfusion/ej2-base'
 
 /**
- * @private
+ * Module to handle collaborative editing.
  */
 export class CollaborativeEditingHandler {
     //TODO need to prevent document change on collaborative editing session i.e. New document, select new document
     //#region SignalR collabrative editing
-    /**
-     * @private
-     */
-    public version: number = 0;
-    /**
-     * @private
-     */
-    public documentEditor: DocumentEditor;
-    /**
-     * @private
-     */
-    public roomName: string;
+    private version: number = 0;
+    private documentEditor: DocumentEditor;
+    private roomName: string;
     private userMap: UserPositionInfo = {};
     private connectionId: string = '';
     private acknowledgmentPending: Operation[];
@@ -32,25 +23,38 @@ export class CollaborativeEditingHandler {
     private isSyncServerChanges: boolean = false;
     private logEventEnabled: boolean = true;
     private message: string = '';
+    private rowWidget: TableRowWidget;
+    private table: TableWidget;
 
-    constructor(documentEditor: DocumentEditor, roomName: string, version: number, serviceUrl: string) {
+    constructor(documentEditor: DocumentEditor) {
         this.documentEditor = documentEditor;
+    }
+
+    /**
+     * Get module name.
+     * @returns - Returns the module name
+     */
+    public getModuleName(): string {
+        return 'CollaborativeEditingHandler';
+    }
+
+    /**
+     * This function updates the room information and server url of the collaborative editing session.
+     * @param roomName - Specifies the current collaborative editing room name.
+     * @param version - Specifies the current version of the document.
+     * @param serviceUrl - Specifies the base url of the collaborative editing service.
+     */
+    public updateRoomInfo(roomName: string, version: number, serviceUrl: string): void {
         this.roomName = roomName;
         this.serviceUrl = serviceUrl;
         this.version = version;
     }
-
-    private isAcknowledgePending(): boolean {
-        return !isNullOrUndefined(this.acknowledgmentPending);
-    }
-
     /**
-     * Update action to server.
-     * @private
-     * @param args 
+     * Send the current action to the server.
+     * @param args - Specified the current action.
      * @returns 
      */
-    public sendActionServer(operations: Operation[]): void {
+    public sendActionToServer(operations: Operation[]): void {
         if (!isNullOrUndefined(operations) && operations.length === 0) {
             return;
         }
@@ -62,10 +66,11 @@ export class CollaborativeEditingHandler {
     }
 
     /**
-     * Apply remote action to document.
-     * @private
+     * Apply the remote operation to the current document.
+     * @param action - Specifies the remote action type.
+     * @param data - Specifies the remote operation data.
      */
-    public applyAction(action: string, data: string | ActionInfo): void {
+    public applyRemoteAction(action: string, data: string | ActionInfo): void {
         switch (action) {
             case 'connectionId':
                 this.connectionId = data as string;
@@ -77,6 +82,11 @@ export class CollaborativeEditingHandler {
                 this.dataReceived(data as ActionInfo);
                 break;
         }
+    }
+
+    
+    private isAcknowledgePending(): boolean {
+        return !isNullOrUndefined(this.acknowledgmentPending);
     }
 
     private handleAcknowledgementReceived(action: ActionInfo): void {
@@ -91,13 +101,11 @@ export class CollaborativeEditingHandler {
             this.sendLocalOperation();
         }
     }
-
     private updateVersion(version: number): void {
         if (version > this.version) {
             this.version = version;
         }
     }
-
     private acknowledgementReceived(): void {
         this.acknowledgmentPending = undefined;
     }
@@ -108,14 +116,13 @@ export class CollaborativeEditingHandler {
             let operations = this.pendingOps.shift();
             let changes: ActionInfo = {};
             changes.currentUser = this.documentEditor.currentUser;
-            changes.fileName = this.documentEditor.documentName + '.docx';
+            changes.roomName = this.roomName;
             changes.connectionId = this.connectionId;
             changes.version = this.version;
             changes.operations = operations;
-            changes.timeStamp = HelperMethods.getUtcDate();
             this.acknowledgmentPending = operations;
             var httpRequest = new XMLHttpRequest();
-            httpRequest.open('Post', this.serviceUrl + 'api/CollaborativeEditing/UpdateAction', true);
+            httpRequest.open('Post', this.serviceUrl + 'UpdateAction', true);
             httpRequest.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
             httpRequest.onreadystatechange = () => {
                 if (httpRequest.readyState === 4) {
@@ -129,10 +136,10 @@ export class CollaborativeEditingHandler {
                     }
                 }
             };
+            this.logMessage('Sent: ' + JSON.stringify(changes));
             httpRequest.send(JSON.stringify(changes));
         }
     }
-
     private dataReceived(action: ActionInfo): void {
         if (action.connectionId === this.connectionId || this.isSyncServerChanges) {
             this.logMessage(this.isSyncServerChanges ? 'SignalR Server sync' + action.version : 'SignalR Same user sync:' + action.version);
@@ -150,16 +157,20 @@ export class CollaborativeEditingHandler {
         }
         this.logMessage('SignalR ack: ' + action.version);
         try {
+            this.logMessage('Received: ' + JSON.stringify(action));
             this.handleRemoteOperation(action);
         } catch (e) {
-            this.logMessage('Error while handling remote operation: ' + e);
+            if (e instanceof Error) {
+                this.logMessage('Error while handling remote operation: ' + e);
+                this.logMessage('Error while handling remote operation: ' + e.stack);
+            } else {
+                this.logMessage('Error while handling remote operation: ' + e);
+            }
         }
     }
-
     private getVersionDifference(action: ActionInfo): number {
         return action.version - this.version;
     }
-
     private handleRemoteOperation(action: ActionInfo): void {
         //To Prevent the content change event while applying the remote operation
         this.documentEditor.editor.isRemoteAction = true;
@@ -184,7 +195,6 @@ export class CollaborativeEditingHandler {
             this.documentEditor.editorHistory.redoStack.length = 0;
         }
     }
-
     private transform(operation: Operation[], remoteOperation: Operation[]): void {
         for (let i: number = 0; i < remoteOperation.length; i++) {
             let remoteData: Operation = remoteOperation[i];
@@ -208,12 +218,21 @@ export class CollaborativeEditingHandler {
             data.skipOperation = true;
         }
     }
-
     private applyRemoteOperation(action: ActionInfo, offset: number, selectionLength: number): void {
+        let currentUser: string = this.documentEditor.currentUser;
+        let bookmarks: BookmarkElementBox[] = [];
+        let currentEditMode: boolean = this.documentEditor.commentReviewPane.commentPane.isEditMode;
+        let currenteditorHistory = this.documentEditor.editorHistory.lastOperation;
+        let currentTextArea: HTMLTextAreaElement;
+        let isFieldOperation: boolean = false;
+        if (!isNullOrUndefined(this.documentEditor.commentReviewPane.commentPane.currentEditingComment)) {
+            currentTextArea = this.documentEditor.commentReviewPane.commentPane.currentEditingComment.textArea;
+        }
         for (let i: number = 0; i < action.operations.length; i++) {
-            let markerData: MarkerData = action.operations[i].markerData;
+            let markerData: MarkerInfo = action.operations[i].markerData;
+            let tableLength: number = undefined;
             let trackingCurrentValue: boolean = this.documentEditor.enableTrackChanges;
-            let currentUser: string = this.documentEditor.currentUser;
+
             if (!isNullOrUndefined(markerData) && !isNullOrUndefined(markerData.author)) {
                 this.documentEditor.currentUser = markerData.author;
             }
@@ -227,12 +246,13 @@ export class CollaborativeEditingHandler {
                 if (action.operations[i].text === (CONTROL_CHARACTERS.Marker_Start.toString() + CONTROL_CHARACTERS.Marker_End.toString())) {
                     let ownerComment: CommentElementBox = undefined;
                     let commentToDelete: CommentElementBox = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.commentId);
-                    let isDeleteComment: boolean = !isNullOrUndefined(commentToDelete);
                     if (!isNullOrUndefined(markerData.ownerCommentId) && markerData.isReply) {
                         ownerComment = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.ownerCommentId);
-                        commentToDelete = this.documentEditor.documentHelper.layout.getCommentById(ownerComment.replyComments, markerData.commentId);
-                        isDeleteComment = !isNullOrUndefined(commentToDelete);
+                        if (!isNullOrUndefined(ownerComment)) {
+                            commentToDelete = this.documentEditor.documentHelper.layout.getCommentById(ownerComment.replyComments, markerData.commentId);
+                        }
                     }
+                    let isDeleteComment: boolean = !isNullOrUndefined(commentToDelete);
                     if (!isNullOrUndefined(commentToDelete) && !(!isNullOrUndefined(markerData.done) && isNullOrUndefined(markerData.date))) {
                         if (commentToDelete.text !== markerData.text) {
                             let commentView: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(commentToDelete);
@@ -241,7 +261,10 @@ export class CollaborativeEditingHandler {
                             continue;
                         }
                     }
-                    if (isDeleteComment) {
+                    if (isDeleteComment || markerData.commentAction === "remove") {
+                        if (isNullOrUndefined(commentToDelete)) {
+                            continue;
+                        }
                         if (!isNullOrUndefined(markerData.done) && isNullOrUndefined(markerData.date)) {
                             let comment: CommentElementBox = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.commentId);
                             if (markerData.done) {
@@ -251,24 +274,28 @@ export class CollaborativeEditingHandler {
                             }
                             continue;
                         }
-                        let commentView: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(!isNullOrUndefined(ownerComment) ? ownerComment : commentToDelete);
-                        commentView.showDrawer();
-                        this.documentEditor.editor.deleteCommentWidget(commentToDelete);
-                        this.deletedComments.push(commentToDelete);
-                        commentView.hideDrawer();
+                        if (markerData.commentAction === "remove") {
+                            let commentView: CommentView = this.documentEditor.commentReviewPane.commentPane.comments.get(!isNullOrUndefined(ownerComment) ? ownerComment : commentToDelete);
+                            commentView.showDrawer();
+                            this.documentEditor.editor.deleteCommentWidget(commentToDelete);
+                            this.deletedComments.push(commentToDelete);
+                            commentView.hideDrawer();
+                        }
                     }
                     else {
                         let item: CommentElementBox = new CommentElementBox(markerData.date);
                         item.commentId = markerData.commentId;
                         let commentStart: CommentCharacterElementBox = this.getObjectByCommentId(this.commentsStart, item.commentId);
                         let commentEnd: CommentCharacterElementBox = this.getObjectByCommentId(this.commentsEnd, item.commentId);
-                        this.documentEditor.editor.updateCommentElement(item, commentStart, commentEnd, markerData);
+                        if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentEnd)) {
+                            this.documentEditor.editor.updateCommentElement(item, commentStart, commentEnd, markerData);
+                        }
                         if (markerData.isReply) {
                             let ownerComment: CommentElementBox = this.documentEditor.documentHelper.layout.getCommentById(this.documentEditor.documentHelper.comments, markerData.ownerCommentId);
                             item.ownerComment = ownerComment;
                             ownerComment.replyComments.splice(markerData.commentIndex, 0, item);
                             this.documentEditor.commentReviewPane.addReply(item, false, false);
-                        } else {
+                        } else if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentEnd)) {
                             this.documentEditor.editor.addCommentWidget(item, true, true, false);
                             this.commentsStart.splice(this.commentsStart.indexOf(commentStart), 1);
                             this.commentsEnd.splice(this.commentsEnd.indexOf(commentEnd), 1);
@@ -299,9 +326,16 @@ export class CollaborativeEditingHandler {
                         }
                     }
                 }
+
                 continue;
             }
             let startOffset = this.getRelativePositionFromAbsolutePosition(action.operations[i].offset, false, false, false);
+            // Code for Comparing the offset calculated using old approach and optimized approach
+            // this.documentEditor.selection.isNewApproach = true;
+            // let newStartOffset = this.getRelativePositionFromAbsolutePosition(action.operations[i].offset, false, false, false);
+            // this.documentEditor.selection.isNewApproach = false;
+            // throwCustomError(startOffset !== newStartOffset, "New StartIndex " + newStartOffset + " and old StartIndex " + startOffset + " doesnot match");
+
             let op2 = action.operations[i];
             let endOffset = startOffset;
 
@@ -310,15 +344,24 @@ export class CollaborativeEditingHandler {
                 continue;
             }
 
-            if (action.operations[i].action === 'Delete' || action.operations[i].action === 'Format') {
+            if (action.operations[i].action === 'Delete' || action.operations[i].action === 'Format') { 
                 //Update endOffset
+                if (action.operations[i].action === 'Delete') {
+                    this.documentEditor.selection.isEndOffset = true;
+                }
                 endOffset = this.getRelativePositionFromAbsolutePosition(action.operations[i].offset + action.operations[i].length, false, false, false);
+                this.documentEditor.selection.isEndOffset = false;
+                // Code for Comparing the offset calculated using old approach and optimized approach
+                // this.documentEditor.selection.isNewApproach = true;
+                // let newEndOffset = this.getRelativePositionFromAbsolutePosition(action.operations[i].offset + action.operations[i].length, false, false, false);
+                // this.documentEditor.selection.isNewApproach = false;
+                // throwCustomError(endOffset !== newEndOffset, "New EndIndex " + newEndOffset + " and old EndIndex " + endOffset + " doesnot match");
             }
             if (op2.action === 'Insert' && (op2.text !== CONTROL_CHARACTERS.Row && op2.text !== CONTROL_CHARACTERS.Cell) && (isNullOrUndefined(op2.markerData) || isNullOrUndefined(op2.markerData.isAcceptOrReject))) {
                 this.documentEditor.selection.select(startOffset, endOffset);
             } else if (op2.action === 'Delete' && op2.text !== CONTROL_CHARACTERS.Cell && (isNullOrUndefined(op2.markerData) || isNullOrUndefined(op2.markerData.isAcceptOrReject))) {
                 this.documentEditor.selection.select(startOffset, endOffset);
-            } else if (op2.action === 'Format' && op2.text !== CONTROL_CHARACTERS.Cell && isNullOrUndefined(op2.tableFormat) && (isNullOrUndefined(op2.markerData) || isNullOrUndefined(op2.markerData.isAcceptOrReject))) {
+            } else if (op2.action === 'Format' && (isNullOrUndefined(op2.markerData) || isNullOrUndefined(op2.markerData.isAcceptOrReject))) {
                 this.documentEditor.selection.select(startOffset, endOffset);
             }
             if (!isNullOrUndefined(op2.markerData)) {
@@ -360,12 +403,12 @@ export class CollaborativeEditingHandler {
                     let element: ElementBox;
                     if (markerData.type && markerData.type === 'Bookmark') {
                         if (op2.text === CONTROL_CHARACTERS.Marker_Start) {
-                            var bookmarks = this.documentEditor.editor.createBookmarkElements(markerData.bookmarkName);
+                            bookmarks = this.documentEditor.editor.createBookmarkElements(markerData.bookmarkName);
                             element = bookmarks[0];
                             this.documentEditor.documentHelper.isBookmarkInserted = false;
                             this.documentEditor.editor.insertElementsInternal(this.documentEditor.selection.start, [element]);
                         } else {
-                            const bookmark: BookmarkElementBox = this.documentEditor.documentHelper.bookmarks.get(markerData.bookmarkName);
+                            const bookmark: BookmarkElementBox = bookmarks[0];
                             if (bookmark) {
                                 element = bookmark.reference;
                                 this.documentEditor.documentHelper.isBookmarkInserted = true;
@@ -382,18 +425,22 @@ export class CollaborativeEditingHandler {
                             element = this.documentEditor.editor.addEditElement(user, id) as EditRangeStartElementBox;
                             (element as EditRangeStartElementBox).columnFirst = parseInt(markerData.columnFirst);
                             (element as EditRangeStartElementBox).columnLast = parseInt(markerData.columnLast);
+                            element.line = this.documentEditor.selection.start.currentWidget;
                         }
                         else {
                             var editRanges = this.documentEditor.documentHelper.editRanges.get(user);
                             for (var editStart of editRanges) {
                                 if (editStart.editRangeId === id) {
                                     element = editStart.editRangeEnd;
+                                    element.line = this.documentEditor.selection.start.currentWidget;
                                     break;
                                 }
                             }
                         }
                         this.documentEditor.editor.insertElementsInternal(this.documentEditor.selection.start, [element]);
+                        this.documentEditor.editor.fireContentChange();
                     } else if (markerData.type && markerData.type === 'Field') {
+                        isFieldOperation = true;
                         let type: number = op2.text === CONTROL_CHARACTERS.Marker_Start ? 0 : op2.text === CONTROL_CHARACTERS.Marker_End ? 1 : op2.text === CONTROL_CHARACTERS.Field_Separator ? 2 : undefined;
                         if (!isNullOrUndefined(type) && isNullOrUndefined(markerData.checkBoxValue)) {
                             var field = new FieldElementBox(type);
@@ -403,7 +450,7 @@ export class CollaborativeEditingHandler {
                                 field.formFieldData = formFieldData;
                             }
                             let characterFormat: WCharacterFormat = new WCharacterFormat();
-                            let data: object = JSON.parse(op2.characterFormat);
+                            let data: object = JSON.parse(op2.format);
                             this.documentEditor.parser.parseCharacterFormat(0, data, characterFormat);
                             field.characterFormat.copyFormat(characterFormat);
                             this.documentEditor.editor.initInsertInline(field);
@@ -458,23 +505,32 @@ export class CollaborativeEditingHandler {
                 } else if (op2.text === CONTROL_CHARACTERS.Table) {
                     i = action.operations.length;
                     this.buildTable(action.operations);
+                    tableLength = this.getOperationLength(action.operations);
                 } else if (op2.text === CONTROL_CHARACTERS.Row) {
                     i = action.operations.length;
-                    if (isNullOrUndefined(op2.rowFormat)) {
+                    if (isNullOrUndefined(op2.format)) {
                         action.operations.reverse();
                     }
                     this.buildRow(action.operations);
+                    tableLength = this.getOperationLength(action.operations);
                 } else if (op2.text === CONTROL_CHARACTERS.Cell) {
-                    i = action.operations.length;
-                    this.buildCell(action.operations);
+                    let paraFormat: string = undefined;
+                    let charFormat: string = undefined;
+                    if (op2.type === 'CellFormat') {
+                        if (op2.length > 0) {
+                            paraFormat = action.operations[i - 1].format;
+                            charFormat = action.operations[i - 2].format;
+                        }
+                        this.buildCell(op2, paraFormat, charFormat);
+                    }
                 } else if (op2.text === CONTROL_CHARACTERS.PageBreak.toString()) {
                     this.documentEditor.editor.insertPageBreak();
                 } else if (op2.text === CONTROL_CHARACTERS.ColumnBreak.toString()) {
                     this.documentEditor.editor.insertColumnBreak();
                 } else {
-                    if (op2.characterFormat) {
+                    if (op2.format) {
                         let characterFormat: WCharacterFormat = new WCharacterFormat();
-                        var data: object = JSON.parse(op2.characterFormat);
+                        var data: object = JSON.parse(op2.format);
                         this.documentEditor.parser.parseCharacterFormat(0, data, characterFormat);
                         this.documentEditor.selection.characterFormat.copyFormat(characterFormat);
                     }
@@ -518,17 +574,8 @@ export class CollaborativeEditingHandler {
                         let offset: number = selection.start.offset - 1;
                         this.documentEditor.editor.removeAtOffset(selection.start.currentWidget, this.documentEditor.selection, offset);
                     }
-                } else if (op2.text === CONTROL_CHARACTERS.Table) {
-                    this.documentEditor.editor.deleteTable();
-                } else if (op2.text === CONTROL_CHARACTERS.Row) {
-                    this.documentEditor.editor.deleteRow();
                 } else if (op2.text === CONTROL_CHARACTERS.Cell) {
-                    for (let j: number = 1; j < action.operations.length; j++) {
-                        if (action.operations[j].action === 'Delete' && action.operations[j].text === CONTROL_CHARACTERS.Cell) {
-                            i++;
-                        }
-                    }
-                    this.buildDeleteCells(action.operations);
+                    this.buildDeleteCells(op2);
                 } else {
                     this.documentEditor.editor.onBackSpace();
                 }
@@ -553,30 +600,29 @@ export class CollaborativeEditingHandler {
                     let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, false, true, false);
                     if (!isNullOrUndefined(data.rowWidget)) {
                         let table: TableWidget = (data.rowWidget as TableRowWidget).ownerTable;
-                        let rowData: any = JSON.parse(op2.rowFormat);
+                        let rowData: any = JSON.parse(op2.format);
                         this.documentEditor.documentHelper.owner.parser.parseRowFormat(rowData, (data.rowWidget as TableRowWidget).rowFormat, 0);
                         table.calculateGrid(false);
                         this.documentEditor.documentHelper.layout.reLayoutTable(table);
                     }
                 } else if (op2.text === CONTROL_CHARACTERS.Cell) {
-                    let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, false, false, true);
-                    if (!isNullOrUndefined(data.cellWidget)) {
-                        let row: TableRowWidget = (data.cellWidget as TableCellWidget).ownerRow;
-                        let table: TableWidget = row.ownerTable;
-                        if (!isNullOrUndefined(op2.tableFormat)) {
-                            let tableData: any = JSON.parse(op2.tableFormat);
-                            this.documentEditor.documentHelper.owner.parser.parseTableFormat(tableData, table.tableFormat, 0);
-                        }
-                        if (!isNullOrUndefined(op2.rowFormat)) {
-                            let rowData: any = JSON.parse(op2.rowFormat);
-                            this.documentEditor.documentHelper.owner.parser.parseRowFormat(rowData, row.rowFormat, 0);
-                        }
-                        let cellData: any = JSON.parse(op2.cellFormat);
-                        this.documentEditor.documentHelper.owner.parser.parseCellFormat(cellData, data.cellWidget.cellFormat, 0);
-                        table.calculateGrid(false);
-                        this.documentEditor.documentHelper.layout.reLayoutTable(table);
+                    if (op2.type === 'TableFormat') {
+                        let tableData: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, true, false, false);
+                        let table: any = JSON.parse(op2.format);
+                        this.documentEditor.documentHelper.owner.parser.parseTableFormat(table, tableData.tableWidget.tableFormat, 0);
+                        tableData.tableWidget.calculateGrid(false);
+                        this.documentEditor.documentHelper.layout.reLayoutTable(tableData.tableWidget);
                     }
-
+                    if (op2.type === 'RowFormat') {
+                        let rowData: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, false, true, false);
+                        let row: any = JSON.parse(op2.format);
+                        this.documentEditor.documentHelper.owner.parser.parseRowFormat(row, rowData.rowWidget.rowFormat, 0);
+                    }
+                    if (op2.type === 'CellFormat') {
+                        let cellData: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(op2.offset, false, false, true);
+                        let cell: any = JSON.parse(op2.format);
+                        this.documentEditor.documentHelper.owner.parser.parseCellFormat(cell, cellData.cellWidget.cellFormat, 0);
+                    }
                 } else if (op2.text === CONTROL_CHARACTERS.Image) {
                     let inlineObj: ElementInfo = this.documentEditor.selection.start.currentWidget.getInline(this.documentEditor.selection.start.offset, 0);
                     let inline: ElementBox = inlineObj.element;
@@ -584,7 +630,7 @@ export class CollaborativeEditingHandler {
                         this.documentEditor.editor.onImageFormat(inline, HelperMethods.convertPointToPixel(op2.imageData.width), HelperMethods.convertPointToPixel(op2.imageData.height), undefined);
                     }
                 } else if (op2.type === 'ListFormat') {
-                    let paragraphFormat: any = JSON.parse(op2.paragraphFormat);
+                    let paragraphFormat: any = JSON.parse(op2.format);
                     let format: WParagraphFormat = new WParagraphFormat(undefined);
                     this.documentEditor.parser.parseParagraphFormat(0, paragraphFormat, format);
                     this.updateList(op2, format);
@@ -599,7 +645,7 @@ export class CollaborativeEditingHandler {
                     let list: WList = this.documentEditor.documentHelper.getListById(nsid, true);
                     this.documentEditor.editor.restartListAtInternal(this.documentEditor.selection, list.listId, list.nsid);
                 } else if (op2.type === 'ContinueNumbering') {
-                    let paragraphFormat: any = JSON.parse(op2.paragraphFormat);
+                    let paragraphFormat: any = JSON.parse(op2.format);
                     let format: WParagraphFormat = new WParagraphFormat(undefined);
                     this.documentEditor.parser.parseParagraphFormat(0, paragraphFormat, format);
                     let list: WList = this.documentEditor.documentHelper.getListById(format.listFormat.nsid, true);
@@ -608,18 +654,18 @@ export class CollaborativeEditingHandler {
                         format.listFormat.list = list;
                     }
                     this.documentEditor.editor.applyContinueNumberingInternal(this.documentEditor.selection, format);
-                } else if (!isNullOrUndefined(op2.characterFormat)) {
-                    this.insertCharaterFormat(op2.type, op2.characterFormat);
-                } else if (!isNullOrUndefined(op2.paragraphFormat)) {
-                    this.insertParagraphFormat(op2.text, op2.paragraphFormat);
-                } else if (!isNullOrUndefined(op2.tableFormat)) {
-                    this.insertTableFormat(op2.type, op2.tableFormat, op2.offset);
-                } else if (!isNullOrUndefined(op2.sectionFormat)) {
-                    this.insertSectionFormat(op2.text, op2.sectionFormat);
-                } else if (!isNullOrUndefined(op2.rowFormat)) {
-                    this.insertRowFormat(op2.text, op2.rowFormat);
-                } else if (!isNullOrUndefined(op2.cellFormat)) {
-                    this.insertCellFormat(op2.cellFormat);
+                } else if (op2.type === 'CharacterFormat') {
+                    this.insertCharaterFormat(op2.type, op2.format);
+                } else if (op2.type === 'ParagraphFormat') {
+                    this.insertParagraphFormat(op2.text, op2.format);
+                } else if (op2.type === 'TableFormat') {
+                    this.insertTableFormat(op2.text, op2.format, op2.offset);
+                } else if (op2.type === 'SectionFormat') {
+                    this.insertSectionFormat(op2.text, op2.format);
+                } else if (op2.type === 'RowFormat') {
+                    this.insertRowFormat(op2.text, op2.format);
+                } else if (op2.type === 'CellFormat') {
+                    this.insertCellFormat(op2.format);
                 }
             }
             this.documentEditor.editor.revisionData = [];
@@ -628,17 +674,48 @@ export class CollaborativeEditingHandler {
             let newOffset = this.documentEditor.selection.startOffset;
             //op2.offset = newOffset;
             this.updateRemoteSelection(action, this.documentEditor.selection.getAbsolutePositionFromRelativePosition(newOffset));
-
+            if (!isNullOrUndefined(tableLength)) {
+                let temp: number = op2.length;
+                op2.length = tableLength;
+                tableLength = temp;
+            }
             let tranformedOffset = this.transformSection(op2.action, op2, offset)[1];
             //TODO: Need to handle backward selection.
             //TODO: Need to optimize the code. Need to transform selection end length based on remove content
             let tranformedEndOffset = this.transformSection(op2.action, op2, offset + selectionLength)[1];
+            offset = tranformedOffset;
             this.documentEditor.selection.select(this.getRelativePositionFromAbsolutePosition(tranformedOffset, false, false, false), this.getRelativePositionFromAbsolutePosition(tranformedEndOffset, false, false, false));
-
+            if (!isNullOrUndefined(tableLength)) {
+                op2.length = tableLength;
+            }
             this.transformRemoteCursor(action.connectionId, op2, op2.offset);
             if (!isNullOrUndefined(this.documentEditor.search) && !isNullOrUndefined(this.documentEditor.optionsPaneModule) && this.documentEditor.search.searchResults.length > 0 && this.documentEditor.optionsPaneModule.isOptionsPaneShow) {
                 this.documentEditor.optionsPaneModule.searchIconClickInternal();
             }
+        }
+        if (isFieldOperation) {
+            this.documentEditor.editor.layoutWholeDocument();
+            isFieldOperation = false;
+        }
+        if (!isNullOrUndefined(this.rowWidget)) {
+            let ownerTable: TableWidget = this.rowWidget.ownerTable.combineWidget(this.documentEditor.viewer) as TableWidget;
+            ownerTable.updateRowIndex(0);
+            ownerTable.calculateGrid(true);
+            this.documentEditor.documentHelper.layout.reLayoutTable(ownerTable);
+            this.documentEditor.editor.reLayout(this.documentEditor.selection);
+            this.rowWidget = undefined;
+        }
+        if (!isNullOrUndefined(this.table)) {
+            this.table.calculateGrid();
+            this.documentEditor.editor.updateTable(this.table);
+            this.documentEditor.editor.reLayout(this.documentEditor.selection, true);
+            this.table = undefined;
+        }
+        this.documentEditor.currentUser = currentUser;
+        this.documentEditor.commentReviewPane.commentPane.isEditMode = currentEditMode;
+        this.documentEditor.editorHistory.lastOperation = currenteditorHistory;
+        if (!isNullOrUndefined(this.documentEditor.commentReviewPane.commentPane.currentEditingComment)) {
+            this.documentEditor.commentReviewPane.commentPane.currentEditingComment.textArea = currentTextArea;
         }
     }
     private updateList(operation: Operation, format?: WParagraphFormat): number {
@@ -673,7 +750,14 @@ export class CollaborativeEditingHandler {
         }
         return nsid;
     }
-
+    private getOperationLength(operations: Operation[],): number {
+        let length: number = 0;
+        for (let i: number = 0; i < operations.length; i++) {
+            if (operations[parseInt(i.toString(), 10)].text === CONTROL_CHARACTERS.Table || operations[parseInt(i.toString(), 10)].text === CONTROL_CHARACTERS.Row || operations[parseInt(i.toString(), 10)].text === CONTROL_CHARACTERS.Cell)
+                length += operations[parseInt(i.toString(), 10)].length;
+        }
+        return length;
+    }
     private updateListCollection(listData: any, keywordIndex: number): void {
         let uniqueListId: number = this.documentEditor.editor.getUniqueListOrAbstractListId(true);
         let uniqueAbsLstId: number = this.documentEditor.editor.getUniqueListOrAbstractListId(false);
@@ -693,7 +777,6 @@ export class CollaborativeEditingHandler {
         this.documentEditor.parser.parseAbstractList(listData, this.documentEditor.documentHelper.abstractLists);
         this.documentEditor.parser.parseList(listData, this.documentEditor.documentHelper.lists);
     }
-
     private getObjectByCommentId(collection: CommentCharacterElementBox[], commentId: string): CommentCharacterElementBox {
         for (const obj of collection) {
             if (obj.commentId === commentId) {
@@ -787,7 +870,6 @@ export class CollaborativeEditingHandler {
         // }
         return [operation1, operation2];
     }
-
     private transformSection(action: string, operation1: Operation, operation2: number): number[] {
         if (action === 'Insert') {
             if (operation1.offset <= operation2) {
@@ -806,8 +888,10 @@ export class CollaborativeEditingHandler {
         }
         return [operation1.offset, operation2];
     }
-
     private transformRemoteCursor(connectionId: string, operation: Operation, offset: number) {
+        if (this.documentEditor.editor.isIncrementalSave) {
+            return;
+        }
         let keys: string[] = Object.keys(this.userMap);
         //For loop to iterate over the keys
         for (let i = 0; i < keys.length; i++) {
@@ -821,8 +905,10 @@ export class CollaborativeEditingHandler {
             this.updateCaretPositionInteral(this.userMap[key].caret, tranformedOffset);
         }
     }
-
     private updateRemoteSelection(data: ActionInfo, removeOffset: number): void {
+        if (this.documentEditor.editor.isIncrementalSave) {
+            return;
+        }
         if (data.connectionId) {
             let color = '';
             let caret: HTMLElement;
@@ -838,19 +924,16 @@ export class CollaborativeEditingHandler {
             this.updateCaretPositionInteral(caret, removeOffset);
         }
     }
-
     private removeCarets(connectionId: string): void {
         if (this.userMap[connectionId] !== undefined) {
             this.userMap[connectionId].caret.remove();
             delete this.userMap[connectionId];
         }
     }
-
     private getColorForMember(randonNumber: number) {
         const colorValue = randonNumber % 20;
         return `hsl(${(colorValue * 360 / 7) % 360}, 100%, 35%)`;
     }
-
     private updateCaretPositionInteral(caret: HTMLElement, start: number): void {
         let zoomFactor: number = this.documentEditor.zoomFactor;
         let selection: Selection = this.documentEditor.selection;
@@ -867,20 +950,23 @@ export class CollaborativeEditingHandler {
             caret.style.left = page.boundingRectangle.x + (Math.round(caretPosition.x) * zoomFactor) + 'px';
             let caretInfo: CaretHeightInfo = selection.updateCaretSize(startPos);
             let topMargin: number = caretInfo.topMargin;
-            caret.style.height = caretInfo.height + 'px';
+            caret.style.height = (caretInfo.height * zoomFactor) + 'px';
             let pageTop: number = selection.getPageTop(page);
-            caret.style.top = pageTop + (Math.round(caretPosition.y + topMargin) * zoomFactor) + 'px';
+            caret.style.top = pageTop + Math.round(caretPosition.y + topMargin) * zoomFactor + 'px';
             if (selection.characterFormat.baselineAlignment === 'Subscript') {
                 caret.style.top = parseFloat(caret.style.top) + (parseFloat(caret.style.height) / 2) + 'px';
             }
         }
     }
-
     private getBlockPosition(offset: number, currentLength: number, block: BlockWidget, completed: AbsolutePositionInfo, isTableInserted: boolean, isRowInserted: boolean, isCellInserted: boolean): AbsoluteParagraphInfo {
         let paragraph;
         if (block instanceof ParagraphWidget) {
+            // let paraLength: number = block.length;
+            // Code for Comparing the offset calculated using old approach and optimized approach
+            // if (this.documentEditor.selection.getParagraphLength(block) + 1 == block.length && currentLength + paraLength < offset && currentLength + paraLength + 1 < offset && this.documentEditor.selection.isNewApproach) {
+            //     currentLength += paraLength;
+            // } else {
             let absoluteData: AbsoluteParagraphInfo = this.getBlockTotalLength(offset, currentLength, block, completed, isTableInserted, isRowInserted, isCellInserted);
-
             // length = block.getTotalLength() + 1;
             // paragraph = block;
             if (completed.done) {
@@ -891,11 +977,12 @@ export class CollaborativeEditingHandler {
                 currentLength = absoluteData.currentLength;
                 paragraph = absoluteData.paragraph;
             }
+            // }
         } else if (block instanceof TableWidget) {
             // Table start mark length
             offset -= 1;
             if (offset === currentLength) {
-                if (isTableInserted) {
+                if (isTableInserted || this.documentEditor.selection.isEndOffset) {
                     completed.done = true;
                     return { 'offset': offset, 'currentLength': currentLength, 'paragraph': paragraph, 'tableWidget': block };
                 }
@@ -905,7 +992,7 @@ export class CollaborativeEditingHandler {
                 // Row mark length
                 offset -= 1;
                 if (offset === currentLength) {
-                    if (isRowInserted) {
+                    if (isRowInserted || this.documentEditor.selection.isEndOffset) {
                         completed.done = true;
                         let index: number = row.index;
                         return { 'offset': offset, 'currentLength': currentLength, 'paragraph': paragraph, 'rowOrCellIndex': index, 'rowWidget': row };
@@ -958,7 +1045,6 @@ export class CollaborativeEditingHandler {
         }
         return { 'offset': offset, 'currentLength': currentLength, 'paragraph': paragraph }
     }
-
     private getBlockTotalLength(offset: number, currentLength: number, block: ParagraphWidget, completed: AbsolutePositionInfo, isTableInserted: boolean, isRowInserted: boolean, isCellInserted: boolean) {
         let splittedWidget: ParagraphWidget[] = block.getSplitWidgets() as ParagraphWidget[];
         //Paragraph start offset
@@ -977,7 +1063,8 @@ export class CollaborativeEditingHandler {
                     if (element instanceof ListTextElementBox) {
                         continue;
                     }
-                    if (element instanceof ShapeElementBox || element instanceof FootnoteElementBox) {
+                    if ((element instanceof ShapeElementBox && !isNullOrUndefined(element.textFrame) && element.textFrame.childWidgets.length > 0)
+                        || element instanceof FootnoteElementBox) {
                         let absoluteData: AbsoluteParagraphInfo;
                         if (element instanceof ShapeElementBox) {
                             if (element.textFrame.childWidgets.length > 0) {
@@ -1005,10 +1092,14 @@ export class CollaborativeEditingHandler {
                 }
             }
         }
-        currentLength += (length + childBlockLength + paragraphStartLength);
-        return { 'offset': offset, 'currentLength': currentLength, 'paragraph': block }
+        if (currentLength + childBlockLength + length + paragraphStartLength + 1 == offset && this.documentEditor.selection.isEndOffset) {
+            completed.done = true;
+            return { 'offset': offset - 1, 'currentLength': currentLength + childBlockLength, 'paragraph': block };
+        } else {
+            currentLength += (length + childBlockLength + paragraphStartLength);
+            return { 'offset': offset, 'currentLength': currentLength, 'paragraph': block }
+        }
     }
-
     private getRelativePositionFromAbsolutePosition(offset: number, isTableInserted: boolean, isRowInserted: boolean, isCellInserted: boolean): string | any {
         let documentEditor = this.documentEditor;
         let block: BlockWidget = this.documentEditor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as BlockWidget;
@@ -1016,18 +1107,6 @@ export class CollaborativeEditingHandler {
         let positionInfo: AbsolutePositionInfo = { done: false };
 
         let blockObj: AbsoluteParagraphInfo = this.getBlockByIndex(block, offset, currentLength, positionInfo, isTableInserted, isRowInserted, isCellInserted);
-        if (positionInfo.done) {
-            let paragraphInfo: ParagraphInfo = {
-                paragraph: blockObj.paragraph,
-                offset: blockObj.offset - blockObj.currentLength,
-            }
-            if (isTableInserted || isRowInserted || isCellInserted) {
-                return blockObj;
-            } else {
-                return documentEditor.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
-            }
-        }
-        let blockObj1: AbsoluteParagraphInfo = this.getBlockIndexFromHeaderFooter(blockObj.offset, blockObj.currentLength, positionInfo, isTableInserted, isRowInserted, isCellInserted);
         if (positionInfo.done) {
             let paraOffset: number = blockObj.offset - blockObj.currentLength;
             if (paraOffset < 0) {
@@ -1038,6 +1117,26 @@ export class CollaborativeEditingHandler {
                 offset: paraOffset,
             }
             if (isTableInserted || isRowInserted || isCellInserted) {
+                return blockObj;
+            } else {
+                return documentEditor.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+            }
+        } else if (blockObj.offset === blockObj.currentLength + 1 && this.documentEditor.selection.isEndOffset) {
+            let length: number = this.documentEditor.selection.getParagraphLength(blockObj.paragraph);
+            currentLength = blockObj.currentLength - length;
+            return documentEditor.selection.getHierarchicalIndex(blockObj.paragraph, (blockObj.offset - currentLength).toString());
+        }
+        let blockObj1: AbsoluteParagraphInfo = this.getBlockIndexFromHeaderFooter(blockObj.offset, blockObj.currentLength, positionInfo, isTableInserted, isRowInserted, isCellInserted);
+        if (positionInfo.done) {
+            let paraOffset: number = blockObj1.offset - blockObj1.currentLength;
+            if (paraOffset < 0) {
+                paraOffset = 0;
+            }
+            let paragraphInfo: ParagraphInfo = {
+                paragraph: blockObj1.paragraph,
+                offset: paraOffset,
+            }
+            if (isTableInserted || isRowInserted || isCellInserted) {
                 return blockObj1;
             } else {
                 return documentEditor.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
@@ -1045,7 +1144,6 @@ export class CollaborativeEditingHandler {
         }
         return '';
     }
-
     private getBlockIndexFromHeaderFooter(offset: number, currentLength: number, positionInfo: AbsolutePositionInfo, isTableInserted: boolean, isRowInserted: boolean, isCellInserted: boolean): AbsoluteParagraphInfo {
         //Iterate header/footer content;
         let blockObj: AbsoluteParagraphInfo;
@@ -1068,7 +1166,6 @@ export class CollaborativeEditingHandler {
         }
         return blockObj;
     }
-
     private getBlockByIndex(block: BlockWidget, offset: number, currentLength: number, positionInfo: AbsolutePositionInfo, isTableInserted: boolean, isRowInserted: boolean, isCellInserted: boolean): AbsoluteParagraphInfo {
         let blockObj: AbsoluteParagraphInfo;
         do {
@@ -1082,8 +1179,7 @@ export class CollaborativeEditingHandler {
         } while (block)
         return blockObj;
     }
-
-    private insertImage(imageData: ImageData): void {
+    private insertImage(imageData: ImageInfo): void {
         if (isNullOrUndefined(imageData.metaString)) {
             this.documentEditor.editor.insertImageInternal(imageData.imageString, true, HelperMethods.convertPointToPixel(imageData.width), HelperMethods.convertPointToPixel(imageData.height));
         }
@@ -1092,7 +1188,6 @@ export class CollaborativeEditingHandler {
             this.documentEditor.editor.insertImageInternal(imageData.metaString, true, HelperMethods.convertPointToPixel(imageData.width), HelperMethods.convertPointToPixel(imageData.height));
         }
     }
-
     private buildTable(operations: Operation[]): void {
         let rows: number = 0;
         let columns: number = 0;
@@ -1106,6 +1201,7 @@ export class CollaborativeEditingHandler {
         }
         for (let i: number = 0; i < operations.length; i++) {
             if (operations[i].text === CONTROL_CHARACTERS.Cell) {
+                i += 2;
                 columns++;
             }
             if (operations[i].text !== CONTROL_CHARACTERS.Table && (isNullOrUndefined(operations[i + 1]) || operations[i + 1].text === CONTROL_CHARACTERS.Row)) {
@@ -1115,7 +1211,6 @@ export class CollaborativeEditingHandler {
         this.documentEditor.editor.insertTable(rows, columns);
         this.documentEditor.editor.revisionData = [];
     }
-
     private buildRow(operations: Operation[]): void {
         let rowData: any;
         let cellDatas: any[] = [];
@@ -1126,7 +1221,7 @@ export class CollaborativeEditingHandler {
         let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(operations[0].offset, false, true, false);
         let tableWidget: TableWidget = (data.rowWidget as TableRowWidget).ownerTable.combineWidget(this.documentEditor.viewer) as TableWidget;
         if (!isNullOrUndefined(operations[0].markerData)) {
-            if (isNullOrUndefined(operations[0].rowFormat)) {
+            if (isNullOrUndefined(operations[0].format)) {
                 let row: TableRowWidget = data.rowWidget as TableRowWidget;
                 if (row.rowFormat.revisions.length > 0) {
                     let revision: Revision = row.rowFormat.revisions[0];
@@ -1135,14 +1230,14 @@ export class CollaborativeEditingHandler {
                 }
             }
         }
-
         for (let i: number = 0; i < operations.length; i++) {
             let operation: Operation = operations[i];
             if (operation.text === CONTROL_CHARACTERS.Cell) {
                 cellCount++;
-                cellDatas.push(JSON.parse(operation.cellFormat));
-                paragraphDatas.push(JSON.parse(operation.paragraphFormat));
-                characterDatas.push(JSON.parse(operation.characterFormat));
+                cellDatas.push(JSON.parse(operation.format));
+                paragraphDatas.push(JSON.parse(operations[i + 1].format));
+                characterDatas.push(JSON.parse(operations[i + 2].format));
+                i += 2;
             }
             if (isNullOrUndefined(operations[i + 1]) || operations[i + 1].text === CONTROL_CHARACTERS.Row) {
                 break;
@@ -1154,7 +1249,7 @@ export class CollaborativeEditingHandler {
                     this.documentEditor.editor.revisionData.push(operations[i].markerData);
                 }
                 insertRow++;
-                rowData = JSON.parse(operations[i].rowFormat);
+                rowData = JSON.parse(operations[i].format);
             }
         }
         this.documentEditor.editor.rowInsertionForCE(data.rowOrCellIndex, cellCount, insertRow, tableWidget, rowData, cellDatas, paragraphDatas, characterDatas);
@@ -1163,61 +1258,42 @@ export class CollaborativeEditingHandler {
         characterDatas = [];
         this.documentEditor.editor.revisionData = [];
     }
-
-    private buildCell(operations: Operation[]): void {
-        let newCell: TableCellWidget;
-        let rowWidget: TableRowWidget;
-        let startParagraph: ParagraphWidget;
-        let cellLength: number = 0;
-        for (let i: number = operations.length - 1; i >= 0; i--) {
-            let operation: Operation = operations[i];
-            if (operation.skipOperation && operation.length > 0) {
-                continue;
-            }
-            let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(operation.offset + cellLength, false, false, true);
-            if (operation.length > 0) {
-                rowWidget = data.cellWidget.ownerRow;
-                newCell = this.documentEditor.editor.cellInsertionForCE(data.rowOrCellIndex, rowWidget, JSON.parse(operation.cellFormat), JSON.parse(operation.paragraphFormat), JSON.parse(operation.characterFormat));
-                if (isNullOrUndefined(startParagraph)) {
-                    startParagraph = this.documentEditor.selection.getFirstParagraph(newCell);
-                }
-                cellLength += 2;
-            } else {
-                this.documentEditor.documentHelper.owner.parser.parseCellFormat(JSON.parse(operation.cellFormat), data.cellWidget.cellFormat, 0);
-            }
+    private buildCell(operation: Operation, paraFormt: string, charFormat: string): void {
+        let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(operation.offset, false, false, true);
+        if (operation.length > 0) {
+            this.rowWidget = data.cellWidget.ownerRow;
+            this.documentEditor.editor.cellInsertionForCE(data.rowOrCellIndex, this.rowWidget, JSON.parse(operation.format), JSON.parse(paraFormt), JSON.parse(charFormat));
+        } else {
+            this.documentEditor.documentHelper.owner.parser.parseCellFormat(JSON.parse(operation.format), data.cellWidget.cellFormat, 0);
         }
-        let ownerTable: TableWidget = rowWidget.ownerTable.combineWidget(this.documentEditor.viewer) as TableWidget;
-        ownerTable.calculateGrid(true);
-        this.documentEditor.documentHelper.layout.reLayoutTable(ownerTable);
-        this.documentEditor.selection.start.setPosition(startParagraph.firstChild as LineWidget, true);
-        this.documentEditor.selection.end.setPosition(this.documentEditor.selection.getLastParagraph(newCell).firstChild as LineWidget, false);
-        this.documentEditor.editor.reLayout(this.documentEditor.selection);
     }
-
-    private buildDeleteCells(operations: Operation[]): void {
-        let deleteCells: TableCellWidget[] = [];
-        for (let i: number = operations.length - 1; i >= 0; i--) {
-            let operation: Operation = operations[i];
-            if (operation.skipOperation) {
-                continue;
+    private buildDeleteCells(operation: Operation): void {
+        let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(operation.offset, false, false, true);
+        if (!isNullOrUndefined(data.cellWidget)) {
+            const firstPara: ParagraphWidget = this.documentEditor.selection.getFirstParagraph(data.cellWidget);
+            const lastPara: ParagraphWidget = this.documentEditor.selection.getLastParagraph(data.cellWidget);
+            if (!isNullOrUndefined(firstPara) && !isNullOrUndefined(lastPara)) {
+                this.documentEditor.selection.start.setPosition(firstPara.firstChild as LineWidget, true);
+                this.documentEditor.selection.end.setPositionParagraph(lastPara.lastChild as LineWidget, (lastPara.lastChild as LineWidget).getEndOffset() + 1);
             }
-            if (operation.action === 'Delete' && operation.text === CONTROL_CHARACTERS.Cell) {
-                let data: AbsoluteParagraphInfo = this.getRelativePositionFromAbsolutePosition(operation.offset, false, false, true);
-                deleteCells.push(data.cellWidget);
+            this.documentEditor.editor.checkAndRemoveComments();
+            this.table = data.cellWidget.ownerTable.combineWidget(this.documentEditor.viewer) as TableWidget;
+            let paragraph: ParagraphWidget = undefined;
+            if (data.cellWidget.nextWidget) {
+                let nextCell: TableCellWidget = data.cellWidget.nextWidget as TableCellWidget;
+                paragraph = this.documentEditor.selection.getFirstParagraph(nextCell);
+            } else if (data.cellWidget.previousWidget) {
+                let previousCell: TableCellWidget = data.cellWidget.previousWidget as TableCellWidget;
+                paragraph = this.documentEditor.selection.getFirstParagraph(previousCell);
             }
+            if (isNullOrUndefined(paragraph)) {
+                paragraph = this.documentEditor.editor.getParagraphForSelection(this.table);
+            }
+            operation.length += this.documentEditor.editor.onDeleteColumn(this.table, [data.cellWidget]);
+            this.table.updateRowIndex(0);
+            this.documentEditor.selection.selectParagraphInternal(paragraph, true);
         }
-        let table: TableWidget = deleteCells[0].ownerTable.combineWidget(this.documentEditor.viewer) as TableWidget;
-        let paragraph: ParagraphWidget = undefined;
-        if (deleteCells[deleteCells.length - 1].nextWidget) {
-            let nextCell: TableCellWidget = deleteCells[deleteCells.length - 1].nextWidget as TableCellWidget;
-            paragraph = this.documentEditor.selection.getFirstParagraph(nextCell);
-        } else if (deleteCells[0].previousWidget) {
-            let previousCell: TableCellWidget = deleteCells[0].previousWidget as TableCellWidget;
-            paragraph = this.documentEditor.selection.getFirstParagraph(previousCell);
-        }
-        this.documentEditor.editor.onDeleteColumn(table, deleteCells, paragraph, undefined);
     }
-
     private transformSelectionOperation(operation: Operation, conflictingOperation: Operation): void {
         if (operation.action === 'Delete' && conflictingOperation.action === 'Delete') {
             let previousStart: number = conflictingOperation.offset;
@@ -1257,7 +1333,6 @@ export class CollaborativeEditingHandler {
             }
         }
     }
-
     private documentSettings(operation: Operation): void {
         this.documentEditor.skipSettingsOps = true;
         switch (operation.text) {
@@ -1285,17 +1360,15 @@ export class CollaborativeEditingHandler {
                 break;
         }
     }
-
     private checkAndRetriveChangesFromServer(): void {
         if (!this.isSyncServerChanges) {
             let action: ActionInfo = {
                 version: this.version,
                 connectionId: this.connectionId,
-                fileName: this.roomName,
-                timeStamp: HelperMethods.getUtcDate()
+                roomName: this.roomName,
             }
             var httpRequest = new XMLHttpRequest();
-            httpRequest.open('Post', this.serviceUrl + 'api/CollaborativeEditing/GetActionsFromServer', true);
+            httpRequest.open('Post', this.serviceUrl + 'GetActionsFromServer', true);
             httpRequest.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
             httpRequest.onreadystatechange = () => {
                 if (httpRequest.readyState === 4) {
@@ -1311,7 +1384,6 @@ export class CollaborativeEditingHandler {
             this.isSyncServerChanges = true;
         }
     }
-
     private applyChangesFromServer(data: string): void {
         let dataObject: ActionInfo[] = JSON.parse(data);
         if (dataObject.length > 0) {
@@ -1333,7 +1405,6 @@ export class CollaborativeEditingHandler {
         }
         this.sendLocalOperation()
     }
-
     private insertCharaterFormat(type: string, characterData: string): void {
         let format: WCharacterFormat = new WCharacterFormat(undefined);
         let characterFormat: any = JSON.parse(characterData);
@@ -1358,10 +1429,14 @@ export class CollaborativeEditingHandler {
             this.documentEditor.editor.clearFormatting();
         }
     }
-
     private insertParagraphFormat(property: string, paragraphData: string): void {
         let format: WParagraphFormat = new WParagraphFormat(undefined);
         let paragraphFormat: any = JSON.parse(paragraphData);
+        let update: boolean = false;
+        if (!isNullOrUndefined(paragraphFormat.isFirstParaForList)) {
+            delete paragraphFormat.isFirstParaForList;
+            update = true;
+        }
         let keys = Object.keys(paragraphFormat);
         this.documentEditor.documentHelper.owner.parser.parseParagraphFormat(0, JSON.parse(paragraphData), format);
         if (keys.length === 1) {
@@ -1371,14 +1446,13 @@ export class CollaborativeEditingHandler {
                 if (keys[0] === 'borders') {
                     this.documentEditor.editor.onApplyParagraphFormat(keys[0], format.borders, false, false);
                 } else {
-                    this.documentEditor.editor.onApplyParagraphFormat(keys[0], paragraphFormat[keys[0]], false, false);
+                    this.documentEditor.editor.onApplyParagraphFormat(keys[0], paragraphFormat[keys[0]], update, false);
                 }
             }
         } else {
             this.documentEditor.editor.updateSelectionParagraphFormatting(null, format, false);
         }
     }
-
     private insertTableFormat(type: string, tableData: string, offset: number) {
         let format: WTableFormat = new WTableFormat(undefined);
         let tableFormat: any = JSON.parse(tableData);
@@ -1445,21 +1519,18 @@ export class CollaborativeEditingHandler {
     }
     private insertSectionFormat(property: string, sectionData: string) {
         let data: object = JSON.parse(sectionData);
-        switch (property) {
-            case 'sectionFormat':
-                let sectionFormat: WSectionFormat = new WSectionFormat();
-                this.documentEditor.documentHelper.owner.parser.parseSectionFormat(0, data, sectionFormat);
-                this.documentEditor.editor.onApplySectionFormat(undefined, sectionFormat);
-                break;
-            case 'linkToPrevious':
-                const headerFooterWidget: HeaderFooterWidget = this.documentEditor.selection.start.paragraph.bodyWidget as HeaderFooterWidget;
-                let sectionIndex: number = headerFooterWidget.sectionIndex;
-                let headerFooterType: HeaderFooterType = headerFooterWidget.headerFooterType;
-                this.documentEditor.editor.removeInlineHeaderFooterWidget(sectionIndex, headerFooterType, property, data['linkToPrevious']);
-                break;
-            default:
-                this.documentEditor.editor.onApplySectionFormat(Object.keys(data)[0], data[Object.keys(data)[0]]);
-                break;
+        let keys = Object.keys(data);
+        if (keys[0] === 'linkToPrevious') {
+            const headerFooterWidget: HeaderFooterWidget = this.documentEditor.selection.start.paragraph.bodyWidget as HeaderFooterWidget;
+            let sectionIndex: number = headerFooterWidget.sectionIndex;
+            let headerFooterType: HeaderFooterType = headerFooterWidget.headerFooterType;
+            this.documentEditor.editor.removeInlineHeaderFooterWidget(sectionIndex, headerFooterType, property, data['linkToPrevious']);
+        } else if (keys.length > 1) {
+            let sectionFormat: WSectionFormat = new WSectionFormat();
+            this.documentEditor.documentHelper.owner.parser.parseSectionFormat(0, data, sectionFormat);
+            this.documentEditor.editor.onApplySectionFormat(undefined, sectionFormat);
+        } else {
+            this.documentEditor.editor.onApplySectionFormat(Object.keys(data)[0], data[Object.keys(data)[0]]);
         }
     }
 
@@ -1468,17 +1539,50 @@ export class CollaborativeEditingHandler {
             this.message += event + ' ' + '\n';
         }
     }
+
+    /**
+     * Destory collaborative editing module.
+     * @private
+     */
+    public destory(): void {
+        this.version = undefined;
+        this.documentEditor = undefined;
+        this.roomName = undefined;
+        this.userMap = undefined;
+        this.connectionId = undefined;
+        this.acknowledgmentPending = undefined;
+        this.pendingOps = undefined;
+        this.serviceUrl = undefined;
+        this.isSyncServerChanges = undefined;
+        this.message = undefined;
+        this.rowWidget = undefined;
+    }
 }
 
 /**
- * @private
+ * Specifies the action info.
+ * > Reserved for internal use only.
  */
 export interface ActionInfo {
+    /**
+     * Reserved for internal use only.
+     */
     connectionId?: string,
+    /**
+     * Reserved for internal use only.
+     */
     version?: number,
-    timeStamp?: string
-    fileName?: string,
+    /**
+     * Reserved for internal use only.
+     */
+    roomName?: string,
+    /**
+     * Reserved for internal use only.
+     */
     operations?: Operation[],
+    /**
+     * Reserved for internal use only.
+     */
     currentUser?: string
 }
 

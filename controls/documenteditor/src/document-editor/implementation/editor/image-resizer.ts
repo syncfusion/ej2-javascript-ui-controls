@@ -2,7 +2,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer } from '../index';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
-import { ImageInfo } from '../selection/selection-helper';
+import { ImageSizeInfo } from '../selection/selection-helper';
 import {
     IWidget, ImageElementBox, LineWidget, Page, ParagraphWidget, TableCellWidget, TableRowWidget,
     ShapeElementBox
@@ -1113,7 +1113,7 @@ export class ImageResizer {
             this.baseHistoryInfo = new BaseHistoryInfo(this.owner);
             this.baseHistoryInfo.action = 'ImageResizing';
             this.baseHistoryInfo.updateSelection();
-            this.baseHistoryInfo.modifiedProperties.push(new ImageInfo(imageContainer));
+            this.baseHistoryInfo.modifiedProperties.push(new ImageSizeInfo(imageContainer));
         }
     }
     /**
@@ -1124,7 +1124,7 @@ export class ImageResizer {
      */
     public updateHistoryForImageResizer(): void {
         if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.baseHistoryInfo)) {
-            let imageFormat: ImageInfo = this.baseHistoryInfo.modifiedProperties[0] as ImageInfo;
+            let imageFormat: ImageSizeInfo = this.baseHistoryInfo.modifiedProperties[0] as ImageSizeInfo;
             if (this.currentImageElementBox.width === imageFormat.width
                 && this.currentImageElementBox.height === imageFormat.height) {
                 this.baseHistoryInfo.modifiedProperties.pop();

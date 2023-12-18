@@ -1,7 +1,7 @@
 import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';
 import { VisibleLabels, Size, VisibleRange, Rect, Align } from '../utils/helper';
-import { Font, Border } from '../model/base';
-import { FontModel, BorderModel } from '../model/base-model';
+import { Font, Border, TextStyle } from '../model/base';
+import { FontModel, BorderModel, TextStyleModel } from '../model/base-model';
 import { RangeModel, PointerModel, LabelModel, TickModel, LineModel } from './axis-model';
 import { Point, Placement, MarkerType, Position} from '../utils/enum';
 import { LinearGradientModel, RadialGradientModel} from '../axes/gradient-model';
@@ -404,6 +404,20 @@ export class Pointer extends ChildProperty<Pointer> {
      */
     @Property(null)
     public description: string;
+
+    /**
+     * Specifies the text that will be displayed as the pointer in Linear Gauge. To display the text pointer, the `markerType` property must be set to `Text`.
+     *
+     * @default ''
+     */
+    @Property('')
+    public text: string;
+
+    /**
+     * Defines the font properties such as font-size, font family and others for the text pointer. 
+     */
+    @Complex<TextStyleModel>({ size: '16px', fontStyle: 'normal', fontWeight: 'normal', fontFamily: null }, TextStyle)
+    public textStyle: TextStyleModel;
 
     /** @private */
     public bounds: Rect;

@@ -364,11 +364,28 @@ export class Render {
         if (gObj.detailTemplate || gObj.childGrid) {
             ++spanCount;
         }
-        const tr: Element = this.parent.createElement('tr', { className: 'e-emptyrow' });
-        const td: HTMLElement = this.parent.createElement('td', {
-            innerHTML: this.l10n.getConstant('EmptyRecord'),
-            attrs: { colspan: (gObj.getVisibleColumns().length + spanCount + gObj.groupSettings.columns.length).toString() }
-        });
+        const tr: Element = this.parent.createElement('tr', { className: 'e-emptyrow', attrs: { role: 'row' } });
+        var td: HTMLElement;
+        if (gObj.emptyRecordTemplate) {
+            const emptyRecordTemplateID: string = gObj.element.id + 'emptyRecordTemplate';
+            td = this.parent.createElement('td', 
+                { attrs: { colspan: (gObj.getVisibleColumns().length + spanCount + gObj.groupSettings.columns.length).toString() }});
+                if (gObj.isVue) {
+                    td.appendChild(gObj.getEmptyRecordTemplate()(gObj.dataSource, gObj, 'emptyRecordTemplate', emptyRecordTemplateID,
+                    undefined, undefined, undefined, this.parent['root'])[1]);
+                } else {
+                    td.appendChild(gObj.getEmptyRecordTemplate()(gObj.dataSource, gObj, 'emptyRecordTemplate', emptyRecordTemplateID,
+                    undefined, undefined, undefined, this.parent['root'])[0]);
+                }
+                if (gObj.isReact) {
+                    this.parent.renderTemplates();
+                }
+        } else {
+            td = this.parent.createElement('td', {
+                innerHTML: this.l10n.getConstant('EmptyRecord'),
+                attrs: { colspan: (gObj.getVisibleColumns().length + spanCount + gObj.groupSettings.columns.length).toString()}
+            });
+        }
         if (gObj.isFrozenGrid()) {
             td.classList.add('e-leftfreeze');
             (td as HTMLElement).style.left = 0 + 'px';
@@ -608,7 +625,7 @@ export class Render {
     }
 
     private setRowCount(dataRowCount: number): void {
-        this.ariaService.setOptions(<HTMLElement>this.parent.getHeaderTable() as HTMLElement, {
+        this.ariaService.setOptions(<HTMLElement>this.parent.element as HTMLElement, {
             rowcount: dataRowCount ? dataRowCount.toString() : '1'
         });
     }

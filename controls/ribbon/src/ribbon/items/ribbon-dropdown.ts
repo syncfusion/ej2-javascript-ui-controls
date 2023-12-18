@@ -159,7 +159,9 @@ export class RibbonDropDown {
     }
 
     private keyActionHandler(e: KeyboardEventArgs, target: HTMLElement): void {
-        const items: NodeListOf<Element> = target.querySelectorAll('.e-control');
+        const controlElements: Array<Element> = Array.prototype.slice.call(target.querySelectorAll('.e-control'));
+        const templateElements: Array<Element> =  Array.prototype.slice.call(target.querySelectorAll('.e-ribbon-template'));
+        const items: Element[] = controlElements.concat(templateElements);
         const comboBoxElements: NodeListOf<Element> = target.querySelectorAll('.e-combobox');
         let comboBoxEle: HTMLElement;
         if (comboBoxElements) {
@@ -178,7 +180,7 @@ export class RibbonDropDown {
                 }
             }
         }
-        if ((e.target as HTMLElement).classList.contains('e-control') || (e.target as HTMLElement).classList.contains('e-ribbon-launcher-icon') ||
+        if ((e.target as HTMLElement).classList.contains('e-control') || (e.target as HTMLElement).classList.contains('e-ribbon-template') || (e.target as HTMLElement).classList.contains('e-ribbon-launcher-icon') ||
                 (e.target as HTMLElement).classList.contains('e-ribbon-last-item') || (e.target as HTMLElement).classList.contains('e-ribbon-first-item')) {
             if (e.key === 'ArrowRight' || (!e.shiftKey && e.key === 'Tab')) {
                 this.handleNavigation(e, !this.enableRtl, items);
@@ -189,14 +191,14 @@ export class RibbonDropDown {
         }
     }
 
-    private handleNavigation(e: KeyboardEventArgs, enableRtl: boolean, items: NodeListOf<Element>): void {
+    private handleNavigation(e: KeyboardEventArgs, enableRtl: boolean, items: Element[]): void {
         if (!(items[0].classList.contains('e-ribbon-first-item'))) { items[0].classList.add('e-ribbon-first-item'); }
         if (!(items[items.length - 1].classList.contains('e-ribbon-last-item'))) { items[items.length - 1].classList.add('e-ribbon-last-item'); }
         if (enableRtl) {
             if (this.itemIndex === 0 && (items[parseInt(this.itemIndex.toString(), 10)] as HTMLElement).classList.contains('e-ribbon-first-item')) { this.updateItemIndex(e, items, true); }
             if (!(e.target as HTMLElement).classList.contains('e-combobox') && !(e.target as HTMLElement).classList.contains('e-ribbon-last-item') &&
                 !(e.target as HTMLElement).classList.contains('e-ribbon-group-container') && ((e.target as HTMLElement).classList.contains('e-ribbon-first-item')
-                    || this.itemIndex !== 0) && (e.target as HTMLElement).classList.contains('e-control')) {
+                    || this.itemIndex !== 0) && ((e.target as HTMLElement).classList.contains('e-control') || (e.target as HTMLElement).classList.contains('e-ribbon-template'))) {
                 this.itemIndex++;
                 this.updateItemIndex(e, items, true);
             }
@@ -222,7 +224,7 @@ export class RibbonDropDown {
         }
     }
 
-    private focusLauncherIcon(e: KeyboardEventArgs, items: NodeListOf<Element>): boolean {
+    private focusLauncherIcon(e: KeyboardEventArgs, items: Element[]): boolean {
         const groupContainer: HTMLElement = items[parseInt(this.itemIndex.toString(), 10)].closest('.e-ribbon-group-container') as HTMLElement;
         let launcherIconEle: HTMLElement;
         if (groupContainer) { launcherIconEle = groupContainer.querySelector('.e-ribbon-launcher-icon') as HTMLElement; }
@@ -234,7 +236,7 @@ export class RibbonDropDown {
         else { return false; }
     }
 
-    private updateItemIndex(e: KeyboardEventArgs, items: NodeListOf<Element>, enableRtl: boolean): void {
+    private updateItemIndex(e: KeyboardEventArgs, items: Element[], enableRtl: boolean): void {
         let ribbonItem: HTMLElement = items[this.itemIndex].closest('.e-ribbon-item') as HTMLElement;
         while (ribbonItem && ribbonItem.classList.contains('e-disabled')) {
             if (enableRtl) {

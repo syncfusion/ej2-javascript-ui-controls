@@ -76,7 +76,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     /**
      * maximum progress value
      *
-     * @default 0
+     * @default 100
      */
     @Property(100)
     public maximum: number;
@@ -470,6 +470,12 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         this.trigger('load', { progressBar: this });
         this.element.style.display = 'block';
         this.element.style.position = 'relative';
+        this.element.setAttribute('role', 'progressbar');
+        this.element.setAttribute('aria-valuemin', this.minimum.toString());
+        this.element.setAttribute('aria-valuemax', this.maximum.toString());
+        this.element.setAttribute('aria-valuenow', this.value ? this.value.toString() : '0');
+        this.element.setAttribute('tabindex', '0');
+        this.element.setAttribute('aria-label', this.labelStyle.text || 'progress bar');
         this.calculateProgressBarSize();
         this.setTheme();
         this.createSVG();
@@ -898,6 +904,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                         this.linear.renderLinearLabel(true);
                     }
                 }
+                this.element.setAttribute('aria-valuenow', this.argsData.value ? this.argsData.value.toString() : '0');
                 break;
             case 'animation':
                 this.createSVG();

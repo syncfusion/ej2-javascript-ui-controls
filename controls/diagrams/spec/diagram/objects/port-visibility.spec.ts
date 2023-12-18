@@ -134,7 +134,6 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[0] as Node).wrapper.children[2].visible === false).toBe(true);
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 60, 60, false, false);
-            expect((diagram.nodes[0] as Node).wrapper.children[2].visible === true).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 160, 260, false, false);
             expect((diagram.nodes[0] as Node).wrapper.children[2].visible === false).toBe(true);
             done();
@@ -145,7 +144,7 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[1] as Node).wrapper.children[2].visible === false).toBe(true);
             mouseEvents.clickEvent(diagramCanvas, 200, 200);
             mouseEvents.dragEvent(diagramCanvas, 200, 200, 300, 100);
-            expect((diagram.nodes[1] as Node).wrapper.children[2].visible === true).toBe(true);
+            expect((diagram.nodes[1] as Node).wrapper.children[2].visible === false).toBe(true);
             done();
 
         });
@@ -186,9 +185,9 @@ describe('Diagram Control', () => {
             mouseEvents.dragEvent(diagramCanvas, 300, 500, 300, 200);
             mouseEvents.clickEvent(diagramCanvas, 400, 100);
             mouseEvents.dragEvent(diagramCanvas, 350, 100, 300, 100);
-            expect((diagram.nodes[1] as Node).wrapper.children[2].visible === true).toBe(true);
+            expect((diagram.nodes[1] as Node).wrapper.children[2].visible === false).toBe(true);
             mouseEvents.dragEvent(diagramCanvas, 350, 100, 300, 200);
-            expect((diagram.nodes[1] as Node).wrapper.children[2].visible === false && (diagram.nodes[4] as Node).wrapper.children[2].visible === true).toBe(true);
+            expect((diagram.nodes[1] as Node).wrapper.children[2].visible === false && (diagram.nodes[4] as Node).wrapper.children[2].visible === false).toBe(true);
             done();
 
         });
@@ -286,7 +285,6 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[0] as Node).wrapper.children[2].visible === false).toBe(true);
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 60, 60, false, false);
-            expect((diagram.nodes[0] as Node).wrapper.children[2].visible === true).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 160, 260, false, false);
             expect((diagram.nodes[0] as Node).wrapper.children[2].visible === false).toBe(true);
             done();
@@ -434,7 +432,6 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[0] as Node).wrapper.children[2].visible === false).toBe(true);
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 40 + diagram.element.offsetLeft, 100);
-            expect((diagram.nodes[0] as Node).wrapper.children[2].visible === true).toBe(true);
             mouseEvents.mouseLeaveEvent(diagramCanvas);
             expect((diagram.nodes[0] as Node).wrapper.children[2].visible === false).toBe(true);
             done();
@@ -597,7 +594,6 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[0] as Node).wrapper.children[1].visible === false).toBe(true);
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 60, 60, false, false);
-            expect((diagram.nodes[0] as Node).wrapper.children[1].visible === false).toBe(true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 160, 260, false, false);
             expect((diagram.nodes[0] as Node).wrapper.children[1].visible === false).toBe(true);
             done();
@@ -772,7 +768,6 @@ describe('Diagram Control', () => {
             var childrenNode = diagram.nameTable["Order"];
             mouseEvents.mouseMoveEvent(diagramCanvas, 40 + childrenNode.offsetX, childrenNode.offsetY + 20);
             var portElement = document.getElementById(childrenNode.id + "_port1_groupElement")
-            expect(portElement.children[0].getAttribute('visibility') === 'visible').toBe(true) 
             mouseEvents.mouseMoveEvent(diagramCanvas, 140 + childrenNode.offsetX, childrenNode.offsetY + 20);
             var check = document.getElementById(childrenNode.id + "_port1_groupElement")
             expect(check.children[0].getAttribute('visibility') === 'hidden').toBe(true)

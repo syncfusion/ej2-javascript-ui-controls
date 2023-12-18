@@ -4977,7 +4977,7 @@ export class Annotation {
                 this.calculateAnnotationBounds(currentAnnotation, annotation);
                 // eslint-disable-next-line max-len
             } else if (annotation.type === 'StickyNotes' || annotation.type === 'Stamp' || annotation.shapeAnnotationType === 'sticky' || annotation.shapeAnnotationType === 'stamp') {
-                if (!(isNullOrUndefined(annotation.opacity)) && currentAnnotation.opacity !== annotation.opacity) {
+                if (!(isNullOrUndefined(annotation.opacity))  && currentAnnotation.opacity !== annotation.opacity) {
                     this.annotationPropertyChange(currentAnnotation, annotation.opacity, 'Shape Opacity', clonedObject, redoClonedObject);
                 }
                 this.calculateAnnotationBounds(currentAnnotation, annotation);
@@ -5464,7 +5464,7 @@ export class Annotation {
             newAnnotation.isReadonly = annotation.isReadonly;
         }
         newAnnotation.customData = annotation.customData;
-         newAnnotation.subject = annotation.subject;
+        newAnnotation.subject = annotation.subject;
         newAnnotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         newAnnotation.isPrint = annotation.isPrint;
         if (annotation.annotationSettings && !isNullOrUndefined(annotation.annotationSettings.isLock)) {
@@ -5713,7 +5713,7 @@ export class Annotation {
             }
         } else if (annotation.AnnotType === 'freeText') {
             annotSettings = this.pdfViewer.freeTextSettings;
-        } else if(annotation.AnnotType === 'ink'){
+        } else if(annotation.AnnotType === 'ink' || annotation.AnnotationType === 'Ink'){
             annotSettings = this.pdfViewer.inkAnnotationSettings;
         } else if (annotation.AnnotType === 'shape') {
             if (annotation.Subject === 'Line') {

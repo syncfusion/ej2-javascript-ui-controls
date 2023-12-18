@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Alignment, LegendPosition, LegendType, LegendMode, ShapeLayerType, Type, MarkerType, Orientation, MapAjax } from '../../index';import { SmartLabelMode, IntersectAction } from '../../index';import { Theme } from './theme';import { Point, GeoLocation } from '../utils/helper';import { BingMapType, LegendArrangement, LegendShape, BubbleType, StaticMapType, ToolbarItem } from '../utils/enum';import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction } from '../index';
+import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Alignment, LegendPosition, LegendType, LegendMode, ShapeLayerType, Type, MarkerType, Orientation, MapAjax } from '../../index';import { SmartLabelMode, IntersectAction } from '../../index';import { Theme } from './theme';import { Point, GeoLocation, Coordinate } from '../utils/helper';import { BingMapType, LegendArrangement, LegendShape, BubbleType, StaticMapType, ToolbarItem } from '../utils/enum';import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction } from '../index';
 
 /**
  * Interface for a class Annotation
@@ -7,7 +7,7 @@ export interface AnnotationModel {
 
     /**
      * Gets or sets the content for the annotation in maps.
-     * 
+     *
      * @default ''
      * @aspType string
      */
@@ -15,14 +15,14 @@ export interface AnnotationModel {
 
     /**
      * Gets or sets the x position of the annotation in pixel or percentage format.
-     * 
+     *
      * @default '0px'
      */
     x?: string;
 
     /**
      * Gets or sets the y position of the annotation in pixel or percentage format.
-     * 
+     *
      * @default '0px'
      */
     y?: string;
@@ -57,35 +57,35 @@ export interface ArrowModel {
 
     /**
      * Gets or sets the type of the position to place the arrow in navigation lines.
-     * 
+     *
      * @default 'Start'
      */
     position?: string;
 
     /**
      * Enables or disables the visibility of the arrow in navigation line.
-     * 
+     *
      * @default false
      */
     showArrow?: boolean;
 
     /**
      * Gets or sets the size of the arrow in navigation line in maps.
-     * 
+     *
      * @default 2
      */
     size?: number;
 
     /**
      * Gets or sets the color for the arrow in navigation line.
-     * 
+     *
      * @default 'black'
      */
     color?: string;
 
     /**
      * Gets or sets the offset value to position the arrow from the navigation line.
-     * 
+     *
      * @default 0
      */
     offSet?: number;
@@ -266,26 +266,26 @@ export interface ZoomToolbarTooltipSettingsModel {
      * Gets or sets the font family of the text in the tooltip of the zoom toolbar.
      *
      * @default ''
-    */
+     */
     fontFamily?: string;
 
     /**
      * Gets or sets the font style of the text in the tooltip of the zoom toolbar.
      *
      * @default ''
-    */
+     */
     fontStyle?: string;
 
     /**
      * Gets or sets the font weight of the text in the tooltip of the zoom toolbar.
      *
      * @default ''
-    */
+     */
     fontWeight?: string;
 
     /**
      * Gets or sets the size of the text in the tooltip of the zoom toolbar.
-     * 
+     *
      * @default ''
      */
     fontSize?: string;
@@ -294,7 +294,7 @@ export interface ZoomToolbarTooltipSettingsModel {
      * Gets or sets the font opacity of the text in the tooltip of the zoom toolbar.
      *
      * @default 1
-    */
+     */
     fontOpacity?: number;
 
 }
@@ -586,7 +586,7 @@ export interface MarkerClusterSettingsModel {
 
     /**
      * Gets or sets the URL path for the marker cluster when the cluster shape is set as image in maps.
-     * 
+     *
      * @default ''
      */
     imageUrl?: string;
@@ -801,6 +801,78 @@ export interface HighlightSettingsModel {
      * Gets or sets the options for customizing the style properties of the border of the highlighted shapes in maps.
      */
     border?: BorderModel;
+
+}
+
+/**
+ * Interface for a class PolygonSetting
+ */
+export interface PolygonSettingModel {
+
+    /**
+     * Gets or sets the width of the border of the polygon shape.
+     *
+     * @default 1
+     */
+    borderWidth?: number;
+
+    /**
+     * Gets or sets the opacity of the border of the polygon shape.
+     *
+     * @default 1
+     */
+    borderOpacity?: number;
+
+    /**
+     * Gets or sets the opacity of the polygon shape.
+     *
+     * @default 1
+     */
+    opacity?: number;
+
+    /**
+     * Gets or sets the color to be used in the border of the polygon shape.
+     *
+     * @default 'black'
+     */
+    borderColor?: string;
+
+    /**
+     * Gets or sets the color to be filled in the polygon shape.
+     *
+     * @default 'black'
+     */
+    fill?: string;
+
+    /**
+     * Gets or sets the points that define the polygon shape.
+     * This property holds a collection of coordinates that define the polygon shape.
+     *
+     * @default []
+     */
+    points?: Coordinate[];
+
+}
+
+/**
+ * Interface for a class PolygonSettings
+ */
+export interface PolygonSettingsModel {
+
+    /**
+     * Gets or sets the properties of all the polygon shapes that will be displayed in a layer.
+     */
+    polygons?: PolygonSettingModel[];
+
+    /**
+     * Gets or sets the properties for selecting polygon shapes in a map layer.
+     */
+    selectionSettings?: SelectionSettingsModel;
+
+    /**
+     * Gets or sets the properties for highlighting polygon shapes in a map layer.
+     */
+    highlightSettings?: HighlightSettingsModel;
 
 }
 
@@ -1098,7 +1170,7 @@ export interface ZoomSettingsModel {
 
     /**
      * Gets or sets the color for the toolbar in maps.
-     * 
+     *
      * @default null
      * @deprecated
      */
@@ -1106,7 +1178,7 @@ export interface ZoomSettingsModel {
 
     /**
      * Gets or sets the color for the zoom toolbar when the mouse has hovered on toolbar element in maps.
-     * 
+     *
      * @default null
      * @deprecated
      */
@@ -1114,7 +1186,7 @@ export interface ZoomSettingsModel {
 
     /**
      * Gets or sets the color for the zooming toolbar when clicking the zooming toolbar in maps.
-     * 
+     *
      * @default null
      * @deprecated
      */
@@ -1193,14 +1265,14 @@ export interface ZoomSettingsModel {
 
     /**
      * Enables or disables the ability to zoom based on the marker position while rendering the maps.
-     * 
+     *
      * @default false
      */
     shouldZoomInitially?: boolean;
 
     /**
      * Enables or disables the zoom to set to the initial State.
-     * 
+     *
      * @default true
      */
     resetToInitial?: boolean;
@@ -1294,7 +1366,7 @@ export interface LegendSettingsModel {
 
     /**
      * Enables or disables the visibility of the inverted pointer in interactive legend in maps.
-     * 
+     *
      * @default false
      */
     invertedPointer?: boolean;
@@ -1408,7 +1480,7 @@ export interface LegendSettingsModel {
 
     /**
      * Gets or sets the color of the legend in maps.
-     * 
+     *
      * @default null
      */
     fill?: string;
@@ -1474,14 +1546,14 @@ export interface DataLabelSettingsModel {
 
     /**
      * Gets or sets the background color for the data labels in maps.
-     * 
+     *
      * @default 'black'
      */
     fill?: string;
 
     /**
      * Gets or sets the opacity of the data labels in maps.
-     * 
+     *
      * @default 1
      */
     opacity?: number;
@@ -1963,6 +2035,12 @@ export interface LayerSettingsModel {
     navigationLineSettings?: NavigationLineSettingsModel[];
 
     /**
+     * Gets or sets the properties of the polygon shapes that will be rendered on a map layer.
+     * The selection and highlight settings for polygon shapes can also be defined.
+     */
+    polygonSettings?: PolygonSettingsModel;
+
+    /**
      * Gets or sets the options for customizing the tooltip of the layers in maps.
      */
     tooltipSettings?: TooltipSettingsModel;
@@ -2004,7 +2082,7 @@ export interface MapsAreaSettingsModel {
 
     /**
      * Gets or sets the background color for the map area.
-     * 
+     *
      * @default null
      */
     background?: string;

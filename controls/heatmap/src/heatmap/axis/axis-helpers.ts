@@ -278,7 +278,7 @@ export class AxisHelper {
             labelPadding = (axis.opposedPosition) ? -(padding) : (padding + ((angle % 360) === 0 ? (elementSize.height / 2) : 0));
             elementSize.width = axis.isInversed ? (elementSize.width > interval ? interval : elementSize.width) : elementSize.width;
             let x: number = lableRect.x + ((!axis.isInversed) ?
-                (lableRect.width / 2) : -((lableRect.width / 2)));
+                (lableRect.width / 2) - (elementSize.width / 2) : -((lableRect.width / 2) + (elementSize.width / 2)));
             if (axis.textStyle.textAlignment === 'Near') {
                 x = lableRect.x - ((!axis.isInversed) ? 0 : lableRect.width);
             } else if (axis.textStyle.textAlignment === 'Far') {
@@ -307,6 +307,7 @@ export class AxisHelper {
                 }
             } else { y = rect.y + ((axis.textStyle.textOverflow === 'Wrap' || isLineBreak) && axis.opposedPosition && angle % 360 === 0 ? - (axis.farSizes.length >= 1 ? axis.farSizes[1] : 0) + padding : labelPadding); }
             this.drawXAxisBorder(axis, borderElement, axis.rect, x, elementSize.width, i);
+            x = (axis.textStyle.textAlignment === 'Center' && wrappedlabels.length > 1) ? x + (elementSize.width / 2) : axis.textStyle.textAlignment === 'Near' ? x + padding / 2 : axis.textStyle.textAlignment === 'Far' ? x - padding / 2 : x;
             if (angle % 360 !== 0) {
                 angle = (angle > 360) ? angle % 360 : angle;
                 rotateSize = rotateTextSize(axis.textStyle, wrappedlabels, angle);
@@ -339,7 +340,7 @@ export class AxisHelper {
                 (elementSize.width / 2) : -((elementSize.width / 2))) : x;
             const options: TextOption = new TextOption(
                 heatMap.element.id + '_XAxis_Label' + i,
-                new TextBasic(x, y, (angle % 360 === 0) ? axis.textStyle.textAlignment === 'Center' ? 'middle' : 'start' : 'middle', label, angle, transform), axis.textStyle,
+                new TextBasic(x, y, (angle % 360 === 0) ? (axis.textStyle.textAlignment === 'Center' && wrappedlabels.length > 1) ? 'middle' : 'start' : 'middle', label, angle, transform), axis.textStyle,
                 axis.textStyle.color || heatMap.themeStyle.axisLabel
             );
             /* eslint-disable max-len */
@@ -562,8 +563,10 @@ export class AxisHelper {
         endY = startY + (axis.opposedPosition ? -(axis.maxLabelSize.height + padding) : axis.maxLabelSize.height + padding);
         // eslint-disable-next-line prefer-const
         endX = axis.isInversed ? startX - interval : startX + interval;
-        const endY1: number = axis.isInversed ? (lableX + width + padding) : (lableX - padding);
-        const endY2: number = axis.isInversed ? (lableX - padding) : (lableX + width + padding);
+        let endY1: number = axis.isInversed ? (lableX + width + padding) : (lableX - padding);
+        let endY2: number = axis.isInversed ? (lableX - padding) : (lableX + width + padding);
+        endY2 = axis.textStyle.textAlignment == 'Near' && axis.isInversed ? endY2 + padding : axis.textStyle.textAlignment == 'Far' && !axis.isInversed ? endY2 - padding : endY2;
+        endY1 = axis.textStyle.textAlignment == 'Far' && axis.isInversed ? endY1 - padding : axis.textStyle.textAlignment == 'Near' && !axis.isInversed ? endY1 + padding : endY1;
         switch (axis.border.type) {
         case 'Rectangle':
             path = ('M' + ' ' + startX + ' ' + startY + ' ' + 'L' + ' ' + startX + ' ' + endY + ' ' +

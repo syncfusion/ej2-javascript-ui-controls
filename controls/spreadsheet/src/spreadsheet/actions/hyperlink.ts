@@ -4,7 +4,7 @@ import { editHyperlink, openHyperlink, editAlert, removeHyperlink, isImported } 
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
-import { getRangeIndexes, getCellIndexes, getRangeAddress, getSwapRange } from '../../workbook/common/address';
+import { getRangeIndexes, getCellIndexes, getRangeAddress } from '../../workbook/common/address';
 import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell, CellStyleModel } from '../../workbook/index';
 import { beforeHyperlinkClick, afterHyperlinkClick, refreshRibbonIcons, deleteHyperlink, beginAction } from '../../workbook/common/event';
 import { isCellReference, DefineNameModel, updateCell } from '../../workbook/index';
@@ -838,9 +838,8 @@ export class SpreadsheetHyperlink {
             if (args.sheet === this.parent.getActiveSheet()) {
                 if (cell.style) { this.parent.notify(refreshRibbonIcons, null); }
                 if (!args.preventRefresh) {
-                    this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
-                        [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], false, false, false, false,
-                        isImported(this.parent));
+                    this.parent.serviceLocator.getService<ICellRenderer>('cell').refresh(
+                        args.rowIdx, args.colIdx, false, null, true, false, isImported(this.parent));
                 }
             }
         }

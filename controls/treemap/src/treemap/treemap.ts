@@ -301,9 +301,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Sets and gets the tab index value for treemap.
      *
-     * @default 1
+     * @default 0
      */
-    @Property(1)
+    @Property(0)
     public tabIndex: number;
     /**
      * Sets and gets format for the texts in the treemap. This property accepts any global string format like 'C', 'N1', 'P' etc.
@@ -737,7 +737,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             );
             element.setAttribute('aria-label', title.description || title.text);
             element.setAttribute('role', '');
-            element.setAttribute('tabindex', (this.tabIndex + (type === 'title' ? 1 : 2)).toString());
+            element.setAttribute('tabindex', this.tabIndex.toString());
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {
                 height = (this.availableSize.height - titleBounds.y - titlePadding - this.margin.bottom);
                 this.areaRect = new Rect(this.margin.left, titleBounds.y + titlePadding, width, height);
@@ -1110,13 +1110,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     private addTabIndex(): void {
         this.element.setAttribute('aria-label', this.description || 'TreeMap Element');
-        if (this.enableDrillDown || (this.selectionSettings.enable || this.highlightSettings.enable)) {
-            this.element.setAttribute('role', 'button');
-            this.element.setAttribute('tabindex', this.tabIndex.toString());
-            this.element.style.cursor = this.highlightSettings.enable && !this.selectionSettings.enable && !this.enableDrillDown ? 'default' : 'pointer';
-        } else {
-            this.element.setAttribute('role', 'region');
-        }  
+        this.element.setAttribute('role', 'region');
+        this.element.setAttribute('tabindex', this.tabIndex.toString());
     }
 
     /**
@@ -1268,6 +1263,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 'pointer' : 'auto';
             eventArgs = { cancel: false, name: itemMove, treemap: this, item: item, mouseEvent: e };
             this.trigger(itemMove, eventArgs);
+        } else {
+            this.element.style.cursor = 'default';
         }
         this.notify(Browser.touchMoveEvent, e);
     }

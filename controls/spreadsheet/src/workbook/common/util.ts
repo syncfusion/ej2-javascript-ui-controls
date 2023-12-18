@@ -696,10 +696,15 @@ export function checkRange(indexes: number[][], range: string): boolean {
 }
 
 /** @hidden */
-export function parseLocaleNumber(valArr: string[], locale: string): string[] {
+export function parseLocaleNumber(
+    valArr: string[], locale: string, curSymbol?: string, numObj?: { decimal: string, group: string }): string[] {
     let numVal: string; let groupArr: string[];
-    const curSymbol: string = getNumberDependable(locale, defaultCurrencyCode);
-    const numObj: { decimal: string, group: string } = getNumericObject(locale) as { decimal: string, group: string };
+    if (!curSymbol) {
+        curSymbol = getNumberDependable(locale, defaultCurrencyCode);
+    }
+    if (!numObj) {
+        numObj = getNumericObject(locale) as { decimal: string, group: string };
+    }
     for (let idx: number = 0; idx < valArr.length; idx++) {
         numVal = valArr[idx as number].toString().split(curSymbol).join('');
         groupArr = numVal.split(numObj.group);

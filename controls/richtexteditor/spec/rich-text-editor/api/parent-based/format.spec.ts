@@ -1110,4 +1110,52 @@ describe('RTE PARENT BASED - formats - ', () => {
         }, 200);
         });
     });
+    
+    describe('851566 - Heading backspace not working in the Rich Text Editor Smart suggestions sample', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({});
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it ('Should insert <h1><br></h1> instead of <h1>&#65279;&#65279;<br></h1> when a format is selected with the dropdown button', () => {
+            rteObj.focusIn();
+            // Click the format dropdown
+            let item: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_Formats');
+            item.click();
+            // Select the H1 format
+            let popup: HTMLElement = document.getElementById(rteObj.element.id + '_toolbar_Formats-popup');
+            dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
+            (popup.querySelectorAll('.e-item')[3] as HTMLElement).click();
+            expect(rteObj.getHtml() === '<h1><br></h1>').toBe(true);
+        });
+    });
+
+    describe('Apply Format to a Block node surrounded by a Paragraph on top and bottom', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p>Paragraph</p>
+                <p class="target" ><br></p>
+                <p>Paragraph</p>`
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it ('Should insert <h1><br></h1> instead of <h1>&#65279;&#65279;<br></h1> when a format is selected with the dropdown button', () => {
+            rteObj.focusIn();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('.target'), rteObj.element.querySelector('.target'), 0, 0);
+            // Click the format dropdown
+            let item: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_Formats');
+            item.click();
+            // Select the H1 format
+            let popup: HTMLElement = document.getElementById(rteObj.element.id + '_toolbar_Formats-popup');
+            dispatchEvent((popup.querySelectorAll('.e-item')[3] as HTMLElement), 'mousedown');
+            (popup.querySelectorAll('.e-item')[3] as HTMLElement).click();
+            const expected: string =`<p>Paragraph</p><h1 class="target"><br></h1><p>Paragraph</p>`
+            expect(rteObj.getHtml() === expected).toBe(true);
+        });
+    });
 });

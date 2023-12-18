@@ -5,7 +5,6 @@ import { getComponent, isNullOrUndefined, KeyboardEventArgs, L10n } from '@syncf
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { SaveType } from '../../workbook';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { Button } from '@syncfusion/ej2-buttons';
 
 /**
  * `Save` module is used to handle the save action in Spreadsheet.
@@ -123,7 +122,7 @@ export class Save {
                             this.parent.save({ saveType: <SaveType>type , fileName: name});
                         } else {
                             const saveButton: HTMLElement = this.parent.element.querySelector('.e-btn-open-ok') as HTMLElement;
-                            const saveButtonObj: Button = getComponent(saveButton, 'btn') as Button;
+                            const saveButtonObj: { disabled: boolean } = getComponent(saveButton, 'btn') as { disabled: boolean };
                             saveButtonObj.disabled = true;
                             const l10n: L10n = this.parent.serviceLocator.getService(locale);
                             const error: string = name.length === 0 ? l10n.getConstant('EmptyFileName') :
@@ -171,7 +170,7 @@ export class Save {
         openTextIp.onkeyup = (e: KeyboardEventArgs): void => {
             if (this.parent.element.querySelector('.e-file-alert-span') && e.keyCode !== 13) {
                 const saveButton: HTMLElement = this.parent.element.querySelector('.e-btn-open-ok') as HTMLElement;
-                const buttonObj: Button = getComponent(saveButton, 'btn') as Button;
+                const buttonObj: { disabled: boolean } = getComponent(saveButton, 'btn') as { disabled: boolean };
                 buttonObj.disabled = false;
                 this.parent.element.querySelector('.e-file-alert-span').remove();
             }

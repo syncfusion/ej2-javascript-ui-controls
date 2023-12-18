@@ -5,12 +5,13 @@
 /* eslint-disable jsdoc/require-param */
 import { getAnimationFunction, ChartLocation, pathAnimation, getElement } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
-import { VisibleRangeModel, Axis } from '../axis/axis';
+import { Axis } from '../axis/axis';
 import { Series, Points } from './chart-series';
 import { Chart } from '../chart';
 import { AnimationModel } from '../../common/model/base-model';
 import { Animation, AnimationOptions, animationMode, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { StepPosition } from '../utils/enum';
+import { VisibleRangeModel } from '../../common/model/interface';
 
 
 

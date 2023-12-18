@@ -11,7 +11,7 @@ import { Rect, Size, PathOption } from '@syncfusion/ej2-svg-base';
 import { ChartLocation, stringToNumber, appendChildElement } from '../../common/utils/helper';
 import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';
 import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs } from '../model/pie-interface';
-import { LegendShape } from '../../chart/utils/enum';
+import { LegendShape } from '../../common/utils/enum';
 import { AccumulationDataLabelSettingsModel } from '../model/acc-base-model';
 import { Data } from '../../common/model/data';
 import { seriesRender, pointRender } from '../../common/model/constants';

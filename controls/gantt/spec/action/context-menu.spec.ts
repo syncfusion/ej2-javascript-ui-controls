@@ -155,11 +155,11 @@ describe('Context-', () => {
             let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
             setTimeout(() => {
                 triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
-                expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedbatchcell').length).toBe(0);
-                done();
-            }, 100);
+                expect(ganttObj.treeGrid.element.getElementsByClassName('e-editedbatchcell').length).toBe(1);
+                done(); 
+            }, 100); 
         }, 500);
-    });
+    });      
     describe('Indent and adding record -', () => {
         beforeAll((done: Function) => {
             ganttObj = createGantt(selfGanttModel, done);
@@ -1868,7 +1868,7 @@ describe('Context-', () => {
                         startDate: 'StartDate',
                         duration: 'Duration',
                         progress: 'Progress'
-
+                       
                     },
                     splitterSettings: {
                         columnIndex: 2
@@ -1903,15 +1903,15 @@ describe('Context-', () => {
                           args.data.TaskName = 'hi';
                           args.data.ganttProperties.taskName = 'hi';
                           args.data.taskData.TaskName = 'hi';
-
+            
                           args.data.Duration = 5;
                           args.data.ganttProperties.duration = 5;
                           args.data.taskData.Duration = 5;
-
+            
                           args.data.Progress = 20;
                           args.data.ganttProperties.progress = 20;
                           args.data.taskData.Progress = 20;
-
+        
                         }
                       },
                     columns: [

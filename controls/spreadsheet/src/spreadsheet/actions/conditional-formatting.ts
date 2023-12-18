@@ -257,7 +257,6 @@ export class ConditionalFormatting {
         }
         subDiv.appendChild(subDivText);
         subDiv.appendChild(colorSelectEle);
-
         const colorData: { [key: string]: Object }[] = [
             { text: l10n.getConstant('LightRedFillWithDarkRedText'), value: 'redft', id: 'redft' },
             { text: l10n.getConstant('YellowFillWithDarkYellowText'), id: 'yellowft' },
@@ -778,7 +777,10 @@ export class ConditionalFormatting {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const result: number[] = cf.result as number[]; let leftStandardWidth: number = 0;
         let topVal: number;
-        const value: number = parseFloat(val);
+        let value: number;
+        if (isNumber(val)) {
+            value = parseFloat(val);
+        }
         if ((result[0] === undefined && result[1] === undefined) || isNaN(value)) {
             const dataBar: Element = td.getElementsByClassName('e-cf-databar')[0];
             if (dataBar) {
@@ -838,9 +840,18 @@ export class ConditionalFormatting {
             }
         }
         dataSpan.style.fontSize = td.style.fontSize || '11pt';
-        dataSpan.innerText = td.textContent;
-        if (td.textContent === '') {
-            dataSpan.appendChild(document.createTextNode(td.textContent));
+        const curEle: HTMLElement = td.querySelector(`#${this.parent.element.id}_currency`);
+        if (curEle) {
+            databar.appendChild(curEle);
+        }
+        const hyperlink: Element = td.querySelector('.e-hyperlink');
+        if (hyperlink) {
+            dataSpan.appendChild(hyperlink);
+        } else {
+            dataSpan.innerText = td.textContent;
+            if (td.textContent === '') {
+                dataSpan.appendChild(document.createTextNode(td.textContent));
+            }
         }
         databar.appendChild(leftSpan);
         databar.appendChild(rightSpan);

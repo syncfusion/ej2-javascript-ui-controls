@@ -23,6 +23,14 @@ export class RibbonColorPickerSettings extends ChildProperty<RibbonColorPickerSe
     public cssClass: string;
 
     /**
+     * Specifies the label text for the overflow item.
+     *
+     * @default ''
+     */
+    @Property('')
+    public label: string;
+
+    /**
      * Defines whether to enable the opacity option in the color picker.
      *
      * @default true
@@ -33,9 +41,9 @@ export class RibbonColorPickerSettings extends ChildProperty<RibbonColorPickerSe
     /**
      * Defines the rendering mode of the color picker.
      *
-     * @default 'Picker'
+     * @default 'Palette'
      */
-    @Property('Picker')
+    @Property('Palette')
     public mode: ColorPickerMode;
 
     /**

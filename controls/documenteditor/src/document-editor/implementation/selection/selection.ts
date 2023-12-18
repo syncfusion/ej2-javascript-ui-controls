@@ -29,7 +29,7 @@ import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFo
 import { HtmlExport } from '../writer/html-export';
 import { Popup } from '@syncfusion/ej2-popups';
 import { ContextType, RequestNavigateEventArgs, TablePasteOptions } from '../../index';
-import { TextPosition, SelectionWidgetInfo, Hyperlink, ImageInfo } from './selection-helper';
+import { TextPosition, SelectionWidgetInfo, Hyperlink, ImageSizeInfo } from './selection-helper';
 import { ItemModel, MenuEventArgs, DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Revision } from '../track-changes/track-changes';
 import { DocumentCanvasRenderingContext2D } from '../viewer/document-canvas';
@@ -94,6 +94,10 @@ export class Selection {
     private toolTipField: FieldElementBox | string;
     private isMoveDownOrMoveUp: boolean = false;
     private pasteDropDwn: DropDownButton;
+    /**
+     * @private
+     */
+    public isEndOffset: boolean = false;
     /**
      * @private
      */
@@ -177,6 +181,11 @@ export class Selection {
      * @private
      */
     public currentFormField: FieldElementBox = undefined;
+    // Code for Comparing the offset calculated using old approach and optimized approach
+    // /**
+    //  * @private
+    //  */
+    // public isNewApproach: boolean;
     /**
      * @private
      * @returns {boolean} - Retuens true if highlighting editing region
@@ -2807,7 +2816,7 @@ export class Selection {
         }
         let startIndex: number = this.getAbsolutePositionFromRelativePosition(start);
         let endIndex: number = this.getAbsolutePositionFromRelativePosition(end);
-        return endIndex - startIndex;
+        return Math.abs(endIndex - startIndex);
         // this.selectPosition(this.start, this.end);
     }
     /**
@@ -3936,7 +3945,7 @@ export class Selection {
      * @param fieldBegin
      * @returns {string}
      */
-    public getFieldCode(fieldBegin: FieldElementBox): string {
+    public getFieldCode(fieldBegin: FieldElementBox, isSkipTrim?: boolean): string {
         let fieldCode: string = '';
         if (!isNullOrUndefined(fieldBegin) && !(fieldBegin.fieldEnd instanceof FieldElementBox)) {
             return fieldCode;
@@ -3958,7 +3967,7 @@ export class Selection {
             startIndex = 0;
         } while (paragraph instanceof ParagraphWidget);
 
-        return fieldCode.trim();
+        return isSkipTrim ? fieldCode : fieldCode.trim();
     }
     private getFieldCodeInternal(paragraph: ParagraphWidget, startLineIndex: number, inlineIndex: number): string {
         let fieldCode: string = '';
@@ -4513,18 +4522,18 @@ export class Selection {
      * @private
      * @returns {number}
      */
-    public getParagraphLength(paragraph: ParagraphWidget, endLine?: LineWidget, elementInfo?: ElementInfo): number {
+    public getParagraphLength(paragraph: ParagraphWidget, endLine?: LineWidget, elementInfo?: ElementInfo, includeShape?: boolean): number {
         let length: number = 0;
         if (!isNullOrUndefined(paragraph)) {
             for (let j: number = 0; j < paragraph.childWidgets.length; j++) {
                 const line: LineWidget = paragraph.childWidgets[j] as LineWidget;
                 if (endLine instanceof LineWidget && endLine === line) {
                     if (elementInfo) {
-                        length += this.getLineLength(line, elementInfo);
+                        length += this.getLineLength(line, elementInfo, includeShape);
                     }
                     break;
                 }
-                length += this.getLineLength(line);
+                length += this.getLineLength(line, undefined, includeShape);
             }
         }
         return length;
@@ -4535,13 +4544,26 @@ export class Selection {
      * @private
      * @returns {number}
      */
-    public getLineLength(line: LineWidget, elementInfo?: ElementInfo): number {
+    public getLineLength(line: LineWidget, elementInfo?: ElementInfo, includeShape?: boolean): number {
         let length: number = 0;
         const bidi: boolean = line.paragraph.bidi;
         for (let i: number = !bidi ? 0 : line.children.length - 1; bidi ? i > -1 : i < line.children.length; bidi ? i-- : i++) {
             const element: ElementBox = line.children[i] as ElementBox;
             if (element instanceof ListTextElementBox) {
                 continue;
+            }
+            if (includeShape) {
+                if (element instanceof ShapeElementBox) {
+                    for (let m = 0; m < (element as ShapeElementBox).textFrame.childWidgets.length; m++) {
+                        let para = (element as ShapeElementBox).textFrame.childWidgets[m] as ParagraphWidget;
+                        length += this.getParagraphLength(para) + 1;
+                    }
+                } else if (element instanceof FootnoteElementBox) {
+                    for (let m = 0; m < (element as FootnoteElementBox).bodyWidget.childWidgets.length; m++) {
+                        let para = (element as FootnoteElementBox).bodyWidget.childWidgets[m] as ParagraphWidget;
+                        length += this.getParagraphLength(para) + 1;
+                    }
+                }
             }
             if (elementInfo && elementInfo.element instanceof ElementBox && elementInfo.element === element) {
                 length += elementInfo.index;
@@ -9302,61 +9324,6 @@ export class Selection {
         }
         return node as BlockWidget;
     }
-     /**
-     * Return 3 if the table is selected else retrun 0.
-     * @private
-     */
-    public isTableSelectedFromStart(): number {
-        if (this.end.paragraph.isInsideTable ) {
-            let cellAdv: TableCellWidget = this.end.paragraph.associatedCell;
-            if (this.start.paragraph.isInsideTable) {
-                let containerCell: TableCellWidget = this.getContainerCellOf(cellAdv, this.start.paragraph.associatedCell);
-                if (containerCell.ownerTable.contains(this.start.paragraph.associatedCell)) {
-                    let startCell: TableCellWidget = this.start.paragraph.associatedCell;
-                    let endCell: TableCellWidget = this.end.paragraph.associatedCell;
-                    if (this.containsCell(containerCell, this.start.paragraph.associatedCell)) {
-                        return 0;
-                    } else {
-                        let startColumnIndex: number = startCell.columnIndex;
-                        let endColumnIndex: number = endCell.columnIndex + endCell.cellFormat.columnSpan - 1;
-                        let startRowIndex: number = startCell.rowIndex;
-                        let endRowIndex: number = endCell.rowIndex;
-                        let table: TableWidget = containerCell.ownerTable;
-                        let rowLength: number =0;
-                        for(let i: number =0; i < table.childWidgets.length; i++) {
-                            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
-                            if (row.index >= startRowIndex && row.index <= endRowIndex) {
-                                let cellLength: number = 0;
-                                for (let j: number = 0; j < row.childWidgets.length; j++) {
-                                    let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
-                                    if (cell.columnIndex >= startColumnIndex && cell.columnIndex <= endColumnIndex) {
-                                        cellLength++;
-                                    }
-                                }
-                                if(row.childWidgets.length == cellLength) {
-                                    rowLength++;
-                                }
-                            }
-                        }
-                        if(table.childWidgets.length == rowLength) {
-                            return 3;
-                        } else {
-                            return 0;
-                        }
-                    }
-                }
-            } else {
-                return 0;
-            }
-        } else {
-            if(this.start.paragraph.isInsideTable) {
-                if (this.containsRow(this.start.paragraph.associatedCell.ownerTable.firstChild as TableRowWidget, this.start.paragraph.associatedCell)) {
-                    return 3;
-                }
-            }
-        }
-        return 0;
-    }
     /**
      * Return true if inline is in field result
      * @private
@@ -9540,7 +9507,7 @@ export class Selection {
     /**
      * @private
      */
-    public isTableSelected(): boolean {
+    public isTableSelected(isNested?: boolean): boolean {
         let start: TextPosition = this.start;
         let end: TextPosition = this.end;
         if (!this.isForward) {
@@ -9554,6 +9521,13 @@ export class Selection {
         let table: TableWidget[] = start.paragraph.associatedCell.ownerTable.getSplitWidgets() as TableWidget[];
         let firstParagraph: ParagraphWidget = this.getFirstBlockInFirstCell(table[0]) as ParagraphWidget;
         let lastParagraph: ParagraphWidget = this.getLastBlockInLastCell(table[table.length - 1]) as ParagraphWidget;
+        if (isNested) {
+            let nestedTable: TableWidget = lastParagraph.associatedCell.ownerTable;
+            while (nestedTable.containerWidget instanceof TableCellWidget) {
+                nestedTable = nestedTable.containerWidget.ownerTable;
+            }
+            lastParagraph = this.getLastBlockInLastCell(nestedTable) as ParagraphWidget;
+        }
         return start.paragraph.associatedCell.equals(firstParagraph.associatedCell) &&
             end.paragraph.associatedCell.equals(lastParagraph.associatedCell)
             && (!firstParagraph.associatedCell.equals(lastParagraph.associatedCell) || (start.offset === 0
@@ -9591,7 +9565,7 @@ export class Selection {
     /**
      * @private
      */
-    public updateImageSize(imageFormat: ImageInfo): void {
+    public updateImageSize(imageFormat: ImageSizeInfo): void {
         this.owner.isShiftingEnabled = true;
         let startPosition: TextPosition = this.start;
         let endPosition: TextPosition = this.end;
@@ -10871,6 +10845,17 @@ export class Selection {
                     startPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset);
                 } else {
                     offset = firstElement.line.getOffset(firstElement, 0);
+                    let line: LineWidget = firstElement.line as LineWidget;
+                    if (line.isFirstLine()) {
+                        for (let i = 0; i < line.children.length; i++) {
+                            if (firstElement === line.children[i] && line.children[i] instanceof TextElementBox) {
+                                offset = 0;
+                                break;
+                            } else if (line.children[i] instanceof TextElementBox) {
+                                break;
+                            }
+                        }
+                    }
                     startPosition.setPositionForLineWidget(firstElement.line, offset);
                 }
                 let endPosition: TextPosition = new TextPosition(this.owner);
@@ -11538,14 +11523,21 @@ export class Selection {
                 position += 1;
                 let elementInfo = (block as ParagraphWidget).getInline(paragraphInfo.offset, 0);
                 position += this.getBlockOffsetByElement(paragraphInfo, block, elementInfo.element, elementInfo.index, fieldResult);
-                position -= fieldResult.length;
+                if (this.isEndOffset && this.end.offset === this.getLineLength(this.end.currentWidget) + 1) {
+                    position += 1;
+                }
+                // if (this.owner.documentHelper.isDocumentProtected && this.owner.documentHelper.protectionType === 'FormFieldsOnly') {
+                //     position -= fieldResult.length;
+                // }
                 positionInfo.done = true;
                 break;
             }
 
             position = this.getBlockLength(paragraphInfo, block, position, positionInfo, true, tableBlock, fieldResult);
             if (positionInfo.done) {
-                position -= fieldResult.length;
+                // if (this.owner.documentHelper.isDocumentProtected && this.owner.documentHelper.protectionType === 'FormFieldsOnly') {
+                //     position -= fieldResult.length;
+                // }
                 break;
             }
             if (!isNullOrUndefined(block)) {
@@ -11615,17 +11607,30 @@ export class Selection {
             position += 1;
             let elementInfo = (block as ParagraphWidget).getInline(paragraphInfo.offset, 0);
             position += this.getBlockOffsetByElement(paragraphInfo, block, elementInfo.element, elementInfo.index, fieldResult);
+            if (this.isEndOffset && block.isInsideTable && (block.associatedCell.lastChild as ParagraphWidget).equals(block) && paragraphInfo.offset === this.getParagraphLength(block) + 1) {
+                position += 1;
+            }
             completed.done = true;
             return position;
         }
         if (block instanceof ParagraphWidget) {
-            //Add Paragraph start length;
-            position += 1;
-            if (!skipShapeElement) {
-                position += (block.getTotalLength());
-            } else {
-                position += this.getBlockTotalLength(block, paragraphInfo, completed, tableBlock, fieldResult);
-            }
+            // Code for Comparing the offset calculated using old approach and optimized approach
+            // if (this.isNewApproach) {
+                // position += 1;
+                // if (!skipShapeElement) {
+                //     position += block.length;
+                // } else {
+                //     position += this.getBlockTotalLength(block, paragraphInfo, completed, tableBlock, fieldResult);
+                // }
+            // } else {
+                //Add Paragraph start length;
+                position += 1;
+                if (!skipShapeElement) {
+                    position += (block.getTotalLength());
+                } else {
+                    position += this.getBlockTotalLength(block, paragraphInfo, completed, tableBlock, fieldResult);
+                }
+            // }
         } else if (block instanceof TableWidget) {
             // Table start mark length
             position += 1;
@@ -11742,6 +11747,96 @@ export class Selection {
             }
         }
         return offset;
+    }
+    /**
+     * 
+     * @private
+     */
+    public getTableRelativeValue(startPosition: TextPosition, endPosition: TextPosition): number {
+        if (startPosition.currentWidget.paragraph.isInsideTable) {
+            if (this.isTableSelected()) {
+                return 3;
+            } else if (this.isRowSelect() && endPosition.paragraph.isInsideTable && startPosition.paragraph.associatedCell.ownerTable.equals(endPosition.paragraph.associatedCell.ownerTable)) {
+                return 2;
+            } else {
+                let table: TableWidget[] = startPosition.paragraph.associatedCell.ownerTable.getSplitWidgets() as TableWidget[];
+                let firstParagraph: ParagraphWidget = this.getFirstBlockInFirstCell(table[0]) as ParagraphWidget;
+                if (startPosition.paragraph.associatedCell.equals(firstParagraph.associatedCell)) {
+                    if (endPosition.paragraph.isInsideTable) {
+                        if (!startPosition.paragraph.associatedCell.ownerTable.equals(endPosition.paragraph.associatedCell.ownerTable)) {
+                            let length: number = this.isRowSelect() ? 2 : 3;
+                            let table: TableWidget = startPosition.paragraph.associatedCell.ownerTable;
+                            while (table.containerWidget instanceof TableCellWidget) {
+                                length += 3;
+                                table = table.containerWidget.ownerTable;
+                                if (table.equals(endPosition.paragraph.associatedCell.ownerTable)) {
+                                    break;
+                                }
+                            }
+                            return length;
+                        } else {
+                            return 0;
+                        }
+                    } else {
+                        return 3;
+                    }
+                } else {
+                    if (endPosition.currentWidget.paragraph.isInsideTable) {
+                        if (!startPosition.paragraph.associatedCell.ownerTable.equals(endPosition.paragraph.associatedCell.ownerTable)) {
+                            return 2;
+                        } else {
+                            return 0;
+                        }
+                    } else {
+                        return 2;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+    /**
+     * 
+     * @private
+     */
+    public isRowSelect(): boolean {
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        if (isNullOrUndefined(start.paragraph.associatedCell) ||
+            isNullOrUndefined(end.paragraph.associatedCell) || start.paragraph.associatedCell.equals(end.paragraph.associatedCell) || this.isTableSelected(true)) {
+            return false;
+        }
+        let endTable = end.paragraph.associatedCell.ownerTable;
+        let isRowSelect: boolean = false;
+        if(endTable.containerWidget instanceof TableCellWidget) {
+            while(endTable.containerWidget instanceof TableCellWidget) {
+                endTable = endTable.containerWidget.ownerTable;
+                for(let i: number = 0; i < endTable.childWidgets.length; i++) {
+                    let row: TableRowWidget = endTable.childWidgets[i] as TableRowWidget;
+                    if((row.childWidgets[row.childWidgets.length - 1] as TableCellWidget).equals(endTable.containerWidget)) {
+                        isRowSelect = true;
+                    }
+                }
+    
+            }
+        } else {
+            for(let i: number = 0; i < endTable.childWidgets.length; i++) {
+                let row: TableRowWidget = endTable.childWidgets[i] as TableRowWidget;
+                if((row.childWidgets[row.childWidgets.length - 1] as TableCellWidget).equals(end.paragraph.associatedCell)) {
+                    isRowSelect = true;
+                }
+            }
+        }
+        let row: TableRowWidget[] = start.paragraph.associatedCell.ownerRow.getSplitWidgets() as TableRowWidget[];
+        let firstcell: TableCellWidget;
+        if (row[0].childWidgets.length > 0) {
+            firstcell = row[0].childWidgets[0] as TableCellWidget;
+        }
+        return start.paragraph.associatedCell.equals(firstcell) && isRowSelect;
     }
 }
 /**

@@ -1336,7 +1336,9 @@ export class DatePicker extends Calendar implements IInput {
         }
     }
     private createCalendar(): void {
-        this.popupWrapper = this.createElement('div', { className: '' + ROOT + ' ' + POPUPWRAPPER });
+        this.popupWrapper = this.createElement('div', { className: '' + ROOT + ' ' + POPUPWRAPPER, id: this.inputElement.id + '_options' });
+        this.popupWrapper.setAttribute( 'aria-label', this.element.id );
+        this.popupWrapper.setAttribute( 'role', 'dialog' );
         if (!isNullOrUndefined(this.cssClass)) {
             this.popupWrapper.className += ' ' + this.cssClass;
         }
@@ -2160,6 +2162,7 @@ export class DatePicker extends Calendar implements IInput {
         if (this.isCalendar()) {
             Input.addAttributes({ 'aria-expanded': 'true' }, this.inputElement);
             attributes(this.inputElement, { 'aria-owns': this.inputElement.id + '_options'});
+            attributes(this.inputElement, { 'aria-controls': this.inputElement.id });
             if (this.value)
             {
                 attributes(this.inputElement, { 'aria-activedescendant': '' + this.setActiveDescendant() });
@@ -2167,6 +2170,7 @@ export class DatePicker extends Calendar implements IInput {
         } else {
             Input.addAttributes({ 'aria-expanded': 'false' }, this.inputElement);
             this.inputElement.removeAttribute('aria-owns');
+            this.inputElement.removeAttribute('aria-controls');
             this.inputElement.removeAttribute( 'aria-activedescendant');
         }
     }

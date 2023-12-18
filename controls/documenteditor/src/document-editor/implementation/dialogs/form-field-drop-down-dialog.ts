@@ -101,6 +101,7 @@ export class DropDownFormFieldDialog {
             attrs: { type: 'button', style: 'height:36px;width:40px' },
             className: 'e-de-ff-drpdwn-mvup'
         });
+        moveUpButtonEle.setAttribute('aria-label','moveUp');
         this.moveUpButton = new Button({ cssClass: 'e-button-custom', iconCss: 'e-de-arrow-up' });
         moveUpButtonEle.addEventListener('click', this.moveUpItem.bind(this));
         let moveDownButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
@@ -108,6 +109,7 @@ export class DropDownFormFieldDialog {
             attrs: { type: 'button', style: 'height:36px;width:40px' },
             className: 'e-de-ff-drpdwn-mvdn'
         });
+        moveDownButtonEle.setAttribute('aria-label','moveDown');
         this.moveDownButton = new Button({ cssClass: 'e-button-custom', iconCss: 'e-de-arrow-down' });
         moveDownButtonEle.addEventListener('click', this.moveDownItem.bind(this));
         let fileSettingsLabel: HTMLElement = createElement('div', {

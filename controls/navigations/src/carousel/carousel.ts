@@ -654,7 +654,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         }
         addClass([this.element], carouselClasses);
         setStyleAttribute(this.element, { 'width': formatUnit(this.width), 'height': formatUnit(this.height) });
-        attributes(this.element, { 'tabindex': '0', 'role': 'group', 'aria-roledescription': 'carousel', 'aria-label': this.localeObj.getConstant('slideShow') });
+        attributes(this.element, { 'role': 'group', 'aria-roledescription': 'carousel', 'aria-label': this.localeObj.getConstant('slideShow') });
         if (!isNullOrUndefined(this.htmlAttributes)) {
             this.setHtmlAttributes(this.htmlAttributes, this.element);
         }
@@ -663,7 +663,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
     private renderSlides(): void {
         let slideContainer: HTMLElement = this.element.querySelector('.' + CLS_SLIDE_CONTAINER);
         if (!slideContainer) {
-            slideContainer = this.createElement('div', { className: CLS_SLIDE_CONTAINER });
+            slideContainer = this.createElement('div', { className: CLS_SLIDE_CONTAINER, attrs: { 'tabindex': '0', 'role': 'tabpanel' } });
             this.element.appendChild(slideContainer);
         }
         this.itemsContainer = this.createElement('div', { className: CLS_ITEMS, attrs: { 'aria-live': this.autoPlay ? 'off' : 'polite' } });
@@ -1578,7 +1578,7 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         this.unWireEvents();
         [].slice.call(this.element.children).forEach((ele: HTMLElement) => { this.element.removeChild(ele); });
         removeClass([this.element], [CLS_CAROUSEL, this.cssClass, CLS_RTL, CLS_SWIPE]);
-        ['tabindex', 'role', 'style'].forEach((attr: string): void => { this.element.removeAttribute(attr); });
+        ['role', 'style'].forEach((attr: string): void => { this.element.removeAttribute(attr); });
         this.itemsContainer = null;
         super.destroy();
     }

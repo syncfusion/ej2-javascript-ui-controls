@@ -116,6 +116,8 @@ $ribbon-group-button-icon-padding: 0 2px 0 0 !default;
 $ribbon-group-button-ddb-border-radius: 4px !default;
 $ribbon-group-button-padding: 0 5px 0 0 !default;
 $ribbon-group-button-ddb-border: 1px solid !default;
+$ribbon-groupbutton-header-padding: 3px !default;
+$ribbon-items-label: 28px !default;
 
 $ribbon-bigger-content-height: 114px !default;
 $ribbon-bigger-group-overflow-content-height: 114px !default;
@@ -195,6 +197,7 @@ $ribbon-bigger-group-button-icon-padding: 0 !default;
 $ribbon-bigger-group-button-icon-margin: $ribbon-bigger-items-margin !default;
 $ribbon-bigger-group-button-ddb-padding: 8px 12px 12px !default;
 $ribbon-bigger-group-button-padding: 0 7px 0 0 !default;
+$ribbon-bigger-items-label: 36px !default;
 
 $ribbon-header-bg-color: $content-bg-color-alt2 !default;
 $ribbon-border-color: unset !default;
@@ -273,3 +276,8 @@ $ribbon-group-button-text-active-color: $flyout-text-color-selected !default;
 $ribbon-group-button-selected-background: $flyout-bg-color-selected !default;
 $ribbon-group-button-dropdown-popup-border-color: $flyout-border !default;
 $ribbon-group-button-dropdown-popup-box-shadow: none !default;
+$ribbon-popup-common-bg-color: $content-bg-color !default;
+$ribbon-popup-common-border-radius: 4px !default;
+$ribbon-popup-common-border-color: $flyout-border !default;
+$ribbon-popup-common-box-shadow: none !default;
+$ribbon-filemenu-popup-border-radius: 4px !default;

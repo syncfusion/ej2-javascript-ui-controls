@@ -154,6 +154,10 @@ export class TableProperties {
         this.alignTop.element.addEventListener('click', this.applyAlignTop.bind(this));
         this.alignBottom.element.addEventListener('click', this.applyAlignBottom.bind(this));
         this.alignCenterHorizontal.element.addEventListener('click', this.applyAlignCenterHorizontal.bind(this));
+        this.topMargin.htmlAttributes={'aria-label':'top-margin'};
+        this.bottomMargin.htmlAttributes={'aria-label':'bottom-margin'};
+        this.leftMargin.htmlAttributes={'aria-label':'left-margin'};
+        this.rightMargin.htmlAttributes={'aria-label':'right-Margin'};
         this.topMargin.element.addEventListener('click', (): void => {
             this.isTopMarginApply = true;
         });

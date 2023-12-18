@@ -362,7 +362,7 @@ export class RulerHelper {
         let finalmouseXRelativeToDiv: number;
         if (isHorizontal) {
             document.addEventListener('mousemove', (e: MouseEvent) => {
-                if (documentEditor.isDestroyed) {
+                if (documentEditor.isDestroyed || !documentEditor.documentEditorSettings.showRuler) {
                     return;
                 }
                 const divRect = hRuler.getBoundingClientRect();
@@ -663,7 +663,7 @@ export class RulerHelper {
         let currentScrollTop: number;
         if (!isHorizontal) {
             document.addEventListener("mousemove", (e) => {
-                if (documentEditor.isDestroyed) {
+                if (documentEditor.isDestroyed || !documentEditor.documentEditorSettings.showRuler) {
                     return;
                 }
                 const divRect = vRuler.getBoundingClientRect();
@@ -1998,7 +1998,7 @@ export class RulerHelper {
                 lineSvg.style.display = 'block';
             });
             document.addEventListener("mousemove", (e) => {
-                if (documentEditor.isDestroyed) {
+                if (documentEditor.isDestroyed || !documentEditor.documentEditorSettings.showRuler) {
                     return;
                 }
                 if (documentEditor.isTableMarkerDragging) {
@@ -2019,7 +2019,7 @@ export class RulerHelper {
                 }
             });
             document.addEventListener("mouseup", (e) => {
-                if (documentEditor.isDestroyed) {
+                if (documentEditor.isDestroyed || !documentEditor.documentEditorSettings.showRuler) {
                     return;
                 }
                 if (documentEditor.isTableMarkerDragging) {

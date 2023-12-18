@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 24.1.41 (2023-12-18)
+
+### Svg Base
+
+- `#I185583` - Now, the shared tooltip doesn't overlaps on cross hair when enabled.
+
+## 23.2.5 (2023-11-23)
+
+### Svg Base
+
+#### Bug Fixes
+
+- `#I519350` - Now, tooltip text is displaying in the correct order when rendering multiple series with a tooltip template.
+
 ## 22.2.8 (2023-08-08)
 
 ### Svg Base

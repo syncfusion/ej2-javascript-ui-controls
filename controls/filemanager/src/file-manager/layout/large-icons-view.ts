@@ -148,6 +148,7 @@ export class LargeIconsView {
             this.listElements = ListBase.createListFromJson(createElement, <{ [key: string]: Object; }[]>this.items, this.listObj);
             this.itemList = Array.prototype.slice.call(selectAll('.' + CLS.LIST_ITEM, this.listElements));
             this.element.appendChild(this.listElements);
+            this.listElements.setAttribute("aria-label","listbox");
             this.preventImgDrag();
             this.createDragObj();
             if (this.itemList.length === 0) {
@@ -307,6 +308,7 @@ export class LargeIconsView {
         });
         checkElement.setAttribute('role', 'checkbox');
         checkElement.setAttribute('aria-checked', 'false');
+        checkElement.setAttribute('aria-label', 'checkbox');
         args.item.firstElementChild.insertBefore(checkElement, args.item.firstElementChild.childNodes[0]);
     }
 

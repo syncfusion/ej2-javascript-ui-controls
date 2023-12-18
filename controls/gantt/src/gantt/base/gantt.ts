@@ -15,7 +15,7 @@ import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeToolti
 import { DataStateChangeEventArgs } from '@syncfusion/ej2-treegrid';
 import { ITaskbarEditedEventArgs, IParent, ITaskData, PdfColumnHeaderQueryCellInfoEventArgs } from './interface';
 import { ICollapsingEventArgs, CellEditArgs, PdfQueryTimelineCellInfoEventArgs } from './interface';
-import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs } from './interface';
+import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs, IEventMarkerInfo } from './interface';
 import { PdfExportProperties, ISplitterResizedEventArgs } from './interface';
 import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs, PdfQueryCellInfoEventArgs } from './interface';
 import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';
@@ -94,6 +94,7 @@ export class Gantt extends Component<HTMLElement>
     private isProjectDateUpdated: boolean;
     public currentSelection: any ;
     public columnLoop: any;
+    private isRowSelected: boolean = false;
     public showIndicator: boolean = true;
     public singleTier: number = 0;
     public isVirtualScroll: boolean;
@@ -601,6 +602,15 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public enableVirtualization: boolean;
+
+    /**
+    * Loads project with large time span with better performance by initially rendering the timeline cells that are 
+    * visible only within the current view and load subsequent timeline cells on horizontal scrolling.
+    *
+    * @default false
+    */
+    @Property(false)
+    public enableTimelineVirtualization: boolean;
 
     /**
      * `toolbar` defines the toolbar items of the Gantt.
@@ -1559,6 +1569,8 @@ export class Gantt extends Component<HTMLElement>
      * @returns {string} .
      * @private
      */
+    
+    public eventMarkerColloction :IEventMarkerInfo[]=[]
     public getModuleName(): string {
         return 'gantt';
     }
@@ -1780,6 +1792,7 @@ export class Gantt extends Component<HTMLElement>
             (<{ vueInstance?: any }>this.treeGrid).vueInstance = (<{ vueInstance?: any }>this).vueInstance;
             (<{ vueInstance?: any }>this.treeGrid.grid).vueInstance = (<{ vueInstance?: any }>this).vueInstance;
         }
+        this.element.setAttribute('role', 'application');
         createSpinner({ target: this.element }, this.createElement);
         this.trigger('load', {});
         this.element.classList.add(cls.root);
@@ -1942,7 +1955,7 @@ export class Gantt extends Component<HTMLElement>
         } else {
                 maskTable.style.height = element.getBoundingClientRect().height + 'px';
                 let div:any = this.createElement('div', { className: 'e-temp-timeline' });
-                div.style.width = 614 + 'px';
+                div.style.width = this.element.getElementsByClassName('e-timeline-header-container')[0]['offsetWidth'] + 'px';
                 div.style.position = 'sticky';
                 if (this.enableRtl) {
                     div.style['margin-right'] = Math.abs(this.scrollLeftValue) + 'px';
@@ -1975,10 +1988,13 @@ export class Gantt extends Component<HTMLElement>
     }
     private applyTimelineMaskRow (row: Element):any {
         const maskRow: Element = row;
-        maskRow.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
-        maskRow.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
-        maskRow.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
-        maskRow.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}))
+        let num: number = 4;
+        if (this.element.getElementsByClassName('e-timeline-header-container')[0]['offsetWidth']/166 > 4) {
+          num = this.element.getElementsByClassName('e-timeline-header-container')[0]['offsetWidth']/166;
+        }
+        for (let i: number = 0; i < num; i++) {
+            maskRow.appendChild(this.createElement('td', { className: 'e-timeline-masked-top-header-cell'}));
+        }
         for (let i:number = 0; i < maskRow.childNodes.length-1; i++) {
             maskRow.childNodes[parseInt(i.toString(), 10)]['style']['width'] = 166 + 'px'
         }
@@ -2060,8 +2076,13 @@ export class Gantt extends Component<HTMLElement>
     private applyMaskRow(row: Element): Element {
         const maskRow: Element = row;
         if (this.columnLoop < 4){
-            maskRow.appendChild(this.createElement('td', { className: 'e-masked-cell e-rowcell' }))
-            maskRow.appendChild(this.createElement('td', { className: 'e-masked-cell e-rowcell' }))
+            let num: number = 2;
+            if (this.element.getElementsByClassName('e-timeline-header-container')[0]['offsetWidth']/300 > 2) {
+              num = this.element.getElementsByClassName('e-timeline-header-container')[0]['offsetWidth']/300;
+            }
+            for (let i: number = 0; i < num; i++) {
+                maskRow.appendChild(this.createElement('td', { className: 'e-masked-cell e-rowcell' }))
+            }
         } else {
             maskRow.appendChild(this.createElement('td', { className: 'e-masked-cell e-rowcell' }))
         }
@@ -2204,9 +2225,9 @@ export class Gantt extends Component<HTMLElement>
         if (!this.isFromOnPropertyChange) {
             this.splitterModule.updateSplitterPosition();
         }
-        // if (this.gridLines === 'Vertical' || this.gridLines === 'Both') {
-        //     this.renderChartVerticalLines();
-        // }
+        if ((this.gridLines === 'Vertical' || this.gridLines === 'Both') && (!this.dayMarkersModule)) {
+            this.renderChartVerticalLines();
+        }
     }
     public removeCriticalPathStyles(): void {
         const ganttChartElement: HTMLElement = this.ganttChartModule.chartElement;
@@ -2273,7 +2294,12 @@ export class Gantt extends Component<HTMLElement>
         }
     }
     public keyActionHandler(e: KeyboardEventArgs): void {
-        this.focusModule.onKeyPress(e);
+        if (e.target && (e.action === 'downArrow' || e.action === 'upArrow') && e.target === this.element.querySelector('.e-rowcell')) {
+            this.treeGrid.grid.notify('key-pressed', e);
+        }
+        else {
+            this.focusModule.onKeyPress(e);
+        }
     }
     /**
      * Method for updating row height value in connector line collections
@@ -2670,10 +2696,17 @@ export class Gantt extends Component<HTMLElement>
     public treeDataBound(args: object): void {
         this.element.getElementsByClassName('e-chart-root-container')[0]['style'].height = '100%';
         let gridHeight: string = this.element.getElementsByClassName('e-gridcontent')[0]['style'].height;
+        var gridContent = this.element.getElementsByClassName('e-gridcontent')[0].childNodes[0] as HTMLElement;
+        gridContent.setAttribute('tabindex', '0');
+        var treeGridrole = this.element.getElementsByClassName('e-gridcontent')[0].childNodes[0].childNodes[0] as HTMLElement;
+        treeGridrole.setAttribute('role', 'treegrid');
         let timelineContainer: number = this.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
         gridHeight = 'calc(100% - ' + timelineContainer + 'px)';
         // eslint-disable-next-line
-        this.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+        // this.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+        const scrollContainer = this.element.getElementsByClassName('e-chart-scroll-container e-content')[0];
+        scrollContainer['style'].height = 'calc(100% - ' + timelineContainer + 'px)';
+        scrollContainer.setAttribute('tabindex', '0');
         if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.toolbarModule.element)) {
             this.splitterElement.style.height = 'calc(100% - ' + this.toolbarModule.element.offsetHeight + 'px)';
         } else {
@@ -3991,6 +4024,7 @@ export class Gantt extends Component<HTMLElement>
         this.splitterModule.splitterPreviousPositionGrid = pane1.scrollWidth + 1 + 'px';
         this.splitterModule.splitterPreviousPositionChart = pane2.scrollWidth + 1 + 'px';
         this.splitterModule.splitterObject.paneSettings[0].size = splitterPosition;
+        this.splitterModule.splitterObject.paneSettings[1].size = (parseFloat('99.75%') - parseFloat(splitterPosition)) + '%';
         this.splitterModule.triggerCustomResizedEvent();
     }
     /**
@@ -4121,6 +4155,7 @@ export class Gantt extends Component<HTMLElement>
      * @param  {Object} data - Defines the data to modify.
      * @returns {void} .
      * @public
+     * > In order to update the custom columns using `updateRecordByID`, it is necessary to define the respective fieldName in the column settings.
      */
     public updateRecordByID(data: Object): void {
         if (this.editModule && this.editSettings.allowEditing) {

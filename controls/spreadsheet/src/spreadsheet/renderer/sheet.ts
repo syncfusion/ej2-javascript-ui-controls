@@ -148,7 +148,7 @@ export class SheetRender implements IRenderer {
     }
 
     public renderPanel(): void {
-        this.contentPanel = this.parent.createElement('div', { className: 'e-main-panel' });
+        this.contentPanel = this.parent.createElement('div', { className: 'e-main-panel', attrs: { 'tabindex': '0' } });
         const sheet: SheetModel = this.parent.getActiveSheet();
         const id: string = this.parent.element.id;
         this.contentPanel.appendChild(this.parent.createElement('div', { className: 'e-row-header', id: `${id}_row_header` }));

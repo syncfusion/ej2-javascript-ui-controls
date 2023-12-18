@@ -465,7 +465,7 @@ export class AccumulationLegend extends BaseLegend {
         if ((<AccumulationChart>this.chart).accumulationSelectionModule) {
             const selectedDataIndexes: Indexes[] = <Indexes[]>extend([], (<AccumulationChart>this.chart).accumulationSelectionModule.selectedDataIndexes, null, true);
         }
-        this.chart.animateSeries = false;
+        (this.chart as AccumulationChart).animateSeries = false;
         for (const id of legendItemsId) {
             if (targetId.indexOf(id) > -1) {
                 const pointIndex: number = parseInt(targetId.split(id)[1], 10);

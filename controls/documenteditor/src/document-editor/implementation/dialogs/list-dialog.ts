@@ -170,7 +170,8 @@ export class ListDialog {
         const numberStyleDiv: HTMLElement = createElement('div', { innerHTML: divStyle + '<label id="' + containerId + '_numberFormatLabel" style="display:block;" class=e-de-list-ddl-header>' + locale.getConstant('Number format') + '</label><label id="' + containerId + '_numberStyleLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Number style for this level') + '</label><select style="height:20px;width:100%" id="' + containerId + '_numberStyle"><option>' + locale.getConstant('Arabic') + '</option><option>' + locale.getConstant('UpRoman') + '</option><option>' + locale.getConstant('LowRoman') + '</option><option>' + locale.getConstant('UpLetter') + '</option><option>' + locale.getConstant('LowLetter') + '</option><option>' + locale.getConstant('Number') + '</option><option>' + locale.getConstant('Leading zero') + '</option><option>' + locale.getConstant('Bullet') + '</option><option>' + locale.getConstant('Ordinal') + '</option><option>' + locale.getConstant('Ordinal Text') + '</option><option>' + locale.getConstant('Special') + '</option><option>' + locale.getConstant('For East') + '</option></select><label id="' + containerId + '_startAtLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Start at') + '</label><input type="text" id="' + containerId + '_startAt">' });
         div.appendChild(numberStyleDiv);
 
-        this.numberFormatDiv = createElement('div', { className: 'e-de-list-dlg-subdiv', innerHTML: '<div><div><label id="' + containerId + '_formatLabel" style="display:inline-block;width:86%" class=e-de-list-ddl-subheader>' + locale.getConstant('Enter formatting for number') + '</label><button type="button" id="' + containerId + '_list_info" class="e-control e-btn e-primary e-de-list-format-info">i</button></div><input style=width:180px; type="text" id="' + containerId + '_numberFormat" class=e-input></div><label id="' + containerId + '_restartLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Restart list after') + '</label><select style="height:20px;width:100%" id="' + containerId + '_restartBy"><option>' + locale.getConstant('No Restart') + '</option></select></div>' });
+        this.numberFormatDiv = createElement('div', { className: 'e-de-list-dlg-subdiv', innerHTML: '<div><div><label id="' + containerId + '_formatLabel" style="display:inline-block;width:86%" class=e-de-list-ddl-subheader>' + locale.getConstant('Enter formatting for number') + '</label><button type="button" id="' + containerId + '_list_info" class="e-control e-btn e-primary e-de-list-format-info">i</button></div><input style=width:180px; type="text" id="' + containerId + '_numberFormat" aria-label="numberFormat" class=e-input></div><label id="' + containerId + '_restartLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Restart list after') + '</label><select style="height:20px;width:100%" id="' + containerId + '_restartBy"><option>' + locale.getConstant('No Restart') + '</option></select></div>' });
+
         div.appendChild(this.numberFormatDiv);
         this.target.appendChild(div);
         let indentsDivLabelStyle: string;
@@ -191,8 +192,11 @@ export class ListDialog {
             this.numberFormatDiv.classList.add('e-de-rtl');
         }
         const startAtTextBox: HTMLInputElement = document.getElementById(containerId + '_startAt') as HTMLInputElement;
+        startAtTextBox.setAttribute('aria-label','startAt');
         const textIndentAtTextBox: HTMLInputElement = document.getElementById(containerId + '_textIndent') as HTMLInputElement;
+        textIndentAtTextBox.setAttribute('aria-label','textIndent');
         const alignedAtTextBox: HTMLInputElement = document.getElementById(containerId + '_alignedAt') as HTMLInputElement;
+        alignedAtTextBox.setAttribute('aria-label','alignedAt');
         this.startAt = new NumericTextBox({
             format: '#',
             decimals: 0,
@@ -352,7 +356,6 @@ export class ListDialog {
         const numberFormat: string = '%' + (this.levelNumber + 1).toString();
 
         const numberFormatTextBox: HTMLInputElement = document.getElementById(this.documentHelper.owner.containerId + '_numberFormat') as HTMLInputElement;
-
         if (this.listLevel.listLevelPattern === 'Bullet') {
             this.listLevel.numberFormat = String.fromCharCode(61623);
             numberFormatTextBox.value = this.listLevel.numberFormat;

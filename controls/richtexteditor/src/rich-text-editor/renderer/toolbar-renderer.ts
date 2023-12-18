@@ -1,5 +1,5 @@
-import { addClass, Browser, L10n, removeClass, EventHandler, formatUnit, isNullOrUndefined, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
-import { getInstance, closest, MouseEventArgs, selectAll, detach } from '@syncfusion/ej2-base';
+import { addClass, Browser, L10n, removeClass, formatUnit, isNullOrUndefined, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { getInstance, closest, MouseEventArgs, selectAll } from '@syncfusion/ej2-base';
 import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode } from '@syncfusion/ej2-navigations';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Popup, Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
@@ -29,10 +29,8 @@ export class ToolbarRenderer implements IRenderer {
      * @private
      */
     public parent: IRichTextEditor;
-    private popupContainer: HTMLElement;
     private currentElement: HTMLElement;
     private currentDropdown: DropDownButton;
-    private popupOverlay: HTMLElement;
     private tooltip: Tooltip;
     private l10n: L10n;
 
@@ -52,12 +50,14 @@ export class ToolbarRenderer implements IRenderer {
 
     private wireEvent(): void {
         this.parent.on(events.destroy, this.unWireEvent, this);
-        this.parent.on(events.maximizeMinimizeClick, this.destroyTooltip, this);
+        this.parent.on(events.destroyTooltip, this.destroyTooltip, this);
     }
 
     private destroyTooltip(): void {
-        if (!isNullOrUndefined(document.querySelector('.e-tooltip-wrap')) && !isNullOrUndefined(document.querySelector( ' [data-tooltip-id]'))) {
-            const tooltipTargetEle: HTMLElement = this.parent.element.querySelector('[data-tooltip-id]');
+        const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
+            this.parent.contentModule.getDocument();
+        if (!isNullOrUndefined(currentDocument.querySelector('.e-tooltip-wrap')) && !isNullOrUndefined(currentDocument.querySelector( '[data-tooltip-id]'))) {
+            const tooltipTargetEle: HTMLElement = currentDocument.querySelector('[data-tooltip-id]');
             const event: MouseEvent = new MouseEvent('mouseleave', {bubbles: true, cancelable: true});
             tooltipTargetEle.dispatchEvent(event);
         }
@@ -65,10 +65,6 @@ export class ToolbarRenderer implements IRenderer {
 
     private unWireEvent(): void {
         this.parent.off(events.destroy, this.unWireEvent);
-        if (this.popupOverlay) {
-            EventHandler.remove(this.popupOverlay, 'click touchmove', this.onPopupOverlay);
-        }
-        this.removePopupContainer();
     }
 
     private toolbarBeforeCreate(e: BeforeCreateArgs): void {
@@ -93,7 +89,6 @@ export class ToolbarRenderer implements IRenderer {
 
     private dropDownSelected(args: MenuEventArgs): void {
         this.parent.notify(events.dropDownSelect, args);
-        this.onPopupOverlay();
     }
 
     private beforeDropDownItemRender(args: MenuEventArgs): void {
@@ -132,28 +127,11 @@ export class ToolbarRenderer implements IRenderer {
                 addClass([listEle[1], listEle[2]], 'e-disabled');
             }
         }
-        if (Browser.isDevice && !args.element.parentElement.classList.contains(classes.CLS_QUICK_DROPDOWN)) {
-            this.popupModal(args.element.parentElement);
-        }
         this.parent.notify(events.selectionSave, args);
     }
 
     private dropDownClose(args: MenuEventArgs): void {
-        this.removePopupContainer();
         this.parent.notify(events.selectionRestore, args);
-    }
-
-    private removePopupContainer(): void {
-        if (Browser.isDevice && !isNullOrUndefined(this.popupContainer)) {
-            const popupEle : HTMLElement = this.popupContainer.querySelector('.e-dropdown-popup.e-tbar-btn.e-control');
-            if (popupEle) {
-                this.popupContainer.parentNode.insertBefore(popupEle, this.popupContainer.nextSibling);
-                popupEle.style.removeProperty('position');
-                removeClass([popupEle], 'e-popup-modal');
-            }
-            detach(this.popupContainer);
-            this.popupContainer = undefined;
-        }
     }
 
     /**
@@ -189,7 +167,7 @@ export class ToolbarRenderer implements IRenderer {
                 openDelay: 400,
                 opensOn: 'Hover',
                 beforeRender: this.tooltipBeforeRender.bind(this),
-                cssClass: this.parent.cssClass,
+                cssClass: this.parent.getCssClass(),
                 windowCollision: true,
                 position: 'BottomCenter'
             });
@@ -228,11 +206,11 @@ export class ToolbarRenderer implements IRenderer {
                     return;
                 }
                 // eslint-disable-next-line
-                 // Table styles dropdown preselect
-                 if (proxy.parent.editorMode !== 'Markdown') {
-                    const startNode : HTMLElement = proxy.parent.getRange().startContainer.parentElement;
-                    const tableEle : HTMLElement = startNode.closest('table');
-                    const trow : HTMLElement = startNode.closest('tr');
+                // Table styles dropdown preselect
+                if (proxy.parent.editorMode !== 'Markdown') {
+                    const startNode: HTMLElement = proxy.parent.getRange().startContainer.parentElement;
+                    const tableEle: HTMLElement = startNode.closest('table');
+                    const trow: HTMLElement = startNode.closest('tr');
                     if (!isNOU(tableEle) && tableEle.classList.contains('e-dashed-border')) {
                         for (let index: number = 0; index < args.element.childNodes.length; index++) {
                             if ((args.element.childNodes[index as number] as HTMLElement).classList.contains('e-dashed-borders')) {
@@ -248,12 +226,12 @@ export class ToolbarRenderer implements IRenderer {
                         }
                     }
                     //Alignments preselect
-                    let alignEle : Node = proxy.parent.getRange().startContainer;
-                    while (alignEle !== proxy.parent.element.querySelector('.e-content') && !isNOU(alignEle.parentElement)) {
+                    let alignEle: Node = proxy.parent.getRange().startContainer;
+                    while (alignEle !== proxy.parent.inputElement && !isNOU(alignEle.parentElement)) {
                         if (alignEle.nodeName === '#text') {
                             alignEle = alignEle.parentElement;
                         }
-                        const alignStyle : string = window.getComputedStyle(alignEle as HTMLElement).textAlign;
+                        const alignStyle: string = window.getComputedStyle(alignEle as HTMLElement).textAlign;
                         if ((args.items[0 as number] as any).command === 'Alignments') {
                             if ((args.items[0 as number].text === 'Align Left' && (alignStyle === 'left') || alignStyle === 'start')) {
                                 addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
@@ -275,7 +253,8 @@ export class ToolbarRenderer implements IRenderer {
                         alignEle = alignEle.parentElement;
                     }
                     //image preselect
-                    const imageEle : HTMLElement = startNode.closest('img') ? startNode.closest('img') : startNode.querySelector('img');
+                    const closestNode: HTMLElement = startNode.closest('img');
+                    const imageEle: HTMLElement = closestNode ? closestNode : startNode.querySelector('img');
                     if ((args.items[0 as number] as any).command === 'Images') {
                         if (!isNOU(imageEle)) {
                             let index: number;
@@ -354,7 +333,7 @@ export class ToolbarRenderer implements IRenderer {
                 proxy.currentElement = dropDown.element;
                 proxy.currentDropdown = dropDown;
                 if (args.event && args.event.type === 'click' && (element.classList.contains(CLS_LIST_PRIMARY_CONTENT)
-                        || element.parentElement.classList.contains(CLS_LIST_PRIMARY_CONTENT))) {
+                    || element.parentElement.classList.contains(CLS_LIST_PRIMARY_CONTENT))) {
                     args.cancel = true;
                     return;
                 }
@@ -384,39 +363,6 @@ export class ToolbarRenderer implements IRenderer {
         };
         return dropDown;
     }
-    // eslint-disable-next-line
-    private onPopupOverlay(args?: MouseEvent): void {
-        if (!isNullOrUndefined(this.popupOverlay)) {
-            (closest(this.popupOverlay, '.e-popup-container') as HTMLElement).style.display = 'none';
-            this.popupOverlay.style.display = 'none';
-            removeClass([this.popupOverlay], 'e-popup-overlay');
-        }
-    }
-
-    private setIsModel(element: HTMLElement): void {
-        if (!closest(element, '.e-popup-container')) {
-            this.popupContainer = this.parent.createElement('div', {
-                className: 'e-rte-modal-popup e-popup-container e-center'
-            });
-            element.parentNode.insertBefore(this.popupContainer, element);
-            this.popupContainer.appendChild(element);
-            this.popupContainer.style.zIndex = element.style.zIndex;
-            this.popupContainer.style.display = 'flex';
-            element.style.position = 'relative';
-            addClass([element], 'e-popup-modal');
-            this.popupOverlay = this.parent.createElement('div', { className: 'e-popup-overlay' });
-            // eslint-disable-next-line
-            this.popupOverlay.style.zIndex = (parseInt(element.style.zIndex, null) - 1).toString();
-            this.popupOverlay.style.display = 'block';
-            this.popupContainer.appendChild(this.popupOverlay);
-            EventHandler.add(this.popupOverlay, 'click touchmove', this.onPopupOverlay, this);
-        } else {
-            element.parentElement.style.display = 'flex';
-            this.popupOverlay = (element.nextElementSibling as HTMLElement);
-            this.popupOverlay.style.display = 'block';
-            addClass([this.popupOverlay], 'e-popup-overlay');
-        }
-    }
     private paletteSelection(dropDownArgs: BeforeOpenCloseMenuEventArgs, currentElement: HTMLElement): void {
         const ele: Element = dropDownArgs.element.querySelector('.e-control.e-colorpicker');
         const colorbox: HTMLElement[] = [].slice.call(selectAll('.e-tile', ele.parentElement));
@@ -445,7 +391,7 @@ export class ToolbarRenderer implements IRenderer {
         const proxy: this = this;
         let css: string = CLS_RTE_ELEMENTS + ' ' + CLS_TB_BTN + ((this.parent.inlineMode) ? (' ' + CLS_INLINE_DROPDOWN) : '');
         css += (' ' + ((item === 'backgroundcolor') ? CLS_BACKGROUND_COLOR_DROPDOWN : CLS_FONT_COLOR_DROPDOWN));
-        css += ' ' + this.parent.cssClass;
+        css += this.parent.getCssClass(true);
         const content: HTMLElement = proxy.parent.createElement('span', { className: CLS_COLOR_CONTENT });
         const inlineEle: HTMLElement = proxy.parent.createElement('span', { className: args.cssClass });
         let range: Range;
@@ -511,9 +457,6 @@ export class ToolbarRenderer implements IRenderer {
                 if (focusEle) {
                     focusEle.focus();
                 }
-                if (Browser.isDevice) {
-                    this.popupModal(dropDownArgs.element.parentElement);
-                }
                 this.pickerRefresh(dropDownArgs);
             },
             beforeClose: (dropDownArgs: BeforeOpenCloseMenuEventArgs): void => {
@@ -539,19 +482,6 @@ export class ToolbarRenderer implements IRenderer {
             },
             close: (dropDownArgs: BeforeOpenCloseMenuEventArgs): void => {
                 proxy.parent.notify(events.selectionRestore, {});
-                const dropElement: HTMLElement = closest(dropDownArgs.element.parentElement, '.e-popup-container') as HTMLElement;
-                if (dropElement) {
-                    dropElement.style.display = 'none'; (dropElement.lastElementChild as HTMLElement).style.display = 'none';
-                    removeClass([dropElement.lastElementChild as HTMLElement], 'e-popup-overlay');
-                }
-                if (Browser.isDevice && !isNullOrUndefined(dropElement)) {
-                    const popupEle: HTMLElement = dropElement.querySelector('.e-dropdown-popup.e-tbar-btn.e-control');
-                    if (popupEle) {
-                        dropElement.parentNode.insertBefore(popupEle, dropElement.nextSibling);
-                        popupEle.style.removeProperty('position'); removeClass([popupEle], 'e-popup-modal');
-                    }
-                    detach(dropElement); proxy.popupContainer = undefined;
-                }
             }
         });
         dropDown.isStringTemplate = true; dropDown.createElement = proxy.parent.createElement; args.element.setAttribute('role', 'button');
@@ -575,16 +505,6 @@ export class ToolbarRenderer implements IRenderer {
             (getInstance(popupElem, Popup) as Popup).refreshPosition(popupElem);
             popupElem.style.width = (popupElem.offsetWidth - 5).toString() + 'px';
         }
-    }
-    private popupModal(element: HTMLElement): void {
-        const popupInst: Popup = getInstance(element, Popup) as Popup;
-        popupInst.relateTo = document.body;
-        popupInst.position = { X: 0, Y: 0 };
-        popupInst.targetType = 'container';
-        popupInst.collision = { X: 'fit', Y: 'fit' };
-        popupInst.offsetY = 4;
-        popupInst.dataBind();
-        this.setIsModel(element);
     }
     private setColorPickerContentWidth(colorPicker: ColorPicker): void {
         const colorPickerContent: HTMLElement = (colorPicker.element.nextSibling as HTMLElement);
@@ -623,7 +543,7 @@ export class ToolbarRenderer implements IRenderer {
                 args.element.classList.add(CLS_COLOR_PALETTE);
                 args.element.classList.add(CLS_CUSTOM_TILE);
                 if (!isNullOrUndefined(this.parent.cssClass)) {
-                    const allClassName: string[] = this.parent.cssClass.split(' ');
+                    const allClassName: string[] = this.parent.getCssClass().split(' ');
                     for (let i: number = 0; i < allClassName.length; i++) {
                         if (allClassName[i as number].trim() !== '') {
                             args.element.classList.add(allClassName[i as number]);

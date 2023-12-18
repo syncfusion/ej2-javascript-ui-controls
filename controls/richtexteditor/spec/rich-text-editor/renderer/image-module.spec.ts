@@ -4,7 +4,7 @@
 import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syncfusion/ej2-base';
 import { RichTextEditor, QuickToolbar, IRenderer, DialogType } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
-import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
+import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA, dispatchKeyEvent } from "./../render.spec";
 import { SelectEventArgs } from '@syncfusion/ej2-navigations';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
@@ -3345,8 +3345,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             done();
         });
         afterAll((done: Function) => {
-            destroy(rteObj);
-            done();
+            setTimeout(() => {
+                destroy(rteObj);
+                done();
+            }, 2000);
         });
         it(" insert image & caption", (done: Function) => {
             let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
@@ -4427,6 +4429,343 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj).imageModule.onIframeMouseDown();
             expect(!isNullOrUndefined(document.querySelector('.e-insertImage.e-primary') as HTMLElement)).toBe(false);
             done();
+        });
+    });
+
+   describe('EJ2-845426: Undo does not works properly after replace the image', () => {
+        let rteObj: any;
+        let QTBarModule: IRenderer;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Undo','Redo','Image', 'Bold']
+                },
+                value: "<div id='rte'><p><b>Syncfusion</b> Software</p>" + "<img id='imgTag' style='width: 200px' alt='Logo'" +
+                " src='http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png' />",
+            });
+            rteEle = rteObj.element;
+            QTBarModule = getQTBarModule(rteObj);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Check undo action after replace the image.", () => {
+            let target: HTMLElement = rteEle.querySelector('#imgTag');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            setCursorPoint(target, 0);
+            rteObj.mouseUp(eventsArg);
+            (<any>QTBarModule).renderQuickToolbars();
+            QTBarModule.imageQTBar.showPopup(10, 131, (rteObj.element.querySelector('.e-rte-image') as HTMLElement));
+            expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(1);
+            let imgPop: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            expect(imgPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
+            (<HTMLElement>document.querySelectorAll("[title='Replace']")[0]).click();
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+            (dialogEle.querySelector('.e-insertImage') as HTMLElement).click();
+            (document.querySelector('[title="Undo (Ctrl+Z)"]') as HTMLElement).click();
+            expect(rteEle.querySelector('img').src == "http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png").toBe(true)
+        });
+    });
+    describe('EJ2-845426: Undo does not works properly after replace the image', () => {
+        let rteObj: any;
+        let QTBarModule: IRenderer;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Undo','Redo','Image', 'Bold']
+                },
+                value: "<div id='rte'><p><b>Syncfusion</b> Software</p>" + "<img id='imgTag' style='width: 200px' alt='Logo'" +
+                " src='http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png' />",
+            });
+            rteEle = rteObj.element;
+            QTBarModule = getQTBarModule(rteObj);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Check undo action after replace the image.", () => {
+            let target: HTMLElement = rteEle.querySelector('#imgTag');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            setCursorPoint(target, 0);
+            rteObj.mouseUp(eventsArg);
+            (<any>QTBarModule).renderQuickToolbars();
+            QTBarModule.imageQTBar.showPopup(10, 131, (rteObj.element.querySelector('.e-rte-image') as HTMLElement));
+            expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(1);
+            let imgPop: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            expect(imgPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
+            (<HTMLElement>document.querySelectorAll("[title='Replace']")[0]).click();
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+            (dialogEle.querySelector('.e-insertImage') as HTMLElement).click();
+            (document.querySelector('[title="Undo (Ctrl+Z)"]') as HTMLElement).click();
+            expect(rteEle.querySelector('img').src == "http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png").toBe(true)
+        });
+    });
+    describe('850205 - Editor content get hidden while try to resize the image.', function () {
+        let rteObj: RichTextEditor;
+        let clickEvent: any;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                width: 500,
+                toolbarSettings: {
+                    items: ['FormatPainter', 'Bold', 'Italic', 'Underline', 'StrikeThrough',
+                        'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
+                        'LowerCase', 'UpperCase', 'SuperScript', 'SubScript', 'EmojiPicker', '|',
+                        'Formats', 'Alignments', 'NumberFormatList', 'BulletFormatList',
+                        'Outdent', 'Indent', '|', 'CreateTable', 'CreateLink', 'Image', 'Audio', 'Video', 'FileManager', '|', 'ClearFormat', 'Print',
+                        'SourceCode', 'FullScreen', '|', 'Undo', 'Redo'
+                    ]
+                },
+                value: `<p><b>Description:</b></p>
+                <p>The Rich Text Editor (RTE) control is an easy to render in the
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                <p><b>Functional
+                Specifications/Requirements:</b></p>
+                <ol><li><p>Provide
+                the tool bar support, it’s also customizable.</p></li><li><p>Options
+                to get the HTML elements with styles.</p></li><li><p>Support
+                to insert image from a defined path.</p></li><li><p>Footer
+                elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                the editor support.</p></li><li><p>Provide
+                efficient public methods and client side events.</p></li><li><p>Keyboard
+                navigation support.</p></li></ol>
+                <p><b>Description:</b></p>
+                <p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p>
+                <p><b>Functional
+                Specifications/Requirements:</b></p>
+                <ol><li><p>Provide
+                the tool bar support, it’s also customizable.</p></li><li><p>Options
+                to get the HTML elements with styles.</p></li><li><p>Support
+                to insert image from a defined path.</p></li><li><p>Footer
+                elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                the editor support.</p></li><li><p>Provide
+                efficient public methods and client side events.</p></li><li><p>Keyboard
+                navigation support.</p></li></ol><img class="e-rte-image" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" alt="Flowers in Chania" />
+                `,
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Toolbar and content-editable area', (done: Function) => {
+            (document.querySelector(".e-richtexteditor .e-toolbar-wrapper .e-expended-nav") as any).click();
+            var trg = (rteObj as any).element.querySelector('.e-rte-image');
+            (rteObj.imageModule as any).resizeStart({ target: trg, pageX: 0 });
+            var resizeBot = rteObj.contentModule.getEditPanel().querySelector('.e-rte-botRight');
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            resizeBot.dispatchEvent(clickEvent);
+            (rteObj.imageModule as any).resizeStart(clickEvent);
+            (rteObj.imageModule as any).resizeBtnStat.botRight = true;
+            (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 200 });
+            (rteObj.imageModule as any).imgDupMouseMove();
+            var toolbarEditarea = document.querySelector(".e-richtexteditor .e-toolbar-wrapper").getBoundingClientRect().bottom - 3 < document.querySelector(".e-richtexteditor .e-rte-content .e-content").getBoundingClientRect().top;
+            expect(toolbarEditarea).toBe(true);
+            done();
+        });
+    });
+
+    describe('850052 - Images were not aligned properly after inserting the edited image.', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><img class='e-rte-image e-imgcenter' id="image" alt="Logo" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="width: 300px;">`
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('checking the inserted image is aligned properly', (done) => {
+            let image: HTMLElement = rteObj.element.querySelector("#image");
+            setCursorPoint(image, 0);
+            dispatchEvent(image, 'mousedown');
+            image.click();
+            dispatchEvent(image, 'mouseup');
+            setTimeout(() => {
+                let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_Replace");
+                imageBtn.parentElement.click();
+                let png = "https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png";
+                let dialog: HTMLElement = document.getElementById(controlId + "_image");
+                let urlInput: HTMLInputElement = dialog.querySelector('.e-img-url');
+                urlInput.value = png;
+                let insertButton: HTMLElement = dialog.querySelector('.e-insertImage.e-primary');
+                urlInput.dispatchEvent(new Event("input"));
+                insertButton.click();
+                expect((<any>rteObj).element.querySelector('.e-rte-image').classList.contains('e-imgcenter')).toBe(true); 
+                done();
+            }, 100);
+        });
+    });
+    describe('850027 - Horizontal scrollbar enabled when we resize the image in large', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let clickEvent: any;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                value:`<ol><li>Rich Text Editor<img id="rteImageID" style="width:300px; height:300px;transform: rotate(0deg);" alt="Logo" src="./src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline"></li></ol>`,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                insertImageSettings: { resize: true, resizeByPercent: true }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Calculation of the image maximum width when inside the OL or UL element', (done) => {
+            let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
+            (rteObj.imageModule as any).resizeStart({ target: trg, pageX: 0 });
+            let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-rte-botRight') as HTMLElement;
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            resizeBot.dispatchEvent(clickEvent);
+            (rteObj.imageModule as any).resizeStart(clickEvent);
+            (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
+            (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 200 });
+            expect(parseInt(trg.style.maxWidth, 10) != rteObj.getInsertImgMaxWidth()).toBe(true);
+            done();
+        });
+    });
+    describe('855616 - Need to add the aria label to the image when setting the target to "_blank."', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><img id="image" alt="Logo" src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;">`
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it("Image link with ariaLabel", (done) => {
+            let image: HTMLElement = rteObj.element.querySelector("#image");
+            setCursorPoint(image, 0);
+            dispatchEvent(image, 'mousedown');
+            image.click();
+            dispatchEvent(image, 'mouseup');
+            setTimeout(() => {
+                let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_InsertLink");
+                imageBtn.parentElement.click();
+                let dialog: HTMLElement = document.getElementById(controlId + "_image");
+                let urlInput: HTMLInputElement = dialog.querySelector(".e-input.e-img-link");
+                urlInput.value = "http://www.google.com";
+                let insertButton: HTMLElement = dialog.querySelector('.e-update-link.e-primary');
+                insertButton.click();
+                expect(rteObj.element.querySelector("#image").parentElement.hasAttribute("aria-label")).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('860425 - Image with caption not get deleted when we press delete or backspace key in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        const deleteKeyUp = new KeyboardEvent('keydown', {
+            cancelable: true,
+            bubbles: true,
+            shiftKey: false,
+            ctrlKey: false,
+            key: 'Delete',
+            which: 46,
+            keyCode: 46,
+            code: 'Delete',
+        } as EventInit);
+        const deleteKeyDown = new KeyboardEvent('keydown', {
+            cancelable: true,
+            bubbles: true,
+            shiftKey: false,
+            ctrlKey: false,
+            key: 'Delete',
+            which: 46,
+            keyCode: 46,
+            code: 'Delete',
+        } as EventInit);
+        beforeEach(() => {
+            rteObj = renderRTE({});
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it ('Should remove the image on delete key press', (done: DoneFn) => {
+            let innerHTMLL: string = `
+            
+                <span class="e-img-caption e-rte-img-caption e-caption-inline" draggable="false" style="width:auto">
+                    <span class="e-img-wrap">
+                        <img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;" class="e-rte-image e-imginline">
+                        <span class="e-img-inner" contenteditable="true">
+                            Feather
+                        </span>
+                    </span>
+                </span>
+            </p>`;
+            rteObj.value = innerHTMLL;
+            rteObj.dataBind();
+            rteObj.focusIn();
+            const element = rteObj.inputElement.querySelector('.e-img-wrap') as HTMLElement;
+            const range = new Range();
+            range.setStart(element, 0);
+            range.setEnd(element, 1);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            element.dispatchEvent(deleteKeyDown);
+            element.dispatchEvent(deleteKeyUp);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelector('.e-img-caption')).toBe(null);
+                done();
+            }, 500);
+        });
+        it ('Should remove the image on delete key press and have focus on the Paragraph', (done: DoneFn) => {
+            let innerHTMLL: string = `
+            <p>The Rich Text Editor component is a WYSIWYG ("what you see is what you get") editor that provides the best
+            user experience to create and update the content. Users can format their content using standard toolbar commands.
+            </p>
+            <p><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="true" draggable="false"
+                    style="width:auto"><span class="e-img-wrap"><img alt="Logo"
+                            src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png"
+                            style="width: 300px;" class="e-rte-image e-imginline"><span class="e-img-inner"
+                            contenteditable="true">Feather</span></span></span></p>
+            <p><b>Key features:</b></p>
+            `;
+            rteObj.value = innerHTMLL;
+            rteObj.dataBind();
+            rteObj.focusIn();
+            const element = rteObj.inputElement.querySelector('.e-img-wrap') as HTMLElement;
+            const range = new Range();
+            range.setStart(element, 0);
+            range.setEnd(element, 1);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);            element.dispatchEvent(deleteKeyDown);
+            element.dispatchEvent(deleteKeyUp);
+            setTimeout(() => {
+                expect(rteObj.inputElement.querySelector('.e-img-caption')).toBe(null);
+                expect(window.getSelection().getRangeAt(0).startContainer.nodeName).toBe('P');
+                done();
+            }, 500);
         });
     });
 });

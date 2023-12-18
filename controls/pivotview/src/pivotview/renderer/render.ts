@@ -1790,9 +1790,8 @@ export class Render {
             let headerCnt: number = this.engine.headerContent.length;
             const headerSplit: Object[] = [];
             const splitPos: Object[] = [];
-            const colWidth: number = this.calculateColWidth(this.engine.pivotValues ? this.engine.pivotValues[0].length : 0);
-            const measureFlag: boolean = this.parent.dataType === 'olap' && !isNullOrUndefined((this.engine as OlapEngine).colMeasurePos) && // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ((this.engine as OlapEngine) as any).colDepth - 1 === this.parent.olapEngineModule.colMeasurePos;
+            const colWidth: number = this.calculateColWidth(this.engine.pivotValues ? this.engine.pivotValues[0].length : 0); // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const measureFlag: boolean = this.parent.dataType === 'olap' && !isNullOrUndefined((this.engine as OlapEngine).colMeasurePos) && ((this.engine as OlapEngine) as any).colDepth - 1 === this.parent.olapEngineModule.colMeasurePos;
             do {
                 const columnModel: ColumnModel[] = [];
                 let actualCnt: number = 0;
@@ -1858,7 +1857,8 @@ export class Render {
                                         minWidth: 30,
                                         allowReordering: (this.parent.showGroupingBar ? false : this.parent.gridSettings.allowReordering),
                                         allowResizing: this.parent.gridSettings.allowResizing,
-                                        visible: true
+                                        visible: true,
+                                        headerTextAlign: this.parent.enableRtl ? 'Right' : 'Left'
                                     };
                                     innerModel = [this.pivotColumns[splitPos[innerPos as number] as number] as Column];
                                 }
@@ -1949,7 +1949,7 @@ export class Render {
                 if (this.parent.olapEngineModule.fieldList[field.name] &&
                     !isNullOrUndefined(this.parent.olapEngineModule.fieldList[field.name].formatString)) {
                     const fString: string = this.parent.olapEngineModule.fieldList[field.name].formatString;
-                    format = (!isNullOrUndefined(fString) && fString !== '') ? fString.indexOf('#') > -1 ? fString : (fString[0] + '2') : undefined;
+                    format = fString.indexOf('#') > -1 ? fString : (fString[0] + '2');
                 }
             } else {
                 if ((['PercentageOfDifferenceFrom', 'PercentageOfRowTotal', 'PercentageOfColumnTotal', 'PercentageOfGrandTotal', 'PercentageOfParentRowTotal', 'PercentageOfParentColumnTotal', 'PercentageOfParentTotal']).indexOf(field.type) > -1) {

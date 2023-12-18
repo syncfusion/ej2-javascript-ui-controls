@@ -83,7 +83,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking axis dashArray major tick line default style', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('sam_Axis_Major_TickLine_0_20');
+                svg = document.getElementById('sam_Axis_Major_TickLine_0_2');
                 expect(svg.getAttribute('fill')).toBe('transparent');
                 expect(svg.getAttribute('stroke')).toBe('#9E9E9E');
                 expect(svg.getAttribute('stroke-width')).toBe('3');
@@ -96,7 +96,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking axis dashArray major tick line given style', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('sam_Axis_Major_TickLine_0_20');
+                svg = document.getElementById('sam_Axis_Major_TickLine_0_2');
                 expect(svg.getAttribute('fill') == 'transparent').toBe(true);
                 expect(svg.getAttribute('stroke') == 'red').toBe(true);
                 expect(svg.getAttribute('stroke-width') == '4').toBe(true);
@@ -111,7 +111,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking default dashArray major interval of the axis', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                direction = document.getElementById('sam_Axis_Major_TickLine_0_20').getAttribute('d');
+                direction = document.getElementById('sam_Axis_Major_TickLine_0_2').getAttribute('d');
                 expect(direction.match(new RegExp('M', 'g')).length == 1).toBe(true);
                 done();
             };
@@ -120,7 +120,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking dashArray major interval of the axis given value', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                direction = document.getElementById('sam_Axis_Major_TickLine_0_20').getAttribute('d');
+                direction = document.getElementById('sam_Axis_Major_TickLine_0_2').getAttribute('d');
                 expect(direction.match(new RegExp('M', 'g')).length == 1).toBe(true);
                 done();
             };

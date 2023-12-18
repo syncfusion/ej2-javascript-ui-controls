@@ -188,16 +188,6 @@ export class EditorHistory {
         }
         this.currentBaseHistoryInfo = new BaseHistoryInfo(this.owner);
         this.currentBaseHistoryInfo.action = action;
-        switch (action) {
-            case 'SectionBreak':
-                this.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Section_Break;
-                this.currentBaseHistoryInfo.type = "NewPage";
-                break;
-            case 'SectionBreakContinuous':
-                this.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Section_Break;
-                this.currentBaseHistoryInfo.type = "Continuous";
-                break;
-        }
         this.currentBaseHistoryInfo.updateSelection();
     }
     /**

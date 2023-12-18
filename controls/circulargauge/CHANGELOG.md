@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 24.1.41 (2023-12-18)
+
+### CircularGauge
+
+#### New Features
+
+- Circular Gauge elements such as the axis line, ranges, pointers, and annotations can now be animated one by one to create a smooth appearance when rendered initially.
+
 ## 23.1.38 (2023-09-26)
 
 ### CircularGauge

@@ -2320,7 +2320,7 @@ describe("Quick Toolbar - Actions Module", () => {
             clickEvent.initEvent("mouseup", true, true);
             trg.dispatchEvent(clickEvent);
             rteObj.mouseUp(clickEvent);
-            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0].querySelector('[title="Insert Video (Ctrl+Shift+V)"]');
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0].querySelector('[title="Insert Video (Ctrl+Alt+V)"]');
             pop.click();
             expect(<HTMLElement>document.querySelectorAll('.e-rte-text-popup')[0]).toBe(undefined);
             rteEle = rteObj.element;
@@ -2528,6 +2528,126 @@ describe("Quick Toolbar - Actions Module", () => {
             expect(pop).not.toBe(undefined);
             rteObj.quickToolbarModule.hideQuickToolbars();
             done();
+        });
+    });
+
+    describe('848813 - When clicking on the image to open the quick toolbar, the main toolbar icon should not be in a visible state', () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let innerHTML: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><thead><tr><th><br></th><th><br></th><th class="e-cell-select"><br></th></tr></thead><tbody><tr><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""> <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/> <br></td></tr></tbody></table><p><br></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo', '|', 'FormatPainter', 'ClearFormat', '|',
+                'Bold', 'Italic', 'Underline', 'StrikeThrough', 'EmojiPicker', '|',
+                'Formats', 'Alignments', 'OrderedList', 'UnorderedList', '|',
+                'CreateLink', 'CreateTable', 'Image', 'Audio', 'Video', 'FileManager', '|',
+                'SourceCode', 'FullScreen']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Checking the main toolbar icon should not be in a visible state', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-rte-image');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).imageModule.editAreaClickHandler({args:clickEvent});
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[3].classList.contains("e-overlay")).toBe(true);
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[4].classList.contains("e-overlay")).toBe(true);
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[6].classList.contains("e-overlay")).toBe(true);
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[25].classList.contains("e-overlay")).toBe(false);
+            done();
+        });
+    });
+
+    describe('854233 - The quick format toolbar item status is not updated.', () => {
+        let rteObj: RichTextEditor;
+        let trg: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    text: ['Undo', 'Redo', '|', 'Bold', 'Italic', '|', 'FontName', 'FontSize', 'Formats']
+                },
+                value: `<p><strong><em><span class="target" style="font-size: 18pt;">Text Quick toolbar</span></em></strong></p>`
+            });
+        });
+        
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        
+        it('Check for the toolbar status in the Text Quick Edit toolbar', (done: Function) => {
+            trg = rteObj.inputElement.firstChild as HTMLElement;
+            const mouseDownEvent = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+            rteObj.inputElement.dispatchEvent(mouseDownEvent);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, document.querySelector('.target').firstChild, document.querySelector('.target').firstChild, 0, 5);
+            const mouseUpEvent = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+            rteObj.inputElement.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                const items: NodeListOf<Element> = document.querySelector('.e-rte-text-quicktoolbar').querySelectorAll('.e-toolbar-item');
+                expect(items[0].classList.contains('e-overlay')).toBe(true);
+                expect(items[1].classList.contains('e-overlay')).toBe(true);
+                expect(items[3].classList.contains('e-overlay')).toBe(false);
+                done();
+            }, 200);
+        });
+    });
+
+    describe('855892 - Quick format toolbar is not opened when the text is selected with Keyboard action.', () => {
+        let editorObj: RichTextEditor;
+        beforeAll(() => {
+            editorObj = renderRTE({
+                quickToolbarSettings: {
+                    text: ['Bold', 'Italic', 'Underline']
+                },
+            });
+        });
+        afterAll(() => {
+            destroy(editorObj);
+        });
+        it('Should open the quick toolbar when the text is selected with Keyboard action.', (done: Function) => {
+            editorObj.inputElement.dispatchEvent(new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true }));
+            editorObj.selectAll();
+            const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', {
+                key: "ArrowRight",
+                keyCode: 39,
+                which: 39,
+                code: "ArrowRight",
+                location: 0,
+                altKey: false,
+                ctrlKey: false,
+                metaKey: false,
+                shiftKey: true,
+                repeat: false
+            } as EventInit);
+            editorObj.inputElement.dispatchEvent(keyDownEvent);
+            const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', {
+                key: "ArrowRight",
+                keyCode: 39,
+                which: 39,
+                code: "ArrowRight",
+                location: 0,
+                altKey: false,
+                ctrlKey: false,
+                metaKey: false,
+                shiftKey: true,
+                repeat: false
+            } as EventInit);
+            editorObj.inputElement.dispatchEvent(keyUpEvent);
+            setTimeout(() => {
+                expect(document.querySelector('.e-rte-text-quicktoolbar').querySelectorAll('.e-toolbar-item').length).toBe(3);
+                done();
+            }, 200);
         });
     });
 });

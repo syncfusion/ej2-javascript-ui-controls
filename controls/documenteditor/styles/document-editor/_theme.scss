@@ -3558,4 +3558,32 @@
                 }
             }
         }
+        .e-de-user-info.e-de-user-name-collapse span {
+            transition-property: height, min-width, max-width, width, border-radius, padding;
+            transition-duration: 200ms;
+            transition-timing-function: cubic-bezier(0.1, 0.9, 0.2, 1);
+            position: absolute;
+            bottom: 0px;
+            height: 6px;
+            width: 6px;
+            min-width: 0px;
+            max-width: 6px;
+            border-radius: 6px;
+            padding: 0px;
+        }
+        .e-de-user-info.e-de-user-name-expended span {
+            transition-property: height, width, min-width, max-width, border-radius, padding;
+            transition-duration: 300ms;
+            transition-timing-function: cubic-bezier(0.8, 0, 0.2, 1);
+            position: absolute;
+            bottom: 0px;
+            height: 20px;
+            line-height: 20px;
+            min-width: 44px;
+            max-width: 150px;
+            padding: 0px 8px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: white;
+        }
 }

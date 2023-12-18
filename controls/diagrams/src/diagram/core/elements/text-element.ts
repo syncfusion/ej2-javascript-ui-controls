@@ -36,8 +36,8 @@ export class TextElement extends DiagramElement {
      */
     public constraints: AnnotationConstraints;
 
-     /** @private */
-     public annotationVisibility: string = 'Visible';
+    /** @private */
+    public annotationVisibility: string = 'Visible';
 
     /**
      * sets the hyperlink color to blue

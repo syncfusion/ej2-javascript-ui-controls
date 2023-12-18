@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Placement, ContainerType, TooltipPosition } from '../utils/enum';
+import { Property, ChildProperty, Complex, extend } from '@syncfusion/ej2-base';import { Placement, ContainerType, TooltipPosition } from '../utils/enum';
 
 /**
  * Interface for a class Font
@@ -42,6 +42,37 @@ export interface FontModel {
      * @default 1
      */
     opacity?: number;
+
+}
+
+/**
+ * Interface for a class TextStyle
+ */
+export interface TextStyleModel {
+
+    /**
+     * Defines the font-size of the text pointer.
+     */
+    size?: string;
+
+    /**
+     * Defines the font-family of the text pointer. The default value of this property varies based on the `theme` set in the Linear Gauge.
+     */
+    fontFamily?: string;
+
+    /**
+     * Defines the font-weight of the text pointer. 
+     *
+     * @default 'normal'
+     */
+    fontWeight?: string;
+
+    /**
+     * Defines the font-style of the text pointer. 
+     *
+     * @default 'normal'
+     */
+    fontStyle?: string;
 
 }
 

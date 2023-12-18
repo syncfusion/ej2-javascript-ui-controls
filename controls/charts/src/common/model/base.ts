@@ -1,8 +1,8 @@
 import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusion/ej2-base';
-import { BorderModel, FontModel, PeriodsModel } from './base-model';
-import { EmptyPointMode, FadeOutMode, TooltipPosition } from '../../chart/utils/enum';
+import { BorderModel, FontModel, PeriodsModel, LocationModel, titleBorderModel  } from './base-model';
+import { FadeOutMode, TooltipPosition } from '../../chart/utils/enum';
 import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';
-import { Alignment, TextOverflow } from '../utils/enum';
+import { Alignment, EmptyPointMode, TextOverflow, TitlePosition} from '../utils/enum';
 import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';
 import {  Theme } from '../model/theme';
 
@@ -59,6 +59,185 @@ export class Connector extends ChildProperty<Connector> {
 
 
 }
+/**
+ * Configures the borders in the chart title.
+ */
+export class titleBorder extends ChildProperty<titleBorder> {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default 'transparent'
+     */
+
+    @Property('transparent')
+    public color: string;
+
+    /**
+     * The width of the border in pixels.
+     *
+     * @default 0
+     */
+
+    @Property(0)
+    public width: number;
+
+    /**
+     * corder radius for the border.
+     *
+     * @default 0.8
+     */
+
+    @Property(0.8)
+    public cornerRadius: number;
+
+}
+
+/**
+ * Configures the title settings in chart and 3D chart.
+ */
+export class titleSettings extends ChildProperty<titleSettings> {
+
+    /**
+     * FontStyle for the text.
+     *
+     * @default 'Normal'
+     */
+
+    @Property('Normal')
+    public fontStyle: string;
+
+    /**
+     * Font size for the text.
+     *
+     * @default '15px'
+     */
+
+    @Property('15px')
+    public size: string;
+
+    /**
+     * FontWeight for the text.
+     *
+     * @default '500'
+     */
+
+    @Property('500')
+    public fontWeight: string;
+
+    /**
+     * Color for the text.
+     *
+     * @default ''
+     */
+
+    @Property('')
+    public color: string;
+
+    /**
+     * text alignment.
+     *
+     * @default 'Center'
+     */
+
+    @Property('Center')
+    public textAlignment: Alignment;
+
+    /**
+     * FontFamily for the text.
+     */
+    @Property('Segoe UI')
+    public fontFamily: string;
+
+    /**
+     * Opacity for the text.
+     *
+     * @default 1
+     */
+
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * Specifies the chart title text overflow.
+     *
+     * @default 'Wrap'
+     */
+
+    @Property('Wrap')
+    public textOverflow: TextOverflow;
+
+    /**
+     * Defines the position for the chart title.
+     * * Top: Displays the title at the top of the chart.
+     * * Left: Displays the title at the left of the chart.
+     * * Bottom: Displays the title at the bottom of the chart.
+     * * Right: Displays the title at the right of the chart.
+     * * Custom: Displays the title based on the given x and y values.
+     *
+     * @default 'Top'
+     */
+
+    @Property('Top')
+    public position: TitlePosition;
+
+    /**
+     * Defines the X coordinate for the chart title.
+     *
+     * @default 0
+     */
+
+    @Property(0)
+    public x: number;
+
+    /**
+     * Defines the Y coordinate for the chart title.
+     *
+     * @default 0
+     */
+
+    @Property(0)
+    public y: number;
+
+    /**
+     * Background of the title border.
+     *
+     * @default 'transparent'
+     */
+
+    @Property('transparent')
+    public background: string;
+
+    /**
+     * Options to customize the border of the chart title.
+     */
+
+    @Complex<titleBorderModel>({}, titleBorder)
+    public border: titleBorderModel;
+}
+/**
+ * Configures the location for the legend.
+ */
+export class Location extends ChildProperty<Location>  {
+    /**
+     * X coordinate of the legend or tooltip in pixels.
+     *
+     * @default 0
+     */
+
+    @Property(0)
+    public x: number;
+
+    /**
+     * Y coordinate of the legend or tooltip in pixels.
+     *
+     * @default 0
+     */
+
+    @Property(0)
+    public y: number;
+}
+
 /**
  * Configures the fonts in charts.
  */
@@ -539,7 +718,7 @@ export class CenterLabel extends ChildProperty<CenterLabel> {
 
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
-     * Enables / Disables the visibility of the tooltip.
+     * If set to true, enables the tooltip for the data points.
      *
      * @default false.
      */
@@ -548,7 +727,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public enable: boolean;
 
     /**
-     * Enables / Disables the visibility of the marker.
+     * If set to true, enables the marker in the chart tooltip.
      *
      * @default true.
      */
@@ -566,7 +745,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public shared: boolean;
 
     /**
-     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+     * The fill color of the tooltip, specified as a valid CSS color string in hex or rgba format.
      *
      * @default null
      */
@@ -575,7 +754,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public fill: string;
 
     /**
-     * Header for tooltip. By default, the shared tooltip displays the point x value and the series name for each individual tooltip.
+     * The header text for the tooltip. By default, it displays the series name.
      *
      * @default null
      */
@@ -584,7 +763,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public header: string;
 
     /**
-     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+     * The opacity of the tooltip, expressed as a numerical value.
      *
      * @default null
      */
@@ -593,14 +772,14 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public opacity: number;
 
     /**
-     * Options to customize the ToolTip text.
+     * Options for customizing the tooltip text appearance.
      */
 
     @Complex<FontModel>({fontFamily: null, size: "12px", fontStyle: 'Normal', fontWeight: null, color: null}, Font)
     public textStyle: FontModel;
 
     /**
-     * Format the ToolTip content.
+     * The format for customizing the tooltip content.
      *
      * @default null.
      */
@@ -609,7 +788,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public format: string;
 
     /**
-     * Custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
+     * A custom template used to format the Tooltip content. You can use ${x} and ${y} as placeholder text to display the corresponding data points.
      *
      * @default null.
      * @aspType string
@@ -619,7 +798,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public template: string | Function;
 
     /**
-     * If set to true, ToolTip will animate while moving from one point to another.
+     * If set to true, tooltip will animate while moving from one point to another.
      *
      * @default true.
      */
@@ -627,7 +806,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public enableAnimation: boolean;
 
     /**
-     * Duration for the ToolTip animation.
+     * Duration for the Tooltip animation.
      *
      * @default 300
      */
@@ -636,7 +815,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public duration: number;
 
     /**
-     * Fade Out duration for the ToolTip hide.
+     * Duration of the fade-out animation for hiding the Tooltip.
      *
      * @default 1000
      */
@@ -673,11 +852,33 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public showNearestPoint: boolean;
 
     /**
-     * Options to customize tooltip borders.
+     * Options for customizing the tooltip borders.
      */
 
     @Complex<BorderModel>({ color: null, width: null }, Border)
     public border: BorderModel;
+
+    /** 
+     * Specifies the location of the tooltip, relative to the chart. 
+     * If x is 20, tooltip moves by 20 pixels to the right of the chart 
+     * ```html 
+     * <div id='Chart'></div> 
+     * ``` 
+     * ```typescript 
+     * let chart: Chart = new Chart({ 
+     * ... 
+     * tooltipSettings: { 
+     * enable: true, 
+     * location: { x: 100, y: 150 }, 
+     *   }, 
+     * ... 
+     * }); 
+     * chart.appendTo('#Chart'); 
+     * ``` 
+     */
+
+    @Complex<LocationModel>({ x: null, y: null }, Location)
+    public location: LocationModel;
 
 }
 

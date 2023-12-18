@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, enableRipple } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11} from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, hierarchicalData8, localData, localData1, localData2, localData3, hierarchicalData9, localData10, localData11 } from '../../spec/treeview/datasource.spec';
 import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6} from '../../spec/treeview/datasource.spec';
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
 import { localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
@@ -12643,6 +12643,7 @@ describe('TreeView control', () => {
                 done();
             }, 100);
         });
+        
         it('ensureVisible for self-referential data', (done: Function) => {
             treeObj = new TreeView({
                 fields: { dataSource: localData11, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild" },

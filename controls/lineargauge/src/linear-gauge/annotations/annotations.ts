@@ -1,7 +1,7 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable max-len */
 
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, Animation, AnimationOptions, animationMode } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis } from '../axes/axis';
 import { Annotation } from '../model/base';
@@ -34,6 +34,8 @@ export class Annotations {
         annotationGroup.style.position = 'absolute';
         annotationGroup.style.top = '0px';
         annotationGroup.style.left = '0px';
+        annotationGroup.style.opacity = gauge.allowLoadingAnimation ? '0' : '1';
+        gauge.splitUpCount = gauge.allowLoadingAnimation && gauge.annotations.length > 0 ? gauge.splitUpCount + 1 : gauge.splitUpCount;
         gauge.annotations.map((annotation: Annotation, index: number): void => {
             if (annotation.content !== null) {
                 this.createAnnotationTemplate(annotationGroup, index, gauge);
@@ -158,6 +160,36 @@ export class Annotations {
             }
         });
 
+    }
+    /**
+     * Method to annotation animation for circular gauge.
+     *
+     * @param {Element} element - Specifies the element.
+     * @param {LinearGauge} gauge - Specifies the instance of gauge.
+     * @returns {void}
+     * 
+     * @private
+     */
+    public annotationAnimate(element: Element, gauge: LinearGauge): void {
+        if ((element as HTMLElement).style.opacity === '0') {
+            let tempOpacity: number = 0;
+            const opacity: number = 1;
+            new Animation({}).animate(<HTMLElement>element, {
+                duration: (gauge.animationDuration === 0 && animationMode === 'Enable') ? 1000 :
+                    (gauge.allowLoadingAnimation && gauge.animationDuration > 0 ? gauge.animationDuration / gauge.splitUpCount : 0),
+                progress: (args: AnimationOptions): void => {
+                    if (args.timeStamp > args.delay) {
+                        tempOpacity = ((args.timeStamp - args.delay) / args.duration);
+                        element['style']['opacity'] = (opacity * tempOpacity);
+                    }
+                },
+                end: (): void => {
+                    element['style']['opacity'] = opacity;
+                    gauge.allowLoadingAnimation = false;
+                    gauge.isOverAllAnimationComplete = true;
+                }
+            });
+        }
     }
 
     /*

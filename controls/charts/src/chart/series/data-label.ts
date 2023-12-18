@@ -8,7 +8,7 @@ import { Chart } from '../chart';
 import { Size, measureText, TextOption, Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { BorderModel, MarginModel, FontModel } from '../../common/model/base-model';
 import { DataLabelSettingsModel, MarkerSettingsModel } from '../series/chart-series-model';
-import { LabelPosition, ErrorBarDirection } from '../utils/enum';
+import { ErrorBarDirection } from '../utils/enum';
 import { Series, Points } from './chart-series';
 import { ITextRenderEventArgs } from '../../chart/model/chart-interface';   
 import { textRender } from '../../common/model/constants';
@@ -16,7 +16,7 @@ import {
     createTemplate, getFontStyle, getElement, measureElementRect, templateAnimate, withIn, withInBounds
 } from '../../common/utils/helper';
 import { createElement, getValue, extend, animationMode } from '@syncfusion/ej2-base';
-import { Alignment } from '../../common/utils/enum';
+import { Alignment, LabelPosition } from '../../common/utils/enum';
 import { getPoint, getRotatedRectangleCoordinates, isRotatedRectIntersect } from '../../common/utils/helper';
 import { Axis } from '../../chart/axis/axis';
 import { PolarRadarPanel } from '../axis/polar-radar-panel';
@@ -598,9 +598,9 @@ export class DataLabel {
         switch (position) {
         case 'Bottom':
             labelLocation = !this.inverted ?
-                isMinus ? (labelLocation - rect.height + extraSpace + margin.top) :
+                isMinus ? (labelLocation + (series.type === 'Waterfall' ? (- extraSpace - margin.top - this.markerHeight) : (-rect.height + extraSpace + margin.top))) :
                     (labelLocation + rect.height - extraSpace - margin.bottom) :
-                isMinus ? (labelLocation + rect.width - extraSpace - margin.left) :
+                isMinus ? (labelLocation + (series.type === 'Waterfall' ? (+ extraSpace + margin.left + this.markerHeight) : (+ rect.width - extraSpace - margin.left))) :
                     (labelLocation - rect.width + extraSpace + margin.right);
             break;
         case 'Middle':
@@ -757,11 +757,11 @@ export class DataLabel {
             break;
         default:
             if ((isMinus && position === 'Top') || (!isMinus && position === 'Outer')) {
-                location = !this.inverted ? location - extraSpace - margin.bottom - this.markerHeight :
-                    location + extraSpace + margin.left + this.markerHeight;
+                location = !this.inverted ? location + (isMinus && series.type === 'Waterfall' ? (-rect.height + extraSpace + margin.bottom) : (-extraSpace - margin.bottom - this.markerHeight)) :
+                    location + (isMinus && series.type === 'Waterfall' ?  (+ rect.width - extraSpace - margin.left) : (+ extraSpace + margin.left + this.markerHeight));
             } else {
-                location = !this.inverted ? location + extraSpace + margin.top + this.markerHeight :
-                    location - extraSpace - margin.right - this.markerHeight;
+                location = !this.inverted ? location + (isMinus && series.type === 'Waterfall' ? (-rect.height - extraSpace - margin.top) : (+ extraSpace + margin.top + this.markerHeight)) :
+                    location + (isMinus && series.type === 'Waterfall' ? (+rect.width + extraSpace + margin.top) : (- extraSpace - margin.right - this.markerHeight));
             }
             break;
         }

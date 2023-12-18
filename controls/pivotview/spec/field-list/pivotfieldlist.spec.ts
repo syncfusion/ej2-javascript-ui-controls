@@ -7,6 +7,7 @@ import { TreeView } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import * as util from '../utils.spec';
 import { FieldDragStartEventArgs, FieldDropEventArgs, FieldDroppedEventArgs, FieldRemoveEventArgs, CalculatedFieldCreateEventArgs } from '../../src/common/base/interface';
+import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
 
 describe('PivotFieldList spec', () => {
     /**
@@ -139,6 +140,77 @@ describe('PivotFieldList spec', () => {
             });
             it('field-list destroy expect', () => {
                 expect(fieldListObj.element.innerHTML).toBe('');
+            });
+        });
+
+        describe('Binding an empty data source', () => {
+            let fieldListObj: PivotFieldList;
+            let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
+            let remoteData: DataManager;
+            afterAll(() => {
+                if (fieldListObj) {
+                    fieldListObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll(() => {
+                if (document.getElementById(elem.id)) {
+                    remove(document.getElementById(elem.id));
+                }
+                document.body.appendChild(elem);
+                fieldListObj = new PivotFieldList({
+                    dataSourceSettings: {
+                        dataSource: [],
+                        expandAll: false,
+                        columns: [{ name: 'CustomerID', caption: 'Customer ID' }],
+                        rows: [{ name: 'ShipCountry', caption: 'Ship Country' }, { name: 'ShipCity', caption: 'Ship City' }],
+                        values: [{ name: 'Freight' }]
+                    },
+                    renderMode: 'Fixed',
+                });
+                fieldListObj.appendTo('#PivotFieldList');
+            });
+            it('Loading the remote data', function (done) {
+                let remoteData: DataManager = new DataManager({
+                    url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+                    adaptor: new ODataV4Adaptor(),
+                    crossDomain: true
+                });
+                remoteData.defaultQuery = new Query().take(5);
+                fieldListObj.dataSourceSettings.dataSource = remoteData;
+                setTimeout(function () {
+                    expect(document.querySelector('.e-pivotfieldlist-container') !== null).toBeTruthy;
+                    done();
+                }, 3000);
+            });
+            it('Checking the pivot buttons', function (done) {
+                setTimeout(function () {
+                    expect(document.querySelectorAll('.e-axis-content')[1].querySelectorAll('.e-pivot-button').length > 0).toBeTruthy;
+                    expect(document.querySelectorAll('.e-axis-content')[2].querySelectorAll('.e-pivot-button').length > 0).toBeTruthy;
+                    expect(document.querySelectorAll('.e-axis-content')[3].querySelectorAll('.e-pivot-button').length > 0).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('Redering empty data', function (done) {
+                remoteData = new DataManager({
+                    url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+                    adaptor: new ODataV4Adaptor(),
+                    crossDomain: true
+                });
+                remoteData.defaultQuery = new Query().take(0);
+                fieldListObj.dataSourceSettings.dataSource = remoteData;
+                setTimeout(function () {
+                    expect(document.querySelector('.e-pivotfieldlist-container') !== null).toBeTruthy;
+                    done();
+                }, 3000);
+            });
+            it('Redering empty data', function (done) {
+                setTimeout(function () {
+                    expect(document.querySelectorAll('.e-axis-content')[1].querySelectorAll('.e-pivot-button').length === 0).toBeTruthy;
+                    expect(document.querySelectorAll('.e-axis-content')[2].querySelectorAll('.e-pivot-button').length === 0).toBeTruthy;
+                    expect(document.querySelectorAll('.e-axis-content')[3].querySelectorAll('.e-pivot-button').length === 0).toBeTruthy;
+                    done();
+                }, 1000);
             });
         });
     });

@@ -9,7 +9,7 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
-import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs, IFormatPainterArgs } from './interface';
+import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs, ImageDropEventArgs, IFormatPainterArgs, CleanupResizeElemArgs } from './interface';
 import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, StatusArgs, ToolbarStatusEventArgs } from './interface';
 import { BeforeQuickToolbarOpenArgs, ChangeEventArgs, AfterImageDeleteEventArgs, AfterMediaDeleteEventArgs, PasteCleanupArgs } from './interface';
 import { ILinkCommandsArgs, IImageCommandsArgs, IAudioCommandsArgs, IVideoCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs, ExecuteCommandOption } from './interface';
@@ -1708,7 +1708,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.enableXhtml) {
             this.setProperties({ value: this.getXhtml() }, true);
         }
-        if (this.toolbarSettings.enable && this.toolbarSettings.type === 'Expand' && !isNOU(this.getToolbar()) &&
+        if (this.toolbarSettings.enable && (this.toolbarSettings.type === 'Expand' || this.toolbarSettings.type === 'MultiRow' || this.toolbarSettings.type === 'Scrollable') && !isNOU(this.getToolbar()) &&
             (this.toolbarSettings.items.indexOf('Undo') > -1 && this.toolbarSettings.items.indexOf('Redo') > -1)) {
             this.disableToolbarItem(['Undo', 'Redo']);
         }
@@ -1718,7 +1718,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         // eslint-disable-next-line
         (this.enabled && !this.readonly) ? this.eventInitializer() : this.unWireEvents();
-        this.notify(events.bindCssClass, {cssClass: this.cssClass});
+        this.notify(events.bindCssClass, {cssClass: this.getCssClass()});
         this.addAudioVideoWrapper();
         this.notify(events.tableclass, {});
         this.renderComplete();
@@ -1811,7 +1811,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             range.endContainer as Element;
         const closestLI: Element = closest(endNode, 'LI');
         let isDetached: boolean = false;
-        if (!isNOU(closestLI) && endNode.textContent.length === range.endOffset &&
+        let currentRangeEndOffset: number = range.endOffset;
+        if (currentEndContainer.nodeType === Node.TEXT_NODE) {
+            if (currentEndContainer.textContent.charAt(currentRangeEndOffset - 1) === '\uFEFF') {
+                currentRangeEndOffset--;
+            }
+        }
+        if (!isNOU(closestLI) && endNode.textContent.trim().length === currentRangeEndOffset &&
         !range.collapsed && isNOU(endNode.nextElementSibling)) {
             for (let i: number = 0; i < closestLI.childNodes.length; i++) {
                 if (closestLI.childNodes[i as number].nodeName === '#text' && closestLI.childNodes[i as number].textContent.trim().length === 0) {
@@ -1895,7 +1901,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         const notFormatPainterCopy: boolean = isNOU((e as KeyboardEventArgs).action) ? true : ((e as KeyboardEventArgs).action !== 'format-copy' ? true : false);
         if (this.formatter.getUndoRedoStack().length === 0 && notFormatPainterCopy &&
-            !(e.altKey || e.shiftKey || (e.altKey && e.shiftKey && e.which === 67))) {
+            !(e.altKey || e.shiftKey || (e.altKey && e.shiftKey && e.which == 67))) {
             this.formatter.saveData();
         }
         if ((e as KeyboardEventArgs).action !== 'insert-link' &&
@@ -1966,7 +1972,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             this.formatter.onKeyHandler(this, e);
         }
         if (this.inputElement && this.inputElement.textContent.length !== 0
-            || this.element.querySelectorAll('.e-toolbar-item.e-active').length > 0) {
+            || this.element.querySelectorAll('.e-toolbar-item.e-active').length > 0 || this.formatter.getUndoRedoStack().length > 0) {
             this.notify(events.toolbarRefresh, { args: e });
         }
         if (!isNOU(this.placeholder)) {
@@ -2060,19 +2066,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         this.notifyMouseUp(e);
-        if (e.detail === 3) {
-            const range: Range = this.getRange();
-            const selection: Selection = this.formatter.editorManager.domNode.getSelection();
-            if (/\s+$/.test(selection.toString())) {
-                if (!isNOU(range.startContainer.parentElement) && (!isNOU(range.startContainer.parentElement.nextSibling) &&
-                (range.startContainer.parentElement.nextSibling.nodeType !== 3 ||
-                /\s+$/.test(range.startContainer.parentElement.nextSibling.textContent)) || range.startOffset === range.endOffset)
-                || range.startContainer.parentElement.tagName.toLocaleLowerCase() === 'li') {
-                    range.setStart(range.startContainer, range.startOffset);
-                    range.setEnd(range.startContainer, range.startContainer.textContent.length);
-                }
-            }
-        }
     }
 
     /**
@@ -2119,7 +2112,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             const currentLength: number = this.inputElement.textContent.length;
             const selectionLength: number = this.getSelection().length;
             const pastedContentLength: number = (isNOU(e as ClipboardEvent) || isNOU((e as ClipboardEvent).clipboardData))
-                ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').length;
+                ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').replace(/(\r\n|\n|\r)/gm, '').replace(/\u200B/g, '').length;
             const totalLength: number = (currentLength - selectionLength) + pastedContentLength;
             if (this.editorMode === 'Markdown') {
                 const args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
@@ -2538,7 +2531,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private updatePanelValue(): void {
         let value: string = this.value;
         value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
-        const getTextArea: HTMLInputElement = this.element.querySelector('.e-rte-srctextarea') ;
+        const getTextArea: HTMLInputElement = this.element.querySelector('.'+ classes.CLS_RTE_SOURCE_CODE_TXTAREA) ;
         if (value) {
             if (getTextArea && getTextArea.style.display === 'block') {
                 getTextArea.value = this.value;
@@ -3002,7 +2995,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             } else {
                 if (target === 'windowResize' && heightPercent){
                     //cntEle hide the borderBottom of RichTextEditor. so removed the 2px of cntEle height.
-                    heightValue = parseInt(heightValue, 10) - 2 + 'px';
+                    heightValue = parseInt(heightValue, 10)- 2 + 'px';
                 }
                 setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });
             }
@@ -3162,6 +3155,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return (this.originalElement.tagName === 'TEXTAREA' ? this.valueContainer.id : this.element.id);
     }
 
+    /**
+   * @returns {void}
+   * getCssClass method
+   *
+   * @hidden
+   * @deprecated
+   */
+    public getCssClass(isSpace?: boolean): string {
+        return (isNOU(this.cssClass) ? '' : isSpace?' '+ this.cssClass: this.cssClass);
+    }
+
     private mouseDownHandler(e: MouseEvent | TouchEvent): void {
         const touch: Touch = <Touch>((e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e);
         addClass([this.element], [classes.CLS_FOCUS]);
@@ -3278,7 +3282,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private getUpdatedValue(): string {
         let value: string;
-        const getTextArea: HTMLInputElement = this.element.querySelector('.e-rte-srctextarea') ;
+        const getTextArea: HTMLInputElement = this.element.querySelector('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA) ;
         if (this.editorMode === 'HTML') {
             value = (this.inputElement.innerHTML === '<p><br></p>' || this.inputElement.innerHTML === '<div><br></div>' ||
             this.inputElement.innerHTML === '<br>') ? null : this.enableHtmlEncode ?
@@ -3303,10 +3307,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.isValueChangeBlurhandler = false;
         this.invokeChangeEvent();
     }
+
     private updateIntervalValue(): void {
         clearTimeout(this.idleInterval);
         this.idleInterval = setTimeout(this.updateValueOnIdle.bind(this), 0);
     }
+
+    private cleanupResizeElements(args: CleanupResizeElemArgs): string {
+        const value = this.removeResizeElement(args.value);
+        return value;
+    }
+
     private removeResizeElement(value: string): string {
         let valueElementWrapper: HTMLElement = document.createElement("div");
         valueElementWrapper.innerHTML = value;
@@ -3318,6 +3329,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         return valueElementWrapper.innerHTML;
     }
+
     private updateStatus(e: StatusArgs): void {
         if (!isNOU(e.html) || !isNOU(e.markdown)) {
             const status: { [key: string]: boolean } = this.formatter.editorManager.undoRedoManager.getUndoStatus();
@@ -3529,6 +3541,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.on(events.contentChanged, this.contentChanged, this);
         this.on(events.resizeInitialized, this.updateResizeFlag, this);
         this.on(events.updateTbItemsStatus, this.updateStatus, this);
+        this.on(events.cleanupResizeElements, this.cleanupResizeElements, this);
         if (this.readonly && this.enabled) {
             return;
         }
@@ -3617,6 +3630,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.off(events.contentChanged, this.contentChanged);
         this.off(events.resizeInitialized, this.updateResizeFlag);
         this.off(events.updateTbItemsStatus, this.updateStatus);
+        this.off(events.cleanupResizeElements, this.cleanupResizeElements);
         if (this.readonly && this.enabled) {
             return;
         }

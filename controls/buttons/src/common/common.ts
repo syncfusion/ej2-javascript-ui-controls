@@ -78,6 +78,7 @@ export function destroy(ejInst: Switch | CheckBox, wrapper: Element, tagName: st
             wrapper.removeAttribute(key);
         });
         wrapper.innerHTML = '';
+        ejInst.element = wrapper as HTMLInputElement;
     }
 }
 

@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, InventoryList } from '../util/datasource.spec';
-import { Spreadsheet, clearViewer } from '../../../src/index';
+import { Spreadsheet, UsedRangeModel, clearViewer } from '../../../src/index';
 import { getComponent } from '@syncfusion/ej2-base';
 
 
@@ -1319,10 +1319,13 @@ describe('Conditional formatting ->', () => {
                 helper.invoke('updateCell', [{ value: '-108' }, 'J5']);
                 helper.invoke('updateCell', [{ value: '120' }, 'J6']);
                 helper.invoke('selectRange', ['J2:J6']);
-                helper.invoke('conditionalFormat', [{ type: "LessThan", cFColor: "RedFT", value: "-100", range: "J2:J6" }]);
+                helper.invoke('conditionalFormat', [{ type: 'LessThan', cFColor: 'RedFT', value: '-100', range: 'J2:K13' }]);
                 expect(helper.invoke('getCell', [1, 9]).style.backgroundColor).toContain('rgb(255, 199, 206)');
                 expect(helper.invoke('getCell', [2, 9]).style.backgroundColor).toBe('rgb(255, 199, 206)');
                 expect(helper.invoke('getCell', [3, 9]).style.backgroundColor).toBe('');
+                const usedRange: UsedRangeModel = helper.getInstance().sheets[0].usedRange;
+                expect(usedRange.rowIndex).toBe(12);
+                expect(usedRange.colIndex).toBe(10);
                 done();
             });
         }); 

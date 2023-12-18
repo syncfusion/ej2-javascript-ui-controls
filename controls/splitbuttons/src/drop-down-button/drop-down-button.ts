@@ -297,6 +297,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             content: this.target ? this.getTargetElement() as HTMLElement : '',
             enableRtl: this.enableRtl
         });
+        this.dropDown.element.setAttribute('role', 'dialog');
+        this.dropDown.element.setAttribute('aria-label', 'dropdown menu');
         if (!isNullOrUndefined(this.popupContent)) {
             this.popupContent.style.display = '';
         }
@@ -337,7 +339,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             li = this.createElement('li', {
                 innerHTML: item.url ? '' : tempItem,
                 className: item.separator ? classNames.ITEM + ' ' + classNames.SEPARATOR : classNames.ITEM,
-                attrs: item.separator ? {'role' : 'separator', 'tabindex': '-1'} : { 'role': 'menuitem', 'tabindex': '-1', 'aria-label': tempItem },
+                attrs: item.separator ? {'role' : 'separator', 'tabindex': '-1', 'aria-label': 'separator', 'aria-hidden': 'true'} : { 'role': 'menuitem', 'tabindex': '-1', 'aria-label': tempItem },
                 id: item.id ? item.id : getUniqueID('e-' + this.getModuleName() + '-item')
             });
             if (this.enableHtmlSanitizer) {
@@ -532,6 +534,13 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         }
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyBoardHandler, this);
+        EventHandler.add(<HTMLElement & Window>window, 'resize',this.windowResize, this);
+    }
+
+    protected windowResize(): void {
+        if (!this.canOpen() && this.dropDown) {
+            this.dropDown.refreshPosition(this.element);
+        }
     }
 
     protected popupWireEvents(): void {
@@ -798,6 +807,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             EventHandler.remove(this.getPopUpElement(), 'click', this.clickHandler);
             EventHandler.remove(this.getPopUpElement(), 'keydown', this.keyBoardHandler);
         }
+        EventHandler.remove(<HTMLElement & Window>window, 'resize', this.windowResize);
     }
 
     /**

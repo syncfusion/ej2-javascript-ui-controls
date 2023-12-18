@@ -1247,7 +1247,8 @@ export class FormDesigner {
                     name: updatedFormFields.name, zoomValue: zoomValue, pageNumber: updatedFormFields.pageNumber, value: updatedFormFields.value, formFieldAnnotationType: updatedFormFields.formFieldAnnotationType,
                     fontFamily: updatedFormFields.fontFamily, fontSize: updatedFormFields.fontSize, fontStyle: updatedFormFields.fontStyle, fontColor: this.getRgbCode(updatedFormFields.color) as unknown as string,
                     backgroundColor: this.getRgbCode(updatedFormFields.backgroundColor) as unknown as string, borderColor: this.getRgbCode(updatedFormFields.borderColor) as unknown as string, thickness: updatedFormFields.thickness, textAlign: updatedFormFields.alignment, isChecked: updatedFormFields.isChecked, isSelected: updatedFormFields.isSelected,
-                    isReadonly: updatedFormFields.isReadonly, font: { isBold: updatedFormFields.font.isBold, isItalic: updatedFormFields.font.isItalic, isStrikeout: updatedFormFields.font.isStrikeout, isUnderline: updatedFormFields.font.isUnderline }, selectedIndex: updatedFormFields.selectedIndex, radiobuttonItem: null, option: updatedFormFields.options ? updatedFormFields.options : [], visibility: updatedFormFields.visibility, maxLength: updatedFormFields.maxLength, isRequired: updatedFormFields.isRequired, isPrint: updatedFormFields.isPrint, rotation: 0, tooltip: updatedFormFields.tooltip, isMultiline: updatedFormFields.isMultiline, insertSpaces: updatedFormFields.insertSpaces, isTransparent: updatedFormFields.isTransparent, zIndex: updatedFormFields.zIndex
+                    isReadonly: updatedFormFields.isReadonly, font: { isBold: updatedFormFields.font.isBold, isItalic: updatedFormFields.font.isItalic, isStrikeout: updatedFormFields.font.isStrikeout, isUnderline: updatedFormFields.font.isUnderline }, selectedIndex: updatedFormFields.selectedIndex, radiobuttonItem: null, option: updatedFormFields.options ? updatedFormFields.options : [], visibility: updatedFormFields.visibility, maxLength: updatedFormFields.maxLength, isRequired: updatedFormFields.isRequired, isPrint: updatedFormFields.isPrint, rotation: 0, tooltip: updatedFormFields.tooltip,
+                    isMultiline: updatedFormFields.isMultiline, insertSpaces: updatedFormFields.insertSpaces, isTransparent: updatedFormFields.isTransparent, zIndex: updatedFormFields.zIndex
                 };
                 if (formFieldsData[i].FormField.formFieldAnnotationType === "SignatureField" || formFieldsData[i].FormField.formFieldAnnotationType === "InitialField") {
                     let updatedSignatureFormFields: any = updatedFormFields;
@@ -1316,6 +1317,12 @@ export class FormDesigner {
         }
         if (!signatureFieldSettings.signatureDialogSettings) {
             signatureFieldSettings.signatureDialogSettings = { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false }
+        }
+        if (!initialFieldSettings.initialIndicatorSettings) {
+            initialFieldSettings.initialIndicatorSettings = { opacity: 1, backgroundColor: 'orange', width: 19, height: 10, fontSize: 10, text: null, color: 'black' };
+        }
+        if (!initialFieldSettings.initialDialogSettings) {
+            initialFieldSettings.initialDialogSettings = { displayMode: DisplayMode.Draw | DisplayMode.Text | DisplayMode.Upload, hideSaveSignature: false };
         }
         //check whether the width for sign indicator has default value or not and then set the default width value for initial field.
         var indicatorSettings;
@@ -2425,8 +2432,8 @@ export class FormDesigner {
     public updateFormField(formFieldId: string | object,
         options: TextFieldSettings | PasswordFieldSettings | CheckBoxFieldSettings | DropdownFieldSettings | RadioButtonFieldSettings | SignatureFieldSettings | InitialFieldSettings): void {
         let formField: PdfFormFieldBaseModel = this.getFormField(formFieldId);
-        let selectedItem:any = this.pdfViewer.selectedItems.formFields[0];
         this.isFormFieldUpdated = true;
+        let selectedItem:any = this.pdfViewer.selectedItems.formFields[0];
         if (formField) {
             if (!formField.isReadonly || (!isNullOrUndefined(options.isReadOnly) && !options.isReadOnly)) {
             switch (formField.formFieldAnnotationType) {
@@ -2842,10 +2849,10 @@ export class FormDesigner {
                     newValue = (options as TextFieldSettings).value;
                 }
                 formFieldObject.value = (options as TextFieldSettings).value ? (options as TextFieldSettings).value : formFieldObject.value;
-                if (formFieldObject.formFieldAnnotationType === "Textbox" && (options as TextFieldSettings).isMultiline) {
+                if (formFieldObject.formFieldAnnotationType === "Textbox" && (options as TextFieldSettings).isMultiline){
                     this.addMultilineTextbox(formFieldObject, "e-pv-formfield-input", true);
                     this.multilineCheckboxCheckedState = true;
-                    document.getElementById(formFieldObject.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(selectedItem) : this.updateFormFieldPropertiesInCollections(selectedItem);
+                    document.getElementById(formFieldObject.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(formFieldObject) : this.updateFormFieldPropertiesInCollections(formFieldObject);
                 }
                 if (!isNullOrUndefined((options as TextFieldSettings).isMultiline) && formFieldObject.isMultiline != (options as TextFieldSettings).isMultiline) {
                     isValueChanged = true;
@@ -2874,9 +2881,9 @@ export class FormDesigner {
                 }
             }
             else if (!isNullOrUndefined(options as TextFieldSettings) && !isNullOrUndefined((options as TextFieldSettings).isMultiline) && !(options as TextFieldSettings).isMultiline) {
-                this.renderTextbox(formFieldObject);
+                this.renderTextbox(selectedItem);
                 this.multilineCheckboxCheckedState = true;
-                document.getElementById(formFieldObject.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(formFieldObject) : this.updateFormFieldPropertiesInCollections(formFieldObject);
+                document.getElementById(selectedItem.id + "_content_html_element") ? this.updateTextboxFormDesignerProperties(selectedItem) : this.updateFormFieldPropertiesInCollections(selectedItem);
             }
             if ((options as any).fontSize) {
                 if (formFieldObject.fontSize !== (options as any).fontSize) {
@@ -3003,15 +3010,30 @@ export class FormDesigner {
                 newValue = options.isReadOnly;
             }
             formFieldObject.isReadonly = options.isReadOnly;
-            this.setReadOnlyToElement(formFieldObject, htmlElement, options.isReadOnly);
-            this.setReadOnlyToFormField(formFieldObject, options.isReadOnly);
+            this.setReadOnlyProperty(formFieldObject, htmlElement);
             if (formFieldObject.formFieldAnnotationType === 'RadioButton') {
-                htmlElement.parentElement.style.pointerEvents = options.isReadOnly ? ((options as any).isMultiline ? 'auto' : 'none') : 'auto';
+                htmlElement.parentElement.style.pointerEvents = options.isReadOnly ? 'none' : 'auto';
+                let data: any = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+                let formFieldsData: any = JSON.parse(data);
+                for (let i: number = 0; i < formFieldsData.length; i++) {
+                    if (formFieldsData[i].FormField.id.split("_")[0] === formFieldObject.id) {
+                        for (let j: number = 0; j < formFieldsData[i].FormField.radiobuttonItem.length; j++) {
+                            let radiobuttonItem: any = formFieldsData[i].FormField.radiobuttonItem[j];
+                            let currentElement: Element = document.getElementById(radiobuttonItem.id + "_html_element").firstElementChild.firstElementChild.firstElementChild;
+                            currentElement.parentElement.style.pointerEvents = options.isReadOnly ?  'none' : 'auto';
+                            radiobuttonItem.isReadonly = formFieldObject.isReadonly;
+                            this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].isReadonly = formFieldObject.isReadonly;
+                            this.setReadOnlyProperty(radiobuttonItem, currentElement);
+                            this.pdfViewerBase.formFieldCollection[i].FormField.radiobuttonItem[j].backgroundColor = this.getRgbCode(radiobuttonItem.backgroundColor) as unknown as string;
+                        }
+                        formFieldsData[i].FormField.isReadonly = formFieldObject.isReadonly;
+                        this.pdfViewerBase.formFieldCollection[i].FormField.isReadonly = formFieldObject.isReadonly;
+                    }
+                }
             }
             else {
                 htmlElement.style.pointerEvents = options.isReadOnly ? ((options as any).isMultiline ? 'auto' : 'none') : 'auto';
             }
-            (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]].isReadonly = options.isReadOnly;
             if (isReadOnlyChanged) {
                 this.updateFormFieldPropertiesChanges("formFieldPropertiesChange", formFieldObject, false, false, false,
                     false, false, false, false, false, false, isReadOnlyChanged, false, false, false, false, false, oldValue, newValue);
@@ -3025,7 +3047,8 @@ export class FormDesigner {
             id: formFieldObject.id, name: (formFieldObject as PdfFormFieldBaseModel).name, value: (formFieldObject as PdfFormFieldBaseModel).value,
             type: formFieldObject.formFieldAnnotationType as FormFieldType, isReadOnly: formFieldObject.isReadonly, fontFamily: formFieldObject.fontFamily,
             fontSize: formFieldObject.fontSize, fontStyle: formFieldObject.fontStyle as unknown as FontStyle, color: (formFieldObject as PdfFormFieldBaseModel).color, backgroundColor: (formFieldObject as PdfFormFieldBaseModel).backgroundColor,
-            alignment: (formFieldObject as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (formFieldObject as PdfFormFieldBaseModel).visibility, maxLength: (formFieldObject as PdfFormFieldBaseModel).maxLength, isRequired: (formFieldObject as PdfFormFieldBaseModel).isRequired, isPrint: formFieldObject.isPrint, tooltip: (formFieldObject as PdfFormFieldBaseModel).tooltip, bounds: formFieldObject.bounds as IFormFieldBound, thickness: formFieldObject.thickness, borderColor: (formFieldObject as PdfFormFieldBaseModel).borderColor, pageIndex: formFieldObject.pageIndex, insertSpaces: (formFieldObject as PdfFormFieldBaseModel).insertSpaces, isTransparent: (formFieldObject as PdfFormFieldBaseModel).isTransparent, options: (formFieldObject as PdfFormFieldBaseModel).options, pageNumber: (formFieldObject as PdfFormFieldBaseModel).pageNumber, rotateAngle: (formFieldObject as PdfFormFieldBaseModel).rotateAngle, selectedIndex: (formFieldObject as PdfFormFieldBaseModel).selectedIndex, signatureIndicatorSettings: (formFieldObject as PdfFormFieldBaseModel).signatureIndicatorSettings, signatureType: (formFieldObject as any).signatureType, zIndex: (formFieldObject as PdfFormFieldBaseModel).zIndex, isChecked: (formFieldObject as PdfFormFieldBaseModel).isChecked, isMultiline: (formFieldObject as PdfFormFieldBaseModel).isMultiline, isSelected: (formFieldObject as PdfFormFieldBaseModel).isSelected
+            alignment: (formFieldObject as PdfFormFieldBaseModel).alignment as TextAlign, visibility: (formFieldObject as PdfFormFieldBaseModel).visibility, maxLength: (formFieldObject as PdfFormFieldBaseModel).maxLength, isRequired: (formFieldObject as PdfFormFieldBaseModel).isRequired,
+            isPrint: formFieldObject.isPrint, tooltip: (formFieldObject as PdfFormFieldBaseModel).tooltip, bounds: formFieldObject.bounds as IFormFieldBound, thickness: formFieldObject.thickness, borderColor: (formFieldObject as PdfFormFieldBaseModel).borderColor, pageIndex: formFieldObject.pageIndex, insertSpaces: (formFieldObject as PdfFormFieldBaseModel).insertSpaces, isTransparent: (formFieldObject as PdfFormFieldBaseModel).isTransparent, options: (formFieldObject as PdfFormFieldBaseModel).options, pageNumber: (formFieldObject as PdfFormFieldBaseModel).pageNumber, rotateAngle: (formFieldObject as PdfFormFieldBaseModel).rotateAngle, selectedIndex: (formFieldObject as PdfFormFieldBaseModel).selectedIndex, signatureIndicatorSettings: (formFieldObject as PdfFormFieldBaseModel).signatureIndicatorSettings, signatureType: (formFieldObject as any).signatureType, zIndex: (formFieldObject as PdfFormFieldBaseModel).zIndex, isChecked: (formFieldObject as PdfFormFieldBaseModel).isChecked, isMultiline: (formFieldObject as PdfFormFieldBaseModel).isMultiline, isSelected: (formFieldObject as PdfFormFieldBaseModel).isSelected
         };
         this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.findIndex(el => el.id === formField.id)] = formField;
         this.pdfViewer.formFieldCollection[this.pdfViewer.formFieldCollection.findIndex(function (el) { return el.id === formField.id; })] = formFieldObject;
@@ -3296,7 +3319,7 @@ export class FormDesigner {
                             case 'Checkbox':
                                 let checkboxDivElement:any = document.getElementById(collections[i].id + "_content_html_element").firstElementChild.firstElementChild.lastElementChild;
                                 checkboxDivElement.style.pointerEvents = 'none';
-                                break; 
+                                break;
                         }
                     } else {
                         this.pdfViewer.designerMode = false;
@@ -4374,7 +4397,8 @@ export class FormDesigner {
             id: formFieldObject.id.split('_')[0], name: (formFieldObject as PdfFormFieldBaseModel).name, value: (formFieldObject as PdfFormFieldBaseModel).value,
             type: (formFieldObject as any).type ? (formFieldObject as any).type : formFieldObject.formFieldAnnotationType as FormFieldType, isReadOnly: formFieldObject.isReadonly, fontFamily: formFieldObject.fontFamily, isMultiline: formFieldObject.isMultiline,
             fontSize: formFieldObject.fontSize, fontStyle: formFieldObject.fontStyle as unknown as FontStyle, color: (formFieldObject as PdfFormFieldBaseModel).color ? (formFieldObject as PdfFormFieldBaseModel).color : this.getRgbToHex((formFieldObject as any).fontColor), backgroundColor: typeof (formFieldObject as PdfFormFieldBaseModel).backgroundColor === 'string' ? (formFieldObject as PdfFormFieldBaseModel).backgroundColor : this.getRgbToHex((formFieldObject as PdfFormFieldBaseModel).backgroundColor),
-            alignment: (formFieldObject as PdfFormFieldBaseModel).alignment ? (formFieldObject as PdfFormFieldBaseModel).alignment as TextAlign : (formFieldObject as any).textAlign, visibility: (formFieldObject as PdfFormFieldBaseModel).visibility, maxLength: (formFieldObject as PdfFormFieldBaseModel).maxLength, isRequired: (formFieldObject as PdfFormFieldBaseModel).isRequired, isPrint: formFieldObject.isPrint, isSelected: formFieldObject.isSelected, isChecked: formFieldObject.isChecked, tooltip: (formFieldObject as PdfFormFieldBaseModel).tooltip, bounds: formFieldObject.bounds as IFormFieldBound ? formFieldObject.bounds : (formFieldObject as any).lineBound, thickness: formFieldObject.thickness, borderColor: typeof (formFieldObject as PdfFormFieldBaseModel).borderColor === 'string' ? (formFieldObject as PdfFormFieldBaseModel).borderColor : this.getRgbToHex((formFieldObject as PdfFormFieldBaseModel).borderColor), pageIndex: !isNullOrUndefined(formFieldObject.pageNumber) ? formFieldObject.pageNumber - 1 : formFieldObject.pageIndex, insertSpaces: (formFieldObject as PdfFormFieldBaseModel).insertSpaces, isTransparent: (formFieldObject as PdfFormFieldBaseModel).isTransparent ? (formFieldObject as PdfFormFieldBaseModel).isTransparent : false, options: (formFieldObject as any).option ? (formFieldObject as any).option : (formFieldObject as PdfFormFieldBaseModel).options, pageNumber: (formFieldObject as PdfFormFieldBaseModel).pageNumber, rotateAngle: !isNullOrUndefined((formFieldObject as PdfFormFieldBaseModel).rotateAngle) ? (formFieldObject as PdfFormFieldBaseModel).rotateAngle : (formFieldObject as any).rotation, selectedIndex: (formFieldObject as PdfFormFieldBaseModel).selectedIndex, signatureIndicatorSettings: (formFieldObject as PdfFormFieldBaseModel).signatureIndicatorSettings, signatureType: (formFieldObject as any).signatureType, zIndex: (formFieldObject as PdfFormFieldBaseModel).zIndex
+            alignment: (formFieldObject as PdfFormFieldBaseModel).alignment ? (formFieldObject as PdfFormFieldBaseModel).alignment as TextAlign : (formFieldObject as any).textAlign, visibility: (formFieldObject as PdfFormFieldBaseModel).visibility, maxLength: (formFieldObject as PdfFormFieldBaseModel).maxLength, isRequired: (formFieldObject as PdfFormFieldBaseModel).isRequired,
+            isPrint: formFieldObject.isPrint, isSelected: formFieldObject.isSelected, isChecked: formFieldObject.isChecked, tooltip: (formFieldObject as PdfFormFieldBaseModel).tooltip, bounds: formFieldObject.bounds as IFormFieldBound ? formFieldObject.bounds : (formFieldObject as any).lineBound, thickness: formFieldObject.thickness, borderColor: typeof (formFieldObject as PdfFormFieldBaseModel).borderColor === 'string' ? (formFieldObject as PdfFormFieldBaseModel).borderColor : this.getRgbToHex((formFieldObject as PdfFormFieldBaseModel).borderColor), pageIndex: !isNullOrUndefined(formFieldObject.pageNumber) ? formFieldObject.pageNumber - 1 : formFieldObject.pageIndex, insertSpaces: (formFieldObject as PdfFormFieldBaseModel).insertSpaces, isTransparent: (formFieldObject as PdfFormFieldBaseModel).isTransparent ? (formFieldObject as PdfFormFieldBaseModel).isTransparent : false, options: (formFieldObject as any).option ? (formFieldObject as any).option : (formFieldObject as PdfFormFieldBaseModel).options, pageNumber: (formFieldObject as PdfFormFieldBaseModel).pageNumber, rotateAngle: !isNullOrUndefined((formFieldObject as PdfFormFieldBaseModel).rotateAngle) ? (formFieldObject as PdfFormFieldBaseModel).rotateAngle : (formFieldObject as any).rotation, selectedIndex: (formFieldObject as PdfFormFieldBaseModel).selectedIndex, signatureIndicatorSettings: (formFieldObject as PdfFormFieldBaseModel).signatureIndicatorSettings, signatureType: (formFieldObject as any).signatureType, zIndex: (formFieldObject as PdfFormFieldBaseModel).zIndex
         };
         this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.findIndex(el => el.id === formField.id)] = formField;
     }
@@ -5123,12 +5147,13 @@ export class FormDesigner {
         if (isUndoRedo) {
             element.style.fontFamily = selectedItem.fontFamily;
         }
-        // EJ2-856550 - to ge selectItem fontfamily when font family empty string in add multiline programattically
+        // EJ2-856550 - to ge selectItem fontfamily when font family empty string in add multiline programattically.
         else if(fontFamily === "")
         {
             fontFamily = selectedItem.fontFamily;
             element.style.fontFamily = fontFamily;
-        } else {
+        }
+        else {
             selectedItem.fontFamily = fontFamily
             element.style.fontFamily = fontFamily;
         }
@@ -5329,6 +5354,9 @@ export class FormDesigner {
                     let currentElement: any = document.getElementById(this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem[i].id.split('_')[0]);
                     let currentItem: any = this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem[i];
                     this.setReadOnlyProperty(currentItem, currentElement);
+                    if (isReadOnlyChanged) {
+                        this.pdfViewerBase.formFieldCollection[index].FormField.radiobuttonItem[i].backgroundColor = this.getRgbCode(currentItem.backgroundColor) as unknown as string;
+                    }
                 }
                 this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
             }
@@ -6470,13 +6498,17 @@ export class FormDesigner {
         }
     }
 
-    // Implemented this method to verify the background color of the selected item. Task: 855151
+     // Implemented this method to verify the background color of the selected item. Task: 855151
     private isTransparentBackground(backgroundColor: any) {
-        return backgroundColor === '#00000000' || backgroundColor === 'transparent' || backgroundColor === 'rgba(0,0,0,0)';
+        if (typeof (backgroundColor) === 'object') {
+            backgroundColor = JSON.stringify(backgroundColor);
+        }
+        return backgroundColor === '#00000000' || backgroundColor === 'transparent' || backgroundColor === 'rgba(0,0,0,0)' || backgroundColor === '{"r":0,"g":0,"b":0,"a":0}';
     };
 
     private setReadOnlyToElement(selectedItem: PdfFormFieldBaseModel, inputElement: any, isReadOnly: boolean) {
         let fillColor: any = '#daeaf7ff';
+        let color: any = {r: 218, g: 234, b: 247, a: 100};
         (inputElement as HTMLInputElement).disabled = isReadOnly;
         if (isReadOnly) {
             if (selectedItem.formFieldAnnotationType === 'RadioButton') {
@@ -6489,12 +6521,12 @@ export class FormDesigner {
             else {
                 inputElement.style.cursor = 'default';
             }
-        }
+        } 
         if (isReadOnly && this.isAddFormFieldProgrammatically) {
             this.previousBackgroundColor = selectedItem.backgroundColor;
         }
         if (selectedItem.formFieldAnnotationType === 'RadioButton') {
-            (inputElement as any).parentElement.style.backgroundColor = selectedItem.isReadonly ? (selectedItem.backgroundColor !== fillColor ? selectedItem.backgroundColor : 'transparent') : (this.isTransparentBackground(selectedItem.backgroundColor) ? fillColor : this.previousBackgroundColor);
+            (inputElement as any).parentElement.style.backgroundColor = selectedItem.isReadonly ? ((selectedItem.backgroundColor !== fillColor && JSON.stringify(selectedItem.backgroundColor) !== JSON.stringify(color)) ? selectedItem.backgroundColor : 'transparent') : (this.isTransparentBackground(selectedItem.backgroundColor) ? fillColor : this.previousBackgroundColor);
         }
         else if (selectedItem.formFieldAnnotationType === 'SignatureField' || selectedItem.formFieldAnnotationType === 'InitialField' && isReadOnly) {
             let background = selectedItem.backgroundColor ? selectedItem.backgroundColor : '#FFE48559';
@@ -6504,7 +6536,7 @@ export class FormDesigner {
         }
         // Have configured the backgroundColor of the selectedItem to ensure that transparency is maintained when downloading and loading in the viewer. Task: 855151
         selectedItem.backgroundColor = selectedItem.isReadonly ?
-            (selectedItem.backgroundColor !== fillColor ? selectedItem.backgroundColor : 'transparent') :
+            ((selectedItem.backgroundColor !== fillColor && JSON.stringify(selectedItem.backgroundColor) !== JSON.stringify(color)) ? selectedItem.backgroundColor : 'transparent') :
             (this.isTransparentBackground(selectedItem.backgroundColor) ? fillColor : (selectedItem.backgroundColor !== this.previousBackgroundColor) ? selectedItem.backgroundColor : this.previousBackgroundColor);
     }
 
@@ -7268,6 +7300,7 @@ export interface IFormField {
     insertSpaces?: boolean;
     isTransparent?: boolean;
     zIndex?: number;
+    
 }
 /**
  * Defines the FormFields Bound properties

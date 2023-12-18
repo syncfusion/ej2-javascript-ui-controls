@@ -11,7 +11,7 @@ $listview-background: $content-bg !default;
 $listview-line-color: rgba($black, .13) !default;
 $listview-item-hover-bg: darken($gray-100, 5%) !default;
 $listview-item-height: 40px !default;
-$listview-item-line-height: 1.5 !default;
+$listview-item-line-height: 1.6 !default;
 $listview-item-padding: 8px 16px 8px 16px !default;
 
 $listview-root-border-color: rgba($black, .13);
@@ -62,7 +62,7 @@ $listview-back-padding-right: 10px !default;
 $listview-back-icon-height: 0 !default;
 $listview-back-icon-font-size: 14px !default;
 $listview-touch-item-height: 50px !default;
-$listview-touch-item-line-height: 1.5 !default;
+$listview-touch-item-line-height: 1.6 !default;
 $listview-touch-item-font-size: 16px !default;
 $listview-touch-groupheader-height: 50px !default;
 $listview-touch-groupheader-line-height: 1.5 !default;

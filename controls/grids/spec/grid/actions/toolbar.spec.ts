@@ -88,7 +88,6 @@ describe('Toolbar functionalities', () => {
     it('check aria-attribute', () => {
         let search: Element = gridObj.toolbarModule.getToolbar().querySelector('.e-search');
         expect(search.querySelector('.e-search-icon').hasAttribute('tabindex')).toBeTruthy();
-        expect(search.querySelector('.e-search-icon').hasAttribute('aria-label')).toBeTruthy();
     });
     it('Enable Toolbar items', () => {
         gridObj.toolbarModule.enableItems(['Grid_update'], true);

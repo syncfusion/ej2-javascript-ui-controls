@@ -8,7 +8,9 @@ import { IGrid, IAction, NotifyArgs, EJ2Intance } from '../base/interface';
 import * as events from '../base/constant';
 import { ShowHide } from './show-hide';
 import { Dialog, calculateRelativeBasedPosition, DialogModel } from '@syncfusion/ej2-popups';
-import { createCboxWithWrap, toogleCheckbox, parentsUntil, removeAddCboxClasses } from '../base/util';
+import { createCboxWithWrap, toogleCheckbox, parentsUntil, removeAddCboxClasses, setChecked } from '../base/util';
+import { ResponsiveDialogAction } from '../base/enum';
+import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { SearchBox } from '../services/focus-strategy';
 import * as literals from '../base/string-literals';
@@ -18,8 +20,6 @@ import * as literals from '../base/string-literals';
  */
 export class ColumnChooser implements IAction {
     // internal variables
-    private parent: IGrid;
-    private serviceLocator: ServiceLocator;
     private l10n: L10n;
     private dlgObj: Dialog;
     private searchValue: string;
@@ -48,6 +48,14 @@ export class ColumnChooser implements IAction {
     private prevShowedCols: string[] = [];
     private hideDialogFunction: Function = this.hideDialog.bind(this);
 
+    //Module declarations
+    /** @hidden */
+    public parent: IGrid;
+    /** @hidden */
+    public responsiveDialogRenderer: ResponsiveDialogRenderer;
+    /** @hidden */
+    public serviceLocator: ServiceLocator;
+
     /**
      * Constructor for the Grid ColumnChooser module
      *
@@ -63,12 +71,12 @@ export class ColumnChooser implements IAction {
         this.cBoxFalse = createCheckBox(this.parent.createElement, false, { checked: false, label: ' ' });
         this.cBoxTrue.insertBefore(
             this.parent.createElement('input', {
-                className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { type: 'checkbox', 'aria-checked': 'true' }
+                className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { type: 'checkbox' }
             }),
             this.cBoxTrue.firstChild);
         this.cBoxFalse.insertBefore(
             this.parent.createElement('input', {
-                className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { 'type': 'checkbox', 'aria-checked': 'false' }
+                className: 'e-chk-hidden e-cc e-cc-chbox', attrs: { 'type': 'checkbox' }
             }),
             this.cBoxFalse.firstChild);
         this.cBoxFalse.querySelector('.e-frame').classList.add('e-uncheck');
@@ -82,6 +90,9 @@ export class ColumnChooser implements IAction {
                 addClass([this.cBoxTrue, this.cBoxFalse], [this.parent.cssClass]);
             }
         }
+        if (this.parent.enableAdaptiveUI) {
+            this.setFullScreenDialog();
+        }
     }
 
     private destroy(): void {
@@ -91,6 +102,12 @@ export class ColumnChooser implements IAction {
         this.unWireEvents();
         if (!isNullOrUndefined(this.dlgObj) && this.dlgObj.element && !this.dlgObj.isDestroyed) {
             this.dlgObj.destroy();
+        }
+    }
+
+    private setFullScreenDialog(): void {
+        if (this.serviceLocator) {
+            this.serviceLocator.registerAdaptiveService(this, this.parent.enableAdaptiveUI, ResponsiveDialogAction.isColumnChooser);
         }
     }
 
@@ -115,6 +132,11 @@ export class ColumnChooser implements IAction {
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.rtlUpdated, this.rtlUpdate, this);
         this.parent.on(events.resetColumns, this.onResetColumns, this);
+        if (this.parent.enableAdaptiveUI) {
+            this.parent.on(events.setFullScreenDialog, this.setFullScreenDialog, this);
+            this.parent.on(events.renderResponsiveColumnChooserDiv, this.renderResponsiveColumnChooserDiv, this);
+            this.parent.on(events.renderResponsiveChangeAction, this.renderResponsiveChangeAction, this);
+        }
     }
 
     /**
@@ -130,11 +152,19 @@ export class ColumnChooser implements IAction {
         this.parent.off(events.rtlUpdated, this.rtlUpdate);
         this.parent.off(events.resetColumns, this.onResetColumns);
         this.parent.removeEventListener(events.dataBound, this.hideDialogFunction);
+        this.parent.off(events.setFullScreenDialog, this.setFullScreenDialog);
+        if (this.parent.enableAdaptiveUI) {
+            this.parent.off(events.setFullScreenDialog, this.setFullScreenDialog);
+            this.parent.off(events.renderResponsiveColumnChooserDiv, this.renderResponsiveColumnChooserDiv);
+            this.parent.off(events.renderResponsiveChangeAction, this.renderResponsiveChangeAction);
+        }
     }
 
     private render(): void {
         this.l10n = this.serviceLocator.getService<L10n>('localization');
-        this.renderDlgContent();
+        if (!this.parent.enableAdaptiveUI) {
+            this.renderDlgContent();
+        }
         this.getShowHideService = this.serviceLocator.getService<ShowHide>('showHideService');
     }
 
@@ -170,7 +200,13 @@ export class ColumnChooser implements IAction {
         if (this.isCustomizeOpenCC && (e.target as Element).classList.contains('e-cc-cancel')) {
             this.refreshCheckboxState();
         }
-        this.rtlUpdate();
+        if (!this.parent.enableAdaptiveUI) {
+            this.rtlUpdate();
+        } else {
+            if (this.parent.enableRtl) {
+                addClass([this.cBoxTrue, this.cBoxFalse], ['e-rtl']);
+            }
+        }
     }
 
     private hideDialog(): void {
@@ -257,6 +293,9 @@ export class ColumnChooser implements IAction {
 
     public openColumnChooser(X?: number, Y?: number): void {
         this.isCustomizeOpenCC = true;
+        if (this.parent.enableAdaptiveUI) {
+            this.renderDlgContent();
+        }
         if (this.dlgObj.visible) {
             this.hideDialog();
             return;
@@ -275,7 +314,9 @@ export class ColumnChooser implements IAction {
         this.dlgObj.dataBind();
         this.dlgObj.position = { X: 'center', Y: 'center' };
         if (isNullOrUndefined(X)) {
-            this.dlgObj.position = { X: 'center', Y: 'center' };
+            if (this.parent.enableAdaptiveUI) {
+                this.dlgObj.position = { X: '', Y: '' };
+            }
             this.dlgObj.refreshPosition();
         } else {
             this.dlgObj.element.style.top = '';
@@ -330,18 +371,26 @@ export class ColumnChooser implements IAction {
 
 
     private renderDlgContent(): void {
+        const isAdaptive: boolean = this.parent.enableAdaptiveUI;
         this.dlgDiv = this.parent.createElement('div', { className: 'e-ccdlg e-cc', id: this.parent.element.id + '_ccdlg' });
-        this.dlgDiv.setAttribute('aria-label', this.l10n.getConstant('ColumnChooserDialogARIA'));
-        this.parent.element.appendChild(this.dlgDiv);
+        if (!isAdaptive) {
+            this.parent.element.appendChild(this.dlgDiv);
+        }
         this.dlgObj = new Dialog({
-            header: this.l10n.getConstant('ChooseColumns'),
+            header: this.parent.enableAdaptiveUI ? null : this.l10n.getConstant('ChooseColumns'),
             showCloseIcon: false,
             closeOnEscape: false,
             locale: this.parent.locale,
             visible: false,
             enableRtl: this.parent.enableRtl,
             target: document.getElementById(this.parent.element.id),
-            buttons: [{
+            content: this.renderChooserList(),
+            width: 250,
+            cssClass: this.parent.cssClass ? 'e-cc' + ' ' + this.parent.cssClass : 'e-cc',
+            animationSettings: { effect: 'None' }
+        });
+        if (!isAdaptive) {
+            this.dlgObj.buttons = [{
                 click: this.confirmDlgBtnClick.bind(this),
                 buttonModel: {
                     content: this.l10n.getConstant('OKButton'), isPrimary: true,
@@ -350,18 +399,24 @@ export class ColumnChooser implements IAction {
             },
             {
                 click: this.clearBtnClick.bind(this),
-                buttonModel: { cssClass: this.parent.cssClass ?
-                    'e-flat e-cc e-cc-cnbtn' + ' ' + this.parent.cssClass : 'e-flat e-cc e-cc-cnbtn',
-                content: this.l10n.getConstant('CancelButton') }
-            }],
-            content: this.renderChooserList(),
-            width: 250,
-            cssClass: this.parent.cssClass ? 'e-cc' + ' ' + this.parent.cssClass : 'e-cc',
-            animationSettings: { effect: 'None' }
-        });
+                buttonModel: {
+                    cssClass: this.parent.cssClass ?
+                        'e-flat e-cc e-cc-cnbtn' + ' ' + this.parent.cssClass : 'e-flat e-cc e-cc-cnbtn',
+                    content: this.l10n.getConstant('CancelButton')
+                }
+            }]
+        }
         const isStringTemplate: string = 'isStringTemplate';
         this.dlgObj[`${isStringTemplate}`] = true;
         this.dlgObj.appendTo(this.dlgDiv);
+        if (isAdaptive) {
+            const responsiveCnt: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-content > .e-mainfilterdiv');
+            if (responsiveCnt) {
+                responsiveCnt.appendChild(this.dlgDiv);
+            }
+            this.dlgObj.open = this.mOpenDlg.bind(this);
+            this.dlgObj.target = document.querySelector('.e-rescolumnchooser > .e-dlg-content > .e-mainfilterdiv') as HTMLElement;
+        }
         this.wireEvents();
     }
 
@@ -384,7 +439,13 @@ export class ColumnChooser implements IAction {
         const innerDivContent: HTMLElement | string[] | string = this.refreshCheckboxList(this.parent.getColumns() as Column[]);
         this.innerDiv.appendChild((innerDivContent as Element));
         conDiv.appendChild(this.innerDiv);
-        this.mainDiv.appendChild(searchDiv);
+        if (this.parent.enableAdaptiveUI) {
+            const searchBoxDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cc-searchBox' });
+            searchBoxDiv.appendChild(searchDiv);
+            this.mainDiv.appendChild(searchBoxDiv);
+        } else {
+            this.mainDiv.appendChild(searchDiv);
+        }
         this.mainDiv.appendChild(conDiv);
         return this.mainDiv;
     }
@@ -412,6 +473,9 @@ export class ColumnChooser implements IAction {
                     emptyRowCell.setAttribute('colSpan', this.parent.getVisibleColumns().length.toString());
                 }
             }
+            if (this.parent.enableAdaptiveUI && this.parent.scrollModule) {
+                this.parent.scrollModule.refresh();
+            }
         }
     }
 
@@ -419,6 +483,16 @@ export class ColumnChooser implements IAction {
         if (e.requestType === 'columnstate') {
             this.resetColumnState();
             return;
+        }
+    }
+
+    private renderResponsiveColumnChooserDiv(args: { action?: string }): void {
+        if (args.action === 'open') {
+            this.openColumnChooser();
+        } else if(args.action === 'clear') {
+            this.clearBtnClick();
+        } else if(args.action === 'confirm') {
+            this.confirmDlgBtnClick(true);
         }
     }
 
@@ -517,6 +591,9 @@ export class ColumnChooser implements IAction {
                 this.refreshCheckboxButton();
             } else {
                 if (okButton && selectedCbox) { okButton.disabled = false; }
+                if (selectedCbox && this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
+                    this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: false });
+                }
             }
         } else {
             const nMatchele: HTMLElement = this.parent.createElement('span', { className: 'e-cc e-nmatch' });
@@ -525,6 +602,9 @@ export class ColumnChooser implements IAction {
             this.innerDiv.appendChild(nMatchele);
             this.innerDiv.classList.add('e-ccnmdiv');
             if (okButton) { okButton.disabled = true; }
+            if (this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
+                this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: true });
+            }
         }
         this.flag = true;
         this.stopTimer();
@@ -539,12 +619,14 @@ export class ColumnChooser implements IAction {
 
     private unWireEvents(): void {
         if (this.parent.isDestroyed) { return; }
-        if (this.dlgObj.element) {
+        if (this.dlgObj && this.dlgObj.element) {
             EventHandler.remove(this.dlgObj.element, 'click', this.checkBoxClickHandler);
             EventHandler.remove(this.dlgObj.element, 'keyup', this.keyUpHandler);
         }
-        EventHandler.remove(this.searchBoxObj.searchBox, 'keyup', this.columnChooserManualSearch);
-        this.searchBoxObj.unWireEvent();
+        if (this.searchBoxObj) {
+            EventHandler.remove(this.searchBoxObj.searchBox, 'keyup', this.columnChooserManualSearch);
+            this.searchBoxObj.unWireEvent();
+        }   
     }
 
     private checkBoxClickHandler(e: MouseEvent): void {
@@ -560,10 +642,8 @@ export class ColumnChooser implements IAction {
             (elem.querySelector('.e-chk-hidden') as HTMLElement).focus();
             if (elem.querySelector('.e-check')) {
                 checkstate = true;
-                (elem.firstChild as HTMLElement).setAttribute('aria-checked', 'true');
             } else if (elem.querySelector('.e-uncheck')) {
                 checkstate = false;
-                (elem.firstChild as HTMLElement).setAttribute('aria-checked', 'false');
             }
             this.updateIntermediateBtn();
             const columnUid: string = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
@@ -589,21 +669,32 @@ export class ColumnChooser implements IAction {
         let className: string[] = [];
         const elem: Element = this.ulElement.children[0].querySelector('.e-frame');
         const selected: number = this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
-        const btn: Button = (<{ btnObj?: Button }>(this.dlgObj as DialogModel)).btnObj[0];
-        const inputElem: HTMLElement = elem.parentElement.querySelector('input');
-        btn.disabled = false;
+        let btn: Button;
+        if (!this.parent.enableAdaptiveUI) {
+            btn = (<{ btnObj?: Button }>(this.dlgObj as DialogModel)).btnObj[0];
+            btn.disabled = false;
+        } else if (this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
+            this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: false });
+        }
+        const inputElem: HTMLInputElement = elem.parentElement.querySelector('input');
         if (cnt === selected) {
             className = ['e-check'];
-            inputElem.setAttribute('aria-checked', 'true');
+            setChecked(inputElem, true);
         } else if (selected) {
             className = ['e-stop'];
-            inputElem.setAttribute('aria-checked', 'mixed');
+            inputElem.indeterminate = true;
         } else {
             className = ['e-uncheck'];
-            inputElem.setAttribute('aria-checked', 'false');
-            btn.disabled = true;
+            setChecked(inputElem, false);
+            if (!this.parent.enableAdaptiveUI) {
+                btn.disabled = true;
+            } else if (this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
+                this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: true });
+            }
         }
-        btn.dataBind();
+        if (!this.parent.enableAdaptiveUI) {
+            btn.dataBind();
+        }
         removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
         addClass([elem], className);
     }
@@ -612,12 +703,12 @@ export class ColumnChooser implements IAction {
         const cBoxes: Element[] = [].slice.call(this.ulElement.getElementsByClassName('e-frame'));
         for (const cBox of cBoxes) {
             removeAddCboxClasses(cBox, checked);
-            const cBoxInput: Element = cBox.parentElement.querySelector('input');
+            const cBoxInput: HTMLInputElement = cBox.parentElement.querySelector('input');
             if (cBox.classList.contains('e-check')) {
-                cBoxInput.setAttribute('aria-checked', 'true');
+                setChecked(cBoxInput, true);
             }
             else if (cBox.classList.contains('e-uncheck')) {
-                cBoxInput.setAttribute('aria-checked', 'false');
+                setChecked(cBoxInput, false);
             }
         }
     }
@@ -637,8 +728,13 @@ export class ColumnChooser implements IAction {
             }
         }
         const selected: number = this.showColumn.length !== 0 ? 1 : this.prevShowedCols.length;
-        const btn: Button = (this.dlgDiv.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
-        btn.disabled = false;
+        let btn: Button;
+        if (!this.parent.enableAdaptiveUI) {
+            btn = (this.dlgDiv.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
+            btn.disabled = false;
+        } else if (this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
+            this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: false });
+        }
         const srchShowCols: string[] = [];
         const searchData: NodeListOf<HTMLInputElement> = [].slice.call(this.parent.element.getElementsByClassName('e-cc-chbox'));
         for (let i: number = 0, itemsLen: number = searchData.length; i < itemsLen; i++) {
@@ -648,9 +744,15 @@ export class ColumnChooser implements IAction {
         }
         const hideCols: string[] = this.showColumn.filter((column: string) => srchShowCols.indexOf(column) !== -1);
         if (selected === 0 && hideCols.length === 0) {
-            btn.disabled = true;
+            if (!this.parent.enableAdaptiveUI) {
+                btn.disabled = true;
+            } else if (this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
+                this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: true });
+            }
         }
-        btn.dataBind();
+        if (!this.parent.enableAdaptiveUI) {
+            btn.dataBind();
+        }
     }
 
     private refreshCheckboxList(gdCol: Column[]): HTMLElement {
@@ -713,7 +815,12 @@ export class ColumnChooser implements IAction {
 
     private createCheckBox(label: string, checked: boolean, uid: string): Element {
         const cbox: Element = checked ? this.cBoxTrue.cloneNode(true) as Element : this.cBoxFalse.cloneNode(true) as Element;
-        cbox.querySelector('.e-label').innerHTML = label;
+        const cboxLabel: HTMLElement = cbox.querySelector('.e-label');
+        const inputcbox: HTMLInputElement = cbox.querySelector('input');
+        setChecked(inputcbox, checked);
+        cboxLabel.setAttribute('id', uid + 'label');
+        cboxLabel.innerHTML = label;
+        inputcbox.setAttribute('aria-labelledby', cboxLabel.id);
         return createCboxWithWrap(uid, cbox, 'e-ccheck');
     }
 
@@ -776,6 +883,9 @@ export class ColumnChooser implements IAction {
             this.dlgObj.element.querySelector('.e-cc-searchdiv').classList.remove('e-input-focus');
             (<HTMLElement>this.dlgObj.element.querySelectorAll('.e-cc-chbox')[0]).focus();
         }
+        if (this.parent.enableAdaptiveUI) {
+            this.dlgObj.element.querySelector('.e-cc-searchdiv').classList.add('e-input-focus');
+        }
     }
 
     // internally use
@@ -801,5 +911,21 @@ export class ColumnChooser implements IAction {
         this.parent.trigger(events.beforeOpenColumnChooser, args1);
         this.searchOperator = args1.searchOperator;
         return args1;
+    }
+
+    private renderResponsiveChangeAction(args: { action?: number }): void {
+        this.responsiveDialogRenderer.action = args.action;
+    }
+
+    /**
+     * To show the responsive custom sort dialog
+     *
+     * @param {boolean} enable - specifes dialog open
+     * @returns {void}
+     * @hidden
+     */
+    public showCustomColumnChooser(enable: boolean): void {
+        this.responsiveDialogRenderer.isCustomDialog = enable;
+        this.responsiveDialogRenderer.showResponsiveDialog();
     }
 }

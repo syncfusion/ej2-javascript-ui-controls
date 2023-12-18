@@ -1270,25 +1270,24 @@ export class _XfdfDocument extends _ExportHelper {
                 const streamDictionary: _PdfDictionary = primitive.dictionary;
                 this._writePrefix(writer, 'STREAM', key);
                 writer._writeAttributeString('DEFINE', '');
+                const data: string = primitive.getString();
+                if (!streamDictionary.has('Length') && data && data !== '') {
+                    streamDictionary.update('Length', primitive.length);
+                }
                 this._writeAppearanceDictionary(writer, streamDictionary);
                 writer._writeStartElement('DATA');
-                const length: number = streamDictionary.get('Length');
-                if (length > 0 && (streamDictionary.has('Subtype') &&
+                if ((streamDictionary.has('Subtype') &&
                     this._getValue(streamDictionary.get('Subtype')) === 'Image') ||
                     (!streamDictionary.has('Type') && !streamDictionary.has('Subtype'))) {
                     writer._writeAttributeString('MODE', 'RAW');
                     writer._writeAttributeString('ENCODING', 'HEX');
-                    const data: string = primitive.getString();
-                    if (data && data !== '') {
-                        writer._writeRaw(data);
-                    }
-                } else if (length > 0) {
+                    
+                } else {
                     writer._writeAttributeString('MODE', 'FILTERED');
                     writer._writeAttributeString('ENCODING', 'ASCII');
-                    const data: string = primitive.getString();
-                    if (data && data !== '') {
-                        writer._writeRaw(data);
-                    }
+                }
+                if (data && data !== '') {
+                    writer._writeRaw(data);
                 }
                 writer._writeEndElement();
                 writer._writeEndElement();

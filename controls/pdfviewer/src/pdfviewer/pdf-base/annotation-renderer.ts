@@ -641,7 +641,7 @@ export class AnnotationRenderer {
             drawingPath._addLine(val.x, val.y, 0, 0);
         }
         for (let k = 0; k < stampObjects.length; k += 2) {
-            const value = drawingPath._points[k];
+            const value = drawingPath._points[parseInt(k.toString(), 10)];
 
             if (minimumX == -1) {
                 minimumX = value[0];
@@ -692,7 +692,7 @@ export class AnnotationRenderer {
             let rotatedPoints: _PdfPath = this.getRotatedPath(linePoints, rotationAngle);
             linePoints = [];
             for (var z = 0; z < rotatedPoints._points.length; z += 2) {
-                linePoints.push((rotatedPoints._points[z][0] - minimumX) / newDifferenceX + left);
+                linePoints.push((rotatedPoints._points[parseInt(z.toString(), 10)][0] - minimumX) / newDifferenceX + left);
                 linePoints.push(page.size[1] - (rotatedPoints._points[z + 1][1] - minimumY) / newDifferenceY - top);
             }
         }
@@ -741,7 +741,7 @@ export class AnnotationRenderer {
                     if (pointsCollections.length > 0) {
                         const rotatedPoints: _PdfPath = this.getRotatedPath(pointsCollections, rotationAngle);
                         for (var z = 0; z < rotatedPoints._points.length; z += 2) {
-                            graphicsPoints.push(rotatedPoints._points[z][0] / minimumX + left);
+                            graphicsPoints.push(rotatedPoints._points[parseInt(g.toString(), 10)][0] / minimumX + left);
                             graphicsPoints.push((rotatedPoints._points[z + 1][1] - minimumY / newDifferenceY) - top);
                         }
                         inkAnnotation.inkPointsCollection.push(graphicsPoints);
@@ -823,7 +823,7 @@ export class AnnotationRenderer {
     private getRotatedPath(linePoints: number[], rotationAngle: number): _PdfPath {
         let graphicsPath: _PdfPath = new _PdfPath();
         for (var j = 0; j < linePoints.length; j += 2) {
-            graphicsPath._addLine(linePoints[j], linePoints[j + 1], 0, 0);
+            graphicsPath._addLine(linePoints[parseInt(j.toString(), 10)], linePoints[j + 1], 0, 0);
         }
         return graphicsPath;
     }
@@ -1112,8 +1112,9 @@ export class AnnotationRenderer {
                 stampAnnotation.author = 'Guest';
             }
             rubberStampAnnotation.author = !isNullOrUndefined(stampAnnotation.author) && stampAnnotation.author.toString() !=="" ? stampAnnotation.author.toString() : 'Guest';
-            rubberStampAnnotation.subject = stampAnnotation.subject.toString();
-
+            if(!isNullOrUndefined(stampAnnotation.subject) && stampAnnotation.subject){
+                rubberStampAnnotation.subject = stampAnnotation.subject.toString();
+            }
             if (!isNullOrUndefined(stampAnnotation.isLocked) && stampAnnotation.isLocked) {
                 rubberStampAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
             }
@@ -1728,7 +1729,7 @@ export class AnnotationRenderer {
         if(!isNullOrUndefined(textFont) && textFont.length > 0) {
             textFont.Keys.forEach((key: string) => {
                 // Need to implement font stream
-                let fontStream = textFont[key]; 
+                let fontStream = textFont[`${key}`]; 
                 if (freeTextAnnotation.hasOwnProperty('dynamicText') && !isNullOrUndefined(freeTextAnnotation.dynamicText.toString())) {
                    let fontAnnotation: PdfTrueTypeFont = new PdfTrueTypeFont(fontStream, this.convertPixelToPoint(fontSize), PdfFontStyle.regular);
                    let format: PdfStringFormat = new PdfStringFormat();
@@ -2529,12 +2530,12 @@ export class AnnotationRenderer {
                     let x: number;
                     let y: number;
                     if (j === 0) {
-                        x = inkList[j];
+                        x = inkList[parseInt(j.toString(), 10)];
                         y = height - inkList[j + 1];
                         outputstring += 'M' + x + ',' + y + ' ';
                     }
                     else {
-                        x  = inkList[j];
+                        x  = inkList[parseInt(j.toString(), 10)];
                         y = height - inkList[j + 1];
                         outputstring += 'L' + x + ',' + y + ' ';
                     }
@@ -2577,18 +2578,18 @@ export class AnnotationRenderer {
                     let y: number;
                     if (inkAnnot._page.rotation == PdfRotationAngle.angle90) {
                         x = inkList[j + 1];
-                        y = inkList[j];
+                        y = inkList[parseInt(j.toString(), 10)];
                     }
                     else if (inkAnnot._page.rotation == PdfRotationAngle.angle180) {
-                        x = inkAnnot._page.size[0] - inkList[j];
+                        x = inkAnnot._page.size[0] - inkList[parseInt(j.toString(), 10)];
                         y = inkList[j + 1];
                     }
                     else if (inkAnnot._page.rotation == PdfRotationAngle.angle270) {
                         x = inkAnnot._page.size[0] - inkList[j + 1];
-                        y = inkAnnot._page.size[1] - inkList[j];
+                        y = inkAnnot._page.size[1] - inkList[parseInt(j.toString(), 10)];
                     }
                     else {
-                        x = inkList[j];
+                        x = inkList[parseInt(j.toString(), 10)];
                         y = inkAnnot._page.size[1] - inkList[j + 1];
                     }
                     if (j === 0) {
@@ -4062,8 +4063,8 @@ export class AnnotationRenderer {
                             oldPageAnnotations.remove(annotation);
                         }
                     }
-                }
 
+                }
             }
         }
     }

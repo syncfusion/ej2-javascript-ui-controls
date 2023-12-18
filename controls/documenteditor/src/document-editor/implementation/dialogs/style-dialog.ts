@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, L10n, initializeCSPTemplate } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n, initializeCSPTemplate, attributes } from '@syncfusion/ej2-base';
 import { DropDownList, ComboBox, SelectEventArgs, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { RadioButton, Button } from '@syncfusion/ej2-buttons';
 import { WStyle, WCharacterStyle, WParagraphStyle } from '../../implementation/format/style';
@@ -283,12 +283,15 @@ export class StyleDialog {
         parentDiv.appendChild(fontGroupButton);
 
         this.bold = this.createButtonElement(fontGroupButton, 'e-de-bold', 'e-de-style-bold-button-size', this.documentHelper.owner.containerId + '_style_bold');
+        this.bold.setAttribute('aria-label','bold');
         this.bold.addEventListener('click', this.setBoldProperty);
 
         this.italic = this.createButtonElement(fontGroupButton, 'e-de-italic', 'e-de-style-icon-button-size', this.documentHelper.owner.containerId + '_style_italic');
+        this.italic.setAttribute('aria-label','italic');
         this.italic.addEventListener('click', this.setItalicProperty);
 
         this.underline = this.createButtonElement(fontGroupButton, 'e-de-underline', 'e-de-style-icon-button-size', this.documentHelper.owner.containerId + '_style_underline');
+        this.underline.setAttribute('aria-label','underline');
         this.underline.addEventListener('click', this.setUnderlineProperty);
         let fontColorElement: HTMLElement = createElement('input', { attrs: { type: 'color' }, className: 'e-de-style-icon-button-size' });
         parentDiv.appendChild(fontColorElement);
@@ -383,27 +386,34 @@ export class StyleDialog {
         let alignmentDiv: HTMLElement = createElement('div', { className: 'e-de-style-paragraph-group-button' });
         parentDiv.appendChild(alignmentDiv);
         this.leftAlign = this.createButtonElement(alignmentDiv, 'e-de-align-left', 'e-de-style-icon-button-size');
+        this.leftAlign.setAttribute('aria-label','leftAlign');
         this.leftAlign.addEventListener('click', this.setLeftAlignment);
         this.centerAlign = this.createButtonElement(alignmentDiv, 'e-de-align-center', 'e-de-style-icon-button-size');
+        this.centerAlign.setAttribute('aria-label','centerAlign');
         this.centerAlign.addEventListener('click', this.setCenterAlignment);
         this.rightAlign = this.createButtonElement(alignmentDiv, 'e-de-align-right', 'e-de-style-icon-button-size');
+        this.rightAlign.setAttribute('aria-label','rightAlign');
         this.rightAlign.addEventListener('click', this.setRightAlignment);
         this.justify = this.createButtonElement(alignmentDiv, 'e-de-justify', 'e-de-style-icon-button-last-size');
+        this.justify.setAttribute('aria-label','justify');
         this.justify.addEventListener('click', this.setJustifyAlignment);
         let lineSpacingDiv: HTMLElement = createElement('div', { className: 'e-de-style-paragraph-group-button' });
         parentDiv.appendChild(lineSpacingDiv);
         this.singleLineSpacing = this.createButtonElement(lineSpacingDiv, 'e-de-single-spacing', 'e-de-style-icon-button-first-size');
+        this.singleLineSpacing.setAttribute('aria-label','singleLineSpacing');
         this.singleLineSpacing.addEventListener('click', () => {
             this.paragraphFormat.lineSpacing = 1;
             this.updateParagraphFormat();
         });
 
         this.onePointFiveLineSpacing = this.createButtonElement(lineSpacingDiv, 'e-de-one-point-five-spacing', 'e-de-style-icon-button-size');
+        this.onePointFiveLineSpacing.setAttribute('aria-label','onePointFiveLineSpacing');
         this.onePointFiveLineSpacing.addEventListener('click', () => {
             this.paragraphFormat.lineSpacing = 1.5;
             this.updateParagraphFormat();
         });
         this.doubleLineSpacing = this.createButtonElement(lineSpacingDiv, 'e-de-double-spacing', 'e-de-style-icon-button-last-size');
+        this.doubleLineSpacing.setAttribute('aria-label','doubleLineSpacing');
         this.doubleLineSpacing.addEventListener('click', () => {
             this.paragraphFormat.lineSpacing = 2;
             this.updateParagraphFormat();
@@ -411,12 +421,15 @@ export class StyleDialog {
         let spacingDiv: HTMLElement = createElement('div', { className: 'e-de-style-paragraph-group-button' });
         parentDiv.appendChild(spacingDiv);
         let beforeSpacing: HTMLElement = this.createButtonElement(spacingDiv, 'e-de-before-spacing', 'e-de-style-icon-button-first-size');
+        beforeSpacing.setAttribute('aria-label','beforeSpacing');
         let afterSpacing: HTMLElement = this.createButtonElement(spacingDiv, 'e-de-after-spacing', 'e-de-style-icon-button-last-size');
+        afterSpacing.setAttribute('aria-label','afterSpacing');
         beforeSpacing.addEventListener('click', this.increaseBeforeAfterSpacing);
         afterSpacing.addEventListener('click', this.decreaseBeforeAfterSpacing);
         let indentingDiv: HTMLElement = createElement('div', { className: 'e-de-style-paragraph-indent-group-button' });
         parentDiv.appendChild(indentingDiv);
         let decreaseIndent: HTMLElement = this.createButtonElement(indentingDiv, 'e-de-indent', 'e-de-style-icon-button-first-size');
+        decreaseIndent.setAttribute('aria-label','decreaseIndent');
         decreaseIndent.addEventListener('click', () => {
             if (this.paragraphFormat.leftIndent >= 36) {
                 this.paragraphFormat.leftIndent -= 36;
@@ -425,6 +438,7 @@ export class StyleDialog {
             }
         });
         let increaseindent: HTMLElement = this.createButtonElement(indentingDiv, 'e-de-outdent', 'e-de-style-icon-button-size');
+        increaseindent.setAttribute('aria-label','increaseindent');
         increaseindent.addEventListener('click', () => {
             this.paragraphFormat.leftIndent += 36;
         });

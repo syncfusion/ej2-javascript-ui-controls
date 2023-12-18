@@ -736,7 +736,8 @@ export class PivotChart {
                         margin: this.chartSettings.margin,
                         border: this.chartSettings.border,
                         background: this.chartSettings.background,
-                        chartArea: this.chartSettings.chartArea,
+                        chartArea: !isNullOrUndefined(this.persistSettings.chartArea) ? this.persistSettings.chartArea :
+                            this.chartSettings.chartArea,
                         palettes: this.chartSettings.palettes,
                         theme: this.chartSettings.theme,
                         crosshair: this.chartSettings.crosshair,

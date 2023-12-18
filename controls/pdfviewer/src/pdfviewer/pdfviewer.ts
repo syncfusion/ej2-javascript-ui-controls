@@ -6,7 +6,7 @@ import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from 
 import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
 // eslint-disable-next-line max-len
-import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel } from './pdfviewer-model';
+import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, CustomToolbarItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel } from './pdfviewer-model';
 import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
@@ -46,7 +46,8 @@ import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEvent
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
 import { IFormField, IFormFieldBound } from './form-designer/form-designer';
-
+import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export'; 
+import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
@@ -127,7 +128,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
      * shows only the defined options in the PdfViewer.
      */
     @Property()
-    public toolbarItems: ToolbarItem[];
+    public toolbarItems: (CustomToolbarItemModel  | ToolbarItem)[];
 
     /**
      * Provide option to customize the annotation toolbar of the PDF Viewer.
@@ -141,6 +142,62 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     @Property()
     public formDesignerToolbarItems: FormDesignerToolbarItem[];
 }
+
+/** 
+ * Defines customized toolbar items.
+ */
+export class CustomToolbarItem  extends ChildProperty<CustomToolbarItem> {
+    
+    /**
+     * Defines single/multiple classes separated by space used to specify an icon for the button.
+     * The icon will be positioned before the text content if text is available, otherwise the icon alone will be rendered.
+     */
+    @Property('')
+    public prefixIcon: string;
+
+    /**
+     * Specifies the text to be displayed on the Toolbar button.
+     */
+    @Property('')
+    public tooltipText: string;
+
+    /**
+     * Specifies the unique ID to be used with button or input element of Toolbar items.
+     */
+    @Property('')
+    public id: string;
+    
+    /**
+     * Specifies the text to be displayed on the Toolbar button.
+     */
+    @Property('')
+    public text: string;
+
+    /**
+     * Defines single/multiple classes (separated by space) to be used for customization of commands.
+     */
+    @Property('')
+    public cssClass: string; 
+
+    /**
+     * Define which side(right/left) to use for customizing the icon.
+     */
+    @Property('left')
+    public align: string;
+
+    /**
+     * Specifies the HTML element/element ID as a string that can be added as a Toolbar command.
+     */
+    @Property('')
+    public template: string | object | Function;
+
+    /**
+     * Specify the type or category of the Toolbar item.
+     */
+    @Property('Button')
+    public type: string;
+
+}    
 
 /**
  * The `AjaxRequestSettings` module is used to set the ajax Request Headers of PDF viewer.
@@ -971,7 +1028,7 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-
+    
     /**
      * specifies the subject of the annotation.
      */
@@ -3588,7 +3645,7 @@ export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
      */
     @Property(false)
     public enableAutoFit: boolean;
-    
+
     /**
      * specifies the subject of the annotation.
      */
@@ -4258,7 +4315,7 @@ export class FormField extends ChildProperty<FormField> {
      */
     @Property(-1)
     public pageIndex: number;
-        
+    
     /**
      * Get the pageNumber of the form field. Default value is 1.
      */
@@ -5996,6 +6053,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * 
      * {% codeBlock src='pdfviewer/resourceUrl/index.md' %}{% endcodeBlock %}
      * 
+     * @remarks
+     * 
+     * Users incorporating custom assets, public directories, or routing setups into their 
+     * Standalone PDF Viewer applications may face challenges when loading the PDF Viewer 
+     * libraries from the default assets location. This property addresses these issues by allowing 
+     * resource URL customization, guaranteeing a smooth integration process for loading libraries 
+     * in the Standalone PDF Viewer.
+     * 
+     * @default ''
      */
     @Property('')
     public resourceUrl: string;
@@ -6973,6 +7039,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public bookmarkClick: EmitType<BookmarkClickEventArgs>;
 
     /**
+     * Triggers when custom toolbar item is clicked.
+     *
+     * @event toolbarClick
+     * @blazorProperty 'ToolbarClick'
+     */
+    @Event()
+    public toolbarClick: EmitType<ClickEventArgs>;    
+
+    /**
      * Triggers when the text selection is initiated.
      *
      * @event textSelectionStart
@@ -7276,13 +7351,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property()
     public drawingObject: PdfAnnotationBaseModel;
 
-    /**
-     * Interal property used to store the created event object.
-     * 
-     * @private
-     */
-    private _created: any;
-
     constructor(options?: PdfViewerModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
         this.viewerBase = new PdfViewerBase(this);
@@ -7299,13 +7367,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         if(Browser.isDevice){
             //EJ2-63562 - Reduced the touchPadding of mobile devices to 16 to improve selection of fields without affecting resizing ability.
             this.touchPadding = 16;
-        }
-        const isProtectedOnChangeValue: boolean = this.isProtectedOnChange;
-        this.isProtectedOnChange = true;
-        this._created = this.created;
-        delete this.properties.created;
-        this.created = null;
-        this.isProtectedOnChange = isProtectedOnChangeValue;
+        } 
     }
     private getUniqueElementId(): string{
         return 'pdfViewer_' + Date.now().toString(36) + Math.random().toString(36).substring(2);
@@ -7328,16 +7390,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.viewerBase.pdfViewerRunner.onmessage = function (event) {
                 if (event.data.message === 'loaded') {
                     proxy.renderComponent();
-                    proxy.properties.created = proxy._created;
-                    proxy.created = proxy._created;
-                    proxy.trigger("created");
                 }
             }
         } else {
             this.renderComponent();
-            this.properties.created = this._created;
-            this.created = this._created;
-            this.trigger("created");
         }
     }
 
@@ -9603,6 +9659,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireThumbnailClick(pageNumber: number): void {
         const eventArgs: ThumbnailClickEventArgs = { name: 'thumbnailClick', pageNumber: pageNumber };
         this.trigger('thumbnailClick', eventArgs);
+    }
+
+    /**
+     * Custom toolbar click event.
+     *
+     * @param target
+     * @private
+     */
+    public async fireCustomToolbarClickEvent(target: ClickEventArgs) {
+        this.trigger('toolbarClick', target);
     }
 
     /**

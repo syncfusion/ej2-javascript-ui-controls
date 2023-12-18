@@ -9,11 +9,12 @@ import { Series, Points } from './chart-series';
 import { MarkerSettingsModel } from '../series/chart-series-model';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { pointRender } from '../../common/model/constants';
-import { Axis, VisibleRangeModel } from '../../chart/axis/axis';
+import { Axis } from '../../chart/axis/axis';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BorderModel } from '../../common/model/base-model';
 import { ChartShape } from '../utils/enum';
 import { markerShapes } from './marker';
+import { VisibleRangeModel } from '../../common/model/interface';
 
 /**
  * `ScatterSeries` module is used to render the scatter series.

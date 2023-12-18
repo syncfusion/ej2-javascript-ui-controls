@@ -97,7 +97,7 @@ export class FileManager {
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(dlgTarget);
         this.dialogObj.show(Browser.isDevice ? true : false);
-        this.setCssClass({cssClass: this.parent.cssClass});
+        this.setCssClass({cssClass: this.parent.getCssClass()});
     }
 
     // eslint-disable-next-line @typescript-eslint/tslint/config

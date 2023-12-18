@@ -50,6 +50,8 @@ export class CalculatedField implements IAction {
     public isRequireUpdate: boolean = false;
     /** @hidden */
     public buttonCall: boolean;
+    /** @hidden */
+    public field: string;
 
     /**
      * Internal variables.
@@ -71,7 +73,6 @@ export class CalculatedField implements IAction {
     private isEdit: boolean;
     private currentFieldName: string;
     private currentFormula: string;
-    private field: string;
     private formatTypes: string[] = ['Standard', 'Currency', 'Percent', 'Custom', 'None'];
 
     /**
@@ -651,6 +652,9 @@ export class CalculatedField implements IAction {
                                     report.calculatedFieldSettings[i as number].formatString = field.formatString;
                                     report.calculatedFieldSettings[i as number].formula = field.formula;
                                     field = report.calculatedFieldSettings[i as number];
+                                    this.updateFormatSettings(report, field.name, calcInfo.formatString);
+                                    this.parent.olapEngineModule.getFormattedFields(report.formatSettings);
+                                    this.parent.olapEngineModule.formatFields[field.name].format = this.getFormat(field.formatString);
                                     this.isFieldExist = true;
                                     break;
                                 }
@@ -674,6 +678,9 @@ export class CalculatedField implements IAction {
                         }
                         if (!this.isFieldExist) {
                             report.calculatedFieldSettings.push(field);
+                            this.updateFormatSettings(report, field.name, calcInfo.formatString);
+                            this.parent.olapEngineModule.getFormattedFields(report.formatSettings);
+                            this.parent.olapEngineModule.formatFields[field.name].format = this.getFormat(field.formatString);
                         }
                         this.parent.lastCalcFieldInfo = field;
                     } else {

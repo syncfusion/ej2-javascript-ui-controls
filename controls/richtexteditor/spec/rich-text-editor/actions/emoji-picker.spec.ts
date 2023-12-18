@@ -110,7 +110,7 @@ describe('Emoji picker module', () => {
             element.click();
             rteObj.emojiPickerSettings.showSearchBox = true;
             const firstP: Element = (rteObj as any).inputElement.querySelector('#rte-p');
-            setCursorPoint(firstP, 1);
+            setCursorPoint(firstP.firstChild as Element, 0);
             (<any>rteObj).keyDown(keyboardEventArgs);
             expect(rteObj.element.querySelector('.e-rte-emoji-search')).toBe(null);
             expect(rteObj.element.querySelector('.e-rte-emojipicker-btn')).not.toBe(null);
@@ -204,7 +204,7 @@ describe('Emoji picker module', () => {
             btnGroup[0].click();
             const firstP: Element = (rteObj as any).inputElement.querySelector('#rte-p');
             expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
-            expect(firstP.innerHTML).toBe(' 😀');
+            expect(firstP.innerHTML).toBe('😀');
         });
         it('Filter the emoji render the popup and keyboard action - down arrow', () => {
             const element: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
@@ -298,7 +298,7 @@ describe('Emoji picker module', () => {
             btnGroup[0].click();
             const firstP: Element = (rteObj as any).inputElement.querySelector('#rte-p');
             expect(rteObj.element.querySelector('.e-rte-emojipicker-popup')).toBe(null);
-            expect(firstP.innerHTML).toBe(' 😀😀');
+            expect(firstP.innerHTML).toBe('😀😀');
         });
         it('When click the toolbar emoji the corresponding emoji set of first icon focused ', () => {
             const element: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
@@ -1692,6 +1692,106 @@ describe('Emoji picker module', () => {
             rteObj.showEmojiPicker();
             const popEle: HTMLElement = rteObj.element.querySelector('.e-rte-emojipicker-popup');
             expect(popEle.style.top).toBe('1806px');
+        });
+    });
+    
+    describe('850182-Tooltip not removed after close the emoji picker popup ' , () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+        let innerHTML: string = `<p id="rte-p">:</p>`;
+        let spaceKeyEventArgs: any = {
+            preventDefault: function () { },
+            keyCode: 32,
+            shiftKey: false,
+            altKey: false,
+            ctrlKey: false,
+            char: '',
+            key: ':',
+            charCode: 0,
+            which: 32,
+            code: 'space',
+            action: 'space',
+            type: 'keydown'
+        };
+        beforeAll(() => {
+            document.body.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+                value: innerHTML,
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                },
+            });
+            rteObj.appendTo('#defaultRTE');
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            detach(defaultRTE);
+        });
+        it('check the tooltip destroy when close the popup using space key', () => {
+            const firstP: HTMLElement = (rteObj as any).inputElement.querySelector('#rte-p');
+            setCursorPoint(firstP, 0);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            let event = new MouseEvent('mouseover', { bubbles: true, cancelable: true });
+            let popupEle = document.querySelector(".e-rte-emojipickerbtn-group").firstChild;
+            popupEle.dispatchEvent(event);
+            expect(rteObj.element.ownerDocument.querySelectorAll('.e-tooltip-wrap').length > 0).toBe(true);
+            let textNode: HTMLElement = (rteObj as any).inputElement.querySelector('#rte-p').childNodes[0];
+            setCursorPoint(textNode, 1);
+            rteObj.keyDown(spaceKeyEventArgs);
+            expect(rteObj.element.ownerDocument.querySelectorAll('.e-tooltip-wrap').length > 0).toBe(false);
+        });
+    });
+
+    describe('850181 - The emoji is inserted on the toolbar in the Rich Text Editor.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+        let innerHTML: string = `<p id="rte-p">:</p>`;
+        let spaceKeyEventArgs: any = {
+            preventDefault: function () { },
+            keyCode: 32,
+            shiftKey: false,
+            altKey: false,
+            ctrlKey: false,
+            char: '',
+            key: ':',
+            charCode: 0,
+            which: 32,
+            code: 'space',
+            action: 'space',
+            type: 'keydown'
+        };
+        beforeAll(() => {
+            document.body.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+                value: innerHTML,
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                },
+            });
+            rteObj.appendTo('#defaultRTE');
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            detach(defaultRTE);
+        });
+        it('The emoji is inserted in the toolbar of the Rich Text Editor.', () => {
+            (<any>rteObj).toolbarModule.getToolbarElement().querySelector('.e-toolbar-items button').click();
+            setTimeout(() => {
+                (<any>rteObj).toolbarModule.getToolbarElement().querySelector('.e-toolbar-items button').click();
+                (<any>rteObj).toolbarModule.getToolbarElement().querySelector('.e-toolbar-items button').click();
+                var emoji: any = document.querySelectorAll('.e-rte-emojipickerbtn-group button');
+                (emoji[5] as any).click();
+                function hasEmojiUTF16(text: string) {
+                    var emojiRegex = /[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}]/u;
+                    return emojiRegex.test(text);
+                }
+                hasEmojiUTF16(rteObj.getText());
+                expect(hasEmojiUTF16(rteObj.getText())).toBe(true);
+            }, 0)
         });
     });
 });

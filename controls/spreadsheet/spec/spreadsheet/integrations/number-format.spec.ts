@@ -264,7 +264,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cellEle.textContent).toBe(' Test ');
             helper.invoke('updateCell', [{ value: '0' }, 'A2']);
             expect(cell.value).toBe(0);
-            expect(cellEle.innerHTML).toBe('<span id="spreadsheet_currency" style="float: left"> $</span>- ');
+            expect(cellEle.innerHTML).toBe('<span id="spreadsheet_currency" style="float: left"> $</span>  - ');
             helper.invoke('updateCell', [{ value: '4234.567' }, 'A2']);
             expect(cell.value).toBe(4234.567);
             expect(cellEle.textContent).toBe(' $4,235 ');
@@ -449,7 +449,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(numFormatSelection.textContent).toBe('Custom');
             helper.invoke('updateCell', [{ format: 'General' }, 'F3']);
             expect(row.cells[5].value).toBe('44106.189409722225');
-            expect(cellEle.textContent).toBe('44106.189409722');
+            expect(cellEle.textContent).toBe('44106.18941');
             expect(numFormatSelection.textContent).toBe('General');
             helper.invoke('updateCell', [{ value: '09-02-23' }, 'F3']);
             expect(row.cells[5].value).toBe('45171');
@@ -941,7 +941,8 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                     const cell: CellModel = helper.getInstance().sheets[0].rows[0].cells[6];
                     expect(cell.value.toString()).toBe('0');
                     const cellEle: HTMLElement = helper.invoke('getCell', [0, 6]);
-                    expect(cellEle.getElementsByClassName("e-fill-sec")[0]).toBeUndefined();
+                    expect(cellEle.getElementsByClassName("e-fill-sec")[0].textContent).toBe('- ');
+                    expect(cellEle.textContent).toBe('             - ');
                     done();
                 });
             });
@@ -1229,6 +1230,48 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cellEle[10].textContent).toBe('Friday, October 12, 1945');
             expect(cellEle[11].textContent).toBe('Monday, October 1, 1945');
             done();
+        });
+    });
+    describe('EJ2-855322 ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    rows: [
+                        { cells: [{ value: '23/01/1928', format: 'dd/MM/yyyy' }, { value: '23-01-1928', format: 'dd-MM-yyyy' }] }
+                    ]
+                }]
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Date format gets changed when attempting to edit the data and saving it', (done: Function) => {
+            let td: HTMLElement = helper.invoke('getCell', [0, 0]);
+            let coords: ClientRect = td.getBoundingClientRect();
+            expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('1/23/1928');
+            helper.triggerMouseAction('dblclick', { x: coords.right, y: coords.top }, null, td);
+            let editEle: HTMLElement = helper.getElementFromSpreadsheet('.e-spreadsheet-edit');
+            expect(editEle.textContent).toBe('1/23/1928');
+            helper.getElement('.e-spreadsheet-edit').textContent = '1/23/1920';
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 0]).textContent).toEqual('23/01/1920');
+                helper.invoke('selectRange', ['B1']);
+                setTimeout((): void => {
+                    td = helper.invoke('getCell', [1, 0]);
+                    coords = td.getBoundingClientRect();
+                    expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('1/23/1928');
+                    helper.triggerMouseAction('dblclick', { x: coords.right, y: coords.top }, null, td);
+                    editEle = helper.getElementFromSpreadsheet('.e-spreadsheet-edit');
+                    expect(editEle.textContent).toBe('1/23/1928');
+                    helper.getElement('.e-spreadsheet-edit').textContent = '1/23/1920';
+                    helper.triggerKeyNativeEvent(13);
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 1]).textContent).toEqual('23-01-1920');
+                        done();
+                    });
+                });
+            });
         });
     });
 });

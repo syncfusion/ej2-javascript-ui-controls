@@ -848,7 +848,11 @@ export enum ResponsiveDialogAction {
     /**  Defines dialog type as Sort */
     isSort,
     /**  Defines dialog type as Filter */
-    isFilter
+    isFilter,
+    /**  Defines dialog type as ColMenu */
+    isColMenu,
+    /**  Defines dialog type as ColumChooser */
+    isColumnChooser
 }
 
 /**

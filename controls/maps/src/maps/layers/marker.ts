@@ -199,25 +199,27 @@ export class Marker {
                                     !isNullOrUndefined(data['Latitude']) ? parseFloat(data['Latitude']) : null;
                                 const longitude: number = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) :
                                     !isNullOrUndefined(data['Longitude']) ? parseFloat(data['Longitude']) : null;
-                                minLong = isNullOrUndefined(minLong) && dataIndex === 0 ?
-                                    longitude : minLong;
-                                maxLat = isNullOrUndefined(maxLat) && dataIndex === 0 ?
-                                    latitude : maxLat;
-                                minLat = isNullOrUndefined(minLat) && dataIndex === 0 ?
-                                    latitude : minLat;
-                                maxLong = isNullOrUndefined(maxLong) && dataIndex === 0 ?
-                                    longitude : maxLong;
-                                if (minLong > longitude) {
-                                    minLong = longitude;
-                                }
-                                if (minLat > latitude) {
-                                    minLat = latitude;
-                                }
-                                if (maxLong < longitude) {
-                                    maxLong = longitude;
-                                }
-                                if (maxLat < latitude) {
-                                    maxLat = latitude;
+                                if (!isNullOrUndefined(latitude) && !isNullOrUndefined(longitude)) {
+                                    minLong = isNullOrUndefined(minLong) && dataIndex === 0 ?
+                                        longitude : minLong;
+                                    maxLat = isNullOrUndefined(maxLat) && dataIndex === 0 ?
+                                        latitude : maxLat;
+                                    minLat = isNullOrUndefined(minLat) && dataIndex === 0 ?
+                                        latitude : minLat;
+                                    maxLong = isNullOrUndefined(maxLong) && dataIndex === 0 ?
+                                        longitude : maxLong;
+                                    if (minLong > longitude) {
+                                        minLong = longitude;
+                                    }
+                                    if (minLat > latitude) {
+                                        minLat = latitude;
+                                    }
+                                    if (maxLong < longitude) {
+                                        maxLong = longitude;
+                                    }
+                                    if (maxLat < latitude) {
+                                        maxLat = latitude;
+                                    }
                                 }
                             });
                         });

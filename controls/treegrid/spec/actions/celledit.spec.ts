@@ -1200,38 +1200,38 @@ describe('update rows method', () => {
     });
   });
 
-  // describe('EJ2-57487 - edit the cell using editCell method and press tab key for moving to another cell', () => {
-  //   let gridObj: TreeGrid;
-  //   let preventDefault: Function = new Function();
-  //   beforeAll((done: Function) => {
-  //     gridObj = createGrid(
-  //       {
-  //         dataSource: sampleData,
-  //         childMapping: 'subtasks',
-  //         editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: 'Cell' },
-  //         enableVirtualization: true,
-  //         treeColumnIndex: 1,
-  //         toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
-  //         columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
-  //         { field: 'taskName', headerText: 'Task Name' },
-  //         { field: 'progress', headerText: 'Progress' },
-  //         { field: 'startDate', headerText: 'Start Date' }
-  //         ]
-  //       },
-  //       done
-  //     );
-  //   });
-  //   it('Edit mode continued to the next cell on tab click', (done: Function) => {
-  //     gridObj.editCell(2,'taskName');
-  //     expect(gridObj.getRows()[2].classList.contains("e-editedrow")).toBe(true);
-  //     gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
-  //     expect(gridObj.getRows()[2].getAttribute('data-rowindex') == '2').toBe(true);
-  //     done();
-  //   });
-  //   afterAll(() => {
-  //     destroy(gridObj);
-  //   });
-  // });
+  describe('EJ2-57487 - edit the cell using editCell method and press tab key for moving to another cell', () => {
+    let gridObj: TreeGrid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: 'Cell' },
+          enableVirtualization: true,
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('Edit mode continued to the next cell on tab click', (done: Function) => {
+      gridObj.editCell(2,'taskName');
+      expect(gridObj.getRows()[2].classList.contains("e-editedrow")).toBe(true);
+      gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+      expect(gridObj.getRows()[2].getAttribute('data-rowindex') == '2').toBe(true);
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
   describe('EJ2-60332 - editing the dropdown column with params when Persistence enabled', () => {
     let gridObj: TreeGrid;

@@ -2,7 +2,7 @@ import * as events from '../base/constant';
 import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer } from '../base/interface';
 import { NotifyArgs, IToolbarOptions, ActionBeginEventArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
-import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach, MouseEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach, MouseEventArgs, EventHandler } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { HTMLFormatter } from '../formatter/html-formatter';
 import { RendererFactory } from '../services/renderer-factory';
@@ -43,6 +43,7 @@ export class HtmlEditor {
     private saveSelection: NodeSelection;
     public xhtmlValidation: XhtmlValidation;
     private clickTimeout: number;
+    private tooltipTargetEle: Element
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -263,6 +264,10 @@ export class HtmlEditor {
                     return;
                 } else {
                     this.parent.notify(events.enterHandler, { args: (e.args as KeyboardEvent) });
+                    const newRange: Range = this.parent.getRange();
+                    if (!isNOU(newRange.startContainer) && newRange.startContainer === this.parent.inputElement.lastChild && newRange.startContainer.nodeName !== '#text') {
+                        (newRange.startContainer as Element).scrollIntoView({ block: "end", inline: "nearest" });
+                    }
                 }
             }
         }
@@ -453,8 +458,12 @@ export class HtmlEditor {
                             this.parent.contentModule.getDocument(), this.deleteRangeElement, this.deleteRangeElement.childNodes.length);
                         this.isImageDelete = false;
                     }
-                    if (this.deleteRangeElement.querySelector('BR')) {
-                        detach(this.deleteRangeElement.querySelector('BR'));
+                    const brNode: HTMLElement = this.deleteRangeElement.querySelector('BR')
+                    if (brNode && brNode.classList.contains('e-rte-image-remove-focus')) {
+                        removeClass([brNode], ['e-rte-image-focus']);
+                        return;
+                    } else if (brNode) {
+                        detach(brNode);
                     }
                     if (!isNullOrUndefined(this.deleteRangeElement) && (this.deleteOldRangeElement.tagName !== 'OL' && this.deleteOldRangeElement.tagName !== 'UL')
                         && this.deleteOldRangeElement !== this.deleteRangeElement) {
@@ -610,12 +619,33 @@ export class HtmlEditor {
                 e, value);
         }
     }
+    private mouseOutHandler (): void {
+        if (!isNOU(this.tooltipTargetEle)){
+            this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
+        } else {
+            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
+                this.parent.contentModule.getDocument();
+            this.tooltipTargetEle = currentDocument.querySelector('[data-title]');
+            this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
+        }
+        this.tooltipTargetEle.removeAttribute('data-title');
+        EventHandler.remove(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler);
+    }
     private onToolbarClick(args: ClickEventArgs): void {
         let save: NodeSelection;
         let selectNodeEle: Node[];
         let selectParentEle: Node[];
         const item: IToolbarItemModel = args.item as IToolbarItemModel;
         const closestElement: Element = closest(args.originalEvent.target as Element, '.e-rte-quick-popup');
+        const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
+            this.parent.contentModule.getDocument();
+        this.tooltipTargetEle = closest(args.originalEvent.target as Element, '[data-tooltip-id]');
+        if (!isNOU(this.tooltipTargetEle) && this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {
+            this.parent.notify(events.destroyTooltip, {args: event});
+            this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
+            this.tooltipTargetEle.removeAttribute('title');
+            EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
+        }
         if (item.command !== 'FormatPainter') {
             if (closestElement && !closestElement.classList.contains('e-rte-inline-popup') && !closestElement.classList.contains('e-rte-text-popup')) {
                 if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||

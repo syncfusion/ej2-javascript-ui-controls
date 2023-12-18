@@ -9,7 +9,7 @@ import { TooltipPosition} from '../utils/enum';
 import { FontModel, BorderModel } from '../model/base-model';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { RangeModel} from '../axes/axis-model';
-import { getElement, GaugeLocation, textFormatter, formatValue, Rect, getMousePosition } from '../utils/helper';
+import { getElement, GaugeLocation, textFormatter, formatValue, Rect, getMousePosition, showTooltip, removeTooltip } from '../utils/helper';
 import { getPointer } from '../utils/helper';
 import { TooltipTheme } from '@syncfusion/ej2-svg-base/src/tooltip/enum';
 
@@ -125,8 +125,10 @@ export class GaugeTooltip {
             this.tooltipRender(tooltipContent, target, tooltipEle, e, areaRect, pageX, pageY, rangeTooltipStyle);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).renderReactTemplates();
+        } else if ((target.id === (this.element.id + '_LinearGaugeTitle')) && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
+            showTooltip(this.gauge.title, this.gauge);
         } else {
-            this.removeTooltip();
+            removeTooltip();
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this.gauge as any).clearTemplate();
         }
@@ -177,7 +179,7 @@ export class GaugeTooltip {
                 id: this.tooltipId,
                 className: 'EJ2-LinearGauge-Tooltip'
             });
-            tooltipEle.style.cssText = 'position: absolute;pointer-events:none;';
+            tooltipEle.style.cssText = 'position: absolute;pointer-events:none;z-index: 3;';
             document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(tooltipEle);
         }
         return tooltipEle;
@@ -215,7 +217,8 @@ export class GaugeTooltip {
             ),
             textStyle: textStyle,
             border: tooltipBorder,
-            theme: args.gauge.theme as TooltipTheme
+            theme: args.gauge.theme as TooltipTheme,
+            enableShadow: true
         });
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((gauge as any).isVue || (gauge as any).isVue3) {
@@ -279,16 +282,11 @@ export class GaugeTooltip {
         return location;
     }
 
-    public removeTooltip(): void {
-        if (document.getElementsByClassName('EJ2-LinearGauge-Tooltip').length > 0) {
-            document.getElementsByClassName('EJ2-LinearGauge-Tooltip')[0].remove();
-        }
-    }
-
     public mouseUpHandler(e: PointerEvent): void {
+        removeTooltip();
         this.renderTooltip(e);
         clearTimeout(this.clearTimeout);
-        this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
+        this.clearTimeout = setTimeout(removeTooltip.bind(this), 2000);
     }
 
     /**

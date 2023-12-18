@@ -72,6 +72,7 @@ export class Table {
         this.parent.on(events.showTableDialog, this.showDialog, this);
         this.parent.on(events.closeTableDialog, this.closeDialog, this);
         this.parent.on(events.docClick, this.docClick, this);
+        this.parent.on(events.iframeMouseDown, this.onIframeMouseDown, this);
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
         this.parent.on(events.clearDialogObj, this.clearDialogObj, this);
         this.parent.on(events.tableToolbarAction, this.onToolbarAction, this);
@@ -93,6 +94,7 @@ export class Table {
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.dynamicModule, this.afterRender);
         this.parent.off(events.docClick, this.docClick);
+        this.parent.off(events.iframeMouseDown, this.onIframeMouseDown);
         this.parent.off(events.showTableDialog, this.showDialog);
         this.parent.off(events.closeTableDialog, this.closeDialog);
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
@@ -101,8 +103,8 @@ export class Table {
         this.parent.off(events.dropDownSelect, this.dropdownSelect);
         this.parent.off(events.mouseDown, this.cellSelect);
         this.parent.off(events.tableColorPickerChanged, this.setBGColor);
-        this.parent.off(events.keyUp, this.keyUp);
         this.parent.off(events.keyDown, this.keyDown);
+        this.parent.off(events.keyUp, this.keyUp);
         this.parent.off(events.mouseUp, this.selectionTable);
         this.parent.off(events.tableModulekeyUp, this.tableModulekeyUp);
         this.parent.off(events.bindCssClass, this.setCssClass);
@@ -210,6 +212,7 @@ export class Table {
         this.parent.formatter.process(this.parent, e, e, { selection: selectCell, subCommand: (e.item as IDropDownItemModel).subCommand });
         this.hideTableQuickToolbar();
     }
+
     private keyUp (e: NotifyArgs): void {
         const target: HTMLElement = <HTMLElement>(e.args as KeyboardEventArgs).target;
         if ((e.args as KeyboardEventArgs).key.toLocaleLowerCase() === 'escape' && target && target.classList && (this.popupObj && !closest(target, '[id=' + "'" + this.popupObj.element.id + "'" +']')) && this.popupObj) {
@@ -299,11 +302,12 @@ export class Table {
                 name: !isInternal ? 'showDialog' : null
             };
             this.insertTableDialog({ self: this, args: args, selection: selection } as NotifyArgs);
+            this.parent.formatter.editorManager.nodeSelection.restore();
         }
     }
     private showDialog(): void {
         this.openDialog(false);
-        this.setCssClass({cssClass: this.parent.cssClass});
+        this.setCssClass({cssClass: this.parent.getCssClass()});
     }
     private closeDialog(): void {
         if (this.editdlgObj) { this.editdlgObj.hide({ returnValue: true } as Event); }
@@ -493,6 +497,12 @@ export class Table {
             (e as ClickEventArgs).originalEvent,
             { selection: selection, subCommand: ((e as ClickEventArgs).item as IDropDownItemModel).subCommand });
     }
+
+    private getAnchorNode(element: HTMLElement): HTMLElement {
+        const selectParent: HTMLElement = closest(element, 'a') as HTMLElement;
+        return <HTMLElement>(selectParent ? selectParent : element);
+    }
+
     private editAreaClickHandler(e: ITableNotifyArgs): void {
         if (this.parent.readonly || !isNOU(closest((e.args as MouseEvent).target as Element, '.e-img-caption'))) {
             return;
@@ -514,7 +524,8 @@ export class Table {
             const closestTable: Element = closest(target, 'table');
             const startNode: HTMLElement = this.parent.getRange().startContainer.parentElement;
             const endNode: HTMLElement = this.parent.getRange().endContainer.parentElement;
-            if (target && target.nodeName !== 'A' && target.nodeName !== 'IMG' && target.nodeName !== 'VIDEO' && !target.classList.contains(classes.CLS_CLICKELEM) &&
+            const isAnchorEle = this.getAnchorNode(target);
+            if (target && target.nodeName !== 'A' && isAnchorEle.nodeName !== 'A' && target.nodeName !== 'IMG' && target.nodeName !== 'VIDEO' && !target.classList.contains(classes.CLS_CLICKELEM) &&
                 target.nodeName !== 'AUDIO' && startNode === endNode && (target.nodeName === 'TD' || target.nodeName === 'TH' ||
                 target.nodeName === 'TABLE' || (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable)))
                 && !(range.startContainer.nodeType === 3 && !range.collapsed)) {
@@ -709,7 +720,7 @@ export class Table {
             this.contentModule.getEditPanel().appendChild(rowReEle);
         }
         const tableReBox: HTMLElement = this.parent.createElement('span', {
-            className: classes.CLS_TB_BOX_RES + ' ' + this.parent.cssClass, attrs: {
+            className: classes.CLS_TB_BOX_RES + this.parent.getCssClass(true), attrs: {
                 'data-col': columns.length.toString(), 'unselectable': 'on', 'contenteditable': 'false'
             }
         });
@@ -860,7 +871,7 @@ export class Table {
     }
     private appendHelper(): void {
         this.helper = this.parent.createElement('div', {
-            className: 'e-table-rhelper' + ' ' + this.parent.cssClass
+            className: 'e-table-rhelper' + this.parent.getCssClass(true)
         });
         if (Browser.isDevice) {
             this.helper.classList.add('e-reicon');
@@ -947,7 +958,7 @@ export class Table {
                     const width: number = parseFloat(this.columnEle.offsetWidth.toString());
                     const cellRow: number = this.curTable.rows[0].cells[0].nodeName === 'TH' ? 1 : 0;
                     let currentTableWidth: number;
-                    if (this.curTable.style.width !== '' && this.curTable.style.width.includes('%')) {
+                    if (this.curTable.style.width !== '' && this.curTable.style.width.includes('%')){
                         currentTableWidth =  parseFloat(this.curTable.style.width.split('%')[0]);
                     }
                     else {
@@ -1054,7 +1065,7 @@ export class Table {
                                         currentResizeRow.cells[this.colIndex] : currentResizeRow && currentResizeRow.cells[currentResizeRow.cells.length - 1] !== mergedElement ?
                                         currentRow.cells[index - 1] : currentResizeRow.cells[currentResizeRow.cells.length - 1];
                                 }
-                                if (!isNOU(currentRow.cells[index - 1]) && !isRowCellsMerged  && !isColCellsMerged) {
+                                if (!isNOU(currentRow.cells[index - 1]) && !isRowCellsMerged && !isColCellsMerged) {
                                     (currentRow.cells[index - 1] as HTMLTableDataCellElement).style.width =
                                         this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
                                 } else {
@@ -1063,7 +1074,7 @@ export class Table {
                                             this.convertPixelToPercentage(leftColumnWidth, tableWidth) + '%';
                                     }
                                 }
-                                if (!isNOU(currentRow.cells[index as number]) && !isRowCellsMerged  && !isColCellsMerged) {
+                                if (!isNOU(currentRow.cells[index as number]) && !isRowCellsMerged && !isColCellsMerged) {
                                     (currentRow.cells[index as number] as HTMLTableDataCellElement).style.width =
                                         this.convertPixelToPercentage(rightColWidth, tableWidth) + '%';
                                 } else {
@@ -1219,16 +1230,16 @@ export class Table {
         this.hideTableQuickToolbar();
         const header: string = '1X1';
         const insertbtn: string = this.l10n.getConstant('inserttablebtn');
-        this.dlgDiv = this.parent.createElement('div', { className: 'e-rte-table-popup' + ' ' + this.parent.cssClass, id: this.rteID + '_table' });
-        this.tblHeader = this.parent.createElement('div', { className: 'e-rte-popup-header' + ' ' + this.parent.cssClass });
+        this.dlgDiv = this.parent.createElement('div', { className: 'e-rte-table-popup' + this.parent.getCssClass(true), id: this.rteID + '_table' });
+        this.tblHeader = this.parent.createElement('div', { className: 'e-rte-popup-header' + this.parent.getCssClass(true) });
         this.tblHeader.innerHTML = header;
         this.dlgDiv.appendChild(this.tblHeader);
-        const tableDiv: HTMLElement = this.parent.createElement('div', { className: 'e-rte-table-span' + ' ' + this.parent.cssClass });
+        const tableDiv: HTMLElement = this.parent.createElement('div', { className: 'e-rte-table-span' + this.parent.getCssClass(true) });
         this.drawTable(tableDiv, args);
         this.dlgDiv.appendChild(tableDiv);
-        this.dlgDiv.appendChild(this.parent.createElement('span', { className: 'e-span-border' + ' ' + this.parent.cssClass }));
+        this.dlgDiv.appendChild(this.parent.createElement('span', { className: 'e-span-border' + this.parent.getCssClass(true) }));
         const btnEle: HTMLElement = this.parent.createElement('button', {
-            className: 'e-insert-table-btn' + ' ' + this.parent.cssClass, id: this.rteID + '_insertTable',
+            className: 'e-insert-table-btn' + this.parent.getCssClass(true), id: this.rteID + '_insertTable',
             attrs: { type: 'button', tabindex: '0' }
         });
         if (!isNOU(this.parent.getToolbarElement().querySelector('.e-expended-nav') as HTMLElement)) {
@@ -1236,7 +1247,7 @@ export class Table {
         }
         this.dlgDiv.appendChild(btnEle);
         this.createTableButton = new Button({
-            iconCss: 'e-icons e-create-table', content: insertbtn, cssClass: 'e-flat' + ' ' + this.parent.cssClass,
+            iconCss: 'e-icons e-create-table', content: insertbtn, cssClass: 'e-flat' + this.parent.getCssClass(true),
             enableRtl: this.parent.enableRtl, locale: this.parent.locale
         });
         this.createTableButton.isStringTemplate = true;
@@ -1264,10 +1275,17 @@ export class Table {
         });
         addClass([this.popupObj.element], 'e-popup-open');
         if (!isNOU(this.parent.cssClass)) {
-            addClass([this.popupObj.element], this.parent.cssClass);
+            addClass([this.popupObj.element], this.parent.getCssClass());
         }
         this.popupObj.refreshPosition(target);
     }
+
+    private onIframeMouseDown(): void {
+        if (this.popupObj) {
+            this.popupObj.hide();
+        }
+    }
+
     private docClick(e: { [key: string]: object }): void {
         const target: HTMLElement = <HTMLElement>(e.args as MouseEvent).target;
         // eslint-disable-next-line
@@ -1306,10 +1324,10 @@ export class Table {
         let rowDiv: HTMLElement;
         let tableCell: HTMLElement;
         for (let row: number = 0; row < 3; row++) {
-            rowDiv = this.parent.createElement('div', { className: 'e-rte-table-row' + ' ' + this.parent.cssClass, attrs: { 'data-column': '' + row } });
+            rowDiv = this.parent.createElement('div', { className: 'e-rte-table-row' + this.parent.getCssClass(true), attrs: { 'data-column': '' + row } });
             for (let col: number = 0; col < 10; col++) {
                 const display: string = (row > 2) ? 'none' : 'inline-block';
-                tableCell = this.parent.createElement('div', { className: 'e-rte-tablecell e-default' + ' ' + this.parent.cssClass, attrs: { 'data-cell': '' + col } });
+                tableCell = this.parent.createElement('div', { className: 'e-rte-tablecell e-default' + this.parent.getCssClass(true), attrs: { 'data-cell': '' + col } });
                 rowDiv.appendChild(tableCell);
                 tableCell.style.display = display;
                 if (col === 0 && row === 0) {
@@ -1332,13 +1350,13 @@ export class Table {
             height: 'initial', width: '290px', content: editContent, header: editHeader,
             buttons: [{
                 click: this.applyProperties.bind(this, args),
-                buttonModel: { content: update, cssClass: 'e-flat e-size-update' + ' ' + this.parent.cssClass, isPrimary: true }
+                buttonModel: { content: update, cssClass: 'e-flat e-size-update' + this.parent.getCssClass(true), isPrimary: true }
             },
             {
                 click: (e: MouseEvent) => {
                     this.cancelDialog(e);
                 },
-                buttonModel: { cssClass: 'e-flat e-cancel' + ' ' + this.parent.cssClass, content: cancel }
+                buttonModel: { cssClass: 'e-flat e-cancel' + this.parent.getCssClass(true), content: cancel }
             }],
             cssClass: this.editdlgObj.cssClass + ' e-rte-edit-table-prop-dialog'
         });
@@ -1380,10 +1398,10 @@ export class Table {
     private tableCellDlgContent(): HTMLElement {
         const tableColumn: string = this.l10n.getConstant('columns');
         const tableRow: string = this.l10n.getConstant('rows');
-        const tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-cell-wrap' + ' ' + this.parent.cssClass });
-        const content: string = '<div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" '
-            + ' data-role ="none" id="tableColumn" class="e-table-column' + ' ' + this.parent.cssClass + '"/></div>'
-            + '<div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" data-role ="none" id="tableRow" class="e-table-row' + ' ' + this.parent.cssClass + '" /></div>';
+        const tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-cell-wrap' + this.parent.getCssClass(true) });
+        const content: string = '<div class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" '
+            + ' data-role ="none" id="tableColumn" class="e-table-column' + this.parent.getCssClass(true) + '"/></div>'
+            + '<div class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" data-role ="none" id="tableRow" class="e-table-row' + this.parent.getCssClass(true) + '" /></div>';
         const contentElem: DocumentFragment = parseHtml(content);
         tableWrap.appendChild(contentElem);
         this.columnTextBox = new NumericTextBox({
@@ -1394,7 +1412,7 @@ export class Table {
             floatLabelType: 'Auto',
             max: 50,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale,
-            cssClass: this.parent.cssClass
+            cssClass: this.parent.getCssClass()
         });
         this.columnTextBox.isStringTemplate = true;
         this.columnTextBox.appendTo(tableWrap.querySelector('#tableColumn') as HTMLElement);
@@ -1406,7 +1424,7 @@ export class Table {
             floatLabelType: 'Auto',
             max: 1000,
             enableRtl: this.parent.enableRtl, locale: this.parent.locale,
-            cssClass: this.parent.cssClass
+            cssClass: this.parent.getCssClass()
         });
         this.rowTextBox.isStringTemplate = true;
         this.rowTextBox.appendTo(tableWrap.querySelector('#tableRow') as HTMLElement);
@@ -1427,27 +1445,27 @@ export class Table {
             return;
         }
         const tableDialog: HTMLElement = this.parent.createElement('div', {
-            className: 'e-rte-edit-table' + ' ' + this.parent.cssClass, id: this.rteID + '_tabledialog' });
+            className: 'e-rte-edit-table' + this.parent.getCssClass(true), id: this.rteID + '_tabledialog' });
         this.parent.element.appendChild(tableDialog);
         const insert: string = this.l10n.getConstant('dialogInsert');
         const cancel: string = this.l10n.getConstant('dialogCancel');
         const header: string = this.l10n.getConstant('tabledialogHeader');
         const dialogModel: DialogModel = {
             header: header,
-            cssClass: classes.CLS_RTE_ELEMENTS + ' ' + this.parent.cssClass,
+            cssClass: classes.CLS_RTE_ELEMENTS + this.parent.getCssClass(true),
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px', height: 'initial',
             position: { X: 'center', Y: (Browser.isDevice) ? 'center' : 'top' },
             isModal: (Browser.isDevice as boolean),
             buttons: [{
-                buttonModel: { content: insert, cssClass: 'e-flat e-insert-table' + ' ' + this.parent.cssClass, isPrimary: true }
+                buttonModel: { content: insert, cssClass: 'e-flat e-insert-table' + this.parent.getCssClass(true), isPrimary: true }
             },
             {
                 click: (e: MouseEvent) => {
                     this.cancelDialog(e);
                 },
-                buttonModel: { cssClass: 'e-flat e-cancel' + ' ' + this.parent.cssClass, content: cancel }
+                buttonModel: { cssClass: 'e-flat e-cancel' + this.parent.getCssClass(true), content: cancel }
             }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
@@ -1522,13 +1540,13 @@ export class Table {
         const tableWidth: string = this.l10n.getConstant('tableWidth');
         const cellPadding: string = this.l10n.getConstant('cellpadding');
         const cellSpacing: string = this.l10n.getConstant('cellspacing');
-        const tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-table-sizewrap' + ' ' + this.parent.cssClass });
+        const tableWrap: HTMLElement = this.parent.createElement('div', { className: 'e-table-sizewrap' + this.parent.getCssClass(true) });
         const widthVal: string | number = closest(selectNode, 'table').getClientRects()[0].width;
         const padVal: string | number = (closest(selectNode, 'td') as HTMLElement).style.padding;
         const brdSpcVal: string | number = (closest(selectNode, 'table') as HTMLElement).getAttribute('cellspacing');
-        const content: string = '<div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" data-role ="none" id="tableWidth" class="e-table-width' + ' ' + this.parent.cssClass + '" '
-            + ' /></div>' + '<div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" data-role ="none" id="cellPadding" class="e-cell-padding' + ' ' + this.parent.cssClass + '" />'
-            + ' </div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" data-role ="none" id="cellSpacing" class="e-cell-spacing' + ' ' + this.parent.cssClass + '" /></div>';
+        const content: string = '<div class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" data-role ="none" id="tableWidth" class="e-table-width' + this.parent.getCssClass(true) + '" '
+            + ' /></div>' + '<div class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" data-role ="none" id="cellPadding" class="e-cell-padding' + this.parent.getCssClass(true) + '" />'
+            + ' </div><div class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" data-role ="none" id="cellSpacing" class="e-cell-spacing' + this.parent.getCssClass(true) + '" /></div>';
         const contentElem: DocumentFragment = parseHtml(content);
         tableWrap.appendChild(contentElem);
         this.tableWidthNum = new NumericTextBox({

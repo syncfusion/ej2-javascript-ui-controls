@@ -38,8 +38,9 @@ export class Clipboard {
     }
 
     private init(): void {
-        this.parent.element
-            .appendChild(this.parent.createElement('input', { className: 'e-clipboard', attrs: { 'contenteditable': 'true' } }));
+        this.parent.element.appendChild(
+            this.parent.createElement(
+                'input', { className: 'e-clipboard', attrs: { 'contenteditable': 'true', 'tabindex': '-1', 'aria-hidden': 'true' } }));
     }
 
     private addEventListener(): void {
@@ -176,7 +177,7 @@ export class Clipboard {
         isAction?: boolean, isInternal?: boolean, isFromUpdateAction?: boolean, focus?: boolean
     } & ClipboardEvent): void {
         if (this.parent.isEdit || this.parent.element.getElementsByClassName('e-dlg-overlay').length > 0) {
-            let editEle: HTMLElement = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0] as HTMLElement;
+            const editEle: HTMLElement = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0] as HTMLElement;
             editEle.style.height = 'auto';
             return;
         }

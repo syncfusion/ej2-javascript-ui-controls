@@ -2,7 +2,6 @@ import { Workbook, SheetModel, getSheet, ConditionalFormat } from '../index';
 import { setCFRule, clearCFRule, getRangeAddress, getSheetIndexFromAddress } from '../common/index';
 import { getRangeIndexes, ConditionalFormatModel, CFArgs, ApplyCFArgs, getSwapRange } from '../common/index';
 import { applyCF, clearCF, goto, CFormattingEventArgs, beginAction } from '../common/index';
-import { completeAction } from '../../spreadsheet/common/event';
 
 
 /**
@@ -61,7 +60,7 @@ export class WorkbookConditionalFormat {
             cf.value = eventArgs.value;
             if (eventArgs.range !== cf.range) {
                 cf.range = eventArgs.range;
-                indexes = getRangeIndexes(eventArgs.range);
+                indexes = getSwapRange(getRangeIndexes(eventArgs.range));
             }
             delete eventArgs.cancel;
         }
@@ -76,9 +75,10 @@ export class WorkbookConditionalFormat {
         } else {
             this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: [cf], isAction: true });
         }
+        this.parent.setUsedRange(indexes[2], indexes[3]);
         if (e.isAction) {
             this.parent.notify(
-                completeAction, { eventArgs: { range: cf.range, type: cf.type, cFColor: cf.cFColor, value: cf.value, sheetIdx: sheetIndex },
+                'actionComplete', { eventArgs: { range: cf.range, type: cf.type, cFColor: cf.cFColor, value: cf.value, sheetIdx: sheetIndex },
                     action: 'conditionalFormat' });
         }
     }
@@ -238,7 +238,7 @@ export class WorkbookConditionalFormat {
             if (args.isClear) {
                 args.cfClearActionArgs = eventArgs;
             } else {
-                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clearCF' });
+                this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'clearCF' });
             }
         }
     }

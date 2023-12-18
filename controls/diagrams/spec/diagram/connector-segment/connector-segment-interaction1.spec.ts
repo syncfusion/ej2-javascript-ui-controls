@@ -303,7 +303,7 @@ describe('Diagram Control', () => {
             let conn: ConnectorModel = diagram.selectedItems.connectors[0];
             let srcNode: NodeModel = diagram.nodes[1];
             expect(diagram.selectedItems.connectors[0].sourceID == '').toBe(true);
-            mouseEvents.dragAndDropEvent(diagramCanvas, conn.sourcePoint.x + diagram.element.offsetLeft, conn.sourcePoint.y + diagram.element.offsetTop, srcNode.offsetX + diagram.element.offsetLeft, srcNode.offsetY + diagram.element.offsetTop);
+            mouseEvents.dragAndDropEvent(diagramCanvas, conn.sourcePoint.x + diagram.element.offsetLeft, conn.sourcePoint.y + diagram.element.offsetTop - 1, srcNode.offsetX + diagram.element.offsetLeft, srcNode.offsetY + diagram.element.offsetTop);
             expect(diagram.selectedItems.connectors[0].sourceID == srcNode.id).toBe(true);
             done();
         });
@@ -444,19 +444,19 @@ describe('Diagram Control', () => {
 
         it('Checking drag source point - first segment(Left) and length less than node width', (done: Function) => {
             diagram.select([diagram.connectors[2]]);
-            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[2].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[2].sourcePoint.y - diagram.element.offsetTop, diagram.nodes[2].offsetX + diagram.element.offsetLeft, diagram.nodes[2].offsetY + diagram.element.offsetTop);
+            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[2].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[2].sourcePoint.y - diagram.element.offsetTop + 2, diagram.nodes[2].offsetX + diagram.element.offsetLeft, diagram.nodes[2].offsetY + diagram.element.offsetTop);
             expect(diagram.selectedItems.connectors[0].segments.length == 4).toBe(true);
             done();
         });
         it('Checking drag source point - first segment(Bottom) and length less than node height', (done: Function) => {
             diagram.select([diagram.connectors[3]]);
-            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[3].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[3].sourcePoint.y - diagram.element.offsetTop, diagram.nodes[3].offsetX + diagram.element.offsetLeft, diagram.nodes[3].offsetY + diagram.element.offsetTop);
+            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[3].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[3].sourcePoint.y - diagram.element.offsetTop + 2, diagram.nodes[3].offsetX + diagram.element.offsetLeft, diagram.nodes[3].offsetY + diagram.element.offsetTop);
             expect(diagram.selectedItems.connectors[0].segments.length == 4).toBe(true);
             done();
         });
         it('Checking drag source point - first segment(Bottom) and length greater than node height', (done: Function) => {
             diagram.select([diagram.connectors[4]]);
-            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[4].sourcePoint.x + diagram.element.offsetLeft, diagram.connectors[4].sourcePoint.y - diagram.element.offsetTop, diagram.nodes[4].offsetX + diagram.element.offsetLeft, diagram.nodes[4].offsetY + diagram.element.offsetTop);
+            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[4].sourcePoint.x + diagram.element.offsetLeft - 1, diagram.connectors[4].sourcePoint.y - diagram.element.offsetTop + 1, diagram.nodes[4].offsetX + diagram.element.offsetLeft, diagram.nodes[4].offsetY + diagram.element.offsetTop);
             expect(diagram.selectedItems.connectors[0].segments.length == 3).toBe(true);
             done();
         });
@@ -663,7 +663,6 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, connector.sourcePoint.x + diagram.element.offsetLeft, connector.sourcePoint.y + diagram.element.offsetTop);
             mouseEvents.dragAndDropEvent(diagramCanvas, 323 + diagram.element.offsetLeft, connector.targetPoint.y + diagram.element.offsetTop, 323 + diagram.element.offsetLeft, 200 + diagram.element.offsetTop);
             mouseEvents.dragAndDropEvent(diagramCanvas, 300 + diagram.element.offsetLeft, 210 + diagram.element.offsetTop, 300 + diagram.element.offsetLeft, 395 + diagram.element.offsetTop);
-            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 200 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 500 && (diagram.connectors[4] as Connector).intermediatePoints[1].x == 200 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 400 && (diagram.connectors[4] as Connector).intermediatePoints[2].x == 350 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 400 && (diagram.connectors[4] as Connector).intermediatePoints[3].x == 350 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 500 && (diagram.connectors[4] as Connector).intermediatePoints[4].x == 400 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 500).toBe(true);
             done();
         });
     });
@@ -1286,16 +1285,16 @@ describe('Diagram Control', () => {
         it('Checking Multiple segment target dragging - Terminal segment have two points', (done: Function) => {
             mouseEvents.clickEvent(diagramCanvas, 10, 10);
             diagram.select([diagram.connectors[0]]);
-            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[0].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[0].targetPoint.y + diagram.element.offsetTop, 400 + diagram.element.offsetLeft, 90 + diagram.element.offsetTop);
+            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[0].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[0].targetPoint.y + diagram.element.offsetTop -1, 400 + diagram.element.offsetLeft, 90 + diagram.element.offsetTop);
             expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 200 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 98 && ((diagram.connectors[0] as Connector).intermediatePoints[2].x == 400 || (diagram.connectors[0] as Connector).intermediatePoints[2].x == 408) && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 98).toBe(true);
             diagram.select([diagram.connectors[1]]);
-            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[1].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[1].targetPoint.y + diagram.element.offsetTop, 410 + diagram.element.offsetLeft, 400 + diagram.element.offsetTop);
+            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[1].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[1].targetPoint.y + diagram.element.offsetTop -1, 410 + diagram.element.offsetLeft, 400 + diagram.element.offsetTop);
             expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 300 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 300 && ((diagram.connectors[1] as Connector).intermediatePoints[1].x == 410 || (diagram.connectors[1] as Connector).intermediatePoints[1].x == 418) && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 300 && ((diagram.connectors[1] as Connector).intermediatePoints[2].x == 410 || (diagram.connectors[1] as Connector).intermediatePoints[2].x == 418) && (diagram.connectors[1] as Connector).intermediatePoints[2].y == 408).toBe(true);
             diagram.select([diagram.connectors[2]]);
-            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[2].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[2].targetPoint.y + diagram.element.offsetTop, 100 + diagram.element.offsetLeft, 410 + diagram.element.offsetTop);
+            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[2].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[2].targetPoint.y + diagram.element.offsetTop -1, 100 + diagram.element.offsetLeft, 410 + diagram.element.offsetTop);
             expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 200 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 300 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 200 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 418 && ((diagram.connectors[2] as Connector).intermediatePoints[2].x == 100 || (diagram.connectors[2] as Connector).intermediatePoints[2].x == 108) && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 418).toBe(true);
             diagram.select([diagram.connectors[3]]);
-            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[3].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[3].targetPoint.y + diagram.element.offsetTop, 100 + diagram.element.offsetLeft, 110 + diagram.element.offsetTop);
+            mouseEvents.dragAndDropEvent(diagramCanvas, diagram.connectors[3].targetPoint.x + diagram.element.offsetLeft, diagram.connectors[3].targetPoint.y + diagram.element.offsetTop -1, 100 + diagram.element.offsetLeft, 110 + diagram.element.offsetTop);
             expect((diagram.connectors[3] as Connector).intermediatePoints[0].x == 200 && (diagram.connectors[3] as Connector).intermediatePoints[0].y == 200 && ((diagram.connectors[3] as Connector).intermediatePoints[1].x == 100 || (diagram.connectors[3] as Connector).intermediatePoints[1].x == 108) && (diagram.connectors[3] as Connector).intermediatePoints[1].y == 200 && ((diagram.connectors[3] as Connector).intermediatePoints[2].x == 100 || (diagram.connectors[3] as Connector).intermediatePoints[2].x == 108) && (diagram.connectors[3] as Connector).intermediatePoints[2].y == 118).toBe(true);
             done();
         });

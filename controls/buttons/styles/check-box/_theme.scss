@@ -233,6 +233,9 @@
 
               &:not(.e-check):not(.e-stop) {
                 color: $cbox-icon-color;
+                @media (max-width: 768px)  {
+                  color: $cbox-bgcolor;
+                }
               }
             }
           }

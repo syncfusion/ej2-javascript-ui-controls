@@ -436,6 +436,22 @@ export type ExportModes =
     'Data';
 
 /**
+ * Defines the child type to be added in the UmlClassifierShape.
+ * Methods
+ * Attributes
+ * Members
+ *
+ * @IgnoreSingular
+ */
+ export type UmlClassChildType =
+    /** Methods - Specified the UML class/interface child type as Method. */
+    'Method' |
+    /** Attributes -Specified the UML class/interface child type as Method */
+    'Attribute' |
+    /** Members - Specified the UML enum child type as Method */
+    'Member';
+
+/**
  * Defines the region that has to be drawn as an image
  * PageSettings -  With the given page settings image has to be exported.
  * Content - The diagram content is export
@@ -2049,6 +2065,8 @@ export type EntryType =
     'SendToBack' |
     /** AddChildToGroupNode - Sets the entry type as  AddChildToGroupNode */
     'AddChildToGroupNode'|
+    /** RemoveChildFromGroupNode - Sets the entry type as  RemoveChildFromGroupNode */
+    'RemoveChildFromGroupNode'|
     /** ExtrenalEntry - Sets the entry type as ExtrenalEntry */
     'ExternalEntry';
 /**

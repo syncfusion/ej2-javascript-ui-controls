@@ -1203,7 +1203,8 @@ export class Splitter extends Component<HTMLElement> {
         this.addResizeHandler(separator);
         separator.appendChild(arrow1);
         this.updateCollapseIcons(i, arrow1, arrow2);
-        separator.setAttribute('tabindex', '0');
+        separator.setAttribute('tabindex', '-1');
+        separator.setAttribute('aria-hidden', 'true');
         if (this.enableReversePanes) {
             separator.setAttribute('dir', 'ltr');
         } else {
@@ -1238,6 +1239,7 @@ export class Splitter extends Component<HTMLElement> {
                 clonedEle[i as number].parentNode.appendChild(separator);
                 this.currentSeparator = separator;
                 separator.setAttribute('role', 'separator');
+                separator.setAttribute('aria-valuenow', i.toString());
                 separator.setAttribute('aria-orientation', this.orientation.toLowerCase());
                 this.wireClickEvents();
                 if (!isNullOrUndefined(separator)) {

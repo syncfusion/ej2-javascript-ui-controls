@@ -167,10 +167,10 @@ export class ProgressAnimation {
             (lineCapRadius / 2) * thickness : 0;
         progressEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? -(lineCapRadius / 2) * thickness : (lineCapRadius / 2) * thickness) : 0;
-        if (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) {
+        if (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0 && progress.startAngle === progress.endAngle) {
             const startPosition: number = degreeToLocation(x, y, pathRadius, start).x;
             let endPosition: number = degreeToLocation(x, y, pathRadius, progressEnd).x;
-            while ((progress.enableRtl ? endPosition <= startPosition : endPosition >= startPosition)) {
+            while (((progress.enableRtl !== progress.startAngle >= 180) ? endPosition <= startPosition : endPosition >= startPosition)) {
                 progressEnd += (progress.enableRtl ? 0.1 : -0.1);
                 endPosition = degreeToLocation(x, y, pathRadius, progressEnd).x;
             }

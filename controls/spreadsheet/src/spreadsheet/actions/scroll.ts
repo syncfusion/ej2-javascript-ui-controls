@@ -4,7 +4,6 @@ import { contentLoaded, spreadsheetDestroyed, onVerticalScroll, onHorizontalScro
 import { IOffset, onContentScroll, deInitProperties, setScrollEvent, updateScroll, selectionStatus } from '../common/index';
 import { virtualContentLoaded, updateScrollValue } from '../common/index';
 import { SheetModel, getRowHeight, getColumnWidth, getCellAddress, skipHiddenIdx } from '../../workbook/index';
-import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 
 /**
  * The `Scroll` module is used to handle scrolling behavior.
@@ -48,7 +47,7 @@ export class Scroll {
             const elem: Element = document.querySelector('#' + this.parent.element.id + '_autofilloptionbtn-popup');
             const DDBElem: HTMLElement = document.querySelector('#' + this.parent.element.id + '_autofilloptionbtn');
             if (elem) {
-                const DDBObj: DropDownButton = getComponent(DDBElem, DropDownButton);
+                const DDBObj: { toggle: Function } = getComponent(DDBElem, 'dropdown-btn');
                 DDBObj.toggle();
             }
         }
@@ -376,7 +375,7 @@ export class Scroll {
         this.removeEventListener();
         const ddbEle: HTMLElement = document.querySelector('#' + this.parent.element.id + '_autofilloptionbtn');
         if (ddbEle) {
-            const ddbObj: DropDownButton = getComponent(ddbEle, DropDownButton);
+            const ddbObj: { destroy: Function } = getComponent(ddbEle, 'dropdown-btn');
             if (ddbObj) {
                 ddbObj.destroy();
             }

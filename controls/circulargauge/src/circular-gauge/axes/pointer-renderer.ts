@@ -54,12 +54,20 @@ export class PointerRenderer {
                 childElement = gauge.renderer.createGroup({
                     id: gauge.element.id + '_Axis_' + axisIndex + '_Pointer_' + pointerIndex
                 });
+                if (pointer.value != null) {
+                    childElement.setAttribute('aria-label', pointer.description || 'Pointer:' + pointer.value.toString());
+                    childElement.setAttribute('role', 'region');
+                }
                 this['draw' + pointer.type + 'Pointer'](axis, axisIndex, pointerIndex, childElement, gauge);
-                this.setPointerValue(axis, pointer, pointer.currentValue);
+                if (this.gauge.allowLoadingAnimation) {
+                    (childElement as HTMLElement).style.visibility = 'hidden';
+                } else {
+                    this.setPointerValue(axis, pointer, pointer.currentValue);
+                }
                 pointerElement.appendChild(childElement);
-                if (((animate || pointer.animation.enable) || animationMode === 'Enable') && (!this.gauge.isPropertyChange || pointer.isPointerAnimation)) {
+                if (!this.gauge.allowLoadingAnimation && ((animate || pointer.animation.enable) || animationMode === 'Enable') && (!this.gauge.isPropertyChange || pointer.isPointerAnimation)) {
                     pointer.previousValue = !this.gauge.isPropertyChange ? axis.minimum : pointer.previousValue;
-                    this.doPointerAnimation(childElement, pointer, axis);
+                    this.doPointerAnimation(childElement, pointer, axis, axisIndex);
                 }
             });
             element.appendChild(pointerElement);
@@ -307,8 +315,6 @@ export class PointerRenderer {
                     );
                 }
             }
-            element.setAttribute('aria-label', pointer.description || 'Pointer:' + value.toString());
-            element.setAttribute('role', 'region');
         });
     }
 
@@ -432,21 +438,23 @@ export class PointerRenderer {
      * @param {Pointer} pointer - Specifies the pointer.
      * @param {Axis} axis - Specifies the axis.
      * @returns {void}
+     * @private
      */
-    private doPointerAnimation(pointerElement: Element, pointer: Pointer, axis: Axis): void {
+    public doPointerAnimation(pointerElement: Element, pointer: Pointer, axis: Axis, axisIndex: number): void {
         const startValue: number = !isNullOrUndefined(pointer.previousValue) ? pointer.previousValue : axis.visibleRange.min;
         const endValue: number = pointer.currentValue;
-        if ((pointer.animation.enable || animationMode === 'Enable') && startValue !== endValue && this.gauge.animatePointer) {
+        if (((pointer.animation.enable || animationMode === 'Enable') && startValue !== endValue && this.gauge.animatePointer) ||
+            (!isNullOrUndefined(this.gauge.loadingAnimationDuration) && this.gauge.loadingAnimationDuration[axisIndex as number] > 0)) {
             pointer.pathElement.map((element: Element) => {
                 if (pointer.type === 'RangeBar') {
-                    this.performRangeBarAnimation(element as HTMLElement, startValue, endValue, axis, pointer);
+                    this.performRangeBarAnimation(element as HTMLElement, startValue, endValue, axis, pointer, axisIndex);
                 } else {
                     if (pointer.type === 'Marker' && pointer.markerShape === 'Text') {
-                        this.performTextAnimation(pointerElement as HTMLElement, startValue, endValue, axis, pointer);
+                        this.performTextAnimation(pointerElement as HTMLElement, startValue, endValue, axis, pointer, axisIndex);
                     }
                     else {
                         this.performNeedleAnimation(
-                            element as HTMLElement, startValue, endValue, axis, pointer);
+                            element as HTMLElement, startValue, endValue, axis, pointer, axisIndex);
                     }
                 }
             });
@@ -462,7 +470,7 @@ export class PointerRenderer {
      * @returns {void}
      * @private
      */
-    public performTextAnimation(element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer): void {
+    public performTextAnimation(element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer, axisIndex: number): void {
         const isClockWise: boolean = axis.direction === 'ClockWise';
         let textangle: number;
         let textlocation: GaugeLocation;
@@ -473,25 +481,39 @@ export class PointerRenderer {
         element = !isNullOrUndefined(element.children[0]) ? element.children[0] as HTMLElement : element;
         const val: number = Math.abs(start - end);
         new Animation({}).animate(element, {
-            duration: (pointer.animation.duration === 0 && animationMode === 'Enable') ? 1000: pointer.animation.duration,
+            duration: this.gauge.isAnimationProgress ? (isNullOrUndefined(pointer.value) || pointer.value === axis.minimum ? 0 :
+                (animationMode === 'Enable' && (((!pointer.animation.enable || pointer.animation.duration === 0)
+                    && !this.gauge.allowLoadingAnimation) || (this.gauge.allowLoadingAnimation && (this.gauge.animationDuration === 0
+                        && pointer.animation.enable && pointer.animation.duration === 0)))) ? 1000 :
+                    (this.gauge.allowLoadingAnimation ? (pointer.animation.enable && pointer.animation.duration > 0 ? pointer.animation.duration
+                        : this.gauge.loadingAnimationDuration[axisIndex as number]) : pointer.animation.duration)) : 0,
             progress: (args: AnimationOptions): void => {
-                if (args.timeStamp > args.delay) {
-                    timeStamp = (args.timeStamp / pointer.animation.duration);
-                    pointerValue = end > start ? start + (timeStamp * val) : start - (timeStamp * val);
-                    textangle = getAngleFromValue(pointerValue, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, isClockWise);
-                    textlocation = getLocationFromAngle(textangle, pointer.currentRadius, this.gauge.midPoint);
-                    element.setAttribute(
-                        'transform', 'rotate(' + (textangle + 90) + ',' + textlocation.x + ',' + textlocation.y + ')'
-                    );
-                    element.setAttribute('x', String(textlocation.x));
-                    element.setAttribute('y', String(textlocation.y));
-                    element.style.visibility = 'visible';
+                if (this.gauge.isAnimationProgress) {
+                    if (args.timeStamp > args.delay) {
+                        timeStamp = (args.timeStamp / pointer.animation.duration);
+                        pointerValue = end > start ? start + (timeStamp * val) : start - (timeStamp * val);
+                        textangle = getAngleFromValue(pointerValue, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, isClockWise);
+                        textlocation = getLocationFromAngle(textangle, pointer.currentRadius, this.gauge.midPoint);
+                        element.setAttribute(
+                            'transform', 'rotate(' + (textangle + 90) + ',' + textlocation.x + ',' + textlocation.y + ')'
+                        );
+                        element.setAttribute('x', String(textlocation.x));
+                        element.setAttribute('y', String(textlocation.y));
+                        element.style.visibility = 'visible';
+                    }
                 }
             },
             end: () => {
-                this.setPointerValue(axis, pointer, end);
-                pointer.isPointerAnimation = false;
+                if (this.gauge.isAnimationProgress) {
+                    this.setPointerValue(axis, pointer, end);
+                    pointer.isPointerAnimation = false;
+                }
                 this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                if (!isNullOrUndefined(this.gauge.loadingAnimationDuration) && (this.gauge.loadingAnimationDuration[axisIndex as number] > 0 && !isNullOrUndefined(this.gauge.annotationsModule))) {
+                    this.gauge.annotationsModule.annotationAnimation(this.gauge);
+                } else {
+                    this.gauge.isOverAllAnimationComplete = true;
+                }
             }
         });
     }
@@ -508,7 +530,7 @@ export class PointerRenderer {
      * @private
      */
     public performNeedleAnimation(
-        element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer): void {
+        element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer, axisIndex: number): void {
         const isClockWise: boolean = axis.direction === 'ClockWise';
         start = typeof(start) === 'string' ? parseInt(start, 10) : start;
         end = typeof(end) === 'string' ? parseInt(end, 10) : end;
@@ -523,24 +545,42 @@ export class PointerRenderer {
         const endAngle: number = startAngle > pointAngle ? (pointAngle + 360) : pointAngle;
         let sweepAngle: number;
         new Animation({}).animate(element, {
-            duration: (pointer.animation.duration === 0 && animationMode === 'Enable') ? 1000: pointer.animation.duration,
+            duration: this.gauge.isAnimationProgress ? (isNullOrUndefined(pointer.value) || pointer.value === axis.minimum ? 0 :
+                (animationMode === 'Enable' && (((!pointer.animation.enable || pointer.animation.duration === 0)
+                    && !this.gauge.allowLoadingAnimation) || (this.gauge.allowLoadingAnimation && (this.gauge.animationDuration === 0
+                        && pointer.animation.enable && pointer.animation.duration === 0)))) ? 1000 :
+                    (this.gauge.allowLoadingAnimation ? (pointer.animation.enable && pointer.animation.duration > 0 ? pointer.animation.duration
+                        : this.gauge.loadingAnimationDuration[axisIndex as number]) : pointer.animation.duration)) : 0,
             progress: (args: AnimationOptions): void => {
-                sweepAngle = (start < end || Math.round(startAngle) === Math.round(endAngle)) ?
-                    isClockWise ? (endAngle - startAngle) : (endAngle - startAngle - 360) :
-                    isClockWise ? (endAngle - startAngle - 360) : (endAngle - startAngle);
-                element.style.animation = 'None';
-                if (start !== end) {
-                    element.setAttribute(
-                        'transform', 'rotate(' + linear(args.timeStamp, startAngle, sweepAngle, args.duration) + ',' +
-                        this.gauge.midPoint.x.toString() + ',' + this.gauge.midPoint.y.toString() + ')'
-                    );
+                if (this.gauge.isAnimationProgress) {
+                    sweepAngle = (start < end || Math.round(startAngle) === Math.round(endAngle)) ?
+                        isClockWise ? (endAngle - startAngle) : (endAngle - startAngle - 360) :
+                        isClockWise ? (endAngle - startAngle - 360) : (endAngle - startAngle);
+                    element.style.animation = 'None';
+                    if (start !== end) {
+                        element.setAttribute(
+                            'transform', 'rotate(' + linear(args.timeStamp, startAngle, sweepAngle, args.duration) + ',' +
+                            this.gauge.midPoint.x.toString() + ',' + this.gauge.midPoint.y.toString() + ')'
+                        );
+                        element.style.visibility = 'visible';
+                    }
                 }
             },
             end: () => {
-                this.setPointerValue(axis, pointer, end);
-                pointer.isPointerAnimation = false;
+                if (this.gauge.isAnimationProgress) {
+                    this.setPointerValue(axis, pointer, end);
+                    if (this.gauge.animationDuration > 0) {
+                        element.style.visibility = 'visible';
+                    }
+                    pointer.isPointerAnimation = false;
+                }
                 if (pointer.type === 'Marker' || (element.id.indexOf('_Pointer_NeedleCap') >= 0)) {
                     this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                }
+                if (!isNullOrUndefined(this.gauge.loadingAnimationDuration) && this.gauge.loadingAnimationDuration[axisIndex as number] > 0 && !isNullOrUndefined(this.gauge.annotationsModule)) {
+                    this.gauge.annotationsModule.annotationAnimation(this.gauge);
+                } else {
+                    this.gauge.isOverAllAnimationComplete = true;
                 }
             }
         });
@@ -557,26 +597,43 @@ export class PointerRenderer {
      * @returns {void}
      * @private
      */
-    public performRangeBarAnimation(element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer): void {
+    public performRangeBarAnimation(element: HTMLElement, start: number, end: number, axis: Axis, pointer: Pointer, axisIndex: number): void {
         start = typeof(start) === 'string' ? parseInt(start, 10) : start;
         end = typeof(end) === 'string' ? parseInt(end, 10) : end;
         let pointerValue: number;
         let timeStamp: number;
+        element.style.visibility = 'visible';
         const val: number = Math.abs(start - end);
         new Animation({}).animate(element, {
-            duration: (pointer.animation.duration === 0 && animationMode === 'Enable') ? 1000: pointer.animation.duration,
+            duration: this.gauge.isAnimationProgress ? (isNullOrUndefined(pointer.value) || pointer.value === axis.minimum ? 0 :
+                (animationMode === 'Enable' && (((!pointer.animation.enable || pointer.animation.duration === 0)
+                    && !this.gauge.allowLoadingAnimation) || (this.gauge.allowLoadingAnimation && (this.gauge.animationDuration === 0
+                        && pointer.animation.enable && pointer.animation.duration === 0)))) ? 1000 :
+                    (this.gauge.allowLoadingAnimation ? (pointer.animation.enable && pointer.animation.duration > 0 ? pointer.animation.duration
+                        : this.gauge.loadingAnimationDuration[axisIndex as number]) : pointer.animation.duration)) : 0,
             progress: (arg: AnimationOptions): void => {
-                timeStamp = (arg.timeStamp / arg.duration);
-                pointerValue = end > start ? start + (timeStamp * val) : start - (timeStamp * val);
-                this.setPointerValue(axis, pointer, pointerValue);
+                if (this.gauge.isAnimationProgress) {
+                    arg.duration = !this.gauge.isAnimationProgress ? 0 : arg.duration;
+                    timeStamp = (arg.timeStamp / arg.duration);
+                    pointerValue = end > start ? start + (timeStamp * val) : start - (timeStamp * val);
+                    this.setPointerValue(axis, pointer, pointerValue);
+                }
             },
             end: () => {
-                this.setPointerValue(axis, pointer, end);
-                pointer.isPointerAnimation = false;
+                if (this.gauge.isAnimationProgress) {
+                    this.setPointerValue(axis, pointer, end);
+                    pointer.isPointerAnimation = false;
+                }
                 this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                if (!isNullOrUndefined(this.gauge.loadingAnimationDuration) && this.gauge.loadingAnimationDuration[axisIndex as number] > 0 && !isNullOrUndefined(this.gauge.annotationsModule)) {
+                    this.gauge.annotationsModule.annotationAnimation(this.gauge);
+                } else {
+                    this.gauge.isOverAllAnimationComplete = true;
+                }
             }
         });
     }
+
     /**
      *
      * @returns {void}

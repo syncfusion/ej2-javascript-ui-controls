@@ -2,8 +2,11 @@
   .e-rating-container {
     .e-rating-item-list {
       &:focus-visible:not(:hover) .e-rating-focus {
-        outline-color: $rating-li-focus;
-        border-radius: $rating-focus-border-radius;
+        &:not(:has(svg)),
+        .e-rating-item:has(svg) {
+          outline-color: $rating-li-focus;
+          border-radius: $rating-focus-border-radius;
+        }
       }
     }
 

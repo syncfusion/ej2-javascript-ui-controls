@@ -807,7 +807,7 @@ export let windowKeys: { [key: string]: string} = {
     'Number Format List':'Ctrl+Shift+O',
     'Bullet Format List':'Ctrl+Alt+O',
     'Insert Audio': 'Ctrl+Shift+A',
-    'Insert Video': 'Ctrl+Shift+V',
+    'Insert Video': 'Ctrl+Alt+V',
     'Increase Indent': 'Ctrl+]',
     'Decrease Indent': 'Ctrl+[',
     'Decrease Fontsize': 'Ctrl+Shift+<',

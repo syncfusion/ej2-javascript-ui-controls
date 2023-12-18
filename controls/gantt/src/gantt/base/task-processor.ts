@@ -1270,7 +1270,7 @@ export class TaskProcessor extends DateProcessor {
      * @returns {number} .
      * @private
      */
-    public getTaskLeft(startDate: Date, isMilestone: boolean): number {
+    public getTaskLeft(startDate: Date, isMilestone: boolean, isFromTimelineVirtulization?: boolean): number {
         const date: Date = new Date(startDate.getTime());
         const tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
@@ -1283,7 +1283,18 @@ export class TaskProcessor extends DateProcessor {
                 date.setHours(22);
             }
         }
-        const timelineStartDate: Date = this.parent.timelineModule.timelineStartDate;
+        let leftValueForStartDate: number;
+        let isValid: boolean = true;
+        if ((this.parent.editModule && ((this.parent.editModule.taskbarEditModule && this.parent.editModule.taskbarEditModule.taskBarEditAction) || (this.parent.editModule.dialogModule && this.parent.editModule.dialogModule['isEdit']) ||
+            this.parent.ganttChartModule.scrollObject['isSetScrollLeft'])) && !isFromTimelineVirtulization) {
+            isValid = false;
+        }
+        if (this.parent.enableTimelineVirtualization && isValid && !this.parent.timelineModule['performedTimeSpanAction']) {
+           leftValueForStartDate = (this.parent.enableTimelineVirtualization && this.parent.ganttChartModule.scrollObject.element.scrollLeft != 0)
+                ? this.parent.ganttChartModule.scrollObject.getTimelineLeft() : null;
+        }
+        const timelineStartDate: Date = (this.parent.enableTimelineVirtualization && !isNullOrUndefined(leftValueForStartDate))
+                ? new Date((this.parent.timelineModule['dateByLeftValue'](leftValueForStartDate)).toString()) : new Date(this.parent.timelineModule.timelineStartDate);
         if (timelineStartDate) {
             return (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
         } else {
@@ -1705,7 +1716,7 @@ export class TaskProcessor extends DateProcessor {
         const resourceInfo: Object[] = data.ganttProperties.resourceInfo;
         const resourceName: Object[] = [];
         const taskMapping: TaskFieldsModel = this.parent.taskFields;
-        if (resourceInfo) {
+        if (resourceInfo && resourceInfo.length > 0) {
             const resourceLength: number = resourceInfo.length;
             const taskResources: Object = extend([], [], data.taskData[this.parent.taskFields.resourceInfo], true);
             this.parent.setRecordValue('taskData.' + this.parent.taskFields.resourceInfo, [], data);
@@ -1800,7 +1811,7 @@ export class TaskProcessor extends DateProcessor {
      */
     public updateDurationValue(duration: string, ganttProperties: ITaskData): void {
         const tempDuration: Object = this.getDurationValue(duration);
-        if (!isNaN(getValue('duration', tempDuration)) && !(this.parent.viewType==="ResourceView" && tempDuration["duration"] === 0)) {
+        if (!isNaN(getValue('duration', tempDuration)) && !(this.parent.viewType==="ResourceView" && tempDuration["duration"] === 0 && this.parent.editModule.cellEditModule.isCellEdit)) {
             this.parent.setRecordValue('duration', getValue('duration', tempDuration), ganttProperties, true);
         }
         if (!isNullOrUndefined(getValue('durationUnit', tempDuration))) {
@@ -1866,8 +1877,14 @@ export class TaskProcessor extends DateProcessor {
         this.updateOverlappingIndex(tasks);
         for (let count: number = 1; count < tasks.length; count++) {
             currentTask = tasks[count as number];
-            const cStartDate: Date = new Date(currentTask.ganttProperties.startDate.getTime());
-            const cEndDate: Date = new Date(currentTask.ganttProperties.endDate.getTime()); //task 2
+            let cStartDate: Date;
+            let cEndDate: Date;
+            if (currentTask.ganttProperties.startDate) {
+                cStartDate = new Date(currentTask.ganttProperties.startDate.getTime());
+            }
+            if (currentTask.ganttProperties.endDate) {
+                cEndDate = new Date(currentTask.ganttProperties.endDate.getTime()); //task 2
+            }
             const range: IWorkTimelineRanges[] = [];
             // eslint-disable-next-line
             const rangeObj: IWorkTimelineRanges = {};
@@ -1875,7 +1892,7 @@ export class TaskProcessor extends DateProcessor {
                 const tStartDate: Date = tasks[index as number].ganttProperties.startDate;
                 const tEndDate: Date = tasks[index as number].ganttProperties.endDate; // task 1
                 const rangeObj: IWorkTimelineRanges = {};
-                if (this._isInStartDateRange(cStartDate, tStartDate, tEndDate) || this._isInEndDateRange(cEndDate, tStartDate, tEndDate)) {
+                if (cStartDate && cEndDate && (this._isInStartDateRange(cStartDate, tStartDate, tEndDate) || this._isInEndDateRange(cEndDate, tStartDate, tEndDate))) {
                     if ((tStartDate.getTime() > cStartDate.getTime() && tStartDate.getTime() < cEndDate.getTime()
                         && tEndDate.getTime() > cStartDate.getTime() && tEndDate.getTime() >= cEndDate.getTime())
                         || (cStartDate.getTime() === tStartDate.getTime() && cEndDate.getTime() <= tEndDate.getTime())) {
@@ -2381,7 +2398,17 @@ export class TaskProcessor extends DateProcessor {
                     } else {
                         milestoneCount++;
                     }
-                    childCompletedWorks += childData.ganttProperties.work;
+                    var work = childData.ganttProperties.work;
+                    if (typeof work === 'string') {
+                // If it's a string, convert it to a number
+                        var numericValue = parseFloat(work);
+                        if (!isNaN(numericValue)) {
+                            childCompletedWorks += numericValue;
+                        }
+                    } else if (typeof work === 'number') {
+               // If it's already a number, simply add it to childCompletedWorks
+                        childCompletedWorks += work;
+                    }
                 }
                 if (!deleteUpdate) {
                     let taskCount: number;

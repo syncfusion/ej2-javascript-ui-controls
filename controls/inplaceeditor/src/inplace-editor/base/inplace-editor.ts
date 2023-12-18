@@ -578,7 +578,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      */
     protected render(): void {
         if (isNOU(this.element.getAttribute('tabindex'))) {
-            this.element.setAttribute('tabindex', '0');
+            this.disabled ? this.element.setAttribute('tabindex', '-1') : this.element.setAttribute('tabindex', '0');
         }
         this.checkIsTemplate();
         this.disable(this.disabled);
@@ -1731,6 +1731,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                     break;
                 case 'disabled':
                     this.disable(newProp.disabled);
+                    newProp.disabled ? this.element.tabIndex = -1 : this.element.tabIndex = 0;
                     break;
                 case 'enableRtl':
                     this.setRtl(newProp.enableRtl);

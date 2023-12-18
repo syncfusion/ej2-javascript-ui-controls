@@ -1,4 +1,4 @@
-import { EventHandler, remove, Browser } from '@syncfusion/ej2-base';
+import { EventHandler, remove, Browser, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Query, DataManager, Predicate, Deferred } from '@syncfusion/ej2-data';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
@@ -41,7 +41,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     private childRefs: object[] = [];
     private eventHandlers: { [x: string]: { [y: string]: Function } } = {};
     private isDevice: boolean = false;
-
+    private focusedMenuItem: HTMLElement | null = null;
     /**
      * Constructor for excel filtering module
      *
@@ -151,6 +151,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     private createMenuElem(val: string, className?: string, iconName?: string, isSubMenu?: boolean): Element {
         const li: Element = this.parent.createElement('li', { className: className + ' e-menu-item' });
         li.innerHTML = val;
+        (li as HTMLElement).tabIndex = li.classList.contains('e-disabled') ? -1 : 0;
         li.insertBefore(this.parent.createElement('span', { className: 'e-menu-icon e-icons ' + iconName, attrs: { 'aria-hidden': 'true' } }), li.firstChild);
         if (isSubMenu) {
             li.appendChild(this.parent.createElement('span', { className: 'e-icons e-caret' }));
@@ -161,11 +162,15 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     private wireExEvents(): void {
         EventHandler.add(this.dlg, 'mouseover', this.hoverHandler, this);
         EventHandler.add(this.dlg, 'click', this.clickExHandler, this);
+        EventHandler.add(this.dlg, 'keyup', this.keyUp, this);
+        EventHandler.add(this.dlg, 'keydown', this.keyDown, this);
     }
 
     private unwireExEvents(): void {
         EventHandler.remove(this.dlg, 'mouseover', this.hoverHandler);
         EventHandler.remove(this.dlg, 'click', this.clickExHandler);
+        EventHandler.remove(this.dlg, 'keyup', this.keyUp);
+        EventHandler.remove(this.dlg, 'keydown', this.keyDown);
     }
 
     private clickExHandler(e: MouseEvent): void {
@@ -182,15 +187,73 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         }
     }
 
+    private focusNextOrPrevElement(e: KeyboardEventArgs, focusableElements: HTMLElement[], focusClassName: string): void {
+        const nextIndex: number = (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) ? focusableElements.indexOf(document.activeElement as HTMLElement) - 1
+         : focusableElements.indexOf(document.activeElement as HTMLElement) + 1;
+        const nextElement: Element = focusableElements[((nextIndex + focusableElements.length) % focusableElements.length)];
+
+        // Set focus on the next / previous element
+        if (nextElement) {
+            (nextElement as HTMLElement).focus();
+            const focusClass: string = nextElement.classList.contains('e-chk-hidden') ? 'e-chkfocus' : focusClassName;
+            const target: Element = nextElement.classList.contains('e-chk-hidden') ? parentsUntil(nextElement, 'e-ftrchk') : parentsUntil(nextElement, 'e-menu-item');
+            this.excelSetFocus(target, focusClass);
+        }
+    }
+
+    private keyUp(e: KeyboardEventArgs): void {
+        if ((e.key === 'Tab' && e.shiftKey) || e.key === 'Tab') {
+            const focusClass: string = (e.target as HTMLElement).classList.contains('e-chk-hidden') ? 'e-chkfocus' : 'e-menufocus';
+            const target: Element = (e.target as HTMLElement).classList.contains('e-menu-item')
+             ? parentsUntil((e.target as HTMLElement), 'e-menu-item') : parentsUntil((e.target as HTMLElement), 'e-ftrchk');
+            this.excelSetFocus(target, focusClass);
+        }
+        else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            const focusableElements: HTMLElement[] = Array.from(this.dlg.querySelectorAll(
+                'input, button, [tabindex]:not([tabindex="-1"]), .e-menu-item:not(.e-disabled):not(.e-separator)'
+            ));
+            this.focusNextOrPrevElement(e, focusableElements, 'e-menufocus');
+        }
+        else if ((e.key === 'Enter' || e.code === 'ArrowRight') && (e.target as Element).classList.contains('e-menu-item')) {
+            e.preventDefault();
+            (e.target as HTMLElement).click();
+            if ((e.target as HTMLElement).classList.contains('e-submenu')){
+                this.hoverHandler(e);
+                (this.menuObj.element.querySelector('.e-menu-item') as HTMLElement).focus();
+                this.excelSetFocus(parentsUntil(this.menuObj.element.querySelector('.e-menu-item'), 'e-menu-item'), 'e-focused');
+                this.focusedMenuItem = this.menuObj.element.querySelector('.e-menu-item');
+            }
+        }
+    }
+
+    private keyDown(e: KeyboardEventArgs): void {
+        //prevented up and down arrow key press default functionality to prevent the browser scroll when performing keyboard navigation in excel filter element.
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+        }
+    }
+
+    private excelSetFocus(elem?: Element, className?: string): void {
+        const prevElem: Element = document.querySelector('.' + className);
+        if (prevElem) {
+            prevElem.classList.remove(className);
+        }
+        if (elem) {
+            elem.classList.add(className);
+        }
+    }
+
     private destroyCMenu(): void {
         this.isCMenuOpen = false;
         if (this.menuObj && !this.menuObj.isDestroyed) {
             this.menuObj.destroy();
+            EventHandler.remove(this.menuObj.element, 'keydown', this.contextKeyDownHandler);
             remove(this.cmenu);
             this.parent.notify(events.renderResponsiveCmenu, { target: null, header: '', isOpen: false, col: this.options.column });
         }
     }
-    private hoverHandler(e: MouseEvent): void {
+    private hoverHandler(e: MouseEvent | KeyboardEventArgs): void {
         if (this.options.isResponsiveFilter && e.type === 'mouseover') {
             return;
         }
@@ -232,6 +295,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             };
             this.parent.element.appendChild(this.cmenu);
             this.menuObj = new ContextMenu(menuOptions, this.cmenu);
+            EventHandler.add(this.menuObj.element, 'keydown', this.contextKeyDownHandler, this);
             const client: ClientRect = this.menu.querySelector('.e-submenu').getBoundingClientRect();
             const pos: OffsetPosition = { top: 0, left: 0 };
             if (this.options.isResponsiveFilter) {
@@ -259,6 +323,24 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 this.menuObj['open'](pos.top, pos.left, e.target as HTMLElement);
             }
             applyBiggerTheme(this.parent.element, this.menuObj.element.parentElement);
+        }
+    }
+
+    private contextKeyDownHandler(e: KeyboardEventArgs): void {
+        if ((e.key === 'Tab' && e.shiftKey) || e.key === 'Tab') {
+            e.preventDefault();
+            const focusableElements: HTMLElement[] = Array.from(this.menuObj.element.querySelectorAll(
+                '[tabindex]:not([tabindex="-1"]), .e-menu-item:not(.e-disabled):not(.e-separator)'
+            ));
+            // Focus the next / previous context menu item
+            this.focusNextOrPrevElement(e, focusableElements,  'e-focused');
+        }
+        else if (e.key === 'ArrowLeft' || e.key === 'Escape') {
+            e.preventDefault();
+            this.menuObj.close();
+            this.focusedMenuItem = null;
+            (document.querySelector('.e-submenu.e-menu-item') as HTMLElement).classList.remove('e-selected');
+            (document.querySelector('.e-submenu.e-menu-item') as HTMLElement).focus();
         }
     }
 
@@ -340,6 +422,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         if (e.item) {
             this.parent.notify(events.filterCmenuSelect, {});
             this.menuItem = e.item;
+            this.closeDialog();
             this.renderDialogue(e);
         }
     }
@@ -374,12 +457,25 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             overlayClick: this.removeDialog.bind(this),
             showCloseIcon: true,
             locale: this.parent.locale,
-            closeOnEscape: false,
+            closeOnEscape: true,
             target: document.body,
             // target: this.parent.element,
             visible: false,
             enableRtl: this.parent.enableRtl,
             open: () => {
+                const rows: HTMLElement[] = [].slice.call(this.dlgObj.element.querySelectorAll('table.e-xlfl-table tr.e-xlfl-fields'));
+                for (let i: number = 0; i < rows.length; i++) {
+                    const valInput: HTMLInputElement = rows[i as number].children[1].querySelector('.e-control');
+                    const dropDownList: DropDownList = rows[i as number]
+                    .querySelector('.e-dropdownlist.e-control')['ej2_instances'][0] as DropDownList;
+                    if (dropDownList.value === 'isempty' || dropDownList.value === 'isnotempty' ||
+                    dropDownList.value === 'isnull' || dropDownList.value === 'isnotnull') {
+                        valInput['ej2_instances'][0]['enabled'] = false;
+                    }
+                    else if (valInput && !isNullOrUndefined(valInput.getAttribute('disabled'))) {
+                        valInput['ej2_instances'][0]['enabled'] = true;
+                    }
+                }
                 const row: HTMLTableRowElement = this.dlgObj.element.querySelector('table.e-xlfl-table>tr') as HTMLTableRowElement;
                 if (this.options.column.filterTemplate) {
                     const templateField: string = isComplexField(this.options.column.field) ?
@@ -584,7 +680,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     // eslint-disable-next-line max-len
     private renderOperatorUI(column: string, table: HTMLElement, elementID: string, predicates: PredicateModel[], isFirst?: boolean): { fieldElement: HTMLElement, operator: string } {
 
-        const fieldElement: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-fields' });
+        const fieldElement: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-fields', attrs: { role: 'row' } });
         table.appendChild(fieldElement);
 
         const xlfloptr: HTMLElement = this.parent.createElement('td', { className: 'e-xlfl-optr' });
@@ -654,6 +750,15 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         } else {
             this.secondOperator = args.value.toString();
         }
+        const valInput: HTMLInputElement = args.element.closest('.e-xlfl-fields').children[1].querySelector('.e-control');
+        const dropDownList: DropDownList = args.element['ej2_instances'][0] as DropDownList;
+        if (dropDownList.value === 'isempty' || dropDownList.value === 'isnotempty' ||
+        dropDownList.value === 'isnull' || dropDownList.value === 'isnotnull') {
+            valInput['ej2_instances'][0]['enabled'] = false;
+        }
+        else if (!isNullOrUndefined(valInput.getAttribute('disabled'))) {
+            valInput['ej2_instances'][0]['enabled'] = true;
+        }
     }
 
     /**
@@ -704,7 +809,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         //Renders first value
         this.renderFlValueUI(column, optr, '-xlfl-frstvalue', predicates, true);
 
-        const predicate: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-predicate' });
+        const predicate: HTMLElement = this.parent.createElement('tr', { className: 'e-xlfl-predicate', attrs: { role: 'row' } });
         table.appendChild(predicate);
 
         //Renders first radion button

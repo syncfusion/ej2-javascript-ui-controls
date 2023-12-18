@@ -250,8 +250,9 @@ export class EnterKeyAction {
                                     this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                                         this.parent.contentModule.getDocument(), (insertElem as Element).nextElementSibling,
                                         0);
-                                } else if (nearBlockNode.textContent.length === 0 && !(!isNOU(nearBlockNode.childNodes[0]) && nearBlockNode.childNodes[0].nodeName === 'IMG') && !(nearBlockNode.querySelectorAll('img').length > 0)) {
-                                    if (!isNOU(nearBlockNode.children[0]) && nearBlockNode.children[0].tagName !== 'BR') {
+                                    } else if (nearBlockNode.textContent.length === 0 && !(!isNOU(nearBlockNode.childNodes[0]) && nearBlockNode.childNodes[0].nodeName === 'IMG' ||
+                                    (nearBlockNode.querySelectorAll('video').length > 0) || (nearBlockNode.querySelectorAll('audio').length > 0) || (nearBlockNode.querySelectorAll('img').length > 0))) {
+                                        if (!isNOU(nearBlockNode.children[0]) && nearBlockNode.children[0].tagName !== 'BR') {
                                         const newElem: Node = this.parent.formatter.editorManager.nodeCutter.SplitNode(
                                             this.range, (nearBlockNode as HTMLElement), false).cloneNode(true);
                                         this.parent.formatter.editorManager.domNode.insertAfter((newElem as Element), nearBlockNode);

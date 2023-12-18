@@ -48,6 +48,7 @@ import { InfiniteScroll } from '../actions/infinite-scroll';
 import { Filter } from '../actions/filter';
 import { ContextMenu } from '../actions/context-menu';
 import { FilterMenuRenderer } from '../renderer/filter-menu-renderer';
+import { ColumnChooser } from '../..';
 
 /**
  * Specifies grid interfaces.
@@ -387,6 +388,11 @@ export interface IGrid extends Component<HTMLElement> {
     rowTemplate?: string | Function;
 
     /**
+     * Specifies the template for rendering a customized element or text instead of displaying the empty record message.
+     */
+    emptyRecordTemplate?: string | Function;
+
+    /**
      * Specifies detailTemplate
      */
     detailTemplate?: string | Function;
@@ -622,6 +628,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     filterModule?: Filter;
 
+    columnChooserModule?: ColumnChooser;
+
     requestTypeAction?: string;
 
     expandedRows?: { [index: number]: IExpandedRow };
@@ -673,6 +681,7 @@ export interface IGrid extends Component<HTMLElement> {
     getFrozenRowByIndex?(index: number): Element;
     showResponsiveCustomFilter?(): void;
     showResponsiveCustomSort?(): void;
+    showResponsiveCustomColumnChooser?(): void;
     getRowInfo?(target: Element): RowInfo;
     selectRow?(index: number, isToggle?: boolean): void;
     getColumnHeaderByIndex?(index: number): Element;
@@ -703,6 +712,7 @@ export interface IGrid extends Component<HTMLElement> {
     getStackedHeaderColumnByHeaderText?(stackedHeader: string, col: Column[]): Column;
     getStackedColumns?(column: Column[]): Column[];
     getRowTemplate?(): Function;
+    getEmptyRecordTemplate?(): Function;
     getDetailTemplate?(): Function;
     getEditTemplate?(): Function;
     getEditFooterTemplate?(): Function;
@@ -1100,6 +1110,10 @@ export interface LazyLoadGroupArgs extends LazyLoadArgs {
     cachedRowIndex?: number;
     /** Defines the row index. */
     rowIndex?: number;
+    /** Defines the expand row query. */
+    lazyLoadQuery?: object;
+    /** Defines the row index. */
+    requestType?: string;
 }
 
 export interface InfiniteScrollArgs {
@@ -2478,15 +2492,19 @@ export interface DataStateChangeEventArgs {
     /** Defines the search criteria */
     search?: SearchSettingsModel[];
     /** Defines the grid action details performed by paging, grouping, filtering, searching, sorting */
-    action?: PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs;
+    action?: PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | LazyLoadGroupArgs;
     /** Defines the remote table name */
     table?: string;
     /** Defines the selected field names */
     select?: string[];
     /** If `count` is set true, then the remote service needs to return records and count */
-    count?: boolean;
+    requiresCounts?: boolean;
     /** Defines the checkbox filter dataSource */
     dataSource?: Function;
+    /** defines the lazy load group */
+    isLazyLoad?: boolean;
+    /** defines the lazy load group expand action */
+    onDemandGroupInfo?: boolean;
 }
 
 export interface DataSourceChangedEventArgs {
@@ -2625,6 +2643,9 @@ export interface IFilterArgs {
     dataManager?: DataManager;  // grid data manager
     format?: string;
     filteredColumns?: Object[];
+    parentFilteredLocalRecords?: Object[]; // for on demand local data proper distinct
+    parentTotalDataCount?: number; // for on demand parent total data count
+    parentCurrentViewDataCount? : number; // for on demand parent current view data count
     localizedStrings?: Object;
     localeObj?: L10n;
     position?: { X: number, Y: number };

@@ -334,6 +334,35 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
         });
     });
 
+    describe('EJ2-844958 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ definedNames: [{ name: 'NR', refersTo: "='Sheet1'!D1:E5" }, { name: 'DF', refersTo: "='Sheet1'!E6:H10" }, { name: 'NE', refersTo: "='Sheet1'!D2:E7" }], sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }], activeSheetIndex: 0 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Delete the sheet after the use of named range applied formula', (done: Function) => {
+            helper.invoke('updateCell', [{ formula: '=SUM(NR)' }, 'Sheet2!J1']);
+            helper.invoke('updateCell', [{ formula: '=SUM(DF,NR,NE)' }, 'Sheet2!J2']);
+            helper.invoke('updateCell', [{ formula: '=SUM(NR,Sheet1!H2;H10,NE,1,4,DF)' }, 'Sheet2!J3']);
+            helper.invoke('updateCell', [{ formula: '=SUM(Sheet1!D1:E5)' }, 'Sheet2!J4']);
+            helper.getInstance().delete(0, 0, 'Sheet');
+            setTimeout((): void => {
+                const sheet: SheetModel = helper.getInstance().sheets[0];
+                expect(helper.getInstance().activeSheetIndex).toBe(0);
+                expect(helper.invoke('getCell', [0, 9]).textContent).toBe('#REF!');
+                expect(sheet.rows[0].cells[9].formula).toBe('=SUM(NR)');
+                expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#REF!');
+                expect(sheet.rows[1].cells[9].formula).toBe("=SUM(DF,NR,NE)");
+                expect(helper.invoke('getCell', [2, 9]).textContent).toBe('#REF!');
+                expect(sheet.rows[2].cells[9].formula).toBe("=SUM(NR,#REF!H2;H10,NE,1,4,DF)");
+                expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#REF!');
+                expect(sheet.rows[3].cells[9].formula).toBe("=SUM(#REF!D1:E5)");
+                done();
+            });
+        });
+    });
+
     describe('CR Issues ->', () => {
         describe('I328870, fb24295, EJ2-50411, EJ2-52987, EJ2-50389, EJ2-50564,  ->', () => {
             let spreadsheet: Spreadsheet;

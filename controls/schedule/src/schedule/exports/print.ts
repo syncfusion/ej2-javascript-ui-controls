@@ -71,11 +71,11 @@ export class Print {
                 if (timeCellsScroll) {
                     timeCellsScroll.scrollTop = scrollableEle.scrollTop;
                 }
-		const contentCellScroll: HTMLElement = printWindow.document.querySelector(className);
+                const contentCellScroll: HTMLElement = printWindow.document.querySelector(className);
                 if (contentCellScroll) {
                     contentCellScroll.scrollLeft = scrollableEle.scrollLeft;
                     contentCellScroll.scrollTop = scrollableEle.scrollTop;
-                }
+                }                    
                 printWindow.print();
                 printWindow.close();
             }

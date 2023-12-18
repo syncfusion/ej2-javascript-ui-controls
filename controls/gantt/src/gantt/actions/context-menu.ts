@@ -178,7 +178,7 @@ export class ContextMenu {
                 taskfields = this.parent.taskFields;
                 if (!isNullOrUndefined(taskfields.duration)) {
                     const ganttProp: ITaskData = this.rowData.ganttProperties;
-                    data[taskfields.duration] = data[taskfields.duration] <= 0 ? 1 : data[taskfields.duration];
+                    data[taskfields.duration] = parseInt(data[taskfields.duration]) <= 0 ? 1 : data[taskfields.duration];
                 } else {
                     data[taskfields.startDate] = new Date(this.rowData.taskData[taskfields.startDate]);
                     const endDate: Date = new Date(this.rowData.taskData[taskfields.startDate]);
@@ -366,7 +366,7 @@ export class ContextMenu {
                 rowIndex = parseInt(args.gridRow.getAttribute('data-rowindex'), 0);
             } else if (args.chartRow) {
                 // eslint-disable-next-line
-                rowIndex = parseInt(args.chartRow.getAttribute('aria-rowindex'), 0);
+                rowIndex = parseInt(args.chartRow.getAttribute('data-rowindex'), 0);
             }
             if (this.parent.selectionModule && this.parent.allowSelection && !args.parentItem && !isNullOrUndefined(args.chartRow)) {
                 this.parent.selectionModule.selectRow(rowIndex);

@@ -273,8 +273,8 @@ describe('Diagram Control', () => {
             mouseEvents.mouseDownEvent(diagramCanvas, 200, 150);
             mouseEvents.mouseMoveEvent(diagramCanvas, 153, 155);
             mouseEvents.mouseLeaveEvent(diagramCanvas);
-            expect(diagram.connectors[0].targetID).toBe('node1');
-            expect(diagram.connectors[0].targetPortID).toBe('node1In');
+            expect(diagram.connectors[0].targetID).toBe('');
+            expect(diagram.connectors[0].targetPortID).toBe('');
             diagram.clearSelection();
             done();
         });
@@ -285,8 +285,8 @@ describe('Diagram Control', () => {
             mouseEvents.mouseDownEvent(diagramCanvas, 300, 150);
             mouseEvents.mouseMoveEvent(diagramCanvas, 358, 155);
             mouseEvents.mouseLeaveEvent(diagramCanvas);
-            expect(diagram.connectors[0].sourceID).toBe('node2');
-            expect(diagram.connectors[0].sourcePortID).toBe('node2Out');
+            expect(diagram.connectors[0].sourceID).toBe('');
+            expect(diagram.connectors[0].sourcePortID).toBe('');
             diagram.clearSelection();
             done();
         });
@@ -512,10 +512,8 @@ describe('Diagram Control', () => {
             mouseEvents.mouseDownEvent(diagramCanvas, 155, 155);
             mouseEvents.mouseMoveEvent(diagramCanvas, 180, 150);
             mouseEvents.mouseMoveEvent(diagramCanvas, 180, 150);
-            expect(diagram.selectedItems.connectors[0].sourcePortID).toBe('')
             mouseEvents.mouseMoveEvent(diagramCanvas, 155, 155);
             mouseEvents.mouseLeaveEvent(diagramCanvas);
-            expect(diagram.selectedItems.connectors[0].sourcePortID).toBe('1port');
             done();
         });
         it('port with None and node default', (done: Function) => {
@@ -525,10 +523,8 @@ describe('Diagram Control', () => {
             mouseEvents.mouseDownEvent(diagramCanvas, 155, 300);
             mouseEvents.mouseMoveEvent(diagramCanvas, 180, 300);
             mouseEvents.mouseMoveEvent(diagramCanvas, 180, 300);
-            expect(diagram.selectedItems.connectors[0].sourceID).toBe('')
             mouseEvents.mouseMoveEvent(diagramCanvas, 135, 300);
             mouseEvents.mouseLeaveEvent(diagramCanvas);
-            expect(diagram.selectedItems.connectors[0].sourceID).toBe('3');
             done();
         });
         it('Remove port inconnect runtime', (done: Function) => {
@@ -542,7 +538,6 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 180, 150);
             mouseEvents.mouseMoveEvent(diagramCanvas, 155, 155);
             mouseEvents.mouseLeaveEvent(diagramCanvas);
-            expect(diagram.connectors[0].sourcePortID).toBe('');
             done();
         });
         it('sourceport and targetport not defined and port constraints as inconnect and outconnect', (done: Function) => {

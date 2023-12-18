@@ -4,8 +4,6 @@
 
     & .e-contextual-toolbar-wrapper {
       background: $image-editor-contextual-toolbar;
-      border-top: $image-editor-border;
-      border-bottom: $image-editor-border;
 
       & .e-toolbar-item:hover .filterwrapper,
       & .e-toolbar-item.e-selected .filterwrapper,
@@ -51,9 +49,9 @@
           }
 
           &:hover {
-            background: $btn-hover-bgcolor;
+            background: $tbar-hover-bg;
             box-shadow: none;
-            color: $btn-hover-color;
+            color: $tbar-hover-font;
           }
 
           &:focus {

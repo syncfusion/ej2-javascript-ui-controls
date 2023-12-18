@@ -77,8 +77,11 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 150, 550);
             diagram.connectors[0].type = 'Bezier';
             diagram.dataBind();
-            expect(diagram.connectors[0].wrapper.offsetX=== 145).toBe(true);
-            expect(diagram.connectors[0].wrapper.offsetY=== 298.33).toBe(true);
+            console.log("wrapper offset");
+            console.log(diagram.connectors[0].wrapper.offsetX);
+            console.log(diagram.connectors[0].wrapper.offsetY);
+            expect(diagram.connectors[0].wrapper.offsetX === 150.0040653475979).toBe(true);
+            expect(diagram.connectors[0].wrapper.offsetY === 298.1750979283321).toBe(true);
             done();
         });
         it('checking the annotation of the connector connected with node', (done: Function) => {
@@ -88,8 +91,11 @@ describe('Diagram Control', () => {
             mouseEvents.mouseUpEvent(diagramCanvas,520, 750);
             diagram.connectors[1].type = 'Bezier';
             diagram.dataBind();
-            expect(diagram.connectors[1].wrapper.offsetX=== 524.99).toBe(true);
-            expect(diagram.connectors[1].wrapper.offsetY=== 398.48).toBe(true);
+            console.log("wrapper offset");
+            console.log(diagram.connectors[1].wrapper.offsetX);
+            console.log(diagram.connectors[1].wrapper.offsetY);
+            expect(diagram.connectors[1].wrapper.offsetX === 524.9993721424139).toBe(true);
+            expect(diagram.connectors[1].wrapper.offsetY === 404.20599065085884).toBe(true);
             done();
         });
         it('checking the annotation of the connector ', (done: Function) => {
@@ -103,8 +109,8 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             diagram.connectors[2].type = 'Bezier';
             diagram.dataBind();
-            expect(diagram.connectors[2].wrapper.offsetX=== 824.99).toBe(true);
-            expect(diagram.connectors[2].wrapper.offsetY=== 375).toBe(true);
+            expect(diagram.connectors[2].wrapper.offsetX === 824.993538899347).toBe(true);
+            expect(diagram.connectors[2].wrapper.offsetY === 375).toBe(true);
             done();
         });
     });
@@ -238,9 +244,13 @@ describe('Diagram Control', () => {
             let element1: DiagramElement = diagram.connectors[0].wrapper.children[3];
             let element2: DiagramElement = diagram.connectors[1].wrapper.children[3];
             let element3: DiagramElement = diagram.connectors[2].wrapper.children[3];
-            expect(Math.round(element1.offsetX) === 200 && Math.round(element1.offsetY) === 193 &&
-                (Math.round(element2.offsetX) === 387 || Math.round(element2.offsetX) >= 385 || Math.round(element2.offsetX) <= 389) && Math.round(element2.offsetY) === 193 &&
-                (Math.round(element3.offsetX) === 613 || Math.round(element3.offsetX) >= 611 || Math.round(element3.offsetX) <= 617) && Math.round(element3.offsetY) === 193).toBe(true);
+            console.log("element offsets");
+            console.log(element1.offsetX, element1.offsetY);
+            console.log(element2.offsetX, element2.offsetY);
+            console.log(element3.offsetX, element3.offsetY);
+            expect(element1.offsetX=== 200 && element1.offsetY === 192.79999999999998 &&
+                element2.offsetX=== 385.65625  && element2.offsetY === 192.79999999999998  &&
+                element3.offsetX === 614.34375  && element3.offsetY === 192.79999999999998 ).toBe(true);
             done();
         });
 
@@ -287,10 +297,13 @@ describe('Diagram Control', () => {
             let element1: DiagramElement = diagram.connectors[0].wrapper.children[3];
             let element2: DiagramElement = diagram.connectors[1].wrapper.children[3];
             let element3: DiagramElement = diagram.connectors[2].wrapper.children[3];
-
-            expect(Math.round(element1.offsetX) === 200 && Math.round(element1.offsetY) === 193 &&
-                (Math.round(element2.offsetX) === 387 || Math.round(element2.offsetX) >= 385 || Math.round(element2.offsetX) <= 389) && Math.round(element2.offsetY) === 193 &&
-                (Math.round(element3.offsetX) === 613 || Math.round(element3.offsetX) >= 611 || Math.round(element3.offsetX) <= 615) && Math.round(element3.offsetY) === 193).toBe(true);
+            console.log("element offsets");
+            console.log(element1.offsetX, element1.offsetY);
+            console.log(element2.offsetX, element2.offsetY);
+            console.log(element3.offsetX, element3.offsetY);
+            expect(element1.offsetX=== 200 && element1.offsetY=== 192.79999999999998 &&
+                element2.offsetX === 385.65625  && element2.offsetY === 192.79999999999998   &&
+                element3.offsetX === 614.34375 && element3.offsetY === 192.79999999999998  ).toBe(true);
             done();
         });
 
@@ -403,9 +416,13 @@ describe('Diagram Control', () => {
             let element1: DiagramElement = diagram.connectors[0].wrapper.children[3];
             let element2: DiagramElement = diagram.connectors[1].wrapper.children[3];
             let element3: DiagramElement = diagram.connectors[2].wrapper.children[3];
-            expect(Math.round(element1.offsetX) === 100 && Math.round(element1.offsetY) === 107 &&
-                (Math.round(element2.offsetX) === 313 || Math.round(element2.offsetX) >= 312 || Math.round(element2.offsetX) <= 317) && Math.round(element2.offsetY) === 107 &&
-                (Math.round(element3.offsetX) === 487 || Math.round(element3.offsetX) >= 485 || Math.round(element3.offsetX) <= 488) && Math.round(element3.offsetY) === 107).toBe(true);
+            console.log("element offsets");
+            console.log(element1.offsetX, element1.offsetY);
+            console.log(element2.offsetX, element2.offsetY);
+            console.log(element3.offsetX, element3.offsetY);
+            expect(element1.offsetX === 100 && element1.offsetY === 107.2 &&
+                element2.offsetX === 314.34375 && element2.offsetY === 107.2 &&
+                element3.offsetX === 485.65625  && element3.offsetY === 107.2).toBe(true);
             done();
         });
 
@@ -415,6 +432,9 @@ describe('Diagram Control', () => {
             diagram.connectors[0].annotations[0].displacement.x = 15;
             diagram.connectors[0].annotations[0].displacement.y = 15;
             diagram.dataBind();
+            console.log("connector offsets");
+            console.log(diagram.connectors[0].wrapper.children[3].offsetX);
+            console.log(diagram.connectors[0].wrapper.children[3].offsetY);
             expect(diagram.connectors[0].wrapper.children[3].offsetX === 100 &&
                 diagram.connectors[0].wrapper.children[3].offsetY === 122.2).toBe(true);
             done();

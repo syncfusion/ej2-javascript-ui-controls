@@ -674,6 +674,7 @@ describe('Pager base module', () => {
         it('checking pager message is hidden/Shown when dynamically changing pager width', function () {
             pagerElements = pagerObj.element.querySelectorAll('.e-mfirst, .e-mprev, .e-icon-first, .e-icon-prev, .e-pp:not(.e-disable), .e-icon-next, .e-icon-last, e-mnext, e-mlast');
             pagerObj.element.querySelector('.e-np').classList.remove('e-disable');
+            (pagerObj.element.querySelector('.e-mfirst') as HTMLElement).style.display = 'none';
             for (var i = 0; i < pagerElements.length; i++) {
                 pagerElements[i].style.width = '25px';
             }

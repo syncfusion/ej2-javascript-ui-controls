@@ -672,7 +672,7 @@ describe('Gantt taskbar editing', () => {
         });
         it('Milestone drag action', () => {
             ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
-                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('04/03/2019 17:00');
+                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('04/02/2019 17:00');
             };
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td >div.e-taskbar-main-container') as HTMLElement;
             triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
@@ -3022,8 +3022,8 @@ describe('cloneTaskbar Expand/Collapse', () => {
     it('when allow editing is false',() => {
         let taskbarElement: HTMLElement = ganttObj.element.getElementsByClassName('e-gantt-parent-taskbar-inner-div e-gantt-parent-taskbar e-row-expand')[0] as HTMLElement;
         triggerMouseEvent(taskbarElement, 'mousedown');
-        var cloneElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-clone-taskbar')
-        expect(! isNullOrUndefined(cloneElement)).toBe(false);
+        var cloneElement = ganttObj.element.getElementsByClassName('e-clone-taskbar');
+        expect(! isNullOrUndefined(cloneElement)).toBe(true);
         var resizeCheck = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-taskbar-resize-div')
         expect(! isNullOrUndefined(resizeCheck)).toBe(false);
         triggerMouseEvent(taskbarElement, 'mouseup');
@@ -4070,5 +4070,191 @@ describe('CR-856375-Milestone not working properly while drop at weekend', () =>
         triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 380, 0);
         triggerMouseEvent(dragElement, 'mouseup');
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/15/2019');
+    });
+});
+describe('Split task- Unable to merge two segments lies between holidays', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [{
+                    TaskID: 1, TaskName: 'Allocate resources', StartDate: new Date('02/05/2019'), EndDate: new Date('02/10/2019'),
+                            Duration: 10, Progress: '75',
+                            Segments: [
+                                { StartDate: new Date('02/05/2019'), Duration: 4 },
+                                { StartDate: new Date('02/08/2019'), Duration: 2 }
+                            ]
+                }],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                allowResizing:true,
+                height: '450px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('04/04/2019')
+            }, done);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 2000);
+    });
+    it('Merging tasks while lies between holidays', () => {
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-segment-last.e-gantt-child-taskbar.e-segmented-taskbar > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', -150, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        var segmentElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-segmented-taskbar')
+        expect(isNullOrUndefined(segmentElement)).toBe(true);
+    });
+});
+describe('CR-856375-Milestone not working properly while drop at weekend', () => {
+    let ganttObj: Gantt;
+    let newData1: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project Initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            isParent: true,
+            subtasks: [
+              {
+                TaskID: 2,
+                TaskName: 'Identify Site location',
+                StartDate: new Date('04/02/2019'),
+                Duration: 0,
+                Progress: 50,
+              },
+              {
+                TaskID: 4,
+                TaskName: 'Soil test approval',
+                StartDate: new Date('04/02/2019'),
+                Duration: 4,
+                Predecessor: '2FS',
+                Progress: 50,
+              },
+            ],
+          }
+        ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: newData1,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            gridLines: "Both",
+            allowResizing:true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            highlightWeekends: true,
+            labelSettings: {
+                taskLabel: 'Progress'
+            },
+            splitterSettings:{
+                columnIndex: 2,
+            },
+            height: '550px',
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('Drag and drop milestone on weekend days', () => {
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-milestone') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 380, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/15/2019');
+    });
+});
+describe('Cant able to merge the splited taskbar by resizing in split tasks sample', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [{
+                    TaskID: 1, TaskName: 'Allocate resources', StartDate: new Date('02/05/2019'), EndDate: new Date('02/10/2019'),
+                            Duration: 10, Progress: '75',
+                            Segments: [
+                                { StartDate: new Date('02/05/2019'), Duration: 4 },
+                                { StartDate: new Date('02/08/2019'), Duration: 2 }
+                            ]
+                }],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    segments: 'Segments'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                includeWeekend: true,
+                allowSelection: true,
+                allowResizing:true,
+                height: '450px',
+                projectStartDate: new Date('01/30/2019'),
+                projectEndDate: new Date('04/04/2019')
+            }, done);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 2000);
+    });
+    it('check if the segments merge properly while including weekend', () => {
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-segment-last.e-gantt-child-taskbar.e-segmented-taskbar > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', -150, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        var segmentElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-segmented-taskbar')
+        expect(isNullOrUndefined(segmentElement)).toBe(true);
     });
 });

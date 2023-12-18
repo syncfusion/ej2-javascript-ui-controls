@@ -461,6 +461,14 @@ export class Reorder implements IAction {
 
     private keyPressHandler(e: KeyboardEventArgs): void {
         const gObj: IGrid = this.parent;
+        const isMacLike: boolean = /(Mac)/i.test(navigator.platform);
+        if (isMacLike && e.metaKey) {
+            if (e.action === 'leftArrow') {
+                e.action = 'ctrlLeftArrow';
+            } else if (e.action === 'rightArrow') {
+                e.action = 'ctrlRightArrow';
+            }
+        }
         switch (e.action) {
         case 'ctrlLeftArrow':
         case 'ctrlRightArrow':

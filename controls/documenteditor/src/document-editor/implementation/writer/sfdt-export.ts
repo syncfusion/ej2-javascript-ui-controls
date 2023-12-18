@@ -63,6 +63,10 @@ export class SfdtExport {
     /**
      * @private
      */
+    public iscommentInsert = true;
+    /**
+     * @private
+     */
     public keywordIndex: number = undefined;
     /**
      * @private
@@ -1029,11 +1033,15 @@ export class SfdtExport {
             inline[editableRangeStartProperty[this.keywordIndex]][columnLastProperty[this.keywordIndex]] = element.editRangeStart.columnLast;
             inline[editRangeIdProperty[this.keywordIndex]] = element.editRangeId.toString();
         } else if (element instanceof CommentCharacterElementBox) {
-            if (!this.isExport && element.commentType === 0) {
-                this.selectedCommentsId.push(element.commentId);
+            if(this.iscommentInsert) {
+                if (!this.isExport && element.commentType === 0) {
+                    this.selectedCommentsId.push(element.commentId);
+                }
+                inline[commentCharacterTypeProperty[this.keywordIndex]] = element.commentType;
+                inline[commentIdProperty[this.keywordIndex]] = element.commentId;
+            } else {
+                return undefined;
             }
-            inline[commentCharacterTypeProperty[this.keywordIndex]] = element.commentType;
-            inline[commentIdProperty[this.keywordIndex]] = element.commentId;
         } else if (element instanceof ShapeElementBox) {
             this.writeShape(element, inline);
         } else {
@@ -1402,15 +1410,17 @@ export class SfdtExport {
                 continue;
             }
             inline = this.writeInline(element);
-            inlines[inlines.length] = inline;
-            if (length > offset || ended) {
-                if (inline.hasOwnProperty(textProperty[this.keywordIndex])) {
-                    let startIndex: number = length - element.length;
-                    let indexInInline: number = offset - startIndex;
-                    let endIndex: number = ended ? this.endOffset - startIndex : element.length;
-                    inline[textProperty[this.keywordIndex]] = inline[textProperty[this.keywordIndex]].substring(indexInInline, endIndex);
+            if(!isNullOrUndefined(inline)) {
+                inlines[inlines.length] = inline;
+                if (length > offset || ended) {
+                    if (inline.hasOwnProperty(textProperty[this.keywordIndex])) {
+                        let startIndex: number = length - element.length;
+                        let indexInInline: number = offset - startIndex;
+                        let endIndex: number = ended ? this.endOffset - startIndex : element.length;
+                        inline[textProperty[this.keywordIndex]] = inline[textProperty[this.keywordIndex]].substring(indexInInline, endIndex);
+                    }
+                    offset = -1;
                 }
-                offset = -1;
             }
             if (ended) {
                 break;
@@ -2265,6 +2275,7 @@ export class SfdtExport {
         switch (listLevelPattern) {
             case 'None':
                 return 0;
+            case 'KanjiDigit':
             case 'Arabic':
                 return 1;
             case 'UpRoman':

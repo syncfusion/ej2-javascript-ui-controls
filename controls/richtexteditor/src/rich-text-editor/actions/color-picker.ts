@@ -74,7 +74,7 @@ export class ColorPickerInput {
                     document.body.appendChild(fontNode);
                     options = {
                         cssClass: this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
-                            + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS + ' ' + this.parent.cssClass,
+                            + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS + this.parent.getCssClass(true),
                         value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
                         command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
                         subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
@@ -100,7 +100,7 @@ export class ColorPickerInput {
                     document.body.appendChild(backNode);
                     options = {
                         cssClass: this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
-                        + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS + ' ' + this.parent.cssClass,
+                        + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS + this.parent.getCssClass(true),
                         value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
                         command: this.tools[item.toLocaleLowerCase() as ToolbarItems].command,
                         subCommand: this.tools[item.toLocaleLowerCase() as ToolbarItems].subCommand,
@@ -117,7 +117,7 @@ export class ColorPickerInput {
             }
         });
         if (this.parent.inlineMode.enable) {
-            this.setCssClass({cssClass: this.parent.cssClass});
+            this.setCssClass({cssClass: this.parent.getCssClass()});
         }
     }
 

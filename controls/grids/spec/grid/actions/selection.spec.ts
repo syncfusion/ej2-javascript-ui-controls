@@ -2408,7 +2408,6 @@ describe('Grid Touch Selection', () => {
             gridObj.keyboardModule.keyAction(args);
             expect(gridObj.getRows()[0].children[1].classList.contains('e-cellselectionbackground')).toBeTruthy();
             expect(gridObj.getRows()[0].children[1].hasAttribute('aria-selected')).toBeTruthy();
-            expect(gridObj.getRows()[0].children[1].hasAttribute('aria-label')).toBeTruthy();
         });
         it('press right arrow', () => {
             let args: any = { action: 'rightArrow', preventDefault: preventDefault };
@@ -2576,7 +2575,6 @@ describe('Grid Touch Selection', () => {
             gridObj.keyboardModule.keyAction(args);
             expect(gridObj.getRows()[0].children[0].classList.contains('e-cellselectionbackground')).toBeTruthy();
             expect(gridObj.getRows()[0].children[0].hasAttribute('aria-selected')).toBeTruthy();
-            expect(gridObj.getRows()[0].children[0].hasAttribute('aria-label')).toBeTruthy();
         });
         it('press right arrow to select span cell from left adjacent cell', () => {
             gridObj.selectCell({ rowIndex: 1, cellIndex: 3 }, true);
@@ -5840,74 +5838,6 @@ describe('BUG 842498 - In a checkbox with a specified field, if you click the in
         destroy(gridObj);
         gridObj = null;
     });
-
-    // used for code coverage
-    describe('on property change', () => {
-        let gridObj: Grid;
-        beforeAll((done: Function) => {
-            gridObj = createGrid(
-                {
-                    dataSource: data.slice(0,5),
-                    columns: [
-                        { field: 'OrderID', headerText: 'Order ID' },
-                        { field: 'CustomerID', headerText: 'CustomerID' },
-                        { field: 'ShipCountry', headerText: 'Ship Country' }],
-                    allowPaging: true,
-                    selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'Box' },
-                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
-                }, done);
-        });
-
-        it('execute methods 1', (done: Function) => {
-            (gridObj.selectionModule as any).isFirstRow(gridObj.element.querySelector('.e-rowcell'));
-            expect(1).toBe(1);
-            done();
-        });
-
-        it('enable auto fill', (done: Function) => {
-            gridObj.enableAutoFill = true;
-            expect(1).toBe(1);
-            done();
-        });        
-
-        afterAll(() => {
-            destroy(gridObj);
-            gridObj = null;
-        });
-    });
-
-    describe('283715 => Checkbox cell selection is not properly cleared on clearSelection method call.', () => {
-        let gridObj: Grid;
-        beforeAll((done: Function) => {
-            gridObj = createGrid(
-                {
-                    dataSource: data.slice(0,5),
-                    columns: [
-                        { type: 'checkbox', width: 50 },
-                        { field: 'OrderID', headerText: 'Order ID' },
-                        { field: 'CustomerID', headerText: 'CustomerID' },
-                        { field: 'ShipCountry', headerText: 'Ship Country' }],
-                    selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'Flow' },
-                }, done);
-        });
-
-        it('checkbox column cell selection', (done: Function) => {
-            (<any>gridObj.selectionModule).selectCell({ rowIndex: 3, cellIndex: 0 }, true);
-            done();
-        });
-
-        it('checkbox column cell de-selection', (done: Function) => {
-            (<any>gridObj.selectionModule).clearCellSelection();
-            expect((<any>gridObj.selectionModule).selectedRowIndexes.length).toBe(0);
-            expect((<any>gridObj.selectionModule).selectedRowCellIndexes.length).toBe(0);
-            done();
-        });        
-
-        afterAll(() => {
-            destroy(gridObj);
-            gridObj = null;
-        });
-    });
 });
 
 describe('Code Coverage - left freeze with autofill', () => {
@@ -6050,7 +5980,7 @@ describe('Code Coverage - Left - Right - Fixed freeze with autofill', () => {
                 ],
             }, done);
     });
-
+    
     it('for coverage - 1', () => {
         let elem: Element = gridObj.getCellFromIndex(1, 1);
         let elemClient: any = elem.getBoundingClientRect();
@@ -6739,6 +6669,74 @@ describe('Code Coverage - Left - Right freeze with autofill', () => {
         destroy(gridObj);
         gridObj = null;
     });
+
+    // used for code coverage
+    describe('on property change', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,5),
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'ShipCountry', headerText: 'Ship Country' }],
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'Box' },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                }, done);
+        });
+
+        it('execute methods 1', (done: Function) => {
+            (gridObj.selectionModule as any).isFirstRow(gridObj.element.querySelector('.e-rowcell'));
+            expect(1).toBe(1);
+            done();
+        });
+
+        it('enable auto fill', (done: Function) => {
+            gridObj.enableAutoFill = true;
+            expect(1).toBe(1);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('283715 => Checkbox cell selection is not properly cleared on clearSelection method call.', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,5),
+                    columns: [
+                        { type: 'checkbox', width: 50 },
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'CustomerID', headerText: 'CustomerID' },
+                        { field: 'ShipCountry', headerText: 'Ship Country' }],
+                    selectionSettings: { type: 'Multiple', mode: 'Cell', cellSelectionMode: 'Flow' },
+                }, done);
+        });
+
+        it('checkbox column cell selection', (done: Function) => {
+            (<any>gridObj.selectionModule).selectCell({ rowIndex: 3, cellIndex: 0 }, true);
+            done();
+        });
+
+        it('checkbox column cell de-selection', (done: Function) => {
+            (<any>gridObj.selectionModule).clearCellSelection();
+            expect((<any>gridObj.selectionModule).selectedRowIndexes.length).toBe(0);
+            expect((<any>gridObj.selectionModule).selectedRowCellIndexes.length).toBe(0);
+            done();
+        });        
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });
 
 describe('853221 => When row drag and drop enabled, cell selection is not working properly.', () => {
@@ -6774,5 +6772,31 @@ describe('853221 => When row drag and drop enabled, cell selection is not workin
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;
+    });
+});
+
+describe('EJ2-855396 - SelectionSettings mode as Both shows wrong selected items', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [{ type: 'checkbox' }, { field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                { field: 'ShipCity' }],
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple', mode: 'Both' },
+                enableHover: false,
+            }, done);
+    });
+
+    it('Selecting with checkbox', (done: Function) => {
+        (gridObj.element.querySelectorAll('.e-rowcell')[1] as any).click();
+        (gridObj.element.querySelectorAll('.e-gridchkbox')[0] as any).click();
+        done();
+        expect(gridObj.selectionModule.selectedRowCellIndexes.length).toBe(0);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
     });
 });

@@ -167,8 +167,8 @@ describe('Freeze render module', () => {
         });
     });
 
-     // used for code coverage
-     describe('Freeze Row with virtualization', () => {
+    // used for code coverage
+    describe('Freeze Row with virtualization', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {
             gridObj = createGrid(

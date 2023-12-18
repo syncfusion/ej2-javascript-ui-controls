@@ -75,6 +75,15 @@ export interface ViewsModel {
     allowVirtualScrolling?: boolean;
 
     /**
+     * Specifies the maximum number of events to be displayed in a single row.
+     * This property is applicable when the 'rowAutoHeight' property is disabled.
+     * This property is only applicable for the month view, timeline views, and timeline year view.
+     *
+     * @default null
+     */
+    maxEventsPerRow?: number;
+
+    /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the
      *  month date cells.
      *  This template is only applicable for month view day cells.

@@ -130,9 +130,10 @@ describe('Diagram Control', () => {
             shape.activity.task.type = 'Manual';
             diagram.dataBind();
             let node = (diagram.nodes[5].wrapper.children[0] as Canvas).children[0] as Canvas;
-            expect(node.children[1].width === 20 && node.children[1].height === 20
+            console.log("Manual");
+            console.log(node.children[1].width, node.children[1].height ,shape.activity.task.type );
+            expect(node.children[1].width === 16 && node.children[1].height === 11
                  && shape.activity.task.type === 'Manual').toBe(true);
-                 console.log(' Send to Manual');
             done();
         });
         it('Checking before, after,  BPMN shape as Activity with Task and task Type as None', (done: Function) => {

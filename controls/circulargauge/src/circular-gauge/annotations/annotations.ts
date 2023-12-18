@@ -3,7 +3,7 @@ import { Axis, Annotation } from '../axes/axis';
 import { getTemplateFunction, getElement, stringToNumber, getFontStyle, getLocationFromAngle, GaugeLocation, removeElement } from '../utils/helper-common';
 import { IAnnotationRenderEventArgs } from '../model/interface';
 import { annotationRender } from '../model/constants';
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, Animation, AnimationOptions } from '@syncfusion/ej2-base';
 
 /**
  * Annotation Module handles the Annotation of the axis.
@@ -32,7 +32,7 @@ export class Annotations {
     public renderAnnotation(axis: Axis, index: number, gauge: CircularGauge): void {
         const width: number = gauge.availableSize.width;
         const element: HTMLElement = createElement('div', {
-            id: gauge.element.id + '_Annotations_' + index
+            id: gauge.element.id + '_Annotations_' + index, styles: gauge.allowLoadingAnimation ? 'opacity: 0' : 'opacity: 1'
         });
         const parentElement: Element = getElement(gauge.element.id + '_Secondary_Element');
         if (!isNullOrUndefined(document.getElementById(gauge.element.id + '_Secondary_Element'))) {
@@ -48,6 +48,49 @@ export class Annotations {
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (gauge as any).renderReactTemplates();
+    }
+
+    /**
+     * Method to annotation animation for circular gauge.
+     *
+     * @param {CircularGauge} gauge - Specifies the instance of gauge.
+     * @returns {void}
+     * @private
+     */
+    public annotationAnimation(gauge: CircularGauge): void {
+        for (let i: number = 0; i < gauge.axes.length; i++) {
+            const element: Element = document.getElementById(gauge.element.id + '_Annotations_' + i);
+            if (!isNullOrUndefined(element)) {
+                if (element['style']['opacity'] === '0') {
+                    this.annotationAnimate(element, gauge, i);
+                }
+            }
+        }
+    }
+
+    /**
+     * Method to annotation animation for circular gauge.
+     *
+     * @param {Element} element - Specifies the element.
+     * @param {CircularGauge} gauge - Specifies the instance of gauge.
+     * @returns {void}
+     */
+    private annotationAnimate(element: Element, gauge: CircularGauge, axisIndex: number): void {
+        let tempOpacity: number = 0;
+        const opacity: number = 1;
+        new Animation({}).animate(<HTMLElement>element, {
+            duration: gauge.loadingAnimationDuration[axisIndex as number],
+            progress: (args: AnimationOptions): void => {
+                if (args.timeStamp > args.delay) {
+                    tempOpacity = ((args.timeStamp - args.delay) / args.duration);
+                    element['style']['opacity'] = (opacity * tempOpacity);
+                }
+            },
+            end: (): void => {
+                element['style']['opacity'] = opacity;
+                gauge.isOverAllAnimationComplete = true;
+            }
+        });
     }
 
     /**

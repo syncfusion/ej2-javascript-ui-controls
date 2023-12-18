@@ -456,7 +456,7 @@ export class FormFields {
         let signatureFields: any[] = this.signatureFieldCollection;
         let collectionData: any = this.pdfViewer.formFieldCollections;
         if (signatureFields.length === 0) {
-            signatureFields =  this.pdfViewerBase.signatureModule.getSignField();
+            signatureFields = this.pdfViewerBase.signatureModule.getSignField();
         }
         // eslint-disable-next-line
         let currentField: any;
@@ -586,6 +586,7 @@ export class FormFields {
             }
         }
     }
+
     /**
      * @private
      */
@@ -669,7 +670,7 @@ export class FormFields {
             let fieldProperties: any = {
                 bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'], tooltip: currentData['ToolTip'],
                 value: currentData['Text'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline,
-                isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'],insertSpaces: currentData['InsertSpaces'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible === 1 ? "hidden" : "visible", font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false, pageIndex : currentData['PageIndex'], isTransparent : currentData['IsTransparent'], rotationAngle : currentData['RotationAngle'],signatureType : currentData['SignatureType'] ? currentData['SignatureType'] : "", signatureIndicatorSettings : currentData['SignatureIndicatorSettings'], zIndex: currentData['zIndex'] }
+                isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'],insertSpaces: currentData['InsertSpaces'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible === 1 ? "hidden" : "visible", font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }, pageIndex : currentData['PageIndex'], isTransparent : currentData['IsTransparent'], rotationAngle : currentData['RotationAngle'],signatureType : currentData['SignatureType'] ? currentData['SignatureType'] : "", signatureIndicatorSettings : currentData['SignatureIndicatorSettings'], zIndex: currentData['zIndex']
             };
             if (currentData.Name === 'DropDown' || currentData.Name === 'ListBox') {
                 fieldProperties.value = currentData['SelectedValue']
@@ -697,7 +698,7 @@ export class FormFields {
             name: this.retriveFieldName(formField), id: formField.uniqueID, isReadOnly: formField.IsReadonly, isRequired: formField.IsRequired, isSelected: type === 'CheckBox' ? false : formField.Selected,
             isChecked: type === 'RadioButton' ? false : formField.Selected, type: type, value: type === 'ListBox' || type === 'DropDown' ? formField.SelectedValue : formField.Value, fontName: formField.FontFamily ? formField.FontFamily : '', pageIndex: formField.PageIndex, pageNumber: formField.PageIndex + 1, isMultiline: formField.isMultiline ? formField.isMultiline : formField.Multiline, insertSpaces: formField.insertSpaces ? formField.insertSpaces : formField.InsertSpaces, isTransparent: formField.isTransparent ? formField.isTransparent : formField.IsTransparent, rotateAngle: formField.rotateAngle ? formField.rotateAngle : formField.RotationAngle,
             selectedIndex: formField.selectedIndex ? formField.selectedIndex : formField.SelectedList, options: formField.options ? formField.options : formField.TextList ? formField.TextList : [],
-            signatureType: formField.signatureType, zIndex: formField.zIndex, tooltip: formField.tooltip ? formField.tooltip : formField.ToolTip ? formField.ToolTip : "", signatureIndicatorSettings: formField.signatureIndicatorSettings ? formField.signatureIndicatorSettings : ""
+            signatureType: formField.signatureType ? formField.signatureType : "", zIndex: formField.zIndex, tooltip: formField.tooltip ? formField.tooltip : formField.ToolTip ? formField.ToolTip : "", signatureIndicatorSettings: formField.signatureIndicatorSettings ? formField.signatureIndicatorSettings : ""
         };
         this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.findIndex(el => el.id === formFieldCollection.id)] = formFieldCollection;
     }
@@ -1114,7 +1115,7 @@ export class FormFields {
                             // eslint-disable-next-line
                             if (this.pdfViewer.signatureFitMode === 'Default') {
                                 // eslint-disable-next-line
-                                let signatureBounds: any =  this.pdfViewerBase.signatureModule.updateSignatureAspectRatio(currentValue, false, currentField);
+                                let signatureBounds: any = this.pdfViewerBase.signatureModule.updateSignatureAspectRatio(currentValue, false, currentField);
                                 // eslint-disable-next-line
                                 bounds = this.getSignBounds(currentIndex, rotateAngle, currentPage, zoomvalue, currentLeft, currentTop, signatureBounds.width, signatureBounds.height, true);
                                 bounds.x = bounds.x + signatureBounds.left;
@@ -1194,7 +1195,7 @@ export class FormFields {
             }
         }
         let annot: PdfAnnotationBaseModel;
-        if (this.pdfViewer.signatureFitMode === 'Default'){
+        if (this.pdfViewer.signatureFitMode === 'Default'){            
                 let padding = Math.min(bounds.height /this. paddingDifferenceValue, bounds.width / this.paddingDifferenceValue);
                 let maxHeight = bounds.height - padding;
                 let maxWidth = bounds.width - padding;
@@ -1438,7 +1439,7 @@ export class FormFields {
         let currentTarget: any = event.target;
         this.updateDataInSession(currentTarget);
     }
-
+    
     /**
      * @param target
      * @param signaturePath

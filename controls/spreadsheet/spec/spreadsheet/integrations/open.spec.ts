@@ -8,8 +8,8 @@ describe('Open & Save ->', () => {
     describe('public method ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
-                openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
-                saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save', sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                openUrl: 'https://services.syncfusion.com/js/production/api/spreadsheet/open',
+                saveUrl: 'https://services.syncfusion.com/js/production/api/spreadsheet/save', sheets: [{ ranges: [{ dataSource: defaultData }] }],
                 beforeSave: (args: any) => { args.isFullPost = false }
             }, done);
         });
@@ -19,15 +19,16 @@ describe('Open & Save ->', () => {
         it('Open', (done: Function) => {
             fetch('https://cdn.syncfusion.com/scripts/spreadsheet/Sample.xlsx').then((response) => {
                 response.blob().then((data: Blob) => {
-                    const file: File = new File([data], "Sample.xlsx");
+                    const file: File = new File([data], 'Sample.xlsx');
                     helper.invoke('open', [{ file: file }]);
-                    setTimeout(() => { // check this now
-                        // expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"isLocked":true,"style":{"fontWeight":"Bold","textAlign":"Center","verticalAlign":"Middle"},"value":"Customer Name"}');
-                        // expect(JSON.stringify(helper.getInstance().sheets[0].rows[30].cells[5])).toBe('{"format":"$#,##0.00","formula":"=SUM(F2:F30)","isLocked":true,"style":{"fontWeight":"Bold"},"value":"282501.5"}');
-                        // expect(helper.getInstance().sheets[0].columns[0].width).toBe(180);
-                        // expect(helper.invoke('getCell', [0, 1]).textContent).toBe('Model');
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.openComplete = () => {
+                        const sheet: SheetModel = helper.invoke('getActiveSheet');
+                        expect(JSON.stringify(sheet.rows[0].cells[0])).toBe('{"style":{"fontWeight":"Bold","textAlign":"Center","verticalAlign":"Middle"},"value":"Customer Name"}');
+                        expect(JSON.stringify(sheet.rows[30].cells[5])).toBe('{"format":"$#,##0.00","formula":"=SUM(F2:F30)","style":{"fontWeight":"Bold"}}');
+                        expect(sheet.columns[0].width).toBe(180);
                         done();
-                    }, 1500);
+                    }
                 });
             });
         });
@@ -56,8 +57,8 @@ describe('Open & Save ->', () => {
     describe('Save method ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
-                openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
-                saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save', sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                openUrl: 'https://services.syncfusion.com/js/production/api/spreadsheet/open',
+                saveUrl: 'https://services.syncfusion.com/js/production/api/spreadsheet/save', sheets: [{ ranges: [{ dataSource: defaultData }] }]
             }, done);
         });
         afterAll(() => {
@@ -134,7 +135,7 @@ describe('EJ2-56416 ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
     beforeAll((done: Function) => {
         helper.initializeSpreadsheet({
-            openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
+            openUrl: 'https://services.syncfusion.com/js/production/api/spreadsheet/open',
             sheets: [{ ranges: [{ dataSource: defaultData }] }],
             beforeOpen: (args: BeforeOpenEventArgs) => { args.cancel = true }
         }, done);

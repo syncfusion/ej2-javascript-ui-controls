@@ -91,7 +91,7 @@ $schedule-current-time-nrml-font-size: $text-xxs !default;
 $schedule-current-time-bgr-font-size: $text-xs !default;
 $schedule-current-time-bgr-device-font-size: $text-xs !default;
 $schedule-time-scale-width: 85px !default;
-$schedule-device-time-scale-width: 35px !default;
+$schedule-device-time-scale-width: 60px !default;
 $schedule-header-date-line-height: unset !default;
 $schedule-header-padding-top: $schedule-header-cells-padding !default;
 
@@ -201,7 +201,11 @@ $schedule-device-event-popup-subject-padding: 12px 24px !default;
 $schedule-bgr-event-popup-header-icon-size: 2em !default;
 $schedule-multiple-event-popup-icon-bg-color: transparent !default;
 $schedule-multiple-event-popup-icon-color: $schedule-primary-content-font-color !default;
-$schedule-multiple-event-popup-subject-padding: 0 5px 0 8px !default;
+$schedule-multiple-event-popup-subject-padding: 1px 5px !default;
+$schedule-multiple-event-popup-icon-height: 35px !default;
+$schedule-multiple-event-popup-icon-font-size: 14px !default;
+$schedule-bgr-multiple-event-popup-subject-padding: 1px 5px !default;
+$schedule-bgr-multiple-event-popup-icon-height: 30px !default;
 
 $schedule-event-box-shadow-1: $shadow-xl !default;
 $schedule-event-box-shadow-2: $shadow-md !default;

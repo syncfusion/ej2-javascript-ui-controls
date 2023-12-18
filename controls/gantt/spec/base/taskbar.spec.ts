@@ -5,7 +5,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Gantt, IQueryTaskbarInfoEventArgs } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
 import { baselineData, resourceData, projectData } from './data-source.spec';
-import { createGantt, destroyGantt } from './gantt-util.spec';
+import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 describe('Gantt taskbar rendering', () => {
     describe('Gantt taskbar rendering actions', () => {
         let ganttObj: Gantt;
@@ -994,6 +994,249 @@ describe('Style not applied for the collapsed row when the virtual scroll is ena
     it('Style not applied for the collapsed row when the virtual scroll is enabled', () => {
         ganttObj.ganttChartModule.expandCollapseAll('collapse');
         expect((ganttObj.element.querySelector('.' + cls.childTaskBarInnerDiv) as HTMLElement).style.backgroundColor).toBe('rgb(242, 210, 189)');
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});
+describe('Manual parent does not render properly', () => {
+    let ganttObj: Gantt;
+    let taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'Progress': '40','Duration':0 ,'isManual': true},
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+                allowSorting: true,
+                enableContextMenu: true,
+                height: '450px',
+                allowSelection: true,
+                selectedRowIndex:2,
+                highlightWeekends: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    dependency: 'Predecessor',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Custom',
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' },
+                        { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowRowDragAndDrop: true,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                allowFiltering: true,
+                columns: [
+                    { field: 'TaskID', visible: true },
+                    { field: 'TaskName' },
+                    { field: 'isManual' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' }
+                ],
+                validateManualTasksOnLinking: true,
+                treeColumnIndex: 1,
+                allowReordering: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                gridLines: "Both",
+                showColumnMenu: true,
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: '${Progress}%'
+                },
+                projectStartDate: new Date('02/20/2017'),
+                projectEndDate: new Date('03/30/2017')
+            }, done);
+    });
+    it('Convert manual milestone to parent task', () => {
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.requestType === 'refresh'){
+               expect(ganttObj.currentViewData[0].ganttProperties.width).toBe(33);
+            }
+        }
+        ganttObj.indent();
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});
+describe('parent drag for custom task mode', () => {
+    let ganttObj: Gantt;
+    let taskModeData = [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'Progress': '40','Duration':0 ,'isManual': true},
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+            ]
+        },
+        {
+            'TaskID': 4,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'Progress': '40','Duration':0 ,'isManual': true}
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: taskModeData,
+                allowSorting: true,
+                enableContextMenu: true,
+                height: '450px',
+                allowSelection: true,
+                selectedRowIndex:2,
+                highlightWeekends: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    dependency: 'Predecessor',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Custom',
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowRowDragAndDrop: true,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                allowFiltering: true,
+                columns: [
+                    { field: 'TaskID', visible: true },
+                    { field: 'TaskName' },
+                    { field: 'isManual' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' }
+                ],
+                validateManualTasksOnLinking: true,
+                treeColumnIndex: 1,
+                allowReordering: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                gridLines: "Both",
+                showColumnMenu: true,
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: '${Progress}%'
+                },
+                projectStartDate: new Date('02/20/2017'),
+                projectEndDate: new Date('03/30/2017')
+            }, done);
+    });
+    it('Convert manual milestone to parent task', () => {
+            ganttObj.taskbarEditing = (args: any) => {
+                expect(args.taskBarEditAction).toBe('ParentDrag');
+                args.cancel = true;
+            };
+            ganttObj.dataBind();
+            ganttObj.dataBind();
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
     });
     afterAll(() => {
         destroyGantt(ganttObj);

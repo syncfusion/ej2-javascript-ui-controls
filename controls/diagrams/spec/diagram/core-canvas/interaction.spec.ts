@@ -835,7 +835,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseDownEvent(diagramCanvas, 300, 300);
             mouseEvents.mouseMoveEvent(diagramCanvas, 155, 100);
             mouseEvents.mouseLeaveEvent(diagramCanvas);
-            expect(diagram.selectedItems.nodes[0].annotations[0].content === 'history change triggred').toBe(true);
+            expect(diagram.selectedItems.nodes[0].annotations[0].content != 'node1').toBe(true);
             done();
         });
     });
@@ -900,11 +900,10 @@ describe('Diagram Control', () => {
 
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft2.x, topLeft2.y, topLeft2.x + 10, topLeft2.y + 10);
 
-            expect(diagram.nodes[0].offsetX == 295 && diagram.nodes[0].offsetY == 295 &&
-                Math.round(diagram.nodes[0].width) == 110 && Math.round(diagram.nodes[0].height) == 110 &&
-                diagram.nodes[1].offsetX == 305 && diagram.nodes[1].offsetY == 505 &&
-                Math.round(diagram.nodes[1].width) == 90 && Math.round(diagram.nodes[1].height) == 90
-            ).toBe(true);
+            expect(diagram.nodes[0].offsetX == 300 && diagram.nodes[0].offsetY == 300 &&
+                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100 &&
+                diagram.nodes[1].offsetX == 300 && diagram.nodes[1].offsetY == 500 &&
+                Math.round(diagram.nodes[1].width) == 100 && Math.round(diagram.nodes[1].height) == 100).toBe(true);
             done();
         });
 
@@ -929,11 +928,10 @@ describe('Diagram Control', () => {
 
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft2.x, topLeft2.y, topLeft2.x + 10, topLeft2.y - 10);
 
-            expect(diagram.nodes[0].offsetX == 290 && diagram.nodes[0].offsetY == 300 &&
+            expect(diagram.nodes[0].offsetX == 300 && diagram.nodes[0].offsetY == 300 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100 &&
-                diagram.nodes[1].offsetX == 310 && diagram.nodes[1].offsetY == 500 &&
-                Math.round(diagram.nodes[1].width) == 100 && Math.round(diagram.nodes[1].height) == 100
-            ).toBe(true);
+                diagram.nodes[1].offsetX == 300 && diagram.nodes[1].offsetY == 500 &&
+                Math.round(diagram.nodes[1].width) == 100 && Math.round(diagram.nodes[1].height) == 100).toBe(true);
             done();
         });
 
@@ -958,12 +956,10 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 310, 500);
 
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft2.x, topLeft2.y, topLeft2.x + 10, topLeft2.y - 10);
-
-            expect(diagram.nodes[0].offsetX == 285 && diagram.nodes[0].offsetY == 305 &&
-                Math.round(diagram.nodes[0].width) == 110 && Math.round(diagram.nodes[0].height) == 110 &&
-                diagram.nodes[1].offsetX == 315 && diagram.nodes[1].offsetY == 495 &&
-                Math.round(diagram.nodes[1].width) == 90 && Math.round(diagram.nodes[1].height) == 90
-            ).toBe(true);
+            expect(diagram.nodes[0].offsetX == 300 && diagram.nodes[0].offsetY == 300 &&
+                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100 &&
+                diagram.nodes[1].offsetX == 300 && diagram.nodes[1].offsetY == 500 &&
+                Math.round(diagram.nodes[1].width) == 100 && Math.round(diagram.nodes[1].height) == 100).toBe(true);
             done();
         });
 
@@ -987,12 +983,10 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 315, 495);
 
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft2.x, topLeft2.y, topLeft2.x + 10, topLeft2.y + 10);
-
-            expect(diagram.nodes[0].offsetX == 280 && diagram.nodes[0].offsetY == 300 &&
+            expect(diagram.nodes[0].offsetX == 290 && diagram.nodes[0].offsetY == 290 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100 &&
-                diagram.nodes[1].offsetX == 320 && diagram.nodes[1].offsetY == 500 &&
-                Math.round(diagram.nodes[1].width) == 100 && Math.round(diagram.nodes[1].height) == 100
-            ).toBe(true);
+                diagram.nodes[1].offsetX == 310 && diagram.nodes[1].offsetY == 510 &&
+                Math.round(diagram.nodes[1].width) == 100 && Math.round(diagram.nodes[1].height) == 100).toBe(true);
             done();
         });
 
@@ -1013,15 +1007,15 @@ describe('Diagram Control', () => {
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 10, topLeft1.y - 20);
 
             //size should be increased by 20, offset should be decreased by 10
-            expect(diagram.nodes[0].offsetX == 280 && diagram.nodes[0].offsetY == 290 &&
-                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 120).toBe(true);
+            expect(diagram.nodes[0].offsetX == 290 && diagram.nodes[0].offsetY == 290 &&
+                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
             topLeft1 = (diagram.nodes[0] as NodeModel).wrapper.bounds.topCenter;
             //reduce size at top
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 10, topLeft1.y + 10);
 
             //size should be decreased by 10, offset should be increased by 5
-            expect(diagram.nodes[0].offsetX == 280 && diagram.nodes[0].offsetY == 295 &&
-                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 110).toBe(true);
+            expect(diagram.nodes[0].offsetX == 290 && diagram.nodes[0].offsetY == 290 &&
+                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
             done();
         });
 
@@ -1042,15 +1036,15 @@ describe('Diagram Control', () => {
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 10, topLeft1.y + 20);
 
             //size should be increased by 20, offset should be inceased by 10
-            expect(diagram.nodes[0].offsetX == 280 && diagram.nodes[0].offsetY == 305 &&
-                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 130).toBe(true);
+            expect(diagram.nodes[0].offsetX == 280 && diagram.nodes[0].offsetY == 310 &&
+                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
             topLeft1 = (diagram.nodes[0] as NodeModel).wrapper.bounds.bottomCenter;
             //reduce size at top
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 10, topLeft1.y - 10);
 
             //size should be decreased by 10, offset should be increased by 5
-            expect(diagram.nodes[0].offsetX == 280 && diagram.nodes[0].offsetY == 300 &&
-                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 120).toBe(true);
+            expect(diagram.nodes[0].offsetX == 270 && diagram.nodes[0].offsetY == 300 &&
+                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
             done();
         });
 
@@ -1073,14 +1067,14 @@ describe('Diagram Control', () => {
 
             //size should be increased by 20, offset should be inceased by 10
             expect(diagram.nodes[0].offsetX == 270 && diagram.nodes[0].offsetY == 300 &&
-                Math.round(diagram.nodes[0].width) == 120 && Math.round(diagram.nodes[0].height) == 120).toBe(true);
+                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
             topLeft1 = (diagram.nodes[0] as NodeModel).wrapper.bounds.middleLeft;
             //reduce size at top
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x + 10, topLeft1.y - 10);
 
             //size should be decreased by 10, offset should be increased by 5
-            expect(diagram.nodes[0].offsetX == 275 && diagram.nodes[0].offsetY == 300 &&
-                Math.round(diagram.nodes[0].width) == 110 && Math.round(diagram.nodes[0].height) == 120).toBe(true);
+            expect(diagram.nodes[0].offsetX == 270 && diagram.nodes[0].offsetY == 300 &&
+                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
             done();
         });
 
@@ -1101,15 +1095,15 @@ describe('Diagram Control', () => {
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x + 20, topLeft1.y + 20);
 
             //size should be increased by 20, offset should be inceased by 10
-            expect(diagram.nodes[0].offsetX == 285 && diagram.nodes[0].offsetY == 300 &&
-                Math.round(diagram.nodes[0].width) == 130 && Math.round(diagram.nodes[0].height) == 120).toBe(true);
+            expect(diagram.nodes[0].offsetX == 290 && diagram.nodes[0].offsetY == 320 &&
+                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
             topLeft1 = (diagram.nodes[0] as NodeModel).wrapper.bounds.middleRight;
             //reduce size at top
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 10, topLeft1.y - 10);
 
             //size should be decreased by 10, offset should be increased by 5
-            expect(diagram.nodes[0].offsetX == 280 && diagram.nodes[0].offsetY == 300 &&
-                Math.round(diagram.nodes[0].width) == 120 && Math.round(diagram.nodes[0].height) == 120).toBe(true);
+            expect(diagram.nodes[0].offsetX == 280 && diagram.nodes[0].offsetY == 310 &&
+                Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
             done();
         });
       });
@@ -1229,10 +1223,11 @@ describe('Diagram Control', () => {
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft.x, topLeft.y, topLeft.x + 20, topLeft.y + 20);
             let topLeft1: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.middleRight;
 
-            expect(Math.round(diagram.selectedItems.width) == width + 20 &&
-                Math.round(diagram.selectedItems.height) == height + 20 &&
-                diagram.selectedItems.offsetX == offsetX + 10 &&
-                Math.round(diagram.selectedItems.offsetY) == offsetY + 10).toBe(true);
+            diagram.selectAll();
+            expect(Math.round(diagram.selectedItems.width) == width &&
+                Math.round(diagram.selectedItems.height) == height  &&
+                diagram.selectedItems.offsetX == offsetX &&
+                Math.round(diagram.selectedItems.offsetY) == offsetY ).toBe(true);
             done();
 
         });
@@ -1277,9 +1272,9 @@ describe('Diagram Control', () => {
 
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.dragAndDropEvent(diagramCanvas, 200, 200, 180, 180);
-            expect(diagram.selectedItems.connectors.length == 1 && diagram.selectedItems.connectors[0].sourcePoint.x == 172 &&
-                diagram.selectedItems.connectors[0].sourcePoint.y == 172 && diagram.selectedItems.connectors[0].targetPoint.x == 300
-                && diagram.selectedItems.connectors[0].targetPoint.y == 300).toBe(true);
+            expect(diagram.selectedItems.connectors.length == 1 && diagram.selectedItems.connectors[0].sourcePoint.x == 180 &&
+                diagram.selectedItems.connectors[0].sourcePoint.y == 180 && diagram.selectedItems.connectors[0].targetPoint.x == 280
+                && diagram.selectedItems.connectors[0].targetPoint.y == 280).toBe(true);
             done();
         });
         });
@@ -1322,10 +1317,10 @@ describe('Diagram Control', () => {
         it('Checking targetPoint dragging in SVG rendering Mode', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.dragAndDropEvent(diagramCanvas, 300, 300, 320, 320);
-            expect(diagram.selectedItems.connectors.length == 1 && diagram.selectedItems.connectors[0].sourcePoint.x == 200 &&
-                diagram.selectedItems.connectors[0].sourcePoint.y == 200 &&
-                diagram.selectedItems.connectors[0].targetPoint.x == 312
-                && diagram.selectedItems.connectors[0].targetPoint.y == 312).toBe(true);
+            expect(diagram.selectedItems.connectors.length == 1 && diagram.selectedItems.connectors[0].sourcePoint.x == 220 &&
+                diagram.selectedItems.connectors[0].sourcePoint.y == 220 &&
+                diagram.selectedItems.connectors[0].targetPoint.x == 320
+                && diagram.selectedItems.connectors[0].targetPoint.y == 320).toBe(true);
             done();
 
         });

@@ -202,7 +202,6 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         return text;
     }
 
-
     private renderCanvas(options?: OverviewModel): void {
         let canvas: HTMLElement = document.getElementById(this.element.id + '_canvas');
         if (!canvas) {
@@ -216,7 +215,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
                 ';style:-ms-touch-action: none;touch-action: none;'
         };
         setAttributeHtml(canvas, attribute);
-        this.element.setAttribute('tabindex', String(0));
+        this.element.setAttribute('tabindex', String(-1));
         this.element.style.overflow = 'hidden';
         this.element.style.height = String(this.model.height);
         this.element.style.width = String(this.model.width);
@@ -732,7 +731,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
     public updateView(view: Overview): void {
         //let width: number; let height: number;
         const bounds: Rect = this.parent.scroller.getPageBounds();
-        // Bug 851571: Overview with html node is not updated properly when we zoom-out the diagram.
+       // Bug 851571: Overview with html node is not updated properly when we zoom-out the diagram.
         // Below transformWidth calculation is removed.
         const width: number = bounds.width;
         const height: number = bounds.height;

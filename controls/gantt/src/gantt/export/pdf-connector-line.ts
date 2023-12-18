@@ -39,8 +39,14 @@ export class PdfGanttPredecessor {
     }
     public findindex(num: number) {
         var dataindex: number;
-        this.parent.currentViewData.map((data, index) => { if (data.index == num) { dataindex = index } })
-        return dataindex
+        if (!this.parent.enableVirtualization) {
+            this.parent.currentViewData.map((data, index) => { if (data.index == num) { dataindex = index } })
+            return dataindex;
+        }
+        else {
+            this.parent.flatData.map((data, index) => { if (data.index == num) { dataindex = index } })
+            return dataindex;
+        }
     }
     /**
      * Calculate the predecesor line point and draw the predecessor
@@ -155,10 +161,12 @@ export class PdfGanttPredecessor {
             }
             break;
         }
+        const midPointManualparent :number = Math.round((this.parent.rowHeight - 15) / 2.0);
         const midPointforTaskbar: number = Math.round((this.parent.rowHeight - 1) / 2.0);
         const midPointforBaseline: number = Math.round((this.parent.rowHeight - 10) / 2.0);
-        let midPoint = this.parent.renderBaseline ? midPointforBaseline : midPointforTaskbar;
+        let midPoint = this.parent.renderBaseline ? midPointforBaseline :((!parentTask.isAutoSchedule && parentTask.isParentTask) || (!childTask.isAutoSchedule && childTask.isParentTask) )? midPointManualparent: midPointforTaskbar;
         midPoint = pixelToPoint(midPoint);
+        
         /* eslint-disable-next-line */
         let point1, point2, point3, point4, point5, point6: PointF;
         point1 = point2 = point3 = point4 = point5 = point6 = new PointF();
@@ -166,16 +174,35 @@ export class PdfGanttPredecessor {
         const childTaskpoint: PointF = { ...childTask.taskStartPoint };
         parentY = parentTaskpoint.y + parentPageData.startPoint.y;
         childY = childTaskpoint.y + childPageData.startPoint.y;
-        const ffpoint1: PointF = new PointF(pixelToPoint(this.parentLeft + this.parentWidth), parentY + midPoint);
-        const sspoint1: PointF = new PointF(pixelToPoint(this.parentLeft) - 1, parentY + midPoint);
-        const ffpoint3: PointF = new PointF(pixelToPoint(this.childLeft - 20), childY + midPoint);
-        const ffpoint4: PointF = new PointF(pixelToPoint(this.childLeft - 6 - this.lineWidth) - 1, childY + midPoint);
-        const sspoint4: PointF = new PointF(pixelToPoint(this.childLeft + this.childWidth + 6 + this.lineWidth) + 1, childY + midPoint);
+        let ffpoint1: PointF;
+        let sspoint1: PointF;
+        let ffpoint3: PointF;
+        let ffpoint4: PointF;
+        let sspoint4: PointF;
+        if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+            ffpoint1 = new PointF((this.parentLeft + this.parentWidth), parentY + midPoint);
+            sspoint1 = new PointF((this.parentLeft) - 1, parentY + midPoint);
+            ffpoint3 = new PointF((this.childLeft - 20), childY + midPoint);
+            ffpoint4 = new PointF((this.childLeft - 6 - this.lineWidth) - 1, childY + midPoint);
+            sspoint4 = new PointF((this.childLeft + this.childWidth + 6 + this.lineWidth) + 1, childY + midPoint);
+        }
+        else {
+            ffpoint1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth), parentY + midPoint);
+            sspoint1 = new PointF(pixelToPoint(this.parentLeft) - 1, parentY + midPoint);
+            ffpoint3 = new PointF(pixelToPoint(this.childLeft - 20), childY + midPoint);
+            ffpoint4 = new PointF(pixelToPoint(this.childLeft - 6 - this.lineWidth) - 1, childY + midPoint);
+            sspoint4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 6 + this.lineWidth) + 1, childY + midPoint);
+        }
         switch (predecessorType) {
         case 'FSType1':
         case 'FSType3':
             point1 = ffpoint1;
-            point2 = new PointF(pixelToPoint(this.childLeft - 20), parentY + midPoint);
+            if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+                point2 = new PointF((this.childLeft - 20), parentY + midPoint);
+            }
+            else {
+                point2 = new PointF(pixelToPoint(this.childLeft - 20), parentY + midPoint);
+            }
             point3 = ffpoint3;
             point4 = ffpoint4;
             this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);               break;
@@ -183,7 +210,12 @@ export class PdfGanttPredecessor {
             point1 = ffpoint1;
             point2 = new PointF(point1.x + 10, parentY + midPoint);
             point3 = new PointF(point1.x + 10, childY + 2);
-            point4 = new PointF(pixelToPoint(this.childLeft - 20), childY + 2);
+            if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+                point4 = new PointF((this.childLeft - 20), childY + 2);
+            }
+            else {
+                point4 = new PointF(pixelToPoint(this.childLeft - 20), childY + 2);
+            }
             point5 = ffpoint3;
             point6 = ffpoint4;
             this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
@@ -192,23 +224,40 @@ export class PdfGanttPredecessor {
             point1 = ffpoint1;
             point2 = new PointF(point1.x + 10, parentY + midPoint);
             point3 = new PointF(point1.x + 10, parentY + 2);
-            point4 = new PointF(pixelToPoint(this.childLeft - 20), parentY + 2);
+            if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+                point4 = new PointF((this.childLeft - 20), parentY + 2);
+            }
+            else {
+                point4 = new PointF(pixelToPoint(this.childLeft - 20), parentY + 2);
+            }
             point5 = ffpoint3;
             point6 = ffpoint4;
             this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
             break;
         case 'FFType1':
         case 'FFType3':
-            point1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
-            point2 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + midPoint);
+            if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+                point1 = new PointF((this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
+                point2 = new PointF((this.childLeft + this.childWidth + 20), parentY + midPoint);
+            }
+            else {
+                point1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
+                point2 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + midPoint);
+            }
             point3 = new PointF(point2.x, childY + midPoint);
             point4 = sspoint4;
             this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
             break;
         case 'FFType2':
         case 'FFType4':
-            point1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
-            point2 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth + 20), parentY + midPoint);
+            if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+                point1 = new PointF((this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
+                point2 = new PointF((this.parentLeft + this.parentWidth + 20), parentY + midPoint);
+            }
+            else {
+                point1 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth) + 1, parentY + midPoint);
+                point2 = new PointF(pixelToPoint(this.parentLeft + this.parentWidth + 20), parentY + midPoint);
+            }
             point3 = new PointF(point2.x, childY + midPoint);
             point4 = sspoint4;
             this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
@@ -216,7 +265,12 @@ export class PdfGanttPredecessor {
         case 'SSType1':
         case 'SSType3':
             point1 = sspoint1;
-            point2 = new PointF(pixelToPoint(this.childLeft - 20), parentY + midPoint);
+            if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+                point2 = new PointF((this.childLeft - 20), parentY + midPoint);
+            }
+            else {
+                point2 = new PointF(pixelToPoint(this.childLeft - 20), parentY + midPoint);
+            }
             point3 = new PointF(point2.x, childY + midPoint);
             point4 = ffpoint4;
             this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
@@ -224,7 +278,12 @@ export class PdfGanttPredecessor {
         case 'SSType2':
         case 'SSType4':
             point1 = sspoint1;
-            point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+            if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+                point2 = new PointF((this.parentLeft - 20), parentY + midPoint);
+            }
+            else {
+                point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+            }
             point3 = new PointF(point2.x, childY + midPoint);
             point4 = ffpoint4;
             this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
@@ -232,25 +291,42 @@ export class PdfGanttPredecessor {
         case 'SFType1':
         case 'SFType3':
             point1 = sspoint1;
-            point2 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + midPoint);
+            if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+                point2 = new PointF((this.childLeft + this.childWidth + 20), parentY + midPoint);
+            }
+            else {
+                point2 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + midPoint);
+            }
             point3 = new PointF(point2.x, childY + midPoint);
             point4 = sspoint4;
             this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint);
             break;
         case 'SFType2':
             point1 = sspoint1;
-            point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+            if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+                point2 = new PointF((this.parentLeft - 20), parentY + midPoint);
+                point4 = new PointF((this.childLeft + this.childWidth + 20), childY + 2);
+            }
+            else {
+                point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+                point4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), childY + 2);
+            }
             point3 = new PointF(point2.x, childY + 2);
-            point4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), childY + 2);
             point5 = new PointF(point4.x, childY + midPoint);
             point6 = sspoint4;
             this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
             break;
         case 'SFType4':
             point1 = sspoint1;
-            point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+            if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+                point2 = new PointF((this.parentLeft - 20), parentY + midPoint);
+                point4 = new PointF((this.childLeft + this.childWidth + 20), parentY + 2);
+            }
+            else {
+                point2 = new PointF(pixelToPoint(this.parentLeft - 20), parentY + midPoint);
+                point4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + 2);
+            }
             point3 = new PointF(point2.x, parentY + 2);
-            point4 = new PointF(pixelToPoint(this.childLeft + this.childWidth + 20), parentY + 2);
             point5 = new PointF(point4.x, childY + midPoint);
             point6 = sspoint4;
             this.connectLines(startPage, endPage, point1, point2, point3, point4, childTask, midPoint, point5, point6);
@@ -398,10 +474,19 @@ export class PdfGanttPredecessor {
         const pdfPages: PdfPage[] = page.section.getPages() as PdfPage[];
         const width: number = 6 + this.lineWidth;
         let point2: PointF;
-        if (this.type === 'FS' || this.type === 'SS') {
-            startPoint = new PointF(pixelToPoint(this.childLeft) - 1, childTask.taskStartPoint.y + pageData.startPoint.y);
-        } else {
-            startPoint = new PointF(pixelToPoint(this.childLeft + this.childWidth) + 1, childTask.taskStartPoint.y + pageData.startPoint.y);
+        if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+            if (this.type === 'FS' || this.type === 'SS') {
+                startPoint = new PointF((this.childLeft) - 1, childTask.taskStartPoint.y + pageData.startPoint.y);
+            } else {
+                startPoint = new PointF((this.childLeft + this.childWidth) + 1, childTask.taskStartPoint.y + pageData.startPoint.y);
+            }
+        }
+        else {
+            if (this.type === 'FS' || this.type === 'SS') {
+                startPoint = new PointF(pixelToPoint(this.childLeft) - 1, childTask.taskStartPoint.y + pageData.startPoint.y);
+            } else {
+                startPoint = new PointF(pixelToPoint(this.childLeft + this.childWidth) + 1, childTask.taskStartPoint.y + pageData.startPoint.y);
+            }
         }
         const startPointCheck: boolean = this.contains(pageRect, startPoint.x, startPoint.y);
         if (!startPointCheck) {
@@ -415,14 +500,31 @@ export class PdfGanttPredecessor {
         startPoint.x = startPoint.x - pageData.startPoint.x + pageData.pageStartX;
         startPoint.y = startPoint.y - pageData.startPoint.y;
         const point1: PointF = new PointF(startPoint.x, startPoint.y + midPoint);
-        if (this.type === 'FS' || this.type === 'SS') {
-            point2 = new PointF(point1.x - pixelToPoint(width), point1.y - pixelToPoint(width));
-        } else {
-            point2 = new PointF(point1.x + pixelToPoint(width), point1.y - pixelToPoint(width));
+        if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+            if (this.type === 'FS' || this.type === 'SS') {
+                point2 = new PointF(point1.x - (width), point1.y - (width));
+            } else {
+                point2 = new PointF(point1.x + (width), point1.y - (width));
+            }
         }
-        const point3: PointF = new PointF(point2.x, point2.y + pixelToPoint(2 * width));
+        else {
+            if (this.type === 'FS' || this.type === 'SS') {
+                point2 = new PointF(point1.x - pixelToPoint(width), point1.y - pixelToPoint(width));
+            } else {
+                point2 = new PointF(point1.x + pixelToPoint(width), point1.y - pixelToPoint(width));
+            }
+        }
         const brush: PdfBrush = new PdfSolidBrush(this.connectorLineColor);
-        const predecessorPen: PdfPen = new PdfPen(brush, pixelToPoint(this.lineWidth));
+        let point3: PointF;
+        let predecessorPen: PdfPen;
+        if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+            point3 = new PointF(point2.x, point2.y + (2 * width));
+            predecessorPen = new PdfPen(brush, (this.lineWidth));
+        }
+        else {
+            point3 = new PointF(point2.x, point2.y + pixelToPoint(2 * width));
+            predecessorPen = new PdfPen(brush, pixelToPoint(this.lineWidth));
+        }
         graphics.drawLine(predecessorPen, point1, point2);
         graphics.drawLine(predecessorPen, point2, point3);
         graphics.drawLine(predecessorPen, point3, point1);

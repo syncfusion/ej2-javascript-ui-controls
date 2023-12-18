@@ -48,6 +48,12 @@
           background: $tab-item-hover-bg;
         }
 
+        &.e-active {
+          @if ($skin-name == 'Bootstrap5') {
+            background: $tab-item-active-bg;
+          }
+        }
+
         &.e-active:hover {
           background: $tab-item-active-hover-bg;
         }

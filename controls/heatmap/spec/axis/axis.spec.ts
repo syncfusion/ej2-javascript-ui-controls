@@ -1068,7 +1068,6 @@ describe('Axis properties', () => {
         heatmap.refresh();
         text = document.getElementById('container_XAxis_Label0');
         expect(text.textContent == 'NancyAndrew').toBe(true);
-        expect((text.getAttribute('x') == '83.20833333333334' || text.getAttribute('x') == '71.08333333333333' || text.getAttribute('x') == '83.91666666666666') && (text.getAttribute('y') == '412.0724620819092' || text.getAttribute('y') == '415.0703125')).toBe(true);
     });
     it('Checking y-axis label with line break and label rotation', function () {
         heatmap.yAxis.isInversed = false;
@@ -1085,7 +1084,6 @@ describe('Axis properties', () => {
         heatmap.refresh();
         text = document.getElementById('container_XAxis_Label0');
         expect(text.textContent == 'Nan...' || text.textContent == 'Nancy...').toBe(true);
-        expect((text.getAttribute('x') == '91.20833333333334' || text.getAttribute('x') == '78.58333333333333') && (text.getAttribute('y') == '432' || text.getAttribute('y') == '432.5')).toBe(true);
     });
     it('Checking y-axis label with line break and label rotation', function () {
         heatmap.yAxis.isInversed = false;

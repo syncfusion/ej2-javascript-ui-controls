@@ -210,7 +210,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking pointer value with aria-label', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('gauge_Axis_0_Pointer_Needle_0');
+                svg = document.getElementById('gauge_Axis_0_Pointer_0');
                 expect(svg.getAttribute('aria-label')).toBe('Pointer:60');
                 done();
             };

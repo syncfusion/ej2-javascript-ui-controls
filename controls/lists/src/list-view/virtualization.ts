@@ -1,6 +1,5 @@
 import { ListView, ItemCreatedArgs, classNames, Fields, UISelectedItem } from './list-view';
 import { EventHandler, append, isNullOrUndefined, detach, compile, formatUnit, select } from '@syncfusion/ej2-base';
-import { debounce } from '@syncfusion/ej2-base';
 import { ListBase } from '../common/list-base';
 import { DataManager } from '@syncfusion/ej2-data';
 
@@ -204,7 +203,7 @@ export class Virtualization {
     private onVirtualUiScroll(e: Event): void {
         let startingHeight: number;
         const curViewDS: { [key: string]: object; }[] = this.listViewInstance.curViewDS as { [key: string]: object; }[];
-        this.listItemHeight = select(".e-list-item", this.listViewInstance.element).getBoundingClientRect().height;
+        this.listItemHeight = select('.e-list-item', this.listViewInstance.element).getBoundingClientRect().height;
         this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
         if (this.listViewInstance.isWindow) {
             startingHeight = this.listViewInstance.ulElement.getBoundingClientRect().top -
@@ -561,7 +560,6 @@ export class Virtualization {
         const curViewDS: DataSource[] = this.listViewInstance.curViewDS;
         // eslint-disable-next-line
         const resutJSON: { [key: string]: any | number } = this.findDSAndIndexFromId(curViewDS, obj);
-        // eslint-disable-next-line
         if (Object.keys(resutJSON).length) {
             dataSource = resutJSON.data as DataSource;
             if (curViewDS[(resutJSON.index as number) - 1] &&
@@ -815,7 +813,7 @@ export class Virtualization {
                 this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index + 2]);
         }
         if (this.listViewInstance.fields.groupBy && this.listViewInstance.curViewDS[index + 1] && this.listViewInstance.curViewDS[index + 1].isHeader) {
-            let targetEle: HTMLElement = this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index - 1]);
+            const targetEle: HTMLElement = this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index - 1]);
             if (targetEle) {
                 target = targetEle.nextElementSibling as HTMLElement;
             }
@@ -832,7 +830,7 @@ export class Virtualization {
     }
 
     public createUIItem(args: ItemCreatedArgs): void {
-        if (!args.item.classList.contains("e-list-group-item")) {
+        if (!args.item.classList.contains('e-list-group-item')) {
             this.templateData = args.curData.isHeader ? (args.curData as { [key: string]: any[]; }).items[0] as DataSource :
                 args.curData;
             if (this.listViewInstance.showCheckBox) {
@@ -890,7 +888,6 @@ export class Virtualization {
     }
 
     private updateUI(element: HTMLElement, index: number, targetElement?: HTMLElement): void {
-        // eslint-disable-next-line @typescript-eslint/ban-types
         const onChange: Function = this.isNgTemplate() ? this.onNgChange : this.onChange;
         if (this.listViewInstance.template || this.listViewInstance.groupTemplate) {
             const curViewDS: DataSource = (this.listViewInstance.curViewDS as DataSource[])[index as number];
@@ -916,10 +913,9 @@ export class Virtualization {
      * @param {Virtualization} virtualThis - The virtualization context for the list view.
      */
     private onChange(newData: DataSource, listElement: ElementContext, virtualThis: Virtualization): void {
-        let liItem: HTMLElement[] = ListBase.createListItemFromJson(virtualThis.listViewInstance.createElement,
+        const liItem: HTMLElement[] = ListBase.createListItemFromJson(virtualThis.listViewInstance.createElement,
             // eslint-disable-next-line
-            [newData] as any,
-            virtualThis.listViewInstance.listBaseOption, null, null, virtualThis.listViewInstance);
+            [newData] as any, virtualThis.listViewInstance.listBaseOption, null, null, virtualThis.listViewInstance);
         if (virtualThis.listViewInstance.isReact) {
             virtualThis.listViewInstance.renderReactTemplates();
         }
@@ -933,7 +929,6 @@ export class Virtualization {
 
     private onNgChange(newData: DataSource, listElement: ElementContext, virtualThis: Virtualization): void {
         // compile given target element with template for new data
-        // eslint-disable-next-line
         const templateCompiler: Function = compile(virtualThis.listViewInstance.template);
         const resultElement: NodeList = templateCompiler(newData);
         while (listElement.lastChild) {
@@ -956,3 +951,4 @@ export class Virtualization {
 interface DataSource {
     [key: string]: object;
 }
+

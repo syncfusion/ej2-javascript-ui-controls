@@ -6,7 +6,7 @@
  */
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LegendOptions, BaseLegend } from '../../common/legend/legend';
-import { LegendShape } from '../../chart/utils/enum';
+import { LegendShape } from '../../common/utils/enum';
 import { Range } from '../model/bullet-base';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
 import { textTrim, ChartLocation} from '../../common/utils/helper';

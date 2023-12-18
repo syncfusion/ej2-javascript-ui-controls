@@ -1,5 +1,5 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, NotifyArgs, IRenderer, ImageSuccessEventArgs, ICssClassArgs } from '../base/interface';
+import { IRichTextEditor, NotifyArgs, IRenderer, ImageSuccessEventArgs, ICssClassArgs, CleanupResizeElemArgs } from '../base/interface';
 import { PasteCleanupArgs } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
@@ -151,7 +151,10 @@ export class PasteCleanup {
             const tempDivElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
             tempDivElem.innerHTML = value;
             const isValueNotEmpty: boolean = tempDivElem.textContent !== '' || !isNOU(tempDivElem.querySelector('img')) ||
-                !isNOU(tempDivElem.querySelector('table'));
+            !isNOU(tempDivElem.querySelector('table'));
+            this.parent.trigger(events.cleanupResizeElements, {value: value} as CleanupResizeElemArgs, (args: CleanupResizeElemArgs) => {
+                value = args.value;
+            });
             if (this.parent.pasteCleanupSettings.prompt) {
                 if (isValueNotEmpty) {
                     (e.args as ClipboardEvent).preventDefault();
@@ -586,7 +589,7 @@ export class PasteCleanup {
             isHeight = true;
         }
         this.dialogObj.show();
-        this.setCssClass({cssClass: this.parent.cssClass});
+        this.setCssClass({cssClass: this.parent.getCssClass()});
     }
 
     private updateCss(currentObj: Dialog | Uploader | RadioButton, e: ICssClassArgs) : void {

@@ -6,7 +6,7 @@ import {
     RectangleF, PdfTextAlignment, PdfBorderOverlapStyle, PointF, PdfDashStyle,
     PdfLineCap, PdfSolidBrush, PdfStandardFont, PdfTrueTypeFont
 } from '@syncfusion/ej2-pdf-export';
-import { SizeF, PdfBrush, PdfPen, PdfFontStyle, PdfFont, PdfGraphics } from '@syncfusion/ej2-pdf-export';
+import { SizeF, PdfBrush, PdfPen, PdfFontStyle, PdfFont, PdfGraphics, PdfBitmap, PdfImage, PdfTextWebLink } from '@syncfusion/ej2-pdf-export';
 import { PdfStringFormat, PdfStringLayouter, PdfStringLayoutResult } from '@syncfusion/ej2-pdf-export';
 import { pointToPixel, pixelToPoint } from '../../base/utils';
 
@@ -237,6 +237,19 @@ export class PdfTreeGridCell {
                 graphics.drawString(this.remainingString, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, this.style.format);
             }
             result = graphics.stringLayoutResult;
+        }
+        else if (this.value instanceof PdfImage || this.value instanceof PdfBitmap) {
+            let imageBounds: any;
+            if (this.value.width <= innerLayoutArea.width) {
+                imageBounds = new RectangleF(innerLayoutArea.x, innerLayoutArea.y, this.value.width, innerLayoutArea.height);
+            }
+            else {
+                imageBounds = innerLayoutArea;
+            }
+            graphics.drawImage(this.value, imageBounds.x, imageBounds.y - 10, imageBounds.width, imageBounds.height);
+        }
+        else if (this.value instanceof PdfTextWebLink) {
+            this.value.draw(graphics.currentPage, innerLayoutArea);
         }
         if (this.style.borders != null) {
             this.drawCellBorder(graphics, bounds);

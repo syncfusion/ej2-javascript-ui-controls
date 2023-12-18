@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { IRowRenderer, ICellRenderer, CellRenderArgs, isImported } from '../common/index';
+import { IRowRenderer, ICellRenderer, CellRenderArgs, isImported, deInitProperties } from '../common/index';
 import { getRowHeight, SheetModel, getCell, isHiddenRow, isHiddenCol } from '../../workbook/base/index';
 import { attributes } from '@syncfusion/ej2-base';
 import { getCellAddress, getCellIndexes, skipHiddenIdx } from '../../workbook/common/index';
@@ -13,11 +13,13 @@ export class RowRenderer implements IRowRenderer {
     private parent: Spreadsheet;
     private element: HTMLTableRowElement;
     private cellRenderer: ICellRenderer;
+    private bottomBorderWidth: number;
 
     constructor(parent?: Spreadsheet) {
         this.parent = parent;
         this.element = this.parent.createElement('tr') as HTMLTableRowElement;
         this.cellRenderer = parent.serviceLocator.getService<ICellRenderer>('cell');
+        this.parent.on(deInitProperties, this.initProps, this);
     }
 
     public render(index?: number, isRowHeader?: boolean, preventHiddenCls?: boolean): Element {
@@ -31,13 +33,23 @@ export class RowRenderer implements IRowRenderer {
         attributes(row, { 'aria-rowindex': (index + 1).toString() });
         const rowHeight: number = getRowHeight(sheet, index, true);
         row.style.height = `${rowHeight}px`;
-        if (rowHeight < 20 ) {
-            row.style.lineHeight =  rowHeight > 1 ? (rowHeight - 1) + 'px' : rowHeight + 'px';
+        const actualRowHgt: number = getRowHeight(sheet, index);
+        if (!this.bottomBorderWidth) {
+            let width: number = 1;
+            if (window.devicePixelRatio % 1 > 0) {
+                const pointValue: number = (1 * window.devicePixelRatio) % 1;
+                width = 1 + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
+            } 
+            this.bottomBorderWidth = width;
+        }
+        if (actualRowHgt < 20) {
+            row.style.lineHeight =  rowHeight > this.bottomBorderWidth ? (rowHeight - this.bottomBorderWidth) + 'px' : '0px';
         }
         if (isRowHeader && !preventHiddenCls) {
-            if ( rowHeight < 20 ) {
-                row.style.lineHeight = rowHeight >= 4 ? (rowHeight - 4) + 'px' :
-                    rowHeight > 0 ? (rowHeight - 1) + 'px' : '0px';
+            if (actualRowHgt < 20 ) {
+                const width: number = 4 + (this.bottomBorderWidth - 1);
+                row.style.lineHeight = rowHeight >= width ? (rowHeight - width) + 'px' :
+                    (rowHeight > this.bottomBorderWidth ? (rowHeight - this.bottomBorderWidth) + 'px' : '0px');
                 if (!row.classList.contains('e-reach-fntsize')) {
                     row.classList.add('e-reach-fntsize');
                 }
@@ -87,12 +99,17 @@ export class RowRenderer implements IRowRenderer {
         return row;
     }
 
+    private initProps(): void {
+        this.bottomBorderWidth = null;
+    }
+
     /**
      * Clears the internal properties of RowRenderer module.
      *
      * @returns {void}
      */
     public destroy(): void {
+        this.parent.off(deInitProperties, this.initProps);
         this.parent = null; this.element = null;
     }
 }

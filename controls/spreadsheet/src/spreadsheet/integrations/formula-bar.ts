@@ -70,9 +70,10 @@ export class FormulaBar {
         insertFnBtn.appendChild(this.parent.createElement('span', { className: 'e-btn-icon e-icons' }));
         this.insertFnRipple = rippleEffect(fBarWrapper, { selector: '.e-insert-function' });
         fBarWrapper.appendChild(this.parent.createElement('div', { className: 'e-separator' }));
+        const formulaBarLocale: string = l10n.getConstant('FormulaBar');
         const textarea: HTMLTextAreaElement = fBarWrapper.appendChild(this.parent.createElement('textarea', {
             className: 'e-formula-bar e-css', id: id + '_formula_input',
-            attrs: { 'title': l10n.getConstant('FormulaBar'), 'spellcheck': 'false' }
+            attrs: { 'title': formulaBarLocale, 'aria-label': formulaBarLocale, 'spellcheck': 'false' }
         })) as HTMLTextAreaElement;
         textarea.rows = 1;
         if (this.parent.isMobileView()) {
@@ -230,14 +231,7 @@ export class FormulaBar {
                                         Number(cell.value)) : dateVal;
                                     if (type === 'date') {
                                         let dateObj: { type: string, format?: string, skeleton?: string } = { type: 'date' };
-                                        // For SF-354174 ticket we have already provided 'dd/MM/yyyy' support, so we are displaying
-                                        // formula bar value in same format.
-                                        if ((cell.format === 'dd-MM-yyyy' || cell.format === 'dd/MM/yyyy') && (!this.parent.locale ||
-                                            this.parent.locale.startsWith('en'))) {
-                                            dateObj.format = 'd/M/yyyy';
-                                        } else {
-                                            dateObj.skeleton = 'yMd';
-                                        }
+                                        dateObj.skeleton = 'yMd';
                                         value = intl.formatDate(dateVal, dateObj);
                                         if (isDateTimeVal) {
                                             value += ' ' + intl.formatDate(timeVal, { type: 'dateTime', skeleton: 'hms' });
@@ -405,7 +399,7 @@ export class FormulaBar {
                 dataSource: this.categoryCollection, cssClass: 'e-ss-formula-category', index: 0, width: '285px', popupHeight: '210px',
                 select: this.dropDownSelect.bind(this),
                 open: () => categoryPopupOpen = true,
-                close: () => categoryPopupOpen = false,
+                close: () => categoryPopupOpen = false
             });
             const listArgs: { action: string, formulaCollection: string[] } = { action: 'getLibraryFormulas', formulaCollection: [] };
             this.parent.notify(workbookFormulaOperation, listArgs);

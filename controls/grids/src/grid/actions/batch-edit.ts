@@ -826,9 +826,11 @@ export class BatchEdit {
     private refreshTD(td: Element, column: Column, rowObj: Row<Column>, value: string | number | boolean | Date): void {
         const cell: CellRenderer = new CellRenderer(this.parent, this.serviceLocator);
         value = column.type === 'number' && !isNullOrUndefined(value) ? parseFloat(value as string) : value;
-        this.setChanges(rowObj, column.field, value);
-        refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
-        const rowcell: Cell<Column>[] = rowObj.cells;
+        if (rowObj) {
+            this.setChanges(rowObj, column.field, value);
+            refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
+        }
+        const rowcell: Cell<Column>[] = rowObj ? rowObj.cells : undefined;
         let parentElement: HTMLTableRowElement;
         let cellIndex: number;
         if (this.parent.isReact) {
@@ -836,8 +838,10 @@ export class BatchEdit {
             cellIndex = (td as HTMLTableCellElement).cellIndex;
         }
         const index: number = 0;
-        cell.refreshTD(
-            td, rowcell[this.getCellIdx(column.uid) - index] as Cell<Column>, rowObj.changes, { 'index': this.getCellIdx(column.uid) });
+        if (rowObj) {
+            cell.refreshTD(
+                td, rowcell[this.getCellIdx(column.uid) - index] as Cell<Column>, rowObj.changes, { 'index': this.getCellIdx(column.uid) });
+        }
         if (this.parent.isReact) {
             this.newReactTd = parentElement.cells[parseInt(cellIndex.toString(), 10)];
             parentElement.cells[parseInt(cellIndex.toString(), 10)].classList.add('e-updatedtd');
@@ -969,6 +973,7 @@ export class BatchEdit {
         const args: CellSaveArgs = this.generateCellArgs();
         const tr: Element = args.cell.parentElement;
         const col: Column = args.column;
+        args.cell.removeAttribute('aria-label');
         if (!isForceSave) {
             gObj.trigger(events.cellSave, args, this.successCallBack(args, tr, col));
             gObj.notify(events.batchForm, { formObj: this.form });
@@ -1032,9 +1037,14 @@ export class BatchEdit {
             gObj.notify(events.toolbarRefresh, {});
             this.isColored = false;
             if (this.parent.aggregates.length > 0) {
-                this.parent.notify(events.refreshFooterRenderer, {});
+                if (!(this.parent.isReact || this.parent.isVue)) {
+                    this.parent.notify(events.refreshFooterRenderer, {});
+                }
                 if (this.parent.groupSettings.columns.length > 0 && !this.isAddRow(this.cellDetails.rowIndex)) {
                     this.parent.notify(events.groupAggregates, {});
+                }
+                if (this.parent.isReact || this.parent.isVue) {
+                    this.parent.notify(events.refreshFooterRenderer, {});
                 }
             }
             this.preventSaveCell = false;
@@ -1115,6 +1125,8 @@ export class BatchEdit {
         if (this.validateFormObj()) {
             this.parent.notify(events.destroyForm, {});
             this.parent.isEdit = false;
+            this.editNext = false;
+            this.mouseDownElement = undefined;
             this.isColored = false;
         }
     }

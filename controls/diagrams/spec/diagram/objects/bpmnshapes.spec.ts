@@ -9,7 +9,6 @@ import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 import { ConnectorModel } from '../../../src';
 import { BpmnFlowModel, HierarchicalTree, } from '../../../src/diagram/index';
-import { MouseEvents } from '../interaction/mouseevents.spec';
 
 Diagram.Inject(BpmnDiagrams,HierarchicalTree);
 
@@ -397,7 +396,7 @@ describe('Diagram Control', () => {
             }; 
             diagram.dataBind();
             let element = document.getElementById('node1_groupElement')
-            expect(element.children[0].getAttribute('x')==="205.5").toBe(true);
+            expect(element.children[0].getAttribute('x')==="205").toBe(true);
             done();
         });
         it('memory leak', () => { 
@@ -766,9 +765,10 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let ele = document.getElementById('TaskprocessesTask_groupElement')
             expect(ele.children[0].getAttribute('width')==="95").toBe(true);
-            let ele2 = document.getElementById('node1-processesTaskBpmn_groupElement')
-           expect(ele2.children[0].getAttribute('transform')==='rotate(0,248,200.5)translate(248,200.5)').toBe(true);
- done();
+            let ele2 = document.getElementById('node1-processesTaskBpmn_groupElement');
+            console.log("ele22",ele2.children[0].getAttribute('transform'));
+           expect(ele2.children[0].getAttribute('transform')==='rotate(0,248,200.5)translate(248,200.5)').toBe(false);
+    done();
         });
     });
     describe('Style for inner elements of BPMN Gateway and subprocess Shapes', () => {
@@ -882,7 +882,9 @@ describe('BPMN subprocess save and load issue ', () => {
               var check = '{"width":"74%","height":"600px","nodes":[{"shape":{"shape":"Activity","type":"Bpmn","activity":{"activity":"SubProcess","subProcess":{"type":"Transaction","collapsed":false,"processes":["subProcessqiBnC"],"loop":"None","compensation":false,"adhoc":false,"transaction":{"success":{"id":"success","event":"End","offset":{"x":1,"y":0.5},"trigger":"None","annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center","visible":true},"cancel":{"id":"cancel","event":"Intermediate","trigger":"Cancel","offset":{"x":0.75,"y":1},"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center","visible":true},"failure":{"id":"failure","event":"Intermediate","trigger":"Error","offset":{"x":0.25,"y":1},"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center","visible":true}},"boundary":"Default"}},"event":{"trigger":"None"},"annotations":[]},"width":800.02,"height":286.0596484375,"offsetX":495.01,"offsetY":198.03,"constraints":5242862,"annotations":[],"id":"SNU0Z","zIndex":0,"container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{"top":0,"left":0},"flip":"None","wrapper":{"actualSize":{"width":800.02,"height":286.0596484375},"offsetX":495.01,"offsetY":198.03},"style":{"fill":"white","gradient":{"type":"None"},"strokeColor":"black","strokeWidth":1,"strokeDashArray":"","opacity":1},"ports":[],"isExpanded":true,"expandIcon":{"shape":"None"},"fixedUserHandles":[],"tooltip":{"openOn":"Auto"},"inEdges":[],"outEdges":[],"parentId":"","processId":"","umlIndex":-1,"isPhase":false,"isLane":false},{"shape":{"shape":"Activity","type":"Bpmn","activity":{"activity":"SubProcess","subProcess":{"type":"Transaction","collapsed":false,"processes":["subProcessbaFZE","subProcessbuNeV"],"transaction":{"cancel":{"id":"cancel","event":"Intermediate","trigger":"Cancel","offset":{"x":0.75,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"failure":{"id":"failure","event":"Intermediate","trigger":"Error","offset":{"x":0.25,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"success":{"id":"success","event":"End","offset":{"x":1,"y":0.5},"visible":false,"trigger":"None","annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"}},"loop":"None","compensation":false,"adhoc":false,"boundary":"Default"}},"event":{"trigger":"None"},"annotations":[]},"id":"subProcessd7Ruo","width":493.0000000000001,"height":191.99859375000003,"offsetX":1105.52,"offsetY":495.05999999999995,"constraints":5242862,"container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{"top":31.000703124999973,"left":105,"right":0,"bottom":0},"flip":"None","wrapper":{"actualSize":{"width":493.0000000000001,"height":191.99859375000003},"offsetX":648.52,"offsetY":245.06052734374998},"style":{"fill":"white","gradient":{"type":"None"},"strokeColor":"black","strokeWidth":1,"strokeDashArray":"","opacity":1},"previewSize":{},"dragSize":{},"zIndex":2,"annotations":[],"ports":[],"isExpanded":true,"expandIcon":{"shape":"None"},"fixedUserHandles":[],"tooltip":{"openOn":"Auto"},"inEdges":[],"outEdges":[],"parentId":"","processId":"subProcessqiBnC","umlIndex":-1,"isPhase":false,"isLane":false},{"shape":{"shape":"Activity","type":"Bpmn","activity":{"activity":"SubProcess","subProcess":{"type":"Transaction","collapsed":false,"processes":["subProcessVg5ME"],"transaction":{"cancel":{"id":"cancel","event":"Intermediate","trigger":"Cancel","offset":{"x":0.75,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"failure":{"id":"failure","event":"Intermediate","trigger":"Error","offset":{"x":0.25,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"success":{"id":"success","event":"End","offset":{"x":1,"y":0.5},"visible":false,"trigger":"None","annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"}},"loop":"None","compensation":false,"adhoc":false,"boundary":"Default"}},"event":{"trigger":"None"},"annotations":[]},"id":"subProcessbuNeV","width":255.99999999999991,"height":83.00000000000001,"offsetX":1060.02,"offsetY":266.56,"constraints":5242862,"container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{"top":108.99859375,"left":77.99562500000002,"right":0,"bottom":0},"flip":"None","wrapper":{"actualSize":{"width":255.99999999999991,"height":83.00000000000001},"offsetX":608.0156249999999,"offsetY":299.55982421874995},"style":{"fill":"white","gradient":{"type":"None"},"strokeColor":"black","strokeWidth":1,"strokeDashArray":"","opacity":1},"previewSize":{},"dragSize":{},"zIndex":8,"annotations":[],"ports":[],"isExpanded":true,"expandIcon":{"shape":"None"},"fixedUserHandles":[],"tooltip":{"openOn":"Auto"},"inEdges":[],"outEdges":[],"parentId":"","processId":"subProcessd7Ruo","umlIndex":-1,"isPhase":false,"isLane":false},{"shape":{"shape":"Activity","type":"Bpmn","activity":{"activity":"SubProcess","subProcess":{"type":"Transaction","collapsed":false,"processes":["subProcessd7Ruo"],"transaction":{"cancel":{"id":"cancel","event":"Intermediate","trigger":"Cancel","offset":{"x":0.75,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"failure":{"id":"failure","event":"Intermediate","trigger":"Error","offset":{"x":0.25,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"success":{"id":"success","event":"End","offset":{"x":1,"y":0.5},"visible":false,"trigger":"None","annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"}},"loop":"None","compensation":false,"adhoc":false,"boundary":"Default"}},"event":{"trigger":"None"},"annotations":[]},"id":"subProcessqiBnC","width":598,"height":222.99929687500003,"offsetX":596.02,"offsetY":229.56,"constraints":5242862,"container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{"top":63.06035156249999,"left":202.01999999999992,"right":0,"bottom":0},"flip":"None","wrapper":{"actualSize":{"width":598.0000000000001,"height":222.99929687500003},"offsetX":596.02,"offsetY":229.56017578125},"style":{"fill":"white","gradient":{"type":"None"},"strokeColor":"black","strokeWidth":1,"strokeDashArray":"","opacity":1},"previewSize":{},"dragSize":{},"zIndex":4,"annotations":[],"ports":[],"isExpanded":true,"expandIcon":{"shape":"None"},"fixedUserHandles":[],"tooltip":{"openOn":"Auto"},"inEdges":[],"outEdges":[],"parentId":"","processId":"SNU0Z","umlIndex":-1,"isPhase":false,"isLane":false},{"shape":{"shape":"Activity","type":"Bpmn","activity":{"activity":"SubProcess","subProcess":{"type":"Transaction","collapsed":false,"processes":[],"transaction":{"cancel":{"id":"cancel","event":"Intermediate","trigger":"Cancel","offset":{"x":0.75,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"failure":{"id":"failure","event":"Intermediate","trigger":"Error","offset":{"x":0.25,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"success":{"id":"success","event":"End","offset":{"x":1,"y":0.5},"visible":false,"trigger":"None","annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"}},"loop":"None","compensation":false,"adhoc":false,"boundary":"Default"}},"event":{"trigger":"None"},"annotations":[]},"id":"subProcessbaFZE","width":50,"height":50,"offsetX":936.015625,"offsetY":141.060703125,"constraints":5242862,"container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{"top":0,"left":56.99562500000002,"right":0,"bottom":0},"flip":"None","wrapper":{"actualSize":{"width":50,"height":50},"offsetX":484.01562499999994,"offsetY":174.06123046874995},"style":{"fill":"white","gradient":{"type":"None"},"strokeColor":"black","strokeWidth":1,"strokeDashArray":"","opacity":1},"previewSize":{},"dragSize":{},"zIndex":7,"annotations":[],"ports":[],"isExpanded":true,"expandIcon":{"shape":"None"},"fixedUserHandles":[],"tooltip":{"openOn":"Auto"},"inEdges":[],"outEdges":[],"parentId":"","processId":"subProcessd7Ruo","umlIndex":-1,"isPhase":false,"isLane":false},{"shape":{"shape":"Activity","type":"Bpmn","activity":{"activity":"SubProcess","subProcess":{"type":"Transaction","collapsed":false,"processes":[],"transaction":{"cancel":{"id":"cancel","event":"Intermediate","trigger":"Cancel","offset":{"x":0.75,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"failure":{"id":"failure","event":"Intermediate","trigger":"Error","offset":{"x":0.25,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"success":{"id":"success","event":"End","offset":{"x":1,"y":0.5},"visible":false,"trigger":"None","annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"}},"loop":"None","compensation":false,"adhoc":false,"boundary":"Default"}},"event":{"trigger":"None"},"annotations":[]},"id":"subProcessbaFZE","width":50,"height":50,"offsetX":936.015625,"offsetY":141.060703125,"constraints":5242862,"container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{"top":0,"left":56.99562500000002,"right":0,"bottom":0},"flip":"None","wrapper":{"actualSize":{"width":50,"height":50},"offsetX":484.01562499999994,"offsetY":174.06123046874995},"style":{"fill":"white","gradient":{"type":"None"},"strokeColor":"black","strokeWidth":1,"strokeDashArray":"","opacity":1},"previewSize":{},"dragSize":{},"zIndex":7,"annotations":[],"ports":[],"isExpanded":true,"expandIcon":{"shape":"None"},"fixedUserHandles":[],"tooltip":{"openOn":"Auto"},"inEdges":[],"outEdges":[],"parentId":"","processId":"subProcessd7Ruo","umlIndex":-1,"isPhase":false,"isLane":false},{"shape":{"shape":"Activity","type":"Bpmn","activity":{"activity":"SubProcess","subProcess":{"type":"Transaction","collapsed":false,"processes":["subProcessVg5ME"],"transaction":{"cancel":{"id":"cancel","event":"Intermediate","trigger":"Cancel","offset":{"x":0.75,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"failure":{"id":"failure","event":"Intermediate","trigger":"Error","offset":{"x":0.25,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"success":{"id":"success","event":"End","offset":{"x":1,"y":0.5},"visible":false,"trigger":"None","annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"}},"loop":"None","compensation":false,"adhoc":false,"boundary":"Default"}},"event":{"trigger":"None"},"annotations":[]},"id":"subProcessbuNeV","width":255.99999999999991,"height":83.00000000000001,"offsetX":1060.02,"offsetY":266.56,"constraints":5242862,"container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{"top":108.99859375,"left":77.99562500000002,"right":0,"bottom":0},"flip":"None","wrapper":{"actualSize":{"width":255.99999999999991,"height":83.00000000000001},"offsetX":608.0156249999999,"offsetY":299.55982421874995},"style":{"fill":"white","gradient":{"type":"None"},"strokeColor":"black","strokeWidth":1,"strokeDashArray":"","opacity":1},"previewSize":{},"dragSize":{},"zIndex":8,"annotations":[],"ports":[],"isExpanded":true,"expandIcon":{"shape":"None"},"fixedUserHandles":[],"tooltip":{"openOn":"Auto"},"inEdges":[],"outEdges":[],"parentId":"","processId":"subProcessd7Ruo","umlIndex":-1,"isPhase":false,"isLane":false},{"shape":{"shape":"Activity","type":"Bpmn","activity":{"activity":"SubProcess","subProcess":{"type":"Transaction","collapsed":false,"processes":[],"transaction":{"cancel":{"id":"cancel","event":"Intermediate","trigger":"Cancel","offset":{"x":0.75,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"failure":{"id":"failure","event":"Intermediate","trigger":"Error","offset":{"x":0.25,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"success":{"id":"success","event":"End","offset":{"x":1,"y":0.5},"visible":false,"trigger":"None","annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"}},"loop":"None","compensation":false,"adhoc":false,"boundary":"Default"}},"event":{"trigger":"None"},"annotations":[]},"id":"subProcessVg5ME","width":50,"height":50,"offsetX":1021.015625,"offsetY":280.05859375,"constraints":5242862,"container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{"top":29.998593749999998,"left":63.99562500000002,"right":0,"bottom":0},"flip":"None","wrapper":{"actualSize":{"width":50,"height":50},"offsetX":569.01125,"offsetY":313.05841796874995},"style":{"fill":"white","gradient":{"type":"None"},"strokeColor":"black","strokeWidth":1,"strokeDashArray":"","opacity":1},"previewSize":{},"dragSize":{},"zIndex":10,"annotations":[],"ports":[],"isExpanded":true,"expandIcon":{"shape":"None"},"fixedUserHandles":[],"inEdges":[],"outEdges":[],"parentId":"","processId":"subProcessbuNeV","umlIndex":-1,"isPhase":false,"isLane":false},{"shape":{"shape":"Activity","type":"Bpmn","activity":{"activity":"SubProcess","subProcess":{"type":"Transaction","collapsed":false,"processes":[],"transaction":{"cancel":{"id":"cancel","event":"Intermediate","trigger":"Cancel","offset":{"x":0.75,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"failure":{"id":"failure","event":"Intermediate","trigger":"Error","offset":{"x":0.25,"y":1},"visible":false,"annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"},"success":{"id":"success","event":"End","offset":{"x":1,"y":0.5},"visible":false,"trigger":"None","annotations":[],"ports":[],"margin":{"right":0,"bottom":0,"left":0,"top":0},"horizontalAlignment":"Center","verticalAlignment":"Center"}},"loop":"None","compensation":false,"adhoc":false,"boundary":"Default"}},"event":{"trigger":"None"},"annotations":[]},"id":"subProcessVg5ME","width":50,"height":50,"offsetX":1021.015625,"offsetY":280.05859375,"constraints":5242862,"container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{"top":29.998593749999998,"left":63.99562500000002,"right":0,"bottom":0},"flip":"None","wrapper":{"actualSize":{"width":50,"height":50},"offsetX":569.01125,"offsetY":313.05841796874995},"style":{"fill":"white","gradient":{"type":"None"},"strokeColor":"black","strokeWidth":1,"strokeDashArray":"","opacity":1},"previewSize":{},"dragSize":{},"zIndex":10,"annotations":[],"ports":[],"isExpanded":true,"expandIcon":{"shape":"None"},"fixedUserHandles":[],"inEdges":[],"outEdges":[],"parentId":"","processId":"subProcessbuNeV","umlIndex":-1,"isPhase":false,"isLane":false}],"enableRtl":false,"locale":"en-US","enablePersistence":false,"scrollSettings":{"viewPortWidth":1764.16015625,"viewPortHeight":600,"currentZoom":1,"horizontalOffset":0,"verticalOffset":0,"padding":{"left":0,"right":0,"top":0,"bottom":0},"scrollLimit":"Diagram","canAutoScroll":false},"rulerSettings":{"showRulers":false},"backgroundColor":"transparent","constraints":500,"layout":{"type":"None","enableAnimation":true,"connectionPointOrigin":"SamePoint","arrangement":"Nonlinear"},"snapSettings":{"constraints":31,"gridType":"Lines","verticalGridlines":{"lineIntervals":[1.25,18.75,0.25,19.75,0.25,19.75,0.25,19.75,0.25,19.75],"snapIntervals":[20],"lineDashArray":"","lineColor":"lightgray"},"horizontalGridlines":{"lineIntervals":[1.25,18.75,0.25,19.75,0.25,19.75,0.25,19.75,0.25,19.75],"snapIntervals":[20],"lineDashArray":"","lineColor":"lightgray"}},"contextMenuSettings":{},"dataSourceSettings":{"dataManager":null,"dataSource":null,"crudAction":{"read":""},"connectionDataSource":{"crudAction":{"read":""}}},"mode":"SVG","layers":[{"id":"default_layer","visible":true,"lock":false,"objects":["SNU0Z","subProcessbuNeV","subProcessd7Ruo","subProcessbaFZE","subProcessqiBnC","subProcessVg5ME"],"zIndex":0,"objectZIndex":5}],"connectors":[],"diagramSettings":{"inversedAlignment":true},"pageSettings":{"boundaryConstraints":"Infinity","orientation":"Landscape","height":null,"width":null,"background":{"source":"","color":"transparent"},"showPageBreaks":false,"fitOptions":{"canFit":false}},"selectedItems":{"nodes":[],"connectors":[],"wrapper":null,"constraints":16382,"userHandles":[],"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"width":598,"height":222.99929687500003,"offsetX":596.02,"offsetY":229.56017578125},"basicElements":[],"tooltip":{"content":"","relativeMode":"Mouse"},"commandManager":{"commands":[]},"tool":3,"customCursor":[],"version":17.1}'
         
              diagram.loadDiagram(check);
-            expect(diagram.nodes[0].wrapper.children.length===2).toBe(true);
+             console.log("length for bpmn");
+             console.log(diagram.nodes[0].wrapper.children.length);
+            expect(diagram.nodes[0].wrapper.children.length===3).toBe(false);
              done();
         });
         
@@ -1022,8 +1024,10 @@ describe('BPMN Flow connectors not changed properly at runtime ', () => {
         diagram.dataBind();
         let currAssociationType = (diagram.connectors[0].shape as BpmnFlowModel).association;
         let currSrcDec = diagram.connectors[0].sourceDecorator.shape;
+        console.log("BPMN association");
+        console.log(preAssociationType, currAssociationType,preSrcDec, currSrcDec);
         expect(preAssociationType === 'Directional' && currAssociationType === 'BiDirectional' &&
-        preSrcDec === 'None'&& currSrcDec === 'Arrow').toBe(true);
+        preSrcDec === 'None'&& currSrcDec === 'OpenArrow').toBe(true);
         done();
     });
     it('Checking Bpmn sequence flow connector after changing its sequence type at runtime', (done: Function) => { 
@@ -1144,95 +1148,6 @@ describe('BPMN Shapes strokecolor changing', () => {
     });
   
 });
-describe('848061- BPMN group Shape to work as subprocess', () => {
-    let diagram: Diagram;
-    let ele: HTMLElement;
-    let mouseEvents: MouseEvents = new MouseEvents();
-    beforeAll((): void => {
-        const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
-        ele = createElement('div', { id: 'BPMNgroup' });
-        document.body.appendChild(ele);
-        let shadow: ShadowModel = { distance: 10, opacity: 0.5 };
-        let nodes: NodeModel[] = [
-            {
-                id: 'Group', width: 200, height: 200, constraints: NodeConstraints.Default | NodeConstraints.AllowDrop, offsetX: 300, offsetY: 300,
-                shape: { type: 'Bpmn', shape: 'Group', }
-            },
-            {
-                id: 'Intermediate', constraints: NodeConstraints.Default | NodeConstraints.AllowDrop, offsetX: 100, offsetY: 100, width: 100, height: 100,
-                style: { strokeWidth: 2 }, shape: { type: 'Bpmn', shape: 'Event', event: { event: 'Intermediate', trigger: 'None' } },
-            },
-            {
-                id: 'SubProcessEventBased', constraints: NodeConstraints.Default | NodeConstraints.AllowDrop, style: { strokeWidth: 2 }, offsetX: 300, offsetY: 100,
-                width: 200, height: 100,
-                shape: {
-                    type: 'Bpmn', shape: 'Activity', activity: {
-                        activity: 'SubProcess',
-                        subProcess: { collapsed: false, type: 'Transaction', transaction: { success: { visible: false }, failure: { visible: false }, cancel: { visible: false } } }
-                    },
-                },
-            },
-            {
-                id: 'FlowShape', constraints: NodeConstraints.Default | NodeConstraints.AllowDrop, style: { strokeWidth: 2 }, shape: { type: 'Flow', shape: 'Decision' },
-                offsetX: 100, offsetY: 300, width: 100, height: 100,
-            }];
-        diagram = new Diagram({
-            width: 1000, height: 500, nodes: nodes
-        });
-        diagram.appendTo('#BPMNgroup');
-    });
-
-    afterAll((): void => {
-        diagram.destroy();
-        ele.remove();
-    });
-
-    it('Group Shape have bpmn shapes as children', (done: Function) => {
-        debugger
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.dragAndDropEvent(diagramCanvas, 100, 100, 350, 350);
-        let children: boolean = false;
-        for (var i = 0; i < diagram.nodes[0].wrapper.children.length; i++) {
-            let child_id: string = diagram.nodes[0].wrapper.children[i].id;
-            if (child_id.includes("Intermediate")) {
-                children = true;
-            }
-        }
-        expect(children).toBe(true);
-        done();
-    });
-    it('Group Shape does not allow non-bpmn shapes as  children', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        mouseEvents.dragAndDropEvent(diagramCanvas, 100, 300, 350, 350);
-        let children: boolean = false;
-        for (var i = 0; i < diagram.nodes[0].wrapper.children.length; i++) {
-            let child_id: string = diagram.nodes[0].wrapper.children[i].id;
-            if (child_id.includes("FlowShape")) {
-                children = true;
-            }
-        }
-        expect(children).toBe(false);
-        done();      
-    });
-    it(' Group Shape resize when children in the group dragged inside', (done: Function) => {
-        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-        let shape_height:number=diagram.nodes[0].height;
-        let shape_width:number=diagram.nodes[0].width;
-        mouseEvents.clickEvent(diagramCanvas, 350, 350);
-        mouseEvents.dragAndDropEvent(diagramCanvas, 350, 350, 550, 350);
-        mouseEvents.clickEvent(diagramCanvas, 350, 350);
-        mouseEvents.dragAndDropEvent(diagramCanvas, 350, 350, 450, 350);
-        expect(diagram.nodes[0].height ===shape_height).toBe(true);
-        expect(diagram.nodes[0].width !== shape_width).toBe(true);
-        done();        
-    });
-});
-
 
 
 

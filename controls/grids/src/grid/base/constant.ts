@@ -568,3 +568,7 @@ export const refreshFrozenPosition: string = 'refresh-Frozen-Position';
 export const refreshResizePosition: string = 'refresh-Resize-Position';
 /** @hidden */
 export const refreshSplitFrozenColumn: string = 'refresh-Split-Frozen-Column';
+/** @hidden */
+export const renderResponsiveChangeAction: string = 'render-Responsive-Change-Action';
+/** @hidden */
+export const renderResponsiveColumnChooserDiv: string = 'render-Responsive-Column-Chooser-Div';

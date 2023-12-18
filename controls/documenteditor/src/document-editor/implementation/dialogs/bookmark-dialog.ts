@@ -60,7 +60,7 @@ export class BookmarkDialog {
         this.textBoxInput.setAttribute('aria-label',localValue.getConstant('Bookmark name'));
         textBoxDiv.appendChild(this.textBoxInput);
 
-        const listviewDiv: HTMLElement = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview', attrs: { tabindex: '-1' }});
+        const listviewDiv: HTMLElement = createElement('div', { className: 'e-bookmark-listViewDiv', id: 'bookmark_listview', attrs: { tabindex: '-1', role:'listbox' }});
         listviewDiv.setAttribute('aria-label',localValue.getConstant('BookMarkList'));
         searchDiv.appendChild(listviewDiv);
         // const arts: string[] = this.documentHelper.bookmarks.keys;

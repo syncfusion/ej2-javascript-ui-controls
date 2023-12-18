@@ -194,6 +194,13 @@ describe('Split Button', () => {
         
     });
 
+    it('Refresh methods', () => {
+        document.body.appendChild(createElement('EJS-SPLITBUTTON', { id: 'angsplitbtn' }));
+        button = new SplitButton({}, '#angsplitbtn');
+        button.isAngular = true;
+        button.refresh();
+    });
+
     describe('CR issues', () => {
         afterEach(() => {
             button.destroy();

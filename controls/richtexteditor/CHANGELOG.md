@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 24.1.41 (2023-12-18)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I522154` - Now, `maxLength` property is calculated properly when pasting the content into the Rich Text Editor.
+
+- `#F185398` - Now, `Opus` and `M4a` audio formats are supported in the Rich Text Editor.
+
+- `#I526413` - Now, the `imageRemoving` event exposes the correct arguments in the Rich Text Editor.
+
+- `#I527590` - Now, pasting content from the input field pastes at the cursor point instead of a new line.
+
+- `#I511988` - Now, the `NumberFormatList` and `BulletFormatList` icons look properly and are different from each other in all the themes.
+
+- `#I528544` - Now, the image will be deleted properly, along with the caption, when the delete key is pressed.
+
+- `#I519493` - Now, font styles are applied properly to the numbered and bullet format list items in RichTextEditor.
+
+#### Breaking Changes
+
+- Now, the shortcut key to open the Insert video dialog has been changed to <kbd>CTRL+ALT+V </kbd> from <kbd>CTRL+SHIFT+V</kbd> to ensure that the Paste as plain text browser shortcut works properly.
+
 ## 23.2.7 (2023-12-05)
 
 ### RichTextEditor
@@ -16,7 +40,7 @@
 
 - `#I524361`- Now, pressing the enter key when `enterKey` is configured as `BR` and the cursor is at the start of the line works properly.
 
--`#I518641` - Now, the RichTextEditor is working properly when click the full screen toolbar icon.
+- `#I518641` - Now, the RichTextEditor is working properly when click the full screen toolbar icon.
 
 ## 23.2.6 (2023-11-28)
 

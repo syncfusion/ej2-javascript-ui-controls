@@ -77,6 +77,16 @@
         background: $gantt-active-background;
         opacity: $gantt-active-color-opacity;
       }
+
+      .e-grid{
+        td.e-active.e-leftfreeze,
+        td.e-active.e-unfreeze,
+        td.e-active.e-rightfreeze,
+        td.e-active.e-fixedfreeze{
+          background: $gantt-active-frozen-background;
+          opacity: 1;
+        }
+      }
     }
     .e-taskbar-resize-div {
       border-color: $event-marker-line-color;
@@ -602,6 +612,7 @@
     }
     .e-dlg-header {
       color: $gantt-dialog-header-font-color;
+      position: relative;
     }
 
     .e-dlg-header-content {

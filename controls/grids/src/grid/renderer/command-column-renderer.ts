@@ -22,7 +22,7 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
 
     public element: HTMLElement = this.parent.createElement('TD', {
         className: 'e-rowcell e-unboundcell', attrs: {
-            tabindex: '-1'
+            tabindex: '-1', role: 'gridcell'
         }
     });
     constructor(parent: IGrid, locator?: ServiceLocator) {
@@ -104,7 +104,7 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
     private renderButton(node: Element, buttonOption: CommandModel, index: number, uid: string): Element {
         const button: HTMLButtonElement = <HTMLButtonElement>this.buttonElement.cloneNode();
         attributes(button, {
-            'id': this.parent.element.id + (buttonOption.type || '') + '_' + index + '_' + uid, 'type': 'button',
+            'id': this.parent.element.id + (buttonOption.type || '') + '_' + index + '_' + uid, 'role': 'button',
             title: !isNullOrUndefined(buttonOption.title) ? buttonOption.title :
                 buttonOption.buttonOption.content || this.localizer.getConstant(buttonOption.type) || buttonOption.type,
             'data-uid': uid

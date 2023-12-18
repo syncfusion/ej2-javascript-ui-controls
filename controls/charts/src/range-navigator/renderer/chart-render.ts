@@ -1,6 +1,6 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-import { IntervalType } from '../../chart/utils/enum';
+import { IntervalType } from '../../common/utils/enum';
 import { firstToLowerCase, RectOption} from '../../common/utils/helper';
 import { Axis } from '../../chart/axis/axis';
 import { DateTime } from '../../chart/axis/date-time-axis';

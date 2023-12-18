@@ -5,6 +5,7 @@ import { Component } from '@syncfusion/ej2-base';
 import { DataManager, Deferred } from '@syncfusion/ej2-data';
 import { DataStateChangeEventArgs } from '../base/interface';
 import { LoadingIndicatorModel } from '../base/grid-model';
+import { IndicatorType } from '../base';
 /** @hidden */
 export interface XLColumn {
     field?: string;
@@ -12,6 +13,9 @@ export interface XLColumn {
 /** @hidden */
 export interface XLFilterSettings {
     columns?: XLColumn[];
+    enableInfiniteScrolling?: boolean;
+    itemsCount?: number;
+    loadingIndicator?: IndicatorType;
 }
 /** @hidden */
 export interface XLSearchSettings {

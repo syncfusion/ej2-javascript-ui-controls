@@ -1,6 +1,7 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfDocument, PdfPage, PdfForm, PdfTextBoxField, PdfFormFieldVisibility, PdfTextAlignment, PdfSignatureField, PdfField, PdfFreeTextAnnotation, PdfFontFamily, PdfStandardFont, PdfAnnotationFlag, PdfRubberStampAnnotation, PdfImage, PdfBitmap, PdfGraphics, PdfGraphicsState, PdfFontStyle as FontStyle, PdfCheckBoxField, PdfComboBoxField, PdfListBoxField, PdfListFieldItem, PdfRadioButtonListField, PdfRadioButtonListItem, PdfRotationAngle, PdfFontStyle, PdfFont, PdfTemplate, PdfInkAnnotation, PdfTrueTypeFont, PdfAnnotationCollection, PdfAnnotation, _PdfReference, _PdfDictionary} from '@syncfusion/ej2-pdf';
-import { PdfViewer, PdfViewerBase, ArialFontData, PageRenderer } from '../index';
+import { PdfViewer, PdfViewerBase, PageRenderer } from '../index';
+import { getArialFontData } from '../pdf-base/fontData';
 import { Rect } from '@syncfusion/ej2-drawings';
 
 /**
@@ -261,7 +262,7 @@ export class FormFieldsBase {
                                 let text: string; 
                                 if(currentField._dictionary.has('Opt')){
                                     optionArray = currentField._dictionary.get('Opt');
-                                    text = optionArray[j];
+                                    text = optionArray[parseInt(j.toString(), 10)];
                                 }else if(!isNullOrUndefined(currentField.itemAt(j))){
                                    text = currentField.itemAt(j).text;
                                 }
@@ -369,23 +370,23 @@ export class FormFieldsBase {
                             }
                             let signatureFields: PdfSignatureField = currentField as PdfSignatureField;
                             if(data.hasOwnProperty(currentFieldName + "fontName")){
-                                this.drawFieldFreeTextAnnotations(data[currentFieldName], signatureFields, currentFieldName, data[currentFieldName + "bounds"], data[currentFieldName + "fontName"], data[currentFieldName + "fontSize"])
+                                this.drawFieldFreeTextAnnotations(data[`${currentFieldName}`], signatureFields, currentFieldName, data[currentFieldName + "bounds"], data[currentFieldName + "fontName"], data[currentFieldName + "fontSize"])
                             }else if (data.hasOwnProperty(currentFieldName + "ImageData")){
-                                this.drawFieldImage(data[currentFieldName], signatureFields, currentFieldName, data[currentFieldName + "bounds"]);
+                                this.drawFieldImage(data[`${currentFieldName}`], signatureFields, currentFieldName, data[currentFieldName + "bounds"]);
                             }
                             else if(data.hasOwnProperty(currentFieldName + "bounds")){
-                                this.drawFieldPath(data[currentFieldName], signatureFields, currentFieldName, data[currentFieldName + "bounds"])
+                                this.drawFieldPath(data[`${currentFieldName}`], signatureFields, currentFieldName, data[currentFieldName + "bounds"])
                             }
                             let signatureFieldListCount: any = signatureFields.itemsCount;
                             if(signatureFieldListCount > 0){
                                 for(let k = 0; k < signatureFieldListCount; k++ ){
                                     if(data.hasOwnProperty(currentFieldName + "fontName" + "_" + k)){
-                                        this.drawFieldFreeTextAnnotations(data[currentFieldName], signatureFields, currentFieldName, data[currentFieldName + "bounds"+ "_" + k], data[currentFieldName + "fontName"+ "_" + k], data[currentFieldName + "fontSize" + "_" + k])
+                                        this.drawFieldFreeTextAnnotations(data[`${currentFieldName}`], signatureFields, currentFieldName, data[currentFieldName + "bounds"+ "_" + k], data[currentFieldName + "fontName"+ "_" + k], data[currentFieldName + "fontSize" + "_" + k])
                                     }else if (data.hasOwnProperty(currentFieldName + "ImageData" + "_"+ k)){
-                                        this.drawFieldImage(data[currentFieldName], signatureFields, currentFieldName, data[currentFieldName + "bounds" + "_" + k]);
+                                        this.drawFieldImage(data[`${currentFieldName}`], signatureFields, currentFieldName, data[currentFieldName + "bounds" + "_" + k]);
                                     }
                                     else if(data.hasOwnProperty(currentFieldName + "bounds"+ "_"+ k)){
-                                        this.drawFieldPath(data[currentFieldName], signatureFields, currentFieldName, data[currentFieldName + "bounds" + "_" + k])
+                                        this.drawFieldPath(data[`${currentFieldName}`], signatureFields, currentFieldName, data[currentFieldName + "bounds" + "_" + k])
                                     } 
                                 }
                             }
@@ -496,7 +497,7 @@ export class FormFieldsBase {
         for (let i: number = 0; i < formFieldAttributes.option.length; i++) {
             const item: PdfListFieldItem = new PdfListFieldItem(formFieldAttributes.option[parseInt(i.toString(), 10)].itemName, formFieldAttributes.option[parseInt(i.toString(), 10)].itemValue);
             comboBox.addItem(item);
-            const flag: boolean = /[^\u0000-\u007F]/.test(formFieldAttributes.option[i].itemName);
+            const flag: boolean = /[^\u0000-\u007F]/.test(formFieldAttributes.option[parseInt(i.toString(), 10)].itemName);
             if (flag)
             {
                 hasUnicode = true;
@@ -576,7 +577,7 @@ export class FormFieldsBase {
         for (let i: number = 0; i < formFieldAttributes.option.length; i++) {
             const item: PdfListFieldItem = new PdfListFieldItem(formFieldAttributes.option[parseInt(i.toString(), 10)].itemName, formFieldAttributes.option[parseInt(i.toString(), 10)].itemValue);
             listBox.addItem(item);
-            const unicode: boolean = /[^\u0000-\u007F]/.test(formFieldAttributes.option[i].itemName);
+            const unicode: boolean = /[^\u0000-\u007F]/.test(formFieldAttributes.option[parseInt(i.toString(), 10)].itemName);
             if (unicode)
             {
                 hasUnicode = true;
@@ -824,7 +825,7 @@ export class FormFieldsBase {
             let maximumY: number = -1;
 
             for (let p = 0; p < stampObjects.length; p++) {
-                const value = stampObjects[p];
+                const value = stampObjects[parseInt(p.toString(), 10)];
                 if (minimumX == -1) {
                     minimumX = value.x;
                     minimumY = value.y;
@@ -855,7 +856,7 @@ export class FormFieldsBase {
             let isNewValues = 0;
             if (pageRotationAngle !== 0) {
                 for (let j = 0; j < stampObjects.length; j++) {
-                    const value = stampObjects[j];
+                    const value = stampObjects[parseInt(j.toString(), 10)];
                     let path: any = value.command.toString();
 
                     if (path == "M" && j !== 0) {
@@ -867,13 +868,13 @@ export class FormFieldsBase {
                 }
                 linePoints = [];
                 for (let z = 0; z < stampObjects.length; z++) {
-                    const value = stampObjects[z];
+                    const value = stampObjects[parseInt(z.toString(), 10)];
                     linePoints.push(((parseFloat(value.x) - minimumX) / newDifferenceX) + left);
                     linePoints.push(this.formFieldLoadedDocument.getPage(pageNumber).size[1] - ((parseFloat(value.y) - minimumY) / newDifferenceY) - top);
                 }
             } else {
                 for (let k = 0; k < stampObjects.length; k++) {
-                    const value = stampObjects[k];
+                    const value = stampObjects[parseInt(k.toString(), 10)];
                     let path: any = value.command.toString();
 
                     if (path == "M" && k !== 0) {
@@ -896,7 +897,7 @@ export class FormFieldsBase {
             if (pageRotationAngle !== 0) {
                 let pathCollection: any[] = [];
                 for (var t = isNewValues; t < stampObjects.length; t++) {
-                    const value = stampObjects[t];
+                    const value = stampObjects[parseInt(t.toString(), 10)];
                     let path: any = value.command.toString();
                     if (path === "M" && t !== isNewValues) {
                         pathCollection.push(linePoints);
@@ -909,11 +910,11 @@ export class FormFieldsBase {
                     pathCollection.push(linePoints);
                 }
                 for (let w = 0; w < pathCollection.length; w++) {
-                    let pointsCollections: any = pathCollection[w];
+                    let pointsCollections: any = pathCollection[parseInt(w.toString(), 10)];
                     linePoints = [];
                     if (pointsCollections.length > 0) {
                         for (let z = 0; z < stampObjects.length; z++) {
-                            const value = stampObjects[z];
+                            const value = stampObjects[parseInt(z.toString(), 10)];
                             linePoints.push(((parseFloat(value.x) - minimumX) / newDifferenceX) + left);
                             linePoints.push(this.formFieldLoadedDocument.getPage(pageNumber).size[1] - ((parseFloat(value.y) - minimumY) / newDifferenceY) - top);
                         }
@@ -923,7 +924,7 @@ export class FormFieldsBase {
                 }
             } else {
                 for (let r = 0; r < stampObjects.length; r++) {
-                    const value = stampObjects[r];
+                    const value = stampObjects[parseInt(r.toString(), 10)];
                     let path: any = value.command.toString();
 
                     if (path == "M" && r !== 0) {
@@ -967,7 +968,7 @@ export class FormFieldsBase {
     }
 
     private getTrueFont( fontSize: number, fontStyle: PdfFontStyle): PdfFont{
-        let font: PdfFont = new PdfTrueTypeFont(ArialFontData, this.convertPixelToPoint(fontSize), fontStyle)
+        let font: PdfFont = new PdfTrueTypeFont(getArialFontData(), this.convertPixelToPoint(fontSize), fontStyle)
         return font;
     }
 
@@ -1314,7 +1315,7 @@ export class FormFieldsBase {
         formFields.TextList = [];
         if (comboBoxField._dictionary.has('Opt')) {
             let options: string[] = comboBoxField._dictionary.get('Opt');
-            if (options.length > 0) {
+            if(options.length > 0){
                 formFields.TextList = options.map(item => (typeof item === "string" ? item : (typeof item === "object" ? item[0] : "")));
             }
         }
@@ -1382,7 +1383,7 @@ export class FormFieldsBase {
             formFields.Value = value;
         }
         if (!isNullOrUndefined(checkBoxIndex)) {
-            formFields.CheckboxIndex = checkBoxIndex;
+            formFields.CheckBoxIndex = checkBoxIndex;
             let chekckboxField: any = chkField.itemAt(parseInt(checkBoxIndex));
             if (!isNullOrUndefined(chekckboxField)) {
                 formFields.Selected = chekckboxField.checked;
@@ -1601,7 +1602,7 @@ export class FormFieldsBase {
             let maximumX: number = -1;
             let maximumY: number = -1;
             for (let p = 0; p < stampObjects.length; p++) {
-                const value = stampObjects[p];
+                const value = stampObjects[parseInt(p.toString(), 10)];
                 if (minimumX == -1) {
                     minimumX = value.x;
                     minimumY = value.y;
@@ -1632,7 +1633,7 @@ export class FormFieldsBase {
             let isNewValues = 0;
             if (rotationAngle !== 0) {
                 for (let j = 0; j < stampObjects.length; j++) {
-                    const value = stampObjects[j];
+                    const value = stampObjects[parseInt(j.toString(), 10)];
                     let path: any = value.command.toString();
 
                     if (path == "M" && j !== 0) {
@@ -1644,13 +1645,13 @@ export class FormFieldsBase {
                 }
                 linePoints = [];
                 for (let z = 0; z < stampObjects.length; z++) {
-                    const value = stampObjects[z];
+                    const value = stampObjects[parseInt(z.toString(), 10)];
                     linePoints.push(((parseFloat(value.x) - minimumX) / newDifferenceX) + left);
                     linePoints.push(this.formFieldLoadedDocument.getPage(pageNumber).size[1] - ((parseFloat(value.y) - minimumY) / newDifferenceY) - top);
                 }
             } else {
                 for (let k = 0; k < stampObjects.length; k++) {
-                    const value = stampObjects[k];
+                    const value = stampObjects[parseInt(k.toString(), 10)];
                     let path: any = value.command.toString();
 
                     if (path == "M" && k !== 0) {
@@ -1673,7 +1674,7 @@ export class FormFieldsBase {
             if (rotationAngle !== 0) {
                 let pathCollection: any[] = [];
                 for (var t = isNewValues; t < stampObjects.length; t++) {
-                    const value = stampObjects[t];
+                    const value = stampObjects[parseInt(t.toString(), 10)];
                     let path: any = value.command.toString();
                     if (path === "M" && t !== isNewValues) {
                         pathCollection.push(linePoints);
@@ -1686,11 +1687,11 @@ export class FormFieldsBase {
                     pathCollection.push(linePoints);
                 }
                 for (let w = 0; w < pathCollection.length; w++) {
-                    let pointsCollections: any = pathCollection[w];
+                    let pointsCollections: any = pathCollection[parseInt(w.toString(), 10)];
                     linePoints = [];
                     if (pointsCollections.length > 0) {
                         for (let z = 0; z < stampObjects.length; z++) {
-                            const value = stampObjects[z];
+                            const value = stampObjects[parseInt(z.toString(), 10)];
                             linePoints.push(((parseFloat(value.x) - minimumX) / newDifferenceX) + left);
                             linePoints.push(this.formFieldLoadedDocument.getPage(pageNumber).size[1] - ((parseFloat(value.y) - minimumY) / newDifferenceY) - top);
                         }
@@ -1700,7 +1701,7 @@ export class FormFieldsBase {
                 }
             } else {
                 for (let r = 0; r < stampObjects.length; r++) {
-                    const value = stampObjects[r];
+                    const value = stampObjects[parseInt(r.toString(), 10)];
                     let path: any = value.command.toString();
 
                     if (path == "M" && r !== 0) {
@@ -1790,21 +1791,21 @@ export class FormFieldsBase {
                         let annotColor = inkAnnot.color;
                         if (!isNullOrUndefined(inkAnnot.inkPointsCollection)) {
                             for (let m = 0; m < inkAnnot.inkPointsCollection.length; m++) {
-                                let inkList = inkAnnot.inkPointsCollection[m];
+                                let inkList = inkAnnot.inkPointsCollection[parseInt(m.toString(), 10)];
                                 for (let k = 0; k < inkList.length; k += 2) {
                                     let x: number;
                                     let y: number;
                                     if (loadedPage.rotation === PdfRotationAngle.angle90) {
                                         x = inkList[k + 1];
-                                        y = inkList[k];
+                                        y = inkList[parseInt(k.toString(), 10)];
                                     } else if (loadedPage.rotation === PdfRotationAngle.angle180) {
                                         x = loadedPage.size[0] - inkList[k + 1];
                                         y = inkList[k + 1];
                                     } else if (loadedPage.rotation === PdfRotationAngle.angle270) {
                                         x = loadedPage.size[0] - inkList[k + 1];
-                                        y = loadedPage.size[1] - inkList[k];
+                                        y = loadedPage.size[1] - inkList[parseInt(k.toString(), 10)];
                                     } else {
-                                        x = inkList[k];
+                                        x = inkList[parseInt(k.toString(), 10)];
                                         y = loadedPage.size[1] - inkList[k + 1];
                                     }
                                     if (k == 0) {
@@ -1909,7 +1910,7 @@ export class PdfRenderedFields {
     public LineBounds: any;
     public Name: string;
     public FieldName: string;
-    public CheckboxIndex: string;
+    public CheckBoxIndex: string;
     public ActualFieldName: string;
     public CheckBoxGroupName: string;
     public GroupName: string;
@@ -1958,7 +1959,7 @@ export class PdfRenderedFields {
         this.BorderStyle = 0;
         this.BorderWidth = 0;
         this.CheckBoxGroupName = null;
-        this.CheckboxIndex = null;
+        this.CheckBoxIndex = null;
         this.FieldName = null;
         this.Font = null;
         this.FontFamily = null;

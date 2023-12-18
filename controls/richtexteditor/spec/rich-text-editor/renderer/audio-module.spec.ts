@@ -2159,5 +2159,47 @@ describe('insert Audio', () => {
     //         target.dispatchEvent(clickEvent);
     //     });
     // });
+    describe('859306 - Opus and M4a type audios are not supported in RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `<p>testing&nbsp;<span class="e-audio-wrap" contenteditable="false" title="horse.ogg"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="https://www.w3schools.com/html/horse.ogg" type="audio/ogg"></audio></span></span><br></p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Checking the type of the audio', (done: Function) => {
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = (rteObj.contentModule.getEditPanel() as HTMLElement).querySelector('.e-audio-wrap');
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionNode(rteObj.contentModule.getDocument(), target);
+            eventsArg = { pageX: 50, pageY: 300, target: target };
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            (<any>rteObj).audioModule.editAreaClickHandler({ args: eventsArg });
+            (<any>rteObj).audioModule.audEle = rteObj.contentModule.getEditPanel().querySelector('.e-audio-wrap audio');
+            setTimeout(function () {
+                let mouseEventArgs = {
+                    item: { command: 'Audios', subCommand: 'Inline' }
+                };
+                (<any>rteObj).audioModule.alignmentSelect(mouseEventArgs);
+                let sourceElement = rteObj.contentModule.getEditPanel().querySelector('.e-audio-wrap audio source');
+                expect(sourceElement.getAttribute('type')).toBe('audio/ogg');
+                done();
+            }, 200);
+        });
+     });
  });
  

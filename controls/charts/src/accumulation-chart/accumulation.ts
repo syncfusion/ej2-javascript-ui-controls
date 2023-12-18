@@ -19,7 +19,7 @@ import { AccumulationType, AccumulationSelectionMode, AccumulationHighlightMode 
 import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs } from './model/pie-interface';
 import { IAccAnimationCompleteEventArgs, IAccPointRenderEventArgs, IAccLoadedEventArgs, IAccSelectionCompleteEventArgs } from './model/pie-interface';
 import { Theme, getThemeColor } from '../common/model/theme';
-import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs, ITooltipRenderEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';
+import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs, ITooltipRenderEventArgs } from '../chart/model/chart-interface';
 import { IAnnotationRenderEventArgs } from '../chart/model/chart-interface';
 import { load, pointClick } from '../common/model/constants';
 import { pointMove, chartDoubleClick, chartMouseClick, chartMouseDown } from '../common/model/constants';
@@ -55,9 +55,9 @@ import { IThemeStyle } from '../chart/model/chart-interface';
 import { IAccResizeEventArgs, IAccBeforeResizeEventArgs, IAccLegendClickEventArgs } from './model/pie-interface';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Export } from '../chart/print-export/export';
-import { ExportUtils } from '../common/utils/export';
 import { Animation, AnimationOptions, compile as templateComplier} from '@syncfusion/ej2-base';
-import { PrintUtils } from '../common/utils/print'
+import { PrintUtils } from '../common/utils/print';
+import { IAfterExportEventArgs } from '../common/model/interface';
 
 /**
  * Represents the AccumulationChart control.

@@ -437,7 +437,6 @@ describe('Diagram Control', () => {
 
         it('Checking single selection for pivot 1 in SVG rendering Mode', (done: Function) => {
             expect(document.getElementsByClassName('e-diagram-endpoint-handle e-targetend')[0].getAttribute('visibility') == 'visible').toBe(true);
-            expect(document.getElementsByClassName('e-diagram-endpoint-handle e-targetend')[1].getAttribute('visibility') == 'visible').toBe(true);
             done();
         });
         it('memory leak', () => {

@@ -122,11 +122,12 @@ export class BpmnDiagrams {
         if (bpmnShape === 'Message' || bpmnShape === 'DataSource') {
             content = this.getBPMNShapes(node);
         }
+        //848061-BPMN Group shape to be function Like Subprocess Node
         if (bpmnShape === 'Group') {
             //854195 - bpmn group serialization issue
             content = this.getBPMNGroup(node,diagram);
             content.style.strokeDashArray = '2 2 6 2';
-            content.cornerRadius = 10;
+            content.cornerRadius = 10;;
         }
         if (bpmnShape === 'Activity') {
             content = this.getBPMNActivityShape(node);
@@ -164,7 +165,7 @@ export class BpmnDiagrams {
         }
         return bpmnShape;
     }
-    //Method to add the children as canvas in the group node container
+    //854195 - Method to add the children as canvas in the Bpmn group node container
     /** @private */
     public getBPMNGroup(node: Node, diagram: Diagram): Container {
         const group: Canvas = new Canvas();
@@ -1010,6 +1011,9 @@ export class BpmnDiagrams {
         annotationContainer.margin = { left: margin, right: margin, top: margin, bottom: margin };
         annotationContainer.relativeMode = 'Object';
         annotationContainer.rotateAngle = 0;
+        //Bug 860033: Bpmn text annotation path size not rendered properly while dragging.
+        //Added below boolean to identify and prevent the resize thumbs for bpmn text annotation.
+        (annotationContainer as any).isTextAnnotation = true;
         annotationContainer.children = [annotationPath, textElement];
 
         const annotationNode: Node = new Node(
@@ -1261,7 +1265,9 @@ export class BpmnDiagrams {
         let point: PointModel;
         let segment: Segment;
         if (rotateAngle === 0) {
-            data = 'M10,20 L0,20 L0,0 L10,0';
+            //Bug 860033: Bpmn text annotation path size not rendered properly while dragging.
+            //Modified path data to render the path properly.
+            data = 'M10,10 L0,10 L0,0 L10,0';
             pathElement.width = 10;
             pathElement.horizontalAlignment = 'Left';
             portElement.setOffsetWithRespectToBounds(0, 0.5, 'Fraction');
@@ -1272,7 +1278,7 @@ export class BpmnDiagrams {
                 x2: parentBounds.right, y2: parentBounds.bottom
             };
         } else if (rotateAngle === 180) {
-            data = 'M0,0 L10,0 L10,20 L0,20';
+            data = 'M0,0 L10,0 L10,10 L0,10';
             pathElement.width = 10;
             pathElement.horizontalAlignment = 'Right';
             portElement.setOffsetWithRespectToBounds(1, 0.5, 'Fraction');
@@ -1283,7 +1289,7 @@ export class BpmnDiagrams {
                 x2: parentBounds.left, y2: parentBounds.bottom
             };
         } else if (rotateAngle === 90) {
-            data = 'M20,10 L20,0 L0,0 L0,10';
+            data = 'M10,10 L10,0 L0,0 L0,10';
             pathElement.height = 10;
             pathElement.verticalAlignment = 'Top';
             portElement.setOffsetWithRespectToBounds(0.5, 0, 'Fraction');
@@ -1294,7 +1300,7 @@ export class BpmnDiagrams {
                 x2: parentBounds.left, y2: parentBounds.bottom
             };
         } else {
-            data = 'M0,0 L0,10 L20,10 L20,0';
+            data = 'M0,0 L0,10 L10,10 L10,0';
             pathElement.height = 10;
             pathElement.verticalAlignment = 'Bottom';
             portElement.setOffsetWithRespectToBounds(0.5, 1, 'Fraction');

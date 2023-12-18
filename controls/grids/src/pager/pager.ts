@@ -304,7 +304,6 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         this.element.setAttribute('data-role', 'pager');
         this.element.setAttribute('tabindex', '-1');
         this.initLocalization();
-        this.element.setAttribute('aria-label', this.getLocalizedLabel('Container'));
         if (this.cssClass) {
             if (this.cssClass.indexOf(' ') !== -1) {
                 addClass([this.element], this.cssClass.split(' '));
@@ -1190,7 +1189,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             /**
              * Condition to hide numeric items when calculated actual width exceeds available pager space.
              */
-             if (pagerWidth > 0 && (actualWidth >= (pagerWidth - (numericItemWidth ? numericItemWidth : 0)))) {
+            if (pagerWidth > 0 && (actualWidth >= (pagerWidth - (numericItemWidth ? numericItemWidth : 0)))) {
                 this.isPagerResized = true;
                 if (this.currentPage !== this.totalPages) {
                     classList(NP, ['e-numericitem', 'e-pager-default'], ['e-nextprevitemdisabled', 'e-disable']);
@@ -1275,6 +1274,23 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                 PP.setAttribute('index', (ppIndex < 1) ? '1' : ppIndex.toString());
                 NP.setAttribute('index', (parseInt(numItems[numItems.length - 1].getAttribute('index'), 10) + 1).toString());
                 this.avgNumItems = isLastSet ? this.avgNumItems : numItems.length;
+            }
+            /**
+             * Condition to add adaptive class name and set pagermessage content with "/" when media query css has been applied.
+             */
+            if (((this.element.offsetWidth < 769) && window.getComputedStyle(this.element.querySelector('.e-mfirst')).getPropertyValue('display') !== 'none') && this.pageSizes) {
+                this.element.querySelector('.e-pagesizes').classList.remove('e-hide');
+                this.element.querySelector('.e-parentmsgbar').classList.remove('e-hide');
+                this.element.classList.add('e-adaptive');
+                this.element.querySelector('.e-pagenomsg').innerHTML = this.element.offsetWidth < 481 ? (this.currentPage + ' / ' + this.totalPages) : this.pagerMessageModule.format(
+                    this.getLocalizedLabel('currentPageInfo'), [this.totalRecordsCount === 0 ? 0 :
+                        this.currentPage, this.totalPages || 0, this.totalRecordsCount || 0]) + ' ';
+            }
+            else {
+                this.element.classList.remove('e-adaptive');
+                this.element.querySelector('.e-pagenomsg').innerHTML = this.pagerMessageModule.format(
+                    this.getLocalizedLabel('currentPageInfo'), [this.totalRecordsCount === 0 ? 0 :
+                        this.currentPage, this.totalPages || 0, this.totalRecordsCount || 0]) + ' ';
             }
         }
     }

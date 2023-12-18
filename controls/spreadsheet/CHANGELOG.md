@@ -2,29 +2,17 @@
 
 ## [Unreleased]
 
-## 23.1.44 (2023-11-07)
+## 24.1.41 (2023-12-18)
 
 ### Spreadsheet
 
-#### Bug Fixes
+#### Features
 
-- `#I512609` - Issue with "aria-label is updated as undefined while changing the cell value using `updateCell` method" has been resolved.
+- `#I477190` - Now, provided support for displaying a confirmation dialog before opening an Excel file that contains an external workbook references.
 
-## 23.1.42 (2023-10-24)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-- `#I509149` - Issue with "row model is not properly updated when the sheet model is constructed with the range property and provided as an argument to the `insertSheet` method for new sheet creation" has been resolved.
-
-## 23.1.38 (2023-09-26)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-- `#I499291`, `#I496936` - Issue with "`ESC` key and edit mode functionality don't work properly when rendering the spreadsheet inside the dialog" has been resolved.
+- The following new formulas added to the Spreadsheet.
+    - LOOKUP, VLOOKUP, HLOOKUP.
+    - SQRT, RSQ, ROUNDDOWN, EOMONTH, NOT.
 
 ## 23.1.36 (2023-09-15)
 

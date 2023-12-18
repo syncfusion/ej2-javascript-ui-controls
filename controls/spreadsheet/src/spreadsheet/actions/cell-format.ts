@@ -111,7 +111,7 @@ export class CellFormat {
                         }
                     }
                 }
-            } else if (!cellModel.wrap && args.style.fontSize) {
+            } else if (!cellModel.wrap && (args.style.fontSize || args.style.fontFamily)) {
                 const hgt: number = getRowHeight(sheet, args.rowIdx, true) - getBorderHeight(args.rowIdx, args.colIdx, sheet);
                 if (hgt < getTextHeight(this.parent, cellModel.style)) {
                     cell.style.lineHeight = `${hgt}px`;

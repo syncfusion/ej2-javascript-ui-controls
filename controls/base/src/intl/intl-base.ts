@@ -864,7 +864,7 @@ export namespace IntlBase {
      */
     export function changeCurrencySymbol(val: string, sym: string): string {
         if (val) {
-            val = val.replace(defaultCurrency, sym);
+            val = val.replace(IntlBase.defaultCurrency, sym);
             return (sym === '')? val.trim() : val;
         }
         return '';

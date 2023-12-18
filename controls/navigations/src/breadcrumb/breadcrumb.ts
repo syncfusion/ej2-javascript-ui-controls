@@ -311,7 +311,9 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
 
     private initialize(): void {
         this._maxItems = this.maxItems;
-        this.element.setAttribute('aria-label', 'breadcrumb');
+        if (isNullOrUndefined(this.element.getAttribute('aria-label'))) {
+            this.element.setAttribute('aria-label', 'breadcrumb');
+        }
         if (this.cssClass) {
             addClass([this.element], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
@@ -631,6 +633,9 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     private beforeItemRenderChanges(prevItem: BreadcrumbItemModel, currItem: BreadcrumbItemModel, elem: Element, isRightIcon: boolean)
         : void {
         const wrapElem: Element = elem.querySelector('.e-anchor-wrap');
+        if (wrapElem) {
+            wrapElem.parentElement.setAttribute('aria-label', 'home');
+        }
         if (currItem.text !== prevItem.text) {
             wrapElem.childNodes.forEach((child: Element) => {
                 if (child.nodeType === Node.TEXT_NODE) {

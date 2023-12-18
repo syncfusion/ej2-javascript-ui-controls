@@ -216,6 +216,13 @@ export class LayerPanel {
             && panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor) {
             panel.mapObject.previousZoomFactor = panel.mapObject.zoomSettings.zoomFactor;
         }
+        if (panel.mapObject.polygonModule) {
+            const polygonElement: Element =
+            panel.mapObject.polygonModule.polygonRender(this.mapObject, layerIndex, panel.mapObject.tileZoomLevel);
+            if (!isNullOrUndefined(polygonElement)) {
+                panel.layerObject.appendChild(polygonElement);
+            }
+        }
         if (panel.mapObject.navigationLineModule) {
             const navigationLineElement: Element =
                 panel.mapObject.navigationLineModule.renderNavigation(panel.currentLayer, panel.mapObject.tileZoomLevel, layerIndex);
@@ -642,15 +649,14 @@ export class LayerPanel {
         }
         pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
             (currentShapeData['property'][properties as string]) : ''));
-        if(this.currentLayer.selectionSettings.enable || this.currentLayer.highlightSettings.enable) {
+        if (this.currentLayer.selectionSettings.enable || this.currentLayer.highlightSettings.enable) {
             (pathEle as HTMLElement).tabIndex = this.mapObject.tabIndex;
             pathEle.setAttribute('role', 'button');
             (pathEle as HTMLElement).style.cursor = this.currentLayer.highlightSettings.enable && !this.currentLayer.selectionSettings.enable ? 'default' : 'pointer';
         }
         else {
             pathEle.setAttribute('role', 'region');
-        }
-        
+        }        
         if (drawingType === 'LineString' || drawingType === 'MultiLineString') {
             (pathEle as HTMLElement).style.cssText = 'outline:none';
         }
@@ -687,6 +693,11 @@ export class LayerPanel {
         labelTemplateEle: HTMLElement
     ): void {
         let bubbleG: Element;
+        if (this.mapObject.polygonModule) {
+            this.groupElements.push(
+                this.mapObject.polygonModule.polygonRender(this.mapObject, layerIndex,
+                    (this.mapObject.isTileMap ? Math.floor(this.currentFactor) : this.currentFactor)));
+        }
         if (this.currentLayer.bubbleSettings.length && this.mapObject.bubbleModule) {
             const length: number = this.currentLayer.bubbleSettings.length;
             let bubble: BubbleSettingsModel;
@@ -1050,9 +1061,11 @@ export class LayerPanel {
                     (!(childNode.id.indexOf('_bubble_Group') > -1)) &&
                     (!(childNode.id.indexOf('_dataLableIndex_Group') > -1)) &&
                     (!(childNode.id.indexOf('_line_Group') > -1))) {
-                    const transform: string = 'scale( ' + this.mapObject.scale + ' ) ' + 'translate( ' + this.mapObject.translatePoint.x
-                        + ' ' + this.mapObject.translatePoint.y + ' ) ';
-                    childNode.setAttribute('transform', transform);
+                    if (childNode.id.indexOf('_Polygons_Group') === -1) {
+                        const transform: string = 'scale( ' + this.mapObject.scale + ' ) ' + 'translate( ' + this.mapObject.translatePoint.x
+                            + ' ' + this.mapObject.translatePoint.y + ' ) ';
+                        childNode.setAttribute('transform', transform);
+                    }
                 }
             }
         }

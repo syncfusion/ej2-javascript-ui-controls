@@ -80,6 +80,7 @@ export class TextProperties {
     }
     private initializeTextProperties(id: string, isTableProperties: boolean, isRtl?: boolean): void {
         this.element = createElement('div', { className: 'e-de-prop-pane e-de-scrollbar-hide' });
+        this.element.setAttribute('tabindex','0');
         this.text.initializeTextPropertiesDiv(this.element, isRtl);
         this.paragraph.initializeParagraphPropertiesDiv(this.element, isRtl);
         this.paragraph.updateStyleNames();

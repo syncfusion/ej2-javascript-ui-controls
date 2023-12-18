@@ -46,7 +46,7 @@ export class FormatPainter implements IFormatPainter {
 
     private onKeyDown(event: NotifyArgs): void {
         const originalEvent: KeyboardEventArgs = event.args as KeyboardEventArgs;
-        if ((originalEvent.altKey && originalEvent.shiftKey && (originalEvent.action === 'format-copy' ||  originalEvent.action === 'format-paste'))
+        if (!isNOU(originalEvent) && !isNOU(originalEvent.action) && (originalEvent.action === 'format-copy' ||  originalEvent.action === 'format-paste')
             || (originalEvent.action === 'escape' && (this.previousAction === 'format-copy' || this.previousAction === 'format-paste' ))) {
             if ((originalEvent.action === 'format-copy' ||  originalEvent.action === 'format-paste')) {
                 originalEvent.stopPropagation();

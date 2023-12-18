@@ -649,7 +649,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
         this.tableHeadElement = this.createElement('thead', { className: WEEKHEADER });
         if (this.weekNumber) {
-            html += '<th class="e-week-number"></th>';
+            html += '<th class="e-week-number" aria-hidden="true"></th>';
             if (this.getModuleName() === 'calendar') {
                 addClass([this.element], '' + WEEKNUMBER);
             } else {
@@ -1031,6 +1031,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
             if (currentMonth !== localDate.getMonth()) {
                 addClass([tdEle], OTHERMONTH);
+                dayLink.setAttribute('aria-disabled', 'true');
             }
             if (localDate.getDay() === 0 || localDate.getDay() === 6) {
                 addClass([tdEle], WEEKEND);
@@ -1067,6 +1068,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             if (this.renderDayCellArgs.isDisabled && !tdEle.classList.contains(SELECTED)) {
                 addClass([tdEle], DISABLED);
                 addClass([tdEle], OVERLAY);
+                dayLink.setAttribute('aria-disabled', 'true');
                 if (+this.renderDayCellArgs.date === +this.todayDate) {
                     this.todayDisabled = true;
                 }
@@ -1222,6 +1224,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             });
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERDECADE);
+                dayLink.setAttribute('aria-disabled', 'true');
                 if (!isNullOrUndefined(value) && localDate.getFullYear() === (value).getFullYear()) {
                     addClass([tdEle], SELECTED);
                 }
@@ -2542,7 +2545,7 @@ export class Calendar extends CalendarBase {
             this.islamicModule.islamicRenderTemplate(elements, count, classNm, e, this.value);
         }
         this.changedArgs = { value: this.value, values: this.values };
-        e && e.type === 'click' && (e.currentTarget as HTMLElement).classList.contains(OTHERMONTH) ? this.changeHandler(e) : this.changeHandler();     
+        e && e.type === 'click' && (e.currentTarget as HTMLElement).classList.contains(OTHERMONTH) ? this.changeHandler(e) : this.changeHandler();
     }
     protected clickHandler(e: MouseEvent): void {
         const eve: Element = <HTMLElement>e.currentTarget;

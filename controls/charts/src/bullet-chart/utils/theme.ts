@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { IFontMapping } from '../../common/model/interface';
-import { ChartTheme } from '../../chart/utils/enum';
+import { ChartTheme } from '../../common/utils/enum';
 import { IBulletStyle } from '../model/bullet-interface';
 
 /** @private

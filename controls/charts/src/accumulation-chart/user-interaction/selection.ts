@@ -406,7 +406,7 @@ export class AccumulationSelection extends BaseSelection {
                 this.removeSvgClass(children[i as number] as HTMLElement, this.unselected);
                 this.removeSvgClass(<Element>children[i as number].parentNode, this.unselected);
             }
-            if ((this.control as AccumulationChart).accumulationLegendModule && this.control.legendSettings.visible) {
+            if ((this.control as AccumulationChart).accumulationLegendModule && (this.control as AccumulationChart).legendSettings.visible) {
                 legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + i);
                 if (legendShape) {
                     if (elementClass.indexOf(className) === -1 && parentClass.indexOf(className) === -1 && visibility) {
@@ -426,7 +426,7 @@ export class AccumulationSelection extends BaseSelection {
         for (const element of elements) {
             let legendShape: Element;
             if (element) {
-                if ((this.control as AccumulationChart).accumulationLegendModule && this.control.legendSettings.visible) {
+                if ((this.control as AccumulationChart).accumulationLegendModule && (this.control as AccumulationChart).legendSettings.visible) {
                     legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + index.point);
                     this.removeSvgClass(legendShape, legendShape.getAttribute('class'));
                     this.addSvgClass(legendShape, this.getSelectionClass(legendShape.id, index.point));
@@ -455,7 +455,7 @@ export class AccumulationSelection extends BaseSelection {
         let legendShape: Element;
         for (const element of elements) {
             if (element) {
-                if ((this.control as AccumulationChart).accumulationLegendModule && this.control.legendSettings.visible) {
+                if ((this.control as AccumulationChart).accumulationLegendModule && (this.control as AccumulationChart).legendSettings.visible) {
                     legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + index.point);
                     this.removeSvgClass(legendShape, this.getSelectionClass(legendShape.id, index.point));
                 }

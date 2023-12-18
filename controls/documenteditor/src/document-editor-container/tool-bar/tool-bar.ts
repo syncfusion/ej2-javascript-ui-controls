@@ -471,7 +471,7 @@ export class Toolbar {
                         prefixIcon: 'e-de-cnt-track',
                         tooltipText: locale.getConstant('Track Changes'),
                         id: id + TRACK_ID, text: this.onWrapText(locale.getConstant('TrackChanges')), cssClass: className,
-                        htmlAttributes: { 'aria-label': locale.getConstant('TrackChanges'), 'aria-pressed': this.container.enableTrackChanges, role: "button" }
+                        htmlAttributes: { 'aria-label': locale.getConstant('TrackChanges'), 'aria-pressed': this.container.enableTrackChanges, role: "button", 'aria-hidden':'true'}
                     });
                     break;
                 case 'Image':
@@ -552,7 +552,7 @@ export class Toolbar {
                         tooltipText: locale.getConstant('Toggle between the internal clipboard and system clipboard'),
                         id: id + CLIPBOARD_ID, text: this.onWrapText(locale.getConstant('Local Clipboard')),
                         cssClass: className,
-                        htmlAttributes:{'aria-label':locale.getConstant('Local Clipboard'),'aria-pressed':this.container.enableLocalPaste, role:"button"}
+                        htmlAttributes:{'aria-label':locale.getConstant('Local Clipboard'),'aria-pressed':this.container.enableLocalPaste, role: "button",'aria-hidden':'true'}
                     });
                     break;
                 case 'RestrictEditing':
@@ -766,7 +766,7 @@ export class Toolbar {
                 const fileReader: FileReader = new FileReader();
                 fileReader.onload = (): void => {
                     if (formatType === '.txt') {
-                        this.container.documentEditor.documentHelper.openTextFile(fileReader.result as string, formatType);
+                        this.container.documentEditor.documentHelper.openTextFile(fileReader.result as string);
                     } else {
                         /* eslint-disable */
                         this.container.documentEditor.open(fileReader.result as string);

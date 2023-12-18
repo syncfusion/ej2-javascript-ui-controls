@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../../document-editor';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { BaseHistoryInfo, MarkerData, Operation } from './base-history-info';
-import { CommentCharacterElementBox, EditRangeStartElementBox } from '../viewer/page';
+import { BaseHistoryInfo, MarkerInfo, Operation } from './base-history-info';
+import { CommentCharacterElementBox, EditRangeStartElementBox, ElementBox } from '../viewer/page';
 import { DocumentHelper } from '../viewer';
 import { Action, CONTROL_CHARACTERS } from '../../base/types';
 /**
@@ -46,7 +46,16 @@ export class HistoryInfo extends BaseHistoryInfo {
         switch (action) {
             case 'InsertBookmark':
             case 'RestrictEditing':
-                    for (let i: number = 0; i < this.modifiedActions.length; i++ ) {
+                if (this.editorHistory.isUndoing) {
+                    for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                        if (action == 'RestrictEditing') {
+                            this.modifiedActions[parseInt(i.toString(), 10)].markerData.push(this.owner.editor.getMarkerData(this.modifiedActions[parseInt(i.toString(), 10)].removedNodes[0] as ElementBox));
+                        }
+                        operations.push(this.modifiedActions[parseInt(i.toString(), 10)].getDeleteOperation('DeleteBookmark', i == 0 ? true : undefined));
+                        this.modifiedActions[parseInt(i.toString(), 10)].markerData.shift();
+                    }
+                } else {
+                    for (let i: number = 0; i < this.modifiedActions.length; i++) {
                         let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
                         if (currentHistory.action === 'DeleteBookmark') {
                             operations.push(currentHistory.getDeleteOperation('DeleteBookmark'));
@@ -55,19 +64,37 @@ export class HistoryInfo extends BaseHistoryInfo {
                         }
                         operations.push(currentHistory.getInsertOperation(action));
                     }
+                }
                 break;
             case 'BackSpace':
             case 'Delete':
             case 'RemoveEditRange':
-                for (let i:number = 0; i < this.modifiedActions.length; i++) {
-                    let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
-                    if (currentHistory.action === 'InsertInline') {
-                        var operation = currentHistory.getInsertOperation('InsertBookmark');
-                        operations.push(operation);
-                    } else {
-                        operations.push(currentHistory.getDeleteOperation(action));
-                        if (currentHistory.action === 'RemoveEditRange') {
-                            operations.push(currentHistory.getDeleteOperation(action, true));
+                if (this.editorHistory.isUndoing) {
+                    for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                        let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
+                        if (currentHistory.action === 'InsertInline') {
+                            var operation = currentHistory.getDeleteOperation('DeleteBookmark', true);
+                            operations.push(operation);
+                        } else {
+                            let operationCollection: Operation[] = currentHistory.getActionInfo();
+                            operations = [...operations, ...operationCollection];
+                            if (currentHistory.action === 'RemoveEditRange') {
+                                operations.push(currentHistory.getDeleteOperation(action, true));
+                            }
+                        }
+                    }
+                    operations.reverse();
+                } else {
+                    for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                        let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
+                        if (currentHistory.action === 'InsertInline') {
+                            var operation = currentHistory.getInsertOperation('InsertBookmark');
+                            operations.push(operation);
+                        } else {
+                            operations.push(currentHistory.getDeleteOperation(action));
+                            if (currentHistory.action === 'RemoveEditRange') {
+                                operations.push(currentHistory.getDeleteOperation(action, true));
+                            }
                         }
                     }
                 }
@@ -80,7 +107,7 @@ export class HistoryInfo extends BaseHistoryInfo {
                         if (currentHistory.removedNodes.length > 0) {
                             operations = operations.concat(currentHistory.getDeleteOperationsForTrackChanges());
                         }
-                        let markerData: MarkerData = currentHistory.markerData[currentHistory.markerData.length - 1];
+                        let markerData: MarkerInfo = currentHistory.markerData[currentHistory.markerData.length - 1];
                         let operation: Operation = currentHistory.getInsertOperation('Enter');
                         let breakOperation: Operation = this.getInsertOperation(action);
                         operation.markerData = markerData;
@@ -91,15 +118,21 @@ export class HistoryInfo extends BaseHistoryInfo {
                         operation.markerData.skipOperation = true;
                     }
                 } else {
-                    for (let i:number = 0; i < this.modifiedActions.length; i++) {
-                        let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
-                        if (currentHistory.removedNodes.length > 0) {
-                            operations.push(currentHistory.getDeleteOperation(action));
+                    if(this.editorHistory.isUndoing) {
+                        for(let i: number = 0; i < 3; i++) {
+                            operations.push(this.getDeleteOperation('Delete'));
                         }
+                    } else {
+                        for (let i:number = 0; i < this.modifiedActions.length; i++) {
+                            let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
+                            if (currentHistory.removedNodes.length > 0) {
+                                operations.push(currentHistory.getDeleteOperation(action));
+                            }
+                        }
+                        operations.push(this.getInsertOperation('Enter'));
+                        operations.push(this.getInsertOperation(action));
+                        operations.push(this.getInsertOperation('Enter'));
                     }
-                    operations.push(this.getInsertOperation('Enter'));
-                    operations.push(this.getInsertOperation(action));
-                    operations.push(this.getInsertOperation('Enter'));
                 }
                 break;
             case 'InsertHyperlink':
@@ -117,39 +150,85 @@ export class HistoryInfo extends BaseHistoryInfo {
                     else if (currentHistory.action === 'Delete') {
                         operations.push(currentHistory.getDeleteOperation(currentHistory.action));
                     }
+                    else if (currentHistory.action === 'Underline' || currentHistory.action === 'FontColor') {
+                        operations = operations.concat(currentHistory.getActionInfo());
+                    }
                 }
                 break;
             case 'InsertComment':
-                for (let i:number = 0; i < this.modifiedActions.length; i++) {
-                    let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
-                    let operation: Operation = currentHistory.getInsertOperation(currentHistory.action);
-                    if ((currentHistory.insertedElement instanceof CommentCharacterElementBox && currentHistory.action === 'InsertInline')) {
-                        operations.push(currentHistory.getCommentOperation(operation));
-                    } else if (currentHistory.action === 'InsertCommentWidget') {
-                        operation = this.getUpdateOperation();
-                        operations.push(currentHistory.getCommentOperation(operation));
+                if (this.editorHistory.isUndoing) {
+                    this.getDeleteCommentOperation(this.modifiedActions, operations);
+                } else {
+                    for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                        let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
+                        let operation: Operation = currentHistory.getInsertOperation(currentHistory.action);
+                        if ((currentHistory.insertedElement instanceof CommentCharacterElementBox && currentHistory.action === 'InsertInline')) {
+                            operations.push(currentHistory.getCommentOperation(operation, currentHistory.action));
+                        } else if (currentHistory.action === 'InsertCommentWidget') {
+                            operation = this.getUpdateOperation();
+                            operations.push(currentHistory.getCommentOperation(operation, currentHistory.action));
+                        }
                     }
                 }
                 break;
             case 'RemoveComment':
-                for (let i:number = 0; i < this.modifiedActions.length; i++) {
-                    let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
-                    let operation: Operation = undefined;
-                    let operationCollection: Operation[] = [];
-                    if (currentHistory.action === 'RemoveInline' && currentHistory.removedNodes[0] instanceof CommentCharacterElementBox) {
-                        operation = currentHistory.getDeleteOperation(currentHistory.action);
-                        operationCollection.push(currentHistory.getCommentOperation(operation));
-                    } else if (currentHistory.action === 'InsertInline' && currentHistory.insertedElement instanceof CommentCharacterElementBox) {
-                        operation = currentHistory.getInsertOperation(currentHistory.action);
-                        operationCollection.push(currentHistory.getCommentOperation(operation));
-                    } else {
-                        operationCollection = currentHistory.getActionInfo();
+                if (this.editorHistory.isUndoing) {
+                    for (let i: number = this.modifiedActions.length - 1; i >= 0; i--) {
+                        let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
+                        let operation: Operation = undefined;
+                        let operationCollection: Operation[] = [];
+                        if (currentHistory.action === 'InsertInline' && currentHistory.insertedElement instanceof CommentCharacterElementBox) {
+                            operation = currentHistory.getDeleteOperation(currentHistory.action);
+                            operationCollection.push(currentHistory.getCommentOperation(operation, 'InsertInline'));
+                        } else if (currentHistory.action === 'RemoveInline') {
+                            operation = currentHistory.getDeleteOperation(currentHistory.action);
+                            operationCollection.push(currentHistory.getCommentOperation(operation, 'InsertInline'));
+                            operation = currentHistory.getInsertOperation(currentHistory.action);
+                            operationCollection.push(currentHistory.getCommentOperation(operation, 'InsertInline'));
+                        } else if (currentHistory.action === 'DeleteComment') {
+                            operationCollection = (currentHistory as HistoryInfo).getActionInfo();
+                        } else {
+                            this.owner.sfdtExportModule.iscommentInsert = false;
+                            operationCollection = currentHistory.getActionInfo();
+                            this.owner.sfdtExportModule.iscommentInsert = true;
+                        }
+                        operations = [...operations, ...operationCollection];
                     }
-                    operations = [...operations, ...operationCollection];
+                } else {
+                    for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                        let currentHistory = this.modifiedActions[parseInt(i.toString(), 10)];
+                        let operation: Operation = undefined;
+                        let operationCollection: Operation[] = [];
+                        if (currentHistory.action === 'RemoveInline' && currentHistory.removedNodes[0] instanceof CommentCharacterElementBox) {
+                            operation = currentHistory.getDeleteOperation(currentHistory.action);
+                            operationCollection.push(currentHistory.getCommentOperation(operation, currentHistory.action));
+                        } else if (currentHistory.action === 'InsertInline' && currentHistory.insertedElement instanceof CommentCharacterElementBox) {
+                            operation = currentHistory.getInsertOperation(currentHistory.action);
+                            operationCollection.push(currentHistory.getCommentOperation(operation, currentHistory.action));
+                        } else {
+                            operationCollection = currentHistory.getActionInfo();
+                        }
+                        operations = [...operations, ...operationCollection];
+                    }
                 }
                 break;
             case 'DeleteComment':
-                this.getDeleteCommentOperation(this.modifiedActions, operations);
+                if (this.editorHistory.isUndoing) {
+                    for (let j: number = this.modifiedActions.length - 1; j >= 0; j--) {
+                        let history = this.modifiedActions[parseInt(j.toString(), 10)];
+                        let operation: Operation = history.getInsertOperation(history.action);
+                        if ((history.insertedElement instanceof CommentCharacterElementBox && history.action === 'RemoveInline')) {
+                            operations.push(history.getCommentOperation(operation, 'InsertInline'));
+                        } else if (history.action === 'DeleteCommentWidget') {
+                            operation = this.getUpdateOperation();
+                            operations.push(history.getCommentOperation(operation, 'InsertCommentWidget'));
+                        } else if (history.action === 'DeleteComment') {
+                            (history as HistoryInfo).getActionInfo();
+                        }
+                    }
+                } else {
+                    this.getDeleteCommentOperation(this.modifiedActions, operations);
+                }
                 break;
             case 'FormField':
                 var currentHistory = this.modifiedActions.pop();
@@ -196,9 +275,9 @@ export class HistoryInfo extends BaseHistoryInfo {
                         operations.push(...operationsCollection);
                     }
                 }
-                if (!isSkip && (action === 'Accept All' || action === 'Reject All')) {
-                    operations.reverse();
-                }
+                // if (!isSkip && (action === 'Accept All' || action === 'Reject All')) {
+                //     operations.reverse();
+                // }
                 break;
             case 'Paste':
                 for (let i: number = 0; i < this.modifiedActions.length; i++) {
@@ -226,35 +305,38 @@ export class HistoryInfo extends BaseHistoryInfo {
                 break;
             case 'ClearFormat':
                 let clearHistory: BaseHistoryInfo = this.modifiedActions[this.modifiedActions.length - 1];
-                let formatOperation: Operation[] = clearHistory.buildFormatOperation('ClearFormat', true, false);
+                let formatOperation: Operation[] = clearHistory.buildFormatOperation('ClearFormat', true);
                 operations = formatOperation.slice();
                 break;
             case 'ApplyStyle':
                 let styleHistory: BaseHistoryInfo;
                 let formatstyleOperation: Operation[] = [];
-                if(this.modifiedActions[0] instanceof HistoryInfo) {
+                if (this.modifiedActions[0] instanceof HistoryInfo) {
                     let historyInfo: HistoryInfo = this.modifiedActions[0] as HistoryInfo;
                     styleHistory = historyInfo.modifiedActions[0];
-                    formatstyleOperation = styleHistory.buildFormatOperation('ClearFormat', true, false);
+                    formatstyleOperation = styleHistory.buildFormatOperation('ClearFormat', true);
                     operations = formatstyleOperation.slice();
                 }
-                if(!(this.modifiedActions[this.modifiedActions.length - 1] instanceof HistoryInfo)) {
-                    formatstyleOperation = (this.modifiedActions[this.modifiedActions.length - 1] as BaseHistoryInfo).buildFormatOperation(action, true, false);
-                    for(let i: number =0; i < formatstyleOperation.length; i++) {
+                if (!(this.modifiedActions[this.modifiedActions.length - 1] instanceof HistoryInfo)) {
+                    formatstyleOperation = (this.modifiedActions[this.modifiedActions.length - 1] as BaseHistoryInfo).buildFormatOperation(action, true);
+                    for (let i: number = 0; i < formatstyleOperation.length; i++) {
                         operations.push(formatstyleOperation[parseInt(i.toString(), 10)]);
                     }
                 }
                 break;
             case 'TableMarginsSelection':
                 this.modifiedActions[this.modifiedActions.length - 1].createTableFormat(this.modifiedActions[this.modifiedActions.length - 1].action);
+                this.modifiedActions[this.modifiedActions.length - 1].type = 'TableFormat';
                 operations.push(this.modifiedActions[this.modifiedActions.length - 1].getFormatOperation());
                 break;
             case 'BordersAndShading':
                 if (this.modifiedActions[0].action === 'TableFormat') {
+                    this.modifiedActions[0].type = 'TableFormat';
                     this.modifiedActions[0].createTableFormat('BordersAndShading');
                     operations.push(this.modifiedActions[0].getFormatOperation());
                 } else {
                     this.modifiedActions[0].createCellFormat('BordersAndShading');
+                    this.modifiedActions[0].type = 'CellFormat';
                     operations = this.modifiedActions[0].getSelectedCellOperation('BordersAndShading', undefined, true, true);
                 }
                 break;
@@ -266,18 +348,21 @@ export class HistoryInfo extends BaseHistoryInfo {
                 }
                 break;
             case 'TableProperties':
-                for(let i: number = 0; i < this.modifiedActions.length; i++) {
+                for (let i: number = 0; i < this.modifiedActions.length; i++) {
                     let tablePropHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
-                    if(tablePropHistory.action === 'TableFormat') {
+                    if (tablePropHistory.action === 'TableFormat') {
                         tablePropHistory.createTableFormat(tablePropHistory.action);
+                        tablePropHistory.type = 'TableFormat';
                         operations.push(tablePropHistory.getFormatOperation());
-                    } else if(tablePropHistory.action === 'RowFormat') {
+                    } else if (tablePropHistory.action === 'RowFormat') {
                         tablePropHistory.createRowFormat(tablePropHistory.action);
+                        tablePropHistory.type = 'RowFormat';
                         operations.push(tablePropHistory.getFormatOperation());
-                    } else if(tablePropHistory.action === 'CellFormat') {
+                    } else if (tablePropHistory.action === 'CellFormat') {
                         tablePropHistory.createCellFormat(tablePropHistory.action);
+                        tablePropHistory.type = 'CellFormat';
                         let cellProp: Operation[] = tablePropHistory.getSelectedCellOperation(tablePropHistory.action);
-                        for(let i:number = 0; i < cellProp.length; i++) {
+                        for (let i: number = 0; i < cellProp.length; i++) {
                             operations.push(cellProp[parseInt(i.toString(), 10)]);
                         }
                     }
@@ -285,6 +370,7 @@ export class HistoryInfo extends BaseHistoryInfo {
                 break;
             case 'CellMarginsSelection':
                 this.modifiedActions[this.modifiedActions.length - 1].createCellFormat('CellOptions');
+                this.modifiedActions[this.modifiedActions.length - 1].type = 'CellFormat';
                 operations = this.modifiedActions[this.modifiedActions.length - 1].getSelectedCellOperation('CellOptions').slice();
                 break;
         }

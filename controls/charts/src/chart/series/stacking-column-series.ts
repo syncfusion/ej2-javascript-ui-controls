@@ -35,7 +35,7 @@ export class StackingColumnSeries extends ColumnBase {
                                               point.xValue + sideBySideInfo.end, stackedValue.startValues[point.index], series);
                 this.rect.width = series.columnWidthInPixel ? series.columnWidthInPixel : this.rect.width;
                 this.rect.x = series.columnWidthInPixel ? this.rect.x - (((series.columnWidthInPixel / 2) * series.rectCount) -
-                (series.columnWidthInPixel * series.position)) : this.rect.x;
+                    (series.columnWidthInPixel * series.position)) : this.rect.x;
                 argsData = this.triggerEvent(series, point, series.interior,
                                              { width: series.border.width, color: series.border.color });
                 if (!argsData.cancel) {

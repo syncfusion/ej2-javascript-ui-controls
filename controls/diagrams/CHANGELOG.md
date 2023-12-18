@@ -2,93 +2,14 @@
 
 ## [Unreleased]
 
-## 23.2.7 (2023-12-05)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I506991` - Fixed the connector selection issue that occurred when the segment thumb was enabled.
-- `#I522256` - Now, the palette expanding event arguments are correct when expanding the palette.
-- `#I522219` - Fixed issue with symbol palette tooltip rendering inaccurately after searching symbols and hovering over palette shapes.
-- `#F185333` - Now, the style property of phase at run-time can be customized.
-
-## 23.2.6 (2023-11-28)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I515562` - Now, the swimlane renders properly while dragging it from palette with multiple page enabled.
-- `#515563`  - Exception while serializing the BPMN Group shape with child has been resolved.
-- `#I520515` - Now, the connector target decorator renders properly after calling doLayout with line-routing.
-- `#I518456` - Now, the Subprocess node and child node dragging is proper after serialization.
-
-## 23.2.4 (2023-11-20)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I499552` - Now, fit to page is working properly when current zoom is less than min-zoom.
-- `#F185082` - Now, the transparent fill is applied properly for swimlane lanes.
-- `#I513170` - The exception will no longer be thrown during the dragging of connector segments.
-
-## 23.1.44 (2023-11-07)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I508486` - Now, user-handle template is rendered properly after save and load.
-
-## 23.1.43 (2023-10-31)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I506971` - Now, Overview with html node is updated properly when we zoom-out the diagram.
-- `#I505963` - Now, Exception occurs due to line routing constraints enabled is resolved.
-
-## 23.1.42 (2023-10-24)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I503100` - Now, Property Change Event triggers while Z-index value get changed.
-- `#F184671` - Now, the overview updated properly after loading the diagram.
-- `#I502515` – Now, the connector overlapping is resolved when enable routing is set to true.
-
-## 23.1.40 (2023-10-10)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I184539` -  Now, BPMN Group shape will Function Like Subprocess.
-- `#I484335` - Now, highlighter rendered properly on hovering ports and nodes.
-- `#F183609` - Now, External entries are added in startgroup and endgroup action.
-
-## 23.1.39 (2023-10-04)
-
-### Diagram
-
-#### Bug Fixes
-
-- `#I501652` - Now, dropping nodes in swimlane consider as child in angular.
-- `#I47014` - The segmentCollectionChange is triggered when editSegment method called.
-
-## 23.1.38 (2023-09-26)
+## 24.1.41 (2023-12-18)
 
 ### Diagram
 
 #### Bug Fixes
 
 - `#I184493` - The null exception will no longer thrown while hovering over the ports.
-- `#F45135` - Now, onUserHandleMouseUp event triggers for single time.
-- `#I487517` - Now, while enabling virtualization constraints nodes does not disappears.
+- `#I47014` - The segmentCollectionChange is triggered when editSegment method called.
 
 ## 23.1.36 (2023-09-15)
 

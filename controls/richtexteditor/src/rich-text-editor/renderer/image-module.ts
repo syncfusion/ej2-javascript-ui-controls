@@ -307,18 +307,18 @@ export class Image {
         this.resizeBtnInit();
         this.imgEle = e;
         addClass([this.imgEle], 'e-resize');
-        this.imgResizeDiv = this.parent.createElement('span', { className: 'e-img-resize' + ' ' + this.parent.cssClass, id: this.rteID + '_imgResize' });
+        this.imgResizeDiv = this.parent.createElement('span', { className: 'e-img-resize' + this.parent.getCssClass(true), id: this.rteID + '_imgResize' });
         this.imgResizeDiv.appendChild(this.parent.createElement('span', {
-            className: 'e-rte-imageboxmark e-rte-topLeft' + ' ' + this.parent.cssClass, styles: 'cursor: nwse-resize'
+            className: 'e-rte-imageboxmark e-rte-topLeft' + this.parent.getCssClass(true), styles: 'cursor: nwse-resize'
         }));
         this.imgResizeDiv.appendChild(this.parent.createElement('span', {
-            className: 'e-rte-imageboxmark e-rte-topRight' + ' ' + this.parent.cssClass, styles: 'cursor: nesw-resize'
+            className: 'e-rte-imageboxmark e-rte-topRight' + this.parent.getCssClass(true), styles: 'cursor: nesw-resize'
         }));
         this.imgResizeDiv.appendChild(this.parent.createElement('span', {
-            className: 'e-rte-imageboxmark e-rte-botLeft' + ' ' + this.parent.cssClass, styles: 'cursor: nesw-resize'
+            className: 'e-rte-imageboxmark e-rte-botLeft' + this.parent.getCssClass(true), styles: 'cursor: nesw-resize'
         }));
         this.imgResizeDiv.appendChild(this.parent.createElement('span', {
-            className: 'e-rte-imageboxmark e-rte-botRight' + ' ' + this.parent.cssClass, styles: 'cursor: nwse-resize'
+            className: 'e-rte-imageboxmark e-rte-botRight' + this.parent.getCssClass(true), styles: 'cursor: nwse-resize'
         }));
         if (Browser.isDevice) {
             addClass([this.imgResizeDiv], 'e-mob-rte');
@@ -461,8 +461,8 @@ export class Image {
                 img.style.height = null;
                 img.removeAttribute('height');
             } else {
-                img.style.width = expectedX + 'px';
-                img.style.height = expectedX + 'px';
+                img.style.width = ((expectedX >= 15) ? expectedX : 15) + 'px';
+                img.style.height = ((expectedX >= 15) ? expectedX : 15) + 'px';
             }
         }
     }
@@ -489,7 +489,6 @@ export class Image {
                 this.setAspectRatio(this.imgEle, parseInt(width, 10), parseInt(height, 10), args);
                 this.resizeImgDupPos(this.imgEle);
                 this.imgResizePos(this.imgEle, this.imgResizeDiv);
-                this.parent.setContentHeight('', false);
             }
         });
     }
@@ -500,7 +499,7 @@ export class Image {
         } else if (isNOU(this.parent.insertImageSettings.maxHeight)) {
             this.imgEle.style.maxHeight = '';
         }
-        this.imgEle.style.maxWidth = this.parent.getInsertImgMaxWidth() + 'px';
+        this.imgEle.style.maxWidth = (closest(this.imgEle, 'ol,ul') != null ? (this.parent.getInsertImgMaxWidth() as number) - parseInt((getComputedStyle(closest(this.imgEle, 'ol,ul')).paddingLeft), 0) : this.parent.getInsertImgMaxWidth()) + 'px';
         const pageX: number = this.getPointX(e);
         const pageY: number = this.getPointY(e);
         const mouseX: number = (this.resizeBtnStat.botLeft || this.resizeBtnStat.topLeft) ? -(pageX - this.pageX) : (pageX - this.pageX);
@@ -725,12 +724,20 @@ export class Image {
                             detach((range.startContainer as HTMLElement).nextElementSibling);
                         }
                     }
-                } else if ((range.startContainer.nodeType === 1 &&
-                    (range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_CAPINLINE))) {
-                    detach((range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_CAPINLINE));
-                } else if (range.startContainer.nodeType === 1 &&
-                    (range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_IMGBREAK)) {
-                    detach((range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_IMGBREAK));
+                } else if (range.startContainer.nodeType === 1) {
+                    if ((range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_CAPINLINE)) {
+                        detach((range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_CAPINLINE));
+                    } else if ((range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_IMGBREAK)) {
+                        detach((range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_IMGBREAK));
+                    } else if ((range.startContainer as HTMLElement).classList.contains('e-img-wrap') && closest((range.startContainer as HTMLElement), '.' + classes.CLS_CAPTION)) {
+                        const parentElem = (range.startContainer as HTMLElement).parentElement.parentElement;
+                        detach(closest((range.startContainer as HTMLElement), '.' + classes.CLS_CAPTION));
+                        if (parentElem && parentElem.textContent.trim() === '') {
+                            const brElem: HTMLElement = this.parent.createElement('br');
+                            brElem.classList.add('e-rte-image-remove-focus');
+                            parentElem.appendChild(brElem); 
+                        }
+                    }
                 }
             }
             break;
@@ -786,7 +793,7 @@ export class Image {
     }
     private showDialog(): void {
         this.openDialog(false);
-        this.setCssClass({cssClass: this.parent.cssClass});
+        this.setCssClass({cssClass: this.parent.getCssClass()});
     }
     private closeDialog(): void {
         if (this.dialogObj) { this.dialogObj.hide({ returnValue: true } as Event); }
@@ -989,19 +996,19 @@ export class Image {
         }
         this.imagDialog(e);
         if (!isNullOrUndefined(this.dialogObj)) {
-            const linkWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-linkwrap' + ' ' + this.parent.cssClass });
+            const linkWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-linkwrap' + this.parent.getCssClass(true) });
             const linkUrl: string = this.i10n.getConstant('linkurl');
-            const content: string = '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
-                '<input type="text" data-role ="none" class="e-input e-img-link' + ' ' + this.parent.cssClass + '" spellcheck="false" placeholder="' + linkUrl + '"/></div>' +
+            const content: string = '<div class="e-rte-field' + this.parent.getCssClass(true) + '">' +
+                '<input type="text" data-role ="none" class="e-input e-img-link' + this.parent.getCssClass(true) + '" spellcheck="false" placeholder="' + linkUrl + '"/></div>' +
                 '<div class="e-rte-label"></div>' + '<div class="e-rte-field">' +
-                '<input type="checkbox" class="e-rte-linkTarget' + ' ' + this.parent.cssClass + '"  data-role ="none"></div>';
+                '<input type="checkbox" class="e-rte-linkTarget' + this.parent.getCssClass(true) + '"  data-role ="none"></div>';
             const contentElem: DocumentFragment = parseHtml(content);
             linkWrap.appendChild(contentElem);
             const linkTarget: HTMLInputElement = linkWrap.querySelector('.e-rte-linkTarget') as HTMLInputElement;
             const inputLink: HTMLElement = linkWrap.querySelector('.e-img-link') as HTMLElement;
             const linkOpenLabel: string = this.i10n.getConstant('linkOpenInNewWindow');
             this.checkBoxObj = new CheckBox({
-                label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass,
+                label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl, cssClass: this.parent.getCssClass(),
                 change: (e: ChangeEventArgs) => {
                     if (e.checked) {
                         target = '_blank';
@@ -1014,11 +1021,12 @@ export class Image {
             this.checkBoxObj.createElement = this.parent.createElement;
             this.checkBoxObj.appendTo(linkTarget);
             let target: string = this.checkBoxObj.checked ? '_blank' : null;
+            let imageLabel = this.checkBoxObj.checked ? this.i10n.getConstant('ImageLinkAriaLabel') : null;
             const linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             const linkargs: IImageNotifyArgs = {
                 args: e.args,
                 selfImage: this, selection: e.selection,
-                selectNode: e.selectNode, selectParent: e.selectParent, link: inputLink, target: target
+                selectNode: e.selectNode, selectParent: e.selectParent, link: inputLink, target: target, ariaLabel: imageLabel
             };
             this.dialogObj.setProperties({
                 height: 'inherit',
@@ -1031,7 +1039,7 @@ export class Image {
                         this.insertlink(linkargs);
                     },
                     buttonModel: {
-                        content: linkUpdate, cssClass: 'e-flat e-update-link' + ' ' + this.parent.cssClass, isPrimary: true
+                        content: linkUpdate, cssClass: 'e-flat e-update-link' + this.parent.getCssClass(true), isPrimary: true
                     }
                 }],
                 cssClass: this.dialogObj.cssClass + ' e-rte-img-link-dialog'
@@ -1057,13 +1065,13 @@ export class Image {
         this.imagDialog(e);
         const altText: string = this.i10n.getConstant('altText');
         if (!isNullOrUndefined(this.dialogObj)) {
-            const altWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-altwrap' + ' ' + this.parent.cssClass });
+            const altWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-altwrap' + this.parent.getCssClass(true) });
             const altHeader: string = this.i10n.getConstant('alternateHeader');
             const linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             const getAlt: string = ((e.selectNode[0] as HTMLElement).getAttribute('alt') === null) ? '' :
                 (e.selectNode[0] as HTMLElement).getAttribute('alt');
-                const content: string = '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
-                '<input type="text" spellcheck="false"  class="e-input e-img-alt' + ' ' + this.parent.cssClass + '" placeholder="' + altText + '"/>' +
+            const content: string = '<div class="e-rte-field' + this.parent.getCssClass(true) + '">' +
+                '<input type="text" spellcheck="false"  class="e-input e-img-alt' + this.parent.getCssClass(true) + '" placeholder="' + altText + '"/>' +
                 '</div>';
             const contentElem: DocumentFragment = parseHtml(content);
             contentElem.querySelector('input').setAttribute('value', getAlt);
@@ -1081,7 +1089,7 @@ export class Image {
                         this.insertAlt(altArgs);
                     },
                     buttonModel: {
-                        content: linkUpdate, cssClass: 'e-flat e-update-alt' + ' ' + this.parent.cssClass, isPrimary: true
+                        content: linkUpdate, cssClass: 'e-flat e-update-alt' + this.parent.getCssClass(true), isPrimary: true
                     }
                 }],
                 cssClass: this.dialogObj.cssClass + ' e-rte-img-alt-dialog'
@@ -1138,7 +1146,7 @@ export class Image {
             proxy.parent.formatter.process(
                 proxy.parent, e.args, e.args,
                 {
-                    url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, selectNode: e.selectNode,
+                    url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, ariaLabel: proxy.checkBoxObj.checked ? this.i10n.getConstant('ImageLinkAriaLabel') : null, selectNode: e.selectNode,
                     subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
                 });
             proxy.dialogObj.hide({ returnValue: true } as Event);
@@ -1147,7 +1155,7 @@ export class Image {
         proxy.parent.formatter.process(
             proxy.parent, e.args, e.args,
             {
-                url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, selectNode: e.selectNode,
+                url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, ariaLabel: proxy.checkBoxObj.checked ? this.i10n.getConstant('ImageLinkAriaLabel') : null, selectNode: e.selectNode,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand, selection: e.selection
             });
         const captionEle: Element = closest(e.selectNode[0], '.e-img-caption');
@@ -1252,11 +1260,11 @@ export class Image {
             }
         } else {
             this.captionEle = this.parent.createElement('span', {
-                className: classes.CLS_CAPTION + ' ' + classes.CLS_RTE_CAPTION + ' ' + this.parent.cssClass,
+                className: classes.CLS_CAPTION + ' ' + classes.CLS_RTE_CAPTION + this.parent.getCssClass(true),
                 attrs: { contenteditable: 'false', draggable: 'false', style: 'width:' + this.parent.insertImageSettings.width }
             });
-            const imgWrap: HTMLElement = this.parent.createElement('span', { className: 'e-img-wrap' + ' ' + this.parent.cssClass });
-            const imgInner: HTMLElement = this.parent.createElement('span', { className: 'e-img-inner' + ' ' + this.parent.cssClass,
+            const imgWrap: HTMLElement = this.parent.createElement('span', { className: 'e-img-wrap' + this.parent.getCssClass(true) });
+            const imgInner: HTMLElement = this.parent.createElement('span', { className: 'e-img-inner' + this.parent.getCssClass(true),
                 attrs: { contenteditable: 'true' } });
             const parent: HTMLElement = e.selectNode[0].parentElement;
             if (parent.tagName === 'A') {
@@ -1311,7 +1319,7 @@ export class Image {
                         this.insertSize(selectObj);
                     },
                     buttonModel: {
-                        content: linkUpdate, cssClass: 'e-flat e-update-size' + ' ' + this.parent.cssClass, isPrimary: true
+                        content: linkUpdate, cssClass: 'e-flat e-update-size' + this.parent.getCssClass(true), isPrimary: true
                     }
                 }],
                 cssClass: this.dialogObj.cssClass + ' e-rte-img-size-dialog'
@@ -1356,7 +1364,7 @@ export class Image {
             this.dialogObj.hide({ returnValue: true } as Event);
             return;
         }
-        const imgDialog: HTMLElement = this.parent.createElement('div', { className: 'e-rte-img-dialog' + ' ' + this.parent.cssClass, id: this.rteID + '_image' });
+        const imgDialog: HTMLElement = this.parent.createElement('div', { className: 'e-rte-img-dialog' + this.parent.getCssClass(true), id: this.rteID + '_image' });
         this.parent.element.appendChild(imgDialog);
         const imgInsert: string = this.i10n.getConstant('dialogInsert');
         const imglinkCancel: string = this.i10n.getConstant('dialogCancel');
@@ -1365,20 +1373,20 @@ export class Image {
         const selectObj: IImageNotifyArgs = { selfImage: this, selection: e.selection, args: e.args, selectParent: e.selectParent };
         const dialogModel: DialogModel = {
             header: imgHeader,
-            cssClass: classes.CLS_RTE_ELEMENTS + ' ' + this.parent.cssClass,
+            cssClass: classes.CLS_RTE_ELEMENTS + this.parent.getCssClass(true),
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '340px',
             isModal: (Browser.isDevice as boolean),
             buttons: [{
                 click: this.insertImageUrl.bind(selectObj),
-                buttonModel: { content: imgInsert, cssClass: 'e-flat e-insertImage' + ' ' + this.parent.cssClass, isPrimary: true, disabled: true }
+                buttonModel: { content: imgInsert, cssClass: 'e-flat e-insertImage' + this.parent.getCssClass(true), isPrimary: true, disabled: true }
             },
             {
                 click: (e: MouseEvent) => {
                     this.cancelDialog(e);
                 },
-                buttonModel: { cssClass: 'e-flat e-cancel' + ' ' + this.parent.cssClass, content: imglinkCancel }
+                buttonModel: { cssClass: 'e-flat e-cancel' + this.parent.getCssClass(true), content: imglinkCancel }
             }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
@@ -1401,12 +1409,12 @@ export class Image {
                 this.dialogObj = null;
             }
         };
-        const dialogContent: HTMLElement = this.parent.createElement('div', { className: 'e-img-content' + ' ' + this.parent.cssClass });
+        const dialogContent: HTMLElement = this.parent.createElement('div', { className: 'e-img-content' + this.parent.getCssClass(true) });
         if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
             || this.parent.editorMode === 'HTML') {
             dialogContent.appendChild(this.imgUpload(e));
         }
-        const linkHeader: HTMLElement = this.parent.createElement('div', { className: 'e-linkheader' + ' ' + this.parent.cssClass });
+        const linkHeader: HTMLElement = this.parent.createElement('div', { className: 'e-linkheader' + this.parent.getCssClass(true) });
         const linkHeaderText: string = this.i10n.getConstant('imageLinkHeader');
         if (this.parent.editorMode === 'HTML') {
             linkHeader.innerHTML = linkHeaderText;
@@ -1518,10 +1526,10 @@ export class Image {
 
     // eslint-disable-next-line
     private imageUrlPopup(e: IImageNotifyArgs): HTMLElement {
-        const imgUrl: HTMLElement = this.parent.createElement('div', { className: 'imgUrl' + ' ' + this.parent.cssClass });
+        const imgUrl: HTMLElement = this.parent.createElement('div', { className: 'imgUrl' + this.parent.getCssClass(true) });
         const placeUrl: string = this.i10n.getConstant('imageUrl');
         this.inputUrl = this.parent.createElement('input', {
-            className: 'e-input e-img-url' + ' ' + this.parent.cssClass,
+            className: 'e-input e-img-url' + this.parent.getCssClass(true),
             attrs: { placeholder: placeUrl, spellcheck: 'false', 'aria-label': this.i10n.getConstant('imageLinkHeader') }
         });
         this.inputUrl.addEventListener('input', () => {
@@ -1592,7 +1600,7 @@ export class Image {
         const selectNode: HTMLImageElement = (e as IImageNotifyArgs).selectNode[0] as HTMLImageElement;
         const imgHeight: string = this.i10n.getConstant('imageHeight');
         const imgWidth: string = this.i10n.getConstant('imageWidth');
-        const imgSizeWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-sizewrap' + ' ' + this.parent.cssClass });
+        const imgSizeWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-sizewrap' + this.parent.getCssClass(true) });
         const widthVal: string = isNullOrUndefined(this.changedWidthValue) && (selectNode.style.width.toString() === 'auto' ||
                 selectNode.style.width !== '') ? selectNode.style.width : !isNullOrUndefined(this.changedWidthValue) ?
                 this.changedWidthValue : (parseInt(selectNode.getClientRects()[0].width.toString(), 10)).toString();
@@ -1601,10 +1609,10 @@ export class Image {
                 this.changedHeightValue : (parseInt(selectNode.getClientRects()[0].height.toString(), 10)).toString();
         this.changedWidthValue = null;
         this.changedHeightValue = null;
-        const content: string = '<div class="e-rte-label' + ' ' + this.parent.cssClass + '"><label>' + imgWidth +
-            '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"><input type="text" id="imgwidth" class="e-img-width' + ' ' + this.parent.cssClass + '/></div>' +
-            '<div class="e-rte-label' + ' ' + this.parent.cssClass + '">' + '<label>' + imgHeight + '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"> ' +
-            '<input type="text" id="imgheight" class="e-img-height' + ' ' + this.parent.cssClass + '"/></div>';
+        const content: string = '<div class="e-rte-label' + this.parent.getCssClass(true) + '"><label>' + imgWidth +
+            '</label></div><div class="e-rte-field' + this.parent.getCssClass(true) + '"><input type="text" id="imgwidth" class="e-img-width' + this.parent.getCssClass(true) + '"/></div>' +
+            '<div class="e-rte-label' + this.parent.getCssClass(true) + '">' + '<label>' + imgHeight + '</label></div><div class="e-rte-field' + this.parent.getCssClass(true) + '"> ' +
+            '<input type="text" id="imgheight" class="e-img-height' + this.parent.getCssClass(true) + '"/></div>';
         const contentElem: DocumentFragment = parseHtml(content);
         contentElem.getElementById('imgwidth').setAttribute('value', widthVal);
         contentElem.getElementById('imgheight').setAttribute('value', heightVal);
@@ -1612,7 +1620,7 @@ export class Image {
         this.widthNum = new TextBox({
             value: formatUnit(widthVal as string),
             enableRtl: this.parent.enableRtl,
-            cssClass: this.parent.cssClass,
+            cssClass: this.parent.getCssClass(),
             input: (e: InputEventArgs) => {
                 this.inputWidthValue = formatUnit(this.inputValue(e.value));
             }
@@ -1622,7 +1630,7 @@ export class Image {
         this.heightNum = new TextBox({
             value: formatUnit(heightVal as string),
             enableRtl: this.parent.enableRtl,
-            cssClass: this.parent.cssClass,
+            cssClass: this.parent.getCssClass(),
             input: (e: InputEventArgs) => {
                 this.inputHeightValue = formatUnit(this.inputValue(e.value));
             }
@@ -1698,16 +1706,16 @@ export class Image {
         } else {
             save = e.selection; selectParent = e.selectParent;
         }
-        const uploadParentEle: HTMLElement = this.parent.createElement('div', { className: 'e-img-uploadwrap e-droparea' + ' ' + this.parent.cssClass });
+        const uploadParentEle: HTMLElement = this.parent.createElement('div', { className: 'e-img-uploadwrap e-droparea' + this.parent.getCssClass(true) });
         const deviceImgUpMsg: string = this.i10n.getConstant('imageDeviceUploadMessage');
         const imgUpMsg: string = this.i10n.getConstant('imageUploadMessage');
-        const span: HTMLElement = this.parent.createElement('span', { className: 'e-droptext' + ' ' + this.parent.cssClass });
+        const span: HTMLElement = this.parent.createElement('span', { className: 'e-droptext' + this.parent.getCssClass(true) });
         const spanMsg: HTMLElement = this.parent.createElement('span', {
-            className: 'e-rte-upload-text' + ' ' + this.parent.cssClass, innerHTML: ((Browser.isDevice) ? deviceImgUpMsg : imgUpMsg)
+            className: 'e-rte-upload-text' + this.parent.getCssClass(true), innerHTML: ((Browser.isDevice) ? deviceImgUpMsg : imgUpMsg)
         });
         span.appendChild(spanMsg);
         const btnEle: HTMLElement = this.parent.createElement('button', {
-            className: 'e-browsebtn' + ' ' + this.parent.cssClass, id: this.rteID + '_insertImage', attrs: { autofocus: 'true', type: 'button' }
+            className: 'e-browsebtn' + this.parent.getCssClass(true), id: this.rteID + '_insertImage', attrs: { autofocus: 'true', type: 'button' }
         });
         span.appendChild(btnEle); uploadParentEle.appendChild(span);
         const browserMsg: string = this.i10n.getConstant('browse');
@@ -1717,7 +1725,7 @@ export class Image {
         const btnClick: HTMLElement = (Browser.isDevice) ? span : btnEle;
         EventHandler.add(btnClick, 'click', this.fileSelect, this);
         const uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
-            id: this.rteID + '_upload', attrs: { type: 'File', name: 'UploadFiles' }, className: this.parent.cssClass
+            id: this.rteID + '_upload', attrs: { type: 'File', name: 'UploadFiles' }, className: this.parent.getCssClass()
         });
         uploadParentEle.appendChild(uploadEle);
         let altText: string;
@@ -1725,7 +1733,7 @@ export class Image {
         let filesData: FileInfo[];
         this.uploadObj = new Uploader({
             asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, removeUrl: this.parent.insertImageSettings.removeUrl },
-            dropArea: span, multiple: false, enableRtl: this.parent.enableRtl, cssClass: this.parent.cssClass,
+            dropArea: span, multiple: false, enableRtl: this.parent.enableRtl, cssClass: this.parent.getCssClass(),
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: (e: SelectedEventArgs) => {
                 proxy.isImgUploaded = true;
@@ -1798,9 +1806,9 @@ export class Image {
             failure: (e: object) => {
                 this.parent.trigger(events.imageUploadFailed, e);
             },
-            removing: () => {
+            removing: (removeEventArgs: object) => {
                 // eslint-disable-next-line
-                this.parent.trigger(events.imageRemoving, e, (e: RemovingEventArgs) => {
+                this.parent.trigger(events.imageRemoving, removeEventArgs, (e: RemovingEventArgs) => {
                     proxy.isImgUploaded = false;
                     (this.dialogObj.getButtons(0) as Button).element.disabled = true;
                     proxy.inputUrl.removeAttribute('disabled'); if (proxy.uploadUrl) {
@@ -2075,7 +2083,7 @@ export class Image {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
                 removeUrl: this.parent.insertImageSettings.removeUrl
             },
-            cssClass: classes.CLS_RTE_DIALOG_UPLOAD + ' ' + this.parent.cssClass,
+            cssClass: classes.CLS_RTE_DIALOG_UPLOAD + this.parent.getCssClass(true),
             dropArea: this.parent.element,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             removing: () => {
@@ -2278,8 +2286,8 @@ export class Image {
      */
     /* eslint-enable */
     public destroy(): void {
-        this.prevSelectedImgEle = undefined;
         if (isNOU(this.parent)) { return; }
+        this.prevSelectedImgEle = undefined;
         this.removeEventListener();
     }
 

@@ -105,7 +105,7 @@ export class DataBind {
                         sRowIdx = sCellIdx[0]; sColIdx = sCellIdx[1];
                         if (result && result.length) {
                             if (!range.info.count) { count = e.count; range.info.count = e.count; }
-                            flds = Object.keys(result[0]);
+                            flds = range.info.flds || Object.keys(result[0]);
                             if (!range.info.fldLen) { range.info.fldLen = flds.length; range.info.flds = flds; }
                             if (range.info.insertColumnRange) {
                                 let insertCount: number = 0;

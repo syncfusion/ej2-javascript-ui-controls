@@ -6,7 +6,7 @@ import { Popup } from '@syncfusion/ej2-popups';
 import { Schedule } from '../base/schedule';
 import { EJ2Instance, ActionEventArgs, CellClickEventArgs, DateRangeTemplateArgs } from '../base/interface';
 import { View } from '../base/type';
-import { ViewsModel } from '../models/models';
+import { ToolbarItemModel, ViewsModel } from '../models/models';
 import * as events from '../base/constant';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
@@ -79,7 +79,7 @@ export class HeaderRenderer {
     }
 
     private renderToolbar(): void {
-        const items: ItemModel[] = this.getItems();
+        const items: ItemModel[] = (this.parent.toolbarItems && this.parent.toolbarItems.length > 0) ? this.getToolbarItems() : this.getItems();
         this.parent.trigger(events.actionBegin, { requestType: 'toolbarItemRendering', items: items }, (args: ActionEventArgs) => {
             this.toolbarObj = new Toolbar({
                 items: args.items,
@@ -89,6 +89,7 @@ export class HeaderRenderer {
                 enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 locale: this.parent.locale
             });
+            this.toolbarObj.root = this.parent.root ? this.parent.root : this.parent;
             this.toolbarObj.appendTo(this.parent.element.querySelector('.' + cls.HEADER_TOOLBAR) as HTMLElement);
             const prevNavEle: HTMLElement = this.toolbarObj.element.querySelector('.e-prev') as HTMLElement;
             if (prevNavEle) {
@@ -220,20 +221,145 @@ export class HeaderRenderer {
         return util.capitalizeFirstWord(dateString, 'single');
     }
 
+    private getItemModel(propItem: ToolbarItemModel): ToolbarItemModel {
+        const item: ToolbarItemModel = {};
+        if (propItem.id) {
+            item.id = propItem.id;
+        }
+        if (propItem.text) {
+            item.text = propItem.text;
+        }
+        if (propItem.tooltipText) {
+            item.tooltipText = propItem.tooltipText;
+        }
+        if (propItem.prefixIcon) {
+            item.prefixIcon = propItem.prefixIcon;
+        }
+        if (propItem.cssClass) {
+            item.cssClass = propItem.cssClass;
+        }
+        if (propItem.showTextOn !== 'Both') {
+            item.showTextOn = propItem.showTextOn;
+        }
+        if (propItem.template) {
+            item.template = propItem.template;
+        }
+        if (propItem.disabled) {
+            item.disabled = propItem.disabled;
+        }
+        if (propItem.width !== 'auto') {
+            item.width = propItem.width;
+        }
+        if (propItem.suffixIcon) {
+            item.suffixIcon = propItem.suffixIcon;
+        }
+        if (propItem.align !== 'Left') {
+            item.align = propItem.align;
+        }
+        if (propItem.overflow !== 'None') {
+            item.overflow = propItem.overflow;
+        }
+        if (propItem.htmlAttributes) {
+            item.htmlAttributes = propItem.htmlAttributes;
+        }
+        if (propItem.type !== 'Button') {
+            item.type = propItem.type;
+        }
+        if (propItem.visible !== true) {
+            item.visible = propItem.visible;
+        }
+        if (propItem.showAlwaysInPopup) {
+            item.showAlwaysInPopup = propItem.showAlwaysInPopup;
+        }
+        if (propItem.tabIndex !== -1) {
+            item.tabIndex = propItem.tabIndex;
+        }
+        return item;
+    }
+
+    private getToolbarItems(): ItemModel[] {
+        const items: ItemModel[] = [];
+        let propItem: ToolbarItemModel;
+        for (const item of this.parent.toolbarItems) {
+            propItem = this.getItemModel(item);
+            let tbItem: ItemModel;
+            if (item.name) {
+                switch (item.name) {
+                    case 'Today':
+                        tbItem = {
+                            showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-day',
+                            text: this.l10n.getConstant('today'), cssClass: 'e-today', overflow: 'Show'
+                        };
+                        tbItem.align = propItem.align ? propItem.align : item.align;
+                        items.push({...tbItem, ...propItem});
+                        break;
+                    case 'Previous':
+                        tbItem = {
+                            prefixIcon: 'e-icon-prev', tooltipText: 'Previous', overflow: 'Show',
+                            cssClass: 'e-prev', htmlAttributes: { 'role': 'navigation' }
+                        };
+                        tbItem.align = propItem.align ? propItem.align : item.align;
+                        items.push({...tbItem, ...propItem});
+                        break;
+                    case 'Next':
+                        tbItem = {
+                            prefixIcon: 'e-icon-next', tooltipText: 'Next', overflow: 'Show',
+                            cssClass: 'e-next', htmlAttributes: { 'role': 'navigation' }
+                        };
+                        tbItem.align = propItem.align ? propItem.align : item.align;
+                        items.push({...tbItem, ...propItem});
+                        break;
+                    case 'DateRangeText':
+                        tbItem = {
+                            text: this.getDateRangeText(), suffixIcon: 'e-icon-down-arrow', cssClass: 'e-date-range',
+                            overflow: 'Show',
+                            htmlAttributes: { 'aria-atomic': 'true', 'aria-live': 'assertive', 'role': 'navigation' }
+                        };
+                        tbItem.align = propItem.align ? propItem.align : item.align;
+                        items.push({...tbItem, ...propItem});
+                        break;
+                    case 'NewEvent':
+                        tbItem = {
+                            showAlwaysInPopup: (this.parent.isAdaptive || this.parent.enableAdaptiveUI), prefixIcon: 'e-icon-add',
+                            text: this.l10n.getConstant('newEvent'), cssClass: 'e-add', overflow: 'Show'
+                        };
+                        tbItem.align = propItem.align ? propItem.align : item.align;
+                        items.push({...tbItem, ...propItem});
+                        break;
+                    case 'Views':
+                        if (this.parent.views.length > 1) {
+                            for (const view of this.parent.views) {
+                                tbItem = this.getItemObject(view);
+                                tbItem.align = propItem.align ? propItem.align : item.align;
+                                items.push({...tbItem, ...propItem});
+                            }
+                        }
+                        break;
+                    case 'Custom':
+                        items.push(item);
+                        break;
+                }
+            } else {
+                items.push(item);
+            }
+        }
+        return items;
+    }
+
     private getItems(): ItemModel[] {
         const items: ItemModel[] = [];
         items.push({
             align: 'Left', prefixIcon: 'e-icon-prev', tooltipText: 'Previous', overflow: 'Show',
-            cssClass: 'e-prev', htmlAttributes: { 'role': 'navigation' }
+            cssClass: 'e-prev'
         });
         items.push({
             align: 'Left', prefixIcon: 'e-icon-next', tooltipText: 'Next', overflow: 'Show',
-            cssClass: 'e-next', htmlAttributes: { 'role': 'navigation' }
+            cssClass: 'e-next'
         });
         items.push({
             align: 'Left', text: this.getDateRangeText(), suffixIcon: 'e-icon-down-arrow', cssClass: 'e-date-range',
             overflow: 'Show',
-            htmlAttributes: { 'aria-atomic': 'true', 'aria-live': 'assertive', 'role': 'navigation' }
+            htmlAttributes: { 'aria-atomic': 'true', 'aria-live': 'assertive' }
         });
         if (this.parent.isAdaptive || this.parent.enableAdaptiveUI) {
             items.push({

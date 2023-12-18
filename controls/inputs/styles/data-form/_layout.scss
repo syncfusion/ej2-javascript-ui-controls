@@ -1,0 +1,223 @@
+@include export-module('data-form-layout') {
+
+  /*! data-form layout */
+  #{&}.e-data-form {
+
+    #{if(&, '&', '*')} .e-form-label {
+      font-size: $field-label-font-size;
+      margin-bottom: $field-label-margin-bottom;
+      font-weight: $field-label-font-weight;
+    }
+
+    #{if(&, '&', '*')} .e-form-layout {
+      display: grid;
+    }
+
+    #{if(&, '&', '*')} .e-grid-col-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #{if(&, '&', '*')} .e-grid-col-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    #{if(&, '&', '*')} .e-grid-col-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    #{if(&, '&', '*')} .e-grid-col-5 {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    #{if(&, '&', '*')} .e-grid-col-6 {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    #{if(&, '&', '*')} .e-grid-col-7 {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    #{if(&, '&', '*')} .e-grid-col-8 {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+
+    #{if(&, '&', '*')} .e-grid-col-9 {
+      grid-template-columns: repeat(9, minmax(0, 1fr));
+    }
+
+    #{if(&, '&', '*')} .e-grid-col-10 {
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+    }
+
+    #{if(&, '&', '*')} .e-grid-col-11 {
+      grid-template-columns: repeat(11, minmax(0, 1fr));
+    }
+
+    #{if(&, '&', '*')} .e-grid-col-12 {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+
+    #{if(&, '&', '*')} .e-colspan-1 {
+      grid-column: span 1/span 1;
+    }
+
+    #{if(&, '&', '*')} .e-colspan-2 {
+      grid-column: span 2/span 2;
+    }
+
+    #{if(&, '&', '*')} .e-colspan-3 {
+      grid-column: span 3/span 3;
+    }
+
+    #{if(&, '&', '*')} .e-colspan-4 {
+      grid-column: span 4/span 4;
+    }
+
+    #{if(&, '&', '*')} .e-colspan-5 {
+      grid-column: span 5/span 5;
+    }
+
+    #{if(&, '&', '*')} .e-colspan-6 {
+      grid-column: span 6/span 6;
+    }
+
+    #{if(&, '&', '*')} .e-colspan-7 {
+      grid-column: span 7/span 7;
+    }
+
+    #{if(&, '&', '*')} .e-colspan-8 {
+      grid-column: span 8/span 8;
+    }
+
+    #{if(&, '&', '*')} .e-colspan-9 {
+      grid-column: span 9/span 9;
+    }
+
+    #{if(&, '&', '*')} .e-colspan-10 {
+      grid-column: span 10/span 10;
+    }
+
+    #{if(&, '&', '*')} .e-colspan-11 {
+      grid-column: span 11/span 11;
+    }
+
+    #{if(&, '&', '*')} .e-colspan-12 {
+      grid-column: span 12/span 12;
+    }
+
+    
+
+    .e-label-left {
+
+      .e-form-item-wrapper {
+        flex: 1 1 auto;
+        max-width: calc(75% - 12px);
+      }
+
+      .e-form-label {
+        margin-right: 12px;
+        width: 25%;
+        text-align: end;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: flex-start;
+      }
+
+      .validation-message {
+        display: flex;
+      }
+    }
+
+    #{if(&, '&', '*')} .e-form-group {
+      border: $form-group-border-none;
+      padding: $form-padding-zero;
+      margin: $form-margin-zero;
+
+      #{if(&, '&', '*')} .e-group-title {
+        position: $form-group-title-position;
+        display: $form-group-title-display;
+        padding-bottom: $form-group-title-padding-bottom;
+
+        /* Gap between text and border */
+        margin-bottom: $form-group-title-margin-bottom;
+        font-size: $form-group-title-font-size;
+
+        #{if(&, '&', '*')}::after {
+          content: '';
+          position: $form-group-title-border-position;
+          bottom: $form-group-title-border-bottom;
+          left: $form-group-title-border-left;
+          width: $form-group-title-border-width;
+          height: $form-group-title-border-height;
+          border-bottom: $form-group-title-border-bottom-style;
+        }
+      }
+    }
+
+    #{if(&, '&', '*')} .e-label-top {
+      display: $form-display-flex;
+      flex-direction: $form-label-top-direction;
+      margin-top: $form-layout-margin-top;
+
+      .e-label-right {
+        display: flex;
+        align-items: center;
+  
+        .e-switch-wrapper + .e-form-label {
+          margin-top: 3px;
+          margin-left: 5px;
+        }
+    
+        .e-checkbox-wrapper + .e-form-label {
+          margin-top: $field-label-right-margin-top;
+        }
+      }
+    }
+
+    #{if(&, '&', '*')} .e-label-left {
+      display: $form-display-flex;
+      text-align: $form-label-text-align;
+      margin-top: $form-layout-margin-top;
+    }
+
+    #{if(&, '&', '*')} .e-button-left {
+      justify-content: $form-button-left-justify;
+    }
+
+    #{if(&, '&', '*')} .e-button-right {
+      justify-content: $form-button-right-justify;
+    }
+
+    #{if(&, '&', '*')} .e-button-center {
+      justify-content: $form-button-center-justify;
+    }
+
+    #{if(&, '&', '*')} .e-button-left,
+    #{if(&, '&', '*')} .e-button-right,
+    #{if(&, '&', '*')} .e-button-center,
+    #{if(&, '&', '*')} .e-button-stretch {
+      margin-top: 24px;
+      display: $form-display-flex;
+      gap: 10px;
+
+      #{if(&, '&', '*')} .e-btn {
+        border-radius: $form-button-border-radius;
+        padding: $form-button-padding;
+      }
+    }
+
+    #{if(&, '&', '*')} .e-button-stretch {
+      #{if(&, '&', '*')} .e-btn {
+        width: 100%;
+      }
+    }
+
+    > :first-child.e-form-layout {
+      margin-top: 0;
+    }
+
+    #{if(&, '&', '*')} .e-form-group-layout {
+      display: grid;
+    }
+  }
+}

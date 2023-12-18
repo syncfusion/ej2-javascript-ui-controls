@@ -864,6 +864,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             opensOn: 'Custom',
             showTipPointer: false,
             cssClass: 'e-color-picker-tooltip',
+            htmlAttributes: {title: 'tooltip'},
             beforeOpen: (args: TooltipEventArgs) => {
                 this.tooltipEle = args.element;
             },
@@ -873,6 +874,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         tooltip.appendTo(this.container);
         tooltip.open(this.container);
         this.tooltipEle.style.zIndex = getZindexPartial(this.tooltipEle).toString();
+        this.tooltipEle.setAttribute('aria-label', 'colorpicker-tooltip');
         select('.e-tip-content', this.tooltipEle).appendChild(this.createElement('div', { className: 'e-tip-transparent' }));
     }
 
@@ -1281,8 +1283,25 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.firstPaletteFocus();
         this.createInput();
         this.refreshPopupPos();
+        //for image editor popup position refreshing
+        if (this.element.parentElement && this.element.parentElement.parentElement && this.element.parentElement.parentElement.classList.contains('e-ie-ddb-popup')) { 
+            this.refreshImageEditorPopupPos();
+        };
         this.wireEvents();
         this.trigger('onModeSwitch', <ModeSwitchEventArgs>{ element: this.container, mode: 'Palette'});
+    }
+
+    //for image editor popup position refreshing
+    private refreshImageEditorPopupPos(): void {
+        if (Browser.isDevice) {
+            const popupEle: HTMLElement = this.getPopupEle();
+            popupEle.style.left = formatUnit(0 + pageXOffset);
+            popupEle.style.top = formatUnit(0 + pageYOffset);
+            const btnElem: HTMLElement = document.querySelector(`#${this.element.parentElement.parentElement.id.split('-popup')[0]}`);
+            if (btnElem) {
+                (popupEle.parentElement as any).ej2_instances[0].refreshPosition(btnElem);
+            }
+        }
     }
 
     private refreshPopupPos(): void {
@@ -1407,6 +1426,10 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.getDragHandler().focus();
         this.createInput();
         this.refreshPopupPos();
+        //for image editor popup position refreshing
+        if (this.element.parentElement && this.element.parentElement.parentElement && this.element.parentElement.parentElement.classList.contains('e-ie-ddb-popup')) { 
+            this.refreshImageEditorPopupPos();
+        };
         this.wireEvents();
         this.trigger('onModeSwitch', <ModeSwitchEventArgs>{ element: this.container, mode: 'Picker'});
     }
@@ -1419,6 +1442,9 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         if (!this.inline) {
             this.closePopup(e);
             this.splitBtn.element.focus();
+        } else if (ele.classList.contains(CANCEL)) {
+            const beforeCloseArgs: BeforeOpenCloseEventArgs = { element: this.container, event: e, cancel: false };
+            this.trigger('beforeClose', beforeCloseArgs);
         }
     }
 

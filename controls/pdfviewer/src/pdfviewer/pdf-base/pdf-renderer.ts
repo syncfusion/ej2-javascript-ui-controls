@@ -1110,7 +1110,7 @@ export class PdfRenderer {
                     if(isRenderText){
                         textDetails = textData.extractedTextDetails;
                     }
-                    // eslint-disable-next-line max-len
+                    // eslint-disable-next-line security/detect-object-injection
                     pageTextDataCollection[pageIndex] = new PageTextData( new SizeBase(this.getPageSize(pageIndex).width, this.getPageSize(pageIndex).height), textDetails.textDataCollection, textDetails.extractedText);
                     if (isRenderText){
                         // eslint-disable-next-line max-len

@@ -1,0 +1,5 @@
+@include export-module('stepper-fluent-icons') {
+  .e-step-indicator::before {
+    content: '\e8db';
+  }
+}

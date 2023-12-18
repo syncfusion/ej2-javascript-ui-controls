@@ -91,7 +91,17 @@ export class Render {
                 this.parent[`${lastRowBorder}`](args.row as HTMLTableRowElement, true);
             }
         }
-        this.parent.trigger(events.rowDataBound, args);
+        if ((<{ isReact?: boolean }>this.parent).isReact) {
+            const renderReactTemplates: string = 'renderReactTemplates';
+            // eslint-disable-next-line @typescript-eslint/no-this-alias
+            const thisRef: Render = this;
+            // tslint:disable-next-line:typedef
+            thisRef.parent[`${renderReactTemplates}`](function () {
+                thisRef.parent.trigger(events.rowDataBound, args);
+            });
+        } else {
+            this.parent.trigger(events.rowDataBound, args);
+        }
     }
     /**
      * cell renderer for tree column index cell
@@ -231,7 +241,10 @@ export class Render {
                 }
             }
         }
-        if (isNullOrUndefined(this.parent.rowTemplate)) {
+        this.parent['args'] = args;
+        if ((isNullOrUndefined(this.parent.rowTemplate) && !((<{ isReact?: boolean }>this.parent).isReact))
+            || (((<{ isReact?: boolean }>this.parent).isReact) &&
+                !args.column['template'])) {
             this.parent.trigger(events.queryCellInfo, args);
         }
     }
@@ -267,7 +280,12 @@ export class Render {
                         this.parent.grid[`${portals}`] = this.parent[`${portals}`];
                     }
                     this.parent.notify('renderReactTemplate', this.parent[`${portals}`]);
-                    this.parent[`${renderReactTemplates}`]();
+                    // eslint-disable-next-line @typescript-eslint/no-this-alias
+                    const thisRef: Render = this;
+                    // tslint:disable-next-line:typedef
+                    thisRef.parent[`${renderReactTemplates}`](function () {
+                        thisRef.parent.trigger(events.queryCellInfo, args);
+                    });
                 } else {
                     const str: string = 'isStringTemplate';
                     const result: Element[] = args.column[`${templateFn}`](
@@ -322,12 +340,13 @@ export class Render {
         this.templateResult = args.template;
     }
 
-    private reactTemplateRender(args: Object[]): void {
+    // eslint-disable-next-line
+    private reactTemplateRender(args: Object[], callBack?: any): void {
         const renderReactTemplates: string = 'renderReactTemplates';
         const portals: string = 'portals';
         this.parent[`${portals}`] = args;
         this.parent.notify('renderReactTemplate', this.parent[`${portals}`]);
-        this.parent[`${renderReactTemplates}`]();
+        this.parent[`${renderReactTemplates}`](callBack);
     }
 
     public destroy(): void {

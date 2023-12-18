@@ -1606,132 +1606,132 @@ describe("EJ2-58929 - Searching after scroll shows no records to display in case
   });
 });
 
-// describe("EJ2-59214- Row Drag And Drop support with Virtual Scrolling", () => {
-//   let TreeGridObj: TreeGrid;
-//   let actionComplete: () => void;
-//   beforeAll((done: Function) => {
-//     TreeGridObj = createGrid(
-//       {
-//         dataSource: editVirtualData,
-//         enableVirtualization: true,
-//         allowSorting: true,
-//         allowFiltering: true,
-//         enableVirtualMaskRow: false,
-//         childMapping: "Crew",
-//         toolbar: ["Indent", "Outdent", "Add", "Delete", "Update", "Cancel"],
-//         editSettings: {
-//           allowAdding: true,
-//           allowEditing: true,
-//           allowDeleting: true,
-//           mode: "Cell",
-//           newRowPosition: "Below",
-//         },
-//         allowRowDragAndDrop: true,
-//         height: 400,
-//         treeColumnIndex: 1,
-//         columns: [
-//           {
-//             field: "TaskID",
-//             headerText: "Player Jersey",
-//             width: 140,
-//             textAlign: "Right",
-//             isPrimaryKey: true,
-//           },
-//           { field: "FIELD1", headerText: "Player Name", width: 140 },
-//           {
-//             field: "FIELD2",
-//             headerText: "Year",
-//             width: 120,
-//             textAlign: "Right",
-//           },
-//           {
-//             field: "FIELD3",
-//             headerText: "Stint",
-//             width: 120,
-//             textAlign: "Right",
-//           },
-//           {
-//             field: "FIELD4",
-//             headerText: "TMID",
-//             width: 120,
-//             textAlign: "Right",
-//           },
-//         ],
-//       },
-//       done
-//     );
-//   });
+describe("EJ2-59214- Row Drag And Drop support with Virtual Scrolling", () => {
+  let TreeGridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        enableVirtualization: true,
+        allowSorting: true,
+        allowFiltering: true,
+        enableVirtualMaskRow: false,
+        childMapping: "Crew",
+        toolbar: ["Indent", "Outdent", "Add", "Delete", "Update", "Cancel"],
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: "Cell",
+          newRowPosition: "Below",
+        },
+        allowRowDragAndDrop: true,
+        height: 400,
+        treeColumnIndex: 1,
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            width: 140,
+            textAlign: "Right",
+            isPrimaryKey: true,
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
 
-//   it("Initial Row Reorder Testing for Above, Child, Below positions", () => {
-//     TreeGridObj.rowDragAndDropModule.reorderRows([3], 1, "above");
-//     expect((TreeGridObj.flatData[1] as ITreeData)["TaskID"]).toBe(4);
-//     TreeGridObj.rowDragAndDropModule.reorderRows([1], 2, "child");
-//     expect((TreeGridObj.flatData[2] as ITreeData).childRecords.length).toBe(1);
-//     TreeGridObj.rowDragAndDropModule.reorderRows([3], 4, "below");
-//     expect((TreeGridObj.flatData[4] as ITreeData)["TaskID"]).toBe(4);
-//   });
+  it("Initial Row Reorder Testing for Above, Child, Below positions", () => {
+    TreeGridObj.rowDragAndDropModule.reorderRows([3], 1, "above");
+    expect((TreeGridObj.flatData[1] as ITreeData)["TaskID"]).toBe(4);
+    TreeGridObj.rowDragAndDropModule.reorderRows([1], 2, "child");
+    expect((TreeGridObj.flatData[2] as ITreeData).childRecords.length).toBe(1);
+    TreeGridObj.rowDragAndDropModule.reorderRows([3], 4, "below");
+    expect((TreeGridObj.flatData[4] as ITreeData)["TaskID"]).toBe(4);
+  });
 
-//   it("Scroll", (done: Function) => {
-//     let content: HTMLElement = <HTMLElement>TreeGridObj.getContent().firstChild;
-//     EventHandler.trigger(content, "wheel");
-//     content.scrollTop = 10;
-//     content.scrollTop = 2000;
-//     EventHandler.trigger(content, "scroll", { target: content });
-//     setTimeout(done, 500);
-//     done();
-//   });
+  it("Scroll", (done: Function) => {
+    let content: HTMLElement = <HTMLElement>TreeGridObj.getContent().firstChild;
+    EventHandler.trigger(content, "wheel");
+    content.scrollTop = 10;
+    content.scrollTop = 2000;
+    EventHandler.trigger(content, "scroll", { target: content });
+    setTimeout(done, 500);
+    done();
+  });
 
-//   it("Row Reorder Testing for Above, Child, Below positions After Scroll", () => {
-//     TreeGridObj.rowDragAndDropModule.reorderRows([102], 105, "above");
-//     expect((TreeGridObj.flatData[104] as ITreeData)["TaskID"]).toBe(103);
-//     TreeGridObj.rowDragAndDropModule.reorderRows([104], 106, "child");
-//     expect((TreeGridObj.flatData[105] as ITreeData).childRecords.length).toBe(
-//       1
-//     );
-//     TreeGridObj.rowDragAndDropModule.reorderRows([101], 103, "below");
-//     expect((TreeGridObj.flatData[102] as ITreeData)["TaskID"]).toBe(102);
-//   });
+  it("Row Reorder Testing for Above, Child, Below positions After Scroll", () => {
+    TreeGridObj.rowDragAndDropModule.reorderRows([102], 105, "above");
+    expect((TreeGridObj.flatData[104] as ITreeData)["TaskID"]).toBe(103);
+    TreeGridObj.rowDragAndDropModule.reorderRows([104], 106, "child");
+    expect((TreeGridObj.flatData[105] as ITreeData).childRecords.length).toBe(
+      1
+    );
+    TreeGridObj.rowDragAndDropModule.reorderRows([101], 103, "below");
+    expect((TreeGridObj.flatData[102] as ITreeData)["TaskID"]).toBe(102);
+  });
 
-//   it("Filtering the column", (done: Function) => {
-//     TreeGridObj.filterByColumn("FIELD2", "contains", "1968");
-//     done();
-//   });
+  it("Filtering the column", (done: Function) => {
+    TreeGridObj.filterByColumn("FIELD2", "contains", "1968");
+    done();
+  });
 
-//   it("Row Reorder Testing for Above, Child, Below positions After Filtering", () => {
-//     TreeGridObj.rowDragAndDropModule.reorderRows([5], 3, "above");
-//     expect((TreeGridObj.flatData[10] as ITreeData)["TaskID"]).toBe(21);
-//     TreeGridObj.rowDragAndDropModule.reorderRows([1], 4, "child");
-//     expect((TreeGridObj.flatData[14] as ITreeData).childRecords.length).toBe(1);
-//     TreeGridObj.rowDragAndDropModule.reorderRows([1], 4, "below");
-//     expect((TreeGridObj.flatData[15] as ITreeData)["TaskID"]).toBe(3);
-//     TreeGridObj.clearFiltering();
-//   });
+  it("Row Reorder Testing for Above, Child, Below positions After Filtering", () => {
+    TreeGridObj.rowDragAndDropModule.reorderRows([5], 3, "above");
+    expect((TreeGridObj.flatData[10] as ITreeData)["TaskID"]).toBe(21);
+    TreeGridObj.rowDragAndDropModule.reorderRows([1], 4, "child");
+    expect((TreeGridObj.flatData[14] as ITreeData).childRecords.length).toBe(1);
+    TreeGridObj.rowDragAndDropModule.reorderRows([1], 4, "below");
+    expect((TreeGridObj.flatData[15] as ITreeData)["TaskID"]).toBe(3);
+    TreeGridObj.clearFiltering();
+  });
 
-//   it("Sorting the column", (done: Function) => {
-//     TreeGridObj.sortByColumn("FIELD1", "Descending", true);
-//     done();
-//   });
+  it("Sorting the column", (done: Function) => {
+    TreeGridObj.sortByColumn("FIELD1", "Descending", true);
+    done();
+  });
 
-//   it("Row Reorder Testing for Above, Child, Below positions After Sorting", () => {
-//     TreeGridObj.rowDragAndDropModule.reorderRows([4], 0, "above");
-//     expect(
-//       (TreeGridObj.rowDragAndDropModule["draggedRecord"] as ITreeData).level
-//     ).toBe(0);
-//     TreeGridObj.rowDragAndDropModule.reorderRows([1], 4, "child");
-//     expect(
-//       (TreeGridObj.getCurrentViewRecords()[4] as ITreeData).childRecords.length
-//     ).toBe(1);
-//     TreeGridObj.rowDragAndDropModule.reorderRows([8], 5, "below");
-//     expect(
-//       (TreeGridObj.rowDragAndDropModule["draggedRecord"] as ITreeData).level
-//     ).toBe(0);
-//     TreeGridObj.rowDragAndDropModule.destroy();
-//   });
+  it("Row Reorder Testing for Above, Child, Below positions After Sorting", () => {
+    TreeGridObj.rowDragAndDropModule.reorderRows([4], 0, "above");
+    expect(
+      (TreeGridObj.rowDragAndDropModule["draggedRecord"] as ITreeData).level
+    ).toBe(0);
+    TreeGridObj.rowDragAndDropModule.reorderRows([1], 4, "child");
+    expect(
+      (TreeGridObj.getCurrentViewRecords()[4] as ITreeData).childRecords.length
+    ).toBe(1);
+    TreeGridObj.rowDragAndDropModule.reorderRows([8], 5, "below");
+    expect(
+      (TreeGridObj.rowDragAndDropModule["draggedRecord"] as ITreeData).level
+    ).toBe(0);
+    TreeGridObj.rowDragAndDropModule.destroy();
+  });
 
-//   afterAll(() => {
-//     destroy(TreeGridObj);
-//   });
-// });
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});
 
 describe("EJ2-62215 - When hierarchyMode is Both and perform searching at initial load, the error is thrown in case of Virtualization enabled", () => {
   let gridObj: TreeGrid;

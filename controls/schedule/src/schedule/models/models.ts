@@ -12,3 +12,4 @@ export * from './group-model';
 export * from './resources-model';
 export * from './quick-info-templates-model';
 export * from './header-rows-model';
+export * from './toolbar-model';

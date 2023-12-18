@@ -153,6 +153,36 @@
         content: '\e96b';
       }
     }
+
+    & .e-custom-f {
+      &::before {
+        content: '\e999';
+      }
+    }
+    
+    & .e-custom-g {
+      &::before {
+        content: '\e99a';
+      }
+    }
+    
+    & .e-custom-h {
+      &::before {
+        content: '\e99b';
+      }
+    }
+    
+    & .e-custom-i {
+      &::before {
+        content: '\e99c';
+      }
+    }
+    
+    & .e-custom-j {
+      &::before {
+        content: '\e99d';
+      }
+    }
   
     & .e-horizontal-flip {
       &::before {
@@ -274,6 +304,36 @@
   & .e-custom-e {
     &::before {
       content: '\e96b';
+    }
+  }
+
+  & .e-custom-f {
+    &::before {
+      content: '\e999';
+    }
+  }
+  
+  & .e-custom-g {
+    &::before {
+      content: '\e99a';
+    }
+  }
+  
+  & .e-custom-h {
+    &::before {
+      content: '\e99b';
+    }
+  }
+  
+  & .e-custom-i {
+    &::before {
+      content: '\e99c';
+    }
+  }
+  
+  & .e-custom-j {
+    &::before {
+      content: '\e99d';
     }
   }
   

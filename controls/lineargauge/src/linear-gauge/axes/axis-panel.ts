@@ -297,6 +297,7 @@ export class AxisLayoutPanel {
         const tick: Rect = axis.majorTickBounds;
         const label: Rect = axis.labelBounds;
         const border: number = pointer.border.width;
+        const textSize : Size = measureText(pointer.text, pointer.textStyle);
         if (this.gauge.orientation === 'Vertical') {
             if (pointer.position === 'Auto') {
                 x = (!axis.opposedPosition) ? (placement === 'Near') ? label.x : (placement === 'Center') ? tick.x : line.x :
@@ -304,11 +305,11 @@ export class AxisLayoutPanel {
                 x = !axis.opposedPosition ? ((pointer.placement === 'Far' ? ((pointer.markerType === 'Triangle' || pointer.markerType === 'Arrow') ? x - border : x + border) : ((pointer.markerType === 'InvertedTriangle' || pointer.markerType === 'InvertedArrow') ? x + border : x - border)) + (offset)) :
                     ((pointer.placement === 'Near' ? ((pointer.markerType === 'InvertedTriangle' || pointer.markerType === 'InvertedArrow') ? x + border : x - border) : ((pointer.markerType === 'Triangle' || pointer.markerType === 'Arrow') ? x - border : x + border)) + (offset));
             } else {
-                x = (pointer.position === 'Cross' ? line.x - pointer.width / 2 - offset :
+                x = (pointer.position === 'Cross' ? line.x - (pointer.markerType === 'Text' ? textSize.width : pointer.width / 2) - offset :
                     ((pointer.position === 'Inside' && !axis.opposedPosition) ||
                         (pointer.position === 'Outside' && axis.opposedPosition)) ?
                         (line.x - line.width / 2 - (pointer.markerType !== 'InvertedTriangle' && pointer.markerType !== 'Triangle' ?
-                            pointer.width : 0)) - offset : ((line.x + line.width / 2) + offset));
+                        (pointer.markerType === 'Text' ? textSize.width : pointer.width) : 0)) - offset : ((line.x + line.width / 2) + offset));
             }
             y = ((valueToCoefficient(pointer.currentValue, axis, this.gauge.orientation, range) * line.height) + line.y);
         } else {
@@ -318,11 +319,11 @@ export class AxisLayoutPanel {
                 y = !axis.opposedPosition ? ((pointer.placement === 'Far' ? ((pointer.markerType === 'Triangle' || pointer.markerType === 'Arrow') ? y - border : y + border) : ((pointer.markerType === 'InvertedTriangle' || pointer.markerType === 'InvertedArrow') ? y + border : y - border)) + (offset)) :
                     ((pointer.placement === 'Near' ? ((pointer.markerType === 'InvertedTriangle' || pointer.markerType === 'InvertedArrow') ? y + border : y - border) : ((pointer.markerType === 'Triangle' || pointer.markerType === 'Arrow') ? y - border : y + border)) + (offset));
             } else {
-                y = (pointer.position === 'Cross' ? line.y - pointer.height / 2 - offset :
+                y = (pointer.position === 'Cross' ? line.y - ((pointer.markerType === 'Text' ? textSize.height : pointer.height) / 2) - offset :
                     ((pointer.position === 'Inside' && !axis.opposedPosition) ||
                         (pointer.position === 'Outside' && axis.opposedPosition)) ?
                         (line.y - line.height / 2 - (pointer.markerType !== 'InvertedTriangle' && pointer.markerType !== 'Triangle' ?
-                            pointer.height : 0)) - offset : ((line.y + line.height / 2) + offset));
+                        (pointer.markerType === 'Text' ? textSize.height : pointer.height) : 0)) - offset : ((line.y + line.height / 2) + offset));
             }
             x = ((valueToCoefficient(pointer.currentValue, axis, this.gauge.orientation, range) * line.width) + line.x);
         }

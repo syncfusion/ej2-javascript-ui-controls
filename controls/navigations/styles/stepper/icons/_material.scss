@@ -1,0 +1,5 @@
+@include export-module('stepper-material-icons') {
+  .e-step-indicator::before {
+    content: '\e99e';
+  }
+}

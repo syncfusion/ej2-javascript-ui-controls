@@ -1,27 +1,4 @@
-import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Chart, ILegendRegions } from '../../chart';import { Font, Border, Margin, ContainerPadding } from '../model/base';import { Theme } from '../model/theme';import { MarginModel, FontModel, BorderModel, ContainerPaddingModel } from '../model/base-model';import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim, getTextAnchor } from '../utils/helper';import { RectOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { LegendPosition, LegendShape, ChartSeriesType, ChartShape, LegendMode } from '../../chart/utils/enum';import { Series } from '../../chart/series/chart-series';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { BulletChart } from '../../bullet-chart/bullet-chart';import { Alignment, LegendTitlePosition, TextWrap, LabelOverflow} from '../utils/enum';import { StockChart } from '../../stock-chart';
-
-/**
- * Interface for a class Location
- */
-export interface LocationModel {
-
-    /**
-     * X coordinate of the legend in pixels.
-     *
-     * @default 0
-     */
-
-    x?: number;
-
-    /**
-     * Y coordinate of the legend in pixels.
-     *
-     * @default 0
-     */
-
-    y?: number;
-
-}
+import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { Chart, ILegendRegions } from '../../chart';import { Font, Border, Margin, ContainerPadding, Location } from '../model/base';import { Theme } from '../model/theme';import { MarginModel, FontModel, BorderModel, ContainerPaddingModel, LocationModel } from '../model/base-model';import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim, getTextAnchor } from '../utils/helper';import { RectOption, textElement, stringToNumber } from '../utils/helper';import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';import { ChartSeriesType, ChartShape, LegendMode } from '../../chart/utils/enum';import { Series } from '../../chart/series/chart-series';import { AccumulationType } from '../../accumulation-chart/model/enum';import { AccumulationChart } from '../../accumulation-chart/accumulation';import { BulletChart } from '../../bullet-chart/bullet-chart';import { Alignment, LegendTitlePosition, TextWrap, LabelOverflow, LegendShape, LegendPosition} from '../utils/enum';import { StockChart } from '../../stock-chart';import { Chart3D } from '../../chart3d';
 
 /**
  * Interface for a class LegendSettings
@@ -29,7 +6,7 @@ export interface LocationModel {
 export interface LegendSettingsModel {
 
     /**
-     * If set to true, legend will be visible.
+     * If set to true, the legend will be displayed for the chart.
      *
      * @default true
      */
@@ -75,13 +52,13 @@ export interface LegendSettingsModel {
     location?: LocationModel;
 
     /**
-     * Position of the legend in the chart are,
-     * * Auto: Places the legend based on area type.
+     * Position of the legend in the chart. Available options include:
+     * * Auto: Places the legend based on the area type.
      * * Top: Displays the legend at the top of the chart.
      * * Left: Displays the legend at the left of the chart.
      * * Bottom: Displays the legend at the bottom of the chart.
      * * Right: Displays the legend at the right of the chart.
-     * * Custom: Displays the legend  based on the given x and y values.
+     * * Custom: Displays the legend based on the given x and y values.
      *
      * @default 'Auto'
      */
@@ -190,7 +167,7 @@ export interface LegendSettingsModel {
     opacity?: number;
 
     /**
-     * If set to true, series' visibility collapses based on the legend visibility.
+     * If set to true, series visibility collapses based on the legend visibility.
      *
      * @default true
      */
@@ -297,7 +274,7 @@ export interface LegendSettingsModel {
     isInversed?: boolean;
 
     /**
-     * If `reverse` set to true, then it reverse the legend items order.
+     * If `reverse` is set to true, it reverses the order of legend items.
      *
      * @default false
      */

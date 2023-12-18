@@ -2,8 +2,8 @@ import { Animation, AnimationOptions, isNullOrUndefined, animationMode } from '@
 import { LinearGauge } from '../../linear-gauge';
 import { Axis, Pointer } from './axis';
 import { animationComplete } from '../model/constant';
-import { Size, valueToCoefficient, PathOption } from '../utils/helper';
-import { calculateShapes, getBox, VisibleRange } from '../utils/helper';
+import { Size, valueToCoefficient, PathOption, TextOption, Rect } from '../utils/helper';
+import { calculateShapes, calculateTextPosition, getBox, VisibleRange } from '../utils/helper';
 
 /**
  * To handle the animation for gauge
@@ -27,7 +27,7 @@ export class Animations {
 
     public performMarkerAnimation(element: Element, axis: Axis, pointer: Pointer): void {
         const markerElement: HTMLElement = <HTMLElement>element;
-        let options: PathOption; let timeStamp: number;
+        let options: PathOption; let textOptions: TextOption; let timeStamp: number;
         const range: VisibleRange = axis.visibleRange;
         const rectHeight: number = (this.gauge.orientation === 'Vertical') ? axis.lineBounds.height : axis.lineBounds.width;
         const rectY: number = (this.gauge.orientation === 'Vertical') ? axis.lineBounds.y : axis.lineBounds.x;
@@ -40,6 +40,11 @@ export class Animations {
         options = calculateShapes(
             pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),
             pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
+        if (pointer.markerType === 'Text') {
+            textOptions = new TextOption(markerElement.id, 0, 0, 'middle', pointer.text, null, 'auto');
+            textOptions = calculateTextPosition(pointer.bounds, pointer.markerType,
+                                textOptions, this.gauge.orientation, axis, pointer);
+        }
         let currentValue: number;
         let start: number = typeof(pointer.startValue) === 'string' ? parseInt(pointer.startValue, 10) : pointer.startValue;
         const end: number = pointer.currentValue;
@@ -48,10 +53,13 @@ export class Animations {
         const currentPath: string = options.d;
         const cx: number = options['cx'];
         const cy: number = options['cy'];
-        const x: number = options['x'];
-        const y: number = options['y'];
+        const x: number = pointer.markerType === 'Text' ? textOptions['x'] : options['x'];
+        const y: number = pointer.markerType === 'Text' ? textOptions['y'] : options['y'];
         new Animation({}).animate(markerElement, {
-            duration: (pointer.animationDuration === 0 && animationMode === 'Enable') ? 1000: pointer.animationDuration,
+            name: 'Linear' as any,
+            duration: (animationMode === 'Enable' && ((pointer.animationDuration === 0 && !this.gauge.allowLoadingAnimation) ||
+                this.gauge.animationDuration === 0)) ? 1000 : (this.gauge.allowLoadingAnimation && pointer.animationDuration === 0 ?
+                    (this.gauge.animationDuration / this.gauge.splitUpCount) : pointer.animationDuration),
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp >= args.delay) {
                     timeStamp = ((args.timeStamp - args.delay) / args.duration);
@@ -62,30 +70,40 @@ export class Animations {
                         options = calculateShapes(
                             pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),
                             pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
+                        if (pointer.markerType === 'Text') {
+                            textOptions = calculateTextPosition(pointer.bounds, pointer.markerType,
+                                textOptions, this.gauge.orientation, axis, pointer);
+                        }
                         if (!isNullOrUndefined(options['r'])) {
                             markerElement.setAttribute('cy', options['cy'].toString());
                         }
-                        else if (!isNullOrUndefined(options['y'])) {
-                            markerElement.setAttribute('y', options['y'].toString());
+                        else if (!isNullOrUndefined(pointer.markerType === 'Text' ? textOptions['y'] : options['y'])) {
+                            markerElement.setAttribute('y', pointer.markerType === 'Text' ? textOptions['y'] : options['y'].toString());
                         }
                         else {
                             markerElement.setAttribute('d', options.d);
                         }
+                        markerElement.style.visibility = 'visible';
                     } else {
                         pointer.bounds.x = (valueToCoefficient(currentValue, axis, this.gauge.orientation, range) *
                             rectHeight) + rectY;
                         options = calculateShapes(
                             pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),
                             pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
+                        if (pointer.markerType === 'Text') {
+                            textOptions = calculateTextPosition(pointer.bounds, pointer.markerType,
+                                textOptions, this.gauge.orientation, axis, pointer);
+                        }
                         if (!isNullOrUndefined(options['r'])) {
                             markerElement.setAttribute('cx', options['cx'].toString());
                         }
-                        else if (!isNullOrUndefined(options['x'])) {
-                            markerElement.setAttribute('x', options['x'].toString());
+                        else if (!isNullOrUndefined(pointer.markerType === 'Text' ? textOptions['x'] : options['x'])) {
+                            markerElement.setAttribute('x', pointer.markerType === 'Text' ? textOptions['x'] : options['x'].toString());
                         }
                         else {
                             markerElement.setAttribute('d', options.d);
                         }
+                        markerElement.style.visibility = 'visible';
                     }
                 }
             },
@@ -101,10 +119,20 @@ export class Animations {
                 else {
                     markerElement.setAttribute('d', currentPath);
                 }
+                markerElement.style.visibility = 'visible';
                 pointer.isPointerAnimation = false;
                 pointer.animationComplete = true;
                 pointer.startValue = pointer.value = pointer.currentValue;
                 this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                if (this.gauge.allowLoadingAnimation) {
+                    if (!isNullOrUndefined(this.gauge.annotationsModule) && (this.gauge.annotations.length > 0 && (this.gauge.annotations[0].content !== '' || this.gauge.annotations.length > 1))) {
+                        const element: Element = document.getElementById(this.gauge.element.id + '_AnnotationsGroup');
+                        this.gauge.annotationsModule.annotationAnimate(element, this.gauge);
+                    } else {
+                        this.gauge.allowLoadingAnimation = false;
+                        this.gauge.isOverAllAnimationComplete = true;
+                    }
+                }
             }
         });
     }
@@ -139,24 +167,33 @@ export class Animations {
             axis.isInversed ? pointerValue : startPointerVal;
         const rectHeight: number = Math.abs(startPointerVal - pointerValue);
         if (this.gauge.container.type === 'Thermometer' && start === 0  && this.gauge.container.width > 0) {
-            clipElement = <HTMLElement>pointerElement.parentElement.childNodes[1].childNodes[0].childNodes[0];
-            if (this.gauge.orientation === 'Vertical') {
-                clipY = clipElement.getAttribute('y');
-                clipHeight = clipElement.getAttribute('height');
-                clipVal = parseInt(clipY, radix) + parseInt(clipHeight, radix);
-                clipElement.setAttribute('y', clipVal.toString());
+            if (end === axis.minimum) {
+                (element as HTMLElement).style.visibility = 'visible';
             } else {
-                clipX = clipElement.getAttribute('x');
-                clipWidth = clipElement.getAttribute('width');
-                clipVal = parseInt(clipX, radix) + parseInt(clipWidth, radix);
-                clipElement.setAttribute('width', '0');
+                clipElement = <HTMLElement>pointerElement.parentElement.childNodes[1].childNodes[0].childNodes[0];
+                if (this.gauge.orientation === 'Vertical') {
+                    clipY = clipElement.getAttribute('y');
+                    clipHeight = clipElement.getAttribute('height');
+                    clipVal = parseInt(clipY, radix) + parseInt(clipHeight, radix);
+                    clipElement.setAttribute('y', clipVal.toString());
+                } else {
+                    clipX = clipElement.getAttribute('x');
+                    clipWidth = clipElement.getAttribute('width');
+                    clipVal = parseInt(clipX, radix) + parseInt(clipWidth, radix);
+                    clipElement.setAttribute('width', '0');
+                }
             }
         }
         path = pointer.value === axis.minimum && this.gauge.container.type === 'RoundedRectangle' ? '' : getBox(
             pointer.bounds, this.gauge.container.type, this.gauge.orientation,
             new Size(pointer.bounds.width, pointer.bounds.height), 'bar', this.gauge.container.width, axis, pointer.roundedCornerRadius);
+        let animatedPointerWidth: number = pointer.bounds.width;
+        let animatedPointerHeight: number = pointer.bounds.height;
         new Animation({}).animate(pointerElement, {
-            duration: (pointer.animationDuration === 0 && animationMode === 'Enable') ? 1000: pointer.animationDuration,
+            name: 'Linear' as any,
+            duration: (animationMode === 'Enable' && ((pointer.animationDuration === 0 && !this.gauge.allowLoadingAnimation) ||
+            this.gauge.animationDuration === 0)) ? 1000 : (this.gauge.allowLoadingAnimation && pointer.animationDuration === 0 ?
+                (this.gauge.animationDuration / this.gauge.splitUpCount) : pointer.animationDuration),
             progress: (animate: AnimationOptions): void => {
                 if (animate.timeStamp >= animate.delay) {
                     timeStamp = ((animate.timeStamp - animate.delay) / animate.duration);
@@ -166,10 +203,10 @@ export class Animations {
                     currentHeight = Math.abs(value2 - value1);
                     if (this.gauge.orientation === 'Vertical') {
                         pointer.bounds.y = (!axis.isInversed) ? value2 : value1;
-                        pointer.bounds.height = currentHeight;
+                        animatedPointerHeight = currentHeight;
                     } else {
                         pointer.bounds.x = (axis.isInversed) ? value2 : value1;
-                        pointer.bounds.width = currentHeight;
+                        animatedPointerWidth = currentHeight;
                     }
                     if (tagName === 'path') {
                         if (start === 0 && this.gauge.container.type === 'Thermometer') {
@@ -179,18 +216,20 @@ export class Animations {
                                 clipElement.setAttribute('width', (timeStamp * parseInt(clipWidth, radix)).toString());
                         }
                         currentPath = pointer.value === axis.minimum && this.gauge.container.type === 'RoundedRectangle' ? '' : getBox(
-                            pointer.bounds, this.gauge.container.type, this.gauge.orientation,
-                            new Size(pointer.bounds.width, pointer.bounds.height), 'bar',
+                            new Rect(pointer.bounds.x, pointer.bounds.y, animatedPointerWidth, animatedPointerHeight), this.gauge.container.type,
+                            this.gauge.orientation, new Size(animatedPointerWidth, animatedPointerHeight), 'bar',
                             this.gauge.container.width, axis, pointer.roundedCornerRadius);
                         pointerElement.setAttribute('d', currentPath);
+                        pointerElement.style.visibility = 'visible';
                     } else {
                         if (this.gauge.orientation === 'Vertical') {
                             pointerElement.setAttribute('y', pointer.bounds.y.toString());
-                            pointerElement.setAttribute('height', pointer.bounds.height.toString());
+                            pointerElement.setAttribute('height', animatedPointerHeight.toString());
                         } else {
                             pointerElement.setAttribute('x', pointer.bounds.x.toString());
-                            pointerElement.setAttribute('width', pointer.bounds.width.toString());
+                            pointerElement.setAttribute('width', animatedPointerWidth.toString());
                         }
+                        pointerElement.style.visibility = 'visible';
                     }
                 }
             },
@@ -210,9 +249,19 @@ export class Animations {
                         pointerElement.setAttribute('width', rectHeight.toString());
                     }
                 }
+                pointerElement.style.visibility = 'visible';
                 pointer.isPointerAnimation = false;
                 pointer.startValue = pointer.value = pointer.currentValue;
                 this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                if (this.gauge.allowLoadingAnimation) {
+                    if (!isNullOrUndefined(this.gauge.annotationsModule) && (this.gauge.annotations.length > 0 && (this.gauge.annotations[0].content !== '' || this.gauge.annotations.length > 1))) {
+                        const element: Element = document.getElementById(this.gauge.element.id + '_AnnotationsGroup');
+                        this.gauge.annotationsModule.annotationAnimate(element, this.gauge);
+                    } else {
+                        this.gauge.allowLoadingAnimation = false;
+                        this.gauge.isOverAllAnimationComplete = true;
+                    }
+                }
             }
         });
     }

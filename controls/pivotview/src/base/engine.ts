@@ -1019,24 +1019,39 @@ export class PivotEngine {
         return !isNullOrUndefined(isHavingFormat) ? (Number((this.formatFields[currentField as string].format).replace(/[^0-9]/g, ''))) : 2;
     } // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private getFormattedFields(fields: IFieldOptions[]): void {
-        let cnt: number = this.dataSourceSettings.formatSettings.length;
-        while (cnt--) { // eslint-disable-next-line max-len
-            this.formatFields[this.dataSourceSettings.formatSettings[cnt as number].name] = this.dataSourceSettings.formatSettings[cnt as number];
-            if (this.dataSourceSettings.formatSettings[cnt as number].type) {
-                this.dateFormatFunction[this.dataSourceSettings.formatSettings[cnt as number].name] = {
-                    exactFormat: this.globalize.getDateFormat(this.dataSourceSettings.formatSettings[cnt as number]),
+        this.formatFields = this.setFormattedFields(this.dataSourceSettings.formatSettings);
+        // for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
+        // if (fields[len as number] && fields[len as number].name === this.dataSourceSettings.formatSettings[cnt as number].name) {
+        //     this.formatFields[fields[len as number].name] = this.dataSourceSettings.formatSettings[cnt as number];
+        // }
+        // }
+    }
+    /* eslint-disable */
+    /**
+     * It is used to update the format fields.
+     *
+     * @param {IFormatSettings[]} formatSettings -  It contains the formatSettings.
+     * @returns {[key: string]: IFormatSettings} - It return the formattted fields.
+     * @hidden
+     */
+    public setFormattedFields(formatSettings: IFormatSettings[]): { [key: string]: IFormatSettings } { /* eslint-enable */
+        let cnt: number = formatSettings.length;
+        const formatFields: { [key: string]: IFormatSettings } = {};
+        while (cnt--) {
+            formatFields[formatSettings[cnt as number].name] = formatSettings[cnt as number];
+            if (formatSettings[cnt as number].type) {
+                this.dateFormatFunction[formatSettings[cnt as number].name] = {
+                    exactFormat: this.globalize.getDateFormat(formatSettings[cnt as number]),
                     fullFormat: this.globalize.getDateFormat({
-                        format: 'yyyy/MM/dd/HH/mm/ss', type: this.dataSourceSettings.formatSettings[cnt as number].type
+                        format: 'yyyy/MM/dd/HH/mm/ss', type: formatSettings[cnt as number].type
                     })
                 };
             }
-            // for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
-            // if (fields[len as number] && fields[len as number].name === this.dataSourceSettings.formatSettings[cnt as number].name) {
-            //     this.formatFields[fields[len as number].name] = this.dataSourceSettings.formatSettings[cnt as number];
-            // }
-            // }
         }
+
+        return formatFields;
     }
+
     private getFieldList(fields: { [index: string]: Object }, isSort: boolean, isValueFilteringEnabled: boolean): void {
         let type: string;
         let lenE: number = this.dataSourceSettings.excludeFields.length - 1;
@@ -2428,6 +2443,7 @@ export class PivotEngine {
                         if (drilledItem.axis === 'row') {
                             sortedHeaders = this.applyValueSorting(headers[count as number].members, this.cMembers);
                             headers[count as number].members = sortedHeaders.rMembers;
+                            this.rowCount += (this.showSubTotalsAtBottom ? 1 : 0);
                         } else { // eslint-disable-next-line max-len
                             const showSubTotals: boolean = this.dataSourceSettings.showSubTotals && this.dataSourceSettings.showColumnSubTotals &&
                                 fields[position as number].showSubTotals;
@@ -2439,6 +2455,9 @@ export class PivotEngine {
                         headers[count as number].isDrilled = false;
                         this.updateHeadersCount(headers[count as number].members, drilledItem.axis, position, fields, 'minus', true);
                         headers[count as number].members = [];
+                        if (drilledItem.axis === 'row') {
+                            this.rowCount -= (this.showSubTotalsAtBottom ? 1 : 0);
+                        }
                     }
                     break;
                 }
@@ -2593,12 +2612,8 @@ export class PivotEngine {
         else {
             const showNoDataItems: boolean = (this.dataSourceSettings.rows[0] && this.dataSourceSettings.rows[0].showNoDataItems) || (
                 this.dataSourceSettings.columns[0] && this.dataSourceSettings.columns[0].showNoDataItems);
-            if (this.dataSourceSettings.rows.length > 0) {
-                this.rMembers = this.getIndexedHeaders(this.dataSourceSettings.rows, this.data, 0, showNoDataItems ? addPos : this.filterMembers, 'row', '');
-            }
-            if (this.dataSourceSettings.columns.length > 0) {
-                this.cMembers = this.getIndexedHeaders(this.dataSourceSettings.columns, this.data, 0, showNoDataItems ? addPos : this.filterMembers, 'column', '');
-            }
+            this.rMembers = this.getIndexedHeaders(this.dataSourceSettings.rows, this.data, 0, showNoDataItems ? addPos : this.filterMembers, 'row', '');
+            this.cMembers = this.getIndexedHeaders(this.dataSourceSettings.columns, this.data, 0, showNoDataItems ? addPos : this.filterMembers, 'column', '');
             this.insertAllMembersCommon();
             this.rowCount = 0;
             this.columnCount = 0;
@@ -2699,6 +2714,10 @@ export class PivotEngine {
             }
             if (headers[lenCnt as number].members.length > 0) {
                 this.updateHeadersCount(headers[lenCnt as number].members, axis, position + 1, fields, action, true);
+                if (axis === 'row') {
+                    this.rowCount +=
+                        this.showSubTotalsAtBottom && headers[lenCnt as number].hasChild && headers[lenCnt as number].isDrilled ? 1 : 0;
+                }
             }
             lenCnt++;
         }
@@ -3306,7 +3325,9 @@ export class PivotEngine {
             for (let iln: number = 0, ilt: number = hierarchy.length; iln < ilt; iln++) {
                 if (!this.frameHeaderObjectsCollection) {
                     if (axis === 'row') {
-                        this.rowCount += this.rowValuesLength;
+                        this.rowCount += (this.rowValuesLength + (
+                            hierarchy[iln as number].isDrilled && this.showSubTotalsAtBottom ? 1 : 0
+                        ));
                     } else {
                         this.columnCount += this.colValuesLength;
                     }

@@ -116,9 +116,17 @@ export class AudioCommand {
         if (!isNOU(e.item.url)) {
             sourceElement.setAttribute('src', e.item.url);
         }
-        sourceElement.type = e.item.fileName && e.item.fileName.split('.').length > 0 ?
-            'audio/' + e.item.fileName.split('.')[e.item.fileName.split('.').length - 1] :
-            e.item.url && e.item.url.split('.').length > 0 ? 'audio/' + e.item.url.split('.')[e.item.url.split('.').length - 1]  : '';
+        const fileExtension = e.item.fileName ? e.item.fileName.split('.').pop().toLowerCase() :
+            e.item.url ? e.item.url.split('.').pop().toLowerCase() : '';
+        if (fileExtension === 'opus') {
+            sourceElement.type = 'audio/ogg';
+        } else if (fileExtension === 'm4a') {
+            sourceElement.type = 'audio/mp4';
+        } else {
+            sourceElement.type = e.item.fileName && e.item.fileName.split('.').length > 0 ?
+                'audio/' + e.item.fileName.split('.')[e.item.fileName.split('.').length - 1] :
+                e.item.url && e.item.url.split('.').length > 0 ? 'audio/' + e.item.url.split('.')[e.item.url.split('.').length - 1] : '';
+        }
     }
 
     private callBack(e: IHtmlItem): void {

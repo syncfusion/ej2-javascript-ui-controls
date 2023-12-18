@@ -582,7 +582,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
 
     private setAria(): void {
         attributes(this.element, {
-            'aria-label': this.element.textContent + ' progress', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': '0'
+            'aria-label': this.element.textContent + ' progress'
         });
     }
 

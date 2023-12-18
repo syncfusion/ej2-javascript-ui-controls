@@ -1,4 +1,5 @@
 import { Spreadsheet } from '../index';
+import { getUpdateUsingRaf } from '../common/index'
 import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined, select, detach } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, enableToolbarItems, completeAction } from '../common/event';
@@ -538,7 +539,7 @@ export class Edit {
                                 const cell: CellModel = getCell(j, k, sheet);
                                 if (j === uniqueRange[0] && k === uniqueRange[1]) {
                                     skip = false;
-                                } else if (!isNullOrUndefined(cell.value) && cell.value !== '') {
+                                } else if (cell && !isNullOrUndefined(cell.value) && cell.value !== '') {
                                     skip = true;
                                 }
                             }
@@ -991,7 +992,7 @@ export class Edit {
     private updateCell(
         oldCellValue: string, tdRefresh: boolean, value: string, newVal: string, e?: MouseEvent & TouchEvent | KeyboardEventArgs): void {
         const oldValue: string = oldCellValue ? oldCellValue.toString().toUpperCase() : '';
-        if (oldCellValue !== this.editCellData.value || oldValue.indexOf('=NOW()') > -1 || oldValue.indexOf('=RAND()') > -1 ||
+        if (oldCellValue !== this.editCellData.value || oldValue.indexOf('=NOW()') > -1 || oldValue.indexOf('NOW()') > -1 || oldValue.indexOf('=RAND()') > -1 ||
             oldValue.indexOf('RAND()') > -1 || oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const cellIndex: number[] = getRangeIndexes(sheet.activeCell);
@@ -1033,6 +1034,7 @@ export class Edit {
                         !skipAlertCls.some((cls: string) => target.classList.contains(cls))) {
                         this.showFormulaAlertDlg(cellValue);
                     }
+                    e.preventDefault();
                 }
                 return;
             }

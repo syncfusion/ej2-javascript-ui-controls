@@ -58,6 +58,21 @@ export class DialogEdit {
     private localeObj: L10n;
     private parent: Gantt;
     private rowIndex: number;
+    private formObj: any;
+    private CustomformObj: any;
+    private taskFieldColumn: Array<any> = [];
+    private customFieldColumn: Array<any> = [];
+    private isFromAddDialog: boolean;
+    private isFromEditDialog:boolean;
+    private storeColumn:any;
+    private taskfields:any;
+    private storeValidTab:any;
+    private singleTab:boolean;
+    private storeDependencyTab:HTMLElement;
+    private storeResourceTab:HTMLElement;
+    private isAddingDialog : boolean;
+    private isEditingDialog :boolean;
+    private firstOccuringTab:string;
     private numericOrString: any;
     private types: IDependencyEditData[];
     private editedRecord: IGanttData;
@@ -252,6 +267,7 @@ export class DialogEdit {
     public openAddDialog(): void {
         this.isEdit = false;
         this.editedRecord = this.composeAddRecord();
+        this.isFromAddDialog = true;
         this.createDialog();
     }
     /**
@@ -396,6 +412,7 @@ export class DialogEdit {
         }
         if (Object.keys(this.rowData).length !== 0) {
             this.editedRecord = extend({}, {}, this.rowData, true);
+            this.isFromEditDialog = true;
             this.createDialog();
         }
     }
@@ -469,8 +486,108 @@ export class DialogEdit {
                 this.dialogClose();
             }
         } else {
+            if (this.singleTab && this.CustomformObj) {
+                if (!this.CustomformObj.validate()) {
+                    target.style.pointerEvents = '';
+                    return;
+                }
+            } else {
+                if (this.CustomformObj) {
+                    if (this.isAddingDialog ) {
+                        if (this.parent.addDialogFields.length > 1 && this.parent.addDialogFields[0].type == "Custom" && !this.formObj) {
+                            if (!this.CustomformObj.validate()) {
+                                target.style.pointerEvents = '';
+                                return;
+                            }
+                        }
+                    } else if (this.isEditingDialog ) {
+                        if (this.parent.editDialogFields.length > 1 && this.parent.editDialogFields[0].type == "Custom" && !this.formObj) {
+                            if (!this.CustomformObj.validate()) {
+                                target.style.pointerEvents = '';
+                                return;
+                            }
+                        }
+                    }
+                    if (!this.formObj.validate() && !this.CustomformObj.validate()) {
+                        target.style.pointerEvents = '';
+                        return;
+                    }
+                }
+                if (this.formObj) {
+                    let formValid = this.formObj.validate();
+                    if (this.storeDependencyTab) {
+                        let dependencyTab = this.storeDependencyTab.querySelector('.e-gridform');
+                        if (dependencyTab) {
+                            let dependencyTabValid = dependencyTab['ej2_instances'][0].validate();
+                            if (!formValid || !dependencyTabValid) {
+                                target.style.pointerEvents = '';
+                                return;
+                            }
+                        }
+                    }
+                    if (this.storeResourceTab) {
+                        let resourceTab = this.storeResourceTab.querySelector('.e-gridform');
+                        if (resourceTab) {
+                            let resourceTabValid = resourceTab['ej2_instances'][0].validate();
+                            if (!formValid || !resourceTabValid) {
+                                target.style.pointerEvents = '';
+                                return;
+                            }
+                        }
+                    }
+                    if (!formValid) {
+                        target.style.pointerEvents = '';
+                        return;
+                    }
+                } else if (this.storeDependencyTab || this.firstOccuringTab == "Dependency") {
+                    if (this.firstOccuringTab == "Dependency") {
+                        let element = (e.target as Element).closest('#'+this.parent.element.id+'_dialog');
+                        let dependencyTab = element.querySelector('.e-gridform');
+                        if (dependencyTab) {
+                            let dependencyTabValid = dependencyTab['ej2_instances'][0].validate();
+                            if (!dependencyTabValid) {
+                                target.style.pointerEvents = '';
+                                return;
+                            }
+                        }
+                    } else {
+                        let dependencyTab = this.storeDependencyTab.querySelector('.e-gridform');
+                        if (dependencyTab) {
+                            let dependencyTabValid = dependencyTab['ej2_instances'][0].validate();
+                            if (!dependencyTabValid) {
+                                target.style.pointerEvents = '';
+                                return;
+                            }
+                        }
+                    }
+                } else if (this.storeResourceTab || this.firstOccuringTab == "Resources") {
+                    if (this.firstOccuringTab == "Resources") {
+                        let element = (e.target as Element).closest('#'+this.parent.element.id+'_dialog');
+                        let resourceTab = element.querySelector('.e-gridform');
+                        if (resourceTab) {
+                            let resourceTabValid = resourceTab['ej2_instances'][0].validate();
+                            if (!resourceTabValid) {
+                                target.style.pointerEvents = '';
+                                return;
+                            }
+                        }
+                    } else {
+                        let resourceTab = this.storeResourceTab.querySelector('.e-gridform');
+                        if (resourceTab) {
+                            let resourceTabValid = resourceTab['ej2_instances'][0].validate();
+                            if (!resourceTabValid) {
+                                target.style.pointerEvents = '';
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
             this.initiateDialogSave();
             target.style.pointerEvents = 'auto';
+            this.singleTab = false;
+            this.isAddingDialog  = false;
+            this.isEditingDialog  = false;
         }
     }
     /**
@@ -693,6 +810,11 @@ export class DialogEdit {
                     element: this.dialog,
                     cancel: false
                 };
+                const columns: any[] = this.parent.treeGrid.grid.getColumns();
+                const isValidateColumn: boolean = columns.some(obj => obj.validationRules);
+                if (isValidateColumn) {
+                    this.changeFormObj(actionCompleteArgs.element, false);
+                }
                 this.parent.trigger('actionComplete', actionCompleteArgs, (actionCompleteArg: CObject) => {
                     if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
                         this.parent.hideMaskRow();
@@ -706,10 +828,296 @@ export class DialogEdit {
             }
         });
     }
+    private changeFormObj(actionCompleteArgs: any, isCustomTab: boolean): void {
+        if (!this.storeColumn) {
+            this.storeColumn = this.parent.treeGrid.grid.getColumns();
+        }
+        if (!this.taskfields) {
+            this.taskfields = this.parent.taskFields['properties'];
+        }
+        if (!this.storeValidTab) {
+            this.storeValidTab = this.getFilteredDialogFields();
+        }
+        const typeOrder = ['General', 'Resources', 'Dependency', 'Custom'];
+        // Custom comparator function to sort by type order
+        function customComparator(a: { type: string; }, b: { type: string; }) {
+            const typeA = a.type || ''; // Default to empty string if type is missing
+            const typeB = b.type || '';
+            const indexA = typeOrder.indexOf(typeA);
+            const indexB = typeOrder.indexOf(typeB);
+
+            return indexA - indexB;
+        }
+        // Sort the array based on the custom comparator
+        if (this.storeValidTab) {
+            this.storeValidTab.sort(customComparator);
+        }
+        if (this.customFieldColumn.length === 0 || this.taskFieldColumn.length === 0) {
+            this.validateColumn(this.storeColumn, this.taskfields, this.storeValidTab);
+        }
+
+        if ((this.isFromAddDialog || this.isFromEditDialog) && this.isSingleCustomTab()) {
+            isCustomTab = true;
+            this.singleTab = true;
+        }
+        if (this.isFromAddDialog) {
+            if (this.parent.addDialogFields.length > 1) {
+                if (this.parent.addDialogFields[0].type === 'Resources'
+                    || this.parent.addDialogFields[0].type === 'Dependency') {
+                    this.firstOccuringTab = this.parent.addDialogFields[0].type;
+                }
+            }
+            if (this.parent.addDialogFields.length == 1) {
+                this.firstOccuringTab = this.parent.addDialogFields[0].type;
+            }
+        }
+        else if (this.isFromEditDialog) {
+            if (this.parent.editDialogFields.length > 1) {
+                if (this.parent.editDialogFields[0].type === 'Resources'
+                    || this.parent.editDialogFields[0].type === 'Dependency') {
+                    this.firstOccuringTab = this.parent.editDialogFields[0].type;
+                }
+            }
+            if (this.parent.editDialogFields.length == 1) {
+                this.firstOccuringTab = this.parent.editDialogFields[0].type;
+            }
+        }
+        if (this.isFromEditDialog) { 
+            if (this.parent.editDialogFields.length > 1) {
+                if (this.parent.editDialogFields[0].type == 'Custom') {
+                    isCustomTab = true
+                }
+            }
+        }
+        if (this.isFromAddDialog) { 
+            if (this.parent.addDialogFields.length > 1) {
+                if (this.parent.addDialogFields[0].type == 'Custom') {
+                    isCustomTab = true
+                }
+            }
+        }
+        if (isCustomTab) {
+            this.CustomformObj = (actionCompleteArgs as HTMLElement).querySelector('.e-edit-form-row');
+            if (this.CustomformObj === null) {
+                return;
+            }
+
+            let validationRulesArray: { [key: string]: { [rule: string]: any } } = {};
+
+            for (let i: number = 0; i < this.customFieldColumn.length; i++) {
+                const column = this.customFieldColumn[parseInt(i.toString(), 10)];
+                if (!column.visible) {
+                    continue;
+                }
+                if (column.validationRules) {
+                    validationRulesArray[column.field] = column.validationRules;
+                }
+            }
+
+            if (Object.keys(validationRulesArray).length > 0) {
+                this.CustomformObj = this.createFormObj(this.CustomformObj, validationRulesArray);
+            }
+        } else {
+            this.formObj = (actionCompleteArgs as HTMLElement).querySelector('.e-edit-form-row');
+            if (this.formObj === null) {
+                return;
+            }
+
+            let validationRulesArray: { [key: string]: { [rule: string]: any } } = {};
+
+            for (let i: number = 0; i < this.taskFieldColumn.length; i++) {
+                const column = this.taskFieldColumn[parseInt(i.toString(), 10)];
+                if (!column.visible) {
+                    continue;
+                }
+                if (column.validationRules) {
+                    validationRulesArray[column.field] = column.validationRules;
+                }
+            }
+
+            if (Object.keys(validationRulesArray).length > 0) {
+                this.formObj = this.createFormObj(this.formObj, validationRulesArray);
+            }
+        }
+        if (this.isFromAddDialog == true || this.isFromEditDialog) {
+            this.isAddingDialog  = this.isFromAddDialog
+            this.isEditingDialog  = this.isFromEditDialog
+        }
+        this.isFromAddDialog = false;
+        this.isFromEditDialog = false;
+        isCustomTab = false;
+    }
+
+    private getFilteredDialogFields(): any {
+        const dialogFields = this.isFromAddDialog
+            ? this.parent.addDialogFields
+            : this.parent.editDialogFields;
+
+        if (dialogFields.length !== 0) {
+            return dialogFields.filter(obj => obj.type === "General" || obj.type === "Custom");
+        }
+        return null;
+    }
+
+    private isSingleCustomTab(): boolean {
+        const dialogFields = this.isFromAddDialog
+            ? this.parent.addDialogFields
+            : this.parent.editDialogFields;
+
+        return this.isFromAddDialog || this.isFromEditDialog
+            ? dialogFields.length === 1 && dialogFields[0].type === 'Custom'
+            : false;
+    }
+
+    private validateColumn(storeColumn: any, taskfields: any, storeValidTab: any) {
+        storeColumn.forEach((column: { field: any }) => {
+            const field = column.field;
+            let isValueMatching = false;
+            const taskfieldValues: (string | number)[] = [];
+            if (this.parent.customColumns.indexOf(field) === -1) {
+                isValueMatching = true;
+            }
+            if (isValueMatching) {
+                if ((this.isFromAddDialog || this.isFromEditDialog) && storeValidTab) {
+                    if (storeValidTab.some((obj: { fields: string }) => obj.fields.includes(column.field))) {
+                        this.taskFieldColumn.push(column);
+                    }
+                } else {
+                    this.taskFieldColumn.push(column);
+                }
+            } else {
+                if ((this.isFromAddDialog || this.isFromEditDialog) && storeValidTab) {
+                    if (storeValidTab.some((obj: { fields: string }) => obj.fields.includes(column.field))) {
+                        this.customFieldColumn.push(column);
+                    }
+                } else {
+                    this.customFieldColumn.push(column);
+                }
+            }
+        });
+    }
+
+    private createFormObj(form: HTMLFormElement, rules: { [name: string]: { [rule: string]: Object } }): FormValidator {
+        return new FormValidator(form, {
+            rules: rules,
+            locale: this.parent.locale,
+            validationComplete: (args: { status: string, inputName: string, element: HTMLElement, message: string }) => {
+                this.validationComplete(args);
+            },
+            customPlacement: (inputElement: HTMLElement, error: HTMLElement) => {
+                const nameAttribute = inputElement.getAttribute('name');
+                if (nameAttribute) {
+                    const columnName = nameAttribute;
+                    this.valErrorPlacement(inputElement, error, columnName);
+                }
+            }
+        });
+    }
+
+    private valErrorPlacement(inputElement: HTMLElement, error: HTMLElement, columnName: string): void {
+        const id = `${columnName}-tooltip`;
+
+        let elem: HTMLElement | null = this.getElemTable(inputElement);
+        if (!elem) {
+            this.createTooltip(inputElement, error, id);
+        } else {
+            const tooltipContent = elem.querySelector('.e-tip-content');
+            if (tooltipContent) {
+                tooltipContent.innerHTML = error.outerHTML;
+            }
+        }
+    }
+
+    private createTooltip(inputElement: HTMLElement, errorMessage: HTMLElement, id: string, display: string = 'block') {
+        const existingTooltip = document.getElementById(id);
+        if (existingTooltip) {
+            existingTooltip.remove();
+        }
+
+        const parentElement = inputElement.parentElement;
+        if (parentElement) {
+            parentElement.style.position = 'relative';
+        }
+
+        const tooltipContainer = document.createElement('div');
+        tooltipContainer.className = 'e-tooltip-wrap e-lib e-control e-popup e-griderror';
+        tooltipContainer.style.display = display;
+        tooltipContainer.style.zIndex = '1000';
+
+        const labelId = `${id}-label`;
+        const tooltipLabel = document.createElement('div');
+        tooltipLabel.id = labelId;
+        tooltipLabel.className = 'sr-only';
+
+        const tooltipContent = document.createElement('div');
+        tooltipContent.className = 'e-tip-content';
+
+        const errorMessageElement = document.createElement('div');
+        errorMessageElement.className = 'error-message';
+        errorMessageElement.appendChild(errorMessage.cloneNode(true));
+
+        const arrow = document.createElement('div');
+        arrow.className = 'e-arrow-tip e-tip-top';
+        arrow.appendChild(document.createElement('div')).className = 'e-arrow-tip-outer e-tip-top';
+        arrow.appendChild(document.createElement('div')).className = 'e-arrow-tip-inner e-tip-top';
+
+        tooltipContainer.setAttribute('aria-labelledby', labelId);
+
+        tooltipContent.appendChild(errorMessageElement);
+        tooltipContainer.appendChild(tooltipContent);
+        tooltipContainer.appendChild(arrow);
+        tooltipContainer.style.top = '125%';
+        tooltipContainer.style.left = '50%';
+        tooltipContainer.style.transform = 'translateX(-50%)';
+
+        if (parentElement) {
+            parentElement.appendChild(tooltipLabel);
+            parentElement.appendChild(tooltipContainer);
+        }
+    }
+
+    private getElemTable(inputElement: Element): HTMLElement | null {
+        const parentElement = inputElement.parentElement;
+        if (parentElement) {
+            return parentElement.querySelector(".e-tooltip-wrap") as HTMLElement | null;
+        }
+        return null;
+    }
+
+    private validationComplete(args: { status: string, inputName: string, element: HTMLElement, message: string }): void {
+        const elem: HTMLElement | null = this.getElemTable(args.element);
+        if (elem) {
+            if (args.status === 'failure') {
+                elem.style.display = '';
+            } else {
+                elem.style.display = 'none';
+            }
+        }
+    }
 
     private tabSelectedEvent(args: SelectEventArgs): void {
         const ganttObj: Gantt = this.parent;
         const id: string = (args.selectedContent.childNodes[0] as HTMLElement).id;
+        if (id == ganttObj.element.id + 'DependencyTabContainer') {
+            this.storeDependencyTab = args.selectedContent
+        }
+        if (id == ganttObj.element.id + 'ResourcesTabContainer') {
+            this.storeResourceTab = args.selectedContent
+        }
+        if (id == ganttObj.element.id + 'Custom0TabContainer') {
+            const columns: any[] = this.parent.treeGrid.grid.getColumns();
+            const isValidateColumn: boolean = columns.some(obj => obj.validationRules);
+            if (isValidateColumn) {
+                this.changeFormObj(args.selectedContent, true);
+            }
+        }
+        if (id == ganttObj.element.id + 'GeneralTabContainer') {
+            const columns: any[] = this.parent.treeGrid.grid.getColumns();
+            const isValidateColumn: boolean = columns.some(obj => obj.validationRules);
+            if (isValidateColumn) {
+                this.changeFormObj(args.selectedContent, false);
+            }
+        }
         if (this.parent.isAdaptive) {
             this.responsiveTabContent(id, ganttObj);
         }
@@ -1004,7 +1412,7 @@ export class DialogEdit {
     public validateDuration(ganttData: IGanttData): void {
         const ganttProp: ITaskData = ganttData.ganttProperties;
         if (!this.dialogEditValidationFlag) {
-            if (isNullOrUndefined(ganttProp.duration)) {
+            if (isNullOrUndefined(ganttProp.duration) && !isScheduledTask(ganttProp) && !isNullOrUndefined(ganttProp.startDate) ) {
                 this.parent.setRecordValue('endDate', null, ganttProp, true);
                 this.parent.setRecordValue('isMilestone', false, ganttProp, true);
             } else if (isScheduledTask(ganttProp) || !isNullOrUndefined(ganttProp.startDate)) {

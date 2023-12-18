@@ -631,9 +631,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     /**
      * @hidden
      * @param {Object} model - specify the model
+     * @param {Object} calcId - specify the calculate instance id.
      * @returns {CalcSheetFamilyItem} - get Sheet Family Item.
      */
-    public getSheetFamilyItem(model: Object): CalcSheetFamilyItem {
+    public getSheetFamilyItem(model: Object, calcId?: number): CalcSheetFamilyItem {
         if (this.sheetFamilyID === 0) {
             if (this.defaultFamilyItem == null) {
                 this.defaultFamilyItem = new CalcSheetFamilyItem();
@@ -643,11 +644,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (this.sheetFamiliesList == null) {
             this.sheetFamiliesList = new Map<number, CalcSheetFamilyItem>();
         }
-        const i: number = this.modelToSheetID.get(model);
-        if (!this.sheetFamiliesList.has(i)) {
-            this.sheetFamiliesList.set(i, new CalcSheetFamilyItem());
+        if (calcId === undefined) {
+            calcId = this.modelToSheetID.get(model);
         }
-        return this.sheetFamiliesList.get(i);
+        if (!this.sheetFamiliesList.has(calcId)) {
+            this.sheetFamiliesList.set(calcId, new CalcSheetFamilyItem());
+        }
+        return this.sheetFamiliesList.get(calcId);
     }
 
     /**
@@ -970,9 +973,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         if (!args.length) {
                             args = [''];
                         }
-                        if (libFormula === 'IFERROR' && (args[0] === "" || args[1] === "")) {
-                            args[1] = '0';
-                        }
                         if (nestedFormula && libFormula && (libFormula === 'IF' || libFormula === 'INDEX')) { args.push('nestedFormulaTrue'); }
                         if (nestedFormula && libFormula && libFormula === 'SORT') { args.push('nestedFormulaTrue'); }
                         if (nestedFormula && libFormula && libFormula === 'IF') { args.push('nestedFormulaTrue'); }
@@ -980,6 +980,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         if (nestedFormula && libFormula && libFormula === 'EXACT') { args.push('nestedFormulaTrue'); }
                         if (nestedFormula && libFormula && libFormula === 'PROPER') { args.push('nestedFormulaTrue'); }
                         if (nestedFormula && libFormula && libFormula === 'DOLLAR') { args.push('nestedFormulaTrue'); }
+                        if (nestedFormula && libFormula && libFormula === 'DATE') { args.push('nestedFormulaTrue'); }
                         if (isFromComputeExpression && libFormula === 'UNIQUE') { args.push('isComputeExp'); }
                     }
                     formulatResult = isNullOrUndefined(this.getFunction(libFormula)) ? this.getErrorStrings()[CommonErrors.name] :
@@ -1096,125 +1097,376 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return [result[0], result[1]];
     }
 
-    // Commented unused method
-    // /**
-    //  * @hidden
-    //  * @param {string[]} range - specify the range
-    //  * @returns {string} - to compute lookup
-    //  */
-    // public computeLookup(range: string[]): string {
-    //     if (range.length === 0) {
-    //         return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
-    //     }
-    //     const checkCrte: string[] = [];
-    //     const findMaxVal: string[] | string = [];
-    //     const argArr: string[] = range;
-    //     const argCount: number = argArr.length;
-    //     const criterias: string = argArr[0].split(this.tic).join(this.emptyString);
-    //     const rangevalue: string = argArr[1];
-    //     const lookupRangeArray: string = argCount === 2 ? rangevalue : argArr[2];
-    //     const criteriaRange: string[] | string = this.getCellCollection(argArr[1]);
-    //     const lookupRange: string[] | string = this.getCellCollection(lookupRangeArray);
-    //     for (let i: number = 0; i < criteriaRange.length; i++) {
-    //         findMaxVal[i] = this.getValueFromArg(criteriaRange[i]).split(this.tic).join('');
-    //     }
-    //     const s: string[] = findMaxVal.toString().split(this.getParseArgumentSeparator());
-    //     const maxVal: number = this.parseFloat(s[s.sort().length - 1]);
-    //     const minVal: number = this.parseFloat(s[0]);
-    //     for (let j: number = 0; j < criteriaRange.length; j++) {
-    //         checkCrte[j] = this.getValueFromArg(criteriaRange[j]).split(this.tic).join('');
-    //         if (criterias === checkCrte[j]) {
-    //             return this.getValueFromArg(lookupRange[j]).split(this.tic).join('');
-    //         } else if (this.parseFloat(criterias) === this.parseFloat(checkCrte[j])) {
-    //             return this.getValueFromArg(lookupRange[j]).split(this.tic).join('');
-    //         } else if (this.parseFloat(criterias) < minVal) {
-    //             return this.getErrorStrings()[CommonErrors.na];
-    //         } else if (this.parseFloat(criterias) > maxVal) {
-    //             const index: number = findMaxVal.indexOf(maxVal.toString());
-    //             return this.getValueFromArg(lookupRange[index]).split(this.tic).join('');
-    //         }
-    //     }
-    //     if (findMaxVal.indexOf(criterias) < 0) {
-    //         const temp: string[] = [];
-    //         for (let n: number = 0; n < s.length; n++) {
-    //             if (this.parseFloat(criterias) > this.parseFloat(s[n])) {
-    //                 temp.push(s[n]);
-    //             }
-    //         }
-    //         const index: number = findMaxVal.indexOf(temp[temp.length - 1]);
-    //         return this.getValueFromArg(lookupRange[index]).split(this.tic).join('');
-    //     }
-    //     return this.getErrorStrings()[CommonErrors.na];
-    // }
+    /**
+     * @hidden
+     * @param {string[]} range - specify the range
+     * @returns {string} - to compute lookup
+     */
+    public computeLookup(range: string[]): string {
+        let lookupArray: string; let matchArray: string;
+        let lookupRange: string[] | string = []; let matchupRange: string[] | string = [];
+        const checkCriteria: string[] = []; const findMaxVal: string[] | string = [];
+        let lookupValue: string; let isArrayVector: boolean;
+        const result: string[] | string = [];
+        const argArr: string[] = range;
+        const argCount: number = argArr.length;
+        if (argCount === 1 || argCount > 3) {
+            return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        if (argArr[1] === '' || argArr[2] === '') {
+            return this.getErrorStrings()[CommonErrors.value];
+        }
+        lookupValue = this.getValueFromArg(argArr[0]);
+        if (argArr[0].indexOf(this.tic) > -1 && argArr[0].toUpperCase().split(this.tic).join('') !== this.trueValue &&
+            argArr[0].toUpperCase().split(this.tic).join('') !== this.falseValue && this.isNaN(this.parseFloat(argArr[0].split(this.tic).join('')))) {
+            lookupValue = lookupValue.split(this.tic).join('');
+        }
+        if (this.getErrorStrings().indexOf(lookupValue) > -1) { return lookupValue; }
+        const rangeSplit: string[] = argArr[1].split(':');
+        if (rangeSplit.length === 2 && this.isCellReference(rangeSplit[0]) && this.isCellReference(rangeSplit[1]) && argCount === 2) {
+            const index: number = argArr[1].indexOf(':');
+            let rowIdx: number = this.rowIndex(this.substring(argArr[1], 0, index));
+            let colIdx: number = this.colIndex(this.substring(argArr[1], 0, index));
+            let endRowIdx: number = this.rowIndex(this.substring(argArr[1], index + 1, index + argArr[1].length - index - 1));
+            let endColIdx: number = this.colIndex(this.substring(argArr[1], index + 1, index + argArr[1].length - index - 1));
+            if (rowIdx > endRowIdx) {
+                [rowIdx, endRowIdx] = [endRowIdx, rowIdx];
+            }
+            if (colIdx > endColIdx) {
+                [colIdx, endColIdx] = [endColIdx, colIdx];
+            }
+            let sheetIdx: string | number = '';
+            if (argArr[1].indexOf('!') === 0) {
+                sheetIdx = argArr[1]; sheetIdx = sheetIdx.replace('!', '');
+                sheetIdx = sheetIdx.indexOf('!'); sheetIdx = argArr[1].substring(0, sheetIdx + 2);
+            }
+            const colCount: number = endColIdx - colIdx + 1;
+            const rowCount: number = endRowIdx - rowIdx + 1;
+            if (rowCount > colCount || rowCount === colCount) { // Taller than Wide. vlookup
+                lookupArray = sheetIdx + getAlphalabel(colIdx) + rowIdx + ':' + getAlphalabel(colIdx) + endRowIdx;
+                matchArray = sheetIdx + getAlphalabel(endColIdx) + rowIdx + ':' + getAlphalabel(endColIdx) + endRowIdx;
+            } else if (rowCount < colCount) { // Wider than Tall. hlookup
+                lookupArray = sheetIdx + getAlphalabel(colIdx) + rowIdx + ':' + getAlphalabel(endColIdx) + rowIdx;
+                matchArray = sheetIdx + getAlphalabel(colIdx) + endRowIdx + ':' + getAlphalabel(endColIdx) + endRowIdx;
+            }
+            if (rowIdx !== endRowIdx || colIdx !== endColIdx) {
+                isArrayVector = true;
+            }
+        }
+        if (isArrayVector) {
+            lookupRange = this.getCellCollection(lookupArray);
+            matchupRange = this.getCellCollection(matchArray);
+        } else {
+            lookupRange = this.getCellCollection(argArr[1]);
+            const arrvalue: string = argCount === 2 ? argArr[1] : argArr[2];
+            matchupRange = this.getCellCollection(arrvalue);
+            const lookupIndex: number[] = getRangeIndexes(argArr[1]);
+            const matchIndex: number[] = getRangeIndexes(arrvalue);
+            const isValidLookup: boolean = lookupIndex[1] === lookupIndex[3] ? true : lookupIndex[0] === lookupIndex[2];
+            const isValidMatch: boolean = matchIndex[1] === matchIndex[3] ? true : matchIndex[0] === matchIndex[2];
+            if (!isValidLookup || !isValidMatch) {
+                return this.getErrorStrings()[CommonErrors.na];
+            }
+        }
+        for (let i: number = 0; i < lookupRange.length; i++) {
+            findMaxVal.push(this.getValueFromArg(lookupRange[i as number]).split(this.tic).join(''));
+        }
+        const num: number[] = findMaxVal.map((value: string) => { return value === '' ? NaN : Number(value); }).sort((a: number, b: number) => a - b);
+        const maxVal: number = num[num.length - 1];
+        const minVal: number = num[0];
+        const lookupVal: number = this.parseFloat(lookupValue);
+        if (!this.isNaN(lookupVal)) {
+            for (let a: number = 0; a < num.length; a++) {
+                checkCriteria[a as number] = num[a as number].toString().split(this.tic).join('');
+                if (!isNullOrUndefined(matchupRange[a as number]) && checkCriteria[a as number] !== '' && lookupVal === this.parseFloat(checkCriteria[a as number])) {
+                    result.push(this.getValueFromArg(matchupRange[a as number]).split(this.tic).join('') || '0');
+                }
+            }
+        } else {
+            for (let j: number = 0; j < lookupRange.length; j++) {
+                checkCriteria[j as number] = this.getValueFromArg(lookupRange[j as number]).split(this.tic).join('');
+                if (!isNullOrUndefined(matchupRange[j as number]) && lookupValue !== '' && checkCriteria[j as number] !== '') {
+                    if (lookupValue.toUpperCase() === checkCriteria[j as number].toUpperCase()) {
+                        result.push(this.getValueFromArg(matchupRange[j as number]).split(this.tic).join('') || '0');
+                    } else if (lookupValue.indexOf('*') > -1 || lookupValue.indexOf('?') > -1) {
+                        let criteriaValue: string = lookupValue;
+                        if (lookupValue.indexOf('*') > -1) {
+                            criteriaValue = criteriaValue.replace(/\*/g, '').trim();
+                            if (this.isCellReference(criteriaValue)) {
+                                criteriaValue = this.getValueFromArg(criteriaValue);
+                            }
+                            const asteriskIndex: number = lookupValue.indexOf('*');
+                            if (lookupValue[0] === '*') { criteriaValue = '*' + criteriaValue; }
+                            if (lookupValue[lookupValue.length - 1] === '*') { criteriaValue += '*'; }
+                            if (asteriskIndex > 0 && asteriskIndex < lookupValue.length - 1) {
+                                criteriaValue = lookupValue.substring(0, asteriskIndex) + '*' + lookupValue.substring(asteriskIndex + 1);
+                            }
+                        }
+                        const stack: string[] = [];
+                        const wildcardResult: string = this.findWildCardValue(criteriaValue.toLowerCase(),
+                            checkCriteria[j as number].toLowerCase());
+                        stack.push(wildcardResult);
+                        stack.push(lookupValue);
+                        if (this.processLogical(stack, 'equal') === this.trueValue) {
+                            result.push(this.getValueFromArg(matchupRange[j as number]).split(this.tic).join('') || '0');
+                        }
+                    }
+                }
+            }
+        }
+        if (result.length > 0) {
+            return result[result.length - 1];
+        }
+        if (lookupVal > maxVal && !isNullOrUndefined(matchupRange[lookupRange.length - 1])) {
+            return this.getValueFromArg(matchupRange[lookupRange.length - 1]).split(this.tic).join('') || '0';
+        } else if (lookupVal < minVal) {
+            return this.getErrorStrings()[CommonErrors.na];
+        }
+        if (findMaxVal.indexOf(lookupValue.split(this.tic).join('')) < 0 && lookupValue !== this.trueValue && lookupValue !== this.falseValue) {
+            if (!this.isNaN(lookupVal) && !this.isNaN(maxVal) && !this.isNaN(minVal)) {
+                const temp: number[] = [];
+                for (let b: number = 0; b < num.length; b++) {
+                    if (lookupVal > num[b as number]) {
+                        temp.push(num[b as number]);
+                    }
+                }
+                const index: number = temp.length - 1;
+                if (!isNullOrUndefined(matchupRange[index as number]) && index >= 0) {
+                    return this.getValueFromArg(matchupRange[index as number]).split(this.tic).join('') || '0';
+                }
+            } else if (this.isNaN(lookupVal) && lookupValue !== '' && /^[a-zA-Z!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/.test(lookupValue)) {
+                const str: string[] = findMaxVal.sort();
+                const index: number = this.findClosestMatch(lookupValue.split(this.tic).join(''), str);
+                if (!isNullOrUndefined(matchupRange[index as number]) && index >= 0) {
+                    return this.getValueFromArg(matchupRange[index as number]).split(this.tic).join('') || '0';
+                }
+            }
+        }
+        return this.getErrorStrings()[CommonErrors.na];
+    }
 
-    // public computeVLookup(range: string[]): string {
-    //     const argArr: string[] = range;
-    //     const findMaxValue: string[] | string = [];
-    //     let lookupValue: string = argArr[0].split(this.tic).join('');
-    //     if (lookupValue.indexOf(':') > - 1) {
-    //         return this.getErrorStrings()[CommonErrors.value];
-    //     }
-    //     if (this.isCellReference(lookupValue)) {
-    //         lookupValue = this.getValueFromArg(lookupValue);
-    //     }
-    //     if (argArr[1].indexOf(':') < - 1) {
-    //         return this.getErrorStrings()[CommonErrors.na];
-    //     }
-    //     let lookupRange: string[] | string = [];
-    //     let firstCol: string = '';
-    //     let secCol: string = '';
-    //     if (this.isCellReference(argArr[1])) {
-    //         lookupRange = this.getCellCollection(argArr[1]);
-    //         if (argArr[1].indexOf(':') > - 1) {
-    //             const index: number = argArr[1].indexOf(':');
-    //             for (let i: number = 0; i < index; i++) {
-    //                 const tempCell: string = this.isChar(argArr[1][i]) ? argArr[1][i] : '';
-    //                 firstCol = firstCol + tempCell;
-    //             }
-    //             for (let j: number = index; j < argArr[1].length; j++) {
-    //                 const tempCell2: string = this.isChar(argArr[1][j]) ? argArr[1][j] : '';
-    //                 secCol = secCol + tempCell2;
-    //             }
-    //         }
-    //     }
-    //     const lookupCol: number = this.colIndex(firstCol) + this.parseFloat(argArr[2]);
-    //     if (lookupCol > this.colIndex(secCol)) {
-    //         return this.getErrorStrings()[CommonErrors.na];
-    //     }
-    //     if (lookupCol === this.colIndex(firstCol)) {
-    //         return this.getErrorStrings()[CommonErrors.na];
-    //     }
-    //     const lookupCell: string = this.convertAlpha(lookupCol);
-    //     argArr[3] = isNullOrUndefined(argArr[3]) ? this.trueValue : argArr[3].split(this.tic).join('');
-    //     let cellValue: string = '';
-    //     for (let i: number = 0; i < lookupRange.length; i++) {
-    //         findMaxValue[i] = this.getValueFromArg(lookupRange[i]).split(this.tic).join('');
-    //     }
-    //     const s: string[] = findMaxValue.toString().split(this.getParseArgumentSeparator());
-    //     const maxValue: number = this.parseFloat(s[s.sort().length - 1]);
-    //     const minValue: number = this.parseFloat(s[0]);
-    //     for (let j: number = 0; j < lookupRange.length; j++) {
-    //         cellValue = this.getValueFromArg(lookupRange[j]);
-    //         if (argArr[3].toUpperCase() === this.trueValue) {
-    //             if (lookupValue === cellValue) {
-    //                 return this.getValueFromArg(lookupCell + j).split(this.tic).join('');
-    //             } else if (this.parseFloat(lookupValue) === this.parseFloat(cellValue)) {
-    //                 return this.getValueFromArg(lookupCell + j).split(this.tic).join('');
-    //             } else if (this.parseFloat(lookupValue) < minValue) {
-    //                 return this.getErrorStrings()[CommonErrors.na];
-    //             } else if (this.parseFloat(lookupValue) > maxValue) {
-    //                 const index: number = findMaxValue.indexOf(maxValue.toString());
-    //                 return this.getValueFromArg(lookupCell + index).split(this.tic).join('');
-    //             }
-    //         }
-    //         if (argArr[3] === this.falseValue) {
-    //             if (lookupValue === cellValue) {
-    //                 return this.getValueFromArg(lookupCell + j);
-    //             }
-    //         }
-    //     }
-    //     return this.getErrorStrings()[CommonErrors.na];
-    // }
+    public computeVHLookup(range: string[], vLookup?: boolean): string {
+        let lookupValue: string; let idxNumber: string;
+        let lookupArray: string; let matchArray: string;
+        let rangeLookup: string; const checkCriteria: string[] = [];
+        const findMaxVal: string[] | string = []; const result: string[] | string = [];
+        const argArr: string[] = range;
+        const isVlookup: string = vLookup ? this.trueValue : this.falseValue;
+        if (argArr[0] === '' || argArr[1] === '') {
+            return this.getErrorStrings()[CommonErrors.na];
+        }
+        lookupValue = this.getValueFromArg(argArr[0]);
+        if (argArr[0].indexOf(this.tic) > -1 && argArr[0].toUpperCase().split(this.tic).join('') !== this.trueValue &&
+            argArr[0].toUpperCase().split(this.tic).join('') !== this.falseValue && this.isNaN(this.parseFloat(argArr[0].split(this.tic).join('')))) {
+            lookupValue = lookupValue.split(this.tic).join('');
+        }
+        if (this.getErrorStrings().indexOf(lookupValue) > -1) { return lookupValue; }
+        if (this.isCellReference(argArr[2]) || argArr[2].includes(this.arithMarker)) {
+            idxNumber = this.getValueFromArg(argArr[2]) || '0';
+        } else {
+            idxNumber = this.getValueFromArg(argArr[2]).split(this.tic).join('');
+        }
+        idxNumber = idxNumber.toUpperCase() === this.trueValue ? '1' :
+            idxNumber.toUpperCase() === this.falseValue ? '0' : idxNumber;
+        const idxNum: number = this.parseFloat(idxNumber);
+        const rangeSplit: string[] = argArr[1].split(':');
+        if (this.isCellReference(rangeSplit[0]) && this.isCellReference(rangeSplit[1])) {
+            const index: number = argArr[1].indexOf(':');
+            let rowIdx: number = this.rowIndex(this.substring(argArr[1], 0, index));
+            let colIdx: number = this.colIndex(this.substring(argArr[1], 0, index));
+            let endRowIdx: number = this.rowIndex(this.substring(argArr[1], index + 1, index + argArr[1].length - index - 1));
+            let endColIdx: number = this.colIndex(this.substring(argArr[1], index + 1, index + argArr[1].length - index - 1));
+            if (rowIdx > endRowIdx) {
+                [rowIdx, endRowIdx] = [endRowIdx, rowIdx];
+            }
+            if (colIdx > endColIdx) {
+                [colIdx, endColIdx] = [endColIdx, colIdx];
+            }
+            let sheetIdx: string | number = '';
+            if (argArr[1].indexOf('!') === 0) {
+                sheetIdx = argArr[1]; sheetIdx = sheetIdx.replace('!', '');
+                sheetIdx = sheetIdx.indexOf('!'); sheetIdx = argArr[1].substring(0, sheetIdx + 2);
+            }
+            if (isVlookup === this.trueValue) {
+                lookupArray = sheetIdx + getAlphalabel(colIdx) + rowIdx + ':' + getAlphalabel(colIdx) + endRowIdx;
+            } else {
+                lookupArray = sheetIdx + getAlphalabel(colIdx) + rowIdx + ':' + getAlphalabel(endColIdx) + rowIdx;
+            }
+            let matchArrayIndex: number;
+            if (isVlookup === this.trueValue) {
+                matchArrayIndex = colIdx + idxNum - 1;
+                if (matchArrayIndex > endColIdx) {
+                    return this.getErrorStrings()[CommonErrors.ref];
+                }
+            } else {
+                matchArrayIndex = rowIdx + idxNum - 1;
+                if (matchArrayIndex > endRowIdx) {
+                    return this.getErrorStrings()[CommonErrors.ref];
+                }
+            }
+            if (idxNum < 1 || this.isNaN(idxNum)) {
+                return this.getErrorStrings()[CommonErrors.value];
+            } else {
+                if (isVlookup === this.trueValue) {
+                    matchArray = sheetIdx + getAlphalabel(matchArrayIndex) + rowIdx + ':' + getAlphalabel(matchArrayIndex) + endRowIdx;
+                } else {
+                    matchArray = sheetIdx + getAlphalabel(colIdx) + matchArrayIndex + ':' + getAlphalabel(endColIdx) + matchArrayIndex;
+                }
+            }
+        }
+        argArr[3] = argArr[3] ? argArr[3] : this.trueValue;
+        if (this.isCellReference(argArr[3])) {
+            argArr[3] = this.getValueFromArg(argArr[3]);
+        } else {
+            argArr[3] = this.getValueFromArg(argArr[3]).split(this.tic).join('');
+        }
+        if (this.getErrorStrings().indexOf(argArr[3]) > -1) { return argArr[3]; }
+        if (argArr[3].toUpperCase() === this.falseValue || argArr[3] === '0') {
+            rangeLookup = this.falseValue;
+        } else if (argArr[3].toUpperCase() === this.trueValue || argArr[3] === '1') {
+            rangeLookup = this.trueValue;
+        } else {
+            return this.getErrorStrings()[CommonErrors.value];
+        }
+        const lookupRangeArray: string[] | string = this.getCellCollection(lookupArray);
+        const matchRangeArray: string[] | string = this.getCellCollection(matchArray);
+        for (let i: number = 0; i < lookupRangeArray.length; i++) {
+            findMaxVal.push(this.getValueFromArg(lookupRangeArray[i as number]).split(this.tic).join(''));
+        }
+        const criteriaVal: number = this.parseFloat(lookupValue);
+        if (rangeLookup === 'FALSE') { // For EXACT Match
+            for (let j: number = 0; j < lookupRangeArray.length; j++) {
+                checkCriteria[j as number] = this.getValueFromArg(lookupRangeArray[j as number]).split(this.tic).join('');
+                if (!isNullOrUndefined(matchRangeArray[j as number])) {
+                    if (!this.isNaN(criteriaVal) && checkCriteria[j as number] !== '' && criteriaVal === this.parseFloat(checkCriteria[j as number])) {
+                        result.push(this.getValueFromArg(matchRangeArray[j as number]).split(this.tic).join('') || '0');
+                    } else if (checkCriteria[j as number] !== '' && lookupValue.toUpperCase() === checkCriteria[j as number].toUpperCase()) {
+                        result.push(this.getValueFromArg(matchRangeArray[j as number]).split(this.tic).join('') || '0');
+                    } else if (lookupValue.indexOf('*') > -1 || lookupValue.indexOf('?') > -1) {
+                        let criteriaValue: string = lookupValue;
+                        if (lookupValue.indexOf('*') > -1) {
+                            criteriaValue = criteriaValue.replace(/\*/g, '').trim();
+                            if (this.isCellReference(criteriaValue)) {
+                                criteriaValue = this.getValueFromArg(criteriaValue);
+                            }
+                            const asteriskIndex: number = lookupValue.indexOf('*');
+                            if (lookupValue[0] === '*') { criteriaValue = '*' + criteriaValue; }
+                            if (lookupValue[lookupValue.length - 1] === '*') { criteriaValue += '*'; }
+                            if (asteriskIndex > 0 && asteriskIndex < lookupValue.length - 1) {
+                                criteriaValue = lookupValue.substring(0, asteriskIndex) + '*' + lookupValue.substring(asteriskIndex + 1);
+                            }
+                        }
+                        const stack: string[] = [];
+                        const wildcardResult: string = this.findWildCardValue(criteriaValue.toLowerCase(),
+                            checkCriteria[j as number].toLowerCase());
+                        stack.push(wildcardResult);
+                        stack.push(lookupValue);
+                        if (this.processLogical(stack, 'equal') === this.trueValue) {
+                            result.push(this.getValueFromArg(matchRangeArray[j as number]).split(this.tic).join('') || '0');
+                        }
+                    }
+                }
+            }
+            if (result.length > 0) {
+                return result[0];
+            } else {
+                return this.getErrorStrings()[CommonErrors.na];
+            }
+        } else if (rangeLookup === 'TRUE') { // For APPROXIMATE Match
+            const num: number[] = findMaxVal.map((value: string) => { return value === '' ? NaN : Number(value); }).sort((a: number, b: number) => a - b);
+            const maxVal: number = num[num.length - 1];
+            const minVal: number = num[0];
+            const lookup: string = lookupValue.toUpperCase();
+            for (let k: number = 0; k < lookupRangeArray.length; k++) {
+                checkCriteria[k as number] = this.getValueFromArg(lookupRangeArray[k as number]).split(this.tic).join('');
+                if (!isNullOrUndefined(matchRangeArray[k as number]) && lookupValue !== '' && checkCriteria[k as number] !== '' && (lookup === this.trueValue || lookup === this.falseValue) && lookup === checkCriteria[k as number].toUpperCase()) {
+                    result.push(this.getValueFromArg(matchRangeArray[k as number]).split(this.tic).join('') || '0');
+                } else if (!isNullOrUndefined(matchRangeArray[k as number]) && lookupValue !== '' && checkCriteria[k as number] !== '' && lookup === checkCriteria[k as number].toUpperCase()) {
+                    result.push(this.getValueFromArg(matchRangeArray[k as number]).split(this.tic).join('') || '0');
+                }
+            }
+            for (let a: number = 0; a < num.length; a++) {
+                checkCriteria[a as number] = num[a as number].toString().split(this.tic).join('');
+                if (!isNullOrUndefined(matchRangeArray[a as number]) && lookupValue !== '' && !this.isNaN(criteriaVal) && checkCriteria[a as number] !== '' && criteriaVal === this.parseFloat(checkCriteria[a as number])) {
+                    result.push(this.getValueFromArg(matchRangeArray[a as number]).split(this.tic).join('') || '0');
+                }
+            }
+            if (result.length > 0) {
+                return result[result.length - 1];
+            } else if (lookupValue.indexOf('*') > -1 || lookupValue.indexOf('?') > -1 ||
+                lookup.split(this.tic).join('') === this.trueValue || lookup.split(this.tic).join('') === this.falseValue) {
+                return this.getErrorStrings()[CommonErrors.na];
+            } else if (criteriaVal > maxVal && !isNullOrUndefined(matchRangeArray[lookupRangeArray.length - 1])) {
+                return this.getValueFromArg(matchRangeArray[lookupRangeArray.length - 1]).split(this.tic).join('');
+            }
+            if (findMaxVal.indexOf(lookupValue.split(this.tic).join('')) < 0 && lookupValue !== this.trueValue && lookupValue !== this.falseValue) {
+                if (!this.isNaN(criteriaVal) && lookupValue !== '' && !this.isNaN(maxVal) && !this.isNaN(minVal)) {
+                    const temp: number[] = [];
+                    for (let b: number = 0; b < num.length; b++) {
+                        if (criteriaVal > num[b as number]) {
+                            temp.push(num[b as number]);
+                        }
+                    }
+                    const index: number = temp.length - 1;
+                    if (!isNullOrUndefined(matchRangeArray[index as number]) && index >= 0) {
+                        return this.getValueFromArg(matchRangeArray[index as number]).split(this.tic).join('') || '0';
+                    }
+                } else if (this.isNaN(criteriaVal) && lookupValue !== '' && this.isNaN(maxVal) && this.isNaN(minVal)) {
+                    const str: string[] = findMaxVal.sort();
+                    const index: number = this.findClosestMatch(lookupValue.split(this.tic).join(''), str);
+                    if (!isNullOrUndefined(matchRangeArray[index as number]) && index >= 0) {
+                        return this.getValueFromArg(matchRangeArray[index as number]).split(this.tic).join('') || '0';
+                    }
+                }
+            }
+        }
+        return this.getErrorStrings()[CommonErrors.na];
+    }
+
+    private findClosestMatch(searchValue: string, sortedArray: string[]): number {
+        let start: number = 0;
+        let end: number = sortedArray.length - 1;
+        while (start <= end) {
+            const mid: number = Math.floor((start + end) / 2);
+            const midValue: string = sortedArray[mid as number];
+            const compareResult: number = this.compareStrings(searchValue.toLowerCase(), midValue.toLowerCase());
+            if (compareResult === 0) {
+                return mid;
+            } else if (compareResult === 1) {
+                start = mid + 1;
+            } else {
+                end = mid - 1;
+            }
+        }
+        // If no exact match is found, return the closest match based on the entire string
+        for (let i: number = start - 1; i >= 0; i--) {
+            if (this.compareStrings(searchValue.toLowerCase(), sortedArray[i as number].toLowerCase()) !== -1) {
+                return i;
+            }
+        }
+        return -1; // No match found
+    }
+
+    private compareStrings(str1: string, str2: string): number {
+        const minLength: number = Math.min(str1.length, str2.length);
+        for (let i: number = 0; i < minLength; i++) {
+            const charCode1: number = str1.charCodeAt(i);
+            const charCode2: number = str2.charCodeAt(i);
+            if (charCode1 < charCode2) {
+                return -1;
+            } else if (charCode1 > charCode2) {
+                return 1;
+            }
+        }
+        // If all characters are the same up to the length of the shorter string, compare lengths
+        if (str1.length < str2.length) {
+            return -1;
+        } else if (str1.length > str2.length) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 
     public findWildCardValue(lookVal: string, cellValue: string): string {
         let finalText: string = '';
@@ -1447,24 +1699,18 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {string} op - specify the operator.
      * @returns {string} - Compute and or.
      */
-    public computeAndOr(args: string[], op: string): string {
-        let result: boolean = op === 'and' ? true : false;
-        let value: string;
-        let parseVal: number;
-        if (args.length === 0) {
-            return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
-        }
-        for (let l: number = 0, len: number = args.length; l < len; l++) {
-            if (args[l as number].split(this.tic).join('').trim() === this.emptyString) {
-                return this.getErrorStrings()[CommonErrors.value];
-            }
-        }
+    public computeAndOrNot(args: string[], op: string): string {
+        const isAnd: boolean = op === 'and'; const isOr: boolean = op === 'or';
+        const isNot: boolean = op === 'not';
+        let result: boolean = (isAnd || isNot) ? true : false;
+        let value: string; let parseVal: number;
+        const resultant: string[] = [];
         const ranges: string[] = args;
         for (let i: number = 0; i < ranges.length; i++) {
             if (ranges[i as number] === (this.tic)) {
                 return this.getErrorStrings()[CommonErrors.value];
             }
-            if (ranges[i as number].indexOf(':') > -1 && this.isCellReference(ranges[i as number])) {
+            if (this.isCellReference(ranges[i as number])) {
                 const cells: string[] | string = this.getCellCollection(ranges[i as number]);
                 for (let j: number = 0; j < cells.length; j++) {
                     if (this.getErrorStrings().indexOf(cells[j as number]) > -1) {
@@ -1473,30 +1719,46 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         return this.getErrorStrings()[CommonErrors.name];
                     }
                     value = this.getValueFromArg(cells[j as number]);
-                    if (value === '') {
-                        value = this.trueValue;
-                    }
                     if (this.getErrorStrings().indexOf(value) > -1) {
                         return value;
                     }
                     parseVal = this.parseFloat(value);
+                    if (value === this.falseValue || (value !== '' && parseVal === 0) || (isNot && value === '')) {
+                        resultant.push(this.falseValue);
+                    } else if (value === this.trueValue || !isNaN(parseVal) && value !== '') {
+                        resultant.push(this.trueValue);
+                    } else if (value === '' || isNaN(parseVal)) {
+                        resultant.push(this.getErrorStrings()[CommonErrors.value]);
+                    }
                 }
             } else {
                 value = this.getValueFromArg(ranges[i as number]).split(this.tic).join('').toUpperCase();
                 if (this.getErrorStrings().indexOf(value) > -1) {
                     return value;
                 }
-                const tempdate: number = Date.parse(value.split(this.tic).join(''));
-                if (!isNaN(tempdate)) {
-                    result = true;
-                } else if (!(value === this.trueValue || value === this.falseValue)) {
-                    return this.getErrorStrings()[CommonErrors.value].toString();
-                }
                 parseVal = this.parseFloat(value);
+                if (value === this.falseValue || ranges[i as number] === '' || (value !== '' && parseVal === 0)) {
+                    resultant.push(this.falseValue);
+                } else if (value === this.trueValue || !isNaN(parseVal) && value !== '') {
+                    resultant.push(this.trueValue);
+                } else if (value === '' || isNaN(parseVal)) {
+                    resultant.push(this.getErrorStrings()[CommonErrors.value]);
+                }
             }
-            result = op === 'and' ? (result && ((value === this.trueValue) || !(isNaN(parseVal)))) :
-                (result || ((value === this.trueValue) || !(isNaN(parseVal))));
         }
+        const containsOnlyValueError: boolean = resultant.every(item => item === this.getErrorStrings()[CommonErrors.value]);
+        if (containsOnlyValueError) { return this.getErrorStrings()[CommonErrors.value]; }
+        for (let j: number = 0; j < resultant.length; j++) {
+            if ((isAnd || isNot) && resultant[j as number] === this.falseValue) {
+                result = false;
+                break;
+            }
+            if (isOr && resultant[j as number] === this.trueValue) {
+                result = true;
+                break;
+            }
+        }
+        result = isNot ? !result : result;
         return result ? this.trueValue : this.falseValue;
     }
 
@@ -1971,9 +2233,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             result = val1 === val2 || isOnlyAsterisk ? this.trueValue : this.falseValue;
         }
         if (operator === 'or') {
-            if(!this.isNaN(value1) && !this.isNaN(value2)){
-                result = Math.pow(this.parseFloat(value2), this.parseFloat(value1)).toString();
-            }
+            result = Math.pow(this.parseFloat(value2), this.parseFloat(value1)).toString();
+            result = this.isNaN(this.parseFloat(result)) ? this.getErrorStrings()[CommonErrors.value] : result;
         }
         stack.push(result);
         return result;
@@ -2126,7 +2387,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return storeCell;
     }
     public computeIfsFormulas(range: string[], isCountIfs?: string, isAvgIfs?: string): string | number {
-        if (isCountIfs === this.trueValue && isNullOrUndefined(range) || range[0] === '' || range.length < 2 || range.length > 127) {
+        if (isCountIfs === this.trueValue && (isNullOrUndefined(range) || range[0] === '' || range.length < 2 || range.length > 127 ||
+            range.length % 2 !== 0)) {
             return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
         const argArr: string[] = range;
@@ -2804,7 +3066,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             cellTxt = token + cellTxt;
         }
         const argVal: string = changeArgs.getValue().toUpperCase();
-        if (argVal.indexOf('=RAND()') > - 1 || argVal.indexOf('=NOW()') > -1 || argVal.indexOf('RAND()') > - 1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
+        if (argVal.indexOf('=RAND()') > - 1 || argVal.indexOf('=NOW()') > -1 || argVal.indexOf('NOW()') > -1 || argVal.indexOf('RAND()') > - 1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
             argVal.indexOf('RANDBETWEEN(') > - 1 || this.randomValues.has(cellTxt)) {
             let randStrVal: string = this.randCollection.toString();
             if (!this.randomValues.has(cellTxt)) {
@@ -2812,7 +3074,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 this.randCollection.push(cellTxt);
                 this.isRandomVal = true;
             } else if (this.randomValues.has(cellTxt)) {
-                if (argVal.indexOf('=RAND()') > -1 || argVal.indexOf('=NOW()') > -1 || argVal.indexOf('RAND()') > -1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
+                if (argVal.indexOf('=RAND()') > -1 || argVal.indexOf('=NOW()') > -1 || argVal.indexOf('NOW()') > -1 || argVal.indexOf('RAND()') > -1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
                     argVal.indexOf('RANDBETWEEN(') > - 1) {
                     this.randomValues.set(cellTxt, changeArgs.getValue());
                 } else if (changeArgs.getValue().toUpperCase() !== this.randomValues.get(cellTxt.toUpperCase())) {
@@ -2984,10 +3246,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     }
                 }
             } else {
-                let val: string = this.getValueFromArg(argArr[i as number]) || '0';
+                let val: string = this.getValueFromArg(argArr[i as number]);
                 let cellVal: number = 0;
                 const isCellRef: boolean = this.isCellReference(argArr[i as number]);
-                const isEmptyCell: boolean = val === '0' && isCellRef;
+                const isEmptyCell: boolean = val === '' && isCellRef;
                 const isStringCell: boolean = this.isNaN(this.parseFloat(val)) && isCellRef;
                 const isBooleanCell: boolean = val === (this.trueValue || this.falseValue) && isCellRef;
                 argArr[i as number] = argArr[i as number].startsWith('n') ? argArr[i as number].slice(1) : argArr[i as number];

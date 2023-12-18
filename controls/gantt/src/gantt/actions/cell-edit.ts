@@ -63,7 +63,11 @@ export class CellEdit {
             }
         } else {
             const callBackPromise: Deferred = new Deferred();
+            let parentReference:any = this.parent;
             this.parent.trigger('cellEdit', args, (arg: CellEditArgs) => {
+                if (arg.columnName == parentReference.taskFields.progress && arg.rowData.hasChildRecords) {
+                    arg.cancel = true
+                }
                 if (data.level === 0 && this.parent.viewType === 'ResourceView') {
                     arg.cancel = true;
                 }
@@ -242,9 +246,9 @@ export class CellEdit {
                 this.parent.setRecordValue('startDate', null, ganttProb, true);
                 this.parent.setRecordValue('duration', null, ganttProb, true);
                 this.parent.setRecordValue('isMilestone', false, ganttProb, true);
-                if (this.parent.allowUnscheduledTasks && isNOU(this.parent.taskFields.endDate)) {
-                    this.parent.setRecordValue('endDate', null, ganttProb, true);
-                }
+                // if (this.parent.allowUnscheduledTasks && isNOU(this.parent.taskFields.endDate)) {
+                //     this.parent.setRecordValue('endDate', null, ganttProb, true);
+                // }
             }
         } else if (ganttProb.endDate || !isNOU(ganttProb.duration)) {
             this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), ganttProb, true);

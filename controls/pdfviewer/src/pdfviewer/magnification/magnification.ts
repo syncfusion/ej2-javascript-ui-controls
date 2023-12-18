@@ -358,14 +358,16 @@ export class Magnification {
             } else {
                 this.pdfViewerBase.isMinimumZoom = false;
             }
-            if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
-                if (this.pdfViewerBase.isWebkitMobile) {
-                    this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
+            if (!isNullOrUndefined(this.pdfViewerBase.viewerContainer)) {
+                if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+                    if (this.pdfViewerBase.isWebkitMobile) {
+                        this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
+                    } else {
+                        this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
+                    }
                 } else {
-                    this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
+                    this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
                 }
-            } else {
-                this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
             }
             if (this.pdfViewerBase.pageCount > 0) {
                 if ((this.previousZoomFactor !== this.zoomFactor)) {

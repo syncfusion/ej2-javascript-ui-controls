@@ -421,6 +421,29 @@ export abstract class Widget implements IWidget {
                 widget.y = lastChild instanceof Widget ? lastChild.y + lastChild.height : this.y;
                 this.height += widget.height;
             }
+            if (widget instanceof TableRowWidget) {
+                let previousRow: TableRowWidget = this.childWidgets[this.childWidgets.length - 1] as TableRowWidget;
+                for (let i = 0; i < previousRow.childWidgets.length; i++) {
+                    let previousCell: TableCellWidget = previousRow.childWidgets[i] as TableCellWidget;
+                    if (previousCell.cellFormat.rowSpan > 1) {
+                        for (let j = 0; j < (widget as TableRowWidget).childWidgets.length; j++) {
+                            let currentCell: TableCellWidget = (widget as TableRowWidget).childWidgets[j] as TableCellWidget;
+                            if (currentCell.columnIndex === previousCell.columnIndex && currentCell.isSplittedCell && currentCell.cellFormat.rowSpan === previousCell.cellFormat.rowSpan) {
+                                for (let k = 0; k < currentCell.childWidgets.length; k++) {
+                                    let block: BlockWidget = currentCell.childWidgets[k] as BlockWidget;
+                                    currentCell.childWidgets.splice(block.indexInOwner, 1);
+                                    previousCell.childWidgets.push(block);
+                                    block.containerWidget = previousCell;
+                                    k--;
+                                }
+                                currentCell.ownerRow.childWidgets.splice(currentCell.indexInOwner, 1);
+                                currentCell.containerWidget = undefined;
+                                j--;
+                            }
+                        }
+                    }
+                }
+            }
             this.childWidgets.push(widget);
         }
     }
@@ -825,6 +848,25 @@ export abstract class BlockWidget extends Widget {
      * @private
      */
     public lockedBy: string = '';
+    // /**
+    //  * @private
+    //  */
+    // private lengthIn: number = 1;
+    // /**
+    //  * @private
+    //  */
+    // get length(): number {
+    //     if (this.lengthIn == 0) {
+    //         this.lengthIn = 1;
+    //     }
+    //     return this.lengthIn;
+    // }
+    // /**
+    //  * @private
+    //  */
+    // set length(value: number) {
+    //     this.lengthIn = value;
+    // }
     /**
      * @private
      */
@@ -1180,6 +1222,9 @@ export class ParagraphWidget extends BlockWidget {
     }
     public getLength(): number {
         let length: number = 0;
+        if (isNullOrUndefined(this.childWidgets)) {
+            return length;
+        }
         for (let j: number = 0; j < this.childWidgets.length; j++) {
             let line: LineWidget = this.childWidgets[j] as LineWidget;
             for (let i: number = 0; i < line.children.length; i++) {
@@ -1868,6 +1913,19 @@ export class TableWidget extends BlockWidget {
      * @private
      */
     public footnoteElement: FootnoteElementBox[] = [];
+    // /**
+    //  * @private
+    //  */
+    // get length(): number {
+    //     if (!isNullOrUndefined(this.nextSplitWidget)) {
+    //         return 1;
+    //     } else {
+    //         if (isNullOrUndefined(this.previousSplitWidget)) {
+    //             return 1;
+    //         }
+    //         return 0;
+    //     }
+    // }
     /**
      * @private
      */
@@ -2825,6 +2883,19 @@ export class TableRowWidget extends BlockWidget {
      * @private
      */
     public editRangeID: Dictionary<number, ElementBox>;
+    // /**
+    //  * @private
+    //  */
+    // get length(): number {
+    //     if (!isNullOrUndefined(this.nextSplitWidget)) {
+    //         return 1;
+    //     } else {
+    //         if (isNullOrUndefined(this.previousSplitWidget)) {
+    //             return 1;
+    //         }
+    //         return 0;
+    //     }
+    // }
     /**
      * @private
      */
@@ -3331,6 +3402,23 @@ export class TableCellWidget extends BlockWidget {
     * @private
      */
     public isRenderEditRangeEnd: boolean = false;
+    // /**
+    //  * @private
+    //  */
+    // get length(): number {
+    //     if (!isNullOrUndefined(this.nextSplitWidget)) {
+    //         return 1;
+    //     } else {
+    //         if (isNullOrUndefined(this.previousSplitWidget)) {
+    //             return 1;
+    //         }
+    //         return 0;
+    //     }
+    // }
+    /**
+    * @private
+     */
+    public isSplittedCell: boolean = false;
     /**
      * @private
      */
@@ -4187,6 +4275,7 @@ export class TableCellWidget extends BlockWidget {
         this.cellFormat = undefined;
         this.rowIndex = undefined;
         this.columnIndex = undefined;
+        this.isSplittedCell = undefined;
         super.destroy();
     }
     /**

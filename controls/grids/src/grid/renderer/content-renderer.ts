@@ -242,9 +242,11 @@ export class ContentRender implements IRenderer {
         }
         contentDiv.appendChild(this.createContentTable('_content_table'));
         this.setTable(contentDiv.querySelector('.' + literals.table));
-        this.ariaService.setOptions(<HTMLElement>this.getTable(), {
-            multiselectable: this.parent.selectionSettings.type === 'Multiple'
-        });
+        if (this.parent.selectionSettings.type === 'Multiple') {
+            this.ariaService.setOptions(this.parent.element, {
+                multiselectable: true
+            });
+        }
         this.initializeContentDrop();
         if (this.parent.frozenRows) {
             this.parent.getHeaderContent().classList.add('e-frozenhdr');
@@ -266,7 +268,7 @@ export class ContentRender implements IRenderer {
         const table: Element = innerDiv.querySelector('.' + literals.table) ? innerDiv.querySelector('.' + literals.table) :
             this.parent.createElement('table', {
                 className: literals.table, attrs: {
-                    cellspacing: '0.25px', role: 'grid',
+                    cellspacing: '0.25px', role: 'presentation',
                     id: this.parent.element.id + id
                 }
             });
@@ -482,7 +484,7 @@ export class ContentRender implements IRenderer {
                                 thisRef.parent.groupSettings.enableLazyLoading)) {
                                 thisRef.rowElements.push(tr);
                             }
-                            thisRef.ariaService.setOptions(thisRef.getTable() as HTMLElement, {
+                            thisRef.ariaService.setOptions(thisRef.parent.element, {
                                 colcount: gObj.getColumns().length.toString() });
                             if (i === modelData.length - 1) {
                                 refFrag = null;
@@ -526,7 +528,7 @@ export class ContentRender implements IRenderer {
                 this.parent.groupSettings.enableLazyLoading)) {
                 this.rowElements.push(tr);
             }
-            this.ariaService.setOptions(this.getTable() as HTMLElement, { colcount: gObj.getColumns().length.toString() });
+            this.ariaService.setOptions(this.parent.element, { colcount: gObj.getColumns().length.toString() });
         }
         const isReactChild: boolean = gObj.parentDetails && gObj.parentDetails.parentInstObj && gObj.parentDetails.parentInstObj.isReact;
         if ((gObj.isReact || isReactChild) && !gObj.requireTemplateRef) {

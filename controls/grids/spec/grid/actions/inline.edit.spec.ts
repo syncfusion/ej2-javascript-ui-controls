@@ -3400,6 +3400,7 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
             gridObj = actionComplete = null;
         });
     });
+
     describe('845385 - deleteRecord with showDeleteConfirmDialog is not working', () => {
         let gridObj: Grid;
         let data = dataSource();
@@ -3437,7 +3438,6 @@ describe('EJ2-40519 - ActionBegin event arguments cancel property value getting 
             destroy(gridObj);
             gridObj = null;
         });
-    
     });
 });
 

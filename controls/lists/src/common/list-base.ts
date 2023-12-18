@@ -332,18 +332,23 @@ export namespace ListBase {
                 li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options, componentInstance);
                 li.classList.add(cssClass.level + '-' + ariaAttributes.level);
                 li.setAttribute('aria-level', ariaAttributes.level.toString());
-                if(ariaAttributes.groupItemRole =='presentation' || ariaAttributes.itemRole == 'presentation'){
+                if (ariaAttributes.groupItemRole === 'presentation' || ariaAttributes.itemRole === 'presentation') {
                     li.removeAttribute('aria-level');
                 }
                 anchorElement = li.querySelector('.' + cssClass.anchorWrap);
                 // eslint-disable-next-line no-prototype-builtins
                 if (fieldData.hasOwnProperty(fields.tooltip)) {
-                    const tooltipText = SanitizeHtmlHelper.sanitize(<string>fieldData[fields.tooltip]);                    
+                    const tooltipText = SanitizeHtmlHelper.sanitize(<string>fieldData[fields.tooltip]);
                     li.setAttribute('title', tooltipText);
                 }
                 // eslint-disable-next-line no-prototype-builtins
                 if (fieldData.hasOwnProperty(fields.htmlAttributes) && fieldData[fields.htmlAttributes]) {
-                    setAttribute(li, <{ [key: string]: string }>fieldData[fields.htmlAttributes]);
+                    const htmlAttributes: { [key: string]: string } = <{ [key: string]: string }>fieldData[fields.htmlAttributes];
+                    // Check if 'class' attribute is present and not an empty string
+                    if (htmlAttributes.hasOwnProperty('class') && typeof htmlAttributes['class'] === 'string' && htmlAttributes['class'].trim() === '') {
+                        delete htmlAttributes['class'];
+                    }
+                    setAttribute(li, htmlAttributes);
                 }
                 // eslint-disable-next-line no-prototype-builtins
                 if (fieldData.hasOwnProperty(fields.enabled) && fieldData[fields.enabled] === false) {
@@ -570,7 +575,6 @@ export namespace ListBase {
         const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         const fields: FieldsMapping = extend({}, defaultMappedFields, curOpt.fields);
         const curEle: HTMLElement = <HTMLElement>element.cloneNode(true);
-        // eslint-disable-next-line
         const jsonAr: { [key: string]: {} }[] = [];
 
         curEle.classList.add('json-parent');
@@ -581,7 +585,6 @@ export namespace ListBase {
             const li: HTMLElement = childs[i as number];
             const anchor: HTMLElement = li.querySelector('a');
             const ul: Element = li.querySelector('ul');
-            // eslint-disable-next-line
             const json: { [key: string]: {} } = {};
             const childNodes: NodeList = anchor ? anchor.childNodes : li.childNodes;
             const keys: string[] = Object.keys(childNodes);
@@ -662,7 +665,6 @@ export namespace ListBase {
         const ulElement: HTMLElement = createElement('ul', { className: cssClass.ul, attrs: { role: 'presentation' } });
         const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         const curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
-        // eslint-disable-next-line
         const compiledString: Function = compileTemplate(template);
         const liCollection: HTMLElement[] = [];
         let value: string;
@@ -707,7 +709,7 @@ export namespace ListBase {
             } else {
                 const currentID: string = isHeader ? curOpt.groupTemplateID : curOpt.templateID;
                 if (isHeader) {
-                    if (componentInstance && componentInstance.getModuleName() != 'listview') {
+                    if (componentInstance && componentInstance.getModuleName() !== 'listview') {
                         // eslint-disable-next-line
                         const compiledElement: any = compiledString(
                             curItem,
@@ -779,7 +781,6 @@ export namespace ListBase {
         fields: FieldsMapping,
         // eslint-disable-next-line
         headerItems: Element[], options?: ListBaseOptions, componentInstance?: any): Element[] {
-        // eslint-disable-next-line @typescript-eslint/ban-types
         const compiledString: Function = compileTemplate(groupTemplate);
         const curFields: FieldsMapping = extend({}, defaultMappedFields, fields);
         const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
@@ -788,7 +789,7 @@ export namespace ListBase {
             const headerData: { [key: string]: string; } = {};
             headerData[`${category}`] = header.textContent;
             header.innerHTML = '';
-            if (componentInstance && componentInstance.getModuleName() !== "listview") {
+            if (componentInstance && componentInstance.getModuleName() !== 'listview') {
                 // eslint-disable-next-line
                 const compiledElement: any = compiledString(
                     headerData,
@@ -831,7 +832,6 @@ export namespace ListBase {
         // Create expand and collapse node
         if (!!options.expandCollapse && hasChildren && !options.template) {
             element.firstElementChild.classList.add(cssClass.iconWrapper);
-            // eslint-disable-next-line @typescript-eslint/ban-types
             const expandElement: Function = options.expandIconPosition === 'Left' ? prepend : append;
             expandElement(
                 [createElement('div', { className: 'e-icons ' + options.expandIconClass })],
@@ -985,9 +985,8 @@ export namespace ListBase {
             li.setAttribute('data-uid', generateId());
         }
         if (grpLI && options && options.groupTemplate) {
-            // eslint-disable-next-line @typescript-eslint/ban-types
             const compiledString: Function = compileTemplate(options.groupTemplate);
-            if (componentInstance && componentInstance.getModuleName() !== "listview") {
+            if (componentInstance && componentInstance.getModuleName() !== 'listview') {
                 // eslint-disable-next-line
                 const compiledElement: any = compiledString(
                     item,
@@ -1004,7 +1003,6 @@ export namespace ListBase {
                 append(compiledString(item, componentInstance, 'groupTemplate', curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
             }
         } else if (!grpLI && options && options.template) {
-            // eslint-disable-next-line @typescript-eslint/ban-types
             const compiledString: Function = compileTemplate(options.template);
             if (componentInstance && componentInstance.getModuleName() !== 'listview') {
                 // eslint-disable-next-line
@@ -1086,7 +1084,6 @@ export namespace ListBase {
         createElement: createElementParams, liElement: HTMLElement, className?: string, options?: ListBaseOptions): HTMLElement {
         const curOpt: ListBaseOptions = extend({}, defaultListBaseOptions, options);
         cssClass = getModuleClass(curOpt.moduleName);
-        // eslint-disable-next-line @typescript-eslint/ban-types
         const expandElement: Function = curOpt.expandIconPosition === 'Left' ? prepend : append;
         expandElement(
             [createElement('div', {
@@ -1203,12 +1200,10 @@ export interface ListBaseOptions {
     /**
      * Specifies the callback function that triggered before each list creation
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     itemCreating?: Function;
     /**
      * Specifies the callback function that triggered after each list creation
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
     itemCreated?: Function;
     /**
      * Specifies the customizable expand icon class

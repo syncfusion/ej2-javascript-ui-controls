@@ -571,114 +571,6 @@ describe('Spreadsheet formula module ->', () => {
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[8])).toBe('{"value":"Sports Shoes","formula":"=T(A3:A4);"}');
             done();
         });
-        it('Hour formula->', (done: Function) => {
-            helper.edit('J1', '=HOUR(C4);');
-            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('3');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[9])).toBe('{"value":3,"formula":"=HOUR(C4);"}');
-            done();
-        });
-        it('Hour formula with no inputs->', (done: Function) => {
-            helper.edit('J2', '=HOUR();');
-            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":"#VALUE!","formula":"=HOUR();"}');
-            done();
-        });
-        it('Hour formula with more than 1 input for error checking->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
-            spreadsheet.selectRange('J3');
-            helper.invoke('startEdit');
-            spreadsheet.editModule.editCellData.value = '=HOUR(C3,C4);';
-            helper.getElement('.e-spreadsheet-edit').textContent = '=HOUR(C3,C4);';
-            helper.triggerKeyNativeEvent(13);
-            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
-            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
-            helper.edit('J3', '=HOUR("4/4/2022 3:32:44 AM");');
-            done();
-        });
-        it('Hour formula without ""->', (done: Function) => {
-            helper.edit('J4', '=HOUR(02/03/2023 6:45 PM);');
-            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[9])).toBe('{"value":"#VALUE!","formula":"=HOUR(02/03/2023 6:45 PM);"}');
-            done();
-        });
-        it('Hour formula with input having only Date Value->', (done: Function) => {
-            helper.edit('J5', '=HOUR("4/4/2022");');
-            expect(helper.getInstance().sheets[0].rows[4].cells[9].formula).toBe('=HOUR("4/4/2022");');
-            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('0'); 
-            done();
-        });
-        it('Hour formula with input having both Date and Time Value->', (done: Function) => {
-            helper.edit('J6', '=HOUR("4/4/2022 3:32:44 AM");');
-            expect(helper.getInstance().sheets[0].rows[5].cells[9].formula).toBe('=HOUR("4/4/2022 3:32:44 AM");');
-            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('3');
-            done();
-        });
-        it('Hour formula with input having both Date and Time Value->', (done: Function) => {
-            helper.edit('J7', '=HOUR("01/12/2023 3:32:44 PM");');
-            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('15');
-            done();
-        });
-        it('Hour formula with input having both Date and Time Value without seconds->', (done: Function) => {
-            helper.edit('J8', '=HOUR("01/12/2023 4:32 AM");');
-            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('4');
-            done();
-        });
-        it('Hour formula with input having both Date and Time Value without seconds->', (done: Function) => {
-            helper.edit('J9', '=HOUR("01/12/2023 4:32 PM");');
-            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('16');
-            done();
-        });
-        it('Hour formula with input having both Date and Time Value as 24 hour format->', (done: Function) => {
-            helper.edit('J10', '=HOUR("01/12/2023 21:23:44");');
-            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('21');
-            done();
-        });
-        it('Hour formula with nested Today formula as input->', (done: Function) => {
-            helper.edit('J11', '=HOUR(TODAY());');
-            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('0');
-            done();
-        });
-        it('Hour formula with 12 hours Time value as input->', (done: Function) => {
-            helper.edit('J12', '=HOUR("7:32:44 AM");');
-            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('7');
-            done();
-        });
-        it('Hour formula with 12 hours Time value as input->', (done: Function) => {
-            helper.edit('J13', '=HOUR("7:32:44 PM");');
-            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('19');
-            done();
-        });
-        it('Hour formula with 24 hours Time value as input->', (done: Function) => {
-            helper.edit('J14', '=HOUR("05:30:44");');
-            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('5');
-            done();
-        });
-        it('Hour formula with 24 hours Time value as input->', (done: Function) => {
-            helper.edit('J15', '=HOUR("15:32:44");');
-            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('15');
-            done();
-        });
-        it('Hour formula with HH:MM AM/PM Time value as input->', (done: Function) => {
-            helper.edit('J16', '=HOUR("04:32 AM");');
-            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('4');
-            done();
-        }); 
-        it('Hour formula with HH:MM AM/PM Time value as input->', (done: Function) => {
-            helper.edit('J17', '=HOUR("04:32 PM");');
-            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('16');
-            done();
-        }); 
-        it('Hour formula with HH:MM Time value as 24 hour format as input->', (done: Function) => {
-            helper.edit('J18', '=HOUR("02:33");');
-            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('2');
-            done();
-        });
-        it('Hour formula with HH:MM Time value as 24 hour format as input->', (done: Function) => {
-            helper.edit('J19', '=HOUR("21:33");');
-            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('21');
-            done();
-        });
     });
 
     describe('Formula - Checking III ->', () => {
@@ -687,189 +579,6 @@ describe('Spreadsheet formula module ->', () => {
         });
         afterAll(() => {
             helper.invoke('destroy');
-        });
-        it('MINUTE formula->', (done: Function) => {
-            helper.edit('I1', '=MINUTE(C4)');
-            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('32');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":32,"formula":"=MINUTE(C4)"}');
-            done();
-        });
-        it('MINUTE formula with 2 Inputs->', (done: Function) => {
-            helper.edit('I2', '=MINUTE(C4:C5)');
-            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('32');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":32,"formula":"=MINUTE(C4:C5)"}');
-            done();
-        });
-        it('MINUTE formula with no Inputs->', (done: Function) => {
-            helper.edit('I3', '=MINUTE()');
-            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"#VALUE!","formula":"=MINUTE()"}');
-            done();
-        });
-        it('MINUTE formula with invalid Inputs->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
-            spreadsheet.selectRange('I4');
-            helper.invoke('startEdit');
-            spreadsheet.editModule.editCellData.value = '=MINUTE(2,2)';
-            helper.getElement('.e-spreadsheet-edit').textContent = '=MINUTE(2,2)';
-            helper.triggerKeyNativeEvent(13);
-            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
-            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
-            helper.edit('I4', '=MINUTE("7/1/2022 7:23:34 AM")');
-            done();
-        });
-        it('MINUTE formula with Date and Time Value->', (done: Function) => {
-            helper.edit('I5', '=MINUTE("7/1/2022 7:23:34 AM")');
-            expect(helper.getInstance().sheets[0].rows[4].cells[8].formula).toBe('=MINUTE("7/1/2022 7:23:34 AM")');
-            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('23');
-            done();
-        });
-        it('MINUTE formula with input having minute value as 90->', (done: Function) => {
-            helper.edit('C4', '3:90:44 AM');
-            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":0,"formula":"=MINUTE(C4)"}');
-            done();
-        });
-        it('MINUTE formula with cell having no value->', (done: Function) => {
-            helper.edit('I6', '=MINUTE(P10)');
-            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('0');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":0,"formula":"=MINUTE(P10)"}');
-            done();
-        });
-        it('MINUTE formula with cell having alphabets->', (done: Function) => {
-            helper.edit('I7', '=MINUTE(A1)');
-            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":"#VALUE!","formula":"=MINUTE(A1)"}');
-            done();
-        });
-        it('MINUTE formula with Time Formula->', (done: Function) => {
-            helper.edit('I8', '=TIME(7,MINUTE(C5),0)');
-            expect(helper.getInstance().sheets[0].rows[7].cells[8].formula).toBe('=TIME(7,MINUTE(C5),0)');
-            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('7:23 AM');
-            done();
-        });
-        it('MINUTE formula without ""->', (done: Function) => {
-            helper.edit('I9', '=MINUTE(7/1/2022 7:23:34 AM)');
-            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[8])).toBe('{"value":"#VALUE!","formula":"=MINUTE(7/1/2022 7:23:34 AM)"}');
-            done();
-        });
-        it('MINUTE formula with 12 hours Time value as input->', (done: Function) => {
-            helper.edit('I10', '=MINUTE("3:32:44 AM");');
-            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('32');
-            done();
-        });
-        it('MINUTE formula with 24 hours Time value as input->', (done: Function) => {
-            helper.edit('I11', '=MINUTE("15:54:44");');
-            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('54');
-            done();
-        });
-        it('MINUTE formula without Seconds HH:MM AM/PM format Time value as input->', (done: Function) => {
-            helper.edit('I12', '=MINUTE("09:12 AM");');
-            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('12');
-            done();
-        });
-        it('MINUTE formula without Seconds HH:MM format Time value as input->', (done: Function) => {
-            helper.edit('I13', '=MINUTE("09:12");');
-            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('12');
-            done();
-        });
-        it('MINUTE formula with date as input->', (done: Function) => {
-            helper.edit('I14', '=MINUTE("01/12/2023");');
-            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('0');
-            done();
-        });
-        it('MINUTE formula with nested TODAY formula as input->', (done: Function) => {
-            helper.edit('I15', '=MINUTE(TODAY());');
-            expect(helper.invoke('getCell', [14, 8]).textContent).toBe('0');
-            done();
-        });
-        it('SECOND formula->', (done: Function) => {
-            helper.edit('J1', '=SECOND(C4)');
-            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('44');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[9])).toBe('{"value":44,"formula":"=SECOND(C4)"}');
-            done();
-        });
-        it('SECOND formula with 2 Inputs->', (done: Function) => {
-            helper.edit('J2', '=SECOND(C4:C5)');
-            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('44');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":44,"formula":"=SECOND(C4:C5)"}');
-            done();
-        });
-        it('SECOND formula with no Inputs->', (done: Function) => {
-            helper.edit('J3', '=SECOND()');
-            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[9])).toBe('{"value":"#VALUE!","formula":"=SECOND()"}');
-            done();
-        });
-        it('SECOND formula with invalid Inputs->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
-            spreadsheet.selectRange('J4');
-            helper.invoke('startEdit');
-            spreadsheet.editModule.editCellData.value = '=SECOND(2,2)';
-            helper.getElement('.e-spreadsheet-edit').textContent = '=SECOND(2,2)';
-            helper.triggerKeyNativeEvent(13);
-            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
-            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[9])).toBe('{}');
-            helper.edit('J4', '=SECOND(P10)');
-            done();
-        });
-        it('SECOND formula with cell having no value->', (done: Function) => {
-            helper.edit('J5', '=SECOND(P10)');
-            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('0');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[9])).toBe('{"value":0,"formula":"=SECOND(P10)"}');
-            done();
-        });
-        it('SECOND formula with cell having alphabets->', (done: Function) => {
-            helper.edit('J6', '=SECOND(A1)');
-            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[9])).toBe('{"value":"#VALUE!","formula":"=SECOND(A1)"}');
-            done();
-        });
-        it('SECOND formula with Time Formula->', (done: Function) => {
-            helper.edit('J7', '=TIME(9,30,45)');
-            helper.edit('J8', '=SECOND(J7)');
-            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('45');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[9])).toBe('{"value":45,"formula":"=SECOND(J7)"}');
-            done();
-        });
-        it('SECOND formula with input having both Date and Time value->', (done: Function) => {
-            helper.edit('J9', '=SECOND("7/1/2022 7:23:34 AM")');
-            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('34');
-            done(); 
-        });
-        it('SECOND formula with Date as input->', (done: Function) => {
-            helper.edit('J10', '=SECOND("01/12/2023")');
-            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('0');
-            done(); 
-        });
-        it('SECOND formula with nested TODAY Formula as input->', (done: Function) => {
-            helper.edit('J11', '=SECOND(TODAY())');
-            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('0');
-            done(); 
-        });
-        it('SECOND formula with 12 hours Time value as input->', (done: Function) => {
-            helper.edit('J12', '=SECOND("3:32:44 AM");');
-            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('44');
-            done();
-        });
-        it('SECOND formula with 24 hours Time value as input->', (done: Function) => {
-            helper.edit('J13', '=SECOND("15:54:54");');
-            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('54');
-            done();
-        });
-        it('SECOND formula without Seconds HH:MM AM/PM format Time value as input->', (done: Function) => {
-            helper.edit('J14', '=SECOND("09:12 AM");');
-            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('0');
-            done();
-        });
-        it('SECOND formula without Seconds HH:MM format Time value as input->', (done: Function) => {
-            helper.edit('J15', '=SECOND("09:12");');
-            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('0');
-            done();
         });
         it('MONTH formula->', (done: Function) => {
             helper.edit('K1', '=MONTH(B5)');
@@ -931,6 +640,872 @@ describe('Spreadsheet formula module ->', () => {
             expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('L1', '=NOW()');
+            done();
+        });
+    });
+
+    describe('IFERROR Formula - Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '43925.21' }] }, { cells: [{ value: '#VALUE!' }] }, { cells: [{ value: '"31-Jan-2018"' }] },
+                        { cells: [{ value: '#NAME?' }] }, { cells: [{ value: '#NUM!' }] }, { cells: [{ value: '3567.45' }] },
+                        { cells: [{ value: '2' }] }, { cells: [{ value: '4' }] }, { cells: [{ value: '15' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('IFERROR formula with number type ', (done: Function) => { 
+            helper.edit('I1', '=IFERROR(34,1);');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('34');
+            helper.edit('I2', '=IFERROR(-456,2);');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('-456');
+            helper.edit('I3', '=IFERROR(-34.54,3);');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('-34.54');
+            helper.edit('I4', '=IFERROR("45",11);');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('45');
+            helper.edit('I5', '=IFERROR(5.43,12);');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('5.43');
+            helper.edit('I6', '=IFERROR(-0.45,13);');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('-0.45');
+            helper.edit('I7', '=IFERROR(67.54,14);');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('67.54');
+            helper.edit('I8', '=IFERROR(-3,15);');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('-3');
+            helper.edit('I9', '=IFERROR(12.67,16);');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('12.67');
+            helper.edit('I10', '=IFERROR(342,17);');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('342');
+            done();
+        });
+        it('IFERROR formula with invalid type', (done: Function) => {
+            helper.edit('I11', '=IFERROR(hello,4);');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('4');
+            helper.edit('I12', '=IFERROR(hello,one);');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('#NAME?');
+            done();
+        });
+        it('IFERROR formula with string type', (done: Function) => {
+            helper.edit('I13', '=IFERROR(hello,"3");');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('3');
+            helper.edit('I14', '=IFERROR(one,"");');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('');
+            helper.edit('I15', '=IFERROR("hello",45);');
+            expect(helper.invoke('getCell', [14, 8]).textContent).toBe('hello');
+            done();
+        });
+        it('IFERROR formula with invalid first argument', (done: Function) => {
+            helper.edit('J1', '=IFERROR("er",4);');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('er');
+            helper.edit('J2', '=IFERROR("",1);');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('');
+            done();
+        });
+        it('IFERROR formula with cell reference', (done: Function) => {
+            helper.edit('J3', '=IFERROR(B2,2);');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('41684');
+            helper.edit('J4', '=IFERROR(A5,1);');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('Sandals & Floaters');
+            helper.edit('J5', '=IFERROR(45,G8);');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('45');
+            helper.edit('J6', '=IFERROR(F3,G5);');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('600');
+            done();
+        });
+        it('IFERROR formula without first argument', (done: Function) => {
+            helper.edit('J7', '=IFERROR(,2);');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            helper.edit('J9', '=IFERROR("",G8);');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('');
+            helper.edit('J10', '=IFERROR(45,"");');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('45');
+            done();
+        });
+        it('IFERROR formula with empty as argument', (done: Function) => {
+            helper.edit('J11', '=IFERROR(,);');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('0');
+            done();
+        });
+        it('IFERROR formula without second argument', (done: Function) => {
+            helper.edit('J12', '=IFERROR(4,);');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('4');
+            helper.edit('J13', '=IFERROR(G8,K10);');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('3');
+            done();
+        });
+        it('IFERROR formula with second argument as expression and range', (done: Function) => {
+            helper.edit('J14', '=IFERROR(4,2+1);');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('4');
+            helper.edit('J15', '=IFERROR(G8,5-3);');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('3');
+            helper.edit('J16', '=IFERROR(3/0,22/2);');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('11');
+            helper.edit('J17', '=IFERROR(67,7*2);');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('67');
+            helper.edit('J18', '=IFERROR(hello,A2:A5);');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('Casual Shoes');
+            helper.edit('J19', '=IFERROR(A6:A9,"hello");');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('Flip- Flops & Slippers');
+            done();
+        });
+        it('IFERROR formula with logical values as arguments', (done: Function) => {
+            helper.edit('K1', '=IFERROR(TRUE,2);');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('TRUE');
+            helper.edit('K2', '=IFERROR(FALSE,3);');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('FALSE');
+            helper.edit('K3', '=IFERROR(3/0,TRUE);');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('TRUE');
+            helper.edit('K4', '=IFERROR(43/0,FALSE);');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('FALSE');
+            helper.edit('K5', 'TRUE');
+            helper.edit('K6', 'FALSE');
+            helper.edit('K7', '=IFERROR(43254,K5);');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('43254');
+            helper.edit('K8', '=IFERROR(K5,11);');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('TRUE');
+            helper.edit('K9', '=IFERROR(43254,K6);');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('43254');
+            helper.edit('K10', '=IFERROR(K6,11);');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('FALSE');
+            helper.edit('K11', '"TRUE"');
+            helper.edit('K12', '"FALSE"');
+            helper.edit('K13', '=IFERROR(K11,12);');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('"TRUE"');
+            helper.edit('K14', '=IFERROR(K12,1);');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('"FALSE"');
+            done();
+        });
+        it('IFERROR formula with absolute cell refernces as arguments->', (done: Function) => {
+            helper.edit('L1', '=IFERROR($B$8,1)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('41674');
+            helper.edit('L2', '=IFERROR($C$7,3)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('0.455474537');
+            helper.edit('L3', '=IFERROR($D$5,4)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('15');
+            helper.edit('L4', '=IFERROR($E$3,2)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('30');
+            helper.edit('L5', '=IFERROR($F$6,5)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('300');
+            helper.edit('L6', '=IFERROR(56/0,$A$5)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('Sandals & Floaters');
+            done();
+        });
+        it('IFERROR formula with Sheet references as arguments->', (done: Function) => {
+            helper.edit('L7', '=IFERROR(Sheet2!A1,1)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('43925.21');
+            helper.edit('L8', '=IFERROR(Sheet1!E3,3)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('30');
+            helper.edit('L9', '=IFERROR(Sheet2!A4,4)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('4');
+            helper.edit('L10', '=IFERROR(Sheet1!C10,11)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('0.480717593');
+            done();
+        });
+        it('IFERROR formula with absolute cell of Sheet refernces as arguments->', (done: Function) => {
+            helper.edit('L11', '=IFERROR(Sheet2!$A$3,12)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('"31-Jan-2018"');
+            helper.edit('L12', '=IFERROR(Sheet1!$E$3,15)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('30');
+            helper.edit('L13', '=IFERROR(Sheet2!$A$2,1)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('1');
+            helper.edit('L14', '=IFERROR(Sheet1!$C$4,3)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('0.147731481');
+            helper.edit('L15', '=IFERROR(Sheet2!$A$5,2)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('2');
+            helper.edit('L16', '=IFERROR(Sheet2!$A$6,3)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('3567.45');
+            done();
+        });
+        it('IFERROR formula with nested formulas->', (done: Function) => {
+            helper.edit('M1', '=IFERROR(DATE(2003,3,12),3)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('37692');
+            helper.edit('M2', '=IFERROR(DAY(fdgfd),2)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('2');
+            helper.edit('M3', '=IFERROR(HOUR(343455546),2)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('2');
+            helper.edit('M4', '=IFERROR(MINUTE("rdg"),2)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('2');
+            helper.edit('M5', '=IFERROR(45323,1)-WEEKDAY(43211,1)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('45316');
+            done();
+        });
+        it('IFERROR formula with no inputs->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('N2');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=IFERROR();';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=IFERROR();';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N2', '=IFERROR(45321,2);');
+            done();
+        });
+    });
+
+    describe('EOMONTH Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [
+                        { cells: [{ index: 8, value: 'Different data' }] }, { cells: [{ index: 8, value: 'TRUE' }] },
+                        { cells: [{ index: 8, value: 'TRUE' }] }, { cells: [{ index: 8, value: 'FALSE' }] },
+                        { cells: [{ index: 8, value: 'FALSE' }] }, { cells: [{ index: 8, value: '103.32' }] },]
+                }, {
+                    rows: [
+                        { cells: [{ value: '4/4/2020' }] }, { cells: [{ value: '45321' }] }, { cells: [{ value: '"31-Jan-2018"' }] },
+                        { cells: [{ value: '45673' }] }, { cells: [{ value: '3' }] }, { cells: [{ value: '3567.45' }] },
+                        { cells: [{ value: '40' }] }, { cells: [{ value: '42' }] }, { cells: [{ value: '50' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('EOMONTH Formula with direct values->', (done: Function) => {
+            helper.edit('J1', '=EOMONTH(0,0)');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('31');
+            helper.edit('J2', '=EOMONTH(" 43432",5)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('43585');
+            helper.edit('J3', '=EOMONTH("1/1/2020",1)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('43890');
+            helper.edit('J4', '=EOMONTH("TRUE",12)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J5', '=EOMONTH(1," 1")');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('59');
+            helper.edit('J6', '=EOMONTH("23",25)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('790');
+            done();
+        });
+        it('EOMONTH Formula having floating number as arguments ->', (done: Function) => {
+            helper.edit('J7', '=EOMONTH(145.322,3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('244');
+            helper.edit('J8', '=EOMONTH(45632,3.56)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('45747');
+            helper.edit('J9', '=EOMONTH(43421.657,2.78)');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('43496');
+            done();
+        });
+        it('EOMONTH Formula having whole number as arguments->', (done: Function) => {
+            helper.edit('J10', '=EOMONTH(236,2)');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('305');
+            helper.edit('J11', '=EOMONTH(42314,12)');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('42704');
+            done();
+        });
+        it('EOMONTH Formula with negative value as inputs->', (done: Function) => {
+            helper.edit('J12', '=EOMONTH(-43263,0)');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('#NUM!');
+            helper.edit('J13', '=EOMONTH(45631,-3)');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('45565');
+            helper.edit('J14', '=EOMONTH(-44671,-2)');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('#NUM!');
+            helper.edit('J15', '=EOMONTH("31-Jan-2019",-2)');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('43434');
+            done();
+        });
+        it('EOMONTH Formula with zero as arguments->', (done: Function) => {
+            helper.edit('J16', '=EOMONTH(0,0)');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('31');
+            helper.edit('J17', '=EOMONTH(3,0)');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('31');
+            helper.edit('J18', '=EOMONTH(0,4)');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('152');
+            done();
+        });
+        it('EOMONTH Formula with first argument as different format of date->', (done: Function) => {
+            helper.edit('K1', '=EOMONTH("31-Jan-2019",1)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('43524');
+            helper.edit('K2', '=EOMONTH("1/4/2022",5)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('44742');
+            helper.edit('K3', '=EOMONTH(1/31/2023,4)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('152');
+            helper.edit('K4', '=EOMONTH("29-Feb-2020",12)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('44255');
+            helper.edit('K5', '=EOMONTH("31/1/2019",1)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K6', '=EOMONTH("Jan-31-2019",1)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('43524');
+            done();
+        });
+        it('EOMONTH Formula with second argument as different types->', (done: Function) => {
+            helper.edit('K7', '=EOMONTH("31-Jan-2019","one")');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K8', '=EOMONTH("31-Jan-2019",one)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('#NAME?');
+            helper.edit('K9', '=EOMONTH("31-Jan-2019","2")');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('43555');
+            helper.edit('K10', '=EOMONTH(46535,3)');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('46630');
+            helper.edit('K11', '=EOMONTH("29-Feb-2020",-12)');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('43524');
+            helper.edit('K12', '=EOMONTH("27-Feb-2019",-0.12)');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('43524');
+            done();
+        });
+        it('EOMONTH Formula with logical values as arguments->', (done: Function) => {
+            helper.edit('K13', '=EOMONTH(True,2)');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K14', '=EOMONTH(False,2)');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K15', '=EOMONTH(43543,True)');
+            expect(helper.invoke('getCell', [14, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K16', '=EOMONTH(43543,False)');
+            expect(helper.invoke('getCell', [15, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K17', '=EOMONTH(TRUE,TRUE)');
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K18', '=EOMONTH(FALSE,FALSE)');
+            expect(helper.invoke('getCell', [17, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K19', '=EOMONTH(43543,"TRUE")');
+            expect(helper.invoke('getCell', [18, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K20', '=EOMONTH(43543,"FALSE")');
+            expect(helper.invoke('getCell', [19, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K21', '=EOMONTH(43543,I2)');
+            expect(helper.invoke('getCell', [20, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K22', '=EOMONTH("31-Mar-2012",I4)');
+            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K23', '=EOMONTH(I3,I4)');
+            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('EOMONTH Formula with empty arguments->', (done: Function) => {
+            helper.edit('L1', '=EOMONTH(,)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('#N/A');
+            helper.edit('L2', '=EOMONTH(,3)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('#N/A');
+            helper.edit('L3', '=EOMONTH(43535,)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('#N/A');
+            helper.edit('L4', '=EOMONTH(43213,"")');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L5', '=EOMONTH("",3)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L6', '=EOMONTH(A20,3)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('121');
+            helper.edit('L7', '=EOMONTH(43564,A22)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('43585');
+            helper.edit('L8', '=EOMONTH(A20,A22)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('31');
+            done();
+        });
+        it('EOMONTH Formula with expression as arguments->', (done: Function) => {
+            helper.edit('L9', '=EOMONTH(45682+20,1)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('45747');
+            helper.edit('L10', '=EOMONTH(45209,2*3)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('45412');
+            helper.edit('L11', '=EOMONTH(45732-4,4/2)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('45808');
+            helper.edit('L12', '=EOMONTH(B7+1,H2-1)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('42124');
+            helper.edit('L13', '=EOMONTH(B7+1,H2+H3)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('43677');
+            done();
+        });
+        it('EOMONTH Formula with invalid arguments->', (done: Function) => {
+            helper.edit('L14', '=EOMONTH(43212," ")');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L15', '=EOMONTH(43542,one)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('#NAME?');
+            helper.edit('L16', '=EOMONTH("31.01.2019",2)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L17', '=EOMONTH(-3,1)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('#NUM!');
+            helper.edit('L18', '=EOMONTH("22-Feb-2012",)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('#N/A');
+            done();
+        });
+        it('EOMONTH Formula with cell reference as arguments->', (done: Function) => {
+            helper.edit('M1', '31-Jan-2019');
+            helper.edit('M2', '=EOMONTH(M1,1)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('43524');
+            helper.edit('M3', '"31-Jan-2020"');
+            helper.edit('M4', '=EOMONTH(M3,2)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M5', '"Jan-31-2019"');
+            helper.edit('M6', '=EOMONTH(M5,3)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M7', '3');
+            helper.edit('M8', '=EOMONTH("31-Jan-2020",M7)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('43951');
+            done();
+        });
+        it('EOMONTH Formula with absolute cell refernces as arguments->', (done: Function) => {
+            helper.edit('M9', '=EOMONTH($B$8,$G$8)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('41790');
+            helper.edit('M10', '=EOMONTH($C$6,$B$8)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('1268458');
+            helper.edit('M11', '=EOMONTH($D$5,$E$4)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('486');
+            helper.edit('M12', '=EOMONTH($E$3,$F$5)');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('9163');
+            helper.edit('M13', '=EOMONTH($F$6,$B$8)');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('1268732');
+            helper.edit('M14', '=EOMONTH($A$5,$E$4)');
+            expect(helper.invoke('getCell', [13, 12]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('EOMONTH Formula with Sheet refernces as arguments->', (done: Function) => {
+            helper.edit('N1', '=EOMONTH(Sheet2!A3,Sheet1!G2)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N2', '=EOMONTH(Sheet1!E3,Sheet2!A3)');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N3', '=EOMONTH(Sheet2!A6,Sheet2!A4)');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('1393735');
+            helper.edit('N4', '=EOMONTH(Sheet1!D6,Sheet1!I10)');
+            expect(helper.invoke('getCell', [3, 13]).textContent).toBe('31');
+            done();
+        });
+        it('EOMONTH Formula with absolute cell of Sheet refernces as arguments->', (done: Function) => {
+            helper.edit('N5', '=EOMONTH(Sheet2!$A$3,Sheet1!$G$2)');
+            expect(helper.invoke('getCell', [4, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N6', '=EOMONTH(Sheet1!$E$3,Sheet2!$A$3)');
+            expect(helper.invoke('getCell', [5, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N7', '=EOMONTH(Sheet2!$A$4,Sheet2!$A$5)');
+            expect(helper.invoke('getCell', [6, 13]).textContent).toBe('45777');
+            helper.edit('N8', '=EOMONTH(Sheet1!$D$6,Sheet1!$I$10)');
+            expect(helper.invoke('getCell', [7, 13]).textContent).toBe('31');
+            helper.edit('N9', '=EOMONTH(Sheet2!$A$4,$G$2)');
+            expect(helper.invoke('getCell', [8, 13]).textContent).toBe('45716');
+            helper.edit('N10', '=EOMONTH(E3,Sheet2!$A$5)');
+            expect(helper.invoke('getCell', [9, 13]).textContent).toBe('121');
+            done();
+        });
+        it('EOMONTH Formula for no inputs->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('N11');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=EOMONTH()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=EOMONTH()';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N11', '=EOMONTH(4321,1)');
+            expect(helper.invoke('getCell', [10, 13]).textContent).toBe('4352');
+            done();
+        });
+    });
+
+    describe('MINUTE Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '4/4/2020 5:45 AM' }] }, { cells: [{ value: '45321.564' }] }, { cells: [{ value: '"31-Jan-2018"' }] },
+                        { cells: [{ value: '4:08 PM' }] }, { cells: [{ value: '-5.4' }] }, { cells: [{ value: '3567.45' }] },
+                        { cells: [{ value: '40' }] }, { cells: [{ value: '42' }] }, { cells: [{ value: '50' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('MINUTE formula->', (done: Function) => {
+            helper.edit('I1', '=MINUTE(C4)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('32');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":32,"formula":"=MINUTE(C4)"}');
+            done();
+        });
+        it('MINUTE formula with 2 Inputs->', (done: Function) => {
+            helper.edit('I2', '=MINUTE(C4:C5)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('32');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":32,"formula":"=MINUTE(C4:C5)"}');
+            done();
+        });
+        it('MINUTE formula with Date and Time Value->', (done: Function) => {
+            helper.edit('I5', '=MINUTE("7/1/2022 7:23:34 AM")');
+            expect(helper.getInstance().sheets[0].rows[4].cells[8].formula).toBe('=MINUTE("7/1/2022 7:23:34 AM")');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('23');
+            done();
+        });
+        it('MINUTE formula with input having minute value as 90->', (done: Function) => {
+            helper.edit('C4', '3:90:44 AM');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"#VALUE!","formula":"=MINUTE(C4)"}');
+            done();
+        });
+        it('MINUTE formula with cell having no value->', (done: Function) => {
+            helper.edit('I6', '=MINUTE(P10)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":0,"formula":"=MINUTE(P10)"}');
+            done();
+        });
+        it('MINUTE formula with cell having alphabets->', (done: Function) => {
+            helper.edit('I7', '=MINUTE(A1)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":"#VALUE!","formula":"=MINUTE(A1)"}');
+            done();
+        });
+        it('MINUTE formula with Time Formula->', (done: Function) => {
+            helper.edit('I8', '=TIME(7,MINUTE(C5),0)');
+            expect(helper.getInstance().sheets[0].rows[7].cells[8].formula).toBe('=TIME(7,MINUTE(C5),0)');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('7:23 AM');
+            done();
+        });
+        it('MINUTE formula without ""->', (done: Function) => {
+            helper.edit('I9', '=MINUTE(7/1/2022 7:23:34 AM)');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[8])).toBe('{"value":"#VALUE!","formula":"=MINUTE(7/1/2022 7:23:34 AM)"}');
+            done();
+        });
+        it('MINUTE formula with 12 hours Time value as input->', (done: Function) => {
+            helper.edit('I10', '=MINUTE("3:32:44 AM");');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('32');
+            done();
+        });
+        it('MINUTE formula with 24 hours Time value as input->', (done: Function) => {
+            helper.edit('I11', '=MINUTE("15:54:44");');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('54');
+            done();
+        });
+        it('MINUTE formula without Seconds HH:MM AM/PM format Time value as input->', (done: Function) => {
+            helper.edit('I12', '=MINUTE("09:12 AM");');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('12');
+            done();
+        });
+        it('MINUTE formula without Seconds HH:MM format Time value as input->', (done: Function) => {
+            helper.edit('I13', '=MINUTE("09:12");');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('12');
+            done();
+        });
+        it('MINUTE formula with date as input->', (done: Function) => {
+            helper.edit('I14', '=MINUTE("01/12/2023");');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('0');
+            done();
+        });
+        it('MINUTE formula with nested TODAY formula as input->', (done: Function) => {
+            helper.edit('I15', '=MINUTE(TODAY());');
+            expect(helper.invoke('getCell', [14, 8]).textContent).toBe('0');
+            done();
+        });
+        it('MINUTE formula without Minutes and Seconds HH AM/PM format Time value as input->', (done: Function) => {
+            helper.edit('I16', '=MINUTE("8 AM");');
+            expect(helper.invoke('getCell', [15, 8]).textContent).toBe('0');
+            done();
+        });
+        it('MINUTE formula with logical value as input->', (done: Function) => {
+            helper.edit('J1', 'TRUE');
+            helper.edit('J2', 'FALSE');
+            helper.edit('J3', '=MINUTE(J1)')
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('0');
+            helper.edit('J4', '=MINUTE(J2)')
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('0');
+            helper.edit('J5', '=MINUTE(TRUE)')
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('0');
+            helper.edit('J6', '=MINUTE(FALSE)')
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('0');
+            helper.edit('J7', '=MINUTE("TRUE")')
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J8', '=MINUTE("FALSE")')
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('MINUTE formula with expression value as input->', (done: Function) => {
+            helper.edit('K1', '=MINUTE(2+0.5)')
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('0');
+            helper.edit('K2', '=MINUTE(5-3.62)')
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('7');
+            helper.edit('K3', '=MINUTE(1/12)')
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('0');
+            helper.edit('K4', '=MINUTE(0.38*4)')
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('28');
+            helper.edit('K5', '=MINUTE(0-0.5)')
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('#NUM!');
+            done();
+        });
+        it('MINUTE formula with nested formulas->', (done: Function) => {
+            helper.edit('M1', '=MINUTE(MINUTE(466.4547))')
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('0');
+            helper.edit('M2', '=MINUTE(SECOND(5545.46))')
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('0');
+            helper.edit('M3', '=TIME(HOUR(0.34),MINUTE(45.567),32)')
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('8:36 AM');
+            helper.edit('M4', '=MINUTE(WEEKDAY(45323,2)+0.56)')
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('26');
+            helper.edit('M5', '=MINUTE(DATE(2020,3,18))')
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('0');
+            helper.edit('M6', '=MINUTE(DAY(45324))')
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('0');
+            done();
+        });
+        it('MINUTE formula with absolute cell refernces as arguments->', (done: Function) => {
+            helper.edit('M7', '=MINUTE($B$8)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('0');
+            helper.edit('M8', '=MINUTE($C$7)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('55');
+            helper.edit('M9', '=MINUTE($D$5)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('0');
+            helper.edit('M10', '=MINUTE($E$3)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('0');
+            helper.edit('M11', '=MINUTE($F$6)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('0');
+            helper.edit('M12', '=MINUTE($A$5)');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('MINUTE formula with Sheet references as arguments->', (done: Function) => {
+            helper.edit('N1', '=MINUTE(Sheet2!A1)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('45');
+            helper.edit('N2', '=MINUTE(Sheet1!E3)');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('0');
+            helper.edit('N3', '=MINUTE(Sheet2!A4)');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('8');
+            helper.edit('N4', '=MINUTE(Sheet1!C10)');
+            expect(helper.invoke('getCell', [3, 13]).textContent).toBe('32');
+            done();
+        });
+        it('MINUTE formula with absolute cell of Sheet refernces as arguments->', (done: Function) => {
+            helper.edit('N5', '=MINUTE(Sheet2!$A$3)');
+            expect(helper.invoke('getCell', [4, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N6', '=MINUTE(Sheet1!$E$3)');
+            expect(helper.invoke('getCell', [5, 13]).textContent).toBe('0');
+            helper.edit('N7', '=MINUTE(Sheet2!$A$2)');
+            expect(helper.invoke('getCell', [6, 13]).textContent).toBe('32');
+            helper.edit('N8', '=MINUTE(Sheet1!$C$5)');
+            expect(helper.invoke('getCell', [7, 13]).textContent).toBe('23');
+            helper.edit('N9', '=MINUTE(Sheet2!$A$5)');
+            expect(helper.invoke('getCell', [8, 13]).textContent).toBe('#NUM!');
+            helper.edit('N10', '=MINUTE(Sheet2!$A$6)');
+            expect(helper.invoke('getCell', [9, 13]).textContent).toBe('47');
+            done();
+        });
+        it('MINUTE formula with no inputs->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('O2');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=MINUTE();';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=MINUTE();';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('O2', '=MINUTE("0.45");');
+            done();
+        });
+        it('MINUTE formula with more than 1 input for error checking->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('O3');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=MINUTE(C3,C4);';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=MINUTE(C3,C4);';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('O3', '=MINUTE("4/4/2022 3:32:44 AM");');
+            done();
+        });
+    });
+    
+    describe('SECOND Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '4/4/2020 5:45:54 AM' }] }, { cells: [{ value: '45321.564' }] }, { cells: [{ value: '"31-Jan-2018"' }] },
+                        { cells: [{ value: '4:08:23 PM' }] }, { cells: [{ value: '-5.4' }] }, { cells: [{ value: '3567.45' }] },
+                        { cells: [{ value: '40' }] }, { cells: [{ value: '42' }] }, { cells: [{ value: '50' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('SECOND formula->', (done: Function) => {
+            helper.edit('I1', '=SECOND(C4)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('44');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":44,"formula":"=SECOND(C4)"}');
+            done();
+        });
+        it('SECOND formula with 2 Inputs->', (done: Function) => {
+            helper.edit('I2', '=SECOND(C4:C5)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('44');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":44,"formula":"=SECOND(C4:C5)"}');
+            done();
+        });
+        it('SECOND formula with cell having no value->', (done: Function) => {
+            helper.edit('I3', '=SECOND(P10)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":0,"formula":"=SECOND(P10)"}');
+            done();
+        });
+        it('SECOND formula with cell having alphabets->', (done: Function) => {
+            helper.edit('I4', '=SECOND(A1)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"#VALUE!","formula":"=SECOND(A1)"}');
+            done();
+        });
+        it('SECOND formula with Time Formula->', (done: Function) => {
+            helper.edit('I5', '=TIME(9,30,45)');
+            helper.edit('I6', '=SECOND(I5)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('45');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":45,"formula":"=SECOND(I5)"}');
+            done();
+        });
+        it('SECOND formula with input having both Date and Time value->', (done: Function) => {
+            helper.edit('I7', '=SECOND("7/1/2022 7:23:34 AM")');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('34');
+            done(); 
+        });
+        it('SECOND formula with Date as input->', (done: Function) => {
+            helper.edit('I8', '=SECOND("01/12/2023")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('0');
+            done(); 
+        });
+        it('SECOND formula with nested TODAY Formula as input->', (done: Function) => {
+            helper.edit('I9', '=SECOND(TODAY())');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('0');
+            done(); 
+        });
+        it('SECOND formula with 12 hours Time value as input->', (done: Function) => {
+            helper.edit('I10', '=SECOND("3:32:44 AM");');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('44');
+            done();
+        });
+        it('SECOND formula with 24 hours Time value as input->', (done: Function) => {
+            helper.edit('I11', '=SECOND("15:54:54");');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('54');
+            done();
+        });
+        it('SECOND formula without Seconds HH:MM AM/PM format Time value as input->', (done: Function) => {
+            helper.edit('I12', '=SECOND("09:12 AM");');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('0');
+            done();
+        });
+        it('SECOND formula without Seconds HH:MM format Time value as input->', (done: Function) => {
+            helper.edit('I13', '=SECOND("09:12");');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('0');
+            done();
+        });
+        it('SECOND formula without Minutes and Seconds h AM/PM format Time value as input->', (done: Function) => {
+            helper.edit('I14', '=SECOND("8 PM");');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('0');
+            done();
+        });
+        it('SECOND formula with logical value as input->', (done: Function) => {
+            helper.edit('J1', 'TRUE');
+            helper.edit('J2', 'FALSE');
+            helper.edit('J3', '=SECOND(J1)')
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('0');
+            helper.edit('J4', '=SECOND(J2)')
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('0');
+            helper.edit('J5', '=SECOND(TRUE)')
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('0');
+            helper.edit('J6', '=SECOND(FALSE)')
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('0');
+            helper.edit('J7', '=SECOND("TRUE")')
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J8', '=SECOND("FALSE")')
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('SECOND formula with expression value as input->', (done: Function) => {
+            helper.edit('K1', '=SECOND(2+0.5)')
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('0');
+            helper.edit('K2', '=SECOND(5-3.62)')
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('12');
+            helper.edit('K3', '=SECOND(1/12)')
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('0');
+            helper.edit('K4', '=SECOND(0.38*4)')
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('48');
+            helper.edit('K5', '=SECOND(0-0.5)')
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('#NUM!');
+            done();
+        });
+        it('SECOND formula with nested formulas->', (done: Function) => {
+            helper.edit('M1', '=SECOND(SECOND(466.4547))')
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('0');
+            helper.edit('M2', '=SECOND(SECOND(5545.46))')
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('0');
+            helper.edit('M3', '=TIME(SECOND(0.34),SECOND(45.567),32)')
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('12:28 PM');
+            helper.edit('M4', '=SECOND(WEEKDAY(45323,2)+0.56)')
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('24');
+            helper.edit('M5', '=SECOND(DATE(2020,3,18))')
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('0');
+            helper.edit('M6', '=SECOND(DAY(45324))')
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('0');
+            helper.edit('M7', '=SECOND(TIME(12,34,54))');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('54');
+            helper.edit('M8', '=IF(SECOND(TIME(3,45,54))=54,SECOND(34.567),3)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('28');
+            done();
+        });
+        it('SECOND formula with absolute cell refernces as arguments->', (done: Function) => {
+            helper.edit('M9', '=SECOND($D$5)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('0');
+            helper.edit('M10', '=SECOND($E$3)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('0');
+            helper.edit('M11', '=SECOND($F$6)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('0');
+            helper.edit('M12', '=SECOND($A$5)');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M13', '=SECOND($B$8)');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('0');
+            helper.edit('M14', '=SECOND($C$7)');
+            expect(helper.invoke('getCell', [13, 12]).textContent).toBe('53');
+            done();
+        });
+        it('SECOND formula with Sheet references as arguments->', (done: Function) => {
+            helper.edit('N1', '=SECOND(Sheet2!A1)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('54');
+            helper.edit('N2', '=SECOND(Sheet1!E3)');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('0');
+            helper.edit('N3', '=SECOND(Sheet2!A4)');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('23');
+            helper.edit('N4', '=SECOND(Sheet1!C10)');
+            expect(helper.invoke('getCell', [3, 13]).textContent).toBe('14');
+            done();
+        });
+        it('SECOND formula with absolute cell of Sheet refernces as arguments->', (done: Function) => {
+            helper.edit('N5', '=SECOND(Sheet2!$A$3)');
+            expect(helper.invoke('getCell', [4, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N6', '=SECOND(Sheet1!$E$3)');
+            expect(helper.invoke('getCell', [5, 13]).textContent).toBe('0');
+            helper.edit('N7', '=SECOND(Sheet2!$A$2)');
+            expect(helper.invoke('getCell', [6, 13]).textContent).toBe('9');
+            helper.edit('N8', '=SECOND(Sheet1!$C$5)');
+            expect(helper.invoke('getCell', [7, 13]).textContent).toBe('54');
+            helper.edit('N9', '=SECOND(Sheet2!$A$5)');
+            expect(helper.invoke('getCell', [8, 13]).textContent).toBe('#NUM!');
+            helper.edit('N10', '=SECOND(Sheet2!$A$6)');
+            expect(helper.invoke('getCell', [9, 13]).textContent).toBe('59');
+            done();
+        });
+        it('SECOND formula with no inputs->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('O2');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=SECOND();';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=SECOND();';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('O2', '=SECOND("0.45");');
+            done();
+        });
+        it('SECOND formula with more than 1 input for error checking->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('O3');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=SECOND(C3,C4);';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=SECOND(C3,C4);';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('O3', '=SECOND("4/4/2022 3:32:44 AM");');
             done();
         });
     });
@@ -1154,14 +1729,14 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('MOD Formula with Date values->', (done: Function) => {
             helper.edit('K8', '=MOD(B2,F2)');
-            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('84');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[10])).toBe('{"value":84,"formula":"=MOD(B2,F2)"}');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('3/24/1900');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[10])).toBe('{"value":84,"format":"mm-dd-yyyy","formula":"=MOD(B2,F2)"}');
             done();
         });
         it('MOD Formula with Time values->', (done: Function) => {
             helper.edit('K9', '=MOD(C2,F2)');
-            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('0.482314815');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[10])).toBe('{"value":0.4823148148148148,"formula":"=MOD(C2,F2)"}');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('11:34:32 AM');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[10])).toBe('{"value":0.48231481481482774,"format":"h:mm:ss AM/PM","formula":"=MOD(C2,F2)"}');
             done();
         });
         it('MOD Formula with Divisor as 0->', (done: Function) => {
@@ -1173,7 +1748,7 @@ describe('Spreadsheet formula module ->', () => {
         it('MOD Formula with number as 0->', (done: Function) => {
             helper.edit('K11', '=MOD(0,20)');
             expect(helper.invoke('getCell', [10, 10]).textContent).toBe('0');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[10])).toBe('{"value":"0","formula":"=MOD(0,20)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[10].cells[10])).toBe('{"value":0,"formula":"=MOD(0,20)"}');
             done();
         });
         it('MOD Formula with no inputs->', (done: Function) => {
@@ -1212,6 +1787,15 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('K15', '=MOD(ed,ed)');
             expect(helper.invoke('getCell', [14, 10]).textContent).toBe('#NAME?');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[14].cells[10])).toBe('{"value":"#NAME?","formula":"=MOD(ed,ed)"}');
+            done();
+        });
+        it('MOD Formula with empty cell references->', (done: Function) => {
+            helper.edit('K16', '=MOD(M2,2)');
+            expect(helper.invoke('getCell', [15, 10]).textContent).toBe('0');
+            helper.edit('K17', '=MOD(M2,M3)');
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('#DIV/0!');
+            helper.edit('K18', '=MOD(2,M2)');
+            expect(helper.invoke('getCell', [17, 10]).textContent).toBe('#DIV/0!');
             done();
         });
     });
@@ -1267,8 +1851,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('ODD Formula with no input->', (done: Function) => {
             helper.edit('I8', '=ODD()');
-            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":"#VALUE!","formula":"=ODD()"}');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{}');
             done();
         });
         it('ODD Formula with more than 1 input->', (done: Function) => {
@@ -1300,6 +1884,90 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('I12', '=ODD(A3)');
             expect(helper.invoke('getCell', [11, 8]).textContent).toBe('#VALUE!');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[8])).toBe('{"value":"#VALUE!","formula":"=ODD(A3)"}');
+            done();
+        });
+        it('ODD Formula with with cell boolean value->', (done: Function) => {
+            helper.edit('I13', '=ODD(TRUE)');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[8])).toBe('{"value":1,"formula":"=ODD(TRUE)"}');
+            done();
+        });
+        it('ODD Formula with with boolean value->', (done: Function) => {
+            helper.edit('I14', '=ODD(FALSE)');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[8])).toBe('{"value":1,"formula":"=ODD(FALSE)"}');
+            done();
+        });
+        it('ODD Formula with with boolean value as cell reference->', (done: Function) => {
+            helper.edit('I15', 'TRUE');
+            helper.edit('I16', '=ODD(I15)');
+            expect(helper.invoke('getCell', [15, 8]).textContent).toBe('1');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[8])).toBe('{"value":1,"formula":"=ODD(I15)"}');
+            done();
+        });
+        it('ODD Formula with with boolean value as cell reference->', (done: Function) => {
+            helper.edit('I17', '=ODD("TRUE")');
+            expect(helper.invoke('getCell', [16, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[16].cells[8])).toBe('{"value":"#VALUE!","formula":"=ODD(\\"TRUE\\")"}');
+            done();
+        });
+        it('ODD Formula percentage,decimal,date,time,currency formats ->', (done: Function) => {
+            helper.edit('M1', '4000.00%');
+            helper.edit('M2', '4045671234');
+            helper.edit('M3', '11/7/2015');
+            helper.edit('M4', '1/10/1900 3:10:00 AM');
+            helper.edit('M5', '$123');
+            helper.edit('M6', '=ODD(M1)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('41');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[12])).toBe('{"value":41,"formula":"=ODD(M1)"}');
+            helper.edit('M7', '=ODD(M2)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('4045671235');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[12])).toBe('{"value":4045671235,"formula":"=ODD(M2)"}');
+            helper.edit('M8', '=ODD(M3)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('42315');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[12])).toBe('{"value":42315,"formula":"=ODD(M3)"}');
+            helper.edit('M9', '=ODD(M4)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('11');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[12])).toBe('{"value":11,"formula":"=ODD(M4)"}');
+            helper.edit('M10', '=ODD(M5)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('123');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[12])).toBe('{"value":123,"formula":"=ODD(M5)"}');
+            done();
+        });
+        it('ODD formula with nested formula and extra string cases', (done: Function) => {
+            helper.edit('N1', '=ODD(SUM(1,2))');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('3');
+            helper.edit('N2', '=ODD(PRODUCT(1,2))');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('3');
+            helper.edit('N3', '=ODD(MIN(G2:G8))');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('1');
+            helper.edit('N4', '=ODD(MAX(G2:G8))');
+            expect(helper.invoke('getCell', [3, 13]).textContent).toBe('13');
+            helper.edit('N5', '=ODD(IF(G1>G4,2,3))');
+            expect(helper.invoke('getCell', [4, 13]).textContent).toBe('3');
+            helper.edit('N6', '=SUM(ODD(G5),3)');
+            expect(helper.invoke('getCell', [5, 13]).textContent).toBe('14');
+            helper.edit('N7', '=PRODUCT(ODD(G7),ODD(3))');
+            expect(helper.invoke('getCell', [6, 13]).textContent).toBe('39');
+            helper.edit('N8', '=MIN(ODD(24),ODD(28))');
+            expect(helper.invoke('getCell', [7, 13]).textContent).toBe('25');
+            helper.edit('N9', '=MAX(ODD(24),ODD(28))');
+            expect(helper.invoke('getCell', [8, 13]).textContent).toBe('29');
+            helper.edit('N10', '=ODD("")');
+            expect(helper.invoke('getCell', [9, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N11', '=ODD(" ")');
+            expect(helper.invoke('getCell', [10, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N12', '"hello"');
+            helper.edit('N13', '=ODD(N12)');
+            expect(helper.invoke('getCell', [12, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N14', '"TRUE"');
+            helper.edit('N15', '=ODD(N14)');
+            expect(helper.invoke('getCell', [14, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N16', '=ODD(O14)');
+            expect(helper.invoke('getCell', [15, 13]).textContent).toBe('1');
+            helper.edit('N17', '"123"');
+            helper.edit('N18', '=ODD(N17)');
+            expect(helper.invoke('getCell', [17, 13]).textContent).toBe('#VALUE!');
             done();
         });
         it('EVEN Formula with cell Reference - I->', (done: Function) => {
@@ -1346,8 +2014,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('EVEN Formula with no input->', (done: Function) => {
             helper.edit('J8', '=EVEN()');
-            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[9])).toBe('{"value":"#VALUE!","formula":"=EVEN()"}');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[9])).toBe('{}');
             done();
         });
         it('EVEN Formula with more than 1 input->', (done: Function) => {
@@ -1379,6 +2047,91 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('J12', '=EVEN(A3)');
             expect(helper.invoke('getCell', [11, 9]).textContent).toBe('#VALUE!');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[9])).toBe('{"value":"#VALUE!","formula":"=EVEN(A3)"}');
+            done();
+        });
+        it('EVEN Formula with boolean value TRUE->', (done: Function) => {
+            helper.edit('J13', '=EVEN(TRUE)');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[9])).toBe('{"value":2,"formula":"=EVEN(TRUE)"}');
+            done();
+        });
+        it('EVEN Formula with boolean value FALSE->', (done: Function) => {
+            helper.edit('J14', '=EVEN(FALSE)');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[13].cells[9])).toBe('{"value":0,"formula":"=EVEN(FALSE)"}');
+            done();
+        });
+        it('EVEN Formula with boolean value as cell reference->', (done: Function) => {
+            helper.edit('J15', 'TRUE');
+            helper.edit('J16', '=EVEN(J15)');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('2');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[15].cells[9])).toBe('{"value":2,"formula":"=EVEN(J15)"}');
+            done();
+        });
+        it('EVEN Formula with boolean value as cell reference->', (done: Function) => {
+            helper.edit('J17', 'FALSE');
+            helper.edit('J18', '=EVEN(J17)');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('0');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[17].cells[9])).toBe('{"value":0,"formula":"=EVEN(J17)"}');
+            done();
+        });
+        it('EVEN Formula percentage,decimal,date,time,currency formats ->', (done: Function) => {
+            helper.edit('L1', '4000.00%');
+            helper.edit('L2', '4045671234');
+            helper.edit('L3', '11/7/2015');
+            helper.edit('L4', '1/10/1900 3:10:00 AM');
+            helper.edit('L5', '$123');
+            helper.edit('L6', '=EVEN(L1)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('40');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[11])).toBe('{"value":40,"formula":"=EVEN(L1)"}');
+            helper.edit('L7', '=EVEN(L2)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('4045671234');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[11])).toBe('{"value":4045671234,"formula":"=EVEN(L2)"}');
+            helper.edit('L8', '=EVEN(L3)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('42316');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[11])).toBe('{"value":42316,"formula":"=EVEN(L3)"}');
+            helper.edit('L9', '=EVEN(L4)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('12');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[11])).toBe('{"value":12,"formula":"=EVEN(L4)"}');
+            helper.edit('L10', '=EVEN(L5)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('124');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[11])).toBe('{"value":124,"formula":"=EVEN(L5)"}');
+            done();
+        });
+        it('EVEN formula with nested formula and extra string cases', (done: Function) => {
+            helper.edit('O1', '=EVEN(SUM(1,2))');
+            expect(helper.invoke('getCell', [0, 14]).textContent).toBe('4');
+            helper.edit('O2', '=EVEN(PRODUCT(1,2))');
+            expect(helper.invoke('getCell', [1, 14]).textContent).toBe('2');
+            helper.edit('O3', '=EVEN(MIN(G2:G8))');
+            expect(helper.invoke('getCell', [2, 14]).textContent).toBe('2');
+            helper.edit('O4', '=EVEN(MAX(G2:G8))');
+            expect(helper.invoke('getCell', [3, 14]).textContent).toBe('14');
+            helper.edit('O5', '=EVEN(IF(G1>G4,2,3))');
+            expect(helper.invoke('getCell', [4, 14]).textContent).toBe('2');
+            helper.edit('O6', '=SUM(EVEN(G5),3)');
+            expect(helper.invoke('getCell', [5, 14]).textContent).toBe('15');
+            helper.edit('O7', '=PRODUCT(EVEN(G7),EVEN(3))');
+            expect(helper.invoke('getCell', [6, 14]).textContent).toBe('56');
+            helper.edit('O8', '=MIN(EVEN(24),EVEN(28))');
+            expect(helper.invoke('getCell', [7, 14]).textContent).toBe('24');
+            helper.edit('O9', '=MAX(EVEN(24),EVEN(28))');
+            expect(helper.invoke('getCell', [8, 14]).textContent).toBe('28');
+            helper.edit('O10', '=EVEN("")');
+            expect(helper.invoke('getCell', [9, 14]).textContent).toBe('#VALUE!');
+            helper.edit('O11', '=EVEN(" ")');
+            expect(helper.invoke('getCell', [10, 14]).textContent).toBe('#VALUE!');
+            helper.edit('O12', '"hello"');
+            helper.edit('O13', '=EVEN(O12)');
+            expect(helper.invoke('getCell', [12, 14]).textContent).toBe('#VALUE!');
+            helper.edit('O14', '"TRUE"');
+            helper.edit('O15', '=EVEN(O14)');
+            expect(helper.invoke('getCell', [14, 14]).textContent).toBe('#VALUE!');
+            helper.edit('O16', '=EVEN(P14)');
+            expect(helper.invoke('getCell', [15, 14]).textContent).toBe('0');
+            helper.edit('O17', '"123"');
+            helper.edit('O18', '=EVEN(O17)');
+            expect(helper.invoke('getCell', [17, 14]).textContent).toBe('#VALUE!');
             done();
         });
         it('PI Formula ->', (done: Function) => {
@@ -1416,6 +2169,15 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('K5', '=DEGREES(pi())');
             expect(helper.invoke('getCell', [4, 10]).textContent).toBe('180');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[10])).toBe('{"value":180,"formula":"=DEGREES(pi())"}');
+            done();
+        });
+        it('PI Formula with string value to the power of 2 as argument ->', (done: Function) => {
+            helper.edit('K6', '=PI()*C1^2');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[10])).toBe('{"value":"#VALUE!","formula":"=PI()*C1^2"}');
+            helper.edit('K7', '=PI()*2^C1');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[10])).toBe('{"value":"#VALUE!","formula":"=PI()*2^C1"}');
             done();
         });
     });
@@ -1547,6 +2309,242 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('N4', '=DEGREES(A3)');
             expect(helper.invoke('getCell', [3, 13]).textContent).toBe('#VALUE!');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[13])).toBe('{"value":"#VALUE!","formula":"=DEGREES(A3)"}');
+            done();
+        });
+    });
+
+    describe('HOUR Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '4/4/2020 5:00 AM' }] }, { cells: [{ value: '45321.564' }] }, { cells: [{ value: '"31-Jan-2018"' }] },
+                        { cells: [{ value: '4:00 PM' }] }, { cells: [{ value: '-5.4' }] }, { cells: [{ value: '3567.45' }] },
+                        { cells: [{ value: '40' }] }, { cells: [{ value: '42' }] }, { cells: [{ value: '50' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Hour formula->', (done: Function) => {
+            helper.edit('J1', '=HOUR(C4);');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('3');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[9])).toBe('{"value":3,"formula":"=HOUR(C4);"}');
+            done();
+        });
+        it('Hour formula without ""->', (done: Function) => {
+            helper.edit('J2', '=HOUR(02/03/2023 6:45 PM);');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":"#VALUE!","formula":"=HOUR(02/03/2023 6:45 PM);"}');
+            done();
+        });
+        it('Hour formula with input having only Date Value->', (done: Function) => {
+            helper.edit('J3', '=HOUR("4/4/2022");');
+            expect(helper.getInstance().sheets[0].rows[2].cells[9].formula).toBe('=HOUR("4/4/2022");');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('0');
+            done();
+        });
+        it('Hour formula with input having both Date and Time Value->', (done: Function) => {
+            helper.edit('J4', '=HOUR("4/4/2022 3:32:44 AM");');
+            expect(helper.getInstance().sheets[0].rows[3].cells[9].formula).toBe('=HOUR("4/4/2022 3:32:44 AM");');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('3');
+            done();
+        });
+        it('Hour formula with input having both Date and Time Value->', (done: Function) => {
+            helper.edit('J5', '=HOUR("01/12/2023 3:32:44 PM");');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('15');
+            done();
+        });
+        it('Hour formula with input having both Date and Time Value without seconds->', (done: Function) => {
+            helper.edit('J6', '=HOUR("01/12/2023 4:32 AM");');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('4');
+            done();
+        });
+        it('Hour formula with input having both Date and Time Value without seconds->', (done: Function) => {
+            helper.edit('J7', '=HOUR("01/12/2023 4:32 PM");');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('16');
+            done();
+        });
+        it('Hour formula with input having both Date and Time Value as 24 hour format->', (done: Function) => {
+            helper.edit('J8', '=HOUR("01/12/2023 21:23:44");');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('21');
+            done();
+        });
+        it('Hour formula with nested Today formula as input->', (done: Function) => {
+            helper.edit('J9', '=HOUR(TODAY());');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('0');
+            done();
+        });
+        it('Hour formula with 12 hours Time value as input->', (done: Function) => {
+            helper.edit('J11', '=HOUR("7:32:44 AM");');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('7');
+            done();
+        });
+        it('Hour formula with 12 hours Time value as input->', (done: Function) => {
+            helper.edit('J12', '=HOUR("7:32:44 PM");');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('19');
+            done();
+        });
+        it('Hour formula with 24 hours Time value as input->', (done: Function) => {
+            helper.edit('J13', '=HOUR("05:30:44");');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('5');
+            done();
+        });
+        it('Hour formula with 24 hours Time value as input->', (done: Function) => {
+            helper.edit('J14', '=HOUR("15:32:44");');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('15');
+            done();
+        });
+        it('Hour formula with HH:MM AM/PM Time value as input->', (done: Function) => {
+            helper.edit('J15', '=HOUR("04:32 AM");');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('4');
+            done();
+        });
+        it('Hour formula with HH:MM AM/PM Time value as input->', (done: Function) => {
+            helper.edit('J16', '=HOUR("04:32 PM");');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('16');
+            done();
+        });
+        it('Hour formula with HH:MM Time value as 24 hour format as input->', (done: Function) => {
+            helper.edit('J17', '=HOUR("02:33");');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('2');
+            done();
+        });
+        it('Hour formula with HH:MM Time value as 24 hour format as input->', (done: Function) => {
+            helper.edit('J18', '=HOUR("21:33");');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('21');
+            done();
+        });
+        it('Hour formula with h AM/PM Time format as input->', (done: Function) => {
+            helper.edit('J19', '=HOUR("7 PM");');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('19');
+            done();
+        });
+        it('Hour formula with logical value as input->', (done: Function) => {
+            helper.edit('K1', 'TRUE');
+            helper.edit('K2', 'FALSE');
+            helper.edit('K3', '=HOUR(K1)')
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('0');
+            helper.edit('K4', '=HOUR(K2)')
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('0');
+            helper.edit('K5', '=HOUR(TRUE)')
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('0');
+            helper.edit('K6', '=HOUR(FALSE)')
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('0');
+            helper.edit('K7', '=HOUR("TRUE")')
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K8', '=HOUR("FALSE")')
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('Hour formula with expression value as input->', (done: Function) => {
+            helper.edit('K9', '=HOUR(2+0.5)')
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('12');
+            helper.edit('K10', '=HOUR(5-3.62)')
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('9');
+            helper.edit('K11', '=HOUR(1/12)')
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('2');
+            helper.edit('K12', '=HOUR(0.38*4)')
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('12');
+            helper.edit('K13', '=HOUR(0-0.5)')
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('#NUM!');
+            done();
+        });
+        it('Hour formula with nested formulas->', (done: Function) => {
+            helper.edit('K14', '=HOUR(MINUTE(466.4547))')
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('0');
+            helper.edit('K15', '=HOUR(SECOND(5545.46))')
+            expect(helper.invoke('getCell', [14, 10]).textContent).toBe('0');
+            helper.edit('K16', '=TIME(HOUR(0.34),45,32)')
+            expect(helper.invoke('getCell', [15, 10]).textContent).toBe('8:45 AM');
+            helper.edit('K17', '=HOUR(WEEKDAY(45323,2)+0.56)')
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('13');
+            helper.edit('K18', '=HOUR(DATE(2020,3,18))')
+            expect(helper.invoke('getCell', [17, 10]).textContent).toBe('0');
+            helper.edit('K19', '=HOUR(DAY(45324))')
+            expect(helper.invoke('getCell', [18, 10]).textContent).toBe('0');
+            done();
+        });
+        it('Hour formula with cell reference as arguments->', (done: Function) => {
+            helper.edit('M1', '31-Jan-2019');
+            helper.edit('M2', '=HOUR(M1)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('0');
+            helper.edit('M3', '"31-Jan-2020"');
+            helper.edit('M4', '=HOUR(M3)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M5', '31-Jan-2019 3:00 PM');
+            helper.edit('M6', '=HOUR(M5)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('15');
+            done();
+        });
+        it('Hour formula with absolute cell refernces as arguments->', (done: Function) => {
+            helper.edit('M9', '=HOUR($B$8)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('0');
+            helper.edit('M10', '=HOUR($C$7)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('10');
+            helper.edit('M11', '=HOUR($D$5)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('0');
+            helper.edit('M12', '=HOUR($E$3)');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('0');
+            helper.edit('M13', '=HOUR($F$6)');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('0');
+            helper.edit('M14', '=HOUR($A$5)');
+            expect(helper.invoke('getCell', [13, 12]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('Hour formula with Sheet references as arguments->', (done: Function) => {
+            helper.edit('N1', '=HOUR(Sheet2!A1)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('5');
+            helper.edit('N2', '=HOUR(Sheet1!E3)');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('0');
+            helper.edit('N3', '=HOUR(Sheet2!A4)');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('16');
+            helper.edit('N4', '=HOUR(Sheet1!C10)');
+            expect(helper.invoke('getCell', [3, 13]).textContent).toBe('11');
+            done();
+        });
+        it('Hour formula with absolute cell of Sheet refernces as arguments->', (done: Function) => {
+            helper.edit('N5', '=HOUR(Sheet2!$A$3)');
+            expect(helper.invoke('getCell', [4, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N6', '=HOUR(Sheet1!$E$3)');
+            expect(helper.invoke('getCell', [5, 13]).textContent).toBe('0');
+            helper.edit('N7', '=HOUR(Sheet2!$A$2)');
+            expect(helper.invoke('getCell', [6, 13]).textContent).toBe('13');
+            helper.edit('N8', '=HOUR(Sheet1!$C$4)');
+            expect(helper.invoke('getCell', [7, 13]).textContent).toBe('3');
+            helper.edit('N9', '=HOUR(Sheet2!$A$5)');
+            expect(helper.invoke('getCell', [8, 13]).textContent).toBe('#NUM!');
+            helper.edit('N10', '=HOUR(Sheet2!$A$6)');
+            expect(helper.invoke('getCell', [9, 13]).textContent).toBe('10');
+            done();
+        });
+        it('Hour formula with no inputs->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('O2');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=HOUR();';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=HOUR();';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('O2', '=HOUR("0.45");');
+            done();
+        });
+        it('Hour formula with more than 1 input for error checking->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('O3');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=HOUR(C3,C4);';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=HOUR(C3,C4);';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('O3', '=HOUR("4/4/2022 3:32:44 AM");');
             done();
         });
     });
@@ -1869,6 +2867,242 @@ describe('Spreadsheet formula module ->', () => {
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('N11', '=EDATE(4321,1)');
             expect(helper.invoke('getCell', [10, 13]).textContent).toBe('4352');
+            done();
+        });
+    });
+
+    describe('WeekDay Formula - Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '43925.21' }] }, { cells: [{ value: '45321.564' }] }, { cells: [{ value: '"31-Jan-2018"' }] },
+                        { cells: [{ value: '44016' }] }, { cells: [{ value: '-5.4' }] }, { cells: [{ value: '3567.45' }] },
+                        { cells: [{ value: '2' }] }, { cells: [{ value: '4' }] }, { cells: [{ value: '15' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('WEEKDAY formula with return type ', (done: Function) => { 
+            helper.edit('I1', '=WEEKDAY(EDATE(F3,F4),1);');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('1');
+            helper.edit('I2', '=WEEKDAY(EDATE(F3,F4),2);');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('7');
+            helper.edit('I3', '=WEEKDAY(EDATE(F3,F4),3);');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('6');
+            helper.edit('I4', '=WEEKDAY(EDATE(F3,F4),11);');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('7');
+            helper.edit('I5', '=WEEKDAY(EDATE(F3,F4),12);');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('6');
+            helper.edit('I6', '=WEEKDAY(EDATE(F3,F4),13);');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('5');
+            helper.edit('I7', '=WEEKDAY(EDATE(F3,F4),14);');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('4');
+            helper.edit('I8', '=WEEKDAY(EDATE(F3,F4),15);');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('3');
+            helper.edit('I9', '=WEEKDAY(EDATE(F3,F4),16);');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('2');
+            helper.edit('I10', '=WEEKDAY(EDATE(F3,F4),17);');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('1');
+            done();
+        });
+        it('WEEKDAY formula with invalid return type', (done: Function) => {
+            helper.edit('I11', '=WEEKDAY(EDATE(F3,F4),4);');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('#NUM!');
+            helper.edit('I12', '=WEEKDAY(EDATE(F3,F4),18);');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('#NUM!');
+            done();
+        });
+        it('WEEKDAY formula with string return type', (done: Function) => {
+            helper.edit('I13', '=WEEKDAY(EDATE(F3,F4),"3");');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('6');
+            helper.edit('I14', '=WEEKDAY(EDATE(F3,F4),"");');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I15', '=WEEKDAY(EDATE(F3,F4),"hfh");');
+            expect(helper.invoke('getCell', [14, 8]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('WEEKDAY formula with invalid first argument', (done: Function) => {
+            helper.edit('J1', '=WEEKDAY("er",4);');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=WEEKDAY("",1);');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('WEEKDAY formula with cell reference', (done: Function) => {
+            helper.edit('J3', '=WEEKDAY(B2,2);');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('5');
+            helper.edit('J4', '=WEEKDAY(A5,1);');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J5', '=WEEKDAY(45,G8);');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('1');
+            helper.edit('J6', '=WEEKDAY(F3,G5);');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('4');
+            done();
+        });
+        it('WEEKDAY formula without first argument', (done: Function) => {
+            helper.edit('J7', '=WEEKDAY(,2);');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('6');
+            helper.edit('J9', '=WEEKDAY("",G8);');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J10', '=WEEKDAY(45,"");');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('WEEKDAY formula with date as argument', (done: Function) => {
+            helper.edit('J11', '=WEEKDAY("6/20/2023");');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('3');
+            helper.edit('J13', '=WEEKDAY(,);');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('#NUM!');
+            done();
+        });
+        it('WEEKDAY formula without second argument', (done: Function) => {
+            helper.edit('J14', '=WEEKDAY(4,);');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('#NUM!');
+            helper.edit('J15', '=WEEKDAY(G8,K10);');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('#NUM!');
+            done();
+        });
+        it('WEEKDAY formula with second argument as expression', (done: Function) => {
+            helper.edit('J16', '=WEEKDAY(4,2+1);');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('2');
+            helper.edit('J17', '=WEEKDAY(G8,5-3);');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('2');
+            helper.edit('J18', '=WEEKDAY(56,22/2);');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('6');
+            helper.edit('J19', '=WEEKDAY(67,7*2);');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('7');
+            done();
+        });
+        it('WEEKDAY formula with logical values as arguments', (done: Function) => {
+            helper.edit('K1', '=WEEKDAY(TRUE,2);');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('7');
+            helper.edit('K2', '=WEEKDAY(FALSE,3);');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('5');
+            helper.edit('K3', '=WEEKDAY(4354,TRUE);');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('7');
+            helper.edit('K4', '=WEEKDAY(4567,FALSE);');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('#NUM!');
+            helper.edit('K5', 'TRUE');
+            helper.edit('K6', 'FALSE');
+            helper.edit('K7', '=WEEKDAY(43254,K5);');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('1');
+            helper.edit('K8', '=WEEKDAY(K5,11);');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('7');
+            helper.edit('K9', '=WEEKDAY(43254,K6);');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('#NUM!');
+            helper.edit('K10', '=WEEKDAY(K6,11);');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('6');
+            done();
+        });
+        it('WEEKDAY formula with negative and decimal values as arguments', (done: Function) => {
+            helper.edit('K11', '=WEEKDAY(4.5,2);');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('3');
+            helper.edit('K12', '=WEEKDAY(6.765,3);');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('4');
+            helper.edit('K13', '=WEEKDAY(0.342,12);');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('5');
+            helper.edit('K14', '=WEEKDAY(-45467,1);');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('#NUM!');
+            helper.edit('K15', '=WEEKDAY(-45467.56,3);');
+            expect(helper.invoke('getCell', [14, 10]).textContent).toBe('#NUM!');
+            helper.edit('K16', '=WEEKDAY(45467,-2);');
+            expect(helper.invoke('getCell', [15, 10]).textContent).toBe('#NUM!');
+            done();
+        });
+        it('WEEKDAY formula with invalid arguments', (done: Function) => {
+            helper.edit('K17', '=WEEKDAY(43254456576786,1);');
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('#NUM!');
+            helper.edit('K18', '=WEEKDAY("4/4/10000",11);');
+            expect(helper.invoke('getCell', [17, 10]).textContent).toBe('#NUM!');
+            helper.edit('K19', '=WEEKDAY(hello,2);');
+            expect(helper.invoke('getCell', [18, 10]).textContent).toBe('#NAME?');
+            helper.edit('K20', '=WEEKDAY(3435," ");');
+            expect(helper.invoke('getCell', [19, 10]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('WEEKDAY formula with absolute cell refernces as arguments->', (done: Function) => {
+            helper.edit('L1', '=WEEKDAY($B$8,1)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('3');
+            helper.edit('L2', '=WEEKDAY($C$7,3)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('5');
+            helper.edit('L3', '=WEEKDAY($D$5,4)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('#NUM!');
+            helper.edit('L4', '=WEEKDAY($E$3,2)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('1');
+            helper.edit('L5', '=WEEKDAY($F$6,5)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('#NUM!');
+            helper.edit('L6', '=WEEKDAY($A$5,2)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('WEEKDAY formula with Sheet references as arguments->', (done: Function) => {
+            helper.edit('L7', '=WEEKDAY(Sheet2!A1,1)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('7');
+            helper.edit('L8', '=WEEKDAY(Sheet1!E3,3)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('0');
+            helper.edit('L9', '=WEEKDAY(Sheet2!A4,4)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('#NUM!');
+            helper.edit('L10', '=WEEKDAY(Sheet1!C10,11)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('6');
+            done();
+        });
+        it('WEEKDAY formula with absolute cell of Sheet refernces as arguments->', (done: Function) => {
+            helper.edit('L11', '=WEEKDAY(Sheet2!$A$3,12)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L12', '=WEEKDAY(Sheet1!$E$3,15)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('4');
+            helper.edit('L13', '=WEEKDAY(Sheet2!$A$2,1)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('3');
+            helper.edit('L14', '=WEEKDAY(Sheet1!$C$4,3)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('5');
+            helper.edit('L15', '=WEEKDAY(Sheet2!$A$5,2)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('#NUM!');
+            helper.edit('L16', '=WEEKDAY(Sheet2!$A$6,3)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('2');
+            done();
+        });
+        it('WEEKDAY formula with nested formulas->', (done: Function) => {
+            helper.edit('M1', '=WEEKDAY(DATE(2003,3,12),3)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('2');
+            helper.edit('M2', '=WEEKDAY(DAY(54564),2)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('6');
+            helper.edit('M3', '=WEEKDAY(DATE(2019,3,30),2)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('6');
+            helper.edit('M4', '=WEEKDAY(SUM(B2:B6),2)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('4');
+            helper.edit('M5', '=WEEKDAY(45323,1)-WEEKDAY(43211,1)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('-2');
+            done();
+        });
+        it('WEEKDAY formula with decimal value as second argument->', (done: Function) => {
+            helper.edit('N1', '=WEEKDAY(45678,3.567)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('1');
+            helper.edit('N2', '=WEEKDAY(DAY(54564),2.564)');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('6');
+            helper.edit('N3', '=WEEKDAY(43543,4.564)');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('#NUM!');
+            helper.edit('N4', '=WEEKDAY(45678.543,2.564)');
+            expect(helper.invoke('getCell', [3, 13]).textContent).toBe('2');
+            helper.edit('N5', '=WEEKDAY(45323,14.543)');
+            expect(helper.invoke('getCell', [4, 13]).textContent).toBe('1');
+            done();
+        });
+        it('WEEKDAY formula with no inputs->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('O2');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=WEEKDAY();';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=WEEKDAY();';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('O2', '=WEEKDAY(45321,2);');
             done();
         });
     });
@@ -2254,61 +3488,6 @@ describe('Spreadsheet formula module ->', () => {
         afterAll(() => {
             helper.invoke('destroy');
         });
-        it('TIME Formula ->', (done: Function) => {
-            helper.edit('I1', '=TIME(6,6,6)');
-            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('6:06 AM');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0.2542361111111111","formula":"=TIME(6,6,6)","format":"h:mm AM/PM"}');
-            done();
-        });
-        it('TIME Formula with Hour value as > 12 ->', (done: Function) => {
-            helper.edit('I2', '=TIME(14,30,30)');
-            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('2:30 PM');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"0.6045138888888889","formula":"=TIME(14,30,30)","format":"h:mm AM/PM"}');
-            done();
-        });
-        it('TIME Formula with Hour value = 0 ->', (done: Function) => {
-            helper.edit('I3', '=TIME(0,5,30)');
-            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('12:05 AM');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"0.0038194444444444443","formula":"=TIME(0,5,30)","format":"h:mm AM/PM"}');
-            done();
-        });
-        it('TIME Formula with cell Reference values->', (done: Function) => {
-            helper.edit('I4', '=TIME(D2,D3,D4)');
-            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('10:20 AM');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"0.430787037037037","formula":"=TIME(D2,D3,D4)","format":"h:mm AM/PM"}');
-            done();
-        });
-        it('TIME Formula with no input->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
-            spreadsheet.selectRange('I5');
-            helper.invoke('startEdit');
-            spreadsheet.editModule.editCellData.value = '=TIME()';
-            helper.getElement('.e-spreadsheet-edit').textContent = '=TIME()';
-            helper.triggerKeyNativeEvent(13);
-            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
-            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
-            helper.edit('I5', '=TIME(3,0,0)');
-            done();
-        });
-        it('TIME Formula with cell having string inputs->', (done: Function) => {
-            helper.edit('I6', '=TIME(A5,A8,A10)');
-            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#NAME?');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"#NAME?","formula":"=TIME(A5,A8,A10)","format":"h:mm AM/PM"}');
-            done();
-        });
-        it('TIME Formula with string inputs->', (done: Function) => {
-            helper.edit('I7', '=TIME(a,b,c)');
-            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#NAME?');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":"#NAME?","formula":"=TIME(a,b,c)","format":"h:mm AM/PM"}');
-            done();
-        });
-        it('TIME Formula with hour value > 32767->', (done: Function) => {
-            helper.edit('I8', '=TIME(32768,3,4)');
-            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#NUM!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[8])).toBe('{"value":"#NUM!","formula":"=TIME(32768,3,4)","format":"h:mm AM/PM"}');
-            done();
-        });
         it('SMALL Formula ->', (done: Function) => {
             helper.edit('J1', '=SMALL(D2:D11,2)');
             expect(helper.invoke('getCell', [0, 9]).textContent).toBe('15');
@@ -2495,19 +3674,6 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [6, 9]).textContent).toBe('10');
             done();
         });
-        it('SUMIF Formula with more than 3 inputs->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
-            spreadsheet.selectRange('J8');
-            helper.invoke('startEdit');
-            spreadsheet.editModule.editCellData.value = '=SUMIF(A2:A5,"Casual Shoes",D2:D4,E2:E4)';
-            helper.getElement('.e-spreadsheet-edit').textContent = '=SUMIF(A2:A5,"Casual Shoes",D2:D4,E2:E4)';
-            helper.triggerKeyNativeEvent(13);
-            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
-            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
-            helper.edit('J8', '=SUMIF(A2:A5,"Casual Shoes",D2:D4)');
-            done();
-        });
         it('ABS Formula->', (done: Function) => {
             helper.edit('K1', '=ABS(D2)');
             expect(helper.invoke('getCell', [0, 10]).textContent).toBe('10');
@@ -2518,19 +3684,6 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('K2', '=ABS(P10)');
             expect(helper.invoke('getCell', [1, 10]).textContent).toBe('0');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[10])).toBe('{"value":0,"formula":"=ABS(P10)"}');
-            done();
-        });
-        it('ABS Formula with more than 1 inputs->', (done: Function) => {
-            const spreadsheet: any = helper.getInstance();
-            spreadsheet.selectRange('K3');
-            helper.invoke('startEdit');
-            spreadsheet.editModule.editCellData.value = '=ABS(-1,-2)';
-            helper.getElement('.e-spreadsheet-edit').textContent = '=ABS(-1,-2)';
-            helper.triggerKeyNativeEvent(13);
-            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
-            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
-            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
-            helper.edit('K3', '=ABS(-1)');
             done();
         });
         it('FIND Formula with Name Error->', (done: Function) => {
@@ -2595,6 +3748,140 @@ describe('Spreadsheet formula module ->', () => {
         });
     });
 
+    describe('ABS Formula - Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {
+                rows: [{ cells: [{ value: '-23.456' }] },
+                { cells: [{ value: '234.45556' }] }, { cells: [{ value: '-567.547' }] }, { cells: [{ value: '-89,789' }] },
+                { cells: [{ value: '-345' }] }, { cells: [{ value: '-34.54' }] },{ cells: [{ value: '13972' }] }]
+            }], activeSheetIndex: 0 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('ABS formula with negative value ', (done: Function) => { 
+            helper.edit('I1', '=ABS(-10);');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('10');
+            helper.edit('I2', '=ABS(-4.5);');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('4.5');
+            helper.edit('I3', '=ABS(6-12);');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('6');
+            done();
+        });
+
+        it('ABS formula with negative value as cell reference', (done: Function) => {
+            helper.edit('I4', '-6');
+            helper.edit('I5', '=ABS(I4);');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('6');
+            helper.edit('I6', '12');
+            helper.edit('I7', '30');
+            helper.edit('I8', '=ABS(I6-I7);');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('18');
+            done();
+        });
+
+        it('ABS formula with boolean value', (done: Function) => {
+            helper.edit('I9', '=ABS(TRUE);');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('1');
+            helper.edit('I10', '=ABS(FALSE);');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('0');
+            helper.edit('I11', '=ABS("TRUE");');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I12', '=ABS("FALSE");');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('#VALUE!');
+            done();
+        });
+
+        it('ABS formula with string argument', (done: Function) => {
+            helper.edit('I13', '=ABS("");');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I14', '=ABS("32");');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('32');
+            helper.edit('I15', '"32");');
+            helper.edit('J1', '=ABS(I15);');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=ABS(J3);');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0');
+            done();
+        });
+        it('absolute cell reference check', (done: Function) => {
+            helper.edit('I2', '=ABS($G$3)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('5');
+            helper.edit('I3', '=ABS($G$4)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('7');
+            helper.edit('I4', '=ABS($G$5)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('11');
+            done();
+        });
+        it('external sheet reference check', (done: Function) => {
+            helper.edit('I5', '=ABS(Sheet2!A1)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('23.456');
+            helper.edit('I6', '=ABS(Sheet2!A2)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('234.45556');
+            helper.edit('I7', '=ABS(Sheet2!A3)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('567.547');
+            done();
+        });
+        it('external sheet with absolute reference check', (done: Function) => {
+            helper.edit('I5', '=ABS(Sheet2!$A$1)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('23.456');
+            helper.edit('I6', '=ABS(Sheet2!$A$2)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('234.45556');
+            helper.edit('I7', '=ABS(Sheet2!$A$3)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('567.547');
+            done();
+        });
+        it('ABS formula with nested formula and extra cases', (done: Function) => {
+            helper.edit('N1', '=ABS(SUM(1,2))');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('3');
+            helper.edit('N2', '=ABS(PRODUCT(1,2))');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('2');
+            helper.edit('N3', '=ABS(MIN(G2:G8))');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('1');
+            helper.edit('N4', '=ABS(MAX(G2:G8))');
+            expect(helper.invoke('getCell', [3, 13]).textContent).toBe('13');
+            helper.edit('N5', '=ABS(IF(G1>G4,2,3))');
+            expect(helper.invoke('getCell', [4, 13]).textContent).toBe('2');
+            helper.edit('N6', '=SUM(ABS(G5),3)');
+            expect(helper.invoke('getCell', [5, 13]).textContent).toBe('14');
+            helper.edit('N7', '=PRODUCT(ABS(G7),ABS(3))');
+            expect(helper.invoke('getCell', [6, 13]).textContent).toBe('39');
+            helper.edit('N8', '=MIN(ABS(24),ABS(28))');
+            expect(helper.invoke('getCell', [7, 13]).textContent).toBe('24');
+            helper.edit('N9', '=MAX(ABS(24),ABS(28))');
+            expect(helper.invoke('getCell', [8, 13]).textContent).toBe('28');
+            helper.edit('N10', '=ABS("")');
+            expect(helper.invoke('getCell', [9, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N11', '=ABS(" ")');
+            expect(helper.invoke('getCell', [10, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N12', '"hello"');
+            helper.edit('N13', '=ABS(N12)');
+            expect(helper.invoke('getCell', [12, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N14', '"TRUE"');
+            helper.edit('N15', '=ODD(N14)');
+            expect(helper.invoke('getCell', [14, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N16', '=ABS(O14)');
+            expect(helper.invoke('getCell', [15, 13]).textContent).toBe('0');
+            helper.edit('N17', '"123"');
+            helper.edit('N18', '=ABS(N17)');
+            expect(helper.invoke('getCell', [17, 13]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('ABS Formula with more than 1 inputs->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('N19');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=ABS(-1,-2)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=ABS(-1,-2)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N19', '=ABS(-1)');
+            done();
+        });
+    });
+
     describe('Sort Formula - Checking ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { rows: [{ cells: [{ value:'10' }] },{ cells: [{ value:'21' }] }, { cells: [{ value:'5' }] }, { cells: [{ value:'42' }] } ] }] }, done);
@@ -2637,8 +3924,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('SORT Formula with invalid value for by Column->', (done: Function) => {
             helper.edit('K4', '=SORT(D2:D11,1,-1,ed)');
-            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('#VALUE!');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[10])).toBe('{"value":"#VALUE!","formula":"=SORT(D2:D11,1,-1,ed)"}');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[10])).toBe('{"value":"#NAME?","formula":"=SORT(D2:D11,1,-1,ed)"}');
             done();
         });
         it('SORT Formula with value refered form another sheet->', (done: Function) => {
@@ -2795,6 +4082,244 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('K5', '=LN(3)');
             done();
         });
+        it('SUMIF Formula with more than 3 inputs->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('K6');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=SUMIF(A2:A5,"Casual Shoes",D2:D4,E2:E4)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=SUMIF(A2:A5,"Casual Shoes",D2:D4,E2:E4)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('K6', '=SUMIF(A2:A5,"Casual Shoes",D2:D4)');
+            done();
+        });
+    });
+
+    describe('TIME Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '54' }] }, { cells: [{ value: '98.564' }] }, { cells: [{ value: '"31-Jan-2018"' }] },
+                        { cells: [{ value: '-54' }] }, { cells: [{ value: '32' }] }, { cells: [{ value: 'one' }] },
+                        { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'FALSE' }] }, { cells: [{ value: '"TRUE"' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('TIME Formula ->', (done: Function) => {
+            helper.edit('I1', '=TIME(6,6,6)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('6:06 AM');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[8])).toBe('{"value":"0.2542361111111111","formula":"=TIME(6,6,6)","format":"h:mm AM/PM"}');
+            done();
+        });
+        it('TIME Formula with Hour value as > 12 ->', (done: Function) => {
+            helper.edit('I2', '=TIME(14,30,30)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('2:30 PM');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[8])).toBe('{"value":"0.6045138888888889","formula":"=TIME(14,30,30)","format":"h:mm AM/PM"}');
+            done();
+        });
+        it('TIME Formula with Hour value = 0 ->', (done: Function) => {
+            helper.edit('I3', '=TIME(0,5,30)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('12:05 AM');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[8])).toBe('{"value":"0.0038194444444444443","formula":"=TIME(0,5,30)","format":"h:mm AM/PM"}');
+            done();
+        });
+        it('TIME Formula with cell Reference values->', (done: Function) => {
+            helper.edit('I4', '=TIME(D2,D3,D4)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('10:20 AM');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[3].cells[8])).toBe('{"value":"0.430787037037037","formula":"=TIME(D2,D3,D4)","format":"h:mm AM/PM"}');
+            done();
+        });
+        it('TIME Formula with cell having string inputs->', (done: Function) => {
+            helper.edit('I5', '=TIME(A5,A8,A10)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('#VALUE!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[8])).toBe('{"value":"#VALUE!","formula":"=TIME(A5,A8,A10)","format":"h:mm AM/PM"}');
+            done();
+        });
+        it('TIME Formula with string inputs->', (done: Function) => {
+            helper.edit('I6', '=TIME(a,b,c)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"#NAME?","formula":"=TIME(a,b,c)","format":"h:mm AM/PM"}');
+            done();
+        });
+        it('TIME Formula with hour value > 32767->', (done: Function) => {
+            helper.edit('I7', '=TIME(32768,3,4)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#NUM!');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[8])).toBe('{"value":"#NUM!","formula":"=TIME(32768,3,4)","format":"h:mm AM/PM"}');
+            done();
+        });
+        it('TIME formula with empty arguments', (done: Function) => {
+            helper.edit('I8', '=TIME(,,);');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('12:00 AM');
+            helper.edit('I9', '=TIME(,45,43);');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('12:45 AM');
+            helper.edit('I10', '=TIME(15,34,);');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('3:34 PM');
+            done();
+        });
+        it('TIME formula with negative numbers as arguments', (done: Function) => {
+            helper.edit('I11', '=TIME(-1,34,43);');
+            expect(helper.invoke('getCell', [10, 8]).textContent).toBe('#NUM!');
+            helper.edit('I12', '=TIME(0,-45,43);');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('#NUM!');
+            helper.edit('I13', '=TIME(2,0,-34);');
+            expect(helper.invoke('getCell', [12, 8]).textContent).toBe('1:59 AM');
+            done();
+        });
+        it('TIME formula with decimal numbers as arguments', (done: Function) => {
+            helper.edit('I14', '=TIME(4.56,34.43,43);');
+            expect(helper.invoke('getCell', [13, 8]).textContent).toBe('4:34 AM');
+            helper.edit('I15', '=TIME(5,-4.54,43);');
+            expect(helper.invoke('getCell', [14, 8]).textContent).toBe('4:56 AM');
+            helper.edit('I16', '=TIME(2,34,34.43);');
+            expect(helper.invoke('getCell', [15, 8]).textContent).toBe('2:34 AM');
+            done();
+        });
+        it('TIME formula with logical values as arguments', (done: Function) => {
+            helper.edit('J1', '=TIME(TRUE,56,43);');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('1:56 AM');
+            helper.edit('J2', '=TIME(7,TRUE,32);');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('7:01 AM');
+            helper.edit('J3', '=TIME(14,FALSE,23);');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('2:00 PM');
+            helper.edit('J4', 'TRUE');
+            helper.edit('J5', 'FALSE');
+            helper.edit('J6', '"TRUE"');
+            helper.edit('J7', '"FALSE"');
+            helper.edit('J8', '=TIME("TRUE",5,3);');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J9', '=TIME(4,"FALSE",2);');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J10', '=TIME(J4,43,23);');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('1:43 AM');
+            helper.edit('J11', '=TIME(4,J5,23);');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('4:00 AM');
+            helper.edit('J12', '=TIME(J6,FALSE,23);');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J13', '=TIME(43,J7,23);');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('TIME formula with cell reference values as arguments', (done: Function) => {
+            helper.edit('K1', '=TIME(A1,6,43);');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K2', '=TIME(B3,43,32);');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#NUM!');
+            helper.edit('K3', '=TIME(4,C4,23);');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('4:00 AM');
+            helper.edit('K4', '=TIME(15,54,D5);');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('3:54 PM');
+            helper.edit('K5', '=TIME(23,E5,43);');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('11:20 PM');
+            helper.edit('K6', '=TIME(4,F6,23);');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('9:00 AM');
+            helper.edit('K7', '=TIME(A20,55,23);');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('12:55 AM');
+            done();
+        });
+        it('TIME Formula with invalid arguments->', (done: Function) => {
+            helper.edit('K8', '=TIME("one",5,3);');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K9', '=TIME(4,one,2);');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('#NAME?');
+            helper.edit('K10', '=TIME("",4,3);');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K11', '=TIME(3," ",3);');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K12', '=TIME(4,54,32768);');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('#NUM!');
+            helper.edit('K13', '123Hello');
+            helper.edit('K14', '=TIME(4,K13,23);');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('TIME formula with absolute cell refernces as arguments->', (done: Function) => {
+            helper.edit('L1', '=TIME($B$8,1,32)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('#NUM!');
+            helper.edit('L2', '=TIME($C$7,3,$D$21)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('12:03 AM');
+            helper.edit('L3', '=TIME($D$5,4,$D$2)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('3:04 PM');
+            helper.edit('L4', '=TIME($E$3,2,$E$6)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('6:02 AM');
+            helper.edit('L5', '=TIME($F$6,5,$A$20)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('12:05 PM');
+            helper.edit('L6', '=TIME($A$5,2,5)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('TIME formula with Sheet references as arguments->', (done: Function) => {
+            helper.edit('L7', '=TIME(Sheet2!A1,1,Sheet1!C3)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('6:01 AM');
+            helper.edit('L8', '=TIME(Sheet1!E3,3,45)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('6:03 AM');
+            helper.edit('L9', '=TIME(Sheet2!A4,4,Sheet2!B13)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('#NUM!');
+            helper.edit('L10', '=TIME(Sheet1!C10,11,65)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('12:12 AM');
+            done();
+        });
+        it('TIME formula with absolute cell of Sheet refernces as arguments->', (done: Function) => {
+            helper.edit('L11', '=TIME(Sheet2!$A$3,12,32)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L12', '=TIME(Sheet1!$E$3,15,Sheet2!$A$8)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('6:15 AM');
+            helper.edit('L13', '=TIME(Sheet2!$A$2,1,65)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('2:02 AM');
+            helper.edit('L14', '=TIME(Sheet1!$C$4,3,Sheet1!$D$5)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('12:03 AM');
+            helper.edit('L15', '=TIME(Sheet2!$A$5,2,43)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('8:02 AM');
+            helper.edit('L16', '=TIME(Sheet2!$A$6,3,5)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('TIME formula with nested formulas->', (done: Function) => {
+            helper.edit('M1', '=TIME(TODAY(),3,43)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('#NUM!');
+            helper.edit('M2', '=TIME(DAY(54564),2,34)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('9:02 PM');
+            helper.edit('M3', '=TIME(DATE(2019,3,30),25,43)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('#NUM!');
+            helper.edit('M4', '=TIME(SUM(C2:C6),2,4)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('1:02 AM');
+            helper.edit('M5', '=TIME(453,1,54)-TIME(211,45,43)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('1:16 AM');
+            helper.edit('M6', '=TIME(HOUR("23:45"),MINUTE("12:30 AM"),SECOND("04:56:43 PM"))');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('11:30 PM');
+            done();
+        });
+        it('TIME formula with invalid arguments in all->', (done: Function) => {
+            helper.edit('M7', '=TIME("one",one,43)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M8', '=TIME(one,"hello",34)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('#NAME?');
+            helper.edit('M9', '=TIME(32,one,"hello")');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('#NAME?');
+            helper.edit('M10', '=TIME(2,34,"one")');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('TIME Formula with no input->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('M11');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=TIME()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=TIME()';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement =  helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('M11', '=TIME(3,0,0)');
+            done();
+        });
     });
 
     describe('AVERAGEA Formula Checking ->', () => {
@@ -2843,7 +4368,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('J6', '=AVERAGEA(I6:I10)');
             expect(helper.invoke('getCell', [5, 9]).textContent).toBe('514.336418');
             helper.edit('J7', '=AVERAGEA(I19:I21)');
-            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('-1491.33333');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('-1491.333333');
             helper.edit('J8', '=AVERAGEA(I24:I25)');
             expect(helper.invoke('getCell', [7, 9]).textContent).toBe('65.78');
             helper.edit('J9', '=AVERAGEA(I26:I27)');
@@ -2853,7 +4378,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('J11', '=AVERAGEA(I13:I16)');
             expect(helper.invoke('getCell', [10, 9]).textContent).toBe('0.5');
             helper.edit('J12', '=AVERAGEA(I13:I29)');
-            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('-220.849412');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('-220.8494118');
             done();
         });
         it('AVERAGEA Formula with single cell references values as arguments->', (done: Function) => {
@@ -4190,7 +5715,7 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('SLOPE Formula ->', (done: Function) => {
             helper.edit('K1', '=SLOPE(D2:D11,E2:E11)');
-            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('-0.19111111');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('-0.191111111');
             expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[10])).toBe('{"value":"-0.19111111111111112","formula":"=SLOPE(D2:D11,E2:E11)"}');
             done();
         });
@@ -5142,6 +6667,13 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [14, 12]).textContent).toBe('The Dollar $83.0 Price is High');
             done();
         });
+        it('DOLLAR Formula with second argument values as cell references that contains DATE value ->', (done: Function) => {
+            helper.edit('M16', '=DOLLAR(B3,B2)');
+            expect(helper.invoke('getCell', [15, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M17', '=DOLLAR(12,B7)');
+            expect(helper.invoke('getCell', [16, 12]).textContent).toBe('#VALUE!');
+            done();
+        });
     });
     
     describe('MEDIAN Formula Checking', () => {
@@ -5337,6 +6869,1155 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [15, 12]).textContent).toBe('250');
             helper.edit('M17', '=MEDIAN(Sheet1!$F$3:$F$10,Sheet1!$G$5)');
             expect(helper.invoke('getCell', [16, 12]).textContent).toBe('300');
+            done();
+        });
+    });
+
+    describe('EJ2-850739 -> ROUNDDOWN Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [
+                        { cells: [{ index: 8, value: 'Different data' }] }, { cells: [{ index: 8, value: 'TRUE' }] },
+                        { cells: [{ index: 8, value: 'TRUE' }] }, { cells: [{ index: 8, value: 'FALSE' }] },
+                        { cells: [{ index: 8, value: 'FALSE' }] }, { cells: [{ index: 8, value: '103.32' }] },
+                        { cells: [{ index: 8, value: '105.36' }] }, { cells: [{ index: 8, value: '-3221' }] },
+                        { cells: [{ index: 8, value: '-123' }] }, { cells: [{ index: 8, value: '0' }] },
+                        { cells: [{ index: 8, value: 'Hello123' }] }, { cells: [{ index: 8, value: '124Hello' }] },
+                        { cells: [{ index: 8, value: '119', format: '#,##0.00' }] }, { cells: [{ index: 8, value: '32', format: '#,##0.00' }] },
+                        { cells: [{ index: 8, value: '119', format: '$#,##0.00' }] }, { cells: [{ index: 8, value: '12.76', format: '$#,##0.00' }] },
+                        { cells: [{ index: 8, value: '12', format: '0.0000E+00' }] }, { cells: [{ index: 8, value: '17', format: '0.0000E+00' }] },
+                        { cells: [{ index: 8, value: '2', format: '0%' }] }, { cells: [{ index: 8, value: '115', format: '0%' }] }, { cells: [{ index: 8, value: '#NUM!' }] }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '2' }] }, { cells: [{ value: '20' }] }, { cells: [{ value: '6' }] },
+                        { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'FALSE' }] },
+                        { cells: [{ value: 'FALSE' }] }, { cells: [{ value: '0' }] }, { cells: [{ value: '1' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('ROUNDDOWN Formula with direct values as numbers arguments ->', (done: Function) => {
+            helper.edit('J1', '=ROUNDDOWN(18,0)');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('18');
+            helper.edit('J2', '=ROUNDDOWN(18.9,0)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('18');
+            helper.edit('J3', '=ROUNDDOWN(3.14159,2)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('3.14');
+            helper.edit('J4', '=ROUNDDOWN(3.14159,4)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('3.1415');
+            helper.edit('J5', '=ROUNDDOWN(31489.323,-1)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('31480');
+            helper.edit('J6', '=ROUNDDOWN(31489.323,-3)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('31000');
+            helper.edit('J7', '=ROUNDDOWN(31489.323,-5)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            helper.edit('J8', '=ROUNDDOWN(129.99,)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('129');
+            done();
+        });
+        it('ROUNDDOWN Formula with direct values and cell references as boolean arguments ->', (done: Function) => {
+            helper.edit('J9', '=ROUNDDOWN(TRUE,0)');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('1');
+            helper.edit('J10', '=ROUNDDOWN(FALSE,3)');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('0');
+            helper.edit('J11', '=ROUNDDOWN(TRUE,FALSE)');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('1');
+            helper.edit('J12', '=ROUNDDOWN(FALSE,TRUE)');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('0');
+            helper.edit('J13', '=ROUNDDOWN("TRUE",0)');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J14', '=ROUNDDOWN("FALSE",0)');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J15', '=ROUNDDOWN(I2,I5)');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('1');
+            helper.edit('J16', '=ROUNDDOWN(I4,I10)');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('0');
+            done();
+        });
+        it('ROUNDDOWN Formula with direct values as string arguments ->', (done: Function) => {
+            helper.edit('J17', '=ROUNDDOWN("hello",2)');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J18', '=ROUNDDOWN(123.32,"hi")');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J19', '=ROUNDDOWN("123Hulk",2)');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J20', '=ROUNDDOWN(123.32,"Hulk12")');
+            expect(helper.invoke('getCell', [19, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J21', '=ROUNDDOWN("123.32",-2)');
+            expect(helper.invoke('getCell', [20, 9]).textContent).toBe('100');
+            helper.edit('J22', '=ROUNDDOWN("123.45","-3")');
+            expect(helper.invoke('getCell', [21, 9]).textContent).toBe('0');
+            done();
+        });
+        it('ROUNDDOWN Formula with direct values as expression ->', (done: Function) => {
+            helper.edit('J23', '=ROUNDDOWN(1+77.26,0)');
+            expect(helper.invoke('getCell', [22, 9]).textContent).toBe('78');
+            helper.edit('J24', '=ROUNDDOWN(2-34.32,-2)');
+            expect(helper.invoke('getCell', [23, 9]).textContent).toBe('0');
+            helper.edit('J25', '=ROUNDDOWN(2>5,-1)');
+            expect(helper.invoke('getCell', [24, 9]).textContent).toBe('0');
+            helper.edit('J26', '=ROUNDDOWN(2<5,1)');
+            expect(helper.invoke('getCell', [25, 9]).textContent).toBe('1');
+            done();
+        });
+        it('ROUNDDOWN Formula with different format arguments as input in General formatted cells ->', (done: Function) => {
+            helper.edit('K1', '=ROUNDDOWN(I6,1)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('103.3');
+            helper.edit('K2', '=ROUNDDOWN(I13,-1)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('110.00');
+            helper.edit('K3', '=ROUNDDOWN(I16,1)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('$12.70');
+            helper.edit('K4', '=ROUNDDOWN(I17,1)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('1.2000E+01');
+            helper.edit('K5', '=ROUNDDOWN(I20,0)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('11500%');
+            done();
+        });
+        it('ROUNDDOWN Formula with different format arguments as input in Currency formatted cells ->', (done: Function) => {
+            helper.invoke('numberFormat', ['$#,##0.00', 'K6']);
+            helper.edit('K6', '=ROUNDDOWN(I6,1)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('$103.30');
+            helper.invoke('numberFormat', ['$#,##0.00', 'K7']);
+            helper.edit('K7', '=ROUNDDOWN(I13,-1)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('110.00');
+            helper.invoke('numberFormat', ['$#,##0.00', 'K8']);
+            helper.edit('K8', '=ROUNDDOWN(I16,1)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('$12.70');
+            helper.invoke('numberFormat', ['$#,##0.00', 'K9']);
+            helper.edit('K9', '=ROUNDDOWN(I17,1)');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('1.2000E+01');
+            helper.invoke('numberFormat', ['$#,##0.00', 'K10']);
+            helper.edit('K10', '=ROUNDDOWN(I20,0)');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('11500%');
+            done();
+        });
+        it('ROUNDDOWN Formula with different format arguments as input in Percentage formatted cells ->', (done: Function) => {
+            helper.invoke('numberFormat', ['0%', 'K11']);
+            helper.edit('K11', '=ROUNDDOWN(I6,1)');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('10330%');
+            helper.invoke('numberFormat', ['0%', 'K12']);
+            helper.edit('K12', '=ROUNDDOWN(I13,-1)');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('110.00');
+            helper.invoke('numberFormat', ['0%', 'K13']);
+            helper.edit('K13', '=ROUNDDOWN(I16,1)');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('$12.70');
+            helper.invoke('numberFormat', ['0%', 'K14']);
+            helper.edit('K14', '=ROUNDDOWN(I17,1)');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('1.2000E+01');
+            helper.invoke('numberFormat', ['0%', 'K15']);
+            helper.edit('K15', '=ROUNDDOWN(I20,0)');
+            expect(helper.invoke('getCell', [14, 10]).textContent).toBe('11500%');
+            done();
+        });
+        it('ROUNDDOWN Formula with different format arguments as input in Scientific formatted cells ->', (done: Function) => {
+            helper.invoke('numberFormat', ['0.0000E+00', 'K16']);
+            helper.edit('K16', '=ROUNDDOWN(I6,1)');
+            expect(helper.invoke('getCell', [15, 10]).textContent).toBe('1.0330E+02');
+            helper.invoke('numberFormat', ['0.0000E+00', 'K17']);
+            helper.edit('K17', '=ROUNDDOWN(I13,-1)');
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('110.00');
+            helper.invoke('numberFormat', ['0.0000E+00', 'K18']);
+            helper.edit('K18', '=ROUNDDOWN(I16,1)');
+            expect(helper.invoke('getCell', [17, 10]).textContent).toBe('$12.70');
+            helper.invoke('numberFormat', ['0.0000E+00', 'K19']);
+            helper.edit('K19', '=ROUNDDOWN(I17,1)');
+            expect(helper.invoke('getCell', [18, 10]).textContent).toBe('1.2000E+01');
+            helper.invoke('numberFormat', ['0.0000E+00', 'K20']);
+            helper.edit('K20', '=ROUNDDOWN(I20,0)');
+            expect(helper.invoke('getCell', [19, 10]).textContent).toBe('11500%');
+            done();
+        });
+        it('ROUNDDOWN Formula with different format arguments as input in Number formatted cells ->', (done: Function) => {
+            helper.invoke('numberFormat', ['#,##0.00', 'K21']);
+            helper.edit('K21', '=ROUNDDOWN(I6,1)');
+            expect(helper.invoke('getCell', [20, 10]).textContent).toBe('103.30');
+            helper.invoke('numberFormat', ['#,##0.00', 'K22']);
+            helper.edit('K22', '=ROUNDDOWN(I13,-1)');
+            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('110.00');
+            helper.invoke('numberFormat', ['#,##0.00', 'K23']);
+            helper.edit('K23', '=ROUNDDOWN(I16,1)');
+            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('$12.70');
+            helper.invoke('numberFormat', ['#,##0.00', 'K24']);
+            helper.edit('K24', '=ROUNDDOWN(I17,1)');
+            expect(helper.invoke('getCell', [23, 10]).textContent).toBe('1.2000E+01');
+            helper.invoke('numberFormat', ['#,##0.00', 'K25']);
+            helper.edit('K25', '=ROUNDDOWN(I20,0)');
+            expect(helper.invoke('getCell', [24, 10]).textContent).toBe('11500%');
+            done();
+        });
+        it('ROUNDDOWN Formula with cell references as arguments ->', (done: Function) => {
+            helper.edit('L1', '=ROUNDDOWN(A3,I10)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L2', '=ROUNDDOWN(B4,I10)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('7/27/2014');
+            helper.edit('L3', '=ROUNDDOWN(C6,I10)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('12:00:00 AM');
+            helper.edit('L4', '=ROUNDDOWN(F9,-2)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('300');
+            helper.edit('L5', '=ROUNDDOWN(I2,I10)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('1');
+            helper.edit('L6', '=ROUNDDOWN(I4,I10)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('0');
+            helper.edit('L7', '=ROUNDDOWN(I7,-1)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('100');
+            helper.edit('L8', '=ROUNDDOWN(I11,0)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L9', '=ROUNDDOWN(I13,1)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('119.00');
+            helper.edit('L10', '=ROUNDDOWN(I15,3)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('$119.00');
+            helper.edit('L11', '=ROUNDDOWN(I18,1)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('1.7000E+01');
+            helper.edit('L12', '=ROUNDDOWN(I20,3)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('11500%');
+            done();
+        });
+        it('ROUNDDOWN Formula with operator and cell references as arguments ->', (done: Function) => {
+            helper.edit('L13', '=ROUNDDOWN(D2<E2,2)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('1');
+            helper.edit('L14', '=ROUNDDOWN(D2>E2,2)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('0');
+            helper.edit('L15', '=ROUNDDOWN(D2<=E2,2)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('1');
+            helper.edit('L16', '=ROUNDDOWN(D2>=E2,2)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('0');
+            helper.edit('L17', '=ROUNDDOWN(D2=E2,2)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('0');
+            helper.edit('L18', '=ROUNDDOWN(D2<>E2,2)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('1');
+            done();
+        });
+        it('ROUNDDOWN Formula with expression and cell references as arguments ->', (done: Function) => {
+            helper.edit('L19', '=ROUNDDOWN(H4+I6+H10=E8,1)');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('0');
+            helper.edit('L20', '=ROUNDDOWN(A9+A10=A11,1)');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L21', '=ROUNDDOWN(E8-E9-F10=D6,1)');
+            expect(helper.invoke('getCell', [20, 11]).textContent).toBe('0');
+            helper.edit('L22', '=ROUNDDOWN(H8-F6<>F4,0)');
+            expect(helper.invoke('getCell', [21, 11]).textContent).toBe('1');
+            helper.edit('L23', '=ROUNDDOWN(H7+34+D10-F9*A20=0,-1)');
+            expect(helper.invoke('getCell', [22, 11]).textContent).toBe('0');
+            done();
+        });
+        it('ROUNDDOWN Formula with Nested formula value as arguments ->', (done: Function) => {
+            helper.edit('M1', '=ROUNDDOWN(D5,IF(2>1,TRUE,FALSE))');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('15');
+            helper.edit('M2', '=ROUNDDOWN(ROUND(H4,4),2)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('27');
+            helper.edit('M3', '=ROUNDDOWN(PRODUCT(D2,2),4)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('20');
+            helper.edit('M4', '=AVERAGE(10,20,ROUNDDOWN(H2,-3))');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('10');
+            helper.edit('M5', '=ROUNDDOWN(H4,IF(I17>I14,2,3))');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('27');
+            helper.edit('M6', '=SUM(ROUNDDOWN(129.99,0),1)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('130');
+            helper.edit('M7', '=SUM(ROUNDDOWN(129.99,1),2)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('131.9');
+            helper.edit('M8', '=SUM(ROUNDDOWN(129.99,-1),2)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('122');
+            helper.edit('M9', '=ROUNDDOWN(D5,IF(2>1,"hello","world"))');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('ROUNDDOWN Formula with Empty arguments as input ->', (done: Function) => {
+            helper.edit('M10', '=ROUNDDOWN("","")');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M11', '=ROUNDDOWN(102.22,"")');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M12', '=ROUNDDOWN(," ")');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M13', '=ROUNDDOWN("",)');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M14', '=ROUNDDOWN(A20,0)');
+            expect(helper.invoke('getCell', [13, 12]).textContent).toBe('0');
+            helper.edit('M15', '=ROUNDDOWN(F22,C22)');
+            expect(helper.invoke('getCell', [14, 12]).textContent).toBe('0');
+            done();
+        });
+        it('ROUNDDOWN Formula with absolute cell refernces as arguments ->', (done: Function) => {
+            helper.edit('M16', '=ROUNDDOWN(1213.32,$I$10)');
+            expect(helper.invoke('getCell', [15, 12]).textContent).toBe('1213');
+            helper.edit('M17', '=ROUNDDOWN($A$2,3)');
+            expect(helper.invoke('getCell', [16, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M18', '=ROUNDDOWN($H$5,$I$10)');
+            expect(helper.invoke('getCell', [17, 12]).textContent).toBe('67');
+            helper.edit('M19', '=ROUNDDOWN($I$6,-2)');
+            expect(helper.invoke('getCell', [18, 12]).textContent).toBe('100');
+            helper.edit('M20', '=ROUNDDOWN($F$9,$I$10)');
+            expect(helper.invoke('getCell', [19, 12]).textContent).toBe('310');
+            done();
+        });
+        it('ROUNDDOWN Formula with Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('N1', '=ROUNDDOWN(Sheet1!F2,Sheet2!A3)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('200');
+            helper.edit('N2', '=ROUNDDOWN(Sheet2!A2,Sheet1!I10)');
+            expect(helper.invoke('getCell', [1, 13]).textContent).toBe('20');
+            helper.edit('N3', '=ROUNDDOWN(Sheet1!F2,Sheet1!A3)');
+            expect(helper.invoke('getCell', [2, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N4', '=ROUNDDOWN(Sheet2!A22,Sheet2!A3)');
+            expect(helper.invoke('getCell', [3, 13]).textContent).toBe('0');
+            helper.edit('N5', '=ROUNDDOWN(F10,-Sheet2!A1)');
+            expect(helper.invoke('getCell', [4, 13]).textContent).toBe('1200');
+            done();
+        });
+        it('ROUNDDOWN Formula with absolute cell of Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('N6', '=ROUNDDOWN(Sheet1!$F$2,Sheet1!$I$10)');
+            expect(helper.invoke('getCell', [5, 13]).textContent).toBe('200');
+            helper.edit('N7', '=ROUNDDOWN(Sheet1!$F$2,Sheet2!$A$3)');
+            expect(helper.invoke('getCell', [6, 13]).textContent).toBe('200');
+            helper.edit('N8', '=ROUNDDOWN(Sheet2!$A$2,Sheet1!$I$10)');
+            expect(helper.invoke('getCell', [7, 13]).textContent).toBe('20');
+            helper.edit('N9', '=ROUNDDOWN(Sheet2!$A$22,Sheet2!$A$3)');
+            expect(helper.invoke('getCell', [8, 13]).textContent).toBe('0');
+            helper.edit('N10', '=ROUNDDOWN(F10,-Sheet2!$A$1)');
+            expect(helper.invoke('getCell', [9, 13]).textContent).toBe('1200');
+            helper.edit('N11', '=ROUNDDOWN($F$10,-Sheet2!A1)');
+            expect(helper.invoke('getCell', [10, 13]).textContent).toBe('1200');
+            done();
+        });
+        it('ROUNDDOWN Formula with Worst case value as arguments ->', (done: Function) => {
+            helper.edit('N12', '=ROUNDDOWN(,)');
+            expect(helper.invoke('getCell', [11, 13]).textContent).toBe('0');
+            helper.edit('N13', '=ROUNDDOWN(2343.456,)');
+            expect(helper.invoke('getCell', [12, 13]).textContent).toBe('2343');
+            helper.edit('N14', '=ROUNDDOWN(hello,12)');
+            expect(helper.invoke('getCell', [13, 13]).textContent).toBe('#NAME?');
+            helper.edit('N15', '=ROUNDDOWN(A4,A6)');
+            expect(helper.invoke('getCell', [14, 13]).textContent).toBe('#VALUE!');
+            helper.edit('N16', '=ROUNDDOWN(I21,2)');
+            expect(helper.invoke('getCell', [15, 13]).textContent).toBe('#NUM!');
+            done();
+        });
+        it('ROUNDDOWN Formula with no inputs and improper arguments->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('O1');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=ROUNDDOWN()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=ROUNDDOWN()';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('O1', '=ROUNDDOWN(121,0)');
+            spreadsheet.selectRange('O2');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=ROUNDDOWN(12,2,2)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=ROUNDDOWN(12,2,2)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog1: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog1.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('O2', '=ROUNDDOWN(12.32,1)');
+            done();
+        });
+    });
+
+    describe('EJ2-854709 -> LOOKUP Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [
+                        { cells: [{ index: 8, value: 'Different data' }] }, { cells: [{ index: 8, value: 'TRUE' }] },
+                        { cells: [{ index: 8, value: 'TRUE' }] }, { cells: [{ index: 8, value: 'FALSE' }] },
+                        { cells: [{ index: 8, value: 'FALSE' }] }, { cells: [{ index: 8, value: '103.32' }] },
+                        { cells: [{ index: 8, value: '105.36' }] }, { cells: [{ index: 8, value: '-3221' }] },
+                        { cells: [{ index: 8, value: '-123' }] }, { cells: [{ index: 8, value: '0' }] },
+                        { cells: [{ index: 8, value: 'Hello123' }] }, { cells: [{ index: 8, value: '124Hello' }] },
+                        { cells: [{ index: 8, value: '119', format: '#,##0.00' }] }, { cells: [{ index: 8, value: '32', format: '#,##0.00' }] },
+                        { cells: [{ index: 8, value: '119', format: '$#,##0.00' }] }, { cells: [{ index: 8, value: '12.76', format: '$#,##0.00' }] },
+                        { cells: [{ index: 8, value: '12', format: '0.0000E+00' }] }, { cells: [{ index: 8, value: '17', format: '0.0000E+00' }] },
+                        { cells: [{ index: 8, value: '2', format: '0%' }] }, { cells: [{ index: 8, value: '115', format: '0%' }] }, { cells: [{ index: 8, value: '#NUM!' }] }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '2' }] }, { cells: [{ value: '20' }] }, { cells: [{ value: '6' }] },
+                        { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'FALSE' }] },
+                        { cells: [{ value: 'FALSE' }] }, { cells: [{ value: '0' }] }, { cells: [{ value: '1' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('LOOKUP Formula with direct values as numbers arguments ->', (done: Function) => {
+            helper.edit('J1', '=LOOKUP(10,D2:D11,F2:F11)');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('200');
+            helper.edit('J2', '=LOOKUP(11,D2:D11,F2:F11)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('200');
+            helper.edit('J3', '=LOOKUP(70,D2:D11,F2:F11)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('500');
+            helper.edit('J4', '=LOOKUP(-232,D2:D11,F2:F11)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#N/A');
+            helper.edit('J5', '=LOOKUP(0,I10:I14,H6:H10)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('70');
+            helper.edit('J6', '=LOOKUP(-123,I9:I10,E6:E17)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('10');
+            helper.edit('J7', '=LOOKUP(103.32,I6:I7,C5:C6)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0.266597222');
+            helper.edit('J8', '=LOOKUP(1240,F2:F11,G2:G11)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('9');
+            done();
+        });
+        it('LOOKUP Formula with direct values and cell references as boolean arguments ->', (done: Function) => {
+            helper.edit('J9', '=LOOKUP(true,I2:I5,F9:F12)');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('1210');
+            helper.edit('J10', '=LOOKUP(false,I2:I5,F8:F11)');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('500');
+            helper.edit('J11', '=LOOKUP("TRUE",I2:I5,G2:G5)');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('#N/A');
+            helper.edit('J12', '=LOOKUP("FALSE",I2:I5,G2:G5)');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('#N/A');
+            helper.edit('J13', '=LOOKUP(I3,I2:I5,A2:A5)');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('Sports Shoes');
+            helper.edit('J14', '=LOOKUP(I4,I2:I5,A2:A5)');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('Sandals & Floaters');
+            done();
+        });
+        it('LOOKUP Formula with direct values as string arguments ->', (done: Function) => {
+            helper.edit('J17', '=LOOKUP("Loafers",A2:A11,F2:F11)');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('310');
+            helper.edit('J18', '=LOOKUP("SNEAKERS",A2:A11,F2:F11)');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('800');
+            helper.edit('J19', '=LOOKUP("Hello123",I11:I12,H10:H11)');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('166');
+            helper.edit('J20', '=LOOKUP("Casual SHOES",A2:A11,B2:B11)');
+            expect(helper.invoke('getCell', [19, 9]).textContent).toBe('41684');
+            helper.edit('J21', '=LOOKUP("Bags",A2:A11,D2:D11)');
+            expect(helper.invoke('getCell', [20, 9]).textContent).toBe('#N/A');
+            helper.edit('J22', '=LOOKUP("loAFERs",A2:A11,G2:G11)');
+            expect(helper.invoke('getCell', [21, 9]).textContent).toBe('6');
+            done();
+        });
+        it('LOOKUP Formula with direct values as expression ->', (done: Function) => {
+            helper.edit('J23', '=LOOKUP(20-10,D2:D4,F2:F4)');
+            expect(helper.invoke('getCell', [22, 9]).textContent).toBe('200');
+            helper.edit('J24', '=LOOKUP(10+10,D2:D11,F2:F11)');
+            expect(helper.invoke('getCell', [23, 9]).textContent).toBe('300');
+            helper.edit('J25', '=LOOKUP(10*1-5,G2:G11,H2:H11)');
+            expect(helper.invoke('getCell', [24, 9]).textContent).toBe('27');
+            helper.edit('J26', '=LOOKUP(900/3,F2:F11,G2:G11)');
+            expect(helper.invoke('getCell', [25, 9]).textContent).toBe('10');
+            done();
+        });
+        it('LOOKUP Formula with cell references as arguments ->', (done: Function) => {
+            helper.edit('K1', '=LOOKUP(A3,A2:A8,B2:B8)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('41801');
+            helper.edit('K2', '=LOOKUP(B4,B2:B7,C2:C7)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('0.030543981');
+            helper.edit('K3', '=LOOKUP(C5,C2:C7,A2:A7)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('Sandals & Floaters');
+            helper.edit('K4', '=LOOKUP(D4,D2:D9,E2:E9)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('10');
+            helper.edit('K5', '=LOOKUP(F3,F2:F10,E2:E10)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('10');
+            helper.edit('K6', '=LOOKUP(F4,E2:E11,D2:D11)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('50');
+            helper.edit('K7', '=LOOKUP(I3,I2:I5,F2:F6)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('600');
+            helper.edit('K8', '=LOOKUP(I11,I11:I12,F10:F11)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('1210');
+            helper.edit('K9', '=LOOKUP(I13,F2:F5,G2:G6)');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('#N/A');
+            helper.edit('K10', '=LOOKUP(I16,I15:I16,E10:E11)');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('30');
+            helper.edit('K11', '=LOOKUP(I14,I13:I14,I15:I16)');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('119');
+            helper.edit('K12', '=LOOKUP(I20,I17:I20,F8:F11)');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('500');
+            done();
+        });
+        it('LOOKUP Formula with operator and cell references as arguments ->', (done: Function) => {
+            helper.edit('K13', '=LOOKUP(E4>E5,I2:I5,H2:H5)');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('67');
+            helper.edit('K14', '=LOOKUP(E4<E5,I2:I5,H2:H5)');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('50');
+            helper.edit('K15', '=LOOKUP(E4>=E5,I2:I5,H2:H5)');
+            expect(helper.invoke('getCell', [14, 10]).textContent).toBe('67');
+            helper.edit('K16', '=LOOKUP(E4<=E5,I2:I5,H2:H5)');
+            expect(helper.invoke('getCell', [15, 10]).textContent).toBe('50');
+            helper.edit('K17', '=LOOKUP(F5=F6,I2:I5,G7:G10)');
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('3');
+            helper.edit('K18', '=LOOKUP(F5<>F6,I2:I5,G8:G11)');
+            expect(helper.invoke('getCell', [17, 10]).textContent).toBe('9');
+            done();
+        });
+        it('LOOKUP Formula with expression and cell references, Wildcard as arguments ->', (done: Function) => {
+            helper.edit('K19', '=LOOKUP(D2+E11=D8,I2:I5,G2:G5)');
+            expect(helper.invoke('getCell', [18, 10]).textContent).toBe('5');
+            helper.edit('K20', '=LOOKUP(D2-E11=D8,I2:I5,G2:G5)');
+            expect(helper.invoke('getCell', [19, 10]).textContent).toBe('11');
+            helper.edit('K21', '=LOOKUP("C*",A2:A11,D2:D11)');
+            expect(helper.invoke('getCell', [20, 10]).textContent).toBe('41');
+            helper.edit('K22', '=LOOKUP("*s",A2:A11,D2:D11)');
+            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('50');
+            done();
+        });
+        it('LOOKUP Formula with Nested formula value as arguments ->', (done: Function) => {
+            helper.edit('L1', '=LOOKUP(SUM(5,5),H2:H11,F2:F11)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('200');
+            helper.edit('L2', '=LOOKUP(COUNT(C2:C11),D2:D11,H2:H11)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('10');
+            helper.edit('L3', '=LOOKUP(COUNT(A2:C11),D2:D11,H2:H11)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('70');
+            helper.edit('L4', '=SUM(LOOKUP(H10,H8:H11,I8:I11),2000)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('2000');
+            helper.edit('L5', '=LOOKUP(AND(20,30),I2:I5,H2:H5)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('50');
+            helper.edit('L6', '=LOOKUP(OR(20,"Cas"),I2:I5,H2:H5)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('50');
+            helper.edit('L7', '=ROUNDDOWN(LOOKUP(I9,I8:I10,I13:I15),-1)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('30.00');
+            helper.edit('L8', '=LOOKUP(SUM(2,7)+COUNT(G10:G8),D2:D11,E2:E11)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('20');
+            helper.edit('L9', '=LOOKUP(MAX(G6,G5),G2:G7,E2:E7)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('10');
+            done();
+        });
+        it('LOOKUP Formula with Empty arguments as input ->', (done: Function) => {
+            helper.edit('L10', '=LOOKUP("",B14:B16,C14:C16)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('#N/A');
+            helper.edit('L11', '=LOOKUP(12,F4:F8,)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L12', '=LOOKUP(,,)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L13', '=LOOKUP(12,,G6:G10)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L14', '=LOOKUP(D16,E15:E18,F8:F11)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('#N/A');
+            helper.edit('L15', '=LOOKUP(F11,F13:F17,G11:G7)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('#N/A');
+            done();
+        });
+        it('LOOKUP Formula with absolute cell refernces as arguments ->', (done: Function) => {
+            helper.edit('L16', '=LOOKUP($F$3,F2:F10,E2:E10)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('10');
+            helper.edit('L17', '=LOOKUP(F4,$F$2:$F$10,E2:E10)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('10');
+            helper.edit('L18', '=LOOKUP(F4,$F$2:$F$10,$E$2:$E$10)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('10');
+            helper.edit('L19', '=LOOKUP(11,$G$2:$G$11,$F$2:$F$11)');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('310');
+            helper.edit('L20', '=LOOKUP($F$5,$F$2:$F$11,$G$2:$G$11)');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('10');
+            done();
+        });
+        it('LOOKUP Formula with Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('M1', '=LOOKUP(Sheet1!H4,E2:E11,F2:F11)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('310');
+            helper.edit('M2', '=LOOKUP(Sheet2!A2,E2:E11,F2:F11)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('310');
+            helper.edit('M3', '=LOOKUP(F5,Sheet1!F2:F11,Sheet1!G2:G11)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('10');
+            helper.edit('M4', '=LOOKUP(Sheet1!F5,Sheet1!F2:F11,Sheet1!G2:G11)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('10');
+            helper.edit('M5', '=LOOKUP(Sheet2!A2,Sheet1!E2:E11,Sheet1!F2:F11)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('310');
+            done();
+        });
+        it('LOOKUP Formula with absolute cell of Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('M6', '=LOOKUP(Sheet2!$A$2,Sheet1!E2:E11,Sheet1!F2:F11)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('310');
+            helper.edit('M7', '=LOOKUP(Sheet1!$F$5,Sheet1!F2:F11,Sheet1!G2:G11)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('10');
+            helper.edit('M8', '=LOOKUP(Sheet2!$A$2,Sheet1!$E$2:$E$11,Sheet1!F2:F11)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('310');
+            helper.edit('M9', '=LOOKUP(Sheet2!$A$2,Sheet1!$E$2:$E$11,Sheet1!$F$2:$F$11)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('310');
+            helper.edit('M10', '=LOOKUP(Sheet1!$H$4,E2:E11,F2:F11)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('310');
+            helper.edit('M11', '=LOOKUP(Sheet1!$H$4,$E$2:$E$11,$F$2:$F$11)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('310');
+            done();
+        });
+        it('LOOKUP Formula with Worst case value as arguments ->', (done: Function) => {
+            helper.edit('M12', '=LOOKUP(,)');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M13', '=LOOKUP(,E4:E7,F4:F7)');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('#N/A');
+            helper.edit('M14', '=LOOKUP(Hello,A3:A6,B3:B6)');
+            expect(helper.invoke('getCell', [13, 12]).textContent).toBe('#NAME?');
+            helper.edit('M15', '=LOOKUP(,,)');
+            expect(helper.invoke('getCell', [14, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M16', '=LOOKUP("#NUM!",D4:D7,E4:E7)');
+            expect(helper.invoke('getCell', [15, 12]).textContent).toBe('#NUM!');
+            done();
+        });
+        it('LOOKUP Formula with no inputs and improper arguments->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('N1');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=LOOKUP()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=LOOKUP()';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N1', '=LOOKUP(12,E5:E9,F5:F10)');
+            spreadsheet.selectRange('N2');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=LOOKUP(,,,,)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=LOOKUP(,,,,)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog1: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog1.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N2', '=LOOKUP(12,E5:E9,F5:F10)');
+            done();
+        });
+    });
+
+    describe('EJ2-854712 -> VLOOKUP Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [
+                        { cells: [{ index: 8, value: 'Different data' }] }, { cells: [{ index: 8, value: 'TRUE' }] },
+                        { cells: [{ index: 8, value: 'TRUE' }] }, { cells: [{ index: 8, value: 'FALSE' }] },
+                        { cells: [{ index: 8, value: 'FALSE' }] }, { cells: [{ index: 8, value: '103.32' }] },
+                        { cells: [{ index: 8, value: '105.36' }] }, { cells: [{ index: 8, value: '-3221' }] },
+                        { cells: [{ index: 8, value: '-123' }] }, { cells: [{ index: 8, value: '0' }] },
+                        { cells: [{ index: 8, value: 'Hello123' }] }, { cells: [{ index: 8, value: '124Hello' }] },
+                        { cells: [{ index: 8, value: '119', format: '#,##0.00' }] }, { cells: [{ index: 8, value: '32', format: '#,##0.00' }] },
+                        { cells: [{ index: 8, value: '119', format: '$#,##0.00' }] }, { cells: [{ index: 8, value: '12.76', format: '$#,##0.00' }] },
+                        { cells: [{ index: 8, value: '12', format: '0.0000E+00' }] }, { cells: [{ index: 8, value: '17', format: '0.0000E+00' }] },
+                        { cells: [{ index: 8, value: '2', format: '0%' }] }, { cells: [{ index: 8, value: '115', format: '0%' }] }, { cells: [{ index: 8, value: '#NUM!' }] }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '2' }] }, { cells: [{ value: '20' }] }, { cells: [{ value: '6' }] },
+                        { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'FALSE' }] },
+                        { cells: [{ value: 'FALSE' }] }, { cells: [{ value: '0' }] }, { cells: [{ value: '1' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('VLOOKUP Formula with direct values as numbers arguments ->', (done: Function) => {
+            helper.edit('J1', '=VLOOKUP(10,D2:F11,2,false)');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('20');
+            helper.edit('J2', '=VLOOKUP(50,D2:F11,3,false)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('500');
+            helper.edit('J3', '=VLOOKUP(600,F2:G11,2,false)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('5');
+            helper.edit('J4', '=VLOOKUP(I10,D3:F8,2,false)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#N/A');
+            helper.edit('J5', '=VLOOKUP(0,I6:J10,2,false)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('0');
+            helper.edit('J6', '=VLOOKUP(103.32,I6:I9,1,false)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('103.32');
+            helper.edit('J7', '=VLOOKUP(-3221,I8:I11,1,false)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('-3221');
+            helper.edit('J8', '=VLOOKUP(300,F2:G10,2,false)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('7');
+            done();
+        });
+        it('VLOOKUP Formula with direct values and cell references as boolean arguments ->', (done: Function) => {
+            helper.edit('J9', '=VLOOKUP(TRUE,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('TRUE');
+            helper.edit('J10', '=VLOOKUP(FALSE,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('FALSE');
+            helper.edit('J11', '=VLOOKUP("TRUE",I2:I5,1,false)');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('#N/A');
+            helper.edit('J12', '=VLOOKUP("FALSE",I2:I5,1,false)');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('#N/A');
+            helper.edit('J13', '=VLOOKUP(I2,I2:I5,1,I4)');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('TRUE');
+            helper.edit('J14', '=VLOOKUP(I4,I2:I5,1,I4)');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('FALSE');
+            helper.edit('J15', '=VLOOKUP(I4,I2:I5,1,"FALSE")');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('FALSE');
+            helper.edit('J16', '=VLOOKUP(I4,I2:I5,1,"TRUE")');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('FALSE');
+            done();
+        });
+        it('VLOOKUP Formula with direct values as string arguments ->', (done: Function) => {
+            helper.edit('J17', '=VLOOKUP("Loafers",A2:F11,4,false)');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('31');
+            helper.edit('J18', '=VLOOKUP("SNEAKERS",A2:F11,5,false)');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('20');
+            helper.edit('J19', '=VLOOKUP("Hello123",I11:I12,1,false)');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('Hello123');
+            helper.edit('J20', '=VLOOKUP("Casual SHOES",A2:B11,2,false)');
+            expect(helper.invoke('getCell', [19, 9]).textContent).toBe('41684');
+            helper.edit('J21', '=VLOOKUP("Bags",A2:D11,2,false)');
+            expect(helper.invoke('getCell', [20, 9]).textContent).toBe('#N/A');
+            helper.edit('J22', '=VLOOKUP("loAFERs",A2:G11,3,false)');
+            expect(helper.invoke('getCell', [21, 9]).textContent).toBe('0.133935185');
+            done();
+        });
+        it('VLOOKUP Formula with direct values as expression ->', (done: Function) => {
+            helper.edit('J23', '=VLOOKUP(20-10,E2:F11,2,false)');
+            expect(helper.invoke('getCell', [22, 9]).textContent).toBe('300');
+            helper.edit('J24', '=VLOOKUP(10+10,D2:F11,3,false)');
+            expect(helper.invoke('getCell', [23, 9]).textContent).toBe('600');
+            helper.edit('J25', '=VLOOKUP(10*1-5,G2:H11,2)');
+            expect(helper.invoke('getCell', [24, 9]).textContent).toBe('27');
+            helper.edit('J26', '=VLOOKUP(900/3,F2:G11,2,false)');
+            expect(helper.invoke('getCell', [25, 9]).textContent).toBe('7');
+            done();
+        });
+        it('VLOOKUP Formula with cell references as arguments ->', (done: Function) => {
+            helper.edit('K1', '=VLOOKUP(A3,A2:C11,2,false)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('41801');
+            helper.edit('K2', '=VLOOKUP(A3,A2:C11,3,false)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('0.247592593');
+            helper.edit('K3', '=VLOOKUP(A3,A2:C11,1,false)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('Sports Shoes');
+            helper.edit('K4', '=VLOOKUP(B6,B2:E11,3,false)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('30');
+            helper.edit('K5', '=VLOOKUP(F2,F2:I5,4,false)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('TRUE');
+            helper.edit('K6', '=VLOOKUP(F4,F2:I5,4,false)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('FALSE');
+            helper.edit('K7', '=VLOOKUP(I6,I6:I10,1,false)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('103.32');
+            helper.edit('K8', '=VLOOKUP(I8,I5:I9,1,false)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('-3221');
+            helper.edit('K9', '=VLOOKUP(I15,I13:I16,1,false)');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('119');
+            helper.edit('K10', '=VLOOKUP(I13,I12:I15,1,false)');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('119');
+            helper.edit('K11', '=VLOOKUP(I18,I16:I18,1,false)');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('17');
+            helper.edit('K12', '=VLOOKUP(I20,I16:I20,1,false)');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('115');
+            done();
+        });
+        it('VLOOKUP Formula with operator and cell references as arguments ->', (done: Function) => {
+            helper.edit('K13', '=VLOOKUP(E4>E5,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('FALSE');
+            helper.edit('K14', '=VLOOKUP(E4<E5,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('TRUE');
+            helper.edit('K15', '=VLOOKUP(E4>=E5,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [14, 10]).textContent).toBe('FALSE');
+            helper.edit('K16', '=VLOOKUP(E4<=E5,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [15, 10]).textContent).toBe('TRUE');
+            helper.edit('K17', '=VLOOKUP(F5=F6,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('TRUE');
+            helper.edit('K18', '=VLOOKUP(F5<>F6,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [17, 10]).textContent).toBe('FALSE');
+            done();
+        });
+        it('VLOOKUP Formula with expression and cell references, Wildcard as arguments ->', (done: Function) => {
+            helper.edit('K19', '=VLOOKUP(D2+E11=D8,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [18, 10]).textContent).toBe('TRUE');
+            helper.edit('K20', '=VLOOKUP(D2-E11=D8,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [19, 10]).textContent).toBe('FALSE');
+            helper.edit('K21', '=VLOOKUP("C*",A2:D11,4,false)');
+            expect(helper.invoke('getCell', [20, 10]).textContent).toBe('10');
+            helper.edit('K22', '=VLOOKUP("*C",A2:D11,2,false)');
+            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('#N/A');
+            helper.edit('K23', '=VLOOKUP("???????",A2:D11,2,false)');
+            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('41973');
+            helper.edit('K24', '=VLOOKUP("??Shirts",A2:D11,2,false)');
+            expect(helper.invoke('getCell', [23, 10]).textContent).toBe('41943');
+            done();
+        });
+        it('VLOOKUP Formula with Nested formula value as arguments ->', (done: Function) => {
+            helper.edit('L1', '=SUM(VLOOKUP(10,D2:F11,2,FALSE),10)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('30');
+            helper.edit('L2', '=VLOOKUP(COUNT(E2:F11),E2:G10,2,false)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('200');
+            helper.edit('L3', '=VLOOKUP(AVERAGE(H2:H11),D2:G11,3)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('500');
+            helper.edit('L4', '=VLOOKUP(sum(D2,D3),D5:F8,3,false)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('300');
+            helper.edit('L5', '=VLOOKUP(NOT(true),I2:I5,1,false)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('FALSE');
+            helper.edit('L6', '=VLOOKUP(NOT(false),I2:I5,1,false)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('TRUE');
+            helper.edit('L7', '=VLOOKUP(10,D2:E11,count(G2:G3),I4)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('20');
+            helper.edit('L8', '=VLOOKUP(SUM(2,5)+COUNT(G10:G8),D2:E11,2,false)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('20');
+            helper.edit('L9', '=VLOOKUP(MAX(G6,G4),G2:E7,2,false)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('300');
+            done();
+        });
+        it('VLOOKUP Formula with Empty argument as input ->', (done: Function) => {
+            helper.edit('L10', '=VLOOKUP(,,)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('#N/A');
+            helper.edit('L11', '=VLOOKUP(,,,)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('#N/A');
+            helper.edit('L12', '=VLOOKUP(,H2:I11,2,TRUE)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('#N/A');
+            helper.edit('L13', '=VLOOKUP(10,,2,FALSE)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('#N/A');
+            helper.edit('L14', '=VLOOKUP(10,D2:J11,2,)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('20');
+            helper.edit('L15', '=VLOOKUP(10,D2:E11,,)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('VLOOKUP Formula with absolute cell refernces as arguments ->', (done: Function) => {
+            helper.edit('L16', '=VLOOKUP($D$5,D2:F11,3,I4)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('300');
+            helper.edit('L17', '=VLOOKUP($D$5,$D$2:$F$11,3,$I$4)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('300');
+            helper.edit('L18', '=VLOOKUP($F$9,$F$2:$G$11,2,$I$5)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('6');
+            helper.edit('L19', '=VLOOKUP(D6,$D$2:$H$11,G3,I4)');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('70');
+            helper.edit('L20', '=VLOOKUP($D$5,$D$2:$H$11,$G$3,$I$5)');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('67');
+            done();
+        });
+        it('VLOOKUP Formula with Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('M1', '=VLOOKUP(Sheet1!H2,E2:F11,2,false)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('300');
+            helper.edit('M2', '=VLOOKUP(Sheet2!A2,E2:F11,2,false)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('200');
+            helper.edit('M3', '=VLOOKUP(F5,Sheet1!F2:G11,2,Sheet1!I4)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('7');
+            helper.edit('M4', '=VLOOKUP(Sheet1!F8,Sheet1!F2:G11,2,False)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('1');
+            helper.edit('M5', '=VLOOKUP(Sheet2!A2,Sheet1!E2:F11,2,FALSE)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('200');
+            done();
+        });
+        it('VLOOKUP Formula with absolute cell of Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('M6', '=VLOOKUP(Sheet1!$H$2,$E$2:$F$11,2,false)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('300');
+            helper.edit('M7', '=VLOOKUP(Sheet2!$A$2,$E$2:$F$11,2,$I$4)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('200');
+            helper.edit('M8', '=VLOOKUP(Sheet1!$D$5,$D$2:$H$11,$G$3,$I$5)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('67');
+            helper.edit('M9', '=VLOOKUP($F$5,Sheet1!$F$2:$G$11,2,Sheet1!$I$4)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('7');
+            helper.edit('M10', '=VLOOKUP(Sheet1!$F$8,Sheet1!$F$2:$G$11,2,False)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('1');
+            helper.edit('M11', '=VLOOKUP(Sheet2!$A$2,Sheet1!$E$2:$F$11,2,FALSE)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('200');
+            done();
+        });
+        it('VLOOKUP Formula with Worst case value as arguments ->', (done: Function) => {
+            helper.edit('M12', '=VLOOKUP(,,,)');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('#N/A');
+            helper.edit('M13', '=VLOOKUP(10,D2:E11,4)');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('#REF!');
+            helper.edit('M14', '=VLOOKUP(20,D2:G11,-1)');
+            expect(helper.invoke('getCell', [13, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M15', '=VLOOKUP(20,D2:G11,0)');
+            expect(helper.invoke('getCell', [14, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M16', '=VLOOKUP(112,D2:E9,2,true0)');
+            expect(helper.invoke('getCell', [15, 12]).textContent).toBe('#NAME?');
+            helper.edit('M17', '=VLOOKUP(112,D2:E9,2,false)');
+            expect(helper.invoke('getCell', [16, 12]).textContent).toBe('#N/A');
+            helper.edit('M18', '=VLOOKUP(10,D2:E11,4,true)');
+            expect(helper.invoke('getCell', [17, 12]).textContent).toBe('#REF!');
+            done();
+        });
+        it('VLOOKUP Formula with no inputs and improper arguments->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('N1');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=VLOOKUP()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=VLOOKUP()';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N1', '=VLOOKUP(10,D2:F11,2,false)');
+            spreadsheet.selectRange('N2');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=VLOOKUP(,)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=VLOOKUP(,)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog1: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog1.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N2', '=VLOOKUP(10,D2:F11,2,false)');
+            spreadsheet.selectRange('N3');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=VLOOKUP(,,,,,)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=VLOOKUP(,,,,,)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog2: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog1.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N3', '=VLOOKUP(10,D2:F11,2,false)');
+            done();
+        });
+    });
+
+    describe('EJ2-854711 -> HLOOKUP Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [
+                        { cells: [{ index: 8, value: 'Different data' }] }, { cells: [{ index: 8, value: 'TRUE' }] },
+                        { cells: [{ index: 8, value: 'TRUE' }] }, { cells: [{ index: 8, value: 'FALSE' }] },
+                        { cells: [{ index: 8, value: 'FALSE' }] }, { cells: [{ index: 8, value: '103.32' }] },
+                        { cells: [{ index: 8, value: '105.36' }] }, { cells: [{ index: 8, value: '-3221' }] },
+                        { cells: [{ index: 8, value: '-123' }] }, { cells: [{ index: 8, value: '0' }] },
+                        { cells: [{ index: 8, value: 'Hello123' }] }, { cells: [{ index: 8, value: '124Hello' }] },
+                        { cells: [{ index: 8, value: '119', format: '#,##0.00' }] }, { cells: [{ index: 8, value: '32', format: '#,##0.00' }] },
+                        { cells: [{ index: 8, value: '119', format: '$#,##0.00' }] }, { cells: [{ index: 8, value: '12.76', format: '$#,##0.00' }] },
+                        { cells: [{ index: 8, value: '12', format: '0.0000E+00' }] }, { cells: [{ index: 8, value: '17', format: '0.0000E+00' }] },
+                        { cells: [{ index: 8, value: '2', format: '0%' }] }, { cells: [{ index: 8, value: '115', format: '0%' }] }, { cells: [{ index: 8, value: '#NUM!' }] }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '2' }] }, { cells: [{ value: '20' }] }, { cells: [{ value: '6' }] },
+                        { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'FALSE' }] },
+                        { cells: [{ value: 'FALSE' }] }, { cells: [{ value: '0' }] }, { cells: [{ value: '1' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('HLOOKUP Formula with direct values as numbers arguments ->', (done: Function) => {
+            helper.edit('J1', '=HLOOKUP(10,D2:F5,2,false)');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('20');
+            helper.edit('J2', '=HLOOKUP(20,D2:F5,3,false)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('15');
+            helper.edit('J3', '=HLOOKUP(600,F3:G7,2,false)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('300');
+            helper.edit('J4', '=HLOOKUP(0,D3:F4,2,false)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#N/A');
+            helper.edit('J5', '=HLOOKUP(0,I10:I13,2,false)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('Hello123');
+            helper.edit('J6', '=HLOOKUP(103.32,I6:I9,3,false)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('-3221');
+            helper.edit('J7', '=HLOOKUP(-3221,I8:I11,3,false)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            helper.edit('J8', '=HLOOKUP(200,D2:G5,2,false)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('600');
+            done();
+        });
+        it('HLOOKUP Formula with direct values and cell references as boolean arguments ->', (done: Function) => {
+            helper.edit('J9', '=HLOOKUP(TRUE,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('TRUE');
+            helper.edit('J10', '=HLOOKUP(FALSE,I4:I7,1,false)');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('FALSE');
+            helper.edit('J11', '=HLOOKUP("TRUE",I2:I5,1,false)');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('#N/A');
+            helper.edit('J12', '=HLOOKUP("FALSE",I4:I7,1,false)');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('#N/A');
+            helper.edit('J13', '=HLOOKUP(I2,G2:I6,5,FALSE)');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('103.32');
+            helper.edit('J14', '=hLOOKUP(I4,G4:I6,3,FALSE)');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('103.32');
+            helper.edit('J15', '=HLOOKUP(I2,G2:I6,4,"FALSE")');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('FALSE');
+            helper.edit('J16', '=HLOOKUP(I2,G2:I6,4,"TRUE")');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('FALSE');
+            done();
+        });
+        it('HLOOKUP Formula with direct values as string arguments ->', (done: Function) => {
+            helper.edit('J17', '=HLOOKUP("Loafers",A9:F11,2,false)');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('Cricket Shoes');
+            helper.edit('J18', '=HLOOKUP("SNEAKERS",A7:F11,5,false)');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('T-Shirts');
+            helper.edit('J19', '=HLOOKUP("Hello123",I11:I12,1,false)');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('Hello123');
+            helper.edit('J20', '=HLOOKUP("Casual SHOES",A2:B11,4,false)');
+            expect(helper.invoke('getCell', [19, 9]).textContent).toBe('Sandals & Floaters');
+            helper.edit('J21', '=HLOOKUP("Bags",A2:D11,2,false)');
+            expect(helper.invoke('getCell', [20, 9]).textContent).toBe('#N/A');
+            helper.edit('J22', '=HLOOKUP("loAFERs",A9:G11,1,false)');
+            expect(helper.invoke('getCell', [21, 9]).textContent).toBe('Loafers');
+            done();
+        });
+        it('HLOOKUP Formula with direct values as expression ->', (done: Function) => {
+            helper.edit('J23', '=HLOOKUP(20-10,D2:G5,2,false)');
+            expect(helper.invoke('getCell', [22, 9]).textContent).toBe('20');
+            helper.edit('J24', '=HLOOKUP(10+10,D2:G5,3,false)');
+            expect(helper.invoke('getCell', [23, 9]).textContent).toBe('15');
+            helper.edit('J25', '=HLOOKUP(10*1,G2:H5,2,false)');
+            expect(helper.invoke('getCell', [24, 9]).textContent).toBe('50');
+            helper.edit('J26', '=HLOOKUP(900/3,F4:G5,2,false)');
+            expect(helper.invoke('getCell', [25, 9]).textContent).toBe('300');
+            done();
+        });
+        it('HLOOKUP Formula with cell references as arguments ->', (done: Function) => {
+            helper.edit('K1', '=HLOOKUP(A3,A3:C11,7,false)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('Loafers');
+            helper.edit('K2', '=HLOOKUP(B3,A3:C11,3,false)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('41964');
+            helper.edit('K3', '=HLOOKUP(C3,A3:C11,1,false)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('0.247592593');
+            helper.edit('K4', '=HLOOKUP(D3,B3:E11,3,false)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('15');
+            helper.edit('K5', '=HLOOKUP(F3,F3:I5,3,false)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('300');
+            helper.edit('K6', '=HLOOKUP(I2,I3:I4,2,false)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('FALSE');
+            helper.edit('K7', '=HLOOKUP(I5,I4:I7,4)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('105.36');
+            helper.edit('K8', '=HLOOKUP(I6,I6:I9,4)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('-123');
+            helper.edit('K9', '=HLOOKUP(I8,I8:I10,3)');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('0');
+            helper.edit('K10', '=HLOOKUP(I13,I13:I14,2,false)');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('32');
+            helper.edit('K11', '=HLOOKUP(I15,I15:I16,2,false)');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('12.76');
+            helper.edit('K12', '=HLOOKUP(I19,I19:I20,2,false)');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('115');
+            done();
+        });
+        it('HLOOKUP Formula with operator and cell references as arguments ->', (done: Function) => {
+            helper.edit('K13', '=HLOOKUP(E4>E5,I4:I5,1,false)');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('FALSE');
+            helper.edit('K14', '=HLOOKUP(E4<E5,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('TRUE');
+            helper.edit('K15', '=HLOOKUP(E4>=E5,I4:I5,1,false)');
+            expect(helper.invoke('getCell', [14, 10]).textContent).toBe('FALSE');
+            helper.edit('K16', '=HLOOKUP(E4<=E5,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [15, 10]).textContent).toBe('TRUE');
+            helper.edit('K17', '=HLOOKUP(F5=F6,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('TRUE');
+            helper.edit('K18', '=HLOOKUP(F5<>F6,I4:I5,1,false)');
+            expect(helper.invoke('getCell', [17, 10]).textContent).toBe('FALSE');
+            done();
+        });
+        it('HLOOKUP Formula with expression and cell references, Wildcard as arguments ->', (done: Function) => {
+            helper.edit('K19', '=HLOOKUP(D2+E11=D8,I2:I5,1,false)');
+            expect(helper.invoke('getCell', [18, 10]).textContent).toBe('TRUE');
+            helper.edit('K20', '=HLOOKUP(D2-E11=D8,I4:I5,1,false)');
+            expect(helper.invoke('getCell', [19, 10]).textContent).toBe('FALSE');
+            helper.edit('K21', '=HLOOKUP("C*",A2:D11,7,false)');
+            expect(helper.invoke('getCell', [20, 10]).textContent).toBe('Running Shoes');
+            helper.edit('K22', '=HLOOKUP("*C",A2:D11,2,false)');
+            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('#N/A');
+            helper.edit('K23', '=HLOOKUP("???????",A9:D11,2,false)');
+            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('Cricket Shoes');
+            helper.edit('K24', '=HLOOKUP("??Shirts",A11:D13,2,false)');
+            expect(helper.invoke('getCell', [23, 10]).textContent).toBe('0');
+            done();
+        });
+        it('HLOOKUP Formula with Nested formula value as arguments ->', (done: Function) => {
+            helper.edit('L1', '=SUM(HLOOKUP(10,D2:F11,2,FALSE),10)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('30');
+            helper.edit('L2', '=HLOOKUP(COUNT(E2:F11),E2:G10,2,false)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('30');
+            helper.edit('L3', '=HLOOKUP(AVERAGE(H2:H11),D2:G11,3)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('300');
+            helper.edit('L4', '=HLOOKUP(SUM(D2,H2),D5:F8,3,false)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('20');
+            helper.edit('L5', '=HLOOKUP(NOT(TRUE),I4:I8,5,false)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('-3221');
+            helper.edit('L6', '=HLOOKUP(NOT(FALSE),G2:I6,5,false)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('103.32');
+            helper.edit('L7', '=HLOOKUP(10,D2:E11,count(G2:G3),I4)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('20');
+            helper.edit('L8', '=HLOOKUP(SUM(2,5)+COUNT(G10:G8),D2:E11,2,false)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('20');
+            helper.edit('L9', '=HLOOKUP(MAX(D3,G6),E2:F5,4,false)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('20');
+            done();
+        });
+        it('HLOOKUP Formula with Empty argument as input ->', (done: Function) => {
+            helper.edit('L10', '=HLOOKUP(,,)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('#N/A');
+            helper.edit('L11', '=HLOOKUP(,,,)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('#N/A');
+            helper.edit('L12', '=HLOOKUP(,H2:I11,2,TRUE)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('#N/A');
+            helper.edit('L13', '=HLOOKUP(10,,2,FALSE)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('#N/A');
+            helper.edit('L14', '=HLOOKUP(10,D2:G5,3,)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('15');
+            helper.edit('L15', '=HLOOKUP(10,D2:E11,,)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('HLOOKUP Formula with absolute cell refernces as arguments ->', (done: Function) => {
+            helper.edit('L16', '=HLOOKUP($D$5,D5:F11,3,I4)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('40');
+            helper.edit('L17', '=HLOOKUP($D$5,$D$5:$F$11,5,$I$4)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('31');
+            helper.edit('L18', '=HLOOKUP($F$9,$F$9:$G$11,2,$I$5)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('1210');
+            helper.edit('L19', '=HLOOKUP(D6,$D$6:$H$11,G3,I4)');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('41');
+            helper.edit('L20', '=HLOOKUP($D$5,$D$5:$H$11,$G$3,$I$5)');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('31');
+            done();
+        });
+        it('HLOOKUP Formula with Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('M1', '=HLOOKUP(Sheet1!H2,D2:F5,2,false)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('20');
+            helper.edit('M2', '=HLOOKUP(Sheet2!A2,E2:F11,2,false)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('30');
+            helper.edit('M3', '=HLOOKUP(F5,Sheet1!F5:G11,2,Sheet1!I4)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('300');
+            helper.edit('M4', '=HLOOKUP(Sheet1!F8,Sheet1!F8:G11,2,False)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('310');
+            helper.edit('M5', '=HLOOKUP(Sheet2!A2,Sheet1!E2:F11,2,FALSE)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('30');
+            done();
+        });
+        it('HLOOKUP Formula with absolute cell of Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('M6', '=HLOOKUP(Sheet1!$H$2,$D$2:$F$11,2,false)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('20');
+            helper.edit('M7', '=HLOOKUP(Sheet2!$A$2,$E$2:$F$11,2,$I$4)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('30');
+            helper.edit('M8', '=HLOOKUP(Sheet1!$D$5,$D$5:$H$11,$G$3,$I$5)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('31');
+            helper.edit('M9', '=HLOOKUP($F$5,Sheet1!$F$5:$G$11,2,Sheet1!$I$4)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('300');
+            helper.edit('M10', '=HLOOKUP(Sheet1!$F$8,Sheet1!$F$2:$G$11,2,False)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('600');
+            helper.edit('M11', '=HLOOKUP(Sheet2!$A$2,Sheet1!$E$2:$F$11,2,FALSE)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('30');
+            done();
+        });
+        it('HLOOKUP Formula with Worst case value as arguments ->', (done: Function) => {
+            helper.edit('M12', '=HLOOKUP(,,,)');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('#N/A');
+            helper.edit('M13', '=HLOOKUP(10,D2:E11,14)');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('#REF!');
+            helper.edit('M14', '=HLOOKUP(20,D2:G11,-1)');
+            expect(helper.invoke('getCell', [13, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M15', '=HLOOKUP(20,D2:G11,0)');
+            expect(helper.invoke('getCell', [14, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M16', '=HLOOKUP(112,D2:E9,2,true0)');
+            expect(helper.invoke('getCell', [15, 12]).textContent).toBe('#NAME?');
+            helper.edit('M17', '=HLOOKUP(112,D2:E9,2,false)');
+            expect(helper.invoke('getCell', [16, 12]).textContent).toBe('#N/A');
+            helper.edit('M18', '=HLOOKUP(10,D2:E4,4,true)');
+            expect(helper.invoke('getCell', [17, 12]).textContent).toBe('#REF!');
+            done();
+        });
+        it('HLOOKUP Formula with no inputs and improper arguments->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('N1');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=HLOOKUP()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=HLOOKUP()';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N1', '=HLOOKUP(600,F3:G7,2,false)');
+            spreadsheet.selectRange('N2');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=HLOOKUP(,)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=HLOOKUP(,)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog1: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog1.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N2', '=HLOOKUP(600,F3:G7,2,false)');
+            spreadsheet.selectRange('N3');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=HLOOKUP(,,,,,)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=HLOOKUP(,,,,,)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog2: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog1.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N3', '=HLOOKUP(600,F3:G7,2,false)');
             done();
         });
     });
@@ -6246,7 +8927,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('J6', '=AVERAGE(I6:I10)');
             expect(helper.invoke('getCell', [5, 9]).textContent).toBe('514.336418');
             helper.edit('J7', '=AVERAGE(I19:I21)');
-            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('-1491.33333');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('-1491.333333');
             helper.edit('J8', '=AVERAGE(I24:I25)');
             expect(helper.invoke('getCell', [7, 9]).textContent).toBe('$65.78');
             helper.edit('J9', '=AVERAGE(I26:I27)');
@@ -6256,7 +8937,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('J11', '=AVERAGE(I13:I16)');
             expect(helper.invoke('getCell', [10, 9]).textContent).toBe('#DIV/0!');
             helper.edit('J12', '=AVERAGE(I13:I29)');
-            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('-341.494545');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('-341.4945455');
             done();
         });
         it('AVERAGE Formula with single cell references values as arguments->', (done: Function) => {
@@ -6953,6 +9634,25 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [6, 13]).textContent).toBe('1');
             done();
         });
+        it('COUNTIFS formula with Nested DATE Formula as input->', (done: Function) => {
+            helper.edit('N8', '=COUNTIFS(H2:H7,">5",B2:B7,">"&DATE(2014,4,3))');
+            expect(helper.invoke('getCell', [7, 13]).textContent).toBe('5');
+            done();
+        });
+        it('COUNTIFS formula with improper range as input->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('N9');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=COUNTIFS(H2:H11,D2,D2:D11)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=COUNTIFS(H2:H11,D2,D2:D11)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog1: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog1.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N9', '=COUNTIFS(H2:H11,D2,D2:D11,E8)');
+            expect(helper.invoke('getCell', [8, 13]).textContent).toBe('1');
+            done();
+        });
     });
 
     describe('COUNTBLANK Formula Checking ->', () => {
@@ -7184,7 +9884,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.invoke('delete', [9, 9, 'Row']);
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].rows[1].cells[9].formula).toBe('=H9^H10:H9');
-                expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBe('invalid expression');
+                expect(helper.getInstance().sheets[0].rows[1].cells[9].value).toBe('#VALUE!');
                 done();
             });
         });
@@ -7628,8 +10328,8 @@ describe('Spreadsheet formula module ->', () => {
                 helper.edit('B6', '=POWER((B2+B3),2)');
                 helper.edit('B7', '=POWER((B2+B3),1/3)');
                 helper.edit('B8', '=(3^2)^(2)');
-                expect(helper.invoke('getCell', [3, 1]).textContent).toBe('1.1025');
-                expect(helper.invoke('getCell', [4, 1]).textContent).toBe('1.016396357');
+                expect(helper.invoke('getCell', [3, 1]).textContent).toBe('110.25%');
+                expect(helper.invoke('getCell', [4, 1]).textContent).toBe('101.64%');
                 expect(helper.invoke('getCell', [5, 1]).textContent).toBe('1.1025');
                 expect(helper.invoke('getCell', [6, 1]).textContent).toBe('1.016396357');
                 expect(helper.invoke('getCell', [7, 1]).textContent).toBe('81');
@@ -8407,7 +11107,7 @@ describe('Spreadsheet formula module ->', () => {
                     helper.triggerKeyEvent('keyup', 83, null, null, null, editElem);
                     setTimeout(() => {
                         let popUpElem: HTMLElement = helper.getElement('.e-popup-open .e-dropdownbase');
-                        expect(popUpElem.firstElementChild.childElementCount).toBe(9);
+                        expect(popUpElem.firstElementChild.childElementCount).toBe(10);
                         helper.triggerKeyNativeEvent(13);
                         done();
                     });
@@ -10146,6 +12846,1061 @@ describe('Spreadsheet formula module ->', () => {
             });
         });
     });
+
+    describe('AND Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [
+                        { cells: [{ index: 8, value: 'Different data' }] }, { cells: [{ index: 8, value: 'TRUE' }] },
+                        { cells: [{ index: 8, value: 'TRUE' }] }, { cells: [{ index: 8, value: 'FALSE' }] },
+                        { cells: [{ index: 8, value: 'FALSE' }] }, { cells: [{ index: 8, value: '103.32' }] },
+                        { cells: [{ index: 8, value: '105.36' }] }, { cells: [{ index: 8, value: '-3221' }] },
+                        { cells: [{ index: 8, value: '-123' }] }, { cells: [{ index: 8, value: '0' }] },
+                        { cells: [{ index: 8, value: 'Hello123' }] }, { cells: [{ index: 8, value: '124Hello' }] },
+                        { cells: [{ index: 8, value: '119', format: '#,##0.00' }] }, { cells: [{ index: 8, value: '32', format: '#,##0.00' }] },
+                        { cells: [{ index: 8, value: '119', format: '$#,##0.00' }] }, { cells: [{ index: 8, value: '12.76', format: '$#,##0.00' }] },
+                        { cells: [{ index: 8, value: '12', format: '0.0000E+00' }] }, { cells: [{ index: 8, value: '17', format: '0.0000E+00' }] },
+                        { cells: [{ index: 8, value: '2', format: '0%' }] }, { cells: [{ index: 8, value: '115', format: '0%' }] }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '2' }] }, { cells: [{ value: '20' }] }, { cells: [{ value: '6' }] },
+                        { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'FALSE' }] },
+                        { cells: [{ value: 'FALSE' }] }, { cells: [{ value: '0' }] }, { cells: [{ value: '1' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('AND Formula with direct values as number arguments ->', (done: Function) => {
+            helper.edit('J1', '=AND(0)');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('FALSE');
+            helper.edit('J2', '=AND(1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('TRUE');
+            helper.edit('J3', '=AND(-321)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('TRUE');
+            helper.edit('J4', '=AND(55930332)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('TRUE');
+            helper.edit('J5', '=AND(-323.12)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('TRUE');
+            helper.edit('J6', '=AND(10,0)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('FALSE');
+            helper.edit('J7', '=AND(12,-12)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('TRUE');
+            helper.edit('J8', '=AND(1.323)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('TRUE');
+            done();
+        });
+        it('AND Formula with direct values as boolean arguments ->', (done: Function) => {
+            helper.edit('J9', '=AND(TRUE)');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('TRUE');
+            helper.edit('J10', '=AND(FALSE)');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('FALSE');
+            helper.edit('J11', '=AND("TRUE")');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('TRUE');
+            helper.edit('J12', '=AND("FALSE")');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('FALSE');
+            helper.edit('J13', '=AND(TRUE,TRUE)');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('TRUE');
+            helper.edit('J14', '=AND(TRUE,FALSE)');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('FALSE');
+            helper.edit('J15', '=AND(FALSE,TRUE)');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('FALSE');
+            helper.edit('J16', '=AND(FALSE,FALSE)');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('FALSE');
+            helper.edit('J17', '=AND(TRUE,"true")');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('TRUE');
+            helper.edit('J18', '=AND(TRUE,TRUE,TRUE,FALSE)');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('FALSE');
+            done();
+        });
+        it('AND Formula with direct values as string arguments ->', (done: Function) => {
+            helper.edit('J19', '=AND("HELLO")');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J20', '=AND(World)');
+            expect(helper.invoke('getCell', [19, 9]).textContent).toBe('#NAME?');
+            helper.edit('J21', '=AND("hello"=hello)');
+            expect(helper.invoke('getCell', [20, 9]).textContent).toBe('#NAME?');
+            helper.edit('J22', '=AND(12,32,"re")');
+            expect(helper.invoke('getCell', [21, 9]).textContent).toBe('TRUE');
+            helper.edit('J23', '=AND(32,"Hello","32")');
+            expect(helper.invoke('getCell', [22, 9]).textContent).toBe('TRUE');
+            done();
+        });
+        it('AND Formula with direct values as expression ->', (done: Function) => {
+            helper.edit('K1', '=AND(1=1)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('TRUE');
+            helper.edit('K2', '=AND(12="12")');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('FALSE');
+            helper.edit('K3', '=AND(1=3,3=1)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('FALSE');
+            helper.edit('K4', '=AND(1=1,11<>12)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('TRUE');
+            helper.edit('K5', '=AND(1+2 =5)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('FALSE');
+            helper.edit('K6', '=AND(1-32=-31)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('TRUE');
+            helper.edit('K7', '=AND(1+13,2+43)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('TRUE');
+            helper.edit('K8', '=AND(12-13,0)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('FALSE');
+            done();
+        });
+        it('AND Formula with single cell references as arguments ->', (done: Function) => {
+            helper.edit('K9', '=AND(A3)');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K10', '=AND(B4)');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('TRUE');
+            helper.edit('K11', '=AND(C5)');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('TRUE');
+            helper.edit('K12', '=AND(D6)');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('TRUE');
+            helper.edit('K13', '=AND(I7)');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('TRUE');
+            helper.edit('K14', '=AND(I9)');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('TRUE');
+            helper.edit('K15', '=AND(I10)');
+            expect(helper.invoke('getCell', [14, 10]).textContent).toBe('FALSE');
+            helper.edit('K16', '=AND(I11)');
+            expect(helper.invoke('getCell', [15, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K17', '=AND(I13)');
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('TRUE');
+            helper.edit('K18', '=AND(I15)');
+            expect(helper.invoke('getCell', [17, 10]).textContent).toBe('TRUE');
+            helper.edit('K19', '=AND(I17)');
+            expect(helper.invoke('getCell', [18, 10]).textContent).toBe('TRUE');
+            helper.edit('K20', '=AND(I20)');
+            expect(helper.invoke('getCell', [19, 10]).textContent).toBe('TRUE');
+            helper.edit('K21', '=AND(F15)');
+            expect(helper.invoke('getCell', [20, 10]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('AND Formula with multiple kind of arguments  ->', (done: Function) => {
+            helper.edit('K22', '=AND(A5,I11,12)');
+            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('TRUE');
+            helper.edit('K23', '=AND(B5,B7,B8,B11,B3)');
+            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('TRUE');
+            helper.edit('K24', '=AND(C3,C7,B7,C9)');
+            expect(helper.invoke('getCell', [23, 10]).textContent).toBe('TRUE');
+            helper.edit('K25', '=AND(B3:B9)');
+            expect(helper.invoke('getCell', [24, 10]).textContent).toBe('TRUE');
+            helper.edit('K26', '=AND(A6,A11,A15,B23,D17)');
+            expect(helper.invoke('getCell', [25, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K27', '=AND(I10,G6,12,"12",D4:D7)');
+            expect(helper.invoke('getCell', [26, 10]).textContent).toBe('FALSE');
+            helper.edit('K28', '=AND(A2:A5,"*A")');
+            expect(helper.invoke('getCell', [27, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K29', '=AND(A2:A5,"c*")');
+            expect(helper.invoke('getCell', [28, 10]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('AND Formula with operator and cell references as arguments ->', (done: Function) => {
+            helper.edit('L1', '=AND(A4<A7)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('TRUE');
+            helper.edit('L2', '=AND(A4>A7)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('FALSE');
+            helper.edit('L3', '=AND(D6>=E5)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('TRUE');
+            helper.edit('L4', '=AND(D6<=E5)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('FALSE');
+            helper.edit('L5', '=AND(D4=D3,D2=H2)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('TRUE');
+            helper.edit('L6', '=AND(H6<>H7)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('TRUE');
+            done();
+        });
+        it('AND Formula with expression and cell references as arguments ->', (done: Function) => {
+            helper.edit('L7', '=AND(H4+I6+H10=E8)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('FALSE');
+            helper.edit('L8', '=AND(A9+A10 =A11)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L9', '=AND(E8-E9-F10=D6)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('FALSE');
+            helper.edit('L10', '=AND(H8-F6<>F4)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('TRUE');
+            helper.edit('L11', '=AND(H7+34+D10-F9*A20=0,0)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('FALSE');
+            done();
+        });
+        it('AND Formula with Nested formula value as arguments ->', (done: Function) => {
+            helper.edit('L12', '=IF(AND(0),1,3)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('3');
+            helper.edit('L13', '=IF(AND(10=H2,E2=20),"Hello","fake")');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('Hello');
+            helper.edit('L14', '=IF(AND(I2,I4,),100,200)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('200');
+            helper.edit('L15', '=IF(1=1,AND(E2>=20,E8>=20),32)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('FALSE');
+            helper.edit('L16', '=IFS(AND(TRUE,1),10, AND(10,0),20)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('10');
+            helper.edit('L17', '=IFS(AND(TRUE,0),10, AND(10,21),20)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('20');
+            done();
+        });
+        it('AND Formula with basic cases as arguments ->', (done: Function) => {
+            helper.edit('L18', '=AND(1=1,2=2,3=3)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('TRUE');
+            helper.edit('L19', '=AND(1=2,2=3,3=4)');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('FALSE');
+            helper.edit('L20', '=AND(D2>1,D4>3)');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('TRUE');
+            helper.edit('L21', '=IF(AND(E3>100,E3>20),"Yes","No")');
+            expect(helper.invoke('getCell', [20, 11]).textContent).toBe('No');
+            helper.edit('L22', '=AND(H4=27,B6<DATE(2023,10,22))');
+            expect(helper.invoke('getCell', [21, 11]).textContent).toBe('TRUE');
+            helper.edit('L23', '=AND(21,"12")');
+            expect(helper.invoke('getCell', [22, 11]).textContent).toBe('TRUE');
+            done();
+        });
+        it('AND Formula with absolute cell refernces as arguments ->', (done: Function) => {
+            helper.edit('M1', '=AND($B$2)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('TRUE');
+            helper.edit('M2', '=AND($I$4)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('FALSE');
+            helper.edit('M3', '=AND($H$4=27,$B$6<DATE(2023,10,22))');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('TRUE');
+            helper.edit('M4', '=AND($D$4=$D$3,$D$2=$H$2)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('TRUE');
+            helper.edit('M5', '=AND($D$4>$D$7,$H$6+20=90)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('FALSE');
+            done();
+        });
+        it('AND Formula with Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('M6', '=AND(Sheet2!A5,Sheet1!G6)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('TRUE');
+            helper.edit('M7', '=AND(Sheet1!G4<Sheet1!G5,Sheet2!A3<Sheet2!A2)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('TRUE');
+            helper.edit('M8', '=AND(Sheet1!H10,Sheet2!A8)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('FALSE');
+            helper.edit('M9', '=AND(Sheet1!G4,Sheet1!G7,Sheet1!I6,Sheet1!J7)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('TRUE');
+            helper.edit('M10', '=AND(F4=300,Sheet1!F7,Sheet2!A6)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('FALSE');
+            done();
+        });
+        it('AND Formula with absolute cell of Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('M11', '=AND(Sheet2!$A$5,Sheet1!G6>Sheet1!E3)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('FALSE');
+            helper.edit('M12', '=AND(Sheet2!$A$5,Sheet1!$G$6<Sheet1!$E$3)');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('TRUE');
+            helper.edit('M13', '=AND(Sheet1!$G$4<Sheet1!$G$5,Sheet2!$A$3<Sheet2!$A$2)');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('TRUE');
+            helper.edit('M14', '=AND($F$4=300,Sheet1!$F$7,Sheet2!$A$6)');
+            expect(helper.invoke('getCell', [13, 12]).textContent).toBe('FALSE');
+            helper.edit('M15', '=AND(Sheet2!$A$5,Sheet1!$G$6)');
+            expect(helper.invoke('getCell', [14, 12]).textContent).toBe('TRUE');
+            helper.edit('M16', '=AND(Sheet1!$H$10,Sheet2!$A$8)');
+            expect(helper.invoke('getCell', [15, 12]).textContent).toBe('FALSE');
+            done();
+        });
+        it('AND Formula with Worst case value as arguments ->', (done: Function) => {
+            helper.edit('M17', '=AND("")');
+            expect(helper.invoke('getCell', [16, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M18', '=AND(NAME)');
+            expect(helper.invoke('getCell', [17, 12]).textContent).toBe('#NAME?');
+            helper.edit('M19', '=AND(,,)');
+            expect(helper.invoke('getCell', [18, 12]).textContent).toBe('FALSE');
+            helper.edit('M20', '=AND(1="1")');
+            expect(helper.invoke('getCell', [19, 12]).textContent).toBe('FALSE');
+            helper.edit('M21', '=AND(,12)');
+            expect(helper.invoke('getCell', [20, 12]).textContent).toBe('FALSE');
+            helper.edit('M22', '=AND(E14,E15,E17,E18)');
+            expect(helper.invoke('getCell', [21, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M23', '=AND(E15,)');
+            expect(helper.invoke('getCell', [22, 12]).textContent).toBe('FALSE');
+            done();
+        });
+        it('AND Formula with no inputs and improper arguments->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('N1');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=AND()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=AND()';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N15', '=AND(0)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('FALSE');
+            done();
+        });
+    });
+
+    describe('OR Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [
+                        { cells: [{ index: 8, value: 'Different data' }] }, { cells: [{ index: 8, value: 'TRUE' }] },
+                        { cells: [{ index: 8, value: 'TRUE' }] }, { cells: [{ index: 8, value: 'FALSE' }] },
+                        { cells: [{ index: 8, value: 'FALSE' }] }, { cells: [{ index: 8, value: '103.32' }] },
+                        { cells: [{ index: 8, value: '105.36' }] }, { cells: [{ index: 8, value: '-3221' }] },
+                        { cells: [{ index: 8, value: '-123' }] }, { cells: [{ index: 8, value: '0' }] },
+                        { cells: [{ index: 8, value: 'Hello123' }] }, { cells: [{ index: 8, value: '124Hello' }] },
+                        { cells: [{ index: 8, value: '119', format: '#,##0.00' }] }, { cells: [{ index: 8, value: '32', format: '#,##0.00' }] },
+                        { cells: [{ index: 8, value: '119', format: '$#,##0.00' }] }, { cells: [{ index: 8, value: '12.76', format: '$#,##0.00' }] },
+                        { cells: [{ index: 8, value: '12', format: '0.0000E+00' }] }, { cells: [{ index: 8, value: '17', format: '0.0000E+00' }] },
+                        { cells: [{ index: 8, value: '2', format: '0%' }] }, { cells: [{ index: 8, value: '115', format: '0%' }] }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '2' }] }, { cells: [{ value: '20' }] }, { cells: [{ value: '6' }] },
+                        { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'FALSE' }] },
+                        { cells: [{ value: 'FALSE' }] }, { cells: [{ value: '0' }] }, { cells: [{ value: '1' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('OR Formula with direct values as number arguments ->', (done: Function) => {
+            helper.edit('J1', '=OR(0)');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('FALSE');
+            helper.edit('J2', '=OR(1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('TRUE');
+            helper.edit('J3', '=OR(-321)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('TRUE');
+            helper.edit('J4', '=OR(55930332)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('TRUE');
+            helper.edit('J5', '=OR(-323.12)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('TRUE');
+            helper.edit('J6', '=OR(10,0)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('TRUE');
+            helper.edit('J7', '=OR(12,-12)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('TRUE');
+            helper.edit('J8', '=OR(1.323)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('TRUE');
+            done();
+        });
+        it('OR Formula with direct values as boolean arguments ->', (done: Function) => {
+            helper.edit('J9', '=OR(TRUE)');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('TRUE');
+            helper.edit('J10', '=OR(FALSE)');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('FALSE');
+            helper.edit('J11', '=OR("TRUE")');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('TRUE');
+            helper.edit('J12', '=OR("FALSE")');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('FALSE');
+            helper.edit('J13', '=OR(TRUE,TRUE)');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('TRUE');
+            helper.edit('J14', '=OR(TRUE,FALSE)');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('TRUE');
+            helper.edit('J15', '=OR(FALSE,TRUE)');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('TRUE');
+            helper.edit('J16', '=OR(FALSE,FALSE)');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('FALSE');
+            helper.edit('J17', '=OR(TRUE,"true")');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('TRUE');
+            helper.edit('J18', '=OR(TRUE,TRUE,TRUE,FALSE)');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('TRUE');
+            done();
+        });
+        it('OR Formula with direct values as string arguments ->', (done: Function) => {
+            helper.edit('J19', '=OR("HELLO")');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J20', '=OR(World)');
+            expect(helper.invoke('getCell', [19, 9]).textContent).toBe('#NAME?');
+            helper.edit('J21', '=OR("hello"=hello)');
+            expect(helper.invoke('getCell', [20, 9]).textContent).toBe('#NAME?');
+            helper.edit('J22', '=OR(12,32,"re")');
+            expect(helper.invoke('getCell', [21, 9]).textContent).toBe('TRUE');
+            helper.edit('J23', '=OR(32,"Hello","32")');
+            expect(helper.invoke('getCell', [22, 9]).textContent).toBe('TRUE');
+            done();
+        });
+        it('OR Formula with direct values as expression ->', (done: Function) => {
+            helper.edit('K1', '=OR(1=1)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('TRUE');
+            helper.edit('K2', '=OR(12="12")');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('FALSE');
+            helper.edit('K3', '=OR(1=3,3=1)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('FALSE');
+            helper.edit('K4', '=OR(1=1,11<>12)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('TRUE');
+            helper.edit('K5', '=OR(1+2 =5)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('FALSE');
+            helper.edit('K6', '=OR(1-32=-31)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('TRUE');
+            helper.edit('K7', '=OR(1+13,2+43)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('TRUE');
+            helper.edit('K8', '=OR(12-13,0)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('TRUE');
+            done();
+        });
+        it('OR Formula with single cell references as arguments ->', (done: Function) => {
+            helper.edit('K9', '=OR(A3)');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K10', '=OR(B4)');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('TRUE');
+            helper.edit('K11', '=OR(C5)');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('TRUE');
+            helper.edit('K12', '=OR(D6)');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('TRUE');
+            helper.edit('K13', '=OR(I7)');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('TRUE');
+            helper.edit('K14', '=OR(I9)');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('TRUE');
+            helper.edit('K15', '=OR(I10)');
+            expect(helper.invoke('getCell', [14, 10]).textContent).toBe('FALSE');
+            helper.edit('K16', '=OR(I11)');
+            expect(helper.invoke('getCell', [15, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K17', '=OR(I13)');
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('TRUE');
+            helper.edit('K18', '=OR(I15)');
+            expect(helper.invoke('getCell', [17, 10]).textContent).toBe('TRUE');
+            helper.edit('K19', '=OR(I17)');
+            expect(helper.invoke('getCell', [18, 10]).textContent).toBe('TRUE');
+            helper.edit('K20', '=OR(I20)');
+            expect(helper.invoke('getCell', [19, 10]).textContent).toBe('TRUE');
+            helper.edit('K21', '=OR(F15)');
+            expect(helper.invoke('getCell', [20, 10]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('OR Formula with multiple kind of arguments  ->', (done: Function) => {
+            helper.edit('K22', '=OR(A5,I11,12)');
+            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('TRUE');
+            helper.edit('K23', '=OR(B5,B7,B8,B11,B3)');
+            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('TRUE');
+            helper.edit('K24', '=OR(C3,C7,B7,C9)');
+            expect(helper.invoke('getCell', [23, 10]).textContent).toBe('TRUE');
+            helper.edit('K25', '=OR(B3:B9)');
+            expect(helper.invoke('getCell', [24, 10]).textContent).toBe('TRUE');
+            helper.edit('K26', '=OR(A6,A11,A15,B23,D17)');
+            expect(helper.invoke('getCell', [25, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K27', '=OR(I10,G6,12,"12",D4:D7)');
+            expect(helper.invoke('getCell', [26, 10]).textContent).toBe('TRUE');
+            helper.edit('K28', '=OR(A2:A5,"*A")');
+            expect(helper.invoke('getCell', [27, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K29', '=OR(A2:A5,"c*")');
+            expect(helper.invoke('getCell', [28, 10]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('OR Formula with operator and cell references as arguments ->', (done: Function) => {
+            helper.edit('L1', '=OR(A4<A7)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('TRUE');
+            helper.edit('L2', '=OR(A4>A7)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('FALSE');
+            helper.edit('L3', '=OR(D6>=E5)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('TRUE');
+            helper.edit('L4', '=OR(D6<=E5)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('FALSE');
+            helper.edit('L5', '=OR(D4=D3,D2=H2)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('TRUE');
+            helper.edit('L6', '=OR(H6<>H7)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('TRUE');
+            done();
+        });
+        it('OR Formula with expression and cell references as arguments ->', (done: Function) => {
+            helper.edit('L7', '=OR(H4+I6+H10=E8)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('FALSE');
+            helper.edit('L8', '=OR(A9+A10 =A11)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L9', '=OR(E8-E9-F10=D6)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('FALSE');
+            helper.edit('L10', '=OR(H8-F6<>F4)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('TRUE');
+            helper.edit('L11', '=OR(H7+34+D10-F9*A20=0,0)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('FALSE');
+            done();
+        });
+        it('OR Formula with Nested formula value as arguments ->', (done: Function) => {
+            helper.edit('L12', '=IF(OR(0),1,3)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('3');
+            helper.edit('L13', '=IF(OR(10=H2,E2=20),"Hello","fake")');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('Hello');
+            helper.edit('L14', '=IF(OR(I2,I4,),100,200)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('100');
+            helper.edit('L15', '=IF(1=1,OR(E2>=20,E8>=20),32)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('TRUE');
+            helper.edit('L16', '=IFS(OR(TRUE,1),10, OR(10,0),20)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('10');
+            helper.edit('L17', '=IFS(OR(0,0),10, OR(10,-12),20)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('20');
+            done();
+        });
+        it('OR Formula with basic cases as arguments ->', (done: Function) => {
+            helper.edit('L18', '=OR(1=1,2=2,3=3)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('TRUE');
+            helper.edit('L19', '=OR(1=2,2=3,3=4)');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('FALSE');
+            helper.edit('L20', '=OR(D2>1,D4>3)');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('TRUE');
+            helper.edit('L21', '=IF(OR(E3>100,E3>20),"Yes","No")');
+            expect(helper.invoke('getCell', [20, 11]).textContent).toBe('Yes');
+            helper.edit('L22', '=OR(H4=27,B6<DATE(2023,10,22))');
+            expect(helper.invoke('getCell', [21, 11]).textContent).toBe('TRUE');
+            helper.edit('L23', '=OR(21,"12")');
+            expect(helper.invoke('getCell', [22, 11]).textContent).toBe('TRUE');
+            done();
+        });
+        it('OR Formula with absolute cell refernces as arguments ->', (done: Function) => {
+            helper.edit('M1', '=OR($B$2)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('TRUE');
+            helper.edit('M2', '=OR($I$4)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('FALSE');
+            helper.edit('M3', '=OR($H$4=27,$B$6<DATE(2023,10,22))');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('TRUE');
+            helper.edit('M4', '=OR($D$4=$D$3,$D$2=$H$2)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('TRUE');
+            helper.edit('M5', '=OR($D$4>$D$7,$H$6+20=90)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('TRUE');
+            done();
+        });
+        it('OR Formula with Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('M6', '=OR(Sheet2!A5,Sheet1!G6)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('TRUE');
+            helper.edit('M7', '=OR(Sheet1!G4<Sheet1!G5,Sheet2!A3<Sheet2!A2)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('TRUE');
+            helper.edit('M8', '=OR(Sheet1!H10,Sheet2!A8)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('TRUE');
+            helper.edit('M9', '=OR(Sheet1!G4,Sheet1!G7,Sheet1!I6,Sheet1!J7)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('TRUE');
+            helper.edit('M10', '=OR(F4=300,Sheet1!F7,Sheet2!A6)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('TRUE');
+            done();
+        });
+        it('OR Formula with absolute cell of Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('M11', '=OR(Sheet2!$A$5,Sheet1!G6>Sheet1!E3)');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('TRUE');
+            helper.edit('M12', '=OR(Sheet2!$A$5,Sheet1!$G$6<Sheet1!$E$3)');
+            expect(helper.invoke('getCell', [11, 12]).textContent).toBe('TRUE');
+            helper.edit('M13', '=OR(Sheet1!$G$4<Sheet1!$G$5,Sheet2!$A$3<Sheet2!$A$2)');
+            expect(helper.invoke('getCell', [12, 12]).textContent).toBe('TRUE');
+            helper.edit('M14', '=OR($F$4=300,Sheet1!$F$7,Sheet2!$A$6)');
+            expect(helper.invoke('getCell', [13, 12]).textContent).toBe('TRUE');
+            helper.edit('M15', '=OR(Sheet2!$A$5 = 10,Sheet1!$G$6 = 20)');
+            expect(helper.invoke('getCell', [14, 12]).textContent).toBe('FALSE');
+            helper.edit('M16', '=OR(Sheet1!$H$10,Sheet2!$A$8)');
+            expect(helper.invoke('getCell', [15, 12]).textContent).toBe('TRUE');
+            done();
+        });
+        it('OR Formula with Worst case value as arguments ->', (done: Function) => {
+            helper.edit('M17', '=OR("")');
+            expect(helper.invoke('getCell', [16, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M18', '=OR(NAME)');
+            expect(helper.invoke('getCell', [17, 12]).textContent).toBe('#NAME?');
+            helper.edit('M19', '=OR(,,)');
+            expect(helper.invoke('getCell', [18, 12]).textContent).toBe('FALSE');
+            helper.edit('M20', '=OR(1="1",0)');
+            expect(helper.invoke('getCell', [19, 12]).textContent).toBe('FALSE');
+            helper.edit('M21', '=OR(,12)');
+            expect(helper.invoke('getCell', [20, 12]).textContent).toBe('TRUE');
+            helper.edit('M22', '=OR(E14,E15,E17,E18)');
+            expect(helper.invoke('getCell', [21, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M23', '=OR(E15,)');
+            expect(helper.invoke('getCell', [22, 12]).textContent).toBe('FALSE');
+            done();
+        });
+        it('OR Formula with no inputs and improper arguments->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('N1');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=OR()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=OR()';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with an invalid arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('N15', '=OR(0,1)');
+            expect(helper.invoke('getCell', [0, 13]).textContent).toBe('TRUE');
+            done();
+        });
+    });
+
+    describe('EJ2-850741 -> NOT Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [
+                        { cells: [{ index: 8, value: 'Different data' }] }, { cells: [{ index: 8, value: 'TRUE' }] },
+                        { cells: [{ index: 8, value: 'TRUE' }] }, { cells: [{ index: 8, value: 'FALSE' }] },
+                        { cells: [{ index: 8, value: 'FALSE' }] }, { cells: [{ index: 8, value: '103.32' }] },
+                        { cells: [{ index: 8, value: '105.36' }] }, { cells: [{ index: 8, value: '-3221' }] },
+                        { cells: [{ index: 8, value: '-123' }] }, { cells: [{ index: 8, value: '0' }] },
+                        { cells: [{ index: 8, value: 'Hello123' }] }, { cells: [{ index: 8, value: '124Hello' }] },
+                        { cells: [{ index: 8, value: '119', format: '#,##0.00' }] }, { cells: [{ index: 8, value: '32', format: '#,##0.00' }] },
+                        { cells: [{ index: 8, value: '119', format: '$#,##0.00' }] }, { cells: [{ index: 8, value: '12.76', format: '$#,##0.00' }] },
+                        { cells: [{ index: 8, value: '12', format: '0.0000E+00' }] }, { cells: [{ index: 8, value: '17', format: '0.0000E+00' }] },
+                        { cells: [{ index: 8, value: '2', format: '0%' }] }, { cells: [{ index: 8, value: '115', format: '0%' }] }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '2' }] }, { cells: [{ value: '20' }] }, { cells: [{ value: '6' }] },
+                        { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'FALSE' }] },
+                        { cells: [{ value: 'FALSE' }] }, { cells: [{ value: '0' }] }, { cells: [{ value: '1' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('NOT Formula with direct values as numbers arguments ->', (done: Function) => {
+            helper.edit('J1', '=NOT(0)');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('TRUE');
+            helper.edit('J2', '=NOT(1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('FALSE');
+            helper.edit('J3', '=NOT(-1)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('FALSE');
+            helper.edit('J4', '=NOT(55930332)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('FALSE');
+            helper.edit('J5', '=NOT(-323.12)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('FALSE');
+            done();
+        });
+        it('NOT Formula with direct values as boolean arguments ->', (done: Function) => {
+            helper.edit('J6', '=NOT(TRUE)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('FALSE');
+            helper.edit('J7', '=NOT(FALSE)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('TRUE');
+            helper.edit('J8', '=NOT("TRUE")');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('FALSE');
+            helper.edit('J9', '=NOT("FALSE")');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('TRUE');
+            helper.edit('J10', '=NOT(I3)');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('FALSE');
+            helper.edit('J11', '=NOT(I4)');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('TRUE');
+            done();
+        });
+        it('NOT Formula with direct values as string arguments ->', (done: Function) => {
+            helper.edit('J12', '=NOT("HELLO")');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J13', '=NOT("Hello123")');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J14', '=NOT("123Hell123")');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J15', '=NOT("123HEllo")');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('NOT Formula with direct values as expression ->', (done: Function) => {
+            helper.edit('J16', '=NOT(1=1)');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('FALSE');
+            helper.edit('J17', '=NOT(1=3)');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('TRUE');
+            helper.edit('J18', '=NOT("1"=2)');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('TRUE');
+            helper.edit('J19', '=NOT("1"="1")');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('FALSE');
+            helper.edit('J20', '=NOT("Hello"="ello")');
+            expect(helper.invoke('getCell', [19, 9]).textContent).toBe('TRUE');
+            helper.edit('J21', '=NOT(1+1=2)');
+            expect(helper.invoke('getCell', [20, 9]).textContent).toBe('FALSE');
+            helper.edit('J22', '=NOT(2+2=5)');
+            expect(helper.invoke('getCell', [21, 9]).textContent).toBe('TRUE');
+            helper.edit('J23', '=NOT(12+32-40 =4)');
+            expect(helper.invoke('getCell', [22, 9]).textContent).toBe('FALSE');
+            done();
+        });
+        it('NOT Formula with cell references as arguments ->', (done: Function) => {
+            helper.edit('K1', '=NOT(A3)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K2', '=NOT(B4)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('FALSE');
+            helper.edit('K3', '=NOT(C5)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('FALSE');
+            helper.edit('K4', '=NOT(D6)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('FALSE');
+            helper.edit('K5', '=NOT(I7)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('FALSE');
+            helper.edit('K6', '=NOT(I9)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('FALSE');
+            helper.edit('K7', '=NOT(I10)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('TRUE');
+            helper.edit('K8', '=NOT(I11)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K9', '=NOT(I13)');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('FALSE');
+            helper.edit('K10', '=NOT(I15)');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('FALSE');
+            helper.edit('K11', '=NOT(I17)');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('FALSE');
+            helper.edit('K12', '=NOT(I20)');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('FALSE');
+            done();
+        });
+        it('NOT Formula with operator and cell references as arguments ->', (done: Function) => {
+            helper.edit('K13', '=NOT(E3>32)');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('TRUE');
+            helper.edit('K14', '=NOT(E3<32)');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('FALSE');
+            helper.edit('K15', '=NOT(F5<=F6)');
+            expect(helper.invoke('getCell', [14, 10]).textContent).toBe('FALSE');
+            helper.edit('K16', '=NOT(F5>=F6)');
+            expect(helper.invoke('getCell', [15, 10]).textContent).toBe('FALSE');
+            helper.edit('K17', '=NOT(F5=F6)');
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('FALSE');
+            helper.edit('K18', '=NOT(F5<>F6)');
+            expect(helper.invoke('getCell', [17, 10]).textContent).toBe('TRUE');
+            done();
+        });
+        it('NOT Formula with expression and cell references as arguments ->', (done: Function) => {
+            helper.edit('K19', '=NOT(H4+I6+H10=E8)');
+            expect(helper.invoke('getCell', [18, 10]).textContent).toBe('TRUE');
+            helper.edit('K20', '=NOT(A9+A10 =A11)');
+            expect(helper.invoke('getCell', [19, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K21', '=NOT(E8-E9-F10=D6)');
+            expect(helper.invoke('getCell', [20, 10]).textContent).toBe('TRUE');
+            helper.edit('K22', '=NOT(H8-F6<>F4)');
+            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('FALSE');
+            helper.edit('K23', '=NOT(H7+34+D10-F9*A20=0)');
+            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('TRUE');
+            helper.edit('K24', '=NOT(A15)');
+            expect(helper.invoke('getCell', [23, 10]).textContent).toBe('TRUE');
+            done();
+        });
+        it('NOT Formula with Nested formula value as arguments ->', (done: Function) => {
+            helper.edit('L1', '=IF(NOT(TRUE),"HI","DK")');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('DK');
+            helper.edit('L2', '=IF(NOT(0),"HI","DK")');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('HI');
+            helper.edit('L3', '=NOT(OR(1=1,2=3))');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('FALSE');
+            helper.edit('L4', '=NOT(AND(0=1,1=1))');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('TRUE');
+            helper.edit('L5', '=OR(1=1,0=1)*NOT(AND(0=1,1=1))');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('1');
+            helper.edit('L6', '=NOT(AND(0))');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('TRUE');
+            helper.edit('L7', '=NOT("10/01/2023" = DATE(2023,10,1))');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('TRUE');
+            helper.edit('L8', '=IFS(NOT(FALSE),10, NOT(0),20)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('10');
+            helper.edit('L9', '=IFS(NOT(TRUE),10, NOT(0),20)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('20');
+            done();
+        });
+        it('NOT Formula with absolute cell refernces as arguments ->', (done: Function) => {
+            helper.edit('L10', '=NOT($B$2)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('FALSE');
+            helper.edit('L11', '=NOT($I$4)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('TRUE');
+            helper.edit('L12', '=NOT($E$1>$E$3)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('FALSE');
+            helper.edit('L13', '=NOT($F$2+$E$2 =$F$3)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('TRUE');
+            done();
+        });
+        it('NOT Formula with Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('L14', '=NOT(Sheet1!F2)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('FALSE');
+            helper.edit('L15', '=NOT(Sheet2!A2)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('FALSE');
+            helper.edit('L16', '=NOT(Sheet1!A10 * Sheet2!A5 = Sheet1!H10)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L17', '=NOT(Sheet1!D31+Sheet2!A3 = 30)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('TRUE');
+            helper.edit('L18', '=NOT(E9-E11=Sheet1!I10)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('FALSE');
+            done();
+        });
+        it('NOT Formula with absolute cell of Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('L19', '=NOT($E$9-$E$11=Sheet1!I10)');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('FALSE');
+            helper.edit('L20', '=NOT(E9-E11=Sheet1!$I$10)');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('FALSE');
+            helper.edit('L21', '=NOT(Sheet1!$A$10 * Sheet2!$A$5 = Sheet1!$H$10)');
+            expect(helper.invoke('getCell', [20, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L22', '=NOT(Sheet1!$D$31+Sheet2!$A$3 = 30)');
+            expect(helper.invoke('getCell', [21, 11]).textContent).toBe('TRUE');
+            helper.edit('L23', '=NOT(Sheet2!$A$2)');
+            expect(helper.invoke('getCell', [22, 11]).textContent).toBe('FALSE');
+            helper.edit('L24', '=NOT(Sheet1!$A$2)');
+            expect(helper.invoke('getCell', [23, 11]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('NOT Formula with Worst case value as arguments ->', (done: Function) => {
+            helper.edit('M1', '=NOT("")');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M2', '=NOT(IF(1=1,T,F))');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('#NAME?');
+            helper.edit('M3', '=NOT(HELLO)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('#NAME?');
+            helper.edit('M4', '=NOT("@")');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('NOT Formula with no inputs and improper arguments->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('M5');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=NOT()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=NOT()';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('M5', '=NOT(0)');
+            spreadsheet.selectRange('M6');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=NOT(12,2)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=NOT(12,2)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog1: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog1.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('M6', '=NOT(1)');
+            spreadsheet.selectRange('M7');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=NOT(,)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=NOT(,)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog2: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog2.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('M7', '=NOT(0)');
+            done();
+        });
+    });
+
+    describe('EJ2-850735 -> SQRT Formula Checking ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [
+                        { cells: [{ index: 8, value: 'Different data' }] }, { cells: [{ index: 8, value: 'TRUE' }] },
+                        { cells: [{ index: 8, value: 'TRUE' }] }, { cells: [{ index: 8, value: 'FALSE' }] },
+                        { cells: [{ index: 8, value: 'FALSE' }] }, { cells: [{ index: 8, value: '103.32' }] },
+                        { cells: [{ index: 8, value: '105.36' }] }, { cells: [{ index: 8, value: '-3221' }] },
+                        { cells: [{ index: 8, value: '-123' }] }, { cells: [{ index: 8, value: '0' }] },
+                        { cells: [{ index: 8, value: 'Hello123' }] }, { cells: [{ index: 8, value: '124Hello' }] },
+                        { cells: [{ index: 8, value: '119', format: '#,##0.00' }] }, { cells: [{ index: 8, value: '32', format: '#,##0.00' }] },
+                        { cells: [{ index: 8, value: '119', format: '$#,##0.00' }] }, { cells: [{ index: 8, value: '12.76', format: '$#,##0.00' }] },
+                        { cells: [{ index: 8, value: '12', format: '0.0000E+00' }] }, { cells: [{ index: 8, value: '17', format: '0.0000E+00' }] },
+                        { cells: [{ index: 8, value: '2', format: '0%' }] }, { cells: [{ index: 8, value: '115', format: '0%' }] }]
+                }, {
+                    rows: [
+                        { cells: [{ value: '2' }] }, { cells: [{ value: '20' }] }, { cells: [{ value: '6' }] },
+                        { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'TRUE' }] }, { cells: [{ value: 'FALSE' }] },
+                        { cells: [{ value: 'FALSE' }] }, { cells: [{ value: '0' }] }, { cells: [{ value: '1' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('SQRT Formula with direct values as numbers arguments ->', (done: Function) => {
+            helper.edit('J1', '=SQRT(121)');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('11');
+            helper.edit('J2', '=SQRT(0)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0');
+            helper.edit('J3', '=SQRT(21232323)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('4607.85449');
+            helper.edit('J4', '=SQRT(-3221)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#NUM!');
+            helper.edit('J5', '=SQRT(2121.232)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('46.05683445');
+            done();
+        });
+        it('SQRT Formula with direct values and cell references as boolean arguments ->', (done: Function) => {
+            helper.edit('J6', '=SQRT(TRUE)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('1');
+            helper.edit('J7', '=SQRT(FALSE)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            helper.edit('J8', '=SQRT("TRUE")');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J9', '=SQRT("FALSE")');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J10', '=SQRT(I3)');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('1');
+            helper.edit('J11', '=SQRT(I4)');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('0');
+            done();
+        });
+        it('SQRT Formula with direct values as string arguments ->', (done: Function) => {
+            helper.edit('J12', '=SQRT("HELLO")');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J13', '=SQRT("Hello123")');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J14', '=SQRT("123Hell123")');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J15', '=SQRT("123HEllo")');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('SQRT Formula with direct values as expression ->', (done: Function) => {
+            helper.edit('J16', '=SQRT(1+3)');
+            expect(helper.invoke('getCell', [15, 9]).textContent).toBe('2');
+            helper.edit('J17', '=SQRT(32323+33)');
+            expect(helper.invoke('getCell', [16, 9]).textContent).toBe('179.8777363');
+            helper.edit('J18', '=SQRT(90-3232)');
+            expect(helper.invoke('getCell', [17, 9]).textContent).toBe('#NUM!');
+            helper.edit('J19', '=SQRT(32322*3232-3223)');
+            expect(helper.invoke('getCell', [18, 9]).textContent).toBe('10220.63995');
+            helper.edit('J20', '=SQRT(1+32-22)');
+            expect(helper.invoke('getCell', [19, 9]).textContent).toBe('3.31662479');
+            helper.edit('J21', '=SQRT(1+"HELLO")');
+            expect(helper.invoke('getCell', [20, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J22', '=SQRT(121.323-32.3232)');
+            expect(helper.invoke('getCell', [21, 9]).textContent).toBe('9.433970532');
+            helper.edit('J23', '=SQRT(1>5)');
+            expect(helper.invoke('getCell', [22, 9]).textContent).toBe('0');
+            done();
+        });
+        it('SQRT Formula with cell references as arguments ->', (done: Function) => {
+            helper.edit('K1', '=SQRT(A3)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K2', '=SQRT(B4)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('204.565393');
+            helper.edit('K3', '=SQRT(C5)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('0.516330536');
+            helper.edit('K4', '=SQRT(D6)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('5.477225575');
+            helper.edit('K5', '=SQRT(I7)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('10.26450194');
+            helper.edit('K6', '=SQRT(I9)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('#NUM!');
+            helper.edit('K7', '=SQRT(I10)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('0');
+            helper.edit('K8', '=SQRT(I11)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K9', '=SQRT(I13)');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('10.90871211');
+            helper.edit('K10', '=SQRT(I15)');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('10.90871211');
+            helper.edit('K11', '=SQRT(I17)');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('3.464101615');
+            helper.edit('K12', '=SQRT(I20)');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('10.72380529');
+            done();
+        });
+        it('SQRT Formula with operator and cell references as arguments ->', (done: Function) => {
+            helper.edit('K13', '=SQRT(E3>32)');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('0');
+            helper.edit('K14', '=SQRT(E3<32)');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('1');
+            helper.edit('K15', '=SQRT(F5<=F6)');
+            expect(helper.invoke('getCell', [14, 10]).textContent).toBe('1');
+            helper.edit('K16', '=SQRT(F5>=F6)');
+            expect(helper.invoke('getCell', [15, 10]).textContent).toBe('1');
+            helper.edit('K17', '=SQRT(F5=F6)');
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('1');
+            helper.edit('K18', '=SQRT(F5<>F6)');
+            expect(helper.invoke('getCell', [17, 10]).textContent).toBe('0');
+            done();
+        });
+        it('SQRT Formula with expression and cell references as arguments ->', (done: Function) => {
+            helper.edit('K19', '=SQRT(H4+I6+H10=E8)');
+            expect(helper.invoke('getCell', [18, 10]).textContent).toBe('0');
+            helper.edit('K20', '=SQRT(A9+A10 =A11)');
+            expect(helper.invoke('getCell', [19, 10]).textContent).toBe('#VALUE!');
+            helper.edit('K21', '=SQRT(E8-E9-F10=D6)');
+            expect(helper.invoke('getCell', [20, 10]).textContent).toBe('0');
+            helper.edit('K22', '=SQRT(H8-F6<>F4)');
+            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('1');
+            helper.edit('K23', '=SQRT(H7+34+D10-F9*A20=0)');
+            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('0');
+            done();
+        });
+        it('SQRT Formula with Nested formula value as arguments ->', (done: Function) => {
+            helper.edit('L1', '=SQRT(ABS(-9))');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('3');
+            helper.edit('L2', '=SQRT(SUM(12,21))');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('5.744562647');
+            helper.edit('L3', '=SUM(SQRT(121),0)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('11');
+            helper.edit('L4', '=IF(SQRT(121)> 100, 10,20)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('20');
+            helper.edit('L5', '=IF(SQRT(121)< 100, 10,20)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('10');
+            helper.edit('L6', '=SQRT(OR(10,20))');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('1');
+            helper.edit('L7', '=MEDIAN(SQRT(G10),2,10,20)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('6.732050808');
+            helper.edit('L8', '=AND(SQRT(132))');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('TRUE');
+            helper.edit('L9', '=NOT(SQRT(0))');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('TRUE');
+            done();
+        });
+        it('SQRT Formula with absolute cell refernces as arguments ->', (done: Function) => {
+            helper.edit('L10', '=SQRT($I$19)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('1.414213562');
+            helper.edit('L11', '=SQRT($A$11)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L12', '=SQRT($E$1>$E$3)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('1');
+            helper.edit('L13', '=SQRT($F$2+$E$2=$F$3)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('0');
+            done();
+        });
+        it('SQRT Formula with Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('L14', '=SQRT(Sheet1!F2)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('14.14213562');
+            helper.edit('L15', '=SQRT(Sheet2!A2)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('4.472135955');
+            helper.edit('L16', '=SQRT(Sheet1!A10 * Sheet2!A5 = Sheet1!H10)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('#VALUE!');
+            helper.edit('L17', '=SQRT(Sheet1!D31+Sheet2!A3 = 30)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('0');
+            helper.edit('L18', '=SQRT(E9-E11=Sheet1!I10)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('1');
+            done();
+        });
+        it('SQRT Formula with absolute cell of Sheet refernces as arguments ->', (done: Function) => {
+            helper.edit('L19', '=SQRT(Sheet1!$I$19)');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('1.414213562');
+            helper.edit('L20', '=SQRT(Sheet2!$A$2)');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('4.472135955');
+            helper.edit('L21', '=SQRT(Sheet1!$I$9)');
+            expect(helper.invoke('getCell', [20, 11]).textContent).toBe('#NUM!');
+            helper.edit('L22', '=SQRT(Sheet2!$A$10)');
+            expect(helper.invoke('getCell', [21, 11]).textContent).toBe('0');
+            helper.edit('L23', '=SQRT(Sheet1!$D$31+Sheet2!$A$3 = 30)');
+            expect(helper.invoke('getCell', [22, 11]).textContent).toBe('0');
+            helper.edit('L24', '=SQRT(Sheet1!$A$10 * Sheet2!$A$5 = Sheet1!H10)');
+            expect(helper.invoke('getCell', [23, 11]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('SQRT Formula with Worst case value as arguments ->', (done: Function) => {
+            helper.edit('M1', '=SQRT("")');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M2', '=SQRT(-1212)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('#NUM!');
+            helper.edit('M3', '=SQRT(HELLO)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('#NAME?');
+            helper.edit('M4', '=SQRT("@")');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('#VALUE!');
+            helper.edit('M5', '=SQRT("NEET")');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('SQRT Formula with no inputs and improper arguments->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.selectRange('M6');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=SQRT()';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=SQRT()';
+            helper.triggerKeyNativeEvent(13);
+            const dialog: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('M6', '=SQRT(121)');
+            spreadsheet.selectRange('M7');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=SQRT(12,2)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=SQRT(12,2)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog1: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog1.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('M7', '=SQRT(10)');
+            spreadsheet.selectRange('M8');
+            helper.invoke('startEdit');
+            spreadsheet.editModule.editCellData.value = '=SQRT(,)';
+            helper.getElement('.e-spreadsheet-edit').textContent = '=SQRT(,)';
+            helper.triggerKeyNativeEvent(13);
+            const dialog2: HTMLElement = helper.getElement('.e-validation-error-dlg.e-dialog .e-dlg-content');
+            expect(dialog2.textContent).toBe('We found that you typed a formula with a wrong number of arguments.');
+            helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
+            helper.edit('M8', '=SQRT(0)');
+            done();
+        });
+    });
+
     describe('IFS Formula Checking ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
@@ -11201,17 +14956,17 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('D7', '=ROUNDUP(A5,IF(2>1,"hello","world"))');
             expect(helper.invoke('getCell', [6, 3]).textContent).toBe('#VALUE!');
             helper.edit('D8', '=ROUNDUP(A5,TRUE)');
-            expect(helper.invoke('getCell', [7, 3]).textContent).toBe('2338.8');
+            expect(helper.invoke('getCell', [7, 3]).textContent).toBe('2,338.80');
             helper.edit('G2','1');
             helper.edit('D9', '=ROUNDUP(A5,G2)');
-            expect(helper.invoke('getCell', [8, 3]).textContent).toBe('2338.8');
+            expect(helper.invoke('getCell', [8, 3]).textContent).toBe('2,338.80');
             helper.edit('D10', '=ROUNDUP(A5,IF(2>1,TRUE,FALSE))');
-            expect(helper.invoke('getCell', [9, 3]).textContent).toBe('2338.8');
+            expect(helper.invoke('getCell', [9, 3]).textContent).toBe('2,338.80');
             helper.edit('D11', '=ROUNDUP(A5,"TRUE")');
             expect(helper.invoke('getCell', [10, 3]).textContent).toBe('#VALUE!');
             helper.edit('F2','1');
             helper.edit('D12', '=ROUNDUP(A5,F2)');
-            expect(helper.invoke('getCell', [11, 3]).textContent).toBe('2338.8');
+            expect(helper.invoke('getCell', [11, 3]).textContent).toBe('2,338.80');
             helper.edit('E1','=ROUNDUP(A10,1)');
             expect(helper.invoke('getCell', [0, 4]).textContent).toBe('18488.9');
             helper.edit('E2','=ROUNDUP(A10,2)');
@@ -11743,9 +15498,9 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.getInstance().sheets[0].rows[1].cells[4].value).toEqual('invalid expression');
             expect(helper.getInstance().sheets[0].rows[1].cells[5].formula).toEqual('=A2/*A1');
             expect(helper.getInstance().sheets[0].rows[1].cells[5].value).toEqual('invalid expression');
-            expect(helper.getInstance().sheets[0].rows[1].cells[6].formula).toEqual('=A2^+A1');
+            expect(helper.getInstance().sheets[0].rows[1].cells[6].formula).toEqual('=A2^A1');
             expect(helper.getInstance().sheets[0].rows[1].cells[6].value).toEqual('243');
-            expect(helper.getInstance().sheets[0].rows[1].cells[7].formula).toEqual('=A2&+A1');
+            expect(helper.getInstance().sheets[0].rows[1].cells[7].formula).toEqual('=A2&A1');
             expect(helper.getInstance().sheets[0].rows[1].cells[7].value).toEqual('35');
             expect(helper.getInstance().sheets[0].rows[2].cells[2].formula).toEqual('=A2+*A1');
             expect(helper.getInstance().sheets[0].rows[2].cells[2].value).toEqual('invalid expression');
@@ -11798,6 +15553,348 @@ describe('Spreadsheet formula module ->', () => {
             done();
         });
     });
+
+    describe('sheet reference check for ODD formula', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }, {
+                    rows: [{ cells: [{ value: '23.345' }] },
+                    { cells: [{ value: '-7651.34' }] }, { cells: [{ value: '-456' }] }, { cells: [{ value: '45' }] },
+                    { cells: [{ value: '34' }] }, { cells: [{ value: '22' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('absolute cell reference check', (done: Function) => {
+            helper.edit('I2', '=ODD($G$3)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('5');
+            helper.edit('I3', '=ODD($G$4)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('7');
+            helper.edit('I4', '=ODD($G$5)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('11');
+            done();
+        });
+        it('external sheet reference check', (done: Function) => {
+            helper.edit('I5', '=ODD(Sheet2!A1)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('25');
+            helper.edit('I6', '=ODD(Sheet2!A2)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('-7653');
+            helper.edit('I7', '=ODD(Sheet2!A3)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('-457');
+            done();
+        });
+        it('external sheet with absolute reference check', (done: Function) => {
+            helper.edit('I5', '=ODD(Sheet2!$A$1)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('25');
+            helper.edit('I6', '=ODD(Sheet2!$A$2)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('-7653');
+            helper.edit('I7', '=ODD(Sheet2!$A$3)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('-457');
+            done();
+        });
+    });
+    
+    describe('Sheet reference check for EVEN formula', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }, {
+                    rows: [{ cells: [{ value: '23.456' }] },
+                    { cells: [{ value: '234.45556' }] }, { cells: [{ value: '567' }] }, { cells: [{ value: '89' }] },
+                    { cells: [{ value: '-345' }] }, { cells: [{ value: '-34.54' }] },{ cells: [{ value: '13972' }] }]
+                }], activeSheetIndex: 0
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('absolute cell reference check', (done: Function) => {
+            helper.edit('I2', '=EVEN($G$3)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('6');
+            helper.edit('I3', '=EVEN($G$4)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('8');
+            helper.edit('I4', '=EVEN($G$5)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('12');
+            done();
+        });
+        it('external sheet reference check', (done: Function) => {
+            helper.edit('I5', '=EVEN(Sheet2!A1)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('24');
+            helper.edit('I6', '=EVEN(Sheet2!A2)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('236');
+            helper.edit('I7', '=EVEN(Sheet2!A3)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('568');
+            done();
+        });
+        it('external sheet with absolute reference check', (done: Function) => {
+            helper.edit('I5', '=EVEN(Sheet2!$A$1)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('24');
+            helper.edit('I6', '=EVEN(Sheet2!$A$2)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('236');
+            helper.edit('I7', '=EVEN(Sheet2!$A$3)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('568');
+            done();
+        });
+    });
+
+    describe('FLOOR formula checking', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {
+                rows: [{ cells: [{ value: '-23.456' }] },
+                { cells: [{ value: '234.45556' }] }, { cells: [{ value: '-567.547' }] }, { cells: [{ value: '-89,789' }] },
+                { cells: [{ value: '-345' }] }, { cells: [{ value: '-34.54' }] },{ cells: [{ value: '13972' }] }]
+            }], activeSheetIndex: 0 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('FLOOR formula with string values', (done: Function) => {
+            helper.edit('I2', '=FLOOR("3.7","2")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('2');
+            helper.edit('I3', '=FLOOR("-2.5","-2")');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('-2');
+            helper.edit('I4', '=FLOOR(A1,2)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I5', '=FLOOR(" "," ")');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I6', '=FLOOR("","")');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I7', '=FLOOR(123,"TRUE")');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I8', '=FLOOR(123,"TRUE")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I9', '=FLOOR(123,"TRUE")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I10', '=FLOOR(123,"FALSE")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('FLOOR formula with boolean values', (done: Function) => {
+            helper.edit('J2', '=FLOOR(TRUE,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('1');
+            helper.edit('J3', '=FLOOR(FALSE,FALSE)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('0');
+            helper.edit('J4', '=FLOOR(123,FALSE)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#DIV/0!');
+            helper.edit('J5', '=FLOOR(TRUE,1)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('1');
+            helper.edit('J6', '=FLOOR(FALSE,1)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('0');
+            helper.edit('J7', '=FLOOR(IF(2>1,TRUE,FALSE),1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('1');
+            helper.edit('J8', '=FLOOR(IF(2<1,TRUE,FALSE),1)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('0');
+            done();
+        });
+        it('FLOOR formula with basic values', (done: Function) => {
+            helper.edit('K2', '=FLOOR(3.7,2)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('2');
+            helper.edit('K3', '=FLOOR(-2.5,-2)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('-2');
+            helper.edit('K4', '=FLOOR(2.5,-2)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('#NUM!');
+            helper.edit('K5', '=FLOOR(2.5,-2)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('#NUM!');
+            helper.edit('K6', '=FLOOR(1.58,0.1)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('1.5');
+            helper.edit('K7', '=FLOOR(0.234,0.01)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('0.23');
+            helper.edit('K8', '=FLOOR(,)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('0');
+            done();
+        });
+        it('absolute cell reference check', (done: Function) => {
+            helper.edit('L2', '=FLOOR($G$3,2)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('4');
+            helper.edit('L3', '=FLOOR($G$4,3)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('6');
+            helper.edit('L4', '=FLOOR($G$5,5)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('10');
+            done();
+        });
+        it('external sheet reference check', (done: Function) => {
+            helper.edit('L5', '=FLOOR(Sheet2!A1,1)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('-24');
+            helper.edit('L6', '=FLOOR(Sheet2!A2,2)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('234');
+            helper.edit('L7', '=FLOOR(Sheet2!A3,3)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('-570');
+            done();
+        });
+        it('external sheet with absolute reference check', (done: Function) => {
+            helper.edit('L8', '=FLOOR(Sheet2!$A$1,1)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('-24');
+            helper.edit('L9', '=FLOOR(Sheet2!$A$2,2)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('234');
+            helper.edit('L10', '=FLOOR(Sheet2!$A$3,3)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('-570');
+            done();
+        });
+        it('nested formula with FLOOR', function (done) {
+            helper.edit('L11', '=FLOOR(SUM(1,2),2)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('2');
+            helper.edit('L12', '=FLOOR(SUM(1,G10),2)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('12');
+            helper.edit('L13', '=FLOOR(PRODUCT(1,G10),12)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('12');
+            helper.edit('L14', '=FLOOR(PRODUCT(1,2),2)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('2');
+            helper.edit('L15', '=FLOOR(AVERAGE(G3:G7),10)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('0');
+            helper.edit('L16', '=FLOOR(MIN(G3:G9),12)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('0');
+            helper.edit('L17', '=FLOOR(MAX(G3:G9),9)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('9');
+            helper.edit('L18', '=FLOOR(IF(A2>A5,2,3),2)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('2');
+            helper.edit('L19', '=MIN(FLOOR(22,3), FLOOR(12,5))');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('10');
+            helper.edit('L20', '=MAX(FLOOR(22,3), FLOOR(12,5))');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('21');
+            helper.edit('L21', '=SUM(FLOOR(22,3), FLOOR(12,5))');
+            expect(helper.invoke('getCell', [20, 11]).textContent).toBe('31');
+            done();
+        });
+        it('FLOOR formula with empty cell referrence', (done: Function) => {
+            helper.edit('M2', '=FLOOR(N2,2)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('0');
+            helper.edit('M3', '=FLOOR(2,N2)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('#DIV/0!');
+            helper.edit('M4', '=FLOOR(N4,N2)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('0');
+            done();
+        });
+    });
+
+    describe('CEILING formula checking', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {
+                rows: [{ cells: [{ value: '-23.456' }] },
+                { cells: [{ value: '234.45556' }] }, { cells: [{ value: '-567.547' }] }, { cells: [{ value: '-89,789' }] },
+                { cells: [{ value: '-345' }] }, { cells: [{ value: '-34.54' }] },{ cells: [{ value: '13972' }] }]
+            }], activeSheetIndex: 0 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('CEILING formula with string values', (done: Function) => {
+            helper.edit('I2', '=CEILING("3.7","2")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('4');
+            helper.edit('I3', '=CEILING("-2.5","-2")');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('-4');
+            helper.edit('I4', '=CEILING(A1,2)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I5', '=CEILING(" "," ")');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I6', '=CEILING("","")');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I7', '=CEILING(123,"TRUE")');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I8', '=CEILING(123,"TRUE")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I9', '=CEILING(123,"TRUE")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I10', '=CEILING(123,"FALSE")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('CEILING formula with boolean values', (done: Function) => {
+            helper.edit('J2', '=CEILING(TRUE,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('1');
+            helper.edit('J3', '=CEILING(FALSE,FALSE)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('0');
+            helper.edit('J4', '=CEILING(123,FALSE)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('0');
+            helper.edit('J5', '=CEILING(TRUE,1)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('1');
+            helper.edit('J6', '=CEILING(FALSE,1)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('0');
+            helper.edit('J7', '=CEILING(IF(2>1,TRUE,FALSE),1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('1');
+            helper.edit('J8', '=CEILING(IF(2<1,TRUE,FALSE),1)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('0');
+            done();
+        });
+        it('CEILING formula with basic values', (done: Function) => {
+            helper.edit('K2', '=CEILING(3.7,2)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('4');
+            helper.edit('K3', '=CEILING(-2.5,-2)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('-4');
+            helper.edit('K4', '=CEILING(2.5,-2)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('#NUM!');
+            helper.edit('K5', '=CEILING(2.5,-2)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('#NUM!');
+            helper.edit('K6', '=CEILING(1.58,0.1)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('1.6');
+            helper.edit('K7', '=CEILING(0.234,0.01)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('0.24');
+            helper.edit('K8', '=CEILING(,)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('0');
+            done();
+        });
+        it('absolute cell reference check', (done: Function) => {
+            helper.edit('L2', '=CEILING($G$3,2)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('6');
+            helper.edit('L3', '=CEILING($G$4,3)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('9');
+            helper.edit('L4', '=CEILING($G$5,5)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('15');
+            done();
+        });
+        it('external sheet reference check', (done: Function) => {
+            helper.edit('L5', '=CEILING(Sheet2!A1,1)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('-23');
+            helper.edit('L6', '=CEILING(Sheet2!A2,2)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('236');
+            helper.edit('L7', '=CEILING(Sheet2!A3,3)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('-567');
+            done();
+        });
+        it('external sheet with absolute reference check', (done: Function) => {
+            helper.edit('L8', '=CEILING(Sheet2!$A$1,1)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('-23');
+            helper.edit('L9', '=CEILING(Sheet2!$A$2,2)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('236');
+            helper.edit('L10', '=CEILING(Sheet2!$A$3,3)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('-567');
+            done();
+        });
+        it('nested formula with CEILING', function (done) {
+            helper.edit('L11', '=CEILING(SUM(1,2),2)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('4');
+            helper.edit('L12', '=CEILING(SUM(1,G10),2)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('14');
+            helper.edit('L13', '=CEILING(PRODUCT(1,G10),12)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('12');
+            helper.edit('L14', '=CEILING(PRODUCT(1,2),2)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('2');
+            helper.edit('L15', '=CEILING(AVERAGE(G3:G7),10)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('10');
+            helper.edit('L16', '=CEILING(MIN(G3:G9),12)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('12');
+            helper.edit('L17', '=CEILING(MAX(G3:G9),9)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('18');
+            helper.edit('L18', '=CEILING(IF(A2>A5,2,3),2)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('4');
+            helper.edit('L19', '=MIN(CEILING(22,3), CEILING(12,5))');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('15');
+            helper.edit('L20', '=MAX(CEILING(22,3), CEILING(12,5))');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('24');
+            helper.edit('L21', '=SUM(CEILING(22,3), CEILING(12,5))');
+            expect(helper.invoke('getCell', [20, 11]).textContent).toBe('39');
+            done();
+        });
+        it('CEILING formula with empty cell referrence', (done: Function) => {
+            helper.edit('M2', '=CEILING(N2,2)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('0');
+            helper.edit('M3', '=CEILING(2,N2)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('0');
+            helper.edit('M4', '=CEILING(N4,N2)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe('0');
+            done();
+        });
+    });
     describe('EJ2-853889 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -11844,6 +15941,800 @@ describe('Spreadsheet formula module ->', () => {
                     });
                 });
             });
+        });
+    });
+
+    describe('EJ2-853889 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('MIN() and MAX() functions does not return proper value as expected when contains zero as arguments', (done: Function) => {
+            helper.edit('I2', '0');
+            helper.edit('I3', '1');
+            helper.edit('I5', '=MIN(I2,I3)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('0');
+            helper.edit('I6', '=MAX(I2,I3)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('1');
+            done();
+        });
+    })
+
+    describe('MOD formula checking', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {
+                rows: [{ cells: [{ value: '-23.456' }] },
+                { cells: [{ value: '234.45556' }] }, { cells: [{ value: '-567.547' }] }, { cells: [{ value: '-89,789' }] },
+                { cells: [{ value: '-345' }] }, { cells: [{ value: '-34.54' }] },{ cells: [{ value: '13972' }] }]
+            }], activeSheetIndex: 0 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('MOD formula with string values', (done: Function) => {
+            helper.edit('I2', '=MOD("3.7","2")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('1.7');
+            helper.edit('I3', '=MOD("-2.5","-2")');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('-0.5');
+            helper.edit('I4', '=MOD(A1,2)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I5', '=MOD(" "," ")');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I6', '=MOD("","")');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I7', '=MOD(123,"TRUE")');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I8', '=MOD(123,"TRUE")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I9', '=MOD(123,"TRUE")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I10', '=MOD(123,"FALSE")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('MOD formula with boolean values', (done: Function) => {
+            helper.edit('J2', '=MOD(TRUE,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0');
+            helper.edit('J3', '=MOD(FALSE,FALSE)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('#DIV/0!');
+            helper.edit('J4', '=MOD(123,FALSE)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#DIV/0!');
+            helper.edit('J5', '=MOD(TRUE,1)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('0');
+            helper.edit('J6', '=MOD(FALSE,1)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('0');
+            helper.edit('J7', '=MOD(IF(2>1,TRUE,FALSE),1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0');
+            helper.edit('J8', '=MOD(IF(2<1,TRUE,FALSE),1)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('0');
+            done();
+        });
+        it('MOD formula with basic values', (done: Function) => {
+            helper.edit('K2', '=MOD(3.7,2)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('1.7');
+            helper.edit('K3', '=MOD(-2.5,-2)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('-0.5');
+            helper.edit('K4', '=MOD(2.5,-2)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('-1.5');
+            helper.edit('K5', '=MOD(2.5,-2)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('-1.5');
+            helper.edit('K6', '=MOD(1.58,0.1)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('0.08');
+            helper.edit('K7', '=MOD(0.234,0.01)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('0.004');
+            helper.edit('K8', '=MOD(,)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('#DIV/0!');
+            done();
+        });
+        it('absolute cell reference check', (done: Function) => {
+            helper.edit('L2', '=MOD($G$3,2)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('1');
+            helper.edit('L3', '=MOD($G$4,3)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('1');
+            helper.edit('L4', '=MOD($G$5,5)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('1');
+            done();
+        });
+        it('external sheet reference check', (done: Function) => {
+            helper.edit('L5', '=MOD(Sheet2!A1,1)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('0.544');
+            helper.edit('L6', '=MOD(Sheet2!A2,2)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('0.45556');
+            helper.edit('L7', '=MOD(Sheet2!A3,3)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('2.453');
+            done();
+        });
+        it('external sheet with absolute reference check', (done: Function) => {
+            helper.edit('L8', '=MOD(Sheet2!$A$1,1)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('0.544');
+            helper.edit('L9', '=MOD(Sheet2!$A$2,2)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('0.45556');
+            helper.edit('L10', '=MOD(Sheet2!$A$3,3)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('2.453');
+            done();
+        });
+        it('nested formula with MOD', function (done) {
+            helper.edit('L11', '=MOD(SUM(1,2),2)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('1');
+            helper.edit('L12', '=MOD(SUM(1,G10),2)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('1');
+            helper.edit('L13', '=MOD(PRODUCT(1,G10),12)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('0');
+            helper.edit('L14', '=MOD(PRODUCT(1,2),2)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('0');
+            helper.edit('L15', '=MOD(AVERAGE(G3:G7),10)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('9.2');
+            helper.edit('L16', '=MOD(MIN(G3:G9),12)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('3');
+            helper.edit('L17', '=MOD(MAX(G3:G9),9)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('4');
+            helper.edit('L18', '=MOD(IF(A2>A5,2,3),2)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('1');
+            helper.edit('L19', '=MIN(MOD(22,3), MOD(12,5))');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('1');
+            helper.edit('L20', '=MAX(MOD(22,3), MOD(12,5))');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('2');
+            helper.edit('L21', '=SUM(MOD(22,3), MOD(12,5))');
+            expect(helper.invoke('getCell', [20, 11]).textContent).toBe('3');
+            done();
+        });
+    });
+
+    describe('PRODUCT formula checking', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, {
+                rows: [{ cells: [{ value: '-23.456' }] },
+                { cells: [{ value: '234.45556' }] }, { cells: [{ value: '-567.547' }] }, { cells: [{ value: '-89,789' }] },
+                { cells: [{ value: '-345' }] }, { cells: [{ value: '-34.54' }] },{ cells: [{ value: '13972' }] },{ cells: [{ value: 'TRUE' }] },
+                { cells: [{ value: '' }] }, { cells: [{ value: '123hello' }] }]
+            }], activeSheetIndex: 0 }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('PRODUCT formula with string values', (done: Function) => {
+            helper.edit('I2', '=PRODUCT("3.7","2")');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('7.4');
+            helper.edit('I3', '=PRODUCT("-2.5","-2")');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('5');
+            helper.edit('I4', '=PRODUCT(A1,2)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('2');
+            helper.edit('I5', '=PRODUCT(" "," ")');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I6', '=PRODUCT("","")');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I7', '=PRODUCT(123,"TRUE")');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I8', '=PRODUCT(123,"TRUE")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I9', '=PRODUCT(123,"TRUE")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            helper.edit('I10', '=PRODUCT(123,"FALSE")');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('PRODUCT formula with boolean values', (done: Function) => {
+            helper.edit('J2', '=PRODUCT(TRUE,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('1');
+            helper.edit('J3', '=PRODUCT(FALSE,FALSE)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('0');
+            helper.edit('J4', '=PRODUCT(123,FALSE)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('0');
+            helper.edit('J5', '=PRODUCT(TRUE,1)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('1');
+            helper.edit('J6', '=PRODUCT(FALSE,1)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('0');
+            helper.edit('J7', '=PRODUCT(IF(2>1,TRUE,FALSE),1)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('1');
+            helper.edit('J8', '=PRODUCT(IF(2<1,TRUE,FALSE),1)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('0');
+            helper.edit('N1','TRUE');
+            helper.edit('N2','TRUE');
+            helper.edit('N3','TRUE');
+            helper.edit('N4','TRUE');
+            helper.edit('J9', '=PRODUCT(N1,N2,N3,N4)');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('0');
+            done();
+        });
+        it('PRODUCT formula with basic values', (done: Function) => {
+            helper.edit('K2', '=PRODUCT(3.7,2)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('7.4');
+            helper.edit('K3', '=PRODUCT(-2.5,-2)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('5');
+            helper.edit('K4', '=PRODUCT(2.5,-2)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('-5');
+            helper.edit('K5', '=PRODUCT(2.5,-2)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('-5');
+            helper.edit('K6', '=PRODUCT(1.58,0.1)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('0.158');
+            helper.edit('K7', '=PRODUCT(0.234,0.01)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('0.00234');
+            helper.edit('K8', '=PRODUCT(,)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('0');
+            done();
+        });
+        it('absolute cell reference check', (done: Function) => {
+            helper.edit('L2', '=PRODUCT($G$3,2)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('10');
+            helper.edit('L3', '=PRODUCT($G$4,3)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('21');
+            helper.edit('L4', '=PRODUCT($G$5,5)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('55');
+            done();
+        });
+        it('external sheet reference check', (done: Function) => {
+            helper.edit('L5', '=PRODUCT(Sheet2!A1,1)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('-23.456');
+            helper.edit('L6', '=PRODUCT(Sheet2!A2,2)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('468.91112');
+            helper.edit('L7', '=PRODUCT(Sheet2!A3,3)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('-1702.641');
+            done();
+        });
+        it('external sheet with absolute reference check', (done: Function) => {
+            helper.edit('L8', '=PRODUCT(Sheet2!$A$1,1)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('-23.456');
+            helper.edit('L9', '=PRODUCT(Sheet2!$A$2,2)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('468.91112');
+            helper.edit('L10', '=PRODUCT(Sheet2!$A$3,3)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('-1702.641');
+            done();
+        });
+        it('nested formula with PRODUCT', function (done) {
+            helper.edit('L11', '=PRODUCT(SUM(1,2),2)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('6');
+            helper.edit('L12', '=PRODUCT(SUM(1,G10),2)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('26');
+            helper.edit('L13', '=PRODUCT(PRODUCT(1,G10),12)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('144');
+            helper.edit('L14', '=PRODUCT(PRODUCT(1,2),2)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('4');
+            helper.edit('L15', '=PRODUCT(AVERAGE(G3:G7),10)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('92');
+            helper.edit('L16', '=PRODUCT(MIN(G3:G9),12)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('36');
+            helper.edit('L17', '=PRODUCT(MAX(G3:G9),9)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('117');
+            helper.edit('L18', '=PRODUCT(IF(A2>A5,2,3),2)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('6');
+            helper.edit('L19', '=MIN(PRODUCT(22,3), PRODUCT(12,5))');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('60');
+            helper.edit('L20', '=MAX(PRODUCT(22,3), PRODUCT(12,5))');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('66');
+            helper.edit('L21', '=SUM(PRODUCT(22,3), PRODUCT(12,5))');
+            expect(helper.invoke('getCell', [20, 11]).textContent).toBe('126');
+            done();
+        });
+        it('PRODUCT formula with range as value', (done: Function) => {
+            helper.edit('F6', 'TRUE');
+            helper.edit('F7', '123hello');
+            helper.edit('F9', '&*');
+            helper.edit('M1', '=PRODUCT(F2:F11,1)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('1.3068E+18');
+            helper.edit('M2', '=PRODUCT(F2:F11,1,TRUE)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('1.3068E+18');
+            helper.edit('M3', '=PRODUCT(F2:F11,1,"hello")');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('#VALUE!');
+            done();
+        });
+    });
+
+    describe('RSQ formula checking', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{
+                rows: [{ cells: [{ value: '23' },{ value: '56' }, { value: '80000000%' }, { value: '7/11/2015' }, { value: '12:32:00 AM'}, { value: '12:32:00 AM'}] },
+                { cells: [{ value: '234.45556' },{ value: '234' },{ value: '430000%' }, { value: '5/12/2015' }, { value: '11:32:00 AM'}] }, 
+                { cells: [{ value: '-567.547' }, { value: '235' }, { value: '800%' }, { value: '5/7/2016' }, { value: '12:32:00 PM'}] }, 
+                { cells: [{ value: '-89' }, { value: '-456' }, { value: '4560%' }, { value: '6/11/2015' }, { value: '1:32:00 AM'}] },
+                { cells: [{ value: '345' }, { value: '56' }, { value: '4550%' }, { value: '6/1/2015' }, { value: '7:32:00 AM'}] }, 
+                { cells: [{ value: '-34.54' }, { value: '45' }, { value: '6500%' }, { value: '7/12/2015' }, { value: '12:32:00 PM'}] },
+                { cells: [{ value: '139' }, { value: '99' }] }, { cells: [{ value: '-34' }, { value: '7' }] }, 
+                { cells: [{ value: '-45' }, { value: '-3' }] },
+                { cells: [{ value: '12' }, { value: '2' }] }, { cells: [{ value: 'hello' }, { value: 'world' }] },{ cells: [{ value: 'world' }, { value: 'hello' }] },{ cells: [{ value: '139' }, { value: '23' }] },{ cells: [{ value: '123hello' }, { value: 'sync' }] }, { cells: [{ value: '98' },{ value: '23' }] }, { cells: [{ value: 'are' }, { value: 'fusion' }] }]
+            },
+            {
+                rows: [{ cells: [{ value: '23' },{ value: '56' }, { value: '80000000%' }, { value: '7/11/2015' }, { value: '12:32:00 AM'}, { value: '12:32:00 AM'}] },
+                { cells: [{ value: '234.45556' },{ value: '234' },{ value: '430000%' }, { value: '5/12/2015' }, { value: '11:32:00 AM'}] }, 
+                { cells: [{ value: '-567.547' }, { value: '235' }, { value: '800%' }, { value: '5/7/2016' }, { value: '12:32:00 PM'}] }, 
+                { cells: [{ value: '-89' }, { value: '-456' }, { value: '4560%' }, { value: '6/11/2015' }, { value: '1:32:00 AM'}] },
+                { cells: [{ value: '345' }, { value: '56' }, { value: '4550%' }, { value: '6/1/2015' }, { value: '7:32:00 AM'}] }, 
+                { cells: [{ value: '-34.54' }, { value: '45' }, { value: '6500%' }, { value: '7/12/2015' }, { value: '12:32:00 PM'}] },
+                { cells: [{ value: '139' }, { value: '99' }] }, { cells: [{ value: '-34' }, { value: '7' }] }, 
+                { cells: [{ value: '-45' }, { value: '-3' }] },
+                { cells: [{ value: '12' }, { value: '2' }] }, { cells: [{ value: 'hello' }, { value: 'world' }] },{ cells: [{ value: 'world' }, { value: 'hello' }] },{ cells: [{ value: '139' }, { value: '23' }] },{ cells: [{ value: '123hello' }, { value: 'sync' }] }, { cells: [{ value: '98' },{ value: '23' }] }, { cells: [{ value: 'are' }, { value: 'fusion' }] }]
+            }]}, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('RSQ formula with basic case checking', (done: Function) => {
+            helper.edit('I1', '=RSQ(A1:A5,B1:B5)');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('0.001575552');
+            helper.edit('I2', '=RSQ(A1:A5,B6:B10)');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('0.140267298');
+            helper.edit('I3', '=RSQ(A7:A12,B7:B12)');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('0.916444193');
+            helper.edit('I4', '=RSQ(A10:A12,B10:B12)');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('#DIV/0!');
+            helper.edit('I5', '=RSQ(A10,B2)');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('#DIV/0!');
+            helper.edit('I6', '=RSQ(A1:A5,B1:B6)');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#N/A');
+            done();
+        });
+        it('RSQ formula with percentage format', (done: Function) => {
+            helper.edit('I7', '=RSQ(C1:C3,C4:C6)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('0.25017859');
+            done();
+        });
+        it('RSQ formula with date format', (done: Function) => {
+            helper.edit('I8', '=RSQ(D1:D3,D4:D6)');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('0.99355548');
+            done();
+        });
+        it('RSQ formula with time format', (done: Function) => {
+            helper.edit('I9', '=RSQ(E1:E3,E4:E6)');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('0.851214575');
+            done();
+        });
+        it('RSQ formula with percentage format', (done: Function) => {
+            helper.edit('I7', '=RSQ(C1:C3,C4:C6)');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('0.25017859');
+            done();
+        });
+        it('sheet referrence check', (done: Function) => {
+            helper.edit('J1', '=RSQ(Sheet1!A2:Sheet1!A5,Sheet1!B2:Sheet1!B5)');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('0.001856987');
+            helper.edit('J2', '=RSQ(Sheet1!A3:Sheet1!A6,Sheet1!B3:Sheet1!B6)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0.065558236');
+            done();
+        });
+        it('absolute sheet referrence check', (done: Function) => {
+            helper.edit('J3', '=RSQ(Sheet1!$A$2:Sheet1!$A$5,Sheet1!$B$2:Sheet1!$B$5)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('0.001856987');
+            done();
+        });
+        it('external sheet referrence check', (done: Function) => {
+            helper.edit('J4', '=RSQ(Sheet1!A2:Sheet1!A5,Sheet2!B2:Sheet2!B5)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('0.001856987');
+            helper.edit('J5', '=RSQ(Sheet1!A3:Sheet1!A6,Sheet2!B3:Sheet2!B6)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('0.065558236');
+            done();
+        });
+        it('external sheet absolute referrence ', (done: Function) => {
+            helper.edit('J6', '=RSQ(Sheet1!$A$2:Sheet1!$A$5,Sheet2!$B$2:Sheet2!$B$5)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('0.001856987');
+            helper.edit('J7', '=RSQ(Sheet1!$A$3:Sheet1!$A$6,Sheet2!$B$3:Sheet2!$B$6)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0.065558236');
+            done();
+        });
+        it('RSQ formula with multiple column as input', function (done) {
+            helper.edit('J8', '=RSQ(A1:B5,A6:B10)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('0.28186104');
+            helper.edit('J9', '=RSQ(A1:B5,A6:A15)');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('0.136777246');
+            done();
+        });
+        it('RSQ formula with 1 and #DIV/0! as result', function (done) {
+            helper.edit('J10', '=RSQ(A11:A16,B11:B16)');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('1');
+            helper.edit('J11', '=RSQ(A10:A12,B10:B12)');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('#DIV/0!');
+            done();
+        });
+    });
+    describe('EJ2-850587 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ index: 12, cells: [{index: 1, value: '""' }, { value: '1'}, { value: '-1'}, { value: '11'}, { value: '"1"'}, { value: '"-1"'}, { value: '"11"'}, { value: '0'}, { value: '"0"'}, { value: 'TRUE'}, { value: '"true"'}, { value: '"TRUE"'}, { value: 'FALSE'}, { value: '"false"'}, { value: '"FALSE"'}, { value: 'test'}, { value: '"test"'}] }] }, { ranges: [{ dataSource: defaultData }] } ]}, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Sort formula checking->', (done: Function) => {
+            helper.edit('J2', '=SORT(D2:D11,2)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(D2:D11,1,1,2)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('50');
+            helper.edit('J2', '=SORT(D2:D11,1,1,-1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('50');
+            helper.edit('J2', '=SORT(D2:D11,1,1,0)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('50');
+            helper.edit('J2', '=SORT(A2:A11,-1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(A2:A11,1,-1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('T-Shirts');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('Casual Shoes');
+            helper.edit('J2', '=SORT(A2:A11,1,1,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('Casual Shoes');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('T-Shirts');
+            helper.edit('J2', '=SORT(D2:F11,2)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('30');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('300');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('41');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('1210');
+            helper.edit('J2', '=SORT(D2:F11,1,-1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('50');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('500');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('200');
+            helper.edit('J2', '=SORT(D2:F11,1,1,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('200');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('50');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('500');
+            helper.edit('J2', '=SORT(D2:F11,2,-1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('600');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('50');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('500');
+            helper.edit('J2', '=SORT(D2:F11,3,-1,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('200');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('500');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(A2:D11,3,1,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0.482314815');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('Casual Shoes');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('0.001203704');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('T-Shirts');
+            helper.edit('J2', '=SORT(A25:C34,1,1,0)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0');
+            helper.edit('J2', '=SORT(A2:D11,1,1,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0.482314815');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('Casual Shoes');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('0.001203704');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('T-Shirts');
+            helper.edit('J2', '=SORT(A2:D11,1,1,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0.482314815');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('Casual Shoes');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('0.001203704');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('T-Shirts');
+            helper.edit('J2', '=SORT(A2:D11,1,-1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('T-Shirts');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('50');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('Casual Shoes');
+            expect(helper.invoke('getCell', [10, 12]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,,,)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,A13,A13,A13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,A13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,A13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,A13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,"","","")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,B13,B13,B13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,B13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,B13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,B13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,"")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,"")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,"")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,1,1,1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,C13,C13,C13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,-1,-1,-1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,D13,D13,D13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,-1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,-1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('30');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,,,-1)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,D13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,D13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('30');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,,,D13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,11,11,11)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,E13,E13,E13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,11)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,11)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,11)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,E13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,E13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,E13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,"1","1","1")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,F13,F13,F13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,"1")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,,"1")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,,,"1")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,F13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,F13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,F13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,"-1","-1","-1")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,G13,G13,G13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,"-1")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,"-1")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('30');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,,,"-1")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,G13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,G13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,G13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,"11","11","11")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,H13,H13,H13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,"11")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,"11")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,"11")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,H13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,H13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,H13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,0,0,0)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,I13,I13,I13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,0)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,0)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,0)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,I13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,I13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,I13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,"0","0","0")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,J13,J13,J13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,"0")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,"0")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,"0")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,J13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,J13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,J13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,TRUE,TRUE,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,K13,K13,K13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,,,TRUE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,K13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,,K13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,,,K13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,"true","true","true")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,L13,L13,L13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,L13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,L13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,L13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,"true")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,"true")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,"true")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,"TRUE","TRUE","TRUE")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,M13,M13,M13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,M13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,M13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,M13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,"TRUE")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,"TRUE")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,"TRUE")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('10');
+            helper.edit('J2', '=SORT(E2:E11,FALSE,FALSE,FALSE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,N13,N13,N13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,N13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,N13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,N13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,FALSE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,FALSE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,FALSE)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,"false","false","false")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,O13,O13,O13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,O13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,O13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,O13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,"false")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,"false")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,"false")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,"FALSE","FALSE","FALSE")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,P13,P13,P13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,P13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,P13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,P13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,"FALSE")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,"FALSE")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,"FALSE")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('10');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('30');
+            helper.edit('J2', '=SORT(E2:E11,test,test,test)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#NAME?');
+            helper.edit('J2', '=SORT(E2:E11,Q13,Q13,Q13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,Q13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,Q13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,Q13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,test)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#NAME?');
+            helper.edit('J2', '=SORT(E2:E11,,test)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#NAME?');
+            helper.edit('J2', '=SORT(E2:E11,,,test)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#NAME?');
+            helper.edit('J2', '=SORT(E2:E11,"test","test","test")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,R13,R13,R13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,R13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,R13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,R13)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,"test")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,"test")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            helper.edit('J2', '=SORT(E2:E11,,,"test")');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#VALUE!');
+            var inst = helper.getInstance();
+            inst.activeSheetIndex = 1;
+            inst.dataBind();
+            setTimeout(function () {
+                helper.invoke('numberFormat', ['$#,##0.00', 'A1:B1']);
+                helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)', 'A1:B1']);
+                helper.invoke('numberFormat', ['0.00%', 'A1:B1']);
+                helper.invoke('numberFormat', ['0.00E+00', 'A1:B1']);
+                helper.edit('J2', '=SORT(B2:H11,2,-1,TRUE)');
+                expect(helper.invoke('getCell', [1, 9]).textContent).toBe('41684');
+                expect(helper.invoke('getCell', [1, 15]).textContent).toBe('0.482314815');
+                expect(helper.invoke('getCell', [10, 9]).textContent).toBe('41943');
+                expect(helper.invoke('getCell', [10, 15]).textContent).toBe('0.001203704');
+                helper.edit('J13', '=SORT(B2:H11,,,TRUE)');
+                expect(helper.invoke('getCell', [12, 9]).textContent).toBe('0.482314815');
+                expect(helper.invoke('getCell', [12, 15]).textContent).toBe('41684');
+                expect(helper.invoke('getCell', [21, 9]).textContent).toBe('0.001203704');
+                expect(helper.invoke('getCell', [21, 15]).textContent).toBe('41943');
+                done();
+            });
+        });
+    });
+
+    describe('EJ2-859157 -> ', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }]}, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('script error throws while deleting a value in range of UNIQUE formula', (done: Function) => {
+            helper.edit('J5', '44');
+            helper.edit('J2', '=UNIQUE(H2:H8)');
+            helper.invoke('selectRange', ['J5']);
+            helper.triggerKeyNativeEvent(46);
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('14');
+            done();
         });
     });
 });

@@ -230,6 +230,7 @@ export class SparklineRenderer {
             d += 'L ' + points[i as number].x + ' ' + points[i as number].y + ' ';
         }
         pathOption.d = d;
+        pathOption['aria-label'] = 'Line series with' + points.length + 'data points';
         drawPath(this.sparkline, pathOption, g);
         this.sparkline.svgObject.appendChild(g);
     }
@@ -355,6 +356,7 @@ export class SparklineRenderer {
             }
         }
         pathOption.d = d;
+        pathOption['aria-label'] = 'Area series with' + points.length + 'data points';
         drawPath(this.sparkline, pathOption, group);
         pathOption = new PathOption(
             spark.element.id + '_sparkline_area_str', 'transparent', args.border.width, args.border.color, spark.opacity, '', str);

@@ -88,7 +88,7 @@ export class Open {
      */
     private openSuccess(response: JsonData): void {
         const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword', 'InCorrectSheetPassword',
-            'CorrectSheetPassword', 'DataLimitExceeded', 'FileSizeLimitExceeded'];
+            'CorrectSheetPassword', 'DataLimitExceeded', 'FileSizeLimitExceeded', 'ExternalWorkbook'];
         const openCancelFn: Function = (action: string): void => {
             (this.parent.serviceLocator.getService(dialog) as Dialog).hide(true);
             const file: File = new File([], response.guid, { type: action.toLowerCase() });
@@ -115,6 +115,34 @@ export class Open {
                 const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
                 dialogInst.hide();
                 this.parent.hideSpinner();
+            } else if (openError[8] === response.data) {
+                const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+                dialogInst.hide(true);
+                const externalWorkbook: boolean = response.data.includes('ExternalWorkbook');
+                (this.parent.serviceLocator.getService(dialog) as Dialog).show({
+                    content: (this.parent.serviceLocator.getService('spreadsheetLocale') as L10n).getConstant('ExternalWorkbook'),
+                    width: '350', buttons: externalWorkbook ? [
+                        {
+                            click: openCancelFn.bind(this, `${response.data}Yes`),
+                            buttonModel: { content: l10n.getConstant('Yes'), isPrimary: true }
+                        },
+                        {
+                            click: openCancelFn.bind(this, `${response.data}No`),
+                            buttonModel: { content: l10n.getConstant('No') }
+                        }] : [],
+                    beforeOpen: (args: BeforeOpenEventArgs): void => {
+                        const dlgArgs: DialogBeforeOpenEventArgs = {
+                            dialogName: 'OpenDialog',
+                            element: args.element, target: args.target, cancel: args.cancel
+                        };
+                        this.parent.trigger('dialogBeforeOpen', dlgArgs);
+                        if (dlgArgs.cancel) {
+                            args.cancel = true;
+                        }
+                    }
+                }, externalWorkbook ? true : null);
+                this.parent.hideSpinner();
+                return;
             }
             else  {
                 const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);

@@ -1798,7 +1798,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     private setDateFormat(sheetId: number, rowIndex: number, colIndex: number): void {
         const sheet: SheetModel = getSheet(this, getSheetIndexFromId(this, sheetId));
-        if (!getCell(rowIndex, colIndex, sheet, null, true).format) {
+        const formatType: string = getCell(rowIndex, colIndex, sheet, null, true).format;
+        if (!formatType || formatType === 'General') {
             setCell(rowIndex, colIndex, sheet, { format: getFormatFromType('ShortDate') }, true);
         }
     }

@@ -4,6 +4,7 @@
  */
 import { Browser, remove } from '@syncfusion/ej2-base';
 import { ItemModel } from '@syncfusion/ej2-navigations';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ActionEventArgs, ScheduleModel
 } from '../../../src/schedule/index';
@@ -462,6 +463,131 @@ describe('Schedule header bar', () => {
             schObj.headerModule.updateItems();
             expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(0);
         });
+    });
+
+    describe('Custom toolbar with default align', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = {
+                width: 800, height: 600, selectedDate: new Date(2017, 9, 4),
+                toolbarItems: [{ name: 'Today', text: 'Today', disabled: false, visible: true, showTextOn: 'Toolbar', tabIndex: 1, type:'Button', width: '50px', cssClass:'e-today',
+                suffixIcon: 'e-icon-day', overflow:'Show', showAlwaysInPopup: true, prefixIcon: 'e-icon-day', tooltipText: 'Today', htmlAttributes: null}, 
+                { name: 'Previous', text: 'previous' }, { name: 'Next', text: 'Next' }, { name: 'DateRangeText',  htmlAttributes: { 'aria-atomic': 'true', 'aria-live': 'assertive', 'role': 'navigation' } },
+                { prefixIcon: 'e-icons e-cut', tooltipText: 'Cut', click: function() { alert("cut button clicked")}  }, { name: 'NewEvent', disabled: true,visible: false, },
+                { id: 'dropdown', type:'Input', template: '<div class="e-input-group"><input id="dropdown"></input></div>' },
+                { id: 'button', template: '<div class="e-input-group"><button id="btn">Custom button</button></div>',click: function() { alert("custom button clicked")} }, { name: 'Views' },],
+                views: ['Day', 'Week', 'WorkWeek', 'Month'],
+            };
+            schObj = util.createSchedule(model, [], done);
+            let sportsData: string[] = ['Badminton', 'Cricket', 'Football', 'Golf', 'Tennis'];
+            let dropDownListObject: DropDownList = new DropDownList({
+                dataSource: sportsData
+            });
+            dropDownListObject.appendTo('#dropdown');
+        });
+        afterAll((): void => {
+            util.destroy(schObj);
+        });
+        it('checking toolbar items', () => {
+            expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(12);
+            expect(schObj.element.querySelectorAll('.e-cut').length).toEqual(1);
+            expect(schObj.toolbarItems[0].name).toEqual('Today');
+            expect(schObj.toolbarItems[0].align).toEqual('Left');
+            expect(schObj.toolbarItems[0].text).toEqual('Today');
+            expect(schObj.toolbarItems[0].visible).toEqual(true);
+            expect(schObj.toolbarItems[0].disabled).toEqual(false);
+            expect(schObj.toolbarItems[0].width).toEqual('50px');
+            expect(schObj.toolbarItems[0].showAlwaysInPopup).toEqual(true);
+            expect(schObj.toolbarItems[0].showTextOn).toEqual('Toolbar');
+            expect(schObj.toolbarItems[0].tabIndex).toEqual(1);
+            expect(schObj.toolbarItems[0].type).toEqual('Button');
+            expect(schObj.toolbarItems[0].suffixIcon).toEqual('e-icon-day');
+            expect(schObj.toolbarItems[0].cssClass).toEqual('e-today');
+            expect(schObj.toolbarItems[0].overflow).toEqual('Show');
+            expect(schObj.toolbarItems[0].htmlAttributes).toEqual(null);
+        });
+
+        it('checking view navigations', () => {
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-day')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-week')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-work-week')).toBeTruthy();
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-month')).toBeTruthy();
+
+            (schObj.element.querySelector('.e-schedule-toolbar .e-week') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-week');
+            expect(schObj.element.querySelector('.e-table-wrap').classList).toContain('e-week-view');
+
+            (schObj.element.querySelector('.e-schedule-toolbar .e-day') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-day');
+            expect(schObj.element.querySelector('.e-table-wrap').classList).toContain('e-day-view');
+
+            (schObj.element.querySelector('.e-schedule-toolbar .e-work-week') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-work-week');
+            expect(schObj.element.querySelector('.e-table-wrap').classList).toContain('e-work-week-view');
+
+            (schObj.element.querySelector('.e-schedule-toolbar .e-month') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month');
+            expect(schObj.element.querySelector('.e-table-wrap').classList).toContain('e-month-view');
+        });
+
+        it('date navigation', () => {
+            schObj.currentView = 'Week';
+            schObj.selectedDate = new Date(2017, 9, 29);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('Oct 29 - Nov 04, 2017');
+            schObj.selectedDate = new Date(2017, 10, 6);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('November 05 - 11, 2017');
+        });
+
+        it('checking click actions', () => {
+            expect((schObj.element.querySelectorAll('.e-toolbar-item')[6].querySelector('input').classList.contains('e-dropdownlist'))).toEqual(true);
+            (schObj.element.querySelectorAll('.e-toolbar-item')[4] as HTMLElement).click();
+            (schObj.element.querySelectorAll('.e-toolbar-item')[7] as HTMLElement).click();
+            (schObj.element.querySelectorAll('.e-toolbar-item')[0] as HTMLElement).click()
+            expect(schObj.selectedDate.getDate()).toEqual(new Date().getDate());
+        });
+    });
+
+    describe('Custom toolbar with user given align properties', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn): void => {
+            const model: ScheduleModel = {
+                width: 800, height: 600, selectedDate: new Date(2017, 9, 4),
+                toolbarItems: [{ name: 'Today', text: 'Today', align: 'Right'}, 
+                { name: 'Previous', text: 'previous', align: 'Right' }, { name: 'Next', text: 'Next', align:'Right' }, { name: 'DateRangeText', align: 'Right' },
+                { prefixIcon: 'e-icons e-cut', tooltipText: 'Cut', click: function() { alert("cut button clicked")}, align:'Right'  }, { name: 'NewEvent', align:'Right' },
+                { id: 'dropdown', type:'Input', template: '<div class="e-input-group"><input id="dropdown"></input></div>', align: 'Right' },
+                { id: 'button', template: '<div class="e-input-group"><button id="btn">Custom button</button></div>',click: function() { alert("custom button clicked")}, align:'Right'},
+                { name: 'Views', align: 'Right' }],
+                views: ['Day', 'Week', 'WorkWeek', 'Month'],
+            };
+            schObj = util.createSchedule(model, [], done);
+            let sportsData: string[] = ['Badminton', 'Cricket', 'Football', 'Golf', 'Tennis'];
+            let dropDownListObject: DropDownList = new DropDownList({
+                dataSource: sportsData
+            });
+            dropDownListObject.appendTo('#dropdown');
+        });
+        afterAll((): void => {
+            util.destroy(schObj);
+        });
+        it('checking toolbar items', () => {
+            expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(12);
+            expect(schObj.element.querySelectorAll('.e-cut').length).toEqual(1);
+            expect(schObj.toolbarItems[0].name).toEqual('Today');
+            expect(schObj.toolbarItems[0].align).toEqual('Right');
+            expect(schObj.toolbarItems[1].name).toEqual('Previous');
+            expect(schObj.toolbarItems[1].align).toEqual('Right');
+            expect(schObj.toolbarItems[2].name).toEqual('Next');
+            expect(schObj.toolbarItems[2].align).toEqual('Right');
+            expect(schObj.toolbarItems[3].name).toEqual('DateRangeText');
+            expect(schObj.toolbarItems[3].align).toEqual('Right');
+            expect(schObj.toolbarItems[8].name).toEqual('Views');
+            expect(schObj.toolbarItems[8].align).toEqual('Right');
+        }); 
     });
 
     it('memory leak', () => {

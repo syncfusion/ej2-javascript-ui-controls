@@ -113,20 +113,20 @@ export class AutoFill {
         const fillRange: number[] = this.getFillRange({ rowIndex: minr, colIndex: minc }, { rowIndex: maxr, colIndex: maxc },
                                                       { rowIndex: currcell[2], colIndex: currcell[3] }, dir);
         this.refreshAutoFillOption(l10n.getConstant(args.type));
-        this.parent.notify(performUndoRedo, { isUndo: true, isPublic: true, preventEvt: args.type === 'FillWithoutFormatting', preventReSelect: true });
+        const evtArgs: { [key: string]: string | object | boolean } = { isUndo: true, isPublic: true, preventReSelect: true,
+            preventEvt: args.type === 'FillWithoutFormatting',
+            setCollection: args.type === 'FillFormattingOnly' || args.type === 'FillWithoutFormatting' };
+        this.parent.notify(performUndoRedo, evtArgs);
         const eventArgs: { dataRange: string, fillRange: string, direction: AutoFillDirection, fillType: AutoFillType,
             isFillOptClick: boolean } = { dataRange: sheet.name + '!' + getRangeAddress(dataRange), fillRange:
             sheet.name + '!' + getRangeAddress(fillRange), direction: dir, fillType: args.type, isFillOptClick: true };
         this.isVerticalFill = eventArgs.direction === 'Down' || eventArgs.direction === 'Up';
         this.parent.notify(setAutoFill, eventArgs);
         this.positionAutoFillElement({ isautofill: true });
-        const autoFillArgs: {
-            dataRange: string,
-            fillRange: string,
-            direction: AutoFillDirection,
-            fillType: AutoFillType,
-            selectedRange: string
-        } = { dataRange: eventArgs.dataRange, fillRange: eventArgs.fillRange, fillType: eventArgs.fillType, direction: eventArgs.direction, selectedRange: sheet.name + '!' + getRangeAddress(currcell) };
+        const autoFillArgs: { dataRange: string, fillRange: string, direction: AutoFillDirection, fillType: AutoFillType,
+            selectedRange: string, undoArgs: object } = { dataRange: eventArgs.dataRange, fillRange: eventArgs.fillRange,
+                fillType: eventArgs.fillType, direction: eventArgs.direction, selectedRange: sheet.name + '!' + getRangeAddress(currcell),
+                undoArgs: <object>evtArgs.undoArgs };
         this.parent.notify(completeAction, { eventArgs: autoFillArgs, action: 'autofill' });
         if (this.parent.showAggregate) {
             this.parent.notify(showAggregate, {});

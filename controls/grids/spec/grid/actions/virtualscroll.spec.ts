@@ -319,6 +319,7 @@ describe('Virtualization testing', () => {
                         frozenColumns: 2,
                         enableColumnVirtualization: true,
                         allowGrouping: true,
+                        allowResizing: true,
                         height: 300,
                         rowHeight: 70
                     },
@@ -1376,7 +1377,7 @@ describe('Column virtualization', () => {
              ],
            }, done );
         });
-
+       
         it('changedatasource call', (done: Function) => {
             let dataBound = () => {
                 expect((gridObj as any).columnModel.length).toBe(2);

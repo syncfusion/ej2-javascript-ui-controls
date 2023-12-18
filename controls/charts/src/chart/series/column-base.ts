@@ -243,7 +243,7 @@ export class ColumnBase {
                 options.d = 'M' + X.toString() + ',' + Y.toString() + 'a' + rx.toString() + ',' + ry.toString() + ' 0 1,0 ' + AEx.toString() + ',' + AEy.toString() + 'a' + rx.toString() + ',' + ry.toString() + ' 0 1,0 ' + (-1 * AEx).toString() + ',' + (-1 * AEy).toString();
                 options.id = id + '_' + 'Region_' + i;
                 options.fill = applyZLight(gradientColor, 0.9);
-                if (i % 2 === 0 && series.type !== 'StackingBar100' && series.type !== 'StackingBar' && series.type !== 'Bar') {
+                if ( i % 2 === 0 && series.type !== 'StackingBar100' && series.type !== 'StackingBar' && series.type !== 'Bar' ) {
                     options.fill = options.fill + '10';
                 }
                 this.element = chart.renderer.drawPath(

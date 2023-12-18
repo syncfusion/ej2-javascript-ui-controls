@@ -30,6 +30,13 @@ export interface RibbonComboBoxSettingsModel {
     cssClass?: string;
 
     /**
+     * Specifies the label text for the overflow item.
+     *
+     * @default ''
+     */
+    label?: string;
+
+    /**
      * Defines the list of items to shown in the combobox.
      *
      * @default []

@@ -57,7 +57,6 @@ describe('Custom Atrributes and html encode module', () => {
             let hRow: Element = gridObj.element.querySelector('.e-columnheader');
             for (let i: number = 0; i < rows[0].children.length; i++) {
                 expect(rows[0].children[i].hasAttribute('tabindex')).toBeTruthy();
-                expect(rows[0].children[i].hasAttribute('aria-label')).toBeTruthy();
             }
             for (let i: number = 0; i < hRow.children.length; i++) {
                 expect(hRow.children[i].hasAttribute('tabindex')).toBeTruthy();

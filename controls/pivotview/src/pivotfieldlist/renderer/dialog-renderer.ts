@@ -197,6 +197,10 @@ export class DialogRenderer {
                 this.deferUpdateCancelButton.isPrimary = true;
             }
         }
+        if ((Object.keys(this.parent.clonedFieldList).length !== Object.keys(this.parent.pivotFieldList).length) &&
+            this.parent.calculatedFieldModule && this.parent.calculatedFieldModule.field && this.parent.dataType === 'pivot') {
+            this.parent.engineModule.fields = Object.keys(this.parent.clonedFieldList);
+        }
         this.onCloseFieldList(null, true);
     }
     private applyButtonClick(): void {

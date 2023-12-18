@@ -479,7 +479,6 @@ export class DataValidation {
         if (isNew) {
             value1 = value2 = '0';
         } else {
-            value1 = val1; value2 = val2;
             if (type === 'Date') {
                 const getFormattedDate: (val: string) => string = (val: string): string => {
                     if (isNumber(val)) {
@@ -490,6 +489,8 @@ export class DataValidation {
                     return val;
                 }
                 value1 = getFormattedDate(value1); value2 = getFormattedDate(value2);
+            } else {
+                value1 = val1; value2 = val2;
             }
         }
         const dlgContent: HTMLElement = this.parent.createElement('div', { className: 'e-validation-dlg' });
@@ -1201,6 +1202,7 @@ export class DataValidation {
                     }
                     if (type === 'List') {
                         if (value1.indexOf('=') !== -1) {
+                            this.data = !isNullOrUndefined(this.data) && !this.data.length ? this.updateDataSource(cell, validation) : this.data;
                             for (let idx: number = 0; idx < this.data.length; idx++) {
                                 if (args.value.toString() === this.data[idx as number].text) {
                                     isValidate = true;

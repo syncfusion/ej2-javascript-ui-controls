@@ -3,7 +3,7 @@
 /* eslint-disable jsdoc/require-param */
 import { IFontMapping } from './interface';
 import { AccumulationTheme } from '../../accumulation-chart/model/enum';
-import { ChartTheme } from '../../chart/utils/enum';
+import { ChartTheme } from '../utils/enum';
 import { IThemeStyle, IScrollbarThemeStyle } from '../../index';
 import { Rect } from '@syncfusion/ej2-svg-base';
 
@@ -1016,3 +1016,4 @@ export function getScrollbarThemeColor(theme: ChartTheme): IScrollbarThemeStyle 
     }
     return scrollStyle;
 }
+

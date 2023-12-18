@@ -934,7 +934,14 @@ export class ConnectorLineEdit {
                 for (let p: number = 0; p < prevPredecessor.length; p++) {
                     const parentGanttRecord: IGanttData = this.parent.connectorLineModule.getRecordByID(prevPredecessor[parseInt(p.toString(), 10)].from as string);
                     if (parentGanttRecord === data) {
-                        data.ganttProperties.predecessor.push(prevPredecessor[parseInt(p.toString(), 10)]);
+                        if (data.parentItem && this.parent.taskFields.dependency && data.ganttProperties.predecessor && this.parent.allowParentDependency) {
+                            if (prevPredecessor[p as number].from !== data.parentItem.taskId && prevPredecessor[p as number].to !== data.parentItem.taskId) {
+                                data.ganttProperties.predecessor.push(prevPredecessor[parseInt(p.toString(), 10)]);
+                            }
+                        }
+                        else {
+                            data.ganttProperties.predecessor.push(prevPredecessor[parseInt(p.toString(), 10)]);
+                        }
                     } else {
                         const parentPredecessor: IPredecessor[] =
                             extend([], [], parentGanttRecord.ganttProperties.predecessor, true) as IPredecessor[];

@@ -3,7 +3,7 @@
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
-import { ChartSeriesType, ChartRangePadding, ValueType, ChartShape } from '../../../src/chart/utils/enum';
+import { ChartSeriesType, ChartShape } from '../../../src/chart/utils/enum';
 import { Series, Points } from '../../../src/chart/series/chart-series';
 import { LineSeries } from '../../../src/chart/series/line-series';
 import { ColumnSeries } from '../../../src/chart/series/column-series';
@@ -286,6 +286,24 @@ describe('Chart Control', () => {  beforeAll(() => {
             chartObj.loaded = loaded;
             chartObj.primaryXAxis.valueType = 'Category';
             chartObj.series[0].type = 'Line';
+            chartObj.refresh();
+        });
+
+        it('checking tooltip with fixed location', (done: Function) => {
+            loaded = (args: Object): void => {
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = (<Points>(<Series>chartObj.series[0]).points[2]).symbolLocations[0].y;
+                x = (<Points>(<Series>chartObj.series[0]).points[2]).symbolLocations[0].x;
+                y += parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x += parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
+                let tooltip: HTMLElement = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.tooltip.location.x = 10;
+            chartObj.tooltip.location.y = 10;
             chartObj.refresh();
         });
 

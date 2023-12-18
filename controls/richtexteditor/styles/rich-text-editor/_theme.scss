@@ -632,7 +632,7 @@
   }
 
   .e-rte-table.e-alternate-border tbody tr:nth-child(2n+0) {
-    background-color: $rte-table-alternate-color;
+    background: $rte-table-alternate-color;
     @if $skin-name == 'highcontrast' {
       color: $rte-img-popup-color;
     }

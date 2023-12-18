@@ -116,7 +116,8 @@ export class VirtualScroll {
                 (this.parent.grid.getContent() as HTMLElement).firstElementChild.scrollTop = 0;
                 this.parent.grid.notify(events.virtualActionArgs, { setTop: true });
             }
-            if ((requestType === 'save' && pageingDetails.actionArgs.index >= (counts.count - this.parent.grid.pageSettings.pageSize)) || (requestType === 'refresh' && this.parent['isGantt'] && this.parent['isAddedFromGantt'])) {
+            if ((requestType === 'save' && pageingDetails.actionArgs.index >= (counts.count - this.parent.grid.pageSettings.pageSize)) || (requestType === 'refresh' && this.parent['isGantt'] && this.parent['isAddedFromGantt']
+                && this.parent.grid.pageSettings.currentPage === this.parent.grid.contentModule['maxPage'])) {
                 startIndex = counts.startIndex + (counts.count - counts.endIndex);
                 endIndex = counts.count;
                 this.parent['isAddedFromGantt'] = false;

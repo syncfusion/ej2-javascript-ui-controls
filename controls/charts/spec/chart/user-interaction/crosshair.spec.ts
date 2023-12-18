@@ -3,7 +3,7 @@
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
-import { ChartSeriesType, ChartRangePadding, ValueType, LabelPlacement, } from '../../../src/chart/utils/enum';
+import { ChartSeriesType } from '../../../src/chart/utils/enum';
 import { LineSeries } from '../../../src/chart/series/line-series';
 import { ColumnSeries } from '../../../src/chart/series/column-series';
 import { AreaSeries } from '../../../src/chart/series/area-series';

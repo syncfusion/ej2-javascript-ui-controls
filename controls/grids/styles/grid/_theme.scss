@@ -369,9 +369,9 @@
       border-bottom-color: $frozen-border-color;
     }
 
-    .e-leftfreeze:not(.e-summarycell, .e-indentcell, .e-updatedtd, .e-selectionbackground, .e-columnselection, .e-groupcaption, .e-cellselectionbackground),
-    .e-rightfreeze:not(.e-summarycell, .e-updatedtd, .e-selectionbackground, .e-columnselection, .e-groupcaption, .e-cellselectionbackground),
-    .e-fixedfreeze:not(.e-summarycell, .e-selectionbackground, .e-updatedtd, .e-columnselection, .e-groupcaption, .e-cellselectionbackground) {
+    .e-leftfreeze:not(.e-summarycell, .e-indentcell, .e-updatedtd, .e-selectionbackground, .e-columnselection, .e-groupcaption, .e-cellselectionbackground, .e-active),
+    .e-rightfreeze:not(.e-summarycell, .e-updatedtd, .e-selectionbackground, .e-columnselection, .e-groupcaption, .e-cellselectionbackground, .e-active),
+    .e-fixedfreeze:not(.e-summarycell, .e-selectionbackground, .e-updatedtd, .e-columnselection, .e-groupcaption, .e-cellselectionbackground, .e-active) {
       @if $grid-skin == 'material' $grid-skin == 'highcontrast' {
         background-color: $grid-rows-bg-color;
       }
@@ -889,6 +889,7 @@
     }
 
     .e-ftrchk.e-chkfocus,
+    .e-menu-item.e-menufocus,
     li.e-cclist.e-colfocus {
       background-color: $grid-hover-bg-color;
     }

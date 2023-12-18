@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, rippleEffect, NotifyPropertyChanges, Property, closest } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, rippleEffect, NotifyPropertyChanges, Property, closest, setValue } from '@syncfusion/ej2-base';
 import { addClass, getInstance, getUniqueID, isRippleEnabled, removeClass, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { BaseEventArgs, detach, EmitType, Event, EventHandler, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { wrapperInitialize, rippleMouseHandler } from './../common/common';
@@ -202,6 +202,13 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
                     radioWrap.removeAttribute(key);
                 });
                 radioWrap.innerHTML = '';
+                this.element = this.wrapper as HTMLInputElement;
+                if (this.refreshing) {
+                    ['e-control', 'e-radio', 'e-lib'].forEach((key: string) => {
+                        this.element.classList.add(key);
+                    });
+                    setValue('ej2_instances', [this], this.element);
+                }
             }
         }
     }

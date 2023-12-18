@@ -1,0 +1,223 @@
+@include export-module('stepper-theme') {
+  .e-stepper {
+    .e-stepper-steps {
+      .e-step-container {
+        &.e-step-notstarted:not(.e-step-disabled) .e-step,
+        &.e-step-notstarted:not(.e-step-disabled) .e-indicator,
+        &.e-step-notstarted .e-icons.e-step-indicator {
+          border-color: $step-border-color;
+        }
+
+        .e-step-label-optional {
+          color: $step-optional-color;
+        }
+
+        .e-step,
+        .e-indicator {
+          color: $step-color;
+          background: $step-bg-color;
+        }
+
+        .e-step-indicator {
+          color: transparent;
+        }
+
+        &.e-step-completed .e-step,
+        &.e-step-inprogress .e-step,
+        &.e-step-completed .e-indicator,
+        &.e-step-inprogress .e-indicator,
+        &.e-step-completed .e-step-indicator,
+        &.e-step-inprogress .e-step-indicator {
+          background: $step-completed-bg-color;
+          color: $step-completed-color;
+        }
+
+        &.e-step-valid {
+          .e-indicator {
+            background: $step-valid-completed-bg-color !important; /* stylelint-disable-line declaration-no-important */
+            color: $step-valid-completed-color;
+          }
+        }
+
+        &.e-step-error {
+          .e-indicator {
+            background: $step-error-completed-bg-color !important; /* stylelint-disable-line declaration-no-important */
+            color: $step-error-icon-color;
+          }
+
+          .e-text,
+          .e-label {
+            color: $step-error-completed-color;
+          }
+        }
+
+        &.e-step-valid:not(.e-step-notstarted) .e-indicator:hover,
+        &.e-step-error .e-indicator:hover {
+          color: $step-color;
+        }
+
+        &.e-step-selected {
+          .e-text,
+          .e-label {
+            font-weight: $stepper-font-weight;
+          }
+        }
+
+        &.e-step-valid.e-step-text-only:not(.e-step-icon.e-step-label) .e-step-text-container,
+        &.e-step-valid.e-step-label-only:not(.e-step-icon.e-step-text) .e-step-label-container {
+          .e-step-validation-icon {
+            color: $step-valid-icon-only-color;
+          }
+        }
+
+        &.e-step-error.e-step-text-only:not(.e-step-icon.e-step-label) .e-step-text-container,
+        &.e-step-error.e-step-label-only:not(.e-step-icon.e-step-text) .e-step-label-container {
+          .e-step-validation-icon {
+            color: $step-error-icon-only-color;
+          }
+        }
+
+        .e-text,
+        .e-label {
+          color: $stepper-text-color;
+        }
+
+        &.e-step-selected:not(.e-step-error),
+        &.e-step-completed:not(.e-step-error) {
+          .e-text,
+          .e-label {
+            color: $step-completed-bg-color;
+          }
+        }
+
+        &.e-step-label:not(.e-step-icon) .e-step-label-container {
+          background-color: $stepper-outline-color;
+        }
+        
+        .e-step-text-container {
+          background-color: $stepper-outline-color;
+          border-color: transparent;
+        }
+
+        &.e-step-selected .e-indicator {
+          background: $step-completed-bg-color;
+        }
+
+        &.e-step-disabled .e-indicator {
+          background: $step-disabled-bg-color !important; /* stylelint-disable-line declaration-no-important */
+          color: $step-disabled-color !important; /* stylelint-disable-line declaration-no-important */
+        }
+
+        &.e-step-disabled .e-text,
+        &.e-step-disabled .e-label,
+        &.e-step-disabled .e-step-validation-icon {
+          color: $step-disabled-font-color !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
+    }
+
+    &.e-vertical .e-stepper-steps .e-step-container.e-step-text-only.e-step-text .e-step-label-optional,
+    &.e-vertical .e-stepper-steps .e-step-container.e-step-label-only.e-step-label .e-step-label-optional,
+    &.e-vertical .e-stepper-steps .e-step-container.e-step-icon:not(.e-step-text):not(.e-step-label) .e-step-label-optional,
+    &.e-vertical.e-label-top .e-stepper-steps .e-step-container .e-step-label-optional,
+    &.e-vertical.e-label-bottom .e-stepper-steps .e-step-container .e-step-label-optional {
+      background-color: $stepper-outline-color;
+    }
+
+    .e-stepper-progressbar {
+      background-color: $step-progress-bg-color;
+
+      >.e-progressbar-value {
+        background-color: $step-progress-value-bg-color;
+      }
+    }
+
+    &:not(.e-steps-focus) .e-stepper-steps .e-step-container.e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-step,
+    .e-stepper-steps .e-step-container.e-step-focus .e-step,
+    .e-stepper-steps .e-step-container.e-step-label-only.e-step-focus .e-label,
+    .e-stepper-steps .e-step-container.e-step-text-only.e-step-focus .e-text,
+    .e-stepper-steps .e-step-container.e-step-template.e-step-focus {
+      box-shadow: $step-selected-li-shadow;
+    }
+
+    &:not(.e-steps-focus) .e-stepper-steps .e-step-container.e-step-valid.e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-step,
+    .e-stepper-steps .e-step-container.e-step-valid.e-step-focus .e-step,
+    .e-stepper-steps .e-step-container.e-step-valid.e-step-label-only.e-step-focus .e-label,
+    .e-stepper-steps .e-step-container.e-step-valid.e-step-text-only.e-step-focus .e-text,
+    .e-stepper-steps .e-step-container.e-step-valid.e-step-template.e-step-focus {
+      box-shadow: $step-valid-li-shadow;
+    }
+
+    &:not(.e-steps-focus) .e-stepper-steps .e-step-container.e-step-error.e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-step,
+    .e-stepper-steps .e-step-container.e-step-error.e-step-focus .e-step,
+    .e-stepper-steps .e-step-container.e-step-error.e-step-label-only.e-step-focus .e-label,
+    .e-stepper-steps .e-step-container.e-step-error.e-step-text-only.e-step-focus .e-text,
+    .e-stepper-steps .e-step-container.e-step-error.e-step-template.e-step-focus {
+      box-shadow: $step-error-li-shadow;
+    }
+
+    .e-stepper-steps .e-step-container:not(.e-step-focus).e-step-notstarted:not(.e-step-text-only):not(.e-step-label-only) .e-step,
+    .e-stepper-steps .e-step-container:not(.e-step-focus).e-step-completed:not(.e-step-text-only):not(.e-step-label-only) .e-step,
+    &.e-steps-focus .e-stepper-steps .e-step-container:not(.e-step-focus).e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-step {
+      box-shadow: $step-li-shadow;
+    }
+
+    .e-stepper-steps .e-step-container.e-step-notstarted:not(.e-step-disabled) .e-step:hover,
+    .e-stepper-steps .e-step-container.e-step-notstarted:not(.e-step-disabled) .e-indicator:hover {
+      border-color: $step-hover-border-color !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    .e-stepper-steps .e-step-container.e-step-notstarted:not(.e-step-disabled) .e-step:active,
+    .e-stepper-steps .e-step-container.e-step-notstarted:not(.e-step-disabled) .e-indicator:active {
+      border-color: $step-active-border-color !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    &:not(.e-step-type-label) .e-stepper-steps .e-step-container.e-step-notstarted:not(.e-step-text-only):not(.e-step-label-only) .e-indicator:hover,
+    &:not(.e-step-type-label) .e-stepper-steps .e-step-container.e-step-notstarted:not(.e-step-text-only):not(.e-step-label-only) .e-step:hover {
+      background: $step-hover-color !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    &:not(.e-step-type-label) .e-stepper-steps .e-step-container.e-step-notstarted:not(.e-step-text-only):not(.e-step-label-only) .e-indicator:active,
+    &:not(.e-step-type-label) .e-stepper-steps .e-step-container.e-step-notstarted:not(.e-step-text-only):not(.e-step-label-only) .e-step:active {
+      background: $step-active-color !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    &:not(.e-step-type-label) .e-stepper-steps .e-step-container {
+      &:not(.e-step-text-only):not(.e-step-label-only) .e-indicator:hover,
+      &:not(.e-step-text-only):not(.e-step-label-only) .e-step:hover {
+        color: $step-hover-text-color;
+        background: $step-selected-hover-color !important; /* stylelint-disable-line declaration-no-important */
+      }
+      &.e-step-valid:not(.e-step-text-only):not(.e-step-label-only) .e-indicator:hover,
+      &.e-step-valid:not(.e-step-text-only):not(.e-step-label-only) .e-step:hover {
+        color: $step-hover-text-color !important; /* stylelint-disable-line declaration-no-important */
+        background: $step-valid-completed-bg-color !important; /* stylelint-disable-line declaration-no-important */
+      }
+      &.e-step-error:not(.e-step-text-only):not(.e-step-label-only) .e-indicator:hover,
+      &.e-step-error:not(.e-step-text-only):not(.e-step-label-only) .e-step:hover {
+        color: $step-hover-text-color !important; /* stylelint-disable-line declaration-no-important */
+        background: $step-error-completed-bg-color !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+
+    &:not(.e-step-type-label) .e-stepper-steps .e-step-container.e-step-notstarted:not(.e-step-text-only):not(.e-step-label-only) .e-indicator:hover,
+    &:not(.e-step-type-label) .e-stepper-steps .e-step-container.e-step-notstarted:not(.e-step-text-only):not(.e-step-label-only) .e-step:hover {
+      color: $step-hover-not-text-color;
+    }
+
+    &:not(.e-step-type-label) .e-stepper-steps .e-step-container {
+      &.e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-indicator:active,
+      &.e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-step:active {
+        background: $step-selected-active-color !important; /* stylelint-disable-line declaration-no-important */
+      }
+      &.e-step-valid.e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-indicator:active,
+      &.e-step-valid.e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-step:active {
+        background: $step-valid-completed-bg-color !important; /* stylelint-disable-line declaration-no-important */
+      }
+      &.e-step-error.e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-indicator:active,
+      &.e-step-error.e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-step:active {
+        background: $step-error-completed-bg-color !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
+  }
+}

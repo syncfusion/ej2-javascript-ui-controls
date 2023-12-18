@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, closest } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, closest, setValue } from '@syncfusion/ej2-base';
 import { EmitType, Event, EventHandler, MouseEventArgs } from '@syncfusion/ej2-base';
 import { addClass, isRippleEnabled, removeClass, rippleEffect, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { SwitchModel } from './switch-model';
@@ -181,6 +181,12 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
             this.unWireEvents();
         }
         destroy(this, this.getWrapper(), this.tagName);
+        if (this.refreshing) {
+            ['e-control', 'e-switch', 'e-lib'].forEach((key: string) => {
+                this.element.classList.add(key);
+            });
+            setValue('ej2_instances', [this], this.element);
+        }
     }
     private focusHandler(): void {
         this.isFocused = true;
@@ -356,6 +362,17 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
             this.isFocused = false;
         }
     }
+
+    private mouseLeaveHandler(e: MouseEvent): void {
+        const rippleSpan: Element = this.element.parentElement.getElementsByClassName(RIPPLE)[0];
+        if (rippleSpan) {
+            const rippleElem: NodeListOf<Element> = rippleSpan.querySelectorAll('.e-ripple-element');
+            for (let i: number = rippleElem.length - 1; i > 0; i--) {
+                rippleSpan.removeChild(rippleSpan.childNodes[i as number]);
+            }
+            rippleMouseHandler(e, rippleSpan);
+        }
+    }
     private rippleTouchHandler(eventType: string): void {
         const rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         if (rippleSpan) {
@@ -449,6 +466,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         EventHandler.add(this.element, 'mouseup', this.delegateMouseUpHandler, this);
         EventHandler.add(this.element, 'keyup', this.delegateKeyUpHandler, this);
         EventHandler.add(wrapper, 'mousedown mouseup', this.rippleHandler, this);
+        EventHandler.add(wrapper, 'mouseleave', this.mouseLeaveHandler, this);
         EventHandler.add(wrapper, 'touchstart touchmove touchend', this.switchMouseUp, this);
         if (this.formElement) {
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
@@ -462,6 +480,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         EventHandler.remove(this.element, 'mouseup', this.delegateMouseUpHandler);
         EventHandler.remove(this.element, 'keyup', this.delegateKeyUpHandler);
         EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
+        EventHandler.remove(wrapper, 'mouseleave', this.mouseLeaveHandler);
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);

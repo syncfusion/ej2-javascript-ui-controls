@@ -368,6 +368,9 @@ export class RibbonBackstage extends Component<HTMLElement> {
                         this.closeBtn.setProperties(commonProp);
                     }
                 }
+                if (this.footerMenuCtrl) {
+                    this.footerMenuCtrl.setProperties(commonProp);
+                }
             }
         }
     }

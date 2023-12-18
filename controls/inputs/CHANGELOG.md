@@ -2,44 +2,13 @@
 
 ## [Unreleased]
 
-## 23.1.43 (2023-10-31)
-
-### FormValidator
-
-#### Bug Fixes
-
-- `#I508670` - Fixed a memory leak issue that occurred when navigating between pages.
-
-### TextBox
-
-#### Bug Fixes
-
-- `#I512497` - Fixed an issue where the values of the textbox with the 'e-valid-input' class were persisting even after resetting the form.
+## 24.1.41 (2023-12-18)
 
 ### Signature
 
 #### Bug Fixes
 
 - `#I510300` - Issue with "`isEmpty` method return wrong value in signature control" has been resolved.
-
-## 23.1.42 (2023-10-24)
-
-### Uploader
-
-#### Bug Fixes
-
-- `#I505786` - Resolved issue with Sequential upload not working when drag and drop files multiple times.
-
-## 23.1.38 (2023-09-26)
-
-### Signature
-
-#### Bug Fixes
-
-- `#I497270` - Provided the support to "GetSignature" public method returns base64 string with background.
-- `#F184324` - Provided the "refresh" public method to signature component.
-
-## 23.1.36 (2023-09-15)
 
 ### ColorPicker
 

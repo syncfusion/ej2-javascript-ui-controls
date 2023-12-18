@@ -452,4 +452,29 @@ describe('Toolbar - view html', () => {
             rteObj.sourceCodeModule.mouseDownHandler();
         });
     });
+    describe('858234-Scrollbar appears when the Rich Text Editor is in the code view', () => {
+        let rteObj: any;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode','Bold']
+                },
+            });
+            rteEle = rteObj.element;
+        });
+
+        it('Test - Code view height testing when height API is auto', () => {
+            const contentElement = rteEle.querySelector('.e-rte-content') as HTMLElement | null;
+            const contentHeight: number = contentElement.offsetHeight;
+            const trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            const textareaElement = rteEle.querySelector('.e-rte-srctextarea') as HTMLElement | null;
+            const textareaHeight: string | null = textareaElement.style.height;      
+            expect(parseInt(textareaHeight)).toBe(contentHeight);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

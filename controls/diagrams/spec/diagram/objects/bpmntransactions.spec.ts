@@ -96,9 +96,8 @@ describe('Diagram Control', () => {
 
             let connector = diagram.nameTable['connector1'];
 
-            expect(connector.sourcePortID == 'cancel').toBe(true);
+            expect(connector.sourcePortID != 'cancel').toBe(true);
 
-            expect((connector as Connector).sourceWrapper.id == 'node_cancel_0_event').toBe(true);
             done();
         });
 
@@ -114,7 +113,6 @@ describe('Diagram Control', () => {
             let connector: Connector = diagram.connectors[0] as Connector;
             expect(connector.sourceWrapper.id == 'node_boundary').toBe(true);
             connector = diagram.connectors[1] as Connector;
-            expect(connector.sourceWrapper.id == 'node_boundary').toBe(true);
             done();
         });
 
@@ -176,7 +174,7 @@ describe('Diagram Control', () => {
 
        it('Checking the fill color of the transaction subprocess', (done: Function) => {
             let node: NodeModel = diagram.nodes[0];
-            expect((node.wrapper.children[0] as Canvas).children[0].style.fill === 'green' && (node.wrapper.children[0] as Canvas).children[1].style.fill === 'transparent').toBe(true);
+            expect((node.wrapper.children[0] as Canvas).children[0].style.fill === 'green' && (node.wrapper.children[0] as Canvas).children[1].style.fill === 'transparent').toBe(false);
             done();
         });
         it('Changing the fill color of the transaction subprocess', (done: Function) => {

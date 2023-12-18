@@ -418,7 +418,7 @@
           .e-rcursor {
             border: 0;
           }
-          
+
           @if $fm-skin-name == 'fabric' or $fm-skin-name == 'fabric-dark' {
             padding: 5px 8px;
             line-height: 16px;
@@ -473,7 +473,7 @@
               line-height: 20px;
             }
           }
-          
+
           @if $fm-skin-name == 'fabric' or $fm-skin-name == 'fabric-dark' {
             padding: 10px 8px;
             line-height: 16px;
@@ -1351,7 +1351,9 @@
 
         .e-fe-search {
           font-size: $fe-mobile-icon-font-size;
-          margin: 3px 0;
+          @if $fm-skin-name !='Material3' {
+            margin: 3px 0;
+          }
           right: 13px;
         }
       }

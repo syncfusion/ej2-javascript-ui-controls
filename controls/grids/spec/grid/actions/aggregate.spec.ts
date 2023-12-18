@@ -506,6 +506,7 @@ describe('Aggregates Functionality testing', () => {
                     ],
                     load: function() {
                         this.isReact = true;
+                        this.isInitialLoad = true;
                     },
                     aggregates: [{
                         columns: [{
@@ -513,6 +514,12 @@ describe('Aggregates Functionality testing', () => {
                             field: 'OrderID',
                             columnName: 'OrderID',
                             groupCaptionTemplate: groupCaption,
+                        },
+                        {
+                            type: 'Sum',
+                            field: 'Freight',
+                            columnName: 'Freight',
+                            footerTemplate: groupCaption,
                         }]
                     }]
                 },

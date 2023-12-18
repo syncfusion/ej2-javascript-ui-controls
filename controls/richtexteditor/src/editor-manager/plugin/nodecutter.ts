@@ -168,7 +168,7 @@ export class NodeCutter {
         if ( (indexes.indexOf(range.startOffset) >= 0)
         || ( (indexes.indexOf(range.startOffset - 1) >= 0) && ( range.startOffset !== 1
         ||  ( range.startOffset === 1 && new RegExp('\\s').test(str[0])) )
-        || ((indexes[indexes.length - 1] - 1 ) === range.startOffset ))) {
+        || (((indexes[indexes.length - 1] - 1 ) === range.startOffset) && !new RegExp('\\s').test(str[0])))) {
             cursorRange = range;
             this.position = 1;
         } else {

@@ -5,7 +5,7 @@ import { RangeNavigator } from '../range-navigator';
 import { valueToCoefficient, textElement, firstToLowerCase, withIn } from '../../common/utils/helper';
 import { PathOption, Rect, measureText, TextOption, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { DateTime } from '../../chart/axis/date-time-axis';
-import { IntervalType } from '../../chart/utils/enum';
+import { IntervalType } from '../../common/utils/enum';
 import { RangeIntervalType } from '../../common/utils/enum';
 import { FontModel } from '../../common/model/base-model';
 import { Axis, VisibleLabels } from '../../chart/axis/axis';

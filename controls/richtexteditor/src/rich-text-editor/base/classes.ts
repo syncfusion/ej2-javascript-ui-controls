@@ -81,6 +81,11 @@ export const CLS_QUICK_TB: string = 'e-rte-quick-toolbar';
  * @hidden
  * @deprecated
  */
+export const CLS_TEXT_QUICK_TB: string = 'e-rte-text-quicktoolbar';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const CLS_POP: string = 'e-rte-pop';
 
 /**

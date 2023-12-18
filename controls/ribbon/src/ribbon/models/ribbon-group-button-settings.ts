@@ -10,6 +10,14 @@ import { RibbonGroupButtonItem } from './ribbon-group-button-item';
 export class RibbonGroupButtonSettings extends ChildProperty<RibbonGroupButtonSettings>  {
 
     /**
+     * Specifies the header for the groupbutton popup in Simplified layout.
+     *
+     * @default ''
+     */
+    @Property('')
+    public header: string;
+
+    /**
      * Defines options for Selection Type.
      *
      * @isenumeration true

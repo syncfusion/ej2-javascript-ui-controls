@@ -5,9 +5,9 @@ import { clearCopy, protectSelection, clearUndoRedoCollection, focus, isLockedCe
 import { Dialog } from '../services/dialog';
 import { ListView, SelectedCollection, SelectEventArgs } from '@syncfusion/ej2-lists';
 import { L10n, EventHandler, closest, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { locale, updateToggleItem, dialog, isImported } from '../common/index';
+import { locale, updateToggleItem, dialog } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
-import { ExtendedSheet, Sheet, SheetModel } from '../../workbook';
+import { ExtendedSheet, SheetModel } from '../../workbook';
 import { CellModel, getSheet, protectsheetHandler, getRangeIndexes } from '../../workbook/index';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { OpenOptions } from '../common/interface';
@@ -782,7 +782,7 @@ export class ProtectSheet {
         let isActive: boolean;
         const parentId: string = this.parent.element.id;
         const sheet: ExtendedSheet = this.parent.getActiveSheet() as ExtendedSheet;
-        if (sheet.isProtected && this.parent.allowOpen && sheet.isImportProtected && this.parent.openModule.isImportedFile &&
+        if (sheet.isProtected && this.parent.allowOpen &&  sheet.isImportProtected && this.parent.openModule.isImportedFile &&
             this.parent.openModule.unProtectSheetIdx.indexOf(this.parent.activeSheetIndex) === -1) {
             this.unProtectsheet(true);
         }

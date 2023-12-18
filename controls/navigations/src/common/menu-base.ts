@@ -565,6 +565,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
                 }
             }
+        } else {
+            this.element.parentElement.setAttribute('role', 'dialog');
+            this.element.parentElement.setAttribute('aria-label', 'context menu');
         }
     }
 

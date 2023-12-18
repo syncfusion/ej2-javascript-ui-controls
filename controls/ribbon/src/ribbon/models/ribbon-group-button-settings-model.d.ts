@@ -6,6 +6,13 @@ import { ChildProperty, Collection, Property } from '@syncfusion/ej2-base';impo
 export interface RibbonGroupButtonSettingsModel {
 
     /**
+     * Specifies the header for the groupbutton popup in Simplified layout.
+     *
+     * @default ''
+     */
+    header?: string;
+
+    /**
      * Defines options for Selection Type.
      *
      * @isenumeration true

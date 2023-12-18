@@ -156,7 +156,7 @@ export class NavigationPane {
             // eslint-disable-next-line max-len
             this.sideBarContentSplitter = createElement('div', { id: this.pdfViewer.element.id + '_sideBarContentSplitter', className: 'e-pv-sidebar-content-splitter' });
             // eslint-disable-next-line max-len
-            this.sideBarContent = createElement('div', { id: this.pdfViewer.element.id + '_sideBarContent', className: 'e-pv-sidebar-content', attrs: { 'tabindex': '0' } });
+            this.sideBarContent = createElement('div', { id: this.pdfViewer.element.id + '_sideBarContent', className: 'e-pv-sidebar-content'});
             // eslint-disable-next-line max-len
             this.sideBarTitleContainer = createElement('div', { id: this.pdfViewer.element.id + '_sideBarTitleContainer', className: 'e-pv-sidebar-title-container' });
             // eslint-disable-next-line max-len
@@ -332,7 +332,7 @@ export class NavigationPane {
         // eslint-disable-next-line max-len
         const moreOptionButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_annotation_more_icon', className: 'e-pv-more-icon e-pv-icon' });
         annotationButton.appendChild(moreOptionButtonSpan);
-        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode &&  !isBlazor()) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode &&!isBlazor()) {
             const commentCloseIconDiv: HTMLElement = createElement('button');
             commentCloseIconDiv.setAttribute('aria-label', 'annotation button');
             commentCloseIconDiv.setAttribute('type', 'button');
@@ -851,6 +851,7 @@ export class NavigationPane {
             this.thumbnailButton.removeAttribute('disabled');
             this.thumbnailButton.children[0].classList.remove('e-pv-thumbnail-view-disable-icon');
             this.thumbnailButton.children[0].classList.add('e-pv-thumbnail-view-icon');
+            this.thumbnailButton.setAttribute('tabindex', '0');
         }
     }
 
@@ -863,6 +864,7 @@ export class NavigationPane {
             this.bookmarkButton.removeAttribute('disabled');
             this.bookmarkButton.children[0].classList.remove('e-pv-bookmark-disable-icon');
             this.bookmarkButton.children[0].classList.add('e-pv-bookmark-icon');
+            this.bookmarkButton.setAttribute('tabindex', '0');
         }
     }
 
@@ -1194,6 +1196,7 @@ export class NavigationPane {
                     proxy.isThumbnailOpen = true;
                     proxy.setThumbnailSelectionIconTheme();
                     proxy.updateViewerContainerOnExpand();
+                    (document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_image_' + (proxy.pdfViewerBase.currentPageNumber -1)) as any).focus();
                 } else {
                     proxy.isThumbnailOpen = false;
                     proxy.removeThumbnailSelectionIconTheme();
@@ -1207,6 +1210,7 @@ export class NavigationPane {
                 proxy.setThumbnailSelectionIconTheme();
                 proxy.updateViewerContainerOnExpand();
                 proxy.isThumbnail = true;
+                (document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_image_' + (proxy.pdfViewerBase.currentPageNumber -1)) as any).focus();
             }
         }
         proxy.isBookmarkOpen = false;
@@ -1261,11 +1265,11 @@ export class NavigationPane {
         }
     };
 
-     /**
+    /**
      * @private
      * @returns {void}
      */
-     public closeThumbnailPane  = (): void => {
+    public closeThumbnailPane  = (): void => {
         let proxy : NavigationPane = null;
         proxy = this;
         if(proxy.isThumbnail || !proxy.isThumbnailAddedProgrammatically) {
@@ -1276,7 +1280,7 @@ export class NavigationPane {
             proxy.isThumbnail = false;
         }
     }
-
+    
     /**
      * @private
      * @returns {void}

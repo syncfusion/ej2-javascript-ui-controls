@@ -1150,7 +1150,7 @@ describe('Overview', () => {
             console.log(htmlOverView.style.transform);
             console.log("Overview - For window resize")
             expect(overviewstyle === "position: relative; height: 150px; width: 100%; touch-action: none;").toBe(true);
-            expect(htmlOverView.style.transform === "scale(0.0662188) translate(731.609px, 790.805px)" || htmlOverView.style.transform === "scale(0.0821449) translate(734.139px, 797.163px)").toBe(true);
+            expect(htmlOverView.style.transform === "scale(0.0821449) translate(641px, 580px)").toBe(true);
             done();
         });
 
@@ -1237,7 +1237,7 @@ describe('Overview', () => {
             var node: NodeModel = { id: "newnode", width: 100, height: 100, offsetX: 400, offsetY: 400 };
             newdiagram.add(node);
             console.log(overview.contentHeight)
-            expect(overview.contentHeight > 5000).toBe(true);
+            expect(overview.contentHeight >= 5000).toBe(true);
 
             done();
         });
@@ -1460,15 +1460,33 @@ describe('Overview', () => {
     });
 
     describe('Overview not updated properly while zoom out', () => {
-        let diagram: Diagram;
-        let overview: Overview;
-        let ele: HTMLElement;
-        let ove: HTMLElement;
+
+        let newdiagram: Diagram;
+        let newoverview: Overview;
+        let Diagramelement: HTMLElement;
+        let parentelement: HTMLElement;
+        let parentelement1: HTMLElement;
+        let overViewElement: HTMLElement;
+        let scroller: DiagramScroller;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+
+
         beforeAll((): void => {
-            ele = createElement('div', { id: 'diagram',styles:"width:74%;height: 500px; float:left" });
-            document.body.appendChild(ele);
-            ove = createElement('div', { id: 'overview1' ,styles:"width:25%;height:200px;float:left; border-color:lightgray;border-style:solid;"});
-            document.body.appendChild(ove);
+            let shape: BasicShapeModel = { type: 'Basic' };
+            let node: NodeModel =
+            {
+                shape: shape
+
+            };
+            parentelement = createElement('div', { id: 'overviewdiagram', styles: "width: 100%;height: 500px;" });
+            document.body.appendChild(parentelement)
+            parentelement1 = createElement('div', { id: 'parentelement1', styles: "width:74%;height: 500px; float:left;" });
+            parentelement.appendChild(parentelement1);
+            Diagramelement = createElement('div', { id: 'diagram' });
+            parentelement1.appendChild(Diagramelement);
+            overViewElement = createElement('div', { id: 'overview', styles: "width:25%;height:200px;float:left; border-color:lightgray;border-style:solid;" });
+            parentelement.appendChild(overViewElement);
 
             let data: object[] =  [
                 {
@@ -1608,7 +1626,8 @@ describe('Overview', () => {
             ];
             let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
 
-            diagram = new Diagram({
+
+            newdiagram = new Diagram({
                 snapSettings: { constraints: 0 },
                 layout: {
                     type: 'OrganizationalChart', margin: { top: 100 },
@@ -1667,42 +1686,45 @@ describe('Overview', () => {
 
                     return content;
                 }
+
             });
-
-            diagram.appendTo('#diagram');
-
+            newdiagram.appendTo('#diagram');
+            newdiagram.fitToPage()
             let options: OverviewModel = {};
-            options.height = '500';
-            options.width = '250';
+            options.height = '250px';
+            options.width = '70%';
             options.sourceID = 'diagram';
-            overview = new Overview(options);
-            overview.appendTo('#over');
+            newoverview = new Overview(options);
+            newoverview.appendTo('#overview');
 
         });
 
         afterAll((): void => {
-            overview.destroy();
-            diagram.destroy();
-            ele.remove();
-            ove.remove();
+            newoverview.destroy();
+            newdiagram.destroy();
+            Diagramelement.remove();
+            overViewElement.remove();
+            parentelement1.remove();
+            parentelement.remove();
         });
+
         it('Zoom-out diagram and doing interactions in diagram', (done: Function) => {
             let zoomout: ZoomOptions = { type: "ZoomOut", zoomFactor: 0.2 };
-            diagram.zoomTo(zoomout);
-            let preZoom = diagram.scroller.currentZoom; 
-            diagram.select([diagram.nodes[0]]);
-            diagram.drag(diagram.nodes[0], 100, 100);
+            newdiagram.zoomTo(zoomout);
+            let preZoom = newdiagram.scroller.currentZoom; 
+            newdiagram.select([newdiagram.nodes[0]]);
+            newdiagram.drag(newdiagram.nodes[0], 100, 100);
             var mouseEvents:MouseEvents = new MouseEvents();
-            let overviewelement:HTMLElement = document.getElementById(overview.element.id);
+            let overviewelement:HTMLElement = document.getElementById(newoverview.element.id);
             let target:HTMLElement = document.getElementById('overview_canvasbottom');
             let mouseDown:string = 'mouseDown';
             let mouseup:string = 'mouseUp';
             let mouseMove:string = 'mouseMove';
-            overview[mouseDown]({ target: target, type: mouseDown });
+            newoverview[mouseDown]({ target: target, type: mouseDown });
             mouseEvents.mouseDownEvent(overviewelement, 1186, 160);
             mouseEvents.mouseMoveEvent(overviewelement, 1056, 170);
-            overview[mouseup]({ target: target, type: mouseDown });
-            let curZoom = diagram.scroller.currentZoom;
+            newoverview[mouseup]({ target: target, type: mouseDown });
+            let curZoom = newdiagram.scroller.currentZoom;
             expect(preZoom !==curZoom).toBe(true);
             done();
         });
@@ -1863,7 +1885,8 @@ describe('Overview', () => {
             createdEvent=true
         }
     });
-    describe('Overview not updated properly when we load the diagram', () => {
+
+    describe('849892-Overview not updated properly when we load the diagram', () => {
         let diagram: Diagram;
         let overview: Overview;
         let ele: HTMLElement;
@@ -1933,9 +1956,8 @@ describe('Overview', () => {
             let y = element.getAttribute("y");
             console.log(x);
             console.log(y);
-            expect(element && Math.round(Number(x)) === 6  || Math.round(Number(x)) === 4 || Math.round(Number(y)) === 111 || Math.round(Number(y)) === 80).toBe(true);
+            expect(element && Number(x) === 10.915472182485976  || Number(y) === 173.44462679296336 ).toBe(true);
             done();
         });
     });
-
 });

@@ -12,3 +12,5 @@ export * from './sidebar/index';
 export * from './breadcrumb/index';
 export * from './carousel/index';
 export * from './appbar/index';
+export * from './stepper-base/index';
+export * from './stepper/index';

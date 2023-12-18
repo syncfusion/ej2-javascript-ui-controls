@@ -380,6 +380,10 @@ describe('Switch', () => {
             specSwitch.click();
             specSwitch.focusIn();
         });
+        it('Refresh methods', () => {
+            specSwitch = new Switch({}, '#specSwitch');
+            specSwitch.refresh();
+        });
     });
 
     describe('Switch in HTML5 forms', () => {

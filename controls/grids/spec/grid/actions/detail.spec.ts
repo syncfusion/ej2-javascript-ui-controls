@@ -1065,5 +1065,4 @@ describe('Detail template module', () => {
             gridObj = columns = dataBound = null;
         });
     });
-
 });

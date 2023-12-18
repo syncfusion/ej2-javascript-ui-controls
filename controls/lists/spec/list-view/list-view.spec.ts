@@ -2,7 +2,7 @@
  * ListView spec document
  */
 import { createElement, isVisible, extend } from '@syncfusion/ej2-base';
-import { ListView, Virtualization, SelectEventArgs, SelectedItem } from '../../src/list-view/index';
+import { ListView, Virtualization, SelectEventArgs, SelectedItem, ScrolledEventArgs } from '../../src/list-view/index';
 import { DataManager, ODataV4Adaptor, Query, JsonAdaptor } from '@syncfusion/ej2-data';
 import '../../node_modules/es6-promise/dist/es6-promise';
 ListView.Inject(Virtualization);
@@ -33,7 +33,6 @@ function simulateScrollEvent(target: HTMLElement, newScrollTop: number) {
     e.initUIEvent("scroll", true, true, window, 1);
     target.dispatchEvent(e);
 }
-
 
 let dataSource: { [key: string]: Object }[] = [
     { id: '01', text: 'text1' },
@@ -254,6 +253,14 @@ let dataSourceGroupCheckbox: { [key: string]: Object }[] = [
     },
 ];
 
+let htmlAttributesData: { [key: string]: Object }[] = [
+    { id: '01', text: 'text1', htmlAttributes: { class: ' ' }},
+    { id: '02', text: 'text2', htmlAttributes: { class: 'li-02' }},
+    { id: '03', text: 'text3', htmlAttributes: { class: 'li-03', title: 'text3' }},
+    { id: '04', text: 'text4', htmlAttributes: { class: ' ', title: 'text4' }}
+];
+
+let emptyDataSource: { [key: string]: Object }[] = [];
 
 describe('ListView', () => {
 
@@ -1852,29 +1859,39 @@ describe('ListView', () => {
             document.body.appendChild(ele);
         });
 
-        it('remove item with grouping option', () => {
+        it('remove item with grouping option', (done: Function) => {
             listObj = new ListView({ dataSource: dataDefaultMapping, showCheckBox: true });
             listObj.appendTo(ele);
             let elements = document.getElementById('ListView').getElementsByClassName('e-list-item');
             listObj.selectItem(elements[2]);
             listObj.removeMultipleItems([elements[0], elements[1]]);
-            expect(listObj.element.querySelectorAll('.e-list-item').length).toBe(1);
+            setTimeout(() => {  
+                expect(listObj.element.querySelectorAll('.e-list-item').length).toBe(1);
+                done();
+            }, 100); 
+            
         });
 
-        it('removeMultipleItems in string of array inputs', () => {
+        it('removeMultipleItems in string of array inputs', (done: Function) => {
             listObj = new ListView({ dataSource: ['item1', 'item2', 'item3', 'item4'], showCheckBox: true });
             listObj.appendTo(ele);
             let elements = document.getElementById('ListView').getElementsByClassName('e-list-item');
             listObj.removeMultipleItems([elements[0], elements[1]]);
-            expect(listObj.element.querySelectorAll('.e-list-item').length).toBe(2);
+            setTimeout(() => {  
+                expect(listObj.element.querySelectorAll('.e-list-item').length).toBe(2);
+                done();
+            }, 100);
         });
 
-        it('remove item in string of array inputs', () => {
+        it('remove item in string of array inputs', (done: Function) => {
             listObj = new ListView({ dataSource: ['item1', 'item2', 'item3', 'item4'], showCheckBox: true });
             listObj.appendTo(ele);
             let elements = document.getElementById('ListView').getElementsByClassName('e-list-item');
             listObj.removeItem(elements[1]);
-            expect(listObj.element.querySelectorAll('.e-list-item').length).toBe(3);
+            setTimeout(() => {  
+                expect(listObj.element.querySelectorAll('.e-list-item').length).toBe(3);
+                done();
+            }, 100);
         });
 
         it('remove item in string of array inputs as by its data', () => {
@@ -2048,21 +2065,27 @@ describe('ListView', () => {
             document.body.appendChild(ele);
         });
 
-        it('Selecting an item from selectItem Method', () => {
+        it('Selecting an item from selectItem Method', (done: Function) => {
             listObj = new ListView({ dataSource: dataSourceGroup, showCheckBox: true });
             listObj.appendTo(ele);
             let elements = document.getElementById('ListView').querySelectorAll('.e-list-item');
             listObj.selectItem(elements[2]);
-            expect(listObj.element.querySelectorAll('.e-active')[0].innerText).toBe((elements[2] as HTMLElement).innerText);
+            setTimeout(() => {  
+                expect(listObj.element.querySelectorAll('.e-active')[0].innerText).toBe((elements[2] as HTMLElement).innerText);
+                done();
+            }, 100); 
         });
 
-        it('Selecting multiple items using selectMultipleItems', () => {
+        it('Selecting multiple items using selectMultipleItems', (done: Function) => {
             listObj = new ListView({ dataSource: dataSourceGroup, showCheckBox: true });
             listObj.appendTo(ele);
             let elements = document.getElementById('ListView').querySelectorAll('.e-list-item');
             listObj.selectMultipleItems([elements[0], elements[1]]);
-            expect(listObj.element.querySelectorAll('.e-active')[0].innerText.trim()).toBe((elements[0] as HTMLElement).innerText.trim());
-            expect(listObj.element.querySelectorAll('.e-active')[1].innerText.trim()).toBe((elements[1] as HTMLElement).innerText.trim());
+            setTimeout(() => {  
+                expect(listObj.element.querySelectorAll('.e-active')[0].innerText.trim()).toBe((elements[0] as HTMLElement).innerText.trim());
+                expect(listObj.element.querySelectorAll('.e-active')[1].innerText.trim()).toBe((elements[1] as HTMLElement).innerText.trim());
+                done();
+            }, 100); 
         });
 
         it('Selecting an item from selectItem Method which was already selected', () => {
@@ -3459,6 +3482,97 @@ describe('ListView', () => {
             expect(listElements[1].getAttribute('data-uid')).toBe('04');
             expect(listObj.element.querySelector(`[data-uid = "04"]`) instanceof Node).toBe(true);
         });
+
+        xit('adding data when scrollbar scrolled to both top and bottom', (done: Function) => {
+            let ele = createElement('div', { id: 'listView-scroll-updown', styles:"overflow:scroll;" });
+            document.body.appendChild(ele);
+            let listObj2 = new ListView ({
+                dataSource: dataSource,
+                height:100,
+                scroll: (args: ScrolledEventArgs) => {
+                    let dsLength = ele.querySelectorAll('.e-list-item').length;
+                    let newData: any = [
+                        { id: '06', text: 'item6' },
+                        { id: '07', text: 'item7' },
+                    ];
+                    if (args.scrollDirection === "Top") {
+                        if (args.distanceY < 200) {
+                            expect(ele.scrollTop).toBe(0);
+                            expect(args.scrollDirection === "Top").toBe(true);
+                            listObj2.addItem(newData, null, 0);
+                            expect(listObj2.element.querySelectorAll('.e-list-item')[1].getAttribute('data-uid')).toBe('06');
+                            expect(listObj2.element.querySelectorAll('.e-list-item')[0].getAttribute('data-uid')).toBe('07');
+                        }
+                    } else {
+                        if (args.distanceY < 200) {
+                            expect(args.scrollDirection === "Bottom").toBe(true);
+                            expect(Math.round(ele.clientHeight) + Math.round(ele.scrollTop)).toBe(ele.scrollHeight);
+                            listObj2.addItem(newData);
+                            expect(listObj2.element.querySelectorAll('.e-list-item')[dsLength].getAttribute('data-uid')).toBe('06');
+                            expect(listObj2.element.querySelectorAll('.e-list-item')[dsLength + 1].getAttribute('data-uid')).toBe('07');
+                        }
+                    }
+                    done();
+                }
+            });
+            listObj2.appendTo(ele);
+            simulateScrollEvent(ele, ele.scrollHeight);
+            simulateScrollEvent(ele, 0);
+        });
+
+        xit('adding data when scrollbar scrolled to Bottom', (done: Function) => {
+            let ele = createElement('div', { id: 'listView-scroll-down', styles:"overflow:scroll;" });
+            document.body.appendChild(ele);
+            let listObj1 = new ListView ({
+                dataSource: dataSource,
+                height:100,
+                scroll: (args: ScrolledEventArgs) => {
+                    if (args.distanceY < 200) {
+                        expect(args.scrollDirection === "Bottom").toBe(true);
+                        let dsLength = ele.querySelectorAll('.e-list-item').length;
+                        let newData: any = [
+                            { id: '06', text: 'item6' },
+                            { id: '07', text: 'item7' },
+                        ];
+                        expect(listObj1.element.scrollHeight - listObj1.element.clientHeight - listObj1.element.scrollTop).toBe(args.distanceY)
+                        listObj1.addItem(newData);
+                        expect(listObj1.element.querySelectorAll('.e-list-item')[dsLength].getAttribute('data-uid')).toBe('06');
+                        expect(listObj1.element.querySelectorAll('.e-list-item')[dsLength + 1].getAttribute('data-uid')).toBe('07');
+                    }
+                    done();
+                }
+            });
+            listObj1.appendTo(ele);
+            simulateScrollEvent(ele, ele.scrollHeight);
+        });
+
+        xit('adding data when scrollbar scrolled to top', (done: Function) => {
+            let ele = createElement('div', { id: 'ListView', styles:"overflow:scroll;" });
+            document.body.appendChild(ele);
+            listObj = new ListView({
+                dataSource: dataSource,
+                height:100,
+                scroll: (args: ScrolledEventArgs) => {
+                    if (args.scrollDirection === "Top") {
+                        if (args.distanceY < 200) {
+                            expect(ele.scrollTop).toBe(args.distanceY);
+                            expect(args.scrollDirection === "Top").toBe(true);
+                            let newData: any = [
+                                { id: '06', text: 'item6' },
+                                { id: '07', text: 'item7' },
+                            ];
+                            listObj.addItem(newData, null, 0);
+                            expect(listObj.element.querySelectorAll('.e-list-item')[1].getAttribute('data-uid')).toBe('06');
+                            expect(listObj.element.querySelectorAll('.e-list-item')[0].getAttribute('data-uid')).toBe('07');
+                        }
+                    }
+                    done();
+                } 
+            });
+            listObj.appendTo(ele);
+            simulateScrollEvent(ele, ele.scrollHeight);
+            simulateScrollEvent(ele, 0);
+        });
     });
 
     describe('removeItem testing', () => {
@@ -3497,6 +3611,56 @@ describe('ListView', () => {
             expect((listObj as any).dataSource[0].id).toBe("02");
             expect((listObj as any).dataSource[1].child.length).toBe(0);
             expect((listObj as any).dataSource.length).toBe(2);
+        });
+    });
+    describe('ListView with empty data source', () => {
+        let treeObj: any;
+        let ele: HTMLElement;
+        beforeEach(() => {
+            ele = document.createElement('div');
+            ele.id = 'ListView';
+            document.body.appendChild(ele);
+            // Initialize a ListView with an empty data source
+            treeObj = new ListView({ dataSource: emptyDataSource });
+            treeObj.appendTo(ele);
+        });
+
+        afterEach(() => {
+            // Clean up after each test
+            treeObj.destroy();
+            ele.remove();
+        });
+
+        it('should not log a console error when clicking on an empty data source', () => {
+           ele.click();
+           expect(console.error()).toEqual(undefined);
+        });
+    });
+    describe('ListView with an empty htmlAttributes field in the data source', () => {
+        let treeObj: any;
+        let ele: HTMLElement;
+        beforeEach(() => {
+            ele = document.createElement('div');
+            ele.id = 'ListView';
+            document.body.appendChild(ele);
+            // Initialize a ListView with an empty data source
+            treeObj = new ListView({ dataSource: htmlAttributesData, fields:{ htmlAttributes:'htmlAttributes'} });
+            treeObj.appendTo(ele);
+        });
+
+        afterEach(() => {
+            // Clean up after each test
+            treeObj.destroy();
+            ele.remove();
+        });
+
+        it('should correctly handle the htmlAttributes field', () => {
+            expect(ele.querySelectorAll('li')[0].classList.contains('e-list-item')).toBe(true);
+            expect(ele.querySelectorAll('li')[1].classList.contains('li-02')).toBe(true);
+            expect(ele.querySelectorAll('li')[2].classList.contains('li-03')).toBe(true);
+            expect(ele.querySelectorAll('li')[2].getAttribute('title')).toBe('text3');
+            expect(ele.querySelectorAll('li')[3].classList.contains('e-list-item')).toBe(true);
+            expect(ele.querySelectorAll('li')[3].getAttribute('title')).toBe('text4');
         });
     });
 });

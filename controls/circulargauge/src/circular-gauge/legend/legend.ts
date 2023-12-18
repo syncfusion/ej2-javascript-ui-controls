@@ -1,195 +1,17 @@
 import { CircularGauge } from '../circular-gauge';
 import { removeElement, getElement, stringToNumber, measureText, textElement, appendPath, calculateShapes, PathOption, RectOption, Size, GaugeLocation, Rect, TextOption } from '../utils/helper-common';
 import { textTrim, showTooltip } from '../utils/helper-legend';
-import { Property, Complex, ChildProperty, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { BorderModel, FontModel, MarginModel } from '../model/base-model';
-import { Font, Border, Margin } from '../model/base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Border } from '../model/base';
 import { LegendPosition, Alignment, GaugeShape } from '../utils/enum';
-import { Theme } from '../model/theme';
 import { Axis } from '../axes/axis';
 import { ILegendRenderEventArgs } from '../model/interface';
-import { LegendSettingsModel } from './legend-model';
-import { LocationModel } from './legend-model';
+import { LocationModel, LegendSettingsModel } from '../model/base-model';
+import { LegendSettings } from '../model/base';
 import { ILegendRegions } from '../model/interface';
 import { RangeModel } from '../axes/axis-model';
 import { Range } from '../axes/axis';
 
-/**
- * Sets and gets the location of the legend in circular gauge.
- */
-export class Location extends ChildProperty<Location>  {
-    /**
-     * Sets and gets the X coordinate of the legend in the circular gauge.
-     *
-     * @default 0
-     */
-    @Property(0)
-    public x: number;
-
-    /**
-     * Sets and gets the Y coordinate of the legend in the circular gauge.
-     *
-     * @default 0
-     */
-    @Property(0)
-    public y: number;
-}
-/**
- * Sets and gets the options to customize the legend for the ranges in the circular gauge.
- */
-export class LegendSettings extends ChildProperty<LegendSettings> {
-
-    /**
-     * Enable and disables the visibility of the legend in circular gauge.
-     *
-     * @default false
-     */
-    @Property(false)
-    public visible: boolean;
-
-    /**
-     * Enables and disables the visibility of the ranges. When the legend is clicked, the visibility of the legend will be toggled.
-     *
-     * @default true
-     */
-    @Property(true)
-    public toggleVisibility: boolean;
-
-    /**
-     * Sets and gets the alignment of the legend in the circular gauge.
-     *
-     * @default 'Center'
-     */
-    @Property('Center')
-    public alignment: Alignment;
-
-    /**
-     * Sets and gets the options to customize the style properties of the border of the legend.
-     *
-     */
-    @Complex<BorderModel>({}, Border)
-    public border: BorderModel;
-
-    /**
-     * Sets and gets the options to customize the style properties of the border for the shape of the legend in the circular gauge.
-     */
-    @Complex<BorderModel>({}, Border)
-    public shapeBorder: BorderModel;
-
-    /**
-     * Sets and gets the options to customize the padding between legend items.
-     *
-     * @default 8
-     */
-    @Property(8)
-    public padding: number;
-
-    /**
-     * Sets and gets the opacity of the legend.
-     *
-     * @default 1
-     */
-    @Property(1)
-    public opacity: number;
-
-    /**
-     * Sets and gets the position of the legend in the circular gauge.
-     *
-     * @default 'Auto'
-     */
-    @Property('Auto')
-    public position: LegendPosition;
-
-    /**
-     * Sets and gets the shape of the legend in circular gauge.
-     *
-     * @default Circle
-     */
-    @Property('Circle')
-    public shape: GaugeShape;
-
-    /**
-     * Sets and gets the height of the legend in the circular gauge.
-     *
-     * @default null
-     */
-    @Property(null)
-    public height: string;
-
-    /**
-     * Sets and gets the width of the legend in the circular gauge.
-     *
-     * @default null
-     */
-    @Property(null)
-    public width: string;
-
-    /**
-     * Sets and gets the options to customize the text of the legend item.
-     */
-    @Complex<FontModel>(Theme.legendLabelFont, Font)
-    public textStyle: FontModel;
-
-    /**
-     * Sets and gets the height of the legend shape in circular gauge.
-     *
-     * @default 10
-     */
-    @Property(10)
-    public shapeHeight: number;
-
-    /**
-     * Sets and gets the width of the legend shape in circular gauge.
-     *
-     * @default 10
-     */
-    @Property(10)
-    public shapeWidth: number;
-
-    /**
-     * Sets and gets the padding for the legend shape in circular gauge.
-     *
-     * @default 5
-     */
-    @Property(5)
-    public shapePadding: number;
-
-    /**
-     * Sets and gets the location of the legend, relative to the circular gauge.
-     * If x is 20, legend moves by 20 pixels to the right of the gauge. It requires the `position` to be `Custom`.
-     * ```html
-     * <div id='Gauge'></div>
-     * ```
-     * ```typescript
-     * let gauge: CircularGauge = new CircularGauge({
-     * ...
-     *   legendSettings: {
-     *     visible: true,
-     *     position: 'Custom',
-     *     location: { x: 100, y: 150 },
-     *   },
-     * ...
-     * });
-     * this.gauge.appendTo('#Gauge');
-     * ```
-     */
-    @Complex<LocationModel>({ x: 0, y: 0 }, Location)
-    public location: LocationModel;
-
-    /**
-     * Sets and gets the background color of the legend in circular gauge.
-     *
-     * @default 'transparent'
-     */
-    @Property('transparent')
-    public background: string;
-
-    /**
-     * Sets and gets the options to customize the legend margin.
-     */
-    @Complex<MarginModel>({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
-    public margin: MarginModel;
-}
 
 /*
  * Sets and gets the module to add the legend in the circular gauge.
@@ -988,10 +810,7 @@ export class Legend {
                     text = legends.originalText;
                 }
             }
-            showTooltip(
-                text, x, y, this.gauge.element.offsetWidth, this.gauge.element.id + '_EJ2_Legend_Tooltip',
-                getElement(this.gauge.element.id + '_Secondary_Element')
-            );
+            showTooltip(text, x, y, this.gauge, 'LegendText');
         } else {
             removeElement(this.gauge.element.id + '_EJ2_Legend_Tooltip');
         }

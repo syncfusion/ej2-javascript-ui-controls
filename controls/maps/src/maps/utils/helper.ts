@@ -216,6 +216,27 @@ export function convertGeoToPoint(latitude: number, longitude: number, factor: n
     }
     return new Point(x, y);
 }
+
+/**
+ * @private
+ */
+export function calculatePolygonPath(maps: Maps, factor: number, currentLayer: LayerSettings, markerData: Coordinate[] ): string {
+    let path: string = '';
+    Array.prototype.forEach.call(markerData, (data: Coordinate, dataIndex: number) => {
+        let lat: number = data.latitude;
+        let lng: number = data.longitude;
+        let location: Point = (maps.isTileMap) ? convertTileLatLongToPoint(
+            new MapLocation(lng, lat), factor, maps.tileTranslatePoint, true
+        ) : convertGeoToPoint(lat, lng, factor, currentLayer, maps);
+        if (dataIndex === 0) {
+            path += 'M ' + location.x + ' ' + location.y;
+        } else {
+            path += ' L ' + location.x + ' ' + location.y;
+        }
+    });
+    path += ' z ';
+    return path
+}
 /**
  * Converting tile latitude and longitude to point
  *
@@ -373,6 +394,24 @@ export class Point {
     constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
+    }
+}
+
+/**
+ * Defines the latitude and longitude values that define a map location.
+ */
+export class Coordinate {
+    /**
+     * Gets or sets the latitude of a coordinate on a map.
+     */
+    public latitude: number;
+    /**
+     * Gets or sets the longitude of a coordinate on a map.
+     */
+    public longitude: number;
+    constructor(latitude: number, longitude: number) {
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 }
 
@@ -1203,10 +1242,20 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
             getElementByID(maps.element.id + '_Secondary_Element').appendChild(markerCollection); 
         }
         const element: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex + '_Polygon_Group');
-        if (isNullOrUndefined(element)) {
-            layerElement.insertBefore(markerCollection, layerElement.firstChild)
-        } else {
+        const polygonElement: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex + '_Polygons_Group');
+        if (isNullOrUndefined(element) && !maps.isTileMap) {
+            layerElement.insertBefore(markerCollection, layerElement.firstChild)            
+        } else if (!maps.isTileMap) {
             layerElement.appendChild(markerCollection);
+        }
+        else {
+            if (!isNullOrUndefined(polygonElement)) {
+                polygonElement.insertAdjacentElement('afterend', markerCollection)
+            } else if (!isNullOrUndefined(element)) {
+                element.insertAdjacentElement('afterend', markerCollection);
+            } else {
+                layerElement.insertBefore(markerCollection, layerElement.firstChild);
+            }
         }
         const markerCluster: HTMLElement = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex + '_markerCluster');
         if (!isNullOrUndefined(markerCluster)) {
@@ -1755,7 +1804,7 @@ export function drawBalloon(maps: Maps, options: PathOption, size: Size, locatio
     const height: number = size.height;
     let pathElement: Element;
     location.x -= width / 2;
-    location.y -= height / 2;
+    location.y -= ((options.id.indexOf('cluster') > -1) ? (height / 2) :  options.id.indexOf('Legend') > -1 ? height / 1.25 : height);
     options.d = 'M15,0C8.8,0,3.8,5,3.8,11.2C3.8,17.5,9.4,24.4,15,30c5.6-5.6,11.2-12.5,11.2-18.8C26.2,5,21.2,0,15,0z M15,16' +
         'c-2.8,0-5-2.2-5-5s2.2-5,5-5s5,2.2,5,5S17.8,16,15,16z';
     const balloon: Element = maps.renderer.drawPath(options);
@@ -2165,7 +2214,8 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
             const point: Point = checkMethodeZoom ? calculateCenterFromPixel(mapObject, layer) :
                 convertGeoToPoint(
                     centerLatitude, centerLongitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
-            if (isNullOrUndefined(mapObject.previousProjection) || mapObject.previousProjection !== mapObject.projectionType) {
+            if (isNullOrUndefined(mapObject.previousProjection) || mapObject.previousProjection !== mapObject.projectionType
+                || mapObject.isMarkerZoomCompleted) {
                 x = -point.x + leftPosition;
                 y = -point.y + topPosition;
                 scaleFactor = zoomFactor;
@@ -3130,6 +3180,12 @@ export function changeBorderWidth(element: Element, index: number, scale: number
         childNode = element.childNodes[l as number] as HTMLElement;
         if (childNode.id.indexOf('_NavigationGroup') > -1) {
             changeNavaigationLineWidth(childNode, index, scale, maps);
+        } else if (childNode.id.indexOf('_Polygons_Group') > -1) {
+            for (var i = 0; i < childNode.childElementCount; i++) {
+                // eslint-disable-next-line
+                const width: number = maps.layersCollection[index].polygonSettings.polygons[parseInt(childNode.children[i as number].id.split('_PolygonIndex_')[1])].borderWidth;
+                childNode.children[i as number].setAttribute('stroke-width', (width / scale).toString());
+            }
         } else {
             let currentStroke: number;
             let value: number = 0;

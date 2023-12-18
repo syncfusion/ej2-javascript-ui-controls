@@ -6,8 +6,8 @@
 import { Property, Complex, ChildProperty, Collection, extend, Browser } from '@syncfusion/ej2-base';
 import { FontModel, BorderModel } from '../../common/model/base-model';
 import { Font, Border } from '../../common/model/base';
-import { Orientation, ChartRangePadding, SkeletonType, AxisPosition } from '../utils/enum';
-import { EdgeLabelPlacement, ValueType, IntervalType, LabelPlacement, LabelIntersectAction } from '../utils/enum';
+import { AxisPosition } from '../utils/enum';
+import { EdgeLabelPlacement, ValueType, IntervalType, LabelIntersectAction, Orientation, ChartRangePadding, SkeletonType } from '../../common/utils/enum';
 import { rotateTextSize, firstToLowerCase, valueToCoefficient, inside, isBreakLabel, isZoomSet, getTitle } from '../../common/utils/helper';
 import { Size, Rect, measureText } from '@syncfusion/ej2-svg-base';
 import { DoubleRange } from '../utils/double-range';
@@ -20,7 +20,7 @@ import { DateTime } from '../axis/date-time-axis';
 import { Category } from '../axis/category-axis';
 import { DateTimeCategory } from '../axis/date-time-category-axis';
 import { Theme } from '../../common/model/theme';
-import { TextAlignment } from '../../common/utils/enum';
+import { LabelPlacement, TextAlignment } from '../../common/utils/enum';
 import { IAxisRangeCalculatedEventArgs } from '../../chart/model/chart-interface';
 import { axisRangeCalculated } from '../../common/model/constants';
 import { StripLineSettings, MultiLevelLabels, LabelBorder, ScrollbarSettings } from '../model/chart-base';
@@ -28,6 +28,7 @@ import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel, Scroll
 import { textWrap } from '../../common/utils/helper';
 import { ScrollBar } from '../../common/scrollbar/scrollbar';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { VisibleRangeModel } from '../../common/model/interface';
 
 /**
  * Configures the `rows` of the chart.
@@ -376,8 +377,8 @@ export class Axis extends ChildProperty<Axis> {
     public titleStyle: FontModel;
 
     /**
-     * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
-     * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
+     * Used to format the axis label, which accepts any global string format like 'C', 'n1', 'P', etc.
+     * It also accepts placeholders like '{value}°C' where 'value' represents the axis label (e.g., 20°C).
      *
      * @default ''
      */
@@ -386,7 +387,7 @@ export class Axis extends ChildProperty<Axis> {
     public labelFormat: string;
 
     /**
-     * Specifies the skeleton format in which the dateTime format will process.
+     * Specifies the skeleton format in which the dateTime will be processed.
      *
      * @default ''
      */
@@ -395,7 +396,7 @@ export class Axis extends ChildProperty<Axis> {
     public skeleton: string;
 
     /**
-     * It specifies the type of format to be used in dateTime format process.
+     * Specifies the format type to be used in dateTime formatting.
      *
      * @default 'DateTime'
      * @deprecated
@@ -458,7 +459,7 @@ export class Axis extends ChildProperty<Axis> {
     @Property(null)
     public plotOffsetBottom: number;
     /**
-     * Specifies indexed category  axis.
+     * If set to true, data points are rendered based on the index.
      *
      * @default false
      */
@@ -599,7 +600,7 @@ export class Axis extends ChildProperty<Axis> {
     public enableAutoIntervalOnZooming: boolean;
 
     /**
-     * Specifies the padding for the axis range in terms of interval.They are,
+     * Specifies the padding for the axis range in terms of interval. Available options are:
      * * none: Padding cannot be applied to the axis.
      * * normal: Padding is applied to the axis based on the range calculation.
      * * additional: Interval of the axis is added as padding to the minimum and maximum values of the range.
@@ -612,12 +613,12 @@ export class Axis extends ChildProperty<Axis> {
     public rangePadding: ChartRangePadding;
 
     /**
-     * Specifies the data types that the axis can handle:
-     * * Double: This type is used for rendering a numeric axis to accommodate numeric data.
-     * * DateTime: This type is utilized for rendering a date-time axis to manage date-time data.
-     * * Category: This type is employed for rendering a category axis to manage categorical data.
-     * * Logarithmic: This type is applied for rendering a logarithmic axis to handle a wide range of values.
-     * * DateTimeCategory: This type is used to render a date time category axis for managing business days.
+     * Specifies the data types that the axis can handle. Available options include:
+     * * Double: Used for rendering a numeric axis to accommodate numeric data.
+     * * DateTime: Utilized for rendering a date-time axis to manage date-time data.
+     * * Category: Employed for rendering a category axis to manage categorical data.
+     * * Logarithmic: Applied for rendering a logarithmic axis to handle a wide range of values.
+     * * DateTimeCategory: Used to render a date time category axis for managing business days.
      *
      * @default 'Double'
      * @blazorType Syncfusion.EJ2.Blazor.Charts.ValueType
@@ -641,7 +642,7 @@ export class Axis extends ChildProperty<Axis> {
     public edgeLabelPlacement: EdgeLabelPlacement;
 
     /**
-     * Specifies the types like `Years`, `Months`, `Days`, `Hours`, `Minutes`, `Seconds` in date time axis.They are,
+     * Specifies the interval types for the date-time axis, including `Auto`, `Years`, `Months`, `Days`, `Hours`, and `Minutes`. These types define the interval of the axis as follows:
      * * Auto: Defines the interval of the axis based on data.
      * * Years: Defines the interval of the axis in years.
      * * Months: Defines the interval of the axis in months.
@@ -687,8 +688,7 @@ export class Axis extends ChildProperty<Axis> {
     @Property('Outside')
     public labelPosition: AxisPosition;
     /**
-     * Unique identifier of an axis.
-     * To associate an axis with the series, set this name to the xAxisName/yAxisName properties of the series.
+     * A unique identifier for an axis. To associate an axis with a series, set this name to the xAxisName/yAxisName properties of the series.
      *
      * @default ''
      */
@@ -697,7 +697,7 @@ export class Axis extends ChildProperty<Axis> {
     public name: string;
 
     /**
-     * If set to true, axis label will be visible.
+     * If set to true, axis labels will be visible in the chart. By default, axis labels are enabled.
      *
      * @default true
      */
@@ -796,7 +796,7 @@ export class Axis extends ChildProperty<Axis> {
     public maximumLabelWidth: number;
 
     /**
-     * Specifies the Trim property for an axis.
+     * If set to true, axis labels will be trimmed based on the maximumLabelWidth.
      *
      * @default false
      */
@@ -804,7 +804,7 @@ export class Axis extends ChildProperty<Axis> {
     public enableTrim: boolean;
 
     /**
-     * Specifies the labelPadding from axis.
+     * Specifies the padding for the axis labels from axis.
      *
      * @default 5
      */
@@ -874,7 +874,7 @@ export class Axis extends ChildProperty<Axis> {
     public labelIntersectAction: LabelIntersectAction;
 
     /**
-     * It specifies whether the axis to be rendered in inversed manner or not.
+     * If set to true, the axis will be rendered in an inversed manner.
      *
      * @default false
      */
@@ -1412,24 +1412,16 @@ export class Axis extends ChildProperty<Axis> {
      */
     public setIsInversedAndOpposedPosition(isPolar: boolean = false): void {
         this.isAxisOpposedPosition = this.opposedPosition || (!isPolar && this.isRTLEnabled && this.orientation === 'Vertical');
+        if (this.opposedPosition && (!isPolar && this.isRTLEnabled && this.orientation === 'Vertical')) {
+            this.isAxisOpposedPosition = false;
+        }
         this.isAxisInverse = this.isInversed || (this.isRTLEnabled && this.orientation === 'Horizontal');
+        if (this.isInversed && (!isPolar && this.isRTLEnabled && this.orientation === 'Horizontal')) {
+            this.isAxisInverse = false;
+        }
     }
 }
-/**
- * Axis visible range
- *
- * @public
- */
-export interface VisibleRangeModel {
-    /** axis minimum value. */
-    min?: number;
-    /** axis maximum value. */
-    max?: number;
-    /** axis interval value. */
-    interval?: number;
-    /** axis delta value. */
-    delta?: number;
-}
+
 /** @private */
 export class VisibleLabels {
 

@@ -97,6 +97,8 @@ export class MonthEvent extends EventBase {
             cellTd.removeChild(wrapper);
         }
         this.eventHeight = util.getElementHeightFromClass(this.element, cls.APPOINTMENT_CLASS);
+        const selector: string = '.' + cls.CONTENT_TABLE_CLASS + ' tbody tr';
+        this.addCellHeight(selector, this.eventHeight, (this.parent.currentView === 'Month' ? EVENT_GAP : 2), this.monthHeaderHeight, this.moreIndicatorHeight);
         const scrollTop: number = conWrap.scrollTop;
         if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !this.parent.virtualScrollModule.isHorizontalScroll
             && !isNullOrUndefined(this.parent.currentAction)) {
@@ -498,6 +500,7 @@ export class MonthEvent extends EventBase {
         if ((day < 0) || (startTime.getTime() < this.parent.minDate.getTime()) || (endTime.getTime() > this.parent.maxDate.getTime())) {
             return;
         }
+        const eventsPerRow: number = this.parent.rowAutoHeight ? 1 : this.parent.activeViewOptions.maxEventsPerRow;
         const overlapCount: number = this.getIndex(startTime);
         event.Index = overlapCount;
         const diffInDays: number = (event.data as Record<string, any>).count as number;
@@ -507,7 +510,9 @@ export class MonthEvent extends EventBase {
             const appTop: number = (overlapCount * (this.eventHeight + EVENT_GAP));
             const height: number =
                 this.monthHeaderHeight + ((overlapCount + 1) * (this.eventHeight + EVENT_GAP)) + this.moreIndicatorHeight;
-            const enableAppRender: boolean = this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
+            const enableAppRender: boolean = this.parent.activeViewOptions.maxEventsPerRow && !this.parent.rowAutoHeight &&
+                !this.parent.eventSettings.enableIndicator ? overlapCount < eventsPerRow : this.maxOrIndicator ? overlapCount < 1
+                    ? true : false : this.cellHeight > height;
             if (this.parent.rowAutoHeight || enableAppRender) {
                 this.renderedEvents.push(extend({}, event, null, true) as Record<string, any>);
                 let appointmentElement: HTMLElement;
@@ -670,7 +675,10 @@ export class MonthEvent extends EventBase {
             className: cls.MORE_INDICATOR_CLASS,
             innerHTML: this.getMoreIndicatorText(count),
             attrs: {
+                'role': 'button',
                 'tabindex': '0',
+                'aria-label': this.parent.globalize.formatNumber(count) + '&nbsp;'
+                    + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more')),
                 'data-count': count.toString(),
                 'data-start-date': startDate.getTime().toString(),
                 'data-end-date': endDate.getTime().toString()

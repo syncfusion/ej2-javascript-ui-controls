@@ -5,7 +5,8 @@ import { stringToNumber, toPixel, textElement, appendPath, getAngleFromValue, ge
 import { getRangeColor } from '../utils/helper-axis-renderer';
 import { TickModel } from './axis-model';
 import { getRangePalette } from '../model/theme';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined} from '@syncfusion/ej2-base';
+import { FontModel } from '../model/base-model';
 
 /**
  * Specifies the Axis rendering for circular gauge
@@ -84,7 +85,7 @@ export class AxisRenderer {
                     gauge.element.id + '_AxisLine_' + index, 'transparent', axis.lineStyle.width, color,
                     null, axis.lineStyle.dashArray,
                     getPathArc(gauge.midPoint, startAngle - 90, endAngle - 90, axis.currentRadius),
-                    '', 'pointer-events:none;'),
+                    '', gauge.allowLoadingAnimation ? 'visibility: hidden; pointer-events:none;' : 'pointer-events:none;'),
                 element, gauge
             );
         }
@@ -102,7 +103,7 @@ export class AxisRenderer {
      */
     public drawAxisLabels(axis: Axis, index: number, element: Element, gauge: CircularGauge): void {
         const labelElement: Element = gauge.renderer.createGroup({
-            id: gauge.element.id + '_Axis_Labels_' + index
+            id: gauge.element.id + '_Axis_Labels_' + index, style: gauge.allowLoadingAnimation ? 'visibility: hidden;' : 'pointer-events:none;'
         });
         const min: number = axis.visibleRange.min;
         const max: number = axis.visibleRange.max;
@@ -169,8 +170,14 @@ export class AxisRenderer {
             if ((i === 0 && style.hiddenLabel === 'First') || (i === (length - 1) && style.hiddenLabel === 'Last')) {
                 continue;
             }
-            style.font.fontFamily = style.font.fontFamily || this.gauge.themeStyle.labelFontFamily;
-            style.font.fontWeight = style.font.fontWeight || this.gauge.themeStyle.fontWeight;
+            const textFont: FontModel = {
+                size: style.font.size,
+                color: style.font.color,
+                fontFamily: style.font.fontFamily || this.gauge.themeStyle.labelFontFamily,
+                fontWeight: style.font.fontWeight || this.gauge.themeStyle.fontWeight,
+                fontStyle: style.font.fontStyle,
+                opacity: style.font.opacity
+            };
             if (axis.hideIntersectingLabel && (i !== 0)) {
                 //To remove the labels which is intersecting with last label.
                 const lastlabel: boolean = ((i !== (labelCollection.length - 1)) && ((isCompleteAngle(axis.startAngle, axis.endAngle) ||
@@ -195,7 +202,7 @@ export class AxisRenderer {
                         location.x, location.y, anchor, label.text,
                         style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '', 'auto'
                     ),
-                    style.font, style.useRangeColor ? getRangeColor(label.value, <Range[]>axis.ranges, color) : color,
+                    textFont, style.useRangeColor ? getRangeColor(label.value, <Range[]>axis.ranges, color) : color,
                     labelElement, 'pointer-events:none;'
                 );
                 if (axis.hideIntersectingLabel) {
@@ -309,16 +316,19 @@ export class AxisRenderer {
         const isRangeColor: boolean = minorLineStyle.useRangeColor;
         const color: string = minorLineStyle.color || this.gauge.themeStyle.minorTickColor;
         if (minorLineStyle.width && minorLineStyle.height && minorInterval) {
+            let j: number = 0;
             for (let i: number = axis.visibleRange.min, max: number = axis.visibleRange.max; i <= max; i += minorInterval) {
                 if (this.majorValues.indexOf(+i.toFixed(3)) < 0) {
-                    appendPath(
+                    const tickElement: HTMLElement = appendPath(
                         new PathOption(
-                            gauge.element.id + '_Axis_Minor_TickLine_' + index + '_' + i, 'transparent', minorLineStyle.width,
+                            gauge.element.id + '_Axis_Minor_TickLine_' + index + '_' + j++, 'transparent', minorLineStyle.width,
                             isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, color) : color,
-                            null, minorLineStyle.dashArray, this.calculateTicks(i, <Tick>minorLineStyle, axis), '', 'pointer-events:none;'
+                            null, minorLineStyle.dashArray, this.calculateTicks(i, <Tick>minorLineStyle, axis), '',
+                            gauge.allowLoadingAnimation ? 'visibility: hidden;pointer-events: none;' : 'pointer-events:none;'
                         ),
                         minorTickElements, gauge
-                    );
+                    ) as HTMLElement;
+                    tickElement.setAttribute('data-interval', i.toString());
                 }
             }
             element.appendChild(minorTickElements);
@@ -344,17 +354,21 @@ export class AxisRenderer {
         this.majorValues = [];
         const color: string = majorLineStyle.color || this.gauge.themeStyle.majorTickColor;
         if (majorLineStyle.width && majorLineStyle.height && axis.visibleRange.interval) {
+            let j: number = 0;
             for (let i: number = axis.visibleRange.min, max: number = axis.visibleRange.max,
                 interval: number = axis.visibleRange.interval; i <= max; i += interval) {
                 this.majorValues.push(+i.toFixed(3));
-                appendPath(
+                const tickElement: HTMLElement = appendPath(
                     new PathOption(
-                        gauge.element.id + '_Axis_Major_TickLine_' + index + '_' + i, 'transparent', majorLineStyle.width,
+                        gauge.element.id + '_Axis_Major_TickLine_' + index + '_' + j, 'transparent', majorLineStyle.width,
                         isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, color) : color,
-                        null, majorLineStyle.dashArray, this.calculateTicks(i, <Tick>majorLineStyle, axis), '', 'pointer-events:none;'
+                        null, majorLineStyle.dashArray, this.calculateTicks(i, <Tick>majorLineStyle, axis), '',
+                        gauge.allowLoadingAnimation ? 'visibility: hidden;pointer-events:none;' : 'pointer-events:none;'
                     ),
                     majorTickElements, gauge
-                );
+                ) as HTMLElement;
+                tickElement.setAttribute('data-interval', i.toString());
+                j++;
             }
             element.appendChild(majorTickElements);
         }
@@ -681,7 +695,8 @@ export class AxisRenderer {
     public drawAxisRange(axis: Axis, index: number, element: Element): void {
         const ele: Element = (document.getElementById(this.gauge.element.id + '_Axis_Ranges_ ' + index));
         const rangeElement: Element = (ele) ? document.getElementById(this.gauge.element.id + '_Axis_Ranges_ ' + index) :
-            this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_Axis_Ranges_' + index });
+            this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_Axis_Ranges_' + index,
+                style: this.gauge.allowLoadingAnimation ? 'opacity: 0;' : '' });
         let startWidth: number; let startEndDifference: number;
         let endWidth: number; let previousEndWidth: number; let previousStartWidth: number;
         axis.ranges.map((range: Range, rangeIndex: number) => {

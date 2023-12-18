@@ -86,6 +86,14 @@ export class RibbonGroup extends ChildProperty<RibbonGroup>  {
     public orientation: ItemOrientation | string;
 
     /**
+     * Defines the header shown in overflow popup of Ribbon group.
+     *
+     * @default ''
+     */
+    @Property('')
+    public overflowHeader: string;
+
+    /**
      * Defines the priority order at which the group should be collapsed or expanded.
      * For collapsing value is fetched in ascending order and for expanding value is fetched in descending order.
      *

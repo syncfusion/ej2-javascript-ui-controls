@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable max-len */
-import { isNullOrUndefined, closest, extend, EventHandler } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, extend, EventHandler, setStyleAttribute } from '@syncfusion/ej2-base';
 import { createElement, prepend, append, addClass, removeClass } from '@syncfusion/ej2-base';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 import { EventFieldsMapping, EventClickArgs, CellClickEventArgs, TdData, SelectEventArgs, InlineClickArgs, CallbackFunction } from '../base/interface';
@@ -165,6 +165,9 @@ export class EventBase {
 
     public processTimezone(event: Record<string, any>, isReverse: boolean = false): Record<string, any> {
         const fields: EventFieldsMapping = this.parent.eventFields;
+        if (event[fields.isAllDay]) {
+            return event;
+        }
         if (event[fields.startTimezone] || event[fields.endTimezone]) {
             const startTimezone: string = <string>event[fields.startTimezone] || <string>event[fields.endTimezone];
             const endTimezone: string = <string>event[fields.endTimezone] || <string>event[fields.startTimezone];
@@ -1301,6 +1304,27 @@ export class EventBase {
             const iconBottom: HTMLElement = iconElement.cloneNode() as HTMLElement;
             addClass([iconBottom], cls.EVENT_ICON_DOWN_CLASS);
             append([iconBottom], element);
+        }
+    }
+
+    public addCellHeight(selector: string, eventHeight: number, eventGap: number, headerHeight: number, indHeight: number, isScrollUpdate: boolean = true): void {
+        if (this.parent.activeViewOptions.maxEventsPerRow && !this.parent.rowAutoHeight) {
+            const rows: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(selector));
+            const weekNumberRows: HTMLElement[] = this.parent.showWeekNumber
+                ? [].slice.call(this.parent.element.querySelectorAll('.' + cls.WEEK_NUMBER_WRAPPER_CLASS + ' tbody tr'))
+                : [];
+            for (const row of rows) {
+                const height: number = (this.parent.activeViewOptions.maxEventsPerRow *
+                    ((eventHeight + (this.parent.currentView === 'Month' ? eventGap : 2)))) + headerHeight + indHeight;
+                if (weekNumberRows.length > 0) {
+                    setStyleAttribute(weekNumberRows[rows.indexOf(row)].firstElementChild as HTMLElement, { 'height': height + 'px' });
+                }
+                setStyleAttribute(row.firstElementChild as HTMLElement, { 'height': height + 'px' });
+            }
+
+            if (!this.parent.enablePersistence && !this.parent.activeViewOptions.allowVirtualScrolling && isScrollUpdate) {
+                this.parent.notify(event.contentReady, {});
+            }
         }
     }
 

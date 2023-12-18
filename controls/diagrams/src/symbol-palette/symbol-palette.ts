@@ -4,7 +4,7 @@ import { isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, EmitType } from '@syncfusion/ej2-base';
 import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';
-import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, TextDecoration, BlazorTooltip, ConnectorConstraints, NodeConstraints, DiagramTooltipModel } from '../diagram/index';
+import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, TextDecoration, BlazorTooltip, ConnectorConstraints, NodeConstraints, DiagramTooltipModel, UmlClassifierShapeModel, RelationShipModel } from '../diagram/index';
 import { Transform, SwimLane, PathModel, IPaletteExpandArgs } from '../diagram/index';
 import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';
 import { DiagramElement, TextElement, MarginModel, Canvas, PointModel, IElement } from '../diagram/index';
@@ -21,6 +21,7 @@ import { CanvasRenderer } from '../diagram/rendering/canvas-renderer';
 import { Rect } from '../diagram/primitives/rect';
 import { SymbolSizeModel, SymbolPaletteInfoModel } from '../diagram/objects/preview-model';
 import { Tooltip, TooltipModel } from '@syncfusion/ej2-popups';
+import { DiagramHtmlElement } from '../diagram/core/elements/html-element';
 // eslint-disable-next-line
 let getObjectType: Function = (obj: Object): Object => {
     const conn: Connector = obj as Connector;
@@ -890,6 +891,76 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     }
                 }
             }
+            //Rendering the UML node as an HTML group node ensures that it is visually represented exactly as intended in the diagram
+            if(symbol.shape.type === 'UmlClassifier' && !(symbol.shape as RelationShipModel).relationship){
+                const umlObj: NodeModel = symbol as NodeModel;
+                let newObj:NodeModel;
+                let getStyle:object;
+                if(symbol.style.fill === "white"){
+                    getStyle = {
+                        fill : "#26A0DA"
+                    };
+                }
+                else{
+                    getStyle = {
+                        fill : symbol.style.fill
+                    };
+                }
+                if((symbol.shape as UmlClassifierShapeModel).classifier=== 'Class'){
+                    newObj = {
+                        id: 'node' + randomId(), shape: { type: 'HTML',   content:
+                        '<div id="parentDiv" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv" style="font-size:0.7vw;">class</div></div>'},
+                        width: umlObj.width ? umlObj.width : 100,
+                        height: umlObj.height ? umlObj.height : 100,
+                        style: getStyle,
+                        offsetX: umlObj.width ? umlObj.width / 2 : 50,
+                        offsetY: umlObj.height ? umlObj.height / 2 : 50,
+                    };
+                    this.addPaletteItem(symbolGroup.id, newObj);
+                }
+                else if((symbol.shape as UmlClassifierShapeModel).classifier==='Enumeration'){
+                    newObj = {
+                        id: 'node' + randomId(), shape: { type: 'HTML', content:
+                        '<div id="parentDiv2" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv2" style="font-size:0.5vw;">Enumeration</div></div>'},
+                        width: umlObj.width ? umlObj.width : 100,
+                        height: umlObj.height ? umlObj.height : 100,
+                        style: getStyle,
+                        offsetX: umlObj.width ? umlObj.width / 2 : 50,
+                        offsetY: umlObj.height ? umlObj.height / 2 : 50,
+                    };
+                    this.addPaletteItem(symbolGroup.id, newObj);
+                }
+                else if((symbol.shape as UmlClassifierShapeModel).classifier==='Interface'){
+                    newObj = {
+                        id: 'node' + randomId(), shape: { type: 'HTML', content:
+                        '<div id="parentDiv3" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv3" style="font-size:0.7vw;">Interface</div></div>'},
+                        width: umlObj.width ? umlObj.width : 100,
+                        height: umlObj.height ? umlObj.height : 100,
+                        style: getStyle,
+                        offsetX: umlObj.width ? umlObj.width / 2 : 50,
+                        offsetY: umlObj.height ? umlObj.height / 2 : 50,
+                    };
+                    this.addPaletteItem(symbolGroup.id, newObj);
+                }
+                const memberObj:NodeModel = {
+                    id: 'member' + randomId(), shape: { type: 'HTML', content:'<div style="width:100%;height:100%;border:1px solid #000;background:white"></div>'},
+                    width: umlObj.width ? umlObj.width : 100,
+                    height: umlObj.height ? umlObj.height : 100,
+                    offsetX: umlObj.width ? umlObj.width / 2 : 50,
+                    offsetY: umlObj.height ? umlObj.height / 2 + (newObj.height / 2) : 50 + (newObj.height / 2),
+                };
+                this.addPaletteItem(symbolGroup.id, memberObj);
+                umlObj.children = [newObj.id,memberObj.id];
+            }
+            //Set the strokeDashArray for specific connectors to ensure that it is visually represented exactly as intended in the diagram
+            if (symbol.shape.type === 'UmlClassifier' && (symbol.shape as RelationShipModel).relationship) {
+                if((symbol.shape as RelationShipModel).relationship == 'Inheritance'){
+                    symbol.style.strokeDashArray = symbol.style.strokeDashArray? symbol.style.strokeDashArray: "4 4"
+                }
+                if((symbol.shape as RelationShipModel).relationship == 'Dependency'){
+                    symbol.style.strokeDashArray = symbol.style.strokeDashArray? symbol.style.strokeDashArray: "4 4"
+                }
+            }
             if (symbol instanceof Node) {
 
                 const getNodeDefaults: Function = getFunction(this.getNodeDefaults);
@@ -1055,7 +1126,18 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             if (obj.children) {
                 content = this.getContainer(obj as Node, container);
             } else {
-                content = (symbol as Node).init(this);
+               if(symbol instanceof Connector && symbol.shape.type === 'UmlClassifier' && (symbol.shape as RelationShipModel).relationship){
+                    content = (symbol as Connector).init(this);
+                    for(let i:number = (content as Canvas).children.length-1; i >= 0; i--) {
+                        if ((content as Canvas).children[parseInt(i.toString(), 10)] instanceof TextElement) {
+                            (content as Canvas).children.splice(i,1);
+                        }
+                    }
+                }
+                else{
+                    content = (symbol as Node).init(this);
+                }
+               
                 if (symbol instanceof Node && symbol.parentId) { container.children.push(content); }
             }
         }
@@ -1276,7 +1358,15 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             div = this.getHtmlSymbol(symbol, canvas, previewContainer, symbolPreviewHeight, symbolPreviewWidth, true);
             //EJ2-838575 - for refreshing the symbols after dragged
             this.prepareSymbol(symbol);
-        } else {
+        } 
+        else if(symbol.shape.type === 'UmlClassifier' && !(symbol.shape as RelationShipModel).relationship){
+            if ((symbol as NodeModel).children &&
+            (symbol as NodeModel).children.length > 0 && groupHasType(symbol as Node, 'HTML', this.childTable))  {
+                div = this.getHtmlSymbol(symbol, canvas, previewContainer, symbol.wrapper.actualSize.height, symbol.wrapper.actualSize.width, true);
+                this.prepareSymbol(symbol);
+            }
+        }
+        else {
             if ((symbol as NodeModel).children &&
                 (symbol as NodeModel).children.length > 0 && groupHasType(symbol as Node, 'HTML', this.childTable)) {
                 div = this.getGroupParent(
@@ -1370,7 +1460,16 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         } else if (symbol.shape.type === 'HTML') {
             div = this.getHtmlSymbol(
                 symbol, canvas, container, symbol.wrapper.actualSize.height, symbol.wrapper.actualSize.width, false, parentDiv.id === 'SearchPalette');
-        } else {
+        } 
+        //This method is responsible for rendering the UML node, as the UML node is displayed as an HTML group node.
+        else if(symbol.shape.type === 'UmlClassifier' && !(symbol.shape as RelationShipModel).relationship){
+            if ((symbol as NodeModel).children &&
+            (symbol as NodeModel).children.length > 0 && groupHasType(symbol as Node, 'HTML', this.childTable))  {
+                div = this.getHtmlSymbol(
+                    symbol, canvas, container, symbol.wrapper.actualSize.height, symbol.wrapper.actualSize.width, false);
+            }
+        }
+        else {
             if ((symbol as NodeModel).children &&
                 (symbol as NodeModel).children.length > 0 && groupHasType(symbol as Node, 'HTML', this.childTable)) {
                 div = this.getGroupParent(
@@ -1497,6 +1596,18 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         container.appendChild(div);
         //EJ2-70280 - Text description in symbol palette for HTML nodes is not visible.
         if(isPreview){
+            //When dragging the UML node from the palette, set the preview specifically for that UML node
+            if(symbol.shape.type=="UmlClassifier"){
+                if((symbol.shape as UmlClassifierShapeModel).classifier=== 'Class'){
+                    (((symbol.wrapper.children[0] as Container).children[0] as Container).children[0] as DiagramHtmlElement).content = '<div id="parentDiv" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv" style="font-size:1vw;">class</div></div>'
+                }
+                else if((symbol.shape as UmlClassifierShapeModel).classifier==='Enumeration'){
+                    (((symbol.wrapper.children[0] as Container).children[0] as Container).children[0] as DiagramHtmlElement).content  = '<div id="parentDiv2" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv2" style="font-size:0.8vw;">Enumeration</div></div>'
+                }
+                else if((symbol.shape as UmlClassifierShapeModel).classifier==='Interface'){
+                    (((symbol.wrapper.children[0] as Container).children[0] as Container).children[0] as DiagramHtmlElement).content  = '<div id="parentDiv3" style="width:100%; height:50%; border:1px solid #000; background:#6BA5D7; display: flex; align-items: center; justify-content: center;"><div id="textDiv3" style="font-size:0.9vw;">Interface</div></div>'
+                }
+            }
             this.diagramRenderer.renderElement((symbol.wrapper.children[0] as Container).children[0], canvas, htmlLayer);
         }
         else{
@@ -1776,7 +1887,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         }
         if (this.selectedSymbol) {
             const oldSymbol: HTMLElement = document.getElementById(this.selectedSymbol.id + '_container');
-            //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
+             //Bug 857673: Symbol palette tooltip is not rendered properly after search symbols and hover over palette shapes
             // To highlight and remove highlight of the selected symbol in search palette on mouse down.
             const oldSearchSymbol = document.getElementById(this.selectedSymbol.id + 'SearchSymbol' + '_container');
             if ((oldSymbol || oldSearchSymbol)) {
@@ -2020,7 +2131,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private updatePalettes(): void {
         for (let i: number = 0; i < this.palettes.length; i++) {
             const symGroup: PaletteModel = this.palettes[parseInt(i.toString(), 10)];
-            //Bug 857693: Collapsing the palettes after searching shapes throws wrong arguments in paletteExpanding event.
+             //Bug 857693: Collapsing the palettes after searching shapes throws wrong arguments in paletteExpanding event.
             //To remove search palette from palette collection.
             if(symGroup.id === 'search_palette'){
                 this.palettes.splice(i, 1);
@@ -2066,8 +2177,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let paletteDiv: HTMLElement;
         //remove the existing child in palette
         if (element) {
-            for (let k: number = element.children.length - 1; k >= 0; k--) {
-                element.removeChild(element.children[parseInt(k.toString(), 10)]);
+            for (let i: number = element.children.length - 1; i >= 0; i--) {
+                element.removeChild(element.children[parseInt(i.toString(), 10)]);
             }
             //Bug 857693: Collapsing the palettes after searching shapes throws wrong arguments in paletteExpanding event.
             //To remove search palette from palette collection. 

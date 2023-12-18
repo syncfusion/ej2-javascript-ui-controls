@@ -2,7 +2,6 @@ import { getRangeIndexes, ChartModel, inRange, checkRange, getSwapRange, getRang
 import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell, getSheetIndexFromId } from '../base/index';
 import { setChart, initiateChart, refreshChart, updateChart, deleteChartColl, refreshChartSize, focusChartBorder } from '../common/event';
 import { closest, isNullOrUndefined, getComponent, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
-import { Chart } from '@syncfusion/ej2-charts';
 
 /**
  * The `WorkbookChart` module is used to handle chart action in Spreadsheet.
@@ -160,8 +159,8 @@ export class WorkbookChart {
                     const chart: ChartModel = this.parent.chartColl[chartCnt as number];
                     if (!isNullOrUndefined(args.overlayEle.querySelector('#' + chart.id))) {
                         const chartObj: HTMLElement = this.parent.element.querySelector('.' + chart.id);
-                        const excelFilter: Chart = getComponent(chartObj, 'chart');
-                        if (excelFilter){
+                        const excelFilter: { height: string, width: string } = getComponent(chartObj, 'chart');
+                        if (excelFilter) {
                             excelFilter.height = args.height;
                             excelFilter.width = args.width;
                         }

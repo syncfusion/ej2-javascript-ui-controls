@@ -97,7 +97,7 @@ describe('Sanitize Html Helper', () => {
             detach(htmlObject);
         });
     })
-
+    
     describe('Handle file name when using more then one & sign  : ', () => {
         var value='Test & Test & Test.jpg'
         var newValue: string = SanitizeHtmlHelper.sanitize(value);
@@ -105,5 +105,4 @@ describe('Sanitize Html Helper', () => {
             expect(newValue).toBe(value);
         });  
     })
-    
 });

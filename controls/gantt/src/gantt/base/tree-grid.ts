@@ -133,7 +133,7 @@ export class GanttTreeGrid {
             toolbarHeight = this.parent.toolbarModule.element.offsetHeight;
         }
         this.parent.treeGrid.height =
-            this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['offsetHeight'] - (this.parent.flatData.length == 0 ? 0 : 19);
+	       this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['offsetHeight'] - (this.parent.flatData.length == 0 ? 0 : 19);
     }
     private getContentDiv(): HTMLElement {
         return this.treeGridElement.querySelector('.e-content');

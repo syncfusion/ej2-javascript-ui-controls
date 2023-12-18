@@ -3,14 +3,14 @@ import { PdfGanttCellStyle} from './../base/interface';
 import {
     PointF, PdfPage, PdfGraphics, PdfColor, PdfPen, PdfBrush, PdfSolidBrush,
     PdfTrueTypeFont, PdfStandardFont, PdfStringFormat, PdfVerticalAlignment,
-    PdfTextAlignment, PdfWordWrapType
+    PdfTextAlignment, PdfWordWrapType,PdfFontFamily,PdfBrushes,PdfGraphicsState 
 } from '@syncfusion/ej2-pdf-export';
 import { TimelineDetails, TimelineFormat, IGanttStyle, PdfQueryTimelineCellInfoEventArgs } from '../base/interface';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { pixelToPoint, pointToPixel } from '../base/utils';
 import { Gantt } from '../base/gantt';
 import { PdfPaddings } from './pdf-base';
-
+import { HolidayModel } from '../models/holiday-model';
 /**
  */
 export class PdfTimeline {
@@ -30,6 +30,15 @@ export class PdfTimeline {
     private bottomTierIndex: number;
     private prevTopTierIndex: number;
     private prevBottomTierIndex: number;
+    public holidayLabel:string;
+    public holidayCompleted:boolean = false;
+    public holidayNumberOfDays:number;
+    public holidayWidth:number;
+    public detailsTimeline:TimelineDetails ;
+    public fitHolidayCompleted:boolean = false;
+    public fromDataHoliday:string| Date;
+    public timelineWidth :number = 0;
+    public lastWidth :number  = 0;
 
     constructor(gantt?: PdfGantt) {
         this.width = 0;
@@ -50,8 +59,8 @@ export class PdfTimeline {
      * @returns {void}
      */
     public drawTimeline(page: PdfPage, startPoint: PointF, detail: TimelineDetails): void {
-        let remainWidth: number = (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
-            this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? pointToPixel(Math.floor(detail.totalWidth)) : Math.floor(detail.totalWidth);
+        this.detailsTimeline = detail;
+        let remainWidth: number = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? pointToPixel(Math.floor(detail.totalWidth)) : Math.floor(detail.totalWidth);
         let renderWidth: number = 0;
         this.topTierPoint.x = startPoint.x;
         this.topTierPoint.y = startPoint.y;
@@ -77,9 +86,8 @@ export class PdfTimeline {
                 }
                 //Primary header Event Arguments
                 /* eslint-disable-next-line */
-                this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, renderWidth, pHeader.value, true);
-                this.topTierPoint.x += (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
-                    this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? renderWidth : pixelToPoint(renderWidth);
+                this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, renderWidth, pHeader.value, true,this.parent.timelineModule.isSingleTier && this.parent.timelineSettings.topTier.unit==="Day" ?pHeader.startDate : null);
+                this.topTierPoint.x += (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? renderWidth : pixelToPoint(renderWidth);
                 remainWidth -= renderWidth;
                 if (isCompleted) {
                     this.topTierIndex++;
@@ -103,9 +111,14 @@ export class PdfTimeline {
                 }
                 //Secondary header Event Arguments
                 /* eslint-disable-next-line */
-                this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, width, secondHeader.value, false);
-                this.bottomTierPoint.x = (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
-                    this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? this.bottomTierPoint.x + width : this.bottomTierPoint.x + pixelToPoint(width);
+                if (!this.parent.pdfExportModule.gantt.taskbar.isAutoFit() && this.parent.timelineModule.bottomTier !=="Day") {
+                    var unit = this.parent.perDayWidth
+                    if (width < unit || (width > unit)) {
+                        width = unit
+                    }
+                }
+                this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, width, secondHeader.value, false,secondHeader.startDate);
+                this.bottomTierPoint.x = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? this.bottomTierPoint.x + width : this.bottomTierPoint.x + pixelToPoint(width);
                 remainWidth -= width;
                 secondHeader.completedWidth = width;
                 if (isCompleted) {
@@ -115,6 +128,7 @@ export class PdfTimeline {
                 remainWidth = 0;
             }
         }
+        this.timelineWidth = this.lastWidth;
     }
 
     /**
@@ -135,9 +149,8 @@ export class PdfTimeline {
                 if (pHeader.completedWidth > 0) {
                     //Primary header Event Arguments
                     /* eslint-disable-next-line */
-                    this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, pHeader.completedWidth, pHeader.value, true);
-                    this.topTierPoint.x += (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
-                        this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? pHeader.completedWidth : pixelToPoint(pHeader.completedWidth);
+                    this.triggerQueryTimelinecell(page, this.topTierPoint.x, this.topTierPoint.y, this.topTierHeight, pHeader.completedWidth, pHeader.value, true,this.parent.timelineModule.isSingleTier && this.parent.timelineSettings.topTier.unit==="Day" ?pHeader.startDate : null);
+                    this.topTierPoint.x += (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? pHeader.completedWidth : pixelToPoint(pHeader.completedWidth);
                 }
             }
         }
@@ -149,9 +162,8 @@ export class PdfTimeline {
                 if (secondHeader.completedWidth > 0) {
                     //Secondary header Event Arguments
                     /* eslint-disable-next-line */
-                    this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, secondHeader.width, secondHeader.value, false);
-                    this.bottomTierPoint.x = (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
-                        this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? this.bottomTierPoint.x + secondHeader.width : this.bottomTierPoint.x + pixelToPoint(secondHeader.width);
+                    this.triggerQueryTimelinecell(page, this.bottomTierPoint.x, this.bottomTierPoint.y, this.bottomTierHeight, secondHeader.width, secondHeader.value, false,secondHeader.startDate);
+                    this.bottomTierPoint.x = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? this.bottomTierPoint.x + secondHeader.width : this.bottomTierPoint.x + pixelToPoint(secondHeader.width);
                 }
             }
         }
@@ -160,7 +172,8 @@ export class PdfTimeline {
      * Method to trigger pdf query timelinecell event
      */
     /* eslint-disable-next-line */
-    private triggerQueryTimelinecell(page: PdfPage, x: number, y: number, height: number, width: number, value: string, isTopTier: boolean): void {
+    private triggerQueryTimelinecell(page: PdfPage, x: number, y: number, height: number, width: number, value: string, isTopTier: boolean, currentDate?:Date): void {
+        var days = new Date(currentDate).getDay()
         const graphics: PdfGraphics = page.graphics;
         const timelineStyle: PdfGanttCellStyle = {};
         const ganttStyle: IGanttStyle = this.gantt.ganttStyle;
@@ -194,12 +207,101 @@ export class PdfTimeline {
             this.parent.trigger('pdfQueryTimelineCellInfo', eventArgs);
         }
         const e: PdfGanttCellStyle = eventArgs.timelineCell;
-        const rectPen: PdfPen = new PdfPen(eventArgs.timelineCell.borderColor);
-        const rectBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.backgroundColor);
-        graphics.drawRectangle(rectPen, rectBrush, x, y, (this.parent.pdfExportModule && this.parent.pdfExportModule.helper.exportProps && this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings && 
-            this.parent.pdfExportModule.helper.exportProps.fitToWidthSettings.isFitToWidth) ? width : pixelToPoint(width), pixelToPoint(height));
+       let rectPen: PdfPen ;
+       let rectBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.backgroundColor);
+       const nonWorkingDays :number[]= this.parent.nonWorkingDayIndex;
+       if(this.parent.highlightWeekends && nonWorkingDays.indexOf(days) !== -1 && (this.parent.timelineModule.bottomTier==="Day" ||this.parent.timelineModule.bottomTier==="None" && this.parent.timelineModule.topTier==="Day") ){
+        rectBrush = new PdfSolidBrush(new PdfColor(238, 238, 238));
+        }
+        this.parent.holidays.map((item:HolidayModel)=>{
+            var fromDate = new Date(item.from)
+            var toDate  = new  Date(item.to)
+            var timelinedate  = new Date(currentDate)
+            if(fromDate<=timelinedate && toDate>=timelinedate &&(this.parent.timelineModule.bottomTier ==="Day"||(this.parent.timelineModule.bottomTier==="None" && this.parent.timelineModule.topTier==="Day"))){
+                rectBrush = new PdfSolidBrush(new PdfColor(238, 238, 238));
+                if (fromDate.getTime() === timelinedate.getTime()) {
+                   this.holidayWidth = x
+                }
+                if(toDate.getTime() === timelinedate.getTime()){
+                    this.holidayLabel = item.label;
+                    var changeDate  = new Date(item.to)
+                    changeDate.setDate(changeDate.getDate() + 1);
+                    var day = this.parent.dataOperation.getTaskWidth(fromDate, changeDate)
+                    this.holidayNumberOfDays =day/width;
+                    this.holidayCompleted = true
+                }
+            }
+               else if(this.parent.timelineModule.bottomTier !=="Day"){
+                if (this.detailsTimeline.startDate <= fromDate && this.detailsTimeline.endDate >= fromDate) {
+                    this.parent.timelineModule.bottomTierCollection.map((items: TimelineFormat, index) => {
+                        if (items.startDate <= fromDate && items.endDate >= fromDate) {
+                            if(items.startDate === currentDate){
+                             this.fitHolidayCompleted = true;
+                             this.fromDataHoliday = item.from;
+                             this.holidayLabel = item.label;   
+                            }
+
+
+                         }
+
+                    })
+                }
+            }
+
+        })
+       const rectPen1 = new PdfPen(eventArgs.timelineCell.borderColor);
+        if (!this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
+            this.lastWidth = x + width;
+        }
+        graphics.drawRectangle(rectPen1, rectBrush, x, y, width, pixelToPoint(height));
         if(!isTopTier && (this.parent.gridLines == "Both" || this.parent.gridLines == "Vertical") ){
-            graphics.drawRectangle(rectPen, rectBrush, x, y + pixelToPoint(height), width, page.getClientSize().height);
+           rectPen = new PdfPen(eventArgs.timelineCell.borderColor);
+        }
+        else{
+            rectPen = null;
+        }
+        graphics.drawRectangle(rectPen, rectBrush, x, y + pixelToPoint(height),width, page.getClientSize().height);
+        if(this.holidayCompleted){
+            let state: PdfGraphicsState = graphics.save();
+            var font1 =new PdfStandardFont(PdfFontFamily.Helvetica, 10); 
+            var fontHieght = font1.height ;
+            var fontSize = font1.size;
+            graphics.translateTransform(this.holidayWidth+ width -((fontSize/2)*this.holidayNumberOfDays)- fontHieght + fontHieght/2+ (width * this.holidayNumberOfDays) / 2, 40);
+           graphics.rotateTransform(-90);         
+           graphics.translateTransform(-(page.getClientSize().height/2), -40);
+             graphics.drawString(
+             this.holidayLabel,
+               font1,
+               null,
+               PdfBrushes.Black,
+               10,
+               10,
+               null
+             );
+             graphics.restore(state);
+          this.holidayCompleted= false;
+        }
+        if(this.fitHolidayCompleted){
+          var  holidayBrush = new PdfSolidBrush(new PdfColor(238, 238, 238));
+            var font1 =new PdfStandardFont(PdfFontFamily.Helvetica, 10); 
+            var fontHieght = font1.height ;
+            var fontSize = font1.size;
+            graphics.drawRectangle(null, holidayBrush, x+width/2 - fontSize, y + pixelToPoint(height),fontSize, page.getClientSize().height);
+            let state: PdfGraphicsState = graphics.save();
+            graphics.translateTransform(x+width+width/2 - fontSize, 40);
+           graphics.rotateTransform(-90);         
+           graphics.translateTransform(-(page.getClientSize().height/2), -40);
+             graphics.drawString(
+             this.holidayLabel,
+               font1,
+               null,
+               PdfBrushes.Black,
+               10,
+               10,
+               null
+             );
+             graphics.restore(state);
+          this.fitHolidayCompleted= false;
         }
         let font: PdfTrueTypeFont | PdfStandardFont = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
         if (ganttStyle.font) {

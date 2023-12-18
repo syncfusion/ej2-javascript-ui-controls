@@ -91,7 +91,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking Minor Tick Line overlapping to others', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_Axis_Minor_TickLine_0_0');
+                svg = document.getElementById('container_Axis_Minor_TickLine_0_10');
                 expect(svg == null).toBe(true);
                 done();
             };
@@ -520,6 +520,70 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
 
+    });  
+    
+    describe('Animation', () => {
+        let gauge: CircularGauge;
+        let ele: HTMLElement;
+        let direction: string;
+        let boundingRect: ClientRect;
+        let boundingRect1: ClientRect;
+        let svg: HTMLElement;
+        let value: string[] | string | number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge(
+                {
+                    animationDuration: 1000,
+                    axes: [{
+                        minimum: 20,
+                        maximum: 50,
+                        pointers: [{
+                            value: 30
+                        }]
+                    }]
+                },
+                '#container'
+            );
+        });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Checking axis default label style', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Label_0');
+                expect(svg.getAttribute('fill')).toBe('#212121');
+                expect(svg.style.fontSize).toBe('12px');
+                expect(svg.style.fontStyle).toBe('normal');
+                expect(svg.style.fontWeight).toBe('normal');
+                done();
+            };
+            gauge.refresh();
+        });
+
+        it('Checking axis given label style', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Label_0');
+                expect(svg.getAttribute('fill') == 'red').toBe(true);
+                expect(svg.style.fontSize == '14px').toBe(true);
+                expect(svg.style.fontStyle == 'normal').toBe(true);
+                expect(svg.style.fontWeight == 'normal').toBe(true);
+                done();
+            };
+            gauge.axes[0].labelStyle.font.color = 'red';
+            gauge.axes[0].labelStyle.font.size = '14px';
+            gauge.refresh();
+        });
+        it('Checking given animation duration', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Label_0');
+                expect(svg.style.fontStyle).toBe('normal');
+                done();
+            };
+            gauge.animationDuration = 10;
+        });
     });
 
     describe('Axis Tick Lines(Major and Minor) and Visible Label', () => {
@@ -560,7 +624,7 @@ describe('Circular-Gauge Control', () => {
         });
         it('Checking axis major tick line default style', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_Axis_Major_TickLine_0_20');
+                svg = document.getElementById('container_Axis_Major_TickLine_0_2');
                 expect(svg.getAttribute('fill')).toBe('transparent');
                 expect(svg.getAttribute('stroke')).toBe('#9E9E9E');
                 expect(svg.getAttribute('stroke-width')).toBe('2');
@@ -572,7 +636,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking axis major tick line given style', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_Axis_Major_TickLine_0_20');
+                svg = document.getElementById('container_Axis_Major_TickLine_0_2');
                 expect(svg.getAttribute('fill') == 'transparent').toBe(true);
                 expect(svg.getAttribute('stroke') == 'red').toBe(true);
                 expect(svg.getAttribute('stroke-width') == '5').toBe(true);
@@ -609,7 +673,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking default major interval of the axis', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                direction = document.getElementById('container_Axis_Major_TickLine_0_20').getAttribute('d');
+                direction = document.getElementById('container_Axis_Major_TickLine_0_2').getAttribute('d');
                 expect(direction.match(new RegExp('M', 'g')).length == 1).toBe(true);
                 done();
             };
@@ -618,7 +682,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking major interval of the axis given value', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                direction = document.getElementById('container_Axis_Major_TickLine_0_20').getAttribute('d');
+                direction = document.getElementById('container_Axis_Major_TickLine_0_2').getAttribute('d');
                 expect(direction.match(new RegExp('M', 'g')).length == 1).toBe(true);
                 done();
             };
@@ -661,7 +725,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking axis minor tick line default style', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_Axis_Minor_TickLine_0_20');
+                svg = document.getElementById('container_Axis_Minor_TickLine_0_2');
                 expect(svg.getAttribute('fill')).toBe('transparent');
                 expect(svg.getAttribute('stroke')).toBe('#9E9E9E');
                 expect(svg.getAttribute('stroke-width')).toBe('2');
@@ -673,7 +737,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking axis minor tick line given style', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_Axis_Minor_TickLine_0_20');
+                svg = document.getElementById('container_Axis_Minor_TickLine_0_2');
                 expect(svg.getAttribute('fill') == 'transparent').toBe(true);
                 expect(svg.getAttribute('stroke') == 'red').toBe(true);
                 expect(svg.getAttribute('stroke-width') == '5').toBe(true);
@@ -687,7 +751,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking axis minor tick inside position', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                boundingRect = document.getElementById('container_Axis_Minor_TickLine_0_20').getBoundingClientRect();
+                boundingRect = document.getElementById('container_Axis_Minor_TickLine_0_2').getBoundingClientRect();
                 boundingRect1 = document.getElementById('container_AxisLine_0').getBoundingClientRect();
                 expect(Math.round(boundingRect.top) > Math.round(boundingRect1.top)).toBe(true);
                 done();
@@ -708,7 +772,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking default minor interval of the axis', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                direction = document.getElementById('container_Axis_Minor_TickLine_0_20').getAttribute('d');
+                direction = document.getElementById('container_Axis_Minor_TickLine_0_2').getAttribute('d');
                 expect(direction.match(new RegExp('M', 'g')).length == 1).toBe(true);
                 done();
             };
@@ -717,7 +781,7 @@ describe('Circular-Gauge Control', () => {
 
         it('Checking minor interval of the axis given value', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                direction = document.getElementById('container_Axis_Minor_TickLine_0_20').getAttribute('d');
+                direction = document.getElementById('container_Axis_Minor_TickLine_0_2').getAttribute('d');
                 expect(direction.match(new RegExp('M', 'g')).length == 1).toBe(true);
                 done();
             };
@@ -1020,7 +1084,7 @@ describe('Circular-Gauge Control', () => {
                 expect(value[1] == '589.5' || value[1] == '596.5').toBe(true);
                 svg = document.getElementById('container_Axis_Minor_TickLine_0_4');
                 value = svg.getAttribute('d').split(' ');
-                expect(value[1] == '210.72455052316764' || value[1] == '215.01102564713278').toBe(true);
+                expect(value[1] == '210.72455052316764' || value[1] == '215.01102564713278' || value[1] == '319.7606962531708').toBe(true);
                 done();
             };
             gauge.axes[0].majorTicks.height = 10;

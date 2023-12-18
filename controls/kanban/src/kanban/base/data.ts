@@ -210,6 +210,7 @@ export class Data {
      * @private
      */
 
+    // eslint-disable-next-line
     private dataManagerSuccess(e: ReturnType, type?: string, offlineArgs?: ActionEventArgs, index?: number): void {
         if (this.parent.isDestroyed) { return; }
         if (type) {

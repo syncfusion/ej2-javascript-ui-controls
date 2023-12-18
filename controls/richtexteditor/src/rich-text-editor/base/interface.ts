@@ -180,6 +180,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     getCollection?(items: string | string[]): string[]
     getRange(): Range
     getID(): string
+    getCssClass(isSpace?: boolean): string
     getText(): string
     updateValueData?(): void
     getBaseToolbarObject(): BaseToolbar
@@ -405,6 +406,7 @@ export interface IImageNotifyArgs {
     member?: string
     name?: string
     cssClass?: string
+    ariaLabel?: string
 }
 
 /**
@@ -1606,4 +1608,13 @@ export interface ToolbarStatusEventArgs {
     html?: object
     /** Defines the markdown toolbar status arguments. */
     markdown?: object
+}
+
+/**
+ * @hidden
+ * @deprecated
+ */
+export interface CleanupResizeElemArgs {
+    name?: string,
+    value: string
 }

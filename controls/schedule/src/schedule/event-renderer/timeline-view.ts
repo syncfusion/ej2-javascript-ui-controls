@@ -103,6 +103,8 @@ export class TimelineEvent extends MonthEvent {
 
     public renderResourceEvents(): void {
         this.removeHeightProperty(cls.RESOURCE_COLUMN_TABLE_CLASS);
+        const selector: string = '.' + cls.RESOURCE_COLUMN_TABLE_CLASS + ' tbody tr';
+        this.addCellHeight(selector, this.eventHeight, EVENT_GAP, this.moreIndicatorHeight, 0, false);
         const resources: TdData[] = this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
             this.parent.resourceBase.renderedResources;
@@ -145,6 +147,7 @@ export class TimelineEvent extends MonthEvent {
             return;
         }
         const cellTd: HTMLElement = this.getCellTd();
+        const eventsPerRow: number = this.parent.rowAutoHeight ? 1 : this.parent.activeViewOptions.maxEventsPerRow;
         const overlapCount: number = (isNullOrUndefined(this.parent.eventSettings.sortComparer)) ? this.getIndex(startTime) : this.getSortComparerIndex(startTime, endTime);
         event.Index = overlapCount;
         const appHeight: number = this.eventHeight;
@@ -154,7 +157,7 @@ export class TimelineEvent extends MonthEvent {
         eventObj[this.fields.endTime] = eventData[this.fields.endTime];
         const currentDate: Date = util.resetTime(new Date(this.dateRender[this.day].getTime()));
         const schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
-        let isValidEvent: boolean =  true;
+        let isValidEvent: boolean = true;
         if (this.isDayProcess() || eventObj[this.fields.isAllDay]) {
             isValidEvent = true;
         } else {
@@ -176,7 +179,8 @@ export class TimelineEvent extends MonthEvent {
             appLeft = (this.parent.enableRtl) ? 0 : position;
             appRight = (this.parent.enableRtl) ? position : 0;
             const height: number = ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
-            const renderApp: boolean = this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
+            const renderApp: boolean = this.parent.activeViewOptions.maxEventsPerRow && !this.parent.rowAutoHeight && !this.parent.eventSettings.enableIndicator
+                ? overlapCount < eventsPerRow : this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
             if (this.parent.rowAutoHeight || renderApp) {
                 let appointmentElement: HTMLElement;
                 if (isNullOrUndefined(this.inlineValue)) {
@@ -258,7 +262,9 @@ export class TimelineEvent extends MonthEvent {
             const appArea: number = this.cellHeight - this.moreIndicatorHeight;
             appHeight = this.withIndicator ? appArea - EVENT_GAP : appHeight;
             const renderedAppCount: number = Math.floor(appArea / (appHeight + EVENT_GAP));
-            const count: number = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);
+            const count: number = this.parent.activeViewOptions.maxEventsPerRow && !this.parent.eventSettings.enableIndicator
+            ? filterEvents.length - this.parent.activeViewOptions.maxEventsPerRow : (filterEvents.length - renderedAppCount) <= 0 ? 1
+                : filterEvents.length - renderedAppCount;            
             let moreIndicatorElement: HTMLElement;
             if (this.renderType === 'day') {
                 moreIndicatorElement = this.getMoreIndicatorElement(count, startDate, endDate);

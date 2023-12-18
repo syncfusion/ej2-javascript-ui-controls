@@ -228,7 +228,7 @@ export class DialogEditRender {
                 || cols[parseInt(i.toString(), 10)].commandsTemplate || cols[parseInt(i.toString(), 10)].type === 'checkbox') {
                 continue;
             }
-            const tr: Element = this.parent.createElement('tr');
+            const tr: Element = this.parent.createElement('tr', { attrs: { role: 'row' } });
             const dataCell: HTMLElement = this.parent.createElement('td', {
                 className: literals.rowCell, attrs: {
                     style: 'text-align:' + (this.parent.enableRtl ? 'right' : 'left') + ';width:190px'

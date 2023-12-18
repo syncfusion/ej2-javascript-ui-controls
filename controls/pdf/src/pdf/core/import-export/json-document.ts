@@ -603,26 +603,26 @@ export class _JsonDocument extends _ExportHelper {
             const dataTable: Map<string, any> = new Map<string, any>(); // eslint-disable-line
             const streamTable: Map<string, any> = new Map<string, any>(); // eslint-disable-line
             const streamDictionary: _PdfDictionary = value.dictionary;
+            const data: string = value.getString(true);
+            if (!streamDictionary.has('Length') && data && data !== '') {
+                streamDictionary.update('Length', value.length);
+            }
             this._writeAppearanceDictionary(streamTable, streamDictionary);
-            const length: number = streamDictionary.get('Length');
             let type: string;
             if (streamDictionary.has('Subtype')) {
                 type = this._getValue(streamDictionary.get('Subtype'));
             }
-            if (length > 0) {
-                if ((!streamDictionary.has('Type') && !streamDictionary.has('Subtype')) ||
-                    (streamDictionary.has('Subtype') &&
-                    (type === 'Image' || type === 'Form' || type === 'CIDFontType0C' || type === 'OpenType'))) {
-                    dataTable.set('mode', 'raw');
-                    dataTable.set('encoding', 'hex');
-                } else {
-                    dataTable.set('mode', 'filtered');
-                    dataTable.set('encoding', 'ascii');
-                }
-                const data: string = value.getString(true);
-                if (data && data !== '') {
-                    dataTable.set('bytes', data);
-                }
+            if ((!streamDictionary.has('Type') && !streamDictionary.has('Subtype')) ||
+                (streamDictionary.has('Subtype') &&
+                (type === 'Image' || type === 'Form' || type === 'CIDFontType0C' || type === 'OpenType'))) {
+                dataTable.set('mode', 'raw');
+                dataTable.set('encoding', 'hex');
+            } else {
+                dataTable.set('mode', 'filtered');
+                dataTable.set('encoding', 'ascii');
+            }
+            if (data && data !== '') {
+                dataTable.set('bytes', data);
             }
             streamTable.set('data', this._convertToJson(dataTable));
             this._writeTable('stream', this._convertToJson(streamTable), table, key, array);

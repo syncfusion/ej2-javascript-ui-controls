@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, addDPRValue, rangeSelectionByKeydown } from '../common/index';
-import { showAggregate, refreshImgElem, getRowIdxFromClientY, getColIdxFromClientX, clearChartBorder, hideAutoFillElement } from '../common/index';
+import { showAggregate, refreshOverlayElem, getRowIdxFromClientY, getColIdxFromClientX, clearChartBorder, hideAutoFillElement } from '../common/index';
 import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook, getSelectedRange } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
 import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest, remove, detach } from '@syncfusion/ej2-base';
@@ -339,6 +339,9 @@ export class Selection {
                         (isTouchStart(e) && activeIdx[0] === rowIdx && activeIdx[1] === colIdx)) || isColSelected || isRowSelected)) {
                         document.addEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
                         if (!Browser.isPointer) {
+                            if (Browser.isIos && isTouchStart(e)) {
+                                e.preventDefault();
+                            }
                             document.addEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt, { passive: false });
                         }
                         this.touchSelectionStarted = true;
@@ -381,26 +384,39 @@ export class Selection {
         const verticalContent: Element = this.parent.getMainContent().parentElement;
         const horizontalContent: Element = this.parent.element.getElementsByClassName('e-scroller')[0];
         const clientRect: ClientRect = verticalContent.getBoundingClientRect(); const frozenCol: number = this.parent.frozenColCount(sheet);
-        const left: number = clientRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet);
-        const top: number = clientRect.top; const right: number = clientRect.right - getScrollBarWidth(); const bottom: number = clientRect.bottom;
+        let left: number = clientRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet);
+        const top: number = clientRect.top; let right: number = clientRect.right - getScrollBarWidth(); const bottom: number = clientRect.bottom;
         const clientX: number = getClientX(e); const clientY: number = getClientY(e);
         // remove math.min or handle top and left auto scroll
         let colIdx: number = this.isRowSelected ? sheet.colCount - 1 :
-            this.getColIdxFromClientX({ clientX:clientX, target: e.target as Element });
+            this.getColIdxFromClientX({ clientX: clientX, target: e.target as Element });
         let rowIdx: number = this.isColSelected ? sheet.rowCount - 1 :
             this.getRowIdxFromClientY({ clientY: clientY, target: e.target as Element });
         let prevIndex: number[];
+        let rangeIndex: number[];
         if (e.ctrlKey) {
             const selRanges: string[] = sheet.selectedRange.split(' ');
             prevIndex = getRangeIndexes(selRanges[selRanges.length - 1]);
         } else {
             prevIndex = getRangeIndexes(sheet.selectedRange);
         }
+        if (Browser.isDevice) {
+            const screenWidth: number = screen.availWidth;
+            if (right >= screenWidth - 40) {
+                right -= (40 - (screenWidth - right));
+            }
+            if (!sheet.showHeaders && left < 40) {
+                left += (40 - left);
+            }
+        }
         const mergeArgs: MergeArgs = { range: [rowIdx, colIdx, rowIdx, colIdx] };
         this.parent.notify(activeCellMergedRange, mergeArgs);
-        if (mergeArgs.range[2] === prevIndex[2] && mergeArgs.range[3] === prevIndex[3] && !(clientY > bottom ? (frozenCol ? clientX < left : true) : false) && !(clientX > right)) { return; }
+        if (mergeArgs.range[2] === prevIndex[2] && mergeArgs.range[3] === prevIndex[3] && clientY <= bottom && clientY >= top &&
+            clientX <= right && clientX >= left) {
+            return;
+        }
         const frozenRow: number = this.parent.frozenRowCount(sheet);
-        let isScrollDown: boolean = (clientY > bottom ? (frozenCol ? clientX < left : true) : false) && rowIdx < sheet.rowCount;
+        let isScrollDown: boolean = clientY > bottom && rowIdx < sheet.rowCount;
         let isScrollUp: boolean = clientY < top && rowIdx >= 0 && !this.isColSelected && !!verticalContent.scrollTop;
         if (frozenRow > rowIdx) {
             isScrollDown = false;
@@ -416,7 +432,7 @@ export class Selection {
         if (!isFormulaEdit && !this.isColSelected && !this.isRowSelected) { prevIndex = getCellIndexes(sheet.activeCell); }
         if (isScrollDown || isScrollUp || isScrollRight || isScrollLeft) {
             if (isScrollUp || isScrollLeft) { scrollUpRowIdx = rowIdx; scrollUpColIdx = colIdx; }
-            this.scrollInterval = setInterval(() => {
+            const scrollSelection: Function = () => {
                 if ((isScrollDown || isScrollUp) && !this.isColSelected) {
                     rowIdx = this.getRowIdxFromClientY({ clientY: isScrollDown ? bottom : top });
                     if (rowIdx >= sheet.rowCount) { // clear interval when scroll up
@@ -432,12 +448,19 @@ export class Selection {
                     }
                     horizontalContent.scrollLeft += (isScrollRight ? 1 : -1) * getColumnWidth(sheet, colIdx);
                 }
-                if ((isScrollUp && !verticalContent.scrollTop) || (isScrollLeft && !horizontalContent.scrollLeft)) {
+                if ((isScrollUp && sheet.frozenRows && !verticalContent.scrollTop) ||
+                    (isScrollLeft && sheet.frozenColumns && !horizontalContent.scrollLeft)) {
                     this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [scrollUpRowIdx, scrollUpColIdx]), e);
                     this.clearInterval(); return;
                 }
                 this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
-            }, 100);
+            };
+            scrollSelection();
+            this.scrollInterval = setInterval(() => {
+                scrollSelection();
+                this.clearInterval();
+                this.scrollInterval = setInterval(scrollSelection, 100);
+            });
         } else {
             let indexes: number[] = [].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]);
             if (frozenRow && indexes[0] < frozenRow && indexes[2] >= frozenRow && verticalContent.scrollTop) {
@@ -453,11 +476,17 @@ export class Selection {
                 const args: {e: MouseEvent & TouchEvent, indexes?: number[] } = { e: e, indexes: null };
                 this.parent.notify(selectAutoFillRange, args);
                 indexes = args.indexes;
+                rangeIndex = indexes;
             }
             this.selectRangeByIdx(indexes, e);
         }
         if (isFormulaEdit && this.parent.isEdit && !closest(e.target as Element, '#' + this.parent.element.id + '_edit')) {
-            const range: string = this.parent.getActiveSheet().selectedRange;
+            let range: string;
+            if (this.isautoFillClicked) {
+                range = getRangeAddress(rangeIndex);
+            } else {
+                range = this.parent.getActiveSheet().selectedRange;
+            }
             this.parent.notify(addressHandle, { range: range, isSelect: false });
         }
     }
@@ -550,8 +579,10 @@ export class Selection {
     }
 
     private clearInterval(): void {
-        clearInterval(this.scrollInterval);
-        this.scrollInterval = null;
+        if (this.scrollInterval) {
+            clearInterval(this.scrollInterval);
+            this.scrollInterval = null;
+        }
     }
 
     private getScrollLeft(): number {
@@ -850,7 +881,7 @@ export class Selection {
         if (this.parent.showAggregate) {
             this.parent.notify(showAggregate, {});
         }
-        this.parent.notify(refreshImgElem, {});
+        this.parent.notify(refreshOverlayElem, {});
         if (overlayEle) {
             this.parent.notify(removeDesignChart, {});
         }

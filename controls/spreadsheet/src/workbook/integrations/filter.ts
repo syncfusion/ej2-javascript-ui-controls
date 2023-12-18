@@ -112,7 +112,7 @@ export class WorkbookFilter {
                 const parent: any = this.parent;
                 let hide: boolean;
                 let refreshUI: boolean;
-                if ((parent.scrollSettings.enableVirtualization && (jsonData.length > (parent.viewport.rowCount +
+                if ((parent.scrollSettings.enableVirtualization && ((sheet.rows || jsonData).length > (parent.viewport.rowCount +
                     (parent.getThreshold('row') * 2))) || sheet.frozenRows || sheet.frozenColumns) || refresh) {
                     jsonData.forEach((data: { [key: string]: CellModel }) => {
                         hide = result.indexOf(data) < 0;
@@ -137,7 +137,7 @@ export class WorkbookFilter {
                     });
                 }
                 if (refreshUI) {
-                    parent.renderModule.refreshSheet(false, false, true);
+                    parent.renderModule.refreshSheet(false, false, document.activeElement.id !== `${this.parent.element.id}_SearchBox`);
                 }
             } else {
                 let hide: boolean;

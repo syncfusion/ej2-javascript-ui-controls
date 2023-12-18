@@ -6,7 +6,7 @@ import { Category } from '../axis/category-axis';
 import { triggerLabelRender, valueToCoefficient } from '../../common/utils/helper';
 import { Size } from '@syncfusion/ej2-svg-base';
 import { withIn, firstToLowerCase } from '../../common/utils/helper';
-import { IntervalType } from '../utils/enum';
+import { IntervalType } from '../../common/utils/enum';
 import { Chart } from '../chart';
 import { extend, getValue } from '@syncfusion/ej2-base';
 import { Font } from '../../common/model/base';

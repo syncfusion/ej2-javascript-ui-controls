@@ -1,8 +1,10 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Filter } from '../actions/filter';
 import { Sort } from '../actions/sort';
+import { ColumnChooser } from '../actions/column-chooser';
 import { ResponsiveDialogAction } from '../base/enum';
 import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
+import { ColumnMenu } from '../..';
 
 /**
  * ServiceLocator
@@ -28,7 +30,7 @@ export class ServiceLocator {
         return <T>this.services[`${name}`];
     }
 
-    public registerAdaptiveService(type: Filter | Sort, isAdaptiveUI: boolean, action: ResponsiveDialogAction): void {
+    public registerAdaptiveService(type: Filter | Sort | ColumnChooser | ColumnMenu, isAdaptiveUI: boolean, action: ResponsiveDialogAction): void {
         if (isAdaptiveUI) {
             type.responsiveDialogRenderer = new ResponsiveDialogRenderer(type.parent, type.serviceLocator);
             type.responsiveDialogRenderer.action = action;

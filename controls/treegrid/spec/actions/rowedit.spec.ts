@@ -150,6 +150,7 @@ describe('Edit module', () => {
       destroy(gridObj);
     });
   });
+
   describe('Hirarchy editing - Add at Bottom', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;
@@ -279,6 +280,7 @@ describe('Edit module', () => {
       destroy(gridObj);
     });
   });
+
   describe('Hirarchy editing - Add at Above', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;

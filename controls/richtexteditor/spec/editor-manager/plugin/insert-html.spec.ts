@@ -378,6 +378,7 @@ describe('EJ2-52641- Text inserted outside of the RichTextEditor after Shift + E
     });
     afterAll(function () {
         detach(divElement);
+        detach(nonElement);
     });
     it('Inserting HTML with shift + enter action', function () {
         range = document.createRange();
@@ -410,6 +411,7 @@ describe('EJ2-53098- Numbered List order in the Rich Text Editor goes incorrect 
     });
     afterAll(function () {
         detach(divElement);
+        detach(wrapperDivElement);
     });
     it('Inserting li element at last in the existing OL', function () {
         range = document.createRange();
@@ -454,6 +456,7 @@ describe('EJ2-53098- Unordered List order in the Rich Text Editor goes incorrect
     });
     afterAll(function () {
         detach(divElement);
+        detach(wrapperDivElement);
     });
     it('Inserting li element at last in the existing UL', function () {
         range = document.createRange();

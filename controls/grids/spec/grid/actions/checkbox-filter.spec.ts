@@ -1814,10 +1814,7 @@ describe('Checkbox Filter module => ', () => {
             (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[1] as any).click();
             checkBoxFilter.querySelectorAll('button')[0].click();
         });
-        it('Check confirm dialog', () => {
-            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-dialog')).toBeTruthy();
-        });
-        it('check data are filtered', (done: Function) => {
+        it('Check confirm dialog & check data are filtered', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'filtering') {
                     expect(gridObj.currentViewData[0]['CustomerID']).toBe('ANATR');
@@ -1826,6 +1823,7 @@ describe('Checkbox Filter module => ', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
+            expect(select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).classList.contains('e-dialog')).toBeTruthy();
             select('#' + gridObj.element.id + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
         });
         it('memory leak', () => {     
@@ -2686,17 +2684,15 @@ describe('EJ2-56656 - Wrong operator while filtering with Excel filter search bo
     });
 });
 
-describe('EJ2-857348 - Filter popup closed on pressing the Enter key when No record found.', () => {
+describe('Checkbox Filter on demand load and selection maintain for filter', () => {
     let gridObj: Grid;
-    let checkBoxFilter: Element;
-    let searchElement : HTMLInputElement;
     let actionComplete: () => void;
     beforeAll((done: Function) => {
         gridObj = createGrid(
             {
-                dataSource: filterData,
+                dataSource: filterData.slice(0, 23),
                 allowFiltering: true,
-                filterSettings: { type: 'CheckBox' },
+                filterSettings: { type: 'CheckBox', enableInfiniteScrolling: true, itemsCount: 5 },
                 height: 500,
                 columns: [
                     { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
@@ -2708,34 +2704,508 @@ describe('EJ2-857348 - Filter popup closed on pressing the Enter key when No rec
 
     it('OrderID filter dialog open testing', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if(args.requestType === 'filterafteropen'){
-                checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                actionComplete = null;
                 done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
             }
         };
         gridObj.actionComplete = actionComplete;
         (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
     });
 
-    it('search not available value', (done: Function) => {
-        searchElement = gridObj.element.querySelector('.e-searchinput');
+    it('OrderID filter dialog open testing and down scroll', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteScrollHandler();
+        setTimeout(done, 1000);
+    });
+
+    it('OrderID filter dialog open testing and down scroll - 1', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3) - 2);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+        const target = (<any>gridObj.filterModule).filterModule.checkBoxBase;
+        target.infiniteScrollMouseKeyUpHandler({target: target.cBox});
+        setTimeout(done, 1000);
+    });
+
+    it('OrderID filter dialog open testing and up scroll', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 0;
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteScrollHandler();
+        setTimeout(done, 1000);
+    });
+
+    it('OrderID filter dialog open testing and down scroll - 2', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+        const target = (<any>gridObj.filterModule).filterModule.checkBoxBase;
+        target.infiniteScrollMouseKeyUpHandler({target: target.cBox});
+        setTimeout(done, 1000);
+    });
+
+    it('OrderID filter dialog open testing and down scroll - 3', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3) - 2);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteScrollHandler();
+        setTimeout(done, 1000);
+    });
+
+    it('OrderID filter dialog open testing and up scroll - 1', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3) - 2);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 0;
+        const target = (<any>gridObj.filterModule).filterModule.checkBoxBase;
+        target.infiniteScrollMouseKeyUpHandler({target: target.cBox});
+        setTimeout(done, 1000);
+    });
+
+    it('OrderID filter dialog open testing and up scroll - 2', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3));
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 0;
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteScrollHandler();
+        setTimeout(done, 1000);
+    });
+
+    it('OrderID filter dialog open testing and up scroll - 3', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3));
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 0;
+        const target = (<any>gridObj.filterModule).filterModule.checkBoxBase;
+        target.infiniteScrollMouseKeyUpHandler({target: target.cBox});
+        setTimeout(done, 1000);
+    });
+
+    it('checkbox selection', () => {
+        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        let checkBox: Element = checkBoxList.children[0].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
+        checkBox = checkBoxList.children[1].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(2);
+        let selectAllCheckBox: Element = (<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: selectAllCheckBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(0);
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: selectAllCheckBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(0);
+    });
+
+    it('search', (done: Function) => {
         actionComplete = (args?: any): void => {
             if (args.requestType === 'filterchoicerequest') {
-                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(1);
-                expect((gridObj.filterModule as any).filterModule.checkBoxBase.filterState).toBe(false);
                 actionComplete = null;
                 done();
             }                                 
         };
+        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        searchElement.value = '2';
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+    });
+
+    it('search checkbox selection', () => {
+        let checkBox: Element = gridObj.element.querySelector('.e-checkboxlist').children[0].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
+        checkBox = gridObj.element.querySelector('.e-checkboxlist').children[1].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(2);
+        checkBox = gridObj.element.querySelector('.e-checkboxlist').children[0].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteSearchPred).not.toBe(undefined);
+    });
+
+    it('Filter OrderID testing with enter key', (done: Function) => {   
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filtering') {
+                expect(gridObj.filterSettings.columns.length).toBe(2);
+                done();
+            }                                 
+        };
+        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({ target: searchElement });              
+    });
+
+    it('OrderID filter dialog open after filter testing', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+    });
+
+    it('selectall checkbox selection', () => {
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteUnloadParentExistPred.length).toBe(1);
+        let selectAllCheckBox: Element = (<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: selectAllCheckBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(0);
+    });
+
+    it('Filter OrderID with existing filter testing with enter key', (done: Function) => {   
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filtering') {
+                expect(gridObj.filterSettings.columns.length).toBe(0);
+                done();
+            }                                 
+        };
+        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({ target: searchElement });              
+    });
+
+    it('OrderID filter dialog open after filter testing - 1', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+    });
+
+    it('unselectall checkbox selection - 1', () => {
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(0);
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteUnloadParentExistPred.length).toBe(0);
+        let selectAllCheckBox: Element = (<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: selectAllCheckBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(0);
+        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        let checkBox: Element = checkBoxList.children[0].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
+        checkBox = checkBoxList.children[1].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(2);
+        checkBox = checkBoxList.children[0].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
+    });
+
+    it('Filter OrderID with existing filter testing with enter key - 1', (done: Function) => {   
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filtering') {
+                expect(gridObj.filterSettings.columns.length).toBe(1);
+                expect(gridObj.currentViewData.length).toBe(1);
+                done();
+            }                                 
+        };
+        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({ target: searchElement });              
+    });
+
+    it('OrderID filter dialog open after filter testing - 2', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.filterSettings.loadingIndicator = 'Spinner';
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+    });
+
+    it('search available value', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterchoicerequest') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                actionComplete = null;
+                done();
+            }                                 
+        };
+        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        searchElement.value = '2';
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+    });
+
+    it('search not available value', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterchoicerequest') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(1);
+                actionComplete = null;
+                done();
+            }                                 
+        };
+        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
         searchElement.value = '1000000';
         gridObj.actionComplete = actionComplete;
         (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
     });
 
+    it('search available value for coverage', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterchoicerequest') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                actionComplete = null;
+                done();
+            }                                 
+        };
+        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        searchElement.value = '2';
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+    });
+
+    it('checkbox selection after search for coverage', () => {
+        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        let checkBox: Element = checkBoxList.children[1].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        let addCurrSelection: Element = <any>checkBoxList.parentElement.previousSibling;
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: addCurrSelection });
+    });
+
+    it('search not available value for coverage', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterchoicerequest') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(1);
+                actionComplete = null;
+                done();
+            }                                 
+        };
+        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        searchElement.value = '1000000';
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13,searchElement));
+    });
+
+    it ('EJ2-857348 - Filter popup closed on pressing the Enter key when No record found.', () => {
+        expect((gridObj.filterModule as any).filterModule.checkBoxBase.filterState).toBe(false);
+    });
+
+    it('clear search', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterchoicerequest') {
+                expect(args.filterModel.dlg.querySelectorAll('.e-searchinput').length).toBe(1);
+                gridObj.element.querySelector('.e-checkboxlist').scrollTop = 500;
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (document.querySelector('.e-checkboxfilter .e-searchclear') as any).click();
+    });
+
+    it('down scroll', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteScrollHandler();
+        setTimeout(done, 1000);
+    });
+
+    it('checkbox selection after down scroll', () => {
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
+        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        let checkBox: Element = checkBoxList.children[checkBoxList.children.length - 4].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(2);
+        checkBox = checkBoxList.children[checkBoxList.children.length - 3].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(3);
+        checkBox = checkBoxList.children[checkBoxList.children.length - 4].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(3);
+    });
+
+    it('up scroll', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.element.querySelector('.e-checkboxlist').scrollTop = 0;
+        const target = (<any>gridObj.filterModule).filterModule.checkBoxBase;
+        target.infiniteScrollMouseKeyUpHandler({target: target.cBox});
+        setTimeout(done, 1000);
+    });
+
+    it('checkbox selection after up scroll', () => {
+        let checkBoxList: Element = gridObj.element.querySelector('.e-checkboxlist');
+        let checkBox: Element = checkBoxList.children[1].querySelector('input');
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.clickHandler({ target: checkBox });
+        expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(3);
+    });
+
+    it('Filter OrderID testing with enter key - 2', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filtering') {
+                expect(gridObj.filterSettings.columns.length).toBe(3);
+                expect(gridObj.currentViewData.length).toBe(1);
+                done();
+            }
+        };
+        let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({ target: searchElement });
+    });
+
+    it('OrderID filter dialog open after filter testing - 3', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
+                expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(0);
+                expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
+                expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteManualSelectMaintainPred.length).toBe(1);
+                expect((<any>gridObj.filterModule).filterModule.checkBoxBase.infiniteUnloadParentExistPred.length).toBe(2);
+                actionComplete = null;
+                done();
+            } else if (args.requestType === 'filterchoicerequest') {
+                args.filterModel.infiniteInitialLoad = false;
+                args.filterModel.filterChoiceCount = 6;
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+    });
+
     afterAll(() => {
         destroy(gridObj);
-        checkBoxFilter = null;
-        searchElement = null;
+        gridObj = null;
+    });
+});
+
+// for cover on demand foreign key filter local data
+describe('Checkbox Filter on demand load and selection maintain for foreign key =>', () => {
+    let gridObj: Grid;
+    let actionComplete: (e?: any) => void;
+    beforeAll((done: Function) => {
+        let options: Object = {
+            dataSource: fdata.slice(0, 50),
+            allowFiltering: true,
+            filterSettings: { type: 'CheckBox', enableInfiniteScrolling: true, itemsCount: 5 },
+            cssClass: 'report market',
+            enableRtl: true,
+            loadingIndicator: { indicatorType: 'Shimmer' },
+            enablePersistence: true,
+            columns: [
+                { field: 'OrderID', width: 120 },
+                { field: 'ShipCity', width: 120 },
+                { field: 'Verified', width: 120 },
+                { field: 'OrderDate', width: 120 },
+                {
+                    field: 'CustomerID', width: 100, foreignKeyValue: 'City', foreignKeyField: 'CustomerID',
+                    dataSource: fCustomerData.slice(0, 50), filter: { itemTemplate: "${foreignKeyData.City}" },
+                },
+                { field: 'ShipCountry', width: 120 },
+            ]
+        };
+        gridObj = createGrid(options, done);
+    });
+
+    it('local data foreign key for coverage', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'filterafteropen') {
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+    });
+    afterAll(() => {
+        destroy(gridObj);
         gridObj = null;
     });
 });
@@ -2908,9 +3378,9 @@ describe('coverage improvemnet.', () => {
                         { field: 'ShipCity', matchCase: false, operator: 'equal', value: 'Rio de Janeiro' }]
                 },
                 cssClass: 'report market',
+                enableRtl: true,
                 loadingIndicator: { indicatorType: 'Shimmer' },
                 enablePersistence: true,
-                enableRtl: true,
                 columns: [
                     { field: 'OrderID', width: 120 },
                     { field: 'ShipCity', width: 120 },

@@ -41,7 +41,7 @@ export const htmlKeyConfig: { [key: string]: string } = {
     'insert-link': 'ctrl+k',
     'insert-image': 'ctrl+shift+i',
     'insert-audio': 'ctrl+shift+a',
-    'insert-video': 'ctrl+shift+v',
+    'insert-video': 'ctrl+alt+v',
     'insert-table': 'ctrl+shift+e',
     'undo': 'ctrl+z',
     'redo': 'ctrl+y',

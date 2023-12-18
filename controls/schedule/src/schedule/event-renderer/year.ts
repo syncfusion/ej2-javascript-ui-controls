@@ -83,6 +83,9 @@ export class YearEvent extends TimelineEvent {
         this.cellHeader = util.getOuterHeight(workCell.querySelector('.' + cls.DATE_HEADER_CLASS));
         const eventTable: Element = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
         this.eventHeight = util.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
+        const selector: string =
+            `.${cls.MONTH_HEADER_WRAPPER} tbody tr,.${cls.RESOURCE_COLUMN_TABLE_CLASS} tbody tr,.${cls.CONTENT_TABLE_CLASS} tbody tr`;
+        this.addCellHeight(selector, this.eventHeight, EVENT_GAP, this.cellHeader, this.moreIndicatorHeight);
         const wrapperCollection: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
         const months: number[] = this.getMonths();
         const groupIndex: number = (this.parent.activeViewOptions.group.resources.length > 0 && this.parent.uiStateValues.isGroupAdaptive) ?
@@ -142,7 +145,9 @@ export class YearEvent extends TimelineEvent {
                         this.moreIndicatorHeight;
                     const appArea: number = this.cellHeight - this.cellHeader - this.moreIndicatorHeight;
                     const renderedAppCount: number = Math.floor(appArea / (this.eventHeight + EVENT_GAP));
-                    const moreIndicatorCount: number = (count - renderedAppCount) <= 0 ? 1 : (count - renderedAppCount);
+                    const eventsPerRow: number = this.parent.rowAutoHeight ? 1 : this.parent.activeViewOptions.maxEventsPerRow;
+                    const moreIndicatorCount: number = this.parent.activeViewOptions.maxEventsPerRow ? count - eventsPerRow
+                        : (count - renderedAppCount) <= 0 ? 1 : count - renderedAppCount;
                     if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                         const isRendered: Record<string, any>[] = this.renderedEvents.filter((eventObj: Record<string, any>) =>
                             eventObj.Guid === eventData.Guid);
@@ -157,9 +162,12 @@ export class YearEvent extends TimelineEvent {
                             continue;
                         }
                     }
-                    if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
+                    const enableAppRender: boolean  = this.maxOrIndicator || (overlapIndex < eventsPerRow) || (this.cellHeight > availedHeight);
+                    if (this.parent.rowAutoHeight || enableAppRender || this.cellHeight > availedHeight) {
                         this.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, monthStart, dayIndex);
-                        this.updateCellHeight(rowTd, availedHeight);
+                        if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
+                            this.updateCellHeight(rowTd, availedHeight);
+                        }                        
                         isSpannedCollection.push(eventData);
                     } else {
                         const moreIndex: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
@@ -224,6 +232,9 @@ export class YearEvent extends TimelineEvent {
         this.cellHeader = 0;
         const eventTable: Element = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
         this.eventHeight = util.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
+        const selector: string =
+            `.${cls.MONTH_HEADER_WRAPPER} tbody tr,.${cls.RESOURCE_COLUMN_TABLE_CLASS} tbody tr,.${cls.CONTENT_TABLE_CLASS} tbody tr`;
+        this.addCellHeight(selector, this.eventHeight, EVENT_GAP, this.cellHeader, this.moreIndicatorHeight);
         const wrapperCollection: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
         const resources: TdData[] = this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :

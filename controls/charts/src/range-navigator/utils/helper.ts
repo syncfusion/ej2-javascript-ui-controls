@@ -1,7 +1,7 @@
 /* eslint-disable jsdoc/require-returns */
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
-import { VisibleRangeModel } from '../../chart/axis/axis';
+import { VisibleRangeModel } from '../../common/model/interface';
 /**
  * Methods for calculating coefficient.
  */

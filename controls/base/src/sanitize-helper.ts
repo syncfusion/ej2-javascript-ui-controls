@@ -167,7 +167,7 @@ export class SanitizeHtmlHelper {
         this.removeXssAttrs();
         const tempEleValue: string = this.wrapElement.innerHTML;
         this.removeElement();
-         return tempEleValue.replace(/&amp;/g, '&');
+        return tempEleValue.replace(/&amp;/g, '&');
     }
 
     private static removeElement(): void {

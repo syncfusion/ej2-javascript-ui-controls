@@ -2,7 +2,7 @@
 /* eslint-disable valid-jsdoc */
 /* eslint-disable jsdoc/require-param */
 import { Chart } from '../chart';
-import { Axis, Row, Column, VisibleRangeModel, VisibleLabels } from '../axis/axis';
+import { Axis, Row, Column, VisibleLabels } from '../axis/axis';
 import { valueToCoefficient, inside, isOverlap, textTrim } from '../../common/utils/helper';
 import { appendChildElement } from '../../common/utils/helper';
 import { CircleOption } from '../../common/utils/helper';
@@ -10,7 +10,9 @@ import { Size, measureText, TextOption, PathOption, Rect } from '@syncfusion/ej2
 import { LineBase } from '../series/line-base';
 import { textElement, ChartLocation, valueToPolarCoefficient, CoefficientToVector, getElement } from '../../common/utils/helper';
 import { BorderModel } from '../../index';
-import { LabelIntersectAction, AxisPosition } from '../utils/enum';
+import { AxisPosition } from '../utils/enum';
+import { LabelIntersectAction } from '../../common/utils/enum';
+import { VisibleRangeModel } from '../../common/model/interface';
 
 /**
  * Specifies the Polar Axis Layout.
@@ -260,9 +262,9 @@ export class PolarRadarPanel extends LineBase {
             elementSize = axis.visibleLabels[i as number].size;
             radius = chart.radius * valueToCoefficient(axis.visibleLabels[i as number].value, axis);
             pointX = (this.centerX + radius * vector.x) + ((axis.majorTickLines.height + elementSize.width / 2 + padding / 2)
-              * (Math.cos(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' && chart.enableRtl ? - 1 : axis.labelPosition === 'Inside' ? 1 : axis.labelPosition === 'Outside' && chart.enableRtl ? 1 : -1));
+                * (Math.cos(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' && chart.enableRtl ? - 1 : axis.labelPosition === 'Inside' ? 1 : axis.labelPosition === 'Outside' && chart.enableRtl ? 1 : -1));
             pointY = (this.centerY + radius * vector.y) + ((axis.majorTickLines.height + elementSize.height / 2)
-              * (Math.sin(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' && chart.enableRtl ? - 1 : axis.labelPosition === 'Inside' ? 1 : axis.labelPosition === 'Outside' && chart.enableRtl ? 1 : -1));
+                * (Math.sin(angle * Math.PI / 180)) * (axis.labelPosition === 'Inside' && chart.enableRtl ? - 1 : axis.labelPosition === 'Inside' ? 1 : axis.labelPosition === 'Outside' && chart.enableRtl ? 1 : -1));
             pointY += (elementSize.height / 4);
             labelRegions[i as number] = this.getLabelRegion(pointX, pointY, axis.visibleLabels[i as number], anchor);
             if (i !== 0 && intersectType === 'Hide') {

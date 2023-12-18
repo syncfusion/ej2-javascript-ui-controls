@@ -154,7 +154,8 @@ export enum ImageEditorCommand {
     Warm = 'Warm',
     Grayscale = 'Grayscale',
     Sepia = 'Sepia',
-    Invert = 'Invert'
+    Invert = 'Invert',
+    Straightening = 'Straightening',
 }
 
 /**

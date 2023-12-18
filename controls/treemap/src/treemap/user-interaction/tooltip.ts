@@ -1,6 +1,6 @@
 import { TreeMap } from '../treemap';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
-import { Browser, createElement, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Location, getMousePosition, textFormatter, formatValue } from '../utils/helper';
 import { TooltipSettingsModel } from '../model/base-model';
 import { ITreeMapTooltipRenderEventArgs, ITreeMapTooltipArgs } from '../model/interface';
@@ -53,11 +53,11 @@ export class TreeMapTooltip {
                     markerFill = item['options']['fill'];
                 }
                 if (this.treemap.enableRtl) {
-                    tooltipContent = [SanitizeHtmlHelper.sanitize(textFormatter(this.tooltipSettings.format, toolTipData, this.treemap)) ||
-                        SanitizeHtmlHelper.sanitize(formatValue(value, this.treemap) + ' : ' + this.treemap.weightValuePath.toString())];
+                    tooltipContent = [(!isNullOrUndefined(this.tooltipSettings.format) ? textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) : null)
+                        || formatValue(value, this.treemap) + ' : ' + this.treemap.weightValuePath.toString()];
                 } else {
-                    tooltipContent = [SanitizeHtmlHelper.sanitize(textFormatter(this.tooltipSettings.format, toolTipData, this.treemap)) ||
-                        SanitizeHtmlHelper.sanitize(this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap))];
+                    tooltipContent = [(!isNullOrUndefined(this.tooltipSettings.format) ? textFormatter(this.tooltipSettings.format, toolTipData, this.treemap) : null)
+                        || this.treemap.weightValuePath.toString() + ' : ' + formatValue(value, this.treemap)];
                 }
                 if (document.getElementById(this.tooltipId)) {
                     tooltipEle = document.getElementById(this.tooltipId);
@@ -72,7 +72,7 @@ export class TreeMapTooltip {
                 location = getMousePosition(pageX, pageY, this.treemap.svgObject);
                 location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
                 this.tooltipSettings.textStyle.size = this.tooltipSettings.textStyle.size || this.treemap.themeStyle.tooltipFontSize;
-                this.tooltipSettings.textStyle.fontFamily = this.treemap.themeStyle.fontFamily;
+                this.tooltipSettings.textStyle.fontFamily = this.tooltipSettings.textStyle.fontFamily || this.treemap.themeStyle.fontFamily;
                 this.tooltipSettings.textStyle.fontStyle = !isNullOrUndefined(this.tooltipSettings.textStyle.fontStyle) ? this.tooltipSettings.textStyle.fontStyle : 'Normal';
                 this.tooltipSettings.textStyle.fontWeight = this.tooltipSettings.textStyle.fontWeight || this.treemap.themeStyle.fontWeight;
                 this.tooltipSettings.textStyle.color = this.treemap.themeStyle.tooltipFontColor
@@ -130,7 +130,8 @@ export class TreeMapTooltip {
                 palette: [markerFill],
                 areaBounds: this.treemap.areaRect,
                 textStyle: args['textStyle'],
-                fill: this.treemap.tooltipSettings.fill ? this.treemap.tooltipSettings.fill : this.treemap.themeStyle.tooltipFillColor
+                fill: this.treemap.tooltipSettings.fill ? this.treemap.tooltipSettings.fill : this.treemap.themeStyle.tooltipFillColor,
+                enableShadow: true
             });
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((this.treemap as any).isVue || (this.treemap as any).isVue3) {

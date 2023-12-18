@@ -108,7 +108,7 @@ export class SeriesRender {
                 });
                 let element: Element = document.getElementById(smithchart.element.id + '_svg' + '_seriesCollection' + j);
                 if (element) {
-                    element.setAttribute('aria-label', ('Smithchart with '+ series[j].points.length + 'Points'));
+                    element.setAttribute('aria-label', ('Smithchart with '+ series[j].points.length + ' points'));
                     element.appendChild(gdlcEle);
                 }
                 this.dataLabel.calculateSmartLabels(this.dataLabel.labelOptions[j], j);
@@ -192,7 +192,7 @@ export class SeriesRender {
                     this.animateDataLabelTemplate(i, smithchart);
                 }
                 let element: Element = document.getElementById(smithchart.element.id + '_svg' + '_seriesCollection' + i);
-                element.setAttribute('aria-label', ('Smithchart with ' + series[i].points.length + 'Points')); 
+                element.setAttribute('aria-label', ('Smithchart with ' + series[i].points.length + ' points')); 
                 this.performAnimation(smithchart, element, i);
             }
         }

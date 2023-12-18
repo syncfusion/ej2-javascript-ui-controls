@@ -909,14 +909,17 @@ export class Edit {
             this.parent.dataOperation.updateParentItems(ganttRecord, true);
         }
         /** Update parent up-to zeroth level */
-        if (ganttRecord.parentItem ) {
+        if (ganttRecord.parentItem) {
             if (this.parent.autoCalculateDateScheduling) {
                 this.parent.dataOperation.updateParentItems(ganttRecord, true);
             }
             let parentData: IGanttData = this.parent.getRecordByID(ganttRecord.parentItem.taskId);
-            if (!parentData.ganttProperties.predecessorsName) {
-               this.parent.predecessorModule.validatePredecessor(parentData, [], '');
-               this.updateParentItemOnEditing();
+            if (!isNullOrUndefined(parentData)) {
+                if (!parentData.ganttProperties.predecessorsName) {
+                    this.parent.predecessorModule.validatePredecessor(parentData, [], '');
+                    this.updateParentItemOnEditing();
+                    this.parent.ganttChartModule.reRenderConnectorLines()
+                }
             }
         }
         if (this.parent.UpdateOffsetOnTaskbarEdit && this.parent.connectorLineEditModule && args.data) {
@@ -1275,6 +1278,7 @@ export class Edit {
         const ganttObj: Gantt = this.parent;
         const currentBaselineStart = { ...eventArgs.data.ganttProperties.baselineStartDate };
         const currentBaselineEnd = { ...eventArgs.data.ganttProperties.baselineEndDate };
+        const currentProgress = eventArgs.data.ganttProperties.progress;
         this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
             if (currentBaselineStart != eventArg.data["ganttProperties"].baselineStartDate
             || currentBaselineEnd != eventArg.data["ganttProperties"].baselineEndDate) {
@@ -1286,6 +1290,16 @@ export class Edit {
                     'baselineWidth', ganttObj.dataOperation.calculateBaselineWidth(
                         eventArg.data['ganttProperties']),
                     eventArg.data['ganttProperties'], true);
+            }
+            if (!isNullOrUndefined(this.parent.taskFields.progress) && currentProgress != eventArg.data["ganttProperties"].progress) {
+                const width: number = eventArg.data['ganttProperties'].isAutoSchedule ? eventArg.data['ganttProperties'].width :
+                    eventArg.data['ganttProperties'].autoWidth;
+                this.parent.setRecordValue(
+                    'progressWidth',
+                    this.parent.dataOperation.getProgressWidth(width, eventArg.data['ganttProperties'].progress),
+                    eventArg.data['ganttProperties'],
+                    true
+                );
             }
             if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
                 this.parent.showMaskRow();
@@ -1459,9 +1473,10 @@ export class Edit {
                 }
             } 
             if (this.parent.isConnectorLineUpdate && !isNullOrUndefined(this.parent.connectorLineEditModule)) {
-                // this.parent.updatedConnectorLineCollection = [];
-                // this.parent.connectorLineIds = [];
+                this.parent.updatedConnectorLineCollection = [];
+                this.parent.connectorLineIds = [];
                 this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.editedRecords);
+                this.parent.ganttChartModule.reRenderConnectorLines();
                 this.updateScheduleDatesOnEditing(args);
             }
         }
@@ -1484,6 +1499,9 @@ export class Edit {
             }
             this.endEditAction(args);
             this.parent.trigger('actionComplete', eventArgs);
+            if (this.parent.allowTaskbarDragAndDrop && this.parent.rowDragAndDropModule && this.parent.rowDragAndDropModule['draggedRecord']) {
+                this.parent.rowDragAndDropModule['draggedRecord'] = null;
+            }
             if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
                 this.parent.hideMaskRow();
             } else {
@@ -2574,13 +2592,13 @@ export class Edit {
         const predecessorCollection: IPredecessor[] = parentRecordTaskData.predecessor;
         let childRecord: IGanttData;
         let predecessorIndex: number;
-        let validPredecessor : boolean;
         const updatedPredecessor: IPredecessor[] = [];
+        let validPredecessor : boolean;
         for (let count: number = 0; count < len; count++) {
             const fromRecord: IGanttData = this.parent.getRecordByID(predecessorCollection[count as number].from);
             const toRecord: IGanttData = this.parent.getRecordByID(predecessorCollection[count as number].to)
             validPredecessor = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
-            if(!validPredecessor){
+            if (!validPredecessor) {
                 if (predecessorCollection[count as number].to === parentRecordTaskData.rowUniqueID.toString()) {
                     childRecord = this.parent.getRecordByID(predecessorCollection[count as number].from);
                     predecessorIndex = getIndex(predecessorCollection[count as number], 'from', childRecord.ganttProperties.predecessor, 'to');
@@ -2605,7 +2623,7 @@ export class Edit {
                 }
             }
         }
-        if(!validPredecessor){
+        if (!validPredecessor) {
             this.parent.setRecordValue('predecessor', updatedPredecessor, parentRecord.ganttProperties, true);
             this.parent.setRecordValue('predecessorsName', '', parentRecord.ganttProperties, true);
         }
@@ -2920,10 +2938,29 @@ export class Edit {
             if (getValue(
                 this.parent.taskFields.id, dataCollection[i as number]).toString() ===
                 this.addRowSelectedItem.ganttProperties.rowUniqueID.toString()) {
+                let index: number;
+                if (this.parent.rowDragAndDropModule && this.parent.rowDragAndDropModule['droppedRecord'] && this.parent.viewType === 'ResourceView') {
+                    for (let i: number = 0; i < dataCollection.length; i++) {
+                        if (dataCollection[i as number][this.parent.taskFields.id] == this.parent.rowDragAndDropModule['droppedRecord'].ganttProperties.taskId) {
+                            index = i;
+                            break;
+                        }
+                    }
+                }
                 if (rowPosition === 'Above') {
-                    dataCollection.splice(i, 0, record);
+                    if (index) {
+                        dataCollection.splice(index, 0, record);
+                    }
+                    else {
+                        dataCollection.splice(i, 0, record);
+                    }
                 } else if (rowPosition === 'Below') {
-                    dataCollection.splice(i + 1, 0, record);
+                    if (index) {
+                        dataCollection.splice(index + 1, 0, record);
+                    }
+                    else {
+                        dataCollection.splice(i + 1, 0, record);
+                    }
                 } else if (rowPosition === 'Child') {
                     if (dataCollection[i as number][child as string] && dataCollection[i as number][child as string].length > 0) {
                         dataCollection[i as number][child as string].push(record);
@@ -3124,6 +3161,9 @@ export class Edit {
                         }
                         this.updateTreeGridUniqueID(cAddedRecord as IGanttData, 'add');
                         this.refreshNewlyAddedRecord(args, cAddedRecord);
+                        if(this.parent.viewType === 'ResourceView' && this.parent.taskFields.work){
+                            this.parent.dataOperation.updateParentItems(ganttData, true);
+                        }
                         this._resetProperties();
                     }
                 } else {
@@ -3556,12 +3596,14 @@ export class Edit {
                 this.refreshDataSource();
             }
             if (this.dropPosition === 'middleSegment') {
-                if (droppedRec.ganttProperties.predecessor) {
+                if ( !isNullOrUndefined(droppedRec.ganttProperties.predecessor)) {
                     const len: number = droppedRec.ganttProperties.predecessor.length;
                     for (let count: number = 0; count < len; count++) {
+                        if ( !isNullOrUndefined(droppedRec.ganttProperties.predecessor)) {
                         const fromRecord: IGanttData = this.parent.getRecordByID(droppedRec.ganttProperties.predecessor[count as number].from);
-                        const toRecord: IGanttData = this.parent.getRecordByID(droppedRec.ganttProperties.predecessor[count as number].to)
+                        const toRecord: IGanttData = this.parent.getRecordByID(droppedRec.ganttProperties.predecessor[count as number].to);
                         const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
+                        
                         if (droppedRec.ganttProperties.predecessor && !validPredecessor) {
                             this.parent.editModule.removePredecessorOnDelete(droppedRec);
                             droppedRec.ganttProperties.predecessor = null;
@@ -3569,6 +3611,7 @@ export class Edit {
                             droppedRec[this.parent.taskFields.dependency] = null;
                             droppedRec.taskData[this.parent.taskFields.dependency] = null;
                         }
+                    }
                     }
                 }
                 if (droppedRec.ganttProperties.isMilestone) {
@@ -3580,6 +3623,12 @@ export class Edit {
                     }
                 }
             }
+            for (let k: number = 0; k < this.updateParentRecords.length; k++) {
+                this.parent.dataOperation.updateParentItems(this.updateParentRecords[k as number]);
+            }
+            this.parent.editedRecords.forEach(record => {
+                this.parent.predecessorModule.validatePredecessor(record, [], '');
+            });
             for (let k: number = 0; k < this.updateParentRecords.length; k++) {
                 this.parent.dataOperation.updateParentItems(this.updateParentRecords[k as number]);
             }
@@ -3645,6 +3694,9 @@ export class Edit {
             this.parent.hideMaskRow();
         } else {
             this.parent.hideSpinner();
+        }
+        if (this.parent.rowDragAndDropModule) {
+           this.parent.rowDragAndDropModule['draggedRecord'] = null;
         }
         this.parent.editedRecords = [];
     }

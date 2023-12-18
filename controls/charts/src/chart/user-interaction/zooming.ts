@@ -10,7 +10,7 @@ import { Rect, measureText, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-
 import { Axis } from '../axis/axis';
 import { Toolkit } from './zooming-toolkit';
 import { AxisModel } from '../axis/axis-model';
-import { VisibleRangeModel } from '../axis/axis';
+import { VisibleRangeModel } from '../../common/model/interface';
 import { ZoomMode, ToolbarItems } from '../utils/enum';
 import { ZoomSettingsModel } from '../chart-model';
 import { CartesianAxisLayoutPanel } from '../axis/cartesian-panel';
@@ -309,7 +309,7 @@ export class Zoom {
 
         const onZoomingEventArg: IZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollections, name: onZooming };
         if (!onZoomingEventArg.cancel && this.chart.isBlazor) {
-            this.chart.trigger(onZooming, onZoomingEventArg, () => {
+            this.chart.trigger(onZooming, onZoomingEventArg, () => { 
                 if (onZoomingEventArg.cancel) {
                     this.zoomCancel(axes, this.zoomCompleteEvtCollection)
                 }
@@ -767,7 +767,7 @@ export class Zoom {
             }
         }
     }
-    
+
     /**
      * Return boolean property to show zooming toolkit.
      *

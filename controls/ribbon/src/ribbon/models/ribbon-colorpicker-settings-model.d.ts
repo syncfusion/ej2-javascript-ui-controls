@@ -20,6 +20,13 @@ export interface RibbonColorPickerSettingsModel {
     cssClass?: string;
 
     /**
+     * Specifies the label text for the overflow item.
+     *
+     * @default ''
+     */
+    label?: string;
+
+    /**
      * Defines whether to enable the opacity option in the color picker.
      *
      * @default true
@@ -29,7 +36,7 @@ export interface RibbonColorPickerSettingsModel {
     /**
      * Defines the rendering mode of the color picker.
      *
-     * @default 'Picker'
+     * @default 'Palette'
      */
     mode?: ColorPickerMode;
 

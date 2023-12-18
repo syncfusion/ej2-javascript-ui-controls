@@ -93,7 +93,7 @@ export class Toolbar {
                 // eslint-disable-next-line
                 'placeholder= \"' + searchLocalText + '\"/>' +
                 '<span id="' + this.id + '_searchbutton" class="e-input-group-icon e-search-icon e-icons"' +
-                'tabindex="-1" title="' + searchLocalText + '" aria-label= "search"></span>' +
+                'tabindex="-1" title="' + searchLocalText + '" aria-label= "search" role="button"></span>' +
                 '</div>',
                     tooltipText: searchLocalText,
                     align: 'Right', cssClass: 'e-search-wrapper'
@@ -377,6 +377,7 @@ export class Toolbar {
      */
     public zoomIn(): void {
         this.parent.timelineModule.processZooming(true);
+        this.parent.timelineModule.isZooming = false;
     }
     /**
      *
@@ -389,6 +390,7 @@ export class Toolbar {
         }
         this.parent.timelineModule.processZoomToFit();
         this.parent.ganttChartModule.updateScrollLeft(0);
+        this.parent.timelineModule.isZoomToFit = false;
     }
     /**
      *
@@ -397,6 +399,7 @@ export class Toolbar {
      */
     public zoomOut(): void {
         this.parent.timelineModule.processZooming(false);
+        this.parent.timelineModule.isZooming = false;
     }
     /**
      * To refresh toolbar items bases current state of tasks

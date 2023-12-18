@@ -6,6 +6,7 @@ import { RichTextEditor, ToolbarType } from "../../../src/rich-text-editor/index
 import { IToolbarStatus } from '../../../src/common/interface';
 import { renderRTE, destroy, dispatchEvent } from "./../render.spec";
 import { NodeSelection } from "../../../src/selection/index";
+
 const toolbarFocusShortCutEvent = new KeyboardEvent('keydown', {
     key: "F10",
     keyCode: 121,
@@ -1092,6 +1093,8 @@ describe("Toolbar - Actions Module", () => {
             expect(rteEle.querySelectorAll(".e-toolbar-item").length).toBe(2);
             expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold (Ctrl+B)");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Minimize");
+            sample.destroy();
+            detach(rteElement);
         });
     });
 

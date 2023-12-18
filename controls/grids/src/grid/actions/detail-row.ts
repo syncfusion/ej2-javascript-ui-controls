@@ -101,8 +101,8 @@ export class DetailRow {
                 needToRefresh = true;
             } else if (gObj.getDetailTemplate() || gObj.childGrid) {
                 const rowId: string = getUid('grid-row');
-                const detailRow: Element = this.parent.createElement('tr', { className: 'e-detailrow', attrs: {'data-uid': rowId} });
-                const detailCell: Element = this.parent.createElement('th', { className: 'e-detailcell', attrs: {'scope': 'col'} });
+                const detailRow: Element = this.parent.createElement('tr', { className: 'e-detailrow', attrs: {'data-uid': rowId, role: 'row'} });
+                const detailCell: Element = this.parent.createElement('th', { className: 'e-detailcell', attrs: {'scope': 'col', role:'columnheader'} });
                 let colSpan: number = this.parent.getVisibleColumns().length;
                 if (this.parent.allowRowDragAndDrop) {
                     colSpan++;
@@ -351,6 +351,14 @@ export class DetailRow {
 
     private keyPressHandler(e: KeyboardEventArgs): void {
         const gObj: IGrid = this.parent;
+        const isMacLike: boolean = /(Mac)/i.test(navigator.platform);
+        if (isMacLike && e.metaKey) {
+            if (e.action === 'downArrow') {
+                e.action = 'ctrlDownArrow';
+            } else if (e.action === 'upArrow') {
+                e.action = 'ctrlUpArrow';
+            }
+        }
         switch (e.action) {
         case 'ctrlDownArrow':
             this.expandAll();

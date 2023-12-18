@@ -77,7 +77,7 @@ describe('Circular-Gauge Control', () => {
         });
         it('Minor default color', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_Axis_Minor_TickLine_0_10');
+                svg = document.getElementById('container_Axis_Minor_TickLine_0_1');
                 expect(svg.getAttribute('stroke')).toBe('#9E9E9E');
             };
             gauge.refresh();
@@ -216,7 +216,7 @@ describe('Circular-Gauge Control', () => {
         });
         it('Minor Material color', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_Axis_Minor_TickLine_0_10');
+                svg = document.getElementById('container_Axis_Minor_TickLine_0_1');
                 expect(svg.getAttribute('stroke')).toBe('#9A9A9A');
             };
             gauge.refresh();
@@ -354,7 +354,7 @@ describe('Circular-Gauge Control', () => {
         });
         it('Minor Highcontrast color', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_Axis_Minor_TickLine_0_10');
+                svg = document.getElementById('container_Axis_Minor_TickLine_0_1');
                 expect(svg.getAttribute('stroke')).toBe('#FFFFFF');
             };
             gauge.refresh();
@@ -493,7 +493,7 @@ describe('Circular-Gauge Control', () => {
         });
         it('Minor Bootstrap4 color', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
-                svg = document.getElementById('container_Axis_Minor_TickLine_0_10');
+                svg = document.getElementById('container_Axis_Minor_TickLine_0_1');
                 expect(svg.getAttribute('stroke')).toBe('#CED4DA');
             };
             gauge.refresh();

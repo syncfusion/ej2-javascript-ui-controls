@@ -541,6 +541,12 @@ describe('CheckBox', () => {
             expect(element.parentElement.children[1].classList.contains('e-stop')).toEqual(false);
             expect(element.parentElement.children[1].classList.contains('e-check')).toEqual(false);
         });
+
+        it('HtmlAttributes property not working properly in CheckBox', () => {
+            checkbox = new CheckBox({htmlAttributes: { 'data-containerid': 'error-agreement', 'test': 'test' }}, '#checkbox');
+            expect(element.parentElement.parentElement.getAttribute("data-containerid").indexOf("error-agreement")).toEqual(0);
+            expect(element.parentElement.parentElement.getAttribute("test").indexOf("test")).toEqual(0);
+        });
        
     });
 

@@ -63,7 +63,7 @@ export class ChartRows extends DateProcessor {
     }
 
     public refreshChartByTimeline(): void {
-        this.taskTable.style.width = formatUnit(this.parent.timelineModule.totalTimelineWidth);
+        this.taskTable.style.width = formatUnit(this.parent.enableTimelineVirtualization? this.parent.timelineModule.wholeTimelineWidth : this.parent.timelineModule.totalTimelineWidth);
         const prevDate: Date = getValue('prevProjectStartDate', this.parent.dataOperation);
         let isUpdated: boolean = false;
         if (prevDate) {
@@ -84,7 +84,7 @@ export class ChartRows extends DateProcessor {
     private createChartTable(): void {
         this.taskTable = createElement('table', {
             className: cls.taskTable + ' ' + cls.zeroSpacing, id: 'GanttTaskTable' + this.parent.element.id,
-            styles: 'position: absolute;width:' + this.parent.timelineModule.totalTimelineWidth + 'px;',
+            styles: 'position: absolute;width:' + (this.parent.enableTimelineVirtualization? this.parent.timelineModule.wholeTimelineWidth : this.parent.timelineModule.totalTimelineWidth) + 'px;',
             attrs: { cellspacing: '0.25px' }
         });
         const colgroup: Element = createElement('colgroup');
@@ -99,8 +99,7 @@ export class ChartRows extends DateProcessor {
     }
 
     public initiateTemplates(): void {
-        this.taskTable.style.width = formatUnit(this.parent.timelineModule.totalTimelineWidth);
-        this.initChartHelperPrivateVariable();
+        this.taskTable.style.width = formatUnit(this.parent.enableTimelineVirtualization? this.parent.timelineModule.wholeTimelineWidth : this.parent.timelineModule.totalTimelineWidth);        this.initChartHelperPrivateVariable();
         this.initializeChartTemplate();
     }
     /**
@@ -592,7 +591,13 @@ export class ChartRows extends DateProcessor {
         startDate: Date, endDate: Date, splitDate: Date, segmentIndex: number, segments: ITaskSegment[], ganttData: IGanttData,
         segmentDuration: number): ITaskSegment[] {
         const ganttProp: ITaskData = ganttData.ganttProperties;
-        const checkClickState: number = this.parent.nonWorkingDayIndex.indexOf(splitDate.getDay());
+        let checkClickState: number;
+        let endDateState: number;
+        if (this.parent.includeWeekend) {
+            checkClickState = -1;
+        } else {
+            checkClickState = this.parent.nonWorkingDayIndex.indexOf(splitDate.getDay());
+        }
         const increment: number = checkClickState === -1 ? 0 : checkClickState === 0 ? 1 : 2;
         startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
         let segmentEndDate: Date = new Date(splitDate.getTime());
@@ -606,7 +611,11 @@ export class ChartRows extends DateProcessor {
                     ganttProp.isAutoSchedule, ganttProp.isMilestone),
                 offsetDuration: 1
             };
-            const endDateState: number = this.parent.nonWorkingDayIndex.indexOf(segmentEndDate.getDay());
+            if (this.parent.includeWeekend) {
+                endDateState = -1;
+            } else {
+                endDateState = this.parent.nonWorkingDayIndex.indexOf(segmentEndDate.getDay());
+            }
             if (segmentIndex !== -1) {
                 segments.splice(segmentIndex, 1);
                 segmentIndex = -1;
@@ -828,7 +837,7 @@ export class ChartRows extends DateProcessor {
     private getManualTaskbar(): NodeList {
         const data: IGanttData = this.templateData;
         const taskbarHeight: number = (this.taskBarHeight / 2 - 1);
-        const innerDiv: string = (data.ganttProperties.startDate && data.ganttProperties.endDate && data.ganttProperties.duration) ?
+        const innerDiv: string = (data.ganttProperties.startDate && data.ganttProperties.endDate && (data.ganttProperties.duration || data.hasChildRecords)) ?
             ('<div class="' + cls.manualParentTaskBar + '" style="width:' + data.ganttProperties.width + 'px;' + 'height:' +
                 taskbarHeight / 5 + 'px;border-left-width:' + taskbarHeight / 5 +
                 'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>') :
@@ -844,8 +853,8 @@ export class ChartRows extends DateProcessor {
         const template: string = '<div class="' + cls.manualParentMainContainer + '"' +
             'style='+ (this.parent.enableRtl? 'right:': 'left:') + (data.ganttProperties.left - data.ganttProperties.autoLeft) + 'px;' +
             'width:' + data.ganttProperties.width + 'px;' +
-            'height:' + taskbarHeight + 'px;>' + innerDiv + ((data.ganttProperties.startDate && data.ganttProperties.endDate &&
-                data.ganttProperties.duration) || data.ganttProperties.duration ? '<div class="e-gantt-manualparenttaskbar-left" style=' +
+            'height:' + taskbarHeight + 'px;cursor:' + (this.parent.editSettings.allowTaskbarEditing ? 'move;' : 'default;') + '</div>' + innerDiv + ((data.ganttProperties.startDate && data.ganttProperties.endDate &&
+                (data.ganttProperties.duration || data.hasChildRecords)) || data.ganttProperties.duration ? '<div class="e-gantt-manualparenttaskbar-left" style=' +
                 (this.parent.enableRtl ? 'margin-right:0px;' : '') + '"height:' + ((taskbarHeight / 5) + 8) + 'px;border-left-width:' + taskbarHeight / 5 +
                 'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>' +
                 '<div class="e-gantt-manualparenttaskbar-right" style=' + (this.parent.enableRtl ? 'margin-right:-8px;' : '') +
@@ -854,7 +863,7 @@ export class ChartRows extends DateProcessor {
                 taskbarHeight / 5 + 'px solid transparent;>' + '</div></div>' : '');
         const milestoneTemplate: string = '<div class="' + cls.manualParentMilestone + '" style="width:' + ((this.parent.renderBaseline ? this.taskBarHeight - 3 : this.taskBarHeight - 7)) + 'px;height:' +
         ((this.parent.renderBaseline ? this.taskBarHeight - 3 : this.taskBarHeight - 7)) + 'px;position:absolute;transform: rotate(45deg);top:' + (this.parent.rowHeight > 40 ? 0 : 2) + 'px;left:' + (this.parent.renderBaseline ? 2 : 1) + 'px;"> </div>';
-        return this.createDivElement(data.ganttProperties.duration !== 0 ? template : milestoneTemplate);
+        return this.createDivElement((data.ganttProperties.duration !== 0 || data.hasChildRecords) ? template : milestoneTemplate);
     }
     /**
      * To get parent taskbar node.
@@ -1067,10 +1076,10 @@ export class ChartRows extends DateProcessor {
             ' tabindex="-1" role="term" style="' + ((data.ganttProperties.isMilestone && !manualParent && !(data.hasChildRecords && !data.ganttProperties.isAutoSchedule)) ?
             ('width:' + this.milestoneHeight + 'px;height:' +
                     this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;' + (this.parent.enableRtl? 'right:' : 'left:') + (data.ganttProperties.left -
-                        (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width +
+                        (this.milestoneHeight / 2)) + 'px;cursor:' + (this.parent.editSettings.allowTaskbarEditing ? 'move;' : 'default;')) : ('width:' + data.ganttProperties.width +
                      'px;margin-top:' + this.taskBarMarginTop + 'px;' + (this.parent.enableRtl? 'right:' : 'left:') + (!data.hasChildRecords || data.ganttProperties.isAutoSchedule ?
                 data.ganttProperties.left : data.ganttProperties.autoLeft) + 'px;height:' +
-                            this.taskBarHeight + 'px;cursor:' + (data.ganttProperties.isAutoSchedule ? 'move;' : 'auto;'))) + '"></div>';
+                            this.taskBarHeight + 'px;cursor:' + (this.parent.editSettings.allowTaskbarEditing ? 'move;' : 'default;'))) + '"></div>';
         return this.createDivElement(template);
     }
 
@@ -1389,7 +1398,7 @@ export class ChartRows extends DateProcessor {
                 } else {
                     this.ganttChartTableBody.appendChild(oldRowElements[oldIndex as number]);
                 }
-                this.ganttChartTableBody.querySelectorAll('tr')[index as number].setAttribute('aria-rowindex', index.toString());
+                this.ganttChartTableBody.querySelectorAll('tr')[index as number].setAttribute('data-rowindex', index.toString());
             }
         }  else {
             let dupChartBody: Element;           
@@ -1414,7 +1423,7 @@ export class ChartRows extends DateProcessor {
                 }
                 // To maintain selection when virtualization is enabled
                 if (this.parent.selectionModule && this.parent.allowSelection) {
-                    this.parent.selectionModule.maintainSelectedRecords(parseInt((tRow as Element).getAttribute('aria-rowindex'), 10));
+                    this.parent.selectionModule.maintainSelectedRecords(parseInt((tRow as Element).getAttribute('data-rowindex'), 10));
                 }
             }
             (this.ganttChartTableBody as any).replaceChildren(...dupChartBody.childNodes as any);
@@ -1611,7 +1620,7 @@ export class ChartRows extends DateProcessor {
         return tRow;
     }
     /**
-     * To set aria-rowindex for chart rows
+     * To set data-rowindex for chart rows
      *
      * @returns {void} .
      * @private
@@ -1629,10 +1638,11 @@ export class ChartRows extends DateProcessor {
                         return x;
                     }
                 })[0];
-                (tRow as Element).setAttribute('aria-rowindex', data['index'].toString());
+                (tRow as Element).setAttribute('data-rowindex', data['index'].toString());
             } else {
                 index = visualData.indexOf(tempTemplateData);
-                (tRow as Element).setAttribute('aria-rowindex', index.toString());
+                (tRow as Element).setAttribute('aria-rowindex', (index+1).toString());
+                (tRow as Element).setAttribute('data-rowindex', index.toString());
             }
     }
     /**

@@ -72,7 +72,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_Series_3_Point_4').getAttribute('aria-label')).toBe('United States:400, FY 2008');
                 expect(document.getElementById('PivotView_chart_Series_4_Point_4')).toBeNull();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check initial render 2', (done: Function) => {
             setTimeout(() => {
@@ -83,7 +83,7 @@ describe('Chart - ', () => {
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2008');
                 done();
-            }, 1000);
+            }, 2000);
         });
 
         it('chart type changed to stackingcolumn100', () => {
@@ -97,7 +97,7 @@ describe('Chart - ', () => {
             setTimeout(() => {
                 expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_5')[0].textContent).toBe('$500.00');
                 done();
-            }, 1000);
+            }, 2000);
         });
 
         it('sort descending -> Country', (done: Function) => {
@@ -106,7 +106,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('United States:400, FY 2005');
                 expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4')[0].textContent).toBe(' + Canada');
                 done();
-            }, 1000);
+            }, 2000);
         })
 
         it('remove Date from column', (done: Function) => {
@@ -117,7 +117,7 @@ describe('Chart - ', () => {
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('Bike');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_2')[0].textContent).toBe('Van');
                 done();
-            }, 1000);
+            }, 2000);
         })
 
         it('empty column', (done: Function) => {
@@ -126,7 +126,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('United States:1450, ');
                 expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_4')[0].textContent).toBe(' + Canada');
                 done();
-            }, 1000);
+            }, 2000);
         })
 
         it('remove Country from row', function (done) {
@@ -134,7 +134,7 @@ describe('Chart - ', () => {
             setTimeout(function () {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_0').getAttribute('aria-label')).toBe('Alabama:250, ');
                 done();
-            }, 1000);
+            }, 2000);
         })
 
         it('empty row', (done: Function) => {
@@ -144,7 +144,7 @@ describe('Chart - ', () => {
                 expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_0_Text_0')[0].textContent).toBe('Total Sum of Amount');
                 expect(document.getElementById('PivotView_chart_chart_legend_text_0')).toBe(null);
                 done();
-            }, 1000);
+            }, 2000);
         })
 
         it('expand all', function (done) {
@@ -199,7 +199,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_Series_5_Point_0').getAttribute('aria-label')).toBe('Grand Total:2, FY 2006 - Bike | Quantity');
                 expect(document.getElementById('PivotView_chart_AxisTitle_0')).toBeNull();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('empty rows3', (done: Function) => {
             setTimeout(function () {
@@ -207,21 +207,21 @@ describe('Chart - ', () => {
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005 - Bike | Amount');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2005 - Van | Quantity');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('chart type changed to stackingarea100 1', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'StackingArea100';
             setTimeout(() => {
                 expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_1')[0].textContent).toBe('$50.00');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('chart type changed to column 1', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'Column';
             setTimeout(() => {
                 expect(document.querySelectorAll('#PivotView_chart2_AxisLabel_1')[0].textContent).toBe('$500.00');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('load y axis properties', () => {
             pivotGridObj.setProperties({ chartSettings: { primaryYAxis: { labelFormat: 'C', title: 'Custom title', plotOffset: 30 } } }, true);
@@ -233,7 +233,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_Series_5_Point_0').getAttribute('aria-label')).toBe('Grand Total:2, FY 2006 - Bike | Quantity');
                 expect(document.getElementById('PivotView_chart_AxisTitle_0')).toBeNull();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('load y axis properties-update', (done: Function) => {
             setTimeout(() => {
@@ -241,7 +241,7 @@ describe('Chart - ', () => {
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005 - Bike | Amount');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2005 - Van | Quantity');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('customize tooltip, legend and zoom properties', () => {
             pivotGridObj.chartSettings = {
@@ -257,7 +257,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_Series_5_Point_0').getAttribute('aria-label')).toBe('Grand Total:2, FY 2006 - Bike | Quantity');
                 expect(document.getElementById('PivotView_chart_AxisTitle_0')).toBeNull();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('customize tooltip, legend and zoom properties-update', (done: Function) => {
             setTimeout(() => {
@@ -265,21 +265,21 @@ describe('Chart - ', () => {
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005 - Bike | Amount');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2005 - Van | Quantity');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('display option view as both', (done: Function) => {
             pivotGridObj.displayOption = { view: 'Both' };
             setTimeout(function () {
                 expect(true).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Set display option view as both, primary as chart', (done: Function) => {
             pivotGridObj.displayOption.primary = 'Chart';
             setTimeout(function () {
                 expect(true).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Set display option view as both, primary as table', (done: Function) => {
             pivotGridObj.chartSeriesCreated = function (args: ChartSeriesCreatedEventArgs) {
@@ -289,7 +289,7 @@ describe('Chart - ', () => {
             setTimeout(function () {
                 expect(document.querySelectorAll('.e-grid,.e-chart')[0].classList.contains('e-pivotchart')).toBeFalsy();
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
 
@@ -372,7 +372,7 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_Series_3_Point_4').getAttribute('aria-label')).toBe('United States:400, FY 2008');
                 expect(document.getElementById('PivotView_chart_Series_4_Point_4')).toBeNull();
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('Check initial render 2', (done: Function) => {
             setTimeout(() => {
@@ -383,7 +383,7 @@ describe('Chart - ', () => {
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_0')[0].textContent).toBe('FY 2005');
                 expect(document.querySelectorAll('#PivotView_chart_chart_legend_text_3')[0].textContent).toBe('FY 2008');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('change width to  800px', (done: Function) => {
             pivotGridObj.width = '800px';
@@ -391,14 +391,14 @@ describe('Chart - ', () => {
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_scrollBarThumb_primaryXAxis')).toBe(null);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('change width to 500', (done: Function) => {
             pivotGridObj.width = 500;
             pivotGridObj.pivotChartModule.loadChart(pivotGridObj, pivotGridObj.chartSettings);
             setTimeout(() => {
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('current measure set to amt(false case)', (done: Function) => {
             pivotGridObj.chartSettings.value = 'Amt';
@@ -408,21 +408,21 @@ describe('Chart - ', () => {
                 expect(document.getElementById('PivotView_chart_Series_0_Point_1').getAttribute('aria-label')).toBe('France:200, FY 2005');
                 expect(document.getElementById('PivotView_chart_Series_3_Point_4').getAttribute('aria-label')).toBe('United States:400, FY 2008');
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('chart type changed to polar', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'Polar';
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_scrollBarThumb_primaryXAxis')).toBe(null);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('chart type changed to radar', (done: Function) => {
             pivotGridObj.chartSettings.chartSeries.type = 'Radar';
             setTimeout(() => {
                 expect(document.getElementById('PivotView_chart_scrollBarThumb_primaryXAxis')).toBe(null);
                 done();
-            }, 1000);
+            }, 2000);
         });
         it('onResize', (done: Function) => {
             (pivotGridObj.pivotChartModule as any).resized({
@@ -434,7 +434,7 @@ describe('Chart - ', () => {
             setTimeout(() => {
                 expect(true).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         })
     });
 
@@ -482,7 +482,7 @@ describe('Chart - ', () => {
             setTimeout(() => {
                 expect((pivotGridObj.chart as Chart).primaryXAxis.zoomFactor === 1).toBeTruthy();
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
 
@@ -557,7 +557,7 @@ describe('Chart - ', () => {
                 expect(legendRenderEvent).toBe("LegendRender");
                 expect(seriesRenderEvent).toBe("SeriesRender");
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
 

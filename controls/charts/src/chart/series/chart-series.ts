@@ -11,7 +11,7 @@ import { StackValues, RectOption, ControlPoints, PolarArc, appendChildElement, a
 import { ErrorBarSettingsModel, ErrorBarCapSettingsModel } from '../series/chart-series-model';
 import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues, getColorByValue } from '../../common/utils/helper';
 import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
-import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType, ShapeType, StepPosition } from '../utils/enum';
+import { ChartSeriesType, ChartShape, SeriesValueType, SplineType, StepPosition } from '../utils/enum';
 import { ChartDrawType, DataLabelIntersectAction } from '../utils/enum';
 import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';
 import { ConnectorModel } from '../../common/model/base-model';
@@ -25,7 +25,7 @@ import { Data } from '../../common/model/data';
 import { Offset } from '../../common/model/base';
 import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
 import { seriesRender } from '../../common/model/constants';
-import { Alignment, SeriesCategories } from '../../common/utils/enum';
+import { Alignment, EmptyPointMode, LabelPosition, LegendShape, SeriesCategories, ShapeType } from '../../common/utils/enum';
 import { BoxPlotMode, Segment } from '../utils/enum';
 import { sort, getVisiblePoints, setRange } from '../../common/utils/helper';
 import { Browser } from '@syncfusion/ej2-base';
@@ -924,8 +924,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public volume: string;
 
     /**
-     * The DataSource field that contains the color value of point
-     * It is applicable for series
+     * The DataSource field that contains the color value of point.
+     * It is applicable for series.
      *
      * @default ''
      */
@@ -934,7 +934,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public pointColorMapping: string;
 
     /**
-     * Specifies the visibility of series.
+     * Specifies the visibility of the series.
      *
      * @default true
      */
@@ -1010,7 +1010,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public animation: AnimationModel;
 
     /**
-     * The fill color for the series that accepts value in hex and rgba as a valid CSS color string.
+     * The fill color for the series, which can accept values in hex or rgba as a valid CSS color string.
      * It also represents the color of the signal lines in technical indicators.
      * For technical indicators, the default value is 'blue' and for series, it has null.
      *
@@ -1040,7 +1040,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public dashArray: string;
 
     /**
-     * Specifies the DataSource for the series. It can be an array of JSON objects or an instance of DataManager.
+     * Specifies the data source for the series. It can be an array of JSON objects or an instance of DataManager.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -1069,7 +1069,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public dataSource: Object | DataManager;
 
     /**
-     * Specifies query to select data from DataSource. This property is applicable only when the DataSource is `ej.DataManager`.
+     * Specifies a query to select data from the DataSource. This property is applicable only when the DataSource is an `ej.DataManager`.
      *
      * @default ''
      */
@@ -1585,7 +1585,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 export class Series extends SeriesBase {
 
     /**
-     * The name of the series visible in legend.
+     * The name of the series as displayed in the legend.
      *
      * @default ''
      */
@@ -1796,7 +1796,7 @@ export class Series extends SeriesBase {
     public trendlines: TrendlineModel[];
 
     /**
-     * If set true, the Tooltip for series will be visible.
+     * Enable tooltip for the chart series.
      *
      * @default true
      */
@@ -1804,7 +1804,7 @@ export class Series extends SeriesBase {
     public enableTooltip: boolean;
 
     /**
-     * user can format now each series tooltip format separately.
+     * Format of the tooltip content.
      *
      * @default ''
      */
@@ -1812,7 +1812,7 @@ export class Series extends SeriesBase {
     public tooltipFormat: string;
 
     /**
-     * The provided value will be considered as a Tooltip name
+     * The data source field that contains the tooltip value.
      *
      * @default ''
      */
@@ -1820,7 +1820,7 @@ export class Series extends SeriesBase {
     public tooltipMappingName: string;
 
     /**
-     * The shape of the legend. Each series has its own legend shape. They are,
+     * The shape of the legend. Each series has its own legend shape, which can be one of the following:
      * * Circle
      * * Rectangle
      * * Triangle
@@ -1929,7 +1929,7 @@ export class Series extends SeriesBase {
     public boxPlotMode: BoxPlotMode;
 
     /**
-     * To render the column series points with particular column width. If the series type is histogram the
+     * Render the column series points with a particular column width. If the series type is histogram the
      * default value is 1 otherwise 0.7.
      *
      * @default null
@@ -2223,7 +2223,7 @@ export class Series extends SeriesBase {
                     series.stackedValues = new StackValues(startValues, endValues);
                     const isLogAxis: boolean = series.yAxis.valueType === 'Logarithmic';
                     const isColumnBarType: boolean = (series.type.indexOf('Column') !== -1 || series.type.indexOf('Bar') !== -1);
-                    series.yMin = isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : Math.min.apply(0, isStacking100 ? startValues : endValues);
+                    series.yMin = isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : parseFloat((Math.min.apply(0, isStacking100 ? startValues : endValues)).toFixed(10));
                     series.yMax = Math.max.apply(0, endValues);
                     if (series.yMin > Math.min.apply(0, endValues)) {
                         series.yMin = (isStacking100) ? -100 :

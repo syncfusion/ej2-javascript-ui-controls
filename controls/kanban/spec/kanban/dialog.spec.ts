@@ -628,7 +628,7 @@ describe('Dialog actions module', () => {
             expect(ele.classList.contains('e-selection')).toEqual(true);
         });
     });
-
+    
     describe('855102- Script error throws when we set true to the cancel argument of dialogClose event in Kanban', () => {
         let kanbanObj: Kanban;
         let element1: HTMLElement;

@@ -155,7 +155,7 @@ export class _ImageDecoder {
         }
     }
     _skipStream(): void {
-        let length: number = this._getBuffer(this._position) << 8 | this._getBuffer(this._position + 1);
+        const length: number = this._getBuffer(this._position) << 8 | this._getBuffer(this._position + 1);
         this._seek(2);
         if (length < 2) {
             throw new Error('Error decoding JPEG image');
@@ -166,7 +166,7 @@ export class _ImageDecoder {
     _readExceededJpegImage(): void {
         let isContinueReading: boolean = true;
         while (isContinueReading) {
-            let marker: number = this._getMarker();
+            const marker: number = this._getMarker();
             switch (marker) {
             case 0x00C0:
             case 0x00C1:

@@ -1,9 +1,9 @@
 /* tslint:disable-next-line:max-line-length */
-import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue } from '@syncfusion/ej2-base';
-import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn, eventPromise, setChecked, clearReactVueTemplates, padZero } from '../base/util';
+import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue, createElement, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn, eventPromise, setChecked, clearReactVueTemplates, padZero, Global } from '../base/util';
 import { remove, debounce, Internationalization, DateFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
-import { DataUtil, Query, DataManager, Predicate, Deferred, QueryOptions } from '@syncfusion/ej2-data';
+import { DataUtil, Query, DataManager, Predicate, Deferred, QueryOptions, ReturnOption } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { ReturnType } from '../base/type';
 import { IFilterArgs, FilterSearchBeginEventArgs, CheckBoxBeforeRenderer } from '../base/interface';
@@ -14,7 +14,7 @@ import { getForeignData } from '../base/util';
 import { Column, ColumnModel } from '../models/column';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
-import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
+import { createSpinner, hideSpinner,     showSpinner } from '@syncfusion/ej2-popups';
 import { getFilterMenuPostion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, getColumnByForeignKeyValue } from '../base/util';
 import { InputArgs } from '@syncfusion/ej2-inputs';
 import { SearchSettingsModel } from '../base/grid-model';
@@ -64,6 +64,26 @@ export class CheckBoxFilterBase {
     private isMenuNotEqual: boolean;
     private isBlanks: boolean;
     private isCheckboxFilterTemplate: boolean = false;
+    private infiniteRenderMod: boolean = false;
+    // for infinite scroll ui
+    private infiniteInitialLoad: boolean = false;
+    private infiniteSearchValChange: boolean = false;
+    private infinitePermenantLocalData: Object[] = [];
+    private infiniteQuery: Query;
+    private infiniteQueryExecutionPending: boolean = false;
+    private infiniteSkipCnt: number = 0;
+    private infiniteScrollAppendDiff: number = 0;
+    private prevInfiniteScrollDirection: string = '';
+    private infiniteLoadedElem: HTMLElement[] = [];
+    private infiniteDataCount: number = 0;
+    // for infinite scroll filter selection(query)
+    private infiniteSearchPred: Predicate;
+    private infiniteLocalSelectAll: boolean = true;
+    private localInfiniteSelectAllClicked: boolean = false;
+    private localInfiniteSelectionInteracted: boolean = false;
+    private infiniteManualSelectMaintainPred: PredicateModel[] = [];
+    private infiniteUnloadParentExistPred: PredicateModel[];
+
     /**
      * Constructor for checkbox filtering module
      *
@@ -177,15 +197,17 @@ export class CheckBoxFilterBase {
     }
 
     private searchBoxKeyUp(e?: KeyboardEvent): void {
-        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-            this.parent.showMaskRow(undefined, this.dialogObj.element);
+        if (isNullOrUndefined(e) || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown' && e.key !== 'Tab' && !(e.key === 'Tab' && e.shiftKey))) {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                this.parent.showMaskRow(undefined, this.dialogObj.element);
+            }
+            if (this.isCheckboxFilterTemplate) {
+                this.parent.notify('refreshCheckbox', { event: e });
+            } else {
+                this.refreshCheckboxes();
+            }
+            this.updateSearchIcon();
         }
-        if (this.isCheckboxFilterTemplate) {
-            this.parent.notify('refreshCheckbox', { event: e });
-        } else {
-            this.refreshCheckboxes();
-        }
-        this.updateSearchIcon();
     }
 
     private updateSearchIcon(): void {
@@ -244,6 +266,9 @@ export class CheckBoxFilterBase {
         this.values = {};
         this.localeObj = options.localeObj;
         this.isFiltered = options.filteredColumns.length;
+        this.infiniteRenderMod = this.parent.filterSettings && this.parent.filterSettings.enableInfiniteScrolling ? true : false;
+        this.infiniteUnloadParentExistPred = this.infiniteRenderMod && this.existingPredicate[this.options.column.field] ?
+            [...this.existingPredicate[this.options.column.field]] : [];
     }
 
     protected getAndSetChkElem(options: IFilterArgs): HTMLElement {
@@ -333,7 +358,9 @@ export class CheckBoxFilterBase {
         const isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[`${isStringTemplate}`] = true;
         this.renderResponsiveFilter(options);
-        this.dlg.setAttribute('aria-label', this.getLocalizedLabel('ExcelFilterDialogARIA'));
+        const dialogLabel: string = this.parent.filterSettings && (this.parent.filterSettings as any).type === 'CheckBox' ?
+            this.getLocalizedLabel('CheckBoxFilterDialogARIA') : this.getLocalizedLabel('ExcelFilterDialogARIA');
+        this.dlg.setAttribute('aria-label', dialogLabel);
         if (options.isResponsiveFilter) {
             const responsiveCnt: HTMLElement = document.querySelector('.e-responsive-dialog > .e-dlg-content > .e-mainfilterdiv');
             responsiveCnt.appendChild(this.dlg);
@@ -346,9 +373,15 @@ export class CheckBoxFilterBase {
         const content: HTMLElement = this.dialogObj.element.querySelector('.e-dlg-content');
         content.appendChild(this.sBox);
         this.wireEvents();
-        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer'
+        && !this.infiniteRenderMod) {
             this.parent.showMaskRow(undefined, this.dialogObj.element);
-        } else {
+        } else if (this.infiniteRenderMod && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
+            this.showMask();
+        }  else {
+            if (this.infiniteRenderMod) {
+                this.cBox.style.marginTop = this.getListHeight(this.cBox) + 'px';
+            }
             createSpinner({ target: this.spinner, cssClass: this.parent.cssClass ? this.parent.cssClass : null },
                           this.parent.createElement);
             showSpinner(this.spinner);
@@ -387,6 +420,9 @@ export class CheckBoxFilterBase {
     }
 
     public closeDialog(): void {
+        if (this.infiniteRenderMod && this.infinitePermenantLocalData.length && !this.options.isRemote) {
+            (this.options.dataSource as DataManager).dataSource.json = this.infinitePermenantLocalData;
+        }
         if (this.dialogObj && !this.dialogObj.isDestroyed) {
             this.isBlanks = false;
             const filterTemplateCol: Column[] = (this.options.columns as Column[]).filter((col: Column) => col.getFilterItemTemplate());
@@ -454,6 +490,10 @@ export class CheckBoxFilterBase {
      * @hidden
      */
     public fltrBtnHandler(): void {
+        if (this.infiniteRenderMod) {
+            this.cBox.innerHTML = '';
+            appendChildren(this.cBox, [...this.infiniteLoadedElem]);
+        }
         let checked: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall):not(.e-add-current)'));
         const check: Element[] = checked;
         let optr: string = 'equal';
@@ -486,31 +526,26 @@ export class CheckBoxFilterBase {
         let length: number;
         let fObj: PredicateModel;
         let coll: PredicateModel[] = [];
-        if (checked.length !== this.itemsCnt || (searchInput && searchInput.value && searchInput.value !== '')) {
-            for (let i: number = 0; i < checked.length; i++) {
-                value = this.values[parentsUntil(checked[parseInt(i.toString(), 10)], 'e-ftrchk').getAttribute('uid')];
-                fObj = extend({}, { value: value }, defaults) as {
-                    field: string, predicate: string, operator: string, matchCase: boolean, ignoreAccent: boolean, value: string
-                };
-                if (value && !value.toString().length) {
-                    fObj.operator = isNotEqual ? 'notequal' : 'equal';
+        if ((checked.length !== this.itemsCnt || (searchInput && searchInput.value && searchInput.value !== ''))
+        || this.infiniteRenderMod) {
+            if (!this.infiniteRenderMod) {
+                for (let i: number = 0; i < checked.length; i++) {
+                    value = this.values[parentsUntil(checked[parseInt(i.toString(), 10)], 'e-ftrchk').getAttribute('uid')];
+                    fObj = extend({}, { value: value }, defaults) as {
+                        field: string, predicate: string, operator: string, matchCase: boolean, ignoreAccent: boolean, value: string
+                    };
+                    if (value && !value.toString().length) {
+                        fObj.operator = isNotEqual ? 'notequal' : 'equal';
+                    }
+                    if (value === '' || isNullOrUndefined(value)) {
+                        coll = coll.concat(CheckBoxFilterBase.generateNullValuePredicates(defaults));
+                    } else {
+                        coll.push(fObj);
+                    }
+                    this.notifyFilterPrevEvent(fObj);
                 }
-                if (value === '' || isNullOrUndefined(value)) {
-                    coll = coll.concat(CheckBoxFilterBase.generateNullValuePredicates(defaults));
-                } else {
-                    coll.push(fObj);
-                }
-                const args: {
-                    cancel: boolean, instance: CheckBoxFilterBase, handler: Function, arg1: string, arg2: Object, arg3: string
-                    , arg4: boolean, arg5: boolean, arg6: string
-                } = {
-                    instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,
-                    arg4: fObj.matchCase, arg5: fObj.ignoreAccent, arg6: fObj.value as string, cancel: false
-                };
-                this.parent.notify(events.fltrPrevent, args);
-                if (args.cancel) {
-                    return;
-                }
+            } else if (this.infiniteRenderMod) {
+                this.infiniteFltrBtnHandler(coll);
             }
             if ((this.options.type === 'date' || this.options.type === 'datetime') && check.length) {
                 length = check.length - 1;
@@ -522,7 +557,9 @@ export class CheckBoxFilterBase {
                     });
                 }
             }
-            if (this.cBox.querySelector('.e-add-current') && this.cBox.querySelector('.e-add-current').classList.contains('e-check')) {
+            let addCurrSelection: HTMLElement = this.infiniteRenderMod ? this.sBox.querySelector('.e-add-current') :
+            this.cBox.querySelector('.e-add-current');
+            if (addCurrSelection && addCurrSelection.classList.contains('e-check')) {
                 const existingPredicate: PredicateModel[] = this.existingPredicate[this.options.field];
                 if (existingPredicate) {
                     for (let j: number = 0; j < existingPredicate.length; j++) {
@@ -535,7 +572,18 @@ export class CheckBoxFilterBase {
                     return;
                 }
             }
-            this.initiateFilter(coll);
+            if (!this.infiniteRenderMod) {
+                this.initiateFilter(coll);
+            } else if (coll.length) {
+                this.initiateFilter(coll);
+            } else if (this.sBox.querySelector('.e-selectall').classList.contains('e-check') && !coll.length) {
+                const isClearFilter: boolean = this.options.filteredColumns.some((value: PredicateModel) => {
+                    return this.options.field === value.field;
+                });
+                if (isClearFilter) {
+                    this.clearFilter();
+                }
+            }
         } else {
             const isClearFilter: boolean = this.options.filteredColumns.some((value: PredicateModel) => {
                 return this.options.field === value.field;
@@ -543,6 +591,49 @@ export class CheckBoxFilterBase {
             if (isClearFilter) {
                 this.clearFilter();
             }
+        }
+    }
+
+    private infiniteFltrBtnHandler(coll: PredicateModel[]): PredicateModel[] | void {
+        let value: string;
+        if (this.infiniteManualSelectMaintainPred.length) {
+            for (let i: number = 0; i < this.infiniteManualSelectMaintainPred.length; i++) {
+                const pred: PredicateModel = this.infiniteManualSelectMaintainPred[i as number];
+                value = pred.value + '';
+                if (value === '' || isNullOrUndefined(value)) {
+                    let dummyDefaults: { predicate?: string, field?: string, type?: string, uid?: string
+                        operator?: string, matchCase?: boolean, ignoreAccent?: boolean
+                    } = { predicate: pred.predicate, field: pred.field, type: pred.type, uid: pred.uid, operator: pred.operator,
+                        matchCase: pred.matchCase, ignoreAccent: pred.ignoreAccent };
+                    coll.push(...CheckBoxFilterBase.generateNullValuePredicates(dummyDefaults));
+                } else {
+                    coll.push(this.infiniteManualSelectMaintainPred[i as number]);
+                }
+                this.notifyFilterPrevEvent(this.infiniteManualSelectMaintainPred[i as number]);
+            }
+        }
+        if (!this.localInfiniteSelectAllClicked && this.sInput.value === '' && !(!this.options.parentCurrentViewDataCount && coll.length)) {
+            for (let i: number = 0; i < this.infiniteUnloadParentExistPred.length; i++) {
+                coll.unshift(this.infiniteUnloadParentExistPred[i as number]);
+                this.notifyFilterPrevEvent(this.existingPredicate[this.options.field][i as number]);
+            }
+        }
+        if (this.sInput.value !== '' && (!this.localInfiniteSelectAllClicked || this.infiniteLocalSelectAll)) {
+            this.infiniteSearchPred['predicate'] = 'or';
+            coll.unshift(this.infiniteSearchPred as PredicateModel);
+            this.notifyFilterPrevEvent(this.infiniteSearchPred as PredicateModel);
+        }
+    }
+
+    private notifyFilterPrevEvent(predicate: PredicateModel): void {
+        const args: {
+            cancel: boolean, instance: CheckBoxFilterBase, handler: Function, arg1: string, arg2: Object, arg3: string, arg4: boolean,
+            arg5: boolean, arg6: string } = {
+            instance: this, handler: this.fltrBtnHandler, arg1: predicate.field, arg2: predicate.predicate, arg3: predicate.operator,
+            arg4: predicate.matchCase, arg5: predicate.ignoreAccent, arg6: predicate.value as string, cancel: false };
+        this.parent.notify(events.fltrPrevent, args);
+        if (args.cancel) {
+            return;
         }
     }
 
@@ -661,6 +752,21 @@ export class CheckBoxFilterBase {
                 parsed = parsed.getFullYear()  + '-' + padZero(parsed.getMonth() + 1) + '-' + padZero(parsed.getDate());
             }
         }
+        this.infiniteSearchValChange = true;
+        this.infiniteLoadedElem = [];
+        this.infiniteLocalSelectAll = true;
+        this.localInfiniteSelectAllClicked = false;
+        this.localInfiniteSelectionInteracted = false;
+        this.infiniteSkipCnt = 0;
+        this.infiniteDataCount = 0;
+        this.infiniteManualSelectMaintainPred = [];
+        if (this.sInput.value === '') {
+            this.infiniteUnloadParentExistPred = this.infiniteRenderMod && this.existingPredicate[this.options.column.field] ?
+            [...this.existingPredicate[this.options.column.field]] : [];
+            this.options.parentTotalDataCount = this.options.parentTotalDataCount;
+        } else {
+            this.infiniteUnloadParentExistPred = [];
+        }
         this.addDistinct(query);
         const args: FilterSearchBeginEventArgs = {
             requestType: events.filterSearchBegin,
@@ -668,6 +774,9 @@ export class CheckBoxFilterBase {
             operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
             query: query, value: parsed
         };
+        if (this.infiniteRenderMod && this.parent.filterSettings.itemsCount) {
+            args.filterChoiceCount = this.parent.filterSettings.itemsCount;
+        }
         this.parent.trigger(events.actionBegin, args, (filterargs: FilterSearchBeginEventArgs) => {
             // eslint-disable-next-line no-self-assign
             filterargs.operator = filterargs.operator;
@@ -687,14 +796,20 @@ export class CheckBoxFilterBase {
                 coll = coll.concat(CheckBoxFilterBase.generateNullValuePredicates(defaults));
                 const emptyValPredicte: Predicate = CheckBoxFilterBase.generatePredicate(coll);
                 emptyValPredicte.predicates.push(predicte);
+                predicte = emptyValPredicte;
                 query.where(emptyValPredicte);
             } else if (val.length) {
                 predicte = !isNullOrUndefined(pred) ? predicte.and(pred.e as Predicate) : predicte;
                 query.where(predicte);
             } else if (!isNullOrUndefined(pred)) {
+                predicte = pred.e as Predicate;
                 query.where(pred.e as Predicate);
             }
+            this.infiniteSearchPred = predicte;
             filterargs.filterChoiceCount = !isNullOrUndefined(filterargs.filterChoiceCount) ? filterargs.filterChoiceCount : 1000;
+            if (this.infiniteRenderMod && this.parent.filterSettings.itemsCount !== filterargs.filterChoiceCount) {
+                this.parent.filterSettings.itemsCount = args.filterChoiceCount;
+            }
             const fPredicate: { predicate?: Predicate } = {};
             showSpinner(this.spinner);
             this.renderEmpty = false;
@@ -712,11 +827,23 @@ export class CheckBoxFilterBase {
                         this.renderEmpty = true;
                     }
                     this.options.column.columnData = columnData;
-                    foreignQuery.take(filterargs.filterChoiceCount);
+                    if (this.infiniteRenderMod) {
+                        this.infiniteInitialLoad = isNullOrUndefined(this.fullData) ? true : false;
+                        this.makeInfiniteScrollRequest(foreignQuery);
+                        foreignQuery.requiresCount();
+                    } else {
+                        foreignQuery.take(filterargs.filterChoiceCount);
+                    }
                     this.search(filterargs, foreignQuery);
                 });
             } else {
-                query.take(filterargs.filterChoiceCount);
+                if (this.infiniteRenderMod && this.parent.filterSettings.itemsCount) {
+                    this.infiniteInitialLoad = isNullOrUndefined(this.fullData) ? true : false;
+                    this.makeInfiniteScrollRequest(query);
+                    query.requiresCount();
+                } else {
+                    query.take(filterargs.filterChoiceCount);
+                }
                 this.search(filterargs, query);
             }
         });
@@ -767,12 +894,24 @@ export class CheckBoxFilterBase {
         };
         const filterModel: string = 'filterModel';
         args[`${filterModel}`] = this;
+        if (this.infiniteRenderMod && this.parent.filterSettings.itemsCount) {
+            args.filterChoiceCount = this.parent.filterSettings.itemsCount;
+        }
         this.parent.trigger(events.actionBegin, args, (args: FilterSearchBeginEventArgs) => {
             args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
-            query.take(args.filterChoiceCount);
-            if (!args.query.distincts.length){
+            if (this.infiniteRenderMod && this.parent.filterSettings.itemsCount !== args.filterChoiceCount) {
+                this.parent.filterSettings.itemsCount = args.filterChoiceCount;
+            }
+            if (!this.infiniteRenderMod) {
+                query.take(args.filterChoiceCount);
+            }
+            if (!args.query.distincts.length || this.infiniteRenderMod){
                 this.customQuery = true;
                 this.queryGenerate(query);
+            }
+            if (this.infiniteRenderMod) {
+                this.infiniteInitialLoad = isNullOrUndefined(this.fullData) ? true : false;
+                this.makeInfiniteScrollRequest(query);
             }
             if (this.parent.dataSource && 'result' in this.parent.dataSource) {
                 this.filterEvent(args, query);
@@ -787,7 +926,30 @@ export class CheckBoxFilterBase {
         if (filteredColumn.indexOf(this.options.column.field) <= -1) {
             filteredColumn = filteredColumn.concat(this.options.column.field);
         }
-        query.distinct(filteredColumn as string[]);
+        if (!this.infiniteRenderMod) {
+            query.distinct(filteredColumn as string[]);
+        }
+        if (this.infiniteRenderMod && !this.options.isRemote && this.sInput.value === '') {
+            this.options.dataSource = this.options.dataSource instanceof DataManager ?
+                this.options.dataSource : new DataManager(this.options.dataSource as JSON[]);
+            this.infinitePermenantLocalData = [...this.options.dataSource.dataSource.json];
+            this.options.dataSource.dataSource.json = DataUtil.distinct(this.options.parentFilteredLocalRecords
+                .concat(...this.infinitePermenantLocalData), this.options.column.field, true);
+            if (this.isForeignColumn(this.options.column as Column)) {
+                this.options.column.dataSource = this.options.column.dataSource instanceof DataManager ?
+                this.options.column.dataSource : new DataManager(this.options.column.dataSource as JSON[]);
+                this.options.dataSource.dataSource.json = this.options.dataSource.dataSource.json.map((item: Object, i: number) =>
+                Object.assign({}, item, (this.options.column.dataSource as DataManager).dataSource.json[i as number]));
+            }
+        } else if (this.infiniteRenderMod && this.options.isRemote) {
+            query.select(this.options.column.field);
+            query.sortBy(this.options.column.field, 'ascending');
+            const moduleName: Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
+            if (moduleName && moduleName() && (moduleName() === 'ODataV4Adaptor' || moduleName() === 'WebApiAdaptor'
+            || moduleName() === 'CustomDataAdaptor' || moduleName() === 'GraphQLAdaptor' || moduleName() === 'ODataAdaptor')) {
+                query.distinct(filteredColumn as string[]);
+            }
+        }
         return query;
     }
 
@@ -798,6 +960,187 @@ export class CheckBoxFilterBase {
         def.promise.then((e: ReturnType[]) => {
             this.dataSuccess(e);
         });
+    }
+
+    private infiniteScrollMouseKeyDownHandler(): void {
+        EventHandler.remove(this.cBox, 'scroll', this.infiniteScrollHandler);
+    }
+
+    private infiniteScrollMouseKeyUpHandler(e: MouseEvent): void {
+        EventHandler.add(this.cBox, 'scroll', this.infiniteScrollHandler, this);
+        const target: HTMLElement = this.cBox;
+        if (target.children.length > 1 && (target.scrollTop >= target.scrollHeight - target.offsetHeight || target.scrollTop <= 0)) {
+            this.infiniteScrollHandler();
+        }
+        Global.timer = (setTimeout(() => { this.clickHandler(e); Global.timer = null; }, 0) as Object);
+    }
+
+    private getListHeight(element?: HTMLElement): number {
+        const listDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-ftrchk', styles: 'visibility: hidden' });
+        listDiv.innerHTML = '<div class="e-checkbox-wrapper"><span class="e-label e-checkboxfiltertext">A</div></span>';
+        element.appendChild(listDiv);
+        const rect: ClientRect = listDiv.getBoundingClientRect();
+        element.removeChild(listDiv);
+        const listHeight = Math.round(rect.height);
+        return listHeight;
+    }
+
+    private getShimmerTemplate(): string {
+        return '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave"></span>';
+    }
+
+    private showMask(): void {
+        let maskRowCount: number = 5;
+        let maskItemHeight: string;
+        const maskList: HTMLElement = this.parent.createElement('div', { id: this.id + this.options.type + '_CheckBoxMaskList',
+            className: 'e-checkboxlist e-fields e-infinite-list e-masklist', styles: 'z-index: 10;' }) as HTMLElement;
+        const wrapperElem: HTMLElement = this.cBox;
+        this.removeMask();
+        if (wrapperElem) {
+            const computedStyle: CSSStyleDeclaration = getComputedStyle(wrapperElem);
+            const height: number = wrapperElem.children.length ? parseInt(computedStyle.height) :
+            Math.floor(parseInt(computedStyle.height.split('px')[0])) - 5;
+            const backgroundColor: string = this.isExcel && !wrapperElem.children.length && !this.dlg.classList.contains('e-excelfilter') ?
+            '' : getComputedStyle(this.dlg.querySelector('.e-dlg-content')).backgroundColor;
+            maskList.style.cssText = 'width: ' + computedStyle.width + '; min-height: ' + computedStyle.minHeight + '; height: ' +
+            height + 'px; margin: ' + computedStyle.margin + '; border-style: ' + computedStyle.borderStyle + '; border-width: '
+            + computedStyle.borderWidth + '; border-color: ' + computedStyle.borderColor + '; position: absolute; background-color: ' +
+            backgroundColor + ';';
+            const liHeight: number = this.getListHeight(wrapperElem);
+            maskRowCount = Math.floor(height / liHeight);
+            maskRowCount = wrapperElem.children.length > maskRowCount ? wrapperElem.children.length : maskRowCount;
+            maskItemHeight = liHeight + 'px';
+        }
+        const maskTemplate: string = '<div class="e-ftrchk e-mask-ftrchk" style="width: 100%; height:' + maskItemHeight + ';">'
+            + '<div class="e-checkbox-wrapper" style="width: 100%;"><input class="e-chk-hidden">'
+            + this.getShimmerTemplate() + this.getShimmerTemplate() + '</div></div>';
+        maskList.innerHTML = '';
+        if (!wrapperElem.children.length) {
+            this.spinner.insertAdjacentHTML('beforebegin', maskTemplate);
+            const maskSpan: Element[] = [].slice.call(this.spinner.parentElement
+                .querySelectorAll('.e-mask:not(.e-mask-checkbox-filter-intent):not(.e-mask-checkbox-filter-span-intent)'));
+            maskSpan[0].classList.add('e-mask-checkbox-filter-intent');
+            maskSpan[1].classList.add('e-mask-checkbox-filter-span-intent');
+        }
+        this.spinner.insertBefore(maskList, this.cBox);
+        for (let i: number = 0; maskRowCount && i < maskRowCount; i++) {
+            maskList.innerHTML += maskTemplate;
+            const maskSpan: Element[] = [].slice.call(maskList
+                .querySelectorAll('.e-mask:not(.e-mask-checkbox-filter-intent):not(.e-mask-checkbox-filter-span-intent)'));
+            maskSpan[0].classList.add('e-mask-checkbox-filter-intent');
+            maskSpan[1].classList.add('e-mask-checkbox-filter-span-intent');
+        }
+        if (this.cBox) {
+            maskList.scrollTop = this.cBox.scrollTop;
+        }
+    }
+
+    private removeMask(): void {
+        const maskLists: NodeListOf<Element> = this.dialogObj.element.querySelectorAll('.e-mask-ftrchk');
+        if (maskLists.length) {
+            for (let i: number = 0; i < maskLists.length; i++) {
+                remove(maskLists[i as number]);
+            }
+        }
+        const maskParent: HTMLElement = this.dialogObj.element.querySelector('.e-checkboxlist.e-masklist');
+        if (maskParent) {
+            remove(this.dialogObj.element.querySelector('.e-checkboxlist.e-masklist'));
+        }
+    }
+
+    private infiniteScrollHandler(): void {
+        const target: HTMLElement = this.cBox;
+        if (target.scrollTop >= target.scrollHeight - target.offsetHeight && !this.infiniteQueryExecutionPending
+            && this.infiniteLoadedElem.length <= (this.infiniteSkipCnt + this.parent.filterSettings.itemsCount)
+            && this.cBox.children.length === this.parent.filterSettings.itemsCount * 3
+            && (!this.infiniteDataCount || this.infiniteDataCount > (this.infiniteSkipCnt + this.parent.filterSettings.itemsCount))) {
+            this.makeInfiniteScrollRequest();
+            this.prevInfiniteScrollDirection = 'down';
+        } else if (target.scrollTop >= target.scrollHeight - target.offsetHeight && !this.infiniteQueryExecutionPending
+            && this.infiniteLoadedElem.length > (this.infiniteSkipCnt + this.parent.filterSettings.itemsCount)
+            && this.cBox.children.length === this.parent.filterSettings.itemsCount * 3) {
+            this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice(0, this.parent.filterSettings.itemsCount));
+            this.infiniteSkipCnt += this.prevInfiniteScrollDirection === 'down' ? this.parent.filterSettings.itemsCount :
+            (this.parent.filterSettings.itemsCount * 3);
+            appendChildren(this.cBox, this.infiniteLoadedElem.slice(this.infiniteSkipCnt, this.parent.filterSettings.itemsCount + this.infiniteSkipCnt));
+            this.prevInfiniteScrollDirection = 'down';
+        }
+        else if (target.scrollTop === 0 && !this.infiniteInitialLoad && !this.infiniteSearchValChange && this.infiniteSkipCnt
+            && this.infiniteLoadedElem.length && this.infiniteLoadedElem.length > this.parent.filterSettings.itemsCount * 3
+            && this.cBox.children.length === this.parent.filterSettings.itemsCount * 3) {
+            this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice((this.parent.filterSettings.itemsCount * 2),
+                this.parent.filterSettings.itemsCount));
+            this.infiniteSkipCnt -= this.prevInfiniteScrollDirection === 'up' ? this.parent.filterSettings.itemsCount :
+            (this.parent.filterSettings.itemsCount * 3);
+            this.infiniteAppendElements([].slice.call(this.infiniteLoadedElem.slice(this.infiniteSkipCnt,
+                this.infiniteSkipCnt + this.parent.filterSettings.itemsCount)));
+            this.cBox.scrollTop = this.infiniteScrollAppendDiff;
+            this.prevInfiniteScrollDirection = 'up';
+        }
+        else if (target.scrollTop === 0 && !this.infiniteInitialLoad && !this.infiniteSearchValChange && this.infiniteSkipCnt
+            && this.infiniteLoadedElem.length && this.cBox.children.length < this.parent.filterSettings.itemsCount * 3) {
+            this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice((this.parent.filterSettings.itemsCount * 2),
+                this.infiniteDataCount % this.parent.filterSettings.itemsCount));
+            this.infiniteSkipCnt = (Math.floor(this.infiniteDataCount / this.parent.filterSettings.itemsCount) - 3) *
+                this.parent.filterSettings.itemsCount;
+            this.infiniteAppendElements([].slice.call(this.infiniteLoadedElem.slice(this.infiniteSkipCnt,
+                this.infiniteSkipCnt + this.parent.filterSettings.itemsCount)));
+            this.cBox.scrollTop = this.infiniteScrollAppendDiff;
+            this.prevInfiniteScrollDirection = 'up';
+        }
+    }
+
+    private infiniteRemoveElements(removeElem: HTMLElement[]): void {
+        for (let i: number = 0; i < removeElem.length; i++) {
+            remove(removeElem[i as number]);
+        }
+    }
+
+    private infiniteAppendElements(appendElem: HTMLElement[]): void {
+        for (let i: number = 0; i < appendElem.length; i++) {
+            this.cBox.insertBefore(appendElem[i as number], this.cBox.children[i as number]);
+        }
+    }
+
+    private makeInfiniteScrollRequest(query?: Query): void {
+        if (!this.infiniteInitialLoad && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
+            setTimeout(() => {
+                if (this.infiniteQueryExecutionPending) {
+                    this.showMask();
+                }
+            }, 500);
+        } else if (!this.infiniteInitialLoad) {
+            createSpinner({ target: this.spinner, cssClass: this.parent.cssClass ? this.parent.cssClass : null }, this.parent.createElement);
+            showSpinner(this.spinner);
+        }
+        const fName: string = 'fn';
+        if (this.infiniteQuery && this.infiniteQuery.queries && this.infiniteQuery.queries.length) {
+            for (let i: number = 0; i < this.infiniteQuery.queries.length; i++) {
+                if (this.infiniteQuery.queries[i as number][`${fName}`] === 'onTake'
+                || this.infiniteQuery.queries[i as number][`${fName}`] === 'onSkip') {
+                    this.infiniteQuery.queries.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+        const existQuery: boolean = query ? true : false;
+        query = query ? query : this.infiniteQuery;
+        if (this.infiniteInitialLoad || this.infiniteSearchValChange) {
+            this.infiniteSkipCnt = 0;
+        } else  {
+            this.infiniteSkipCnt += this.parent.filterSettings.itemsCount;
+        }
+        query.skip(this.infiniteSkipCnt);
+        if (this.infiniteInitialLoad || this.infiniteSearchValChange) {
+            query.take(this.parent.filterSettings.itemsCount * 3);
+            this.infiniteSkipCnt += this.parent.filterSettings.itemsCount * 2;
+        } else {
+            query.take(this.parent.filterSettings.itemsCount);
+        }
+        if (!existQuery) {
+            this.processDataOperation(query);
+            this.infiniteQueryExecutionPending = true;
+        }
     }
 
     private processDataOperation(query: Query, isInitial?: boolean): void {
@@ -814,18 +1157,49 @@ export class CheckBoxFilterBase {
             allPromise.push(colData.executeQuery(this.foreignKeyQuery));
             runArray.push((data: Object[]) => this.foreignKeyData = data);
         }
-        allPromise.push(
-            this.options.dataSource.executeQuery(query)
-        );
+        if (this.infiniteRenderMod) {
+            this.infiniteQuery = query.clone();
+            if (this.infiniteInitialLoad) {
+                this.cBox.classList.add('e-checkbox-infinitescroll');
+                EventHandler.add(this.cBox, 'scroll', this.infiniteScrollHandler, this);
+                EventHandler.add(this.cBox, 'mouseup', this.infiniteScrollMouseKeyUpHandler, this);
+                EventHandler.add(this.cBox, 'mousedown', this.infiniteScrollMouseKeyDownHandler, this);
+            } else if (this.infiniteSearchValChange) {
+                this.cBox.innerHTML = '';
+            }
+        }
+        if (this.infiniteRenderMod && this.infiniteInitialLoad && !this.options.isRemote) {
+            const field: string = this.isForeignColumn(this.options.column as Column) ? this.options.foreignKeyValue :
+            this.options.column.field;
+            this.options.dataSource.executeQuery(new Query().sortBy(field, DataUtil.fnAscending)).then((e: ReturnOption) => {
+                (this.options.dataSource as DataManager).dataSource.json = e.result as JSON[];
+                this.executeQueryOperations(query, allPromise, runArray);
+            });
+        } else {
+            this.executeQueryOperations(query, allPromise, runArray);
+        }
+    }
+    private executeQueryOperations(query: Query, allPromise: Promise<Object>[], runArray: Function[]): void {
+        allPromise.push((this.options.dataSource as DataManager).executeQuery(query));
         runArray.push(this.dataSuccess.bind(this));
         let i: number = 0;
         Promise.all(allPromise).then((e: ReturnType[]) => {
+            this.infiniteQueryExecutionPending = this.infiniteRenderMod ? false : this.infiniteQueryExecutionPending;
             for (let j: number = 0; j < e.length; j++) {
+                this.infiniteDataCount = this.infiniteRenderMod && !this.infiniteDataCount ? e[j as number].count : this.infiniteDataCount;
                 runArray[i++](e[parseInt(j.toString(), 10)].result);
+            }
+        }).catch(() => {
+            if (this.infiniteRenderMod && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
+                this.parent.showMaskRow(undefined, this.dialogObj.element);
             }
         });
     }
     private dataSuccess(e: Object[]): void {
+        if (!this.infiniteInitialLoad && this.infiniteDataCount && ((this.infiniteSkipCnt >= this.infiniteDataCount
+            && !this.infiniteSearchValChange) || (e.length === 0))) {
+            return;
+        }
         this.fullData = e;
         const args1: CheckBoxBeforeRenderer = { dataSource: this.fullData, executeQuery: true, field: this.options.field };
         this.parent.notify(events.beforeCheckboxRenderer, args1 );
@@ -844,8 +1218,12 @@ export class CheckBoxFilterBase {
         }
         const data: object[] = args1.executeQuery ? this.filteredData : args1.dataSource ;
         this.processDataSource(null, true, data, args1);
-        if (this.sInput) {
+        if (this.sInput && ((this.infiniteRenderMod && this.infiniteInitialLoad) || !this.infiniteRenderMod)) {
             this.sInput.focus();
+        }
+        if (this.infiniteInitialLoad || this.infiniteSearchValChange) {
+            this.infiniteInitialLoad = false;
+            this.infiniteSearchValChange = false;
         }
         const args: Object = {
             requestType: events.filterAfterOpen,
@@ -904,6 +1282,8 @@ export class CheckBoxFilterBase {
         this.isCheckboxFilterTemplate = (<{ isCheckboxFilterTemplate?: boolean }>args1).isCheckboxFilterTemplate;
         if (!this.isCheckboxFilterTemplate) {
             this.createFilterItems(dataSource, isInitial, args);
+        } else if (this.infiniteRenderMod && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
+            this.removeMask();
         }
     }
 
@@ -913,7 +1293,9 @@ export class CheckBoxFilterBase {
 
     private updateResult(): void {
         this.result = {};
-        const predicate: Predicate = this.getPredicateFromCols(this.options.filteredColumns, this.isExecuteLocal);
+        const predicate: Predicate = this.infiniteRenderMod && this.existingPredicate[this.options.field] ? 
+        this.getPredicateFromCols(this.existingPredicate[this.options.field], this.isExecuteLocal) : 
+        this.getPredicateFromCols(this.options.filteredColumns, this.isExecuteLocal);
         const query: Query = new Query();
         if (predicate) {
             query.where(predicate);
@@ -926,6 +1308,9 @@ export class CheckBoxFilterBase {
     }
 
     private clickHandler(e: MouseEvent): void {
+        if (!isNullOrUndefined(Global.timer)) {
+            clearTimeout(Global.timer as number);
+        }
         const target: Element = e.target as Element;
         if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer'
             && parentsUntil(target, 'e-mask-ftrchk')) { return; }
@@ -939,6 +1324,40 @@ export class CheckBoxFilterBase {
                 this.updateAllCBoxes(!selectAll.classList.contains('e-check'));
             } else {
                 toogleCheckbox(elem.parentElement);
+                if (this.infiniteRenderMod && !elem.parentElement.querySelector('.e-add-current')) {
+                    this.localInfiniteSelectionInteracted = true;
+                    const caseSen: boolean = this.options.allowCaseSensitive;
+                    const span: Element = elem.parentElement.querySelector('.e-frame');
+                    const input: HTMLInputElement = span.previousSibling as HTMLInputElement;
+                    const optr: string = input.checked ? 'equal' : 'notequal';
+                    const pred: string = input.checked ? 'or' : 'and';
+                    const defaults: { predicate?: string, field?: string, type?: string, uid?: string, operator?: string,
+                        matchCase?: boolean, ignoreAccent?: boolean } = { field: this.options.field, predicate: pred, uid: this.options.uid,
+                        operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.options.ignoreAccent
+                    };
+                    const value: string = this.values[parentsUntil(input, 'e-ftrchk').getAttribute('uid')];
+                    this.updateInfiniteManualSelectPred(defaults, value);
+                    if (this.infiniteRenderMod && !this.options.isRemote && this.options.parentTotalDataCount
+                        && this.infiniteUnloadParentExistPred.length) {
+                        const predicate: Predicate = this.getPredicateFromCols(this.options.filteredColumns
+                            .concat(...this.infiniteManualSelectMaintainPred), true);
+                        const query: Query = new Query();
+                        if (predicate) {
+                            query.where(predicate);
+                        }
+                        const result: Object[] = new DataManager(this.infinitePermenantLocalData as JSON[]).executeLocal(query);
+                        if (this.options.parentTotalDataCount !== result.length) {
+                            this.options.parentTotalDataCount = result.length
+                        }
+                        if (!this.options.parentTotalDataCount && this.infiniteUnloadParentExistPred.length) {
+                            this.infiniteUnloadParentExistPred = [];
+                        }
+                    }
+                    if (this.infiniteUnloadParentExistPred.length && (this.options.parentTotalDataCount === this.infiniteDataCount
+                        || !this.options.parentTotalDataCount)) {
+                        this.infiniteUnloadParentExistPred = [];
+                    }
+                }
             }
             this.updateIndeterminatenBtn();
             (elem.querySelector('.e-chk-hidden') as HTMLElement).focus();
@@ -946,8 +1365,32 @@ export class CheckBoxFilterBase {
         this.setFocus(parentsUntil(elem, 'e-ftrchk'));
     }
 
-    private keyupHandler(e: MouseEvent): void {
-        this.setFocus(parentsUntil(e.target as Element, 'e-ftrchk'));
+    private updateInfiniteManualSelectPred(defaults: { predicate?: string, field?: string, type?: string, uid?: string, operator?: string,
+        matchCase?: boolean, ignoreAccent?: boolean }, value: string): void {
+        for (let i: number = 0; i < this.infiniteManualSelectMaintainPred.length; i++) {
+            const predmdl: PredicateModel = this.infiniteManualSelectMaintainPred[i as number];
+            if (predmdl.value + '' === value + '' && (predmdl.operator === 'equal' || predmdl.operator === 'notequal')) {
+                this.infiniteManualSelectMaintainPred.splice(i, 1);
+                break;
+            }
+        }
+        if ((defaults.predicate === 'or' && (!this.localInfiniteSelectAllClicked || !this.infiniteLocalSelectAll))
+        || (defaults.predicate === 'and' && (!this.localInfiniteSelectAllClicked || this.infiniteLocalSelectAll))) {
+            this.infiniteManualSelectMaintainPred.push(extend({}, { value: value }, defaults) as {
+                field: string, predicate: string, operator: string, matchCase: boolean, ignoreAccent: boolean, value: string
+            });
+            if (defaults.predicate === 'or') {
+                this.options.parentTotalDataCount++;
+            } else {
+                this.options.parentTotalDataCount--;
+            }
+        }
+    }
+
+    private keyupHandler(e: KeyboardEventArgs): void {
+        if ((e.key === 'Tab' && e.shiftKey) || e.key === 'Tab' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            this.setFocus(parentsUntil(e.target as Element, 'e-ftrchk'));
+        }
     }
 
     private setFocus(elem?: Element): void {
@@ -955,13 +1398,21 @@ export class CheckBoxFilterBase {
         if (prevElem) {
             prevElem.classList.remove('e-chkfocus');
         }
-        if (elem) {
+        if (elem && elem !== prevElem) {
             elem.classList.add('e-chkfocus');
         }
     }
 
     private updateAllCBoxes(checked: boolean): void {
-        const cBoxes: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-frame:not(.e-add-current)'));
+        if (this.infiniteRenderMod) {
+            this.localInfiniteSelectAllClicked = true;
+            this.infiniteLocalSelectAll = checked;
+            this.infiniteUnloadParentExistPred = [];
+            this.infiniteManualSelectMaintainPred = [];
+        }
+        const cBoxes: Element[] = this.infiniteRenderMod ?
+        this.infiniteLoadedElem.map(arr =>
+            arr.querySelector('.e-frame')) : [].slice.call(this.cBox.querySelectorAll('.e-frame:not(.e-add-current)'));
         for (const cBox of cBoxes) {
             removeAddCboxClasses(cBox, checked);
             setChecked(cBox.previousSibling as HTMLInputElement, checked);
@@ -986,6 +1437,9 @@ export class CheckBoxFilterBase {
         const innerText: string = this.options.disableHtmlEncode ? 'textContent' : 'innerHTML';
         label[`${innerText}`] = !isNullOrUndefined(value) && value.toString().length ?
             this.parent.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(value) : value : this.getLocalizedLabel('Blanks');
+        const checkboxUid: string = getUid('cbox');
+        label.setAttribute('id', checkboxUid + 'cboxLabel');
+        elem.querySelector('input').setAttribute('aria-labelledby', label.id);
         if (label.innerHTML === this.getLocalizedLabel('Blanks')) {
             this.isBlanks = true;
         }
@@ -1013,11 +1467,12 @@ export class CheckBoxFilterBase {
     }
 
     private updateIndeterminatenBtn(): void {
-        let cnt: number = this.cBox.children.length - 1;
+        let cnt: number = this.infiniteRenderMod ? this.infiniteLoadedElem.length : this.cBox.children.length - 1;
         let className: string[] = [];
         let disabled: boolean = false;
-        const elem: Element = this.cBox.querySelector('.e-selectall');
-        const selected: number = this.cBox.querySelectorAll('.e-check:not(.e-selectall):not(.e-add-current)').length;
+        const elem: Element = this.infiniteRenderMod ? this.sBox.querySelector('.e-selectall') : this.cBox.querySelector('.e-selectall');
+        let selected: number = this.infiniteRenderMod ? this.infiniteLoadedElem.filter(arr => arr.querySelector('.e-check')).length :
+        this.cBox.querySelectorAll('.e-check:not(.e-selectall):not(.e-add-current)').length;
         if (this.cBox.querySelector('.e-add-current')) {
             cnt -= 1;
         }
@@ -1029,13 +1484,34 @@ export class CheckBoxFilterBase {
         const input: HTMLInputElement = elem.previousSibling as HTMLInputElement;
         setChecked(input, false);
         input.indeterminate = false;
+        if (this.infiniteRenderMod && this.sInput.value === '' && !this.options.parentCurrentViewDataCount && !this.localInfiniteSelectionInteracted
+        && (!this.localInfiniteSelectAllClicked || (!this.infiniteLocalSelectAll && !selected)) && (cnt !== selected || cnt === selected)) {
+            selected = 0;
+        } else if (this.infiniteRenderMod && this.infiniteLoadedElem.length < this.infiniteDataCount
+            && this.infiniteUnloadParentExistPred.length && (!selected || cnt === selected) && this.infiniteLocalSelectAll) {
+            if (!selected) {
+                selected += this.infiniteUnloadParentExistPred.length;
+            } else {
+                cnt += this.infiniteUnloadParentExistPred.length;
+            }
+        }
         if (cnt === selected) {
+            if (this.infiniteRenderMod) {
+                this.infiniteLocalSelectAll = true;
+                this.localInfiniteSelectAllClicked = true;
+                this.infiniteManualSelectMaintainPred = [];
+            }
             className = ['e-check'];
             setChecked(input, true);
         } else if (selected) {
             className = ['e-stop'];
             input.indeterminate = true;
         } else {
+            if (this.infiniteRenderMod) {
+                this.infiniteLocalSelectAll = false;
+                this.localInfiniteSelectAllClicked = true;
+                this.infiniteManualSelectMaintainPred = [];
+            }
             className = ['e-uncheck'];
             disabled = true;
             if (btn) { btn.disabled = true; }
@@ -1066,7 +1542,12 @@ export class CheckBoxFilterBase {
                 nullCounter = nullCounter + 1;
             }
         }
-        this.itemsCnt = nullCounter !== -1 ? data.length - nullCounter : data.length;
+        if (!this.infiniteRenderMod) {
+            this.itemsCnt = nullCounter !== -1 ? data.length - nullCounter : data.length;
+        }
+        if (this.infiniteRenderMod && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
+            this.removeMask();
+        }
         if (data.length && !this.renderEmpty) {
             const selectAllValue: string = this.getLocalizedLabel('SelectAll');
             const innerDiv: Element = this.cBox.querySelector('.e-checkfltrnmdiv');
@@ -1081,9 +1562,19 @@ export class CheckBoxFilterBase {
                     addClass([checkBox], [this.parent.cssClass]);
                 }
             }
-            const selectAll: Element = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
-            selectAll.querySelector('.e-frame').classList.add('e-selectall');
-            cBoxes.appendChild(selectAll);
+            if (this.infiniteInitialLoad || !this.infiniteRenderMod) {
+                const selectAll: Element = createCboxWithWrap(getUid('cbox'), checkBox, 'e-ftrchk');
+                selectAll.querySelector('.e-frame').classList.add('e-selectall');
+                if (this.infiniteRenderMod) {
+                    this.sBox.insertBefore(selectAll, this.spinner);
+                }
+                else {
+                    cBoxes.appendChild(selectAll);
+                }
+            } else if (this.sBox.querySelector('.e-ftrchk .e-selectall')) {
+                (this.sBox.querySelector('.e-ftrchk .e-selectall').previousSibling as HTMLInputElement).disabled = false;
+                this.sBox.querySelector('.e-ftrchk .e-selectall').parentElement.classList.remove('e-checkbox-disabled');
+            }
             let predicate: Predicate = new Predicate('field', 'equal', this.options.field);
             if (this.options.foreignKeyValue) {
                 predicate = predicate.or('field', 'equal', this.options.foreignKeyValue);
@@ -1100,9 +1591,32 @@ export class CheckBoxFilterBase {
                         addClass([predicateCheckBox], [this.parent.cssClass]);
                     }
                 }
-                const predicateElement: Element = createCboxWithWrap(getUid('cbox'), predicateCheckBox, 'e-ftrchk');
-                predicateElement.querySelector('.e-frame').classList.add('e-add-current');
-                cBoxes.appendChild(predicateElement);
+                if ((this.infiniteRenderMod && (!isNullOrUndefined(this.sBox.children[2])
+                && (this.sBox.children[2] as HTMLElement).innerText !== 'Add current selection to filter')) || !this.infiniteRenderMod) {
+                    const predicateElement: Element = createCboxWithWrap(getUid('cbox'), predicateCheckBox, 'e-ftrchk');
+                    predicateElement.querySelector('.e-frame').classList.add('e-add-current');
+                    if (this.infiniteRenderMod) {
+                        this.sBox.insertBefore(predicateElement, this.spinner);
+                        let checkBoxListElem: HTMLElement = this.spinner.querySelector('.e-checkboxlist');
+                        let reduceHeight: number = Math.ceil(predicateElement.getBoundingClientRect().height);
+                        checkBoxListElem.style.height = (parseInt(getComputedStyle(checkBoxListElem).height.split('px')[0]) - reduceHeight)
+                        + 'px';
+                        checkBoxListElem.style.minHeight = checkBoxListElem.style.height;
+                    } else {
+                        cBoxes.appendChild(predicateElement);
+                    }
+                } else if (this.sBox.querySelector('.e-ftrchk .e-add-current')) {
+                    (this.sBox.querySelector('.e-ftrchk .e-add-current').previousSibling as HTMLInputElement).disabled = false;
+                    this.sBox.querySelector('.e-ftrchk .e-add-current').parentElement.classList.remove('e-checkbox-disabled');
+                }
+            } else if (this.infiniteRenderMod && !isNullOrUndefined(this.sBox.children[2])
+                && (this.sBox.children[2] as HTMLElement).innerText === 'Add current selection to filter') {
+                let checkBoxListElem: HTMLElement = this.spinner.querySelector('.e-checkboxlist');
+                let increaseHeight: number = Math.ceil(this.sBox.children[2].getBoundingClientRect().height);
+                checkBoxListElem.style.height = (parseInt(getComputedStyle(checkBoxListElem).height.split('px')[0]) + increaseHeight)
+                + 'px';
+                checkBoxListElem.style.minHeight = checkBoxListElem.style.height;
+                remove(this.sBox.children[2]);
             }
             let isRndere: boolean;
             for (let i: number = 0; i < data.length; i++) {
@@ -1120,25 +1634,81 @@ export class CheckBoxFilterBase {
                     if (isRndere) { continue; }
                     isRndere = true;
                 }
+                if (this.infiniteRenderMod) {
+                    this.updateInfiniteUnLoadedCheckboxExistPred(value, this.infiniteUnloadParentExistPred);
+                }
                 const checkbox: Element =
-                    this.createCheckbox(
-                        value as string, this.getCheckedState(isColFiltered, this.values[`${uid}`]),
-                        getValue('dataObj', data[parseInt(i.toString(), 10)]));
+                this.localInfiniteSelectAllClicked ?
+                    this.createCheckbox(value as string, this.infiniteLocalSelectAll, getValue('dataObj', data[i as number])) :
+                    this.createCheckbox( value as string,
+                        this.getCheckedState(isColFiltered, this.values[`${uid}`]), getValue('dataObj', data[i as number]));
                 cBoxes.appendChild(createCboxWithWrap(uid, checkbox, 'e-ftrchk'));
+                if (this.infiniteRenderMod) {
+                    (cBoxes.lastChild as HTMLElement).style.height = this.getListHeight(this.cBox) + 'px';
+                }
             }
-            this.cBox.innerHTML = '';
+            const scrollTop: number = this.cBox.scrollTop;
+            if (!this.infiniteRenderMod || this.infiniteSearchValChange) {
+                this.cBox.innerHTML = '';
+            } else if (this.infiniteRenderMod && this.cBox.children.length) {
+                this.infiniteRemoveElements(([].slice.call(this.cBox.children)).splice(0, this.parent.filterSettings.itemsCount));
+            }
+            if (this.infiniteRenderMod) {
+                this.infiniteLoadedElem.push(...[].slice.call(cBoxes.children));
+                this.itemsCnt = nullCounter !== -1 ? this.infiniteLoadedElem.length - nullCounter : this.infiniteLoadedElem.length;
+            }
+            if (this.infiniteUnloadParentExistPred.length && (this.infiniteLoadedElem.length >= this.infiniteDataCount
+                || !this.options.parentCurrentViewDataCount || (this.options.parentTotalDataCount === this.infiniteDataCount
+                    && this.options.parentCurrentViewDataCount))) {
+                this.infiniteUnloadParentExistPred = [];
+            }
             appendChildren(this.cBox, [].slice.call(cBoxes.children));
+            if (this.infiniteRenderMod && !this.infiniteScrollAppendDiff) {
+                this.infiniteScrollAppendDiff = Math.round(scrollTop - this.cBox.scrollTop);
+            }
             this.updateIndeterminatenBtn();
-            if (btn) { btn.disabled = false; }
-            disabled = false;
+            if (!this.infiniteRenderMod) {
+                if (btn) { btn.disabled = false; }
+                disabled = false;
+            } else {
+                if (btn.disabled) {
+                    disabled = true;
+                } else {
+                    disabled = false;
+                }
+            }
         } else {
             cBoxes.appendChild(this.parent.createElement('span', { innerHTML: this.getLocalizedLabel('NoResult') }));
             this.cBox.innerHTML = '';
+            if (this.infiniteRenderMod) {
+                const selectAll: HTMLElement = this.sBox.querySelector('.e-ftrchk .e-selectall');
+                if (selectAll) {
+                    const selectAllParent: HTMLElement = selectAll.parentElement.parentElement;
+                    if (selectAll.classList.contains('e-check')) {
+                        toogleCheckbox(selectAllParent);
+                    } else if (selectAll.classList.contains('e-stop')) {
+                        toogleCheckbox(selectAllParent);
+                        selectAll.classList.remove('e-stop');
+                        toogleCheckbox(selectAllParent);
+                    }
+                    (selectAll.previousSibling as HTMLInputElement).disabled = true;
+                    selectAll.parentElement.classList.add('e-checkbox-disabled');
+                }
+                const addCurrSelection: HTMLElement = this.sBox.querySelector('.e-ftrchk .e-add-current');
+                if (addCurrSelection) {
+                    const addCurrSelectionParent: HTMLElement = addCurrSelection.parentElement.parentElement;
+                    if (addCurrSelection.classList.contains('e-check')) {
+                        toogleCheckbox(addCurrSelectionParent);
+                    }
+                    (addCurrSelection.previousSibling as HTMLInputElement).disabled = true;
+                    addCurrSelection.parentElement.classList.add('e-checkbox-disabled');
+                }
+            }
             this.cBox.appendChild(this.parent.createElement('div', { className: 'e-checkfltrnmdiv' }));
             appendChildren(this.cBox.children[0], [].slice.call(cBoxes.children));
             if (btn) { btn.disabled = true; }
             disabled = true;
-            this.filterState = !btn.disabled;
+            this.filterState = !disabled;
         }
         if (btn && data.length) {
             this.filterState = !btn.disabled;
@@ -1152,7 +1722,21 @@ export class CheckBoxFilterBase {
         args[`${filterModel}`] = this;
         this.parent.notify(events.cBoxFltrComplete, args);
         this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: disabled });
+        if (this.infiniteRenderMod && this.infiniteInitialLoad) {
+            this.cBox.style.marginTop = '0px';
+        }
         hideSpinner(this.spinner);
+    }
+
+    private updateInfiniteUnLoadedCheckboxExistPred(value: string | number, updatePredArr: Object[]): void {
+        for (let j: number = 0; j < updatePredArr.length; j++) {
+            const pred: PredicateModel = updatePredArr[j as number] as PredicateModel;
+            if (value === pred.value && (pred.operator === 'equal' || pred.operator === 'notequal')) {
+                this.infiniteManualSelectMaintainPred.push(updatePredArr[j as number]);
+                updatePredArr.splice(j, 1);
+                j--;
+            }
+        }
     }
 
     private getCheckedState(isColFiltered: number | boolean, value: string): boolean {
@@ -1160,7 +1744,11 @@ export class CheckBoxFilterBase {
             return true;
         } else {
             const checkState: boolean = this.sInput.value ? true : this.result[`${value}`];
-            return this.options.operator === 'notequal' ? !checkState : checkState;
+            if (this.infiniteRenderMod) {
+                return checkState;
+            } else {
+                return this.options.operator === 'notequal' ? !checkState : checkState;
+            }
         }
     }
 
@@ -1227,18 +1815,18 @@ export class CheckBoxFilterBase {
         }
         for (let p: number = 1; p < len; p++) {
             cols[parseInt(p.toString(), 10)] = CheckBoxFilterBase.updateDateFilter(cols[parseInt(p.toString(), 10)]);
-            if (len > 2 && p > 1 && cols[parseInt(p.toString(), 10)].predicate === 'or') {
-                if (cols[parseInt(p.toString(), 10)].type === 'date' || cols[parseInt(p.toString(), 10)].type === 'datetime' || cols[parseInt(p.toString(), 10)].type === 'dateonly') {
+            if (len > 2 && p > 1 && cols[p as number].predicate === 'or' && cols[p as number - 1].predicate === 'or') {
+                if (cols[p as number].type === 'date' || cols[p as number].type === 'datetime' || cols[p as number].type === 'dateonly') {
                     predicate.predicates.push(
-                        getDatePredicate(cols[parseInt(p.toString(), 10)], cols[parseInt(p.toString(), 10)].type, isExecuteLocal));
+                        getDatePredicate(cols[parseInt(p.toString(), 10)], cols[p as number].type, isExecuteLocal));
                 } else {
                     predicate.predicates.push(new Predicate(
-                        cols[parseInt(p.toString(), 10)].field, cols[parseInt(p.toString(), 10)].operator,
+                        cols[p as number].field, cols[parseInt(p.toString(), 10)].operator,
                         cols[parseInt(p.toString(), 10)].value, !CheckBoxFilterBase.getCaseValue(cols[parseInt(p.toString(), 10)]),
                         cols[parseInt(p.toString(), 10)].ignoreAccent));
                 }
             } else {
-                if (cols[parseInt(p.toString(), 10)].type === 'date' || cols[parseInt(p.toString(), 10)].type === 'datetime' || cols[parseInt(p.toString(), 10)].type === 'dateonly') {
+                if (cols[p as number].type === 'date' || cols[p as number].type === 'datetime' || cols[p as number].type === 'dateonly') {
                     if (cols[parseInt(p.toString(), 10)].predicate === 'and' && cols[parseInt(p.toString(), 10)].operator === 'equal') {
                         predicate = (predicate[`${operate}`] as Function)(
                             getDatePredicate(cols[parseInt(p.toString(), 10)], cols[parseInt(p.toString(), 10)].type, isExecuteLocal),

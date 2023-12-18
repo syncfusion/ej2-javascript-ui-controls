@@ -15,7 +15,7 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
 
     public element: HTMLElement = this.parent.createElement('TH', {
         className: 'e-headercell e-stackedheadercell', attrs: {
-            tabindex: '-1'
+            tabindex: '-1', role: 'columnheader'
         }
     });
 

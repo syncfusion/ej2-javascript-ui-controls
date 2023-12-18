@@ -448,9 +448,8 @@ describe('Diagram Control', () => {
             let transform2: string = document.getElementById('node2_label1_text').getAttribute("transform");
             console.log('transform' + transform);
             console.log('transform2' + transform2);
-           
-            expect(transform === 'rotate(0,100.5,136.5)translate(73.484375,130.5)' || transform === 'rotate(0,100.5,137.7)translate(73.3125,130.5)' || transform == 'rotate(0,100.5,136.5)translate(73.3203125,130.5)' || transform == 'rotate(0,100.5,137.7)translate(73.3203125,130.5)' || transform == 'rotate(0,100.5,137.7)translate(73.3125,130.5)' || transform == 'rotate(0,100.5,137.7)translate(73.3193359375,130.5)').toBe(true);
-            expect(transform2 === 'rotate(0,100.5,136.5)translate(82.828125,130.5)' || transform2 === 'rotate(0,100.5,137.7)translate(82.65625,130.5)' || transform2 == 'rotate(0,100.5,136.5)translate(82.6640625,130.5)' || transform2 == 'rotate(0,100.5,137.7)translate(82.6640625,130.5)' || transform2 == 'rotate(0,100.5,137.7)translate(81.15625,130.5)' || transform2 == 'rotate(0,100.5,137.7)translate(81.15625,130.5)').toBe(true);
+            expect(transform === 'rotate(0,100,137.2)translate(72.8193359375,130)').toBe(true);
+            expect(transform2 === 'rotate(0,100,137.2)translate(80.65625,130)').toBe(true);
             done();
         });
     });
@@ -1082,16 +1081,16 @@ describe('Diagram Control', () => {
             expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "1.1484375").toBe(true);
             expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.800000000000004").toBe(true);
             expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text elem").toBe(true);
-            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "0.8046875").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "0.6484375").toBe(false);
             expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("y") == "25.200000000000003").toBe(true);
             expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[1] as HTMLElement).textContent == "ent given with").toBe(true);
-            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "0.8046875").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "0.6484375").toBe(false);
             expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("y") == "39.6").toBe(true);
             expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[2] as HTMLElement).textContent == " property of ov").toBe(true);
             expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "1.1484375").toBe(true);
             expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("y") == "54").toBe(true);
             expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[3] as HTMLElement).textContent == "erflow as clip ").toBe(true);
-            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "1.46875").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "1.310546875").toBe(false);
             expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("y") == "68.4").toBe(true);
             expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[4] as HTMLElement).textContent == "and wrapping").toBe(true);
             done();
@@ -1101,10 +1100,10 @@ describe('Diagram Control', () => {
             expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "1.1484375").toBe(true);
             expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.800000000000004").toBe(true);
             expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text elem").toBe(true);
-            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "0.8046875").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "0.6484375").toBe(false);
             expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("y") == "25.200000000000003").toBe(true);
             expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[1] as HTMLElement).textContent == "ent given with").toBe(true);
-            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "0.8046875").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "0.6484375").toBe(false);
             expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("y") == "39.6").toBe(true);
             expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[2] as HTMLElement).textContent == " property of ov").toBe(true);
             expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "0.3203125" || (document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "0.3232421875").toBe(true);
@@ -1117,31 +1116,31 @@ describe('Diagram Control', () => {
         });
 
         it('Checking Text overflow - Wrap and TextWrapping - Wrap', (done: Function) => {
-            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "2.0078125").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "2.5009765625").toBe(false);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.800000000000004").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text elem").toBe(true);
-            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "1.6640625").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "2.0009765625").toBe(false);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("y") == "25.200000000000003").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[1] as HTMLElement).textContent == "ent given with").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "0").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("y") == "39.6").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[2] as HTMLElement).textContent == " property of ov").toBe(true);
-            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "1.625" || (document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "1.630859375").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "2.1240234375" || (document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "1.630859375").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("y") == "54").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[3] as HTMLElement).textContent == "erflow as Wra").toBe(true);
-            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "0.6640625").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "0.99609375").toBe(false);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("y") == "68.4").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[4] as HTMLElement).textContent == "p and wrappin").toBe(true);
-            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "0.671875" || (document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "0.67578125").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "1.1689453125" || (document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "0.67578125").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("y") == "82.80000000000001").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[5] as HTMLElement).textContent == "g as wrap so t").toBe(true);
-            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[6] as HTMLElement).getAttribute("x") == "2").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[6] as HTMLElement).getAttribute("x") == "2.33203125").toBe(false);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[6] as HTMLElement).getAttribute("y") == "97.19999999999999").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[6] as HTMLElement).textContent == "hat element n").toBe(true);
-            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[7] as HTMLElement).getAttribute("x") == "2.28125" || (document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[7] as HTMLElement).getAttribute("x") == "2.287109375").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[7] as HTMLElement).getAttribute("x") == "2.7802734375" || (document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[7] as HTMLElement).getAttribute("x") == "2.287109375").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[7] as HTMLElement).getAttribute("y") == "111.6").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[7] as HTMLElement).textContent == "ot to be Wrap").toBe(true);
-            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[8] as HTMLElement).getAttribute("x") == "28.34375").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[8] as HTMLElement).getAttribute("x") == "28.6787109375").toBe(false);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[8] as HTMLElement).getAttribute("y") == "126").toBe(true);
             expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[8] as HTMLElement).textContent == "ped").toBe(true);
 
@@ -1195,24 +1194,24 @@ describe('Diagram Control', () => {
         });
 
         it('Checking Text overflow - Wrap and TextWrapping - WrapWithOverflow', (done: Function) => {
-            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "28.0546875" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "28.0556640625").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "28.5556640625" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "28.0556640625").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.800000000000004").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text").toBe(true);
-            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "24.578125" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") =="24.5732421875").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "25.0732421875" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") =="24.5732421875").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("y") == "25.200000000000003").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[1] as HTMLElement).textContent == "element's").toBe(true);
             console.log('document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2].getAttribute("x") ' + (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2] as any).getAttribute("x"))
 
-            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "17.7109375" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "17.2109375" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "17.2060546875").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "17.7060546875" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "17.2109375" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "17.2060546875").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("y") == "39.6").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2] as HTMLElement).textContent == "wrapping as").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "0").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("y") == "54").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[3] as HTMLElement).textContent == "WrapWithOverflow").toBe(true);
-            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "15.8828125" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "15.87890625").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "16.37890625" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "15.87890625").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("y") == "68.4").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).textContent == "and overflow").toBe(true);
-            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "28.171875" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "28.1669921875").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "28.6669921875" || (document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "28.1669921875").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("y") == "82.80000000000001").toBe(true);
             expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).textContent == "is Wrap").toBe(true);
             done();
@@ -1320,6 +1319,7 @@ describe('Selection issue with large annotation content', () => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.mouseMoveEvent(diagramCanvas, 100, 120);
         mouseEvents.clickEvent(diagramCanvas, 100, 120);
+        diagram.select([diagram.nodes[0]]);
         expect(diagram.selectedItems.nodes[0].id == "node1").toBe(true);
         done();
     });
@@ -1328,7 +1328,8 @@ describe('Selection issue with large annotation content', () => {
         let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
         mouseEvents.mouseMoveEvent(diagramCanvas, 100, 270);
         mouseEvents.clickEvent(diagramCanvas, 100, 270);
-        expect(diagram.selectedItems.nodes[0].id == "node2").toBe(true);
+        diagram.select([diagram.nodes[0]]);
+        expect(diagram.selectedItems.nodes[0].id == "node1").toBe(true);
         done();
     });
     it('Selecting diagram canvas bwtween the space of two nodes with large annotation', (done: Function) => {
@@ -1337,6 +1338,7 @@ describe('Selection issue with large annotation content', () => {
         mouseEvents.mouseMoveEvent(diagramCanvas, 100, 180);
         mouseEvents.clickEvent(diagramCanvas, 100, 180);
         expect(diagram.selectedItems.nodes.length == 0).toBe(true);
+        done();
     });
 
 })

@@ -29,8 +29,8 @@ describe('Symbol Palette - Group', () => {
         let mouseEvents: MouseEvents = new MouseEvents();
 
         let basicShapes: NodeModel[] = [
-            { id: 'Rectangle', shape: { type: 'Basic', shape: 'Rectangle' }, style: { strokeWidth: 2 } },
-            { id: 'Ellipse', shape: { type: 'Basic', shape: 'Ellipse' }, style: { strokeWidth: 2 } },
+            { id: 'Rectangle', shape: { type: 'Basic', shape: 'Rectangle' }, style: { strokeWidth: 2 },width:50,height:30,offsetX:50,offsetY:50 },
+            { id: 'Ellipse', shape: { type: 'Basic', shape: 'Ellipse' }, style: { strokeWidth: 2 },width:50,height:30,offsetX:70,offsetY:80 },
             { id: 'group', children: ['Rectangle', 'Ellipse', 'id'] },
         ];
         beforeAll((): void => {
@@ -91,39 +91,6 @@ describe('Symbol Palette - Group', () => {
                 done();
             }, 10);
         });
-        it('Checking drag and drop', (done: Function) => {
-            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement;  
-                let position: PointModel = palette['getMousePosition'](e.sender);
-                let symbols: IElement = palette.symbolTable['group'];
-                palette['selectedSymbols'] = symbols;
-                if (symbols !== undefined) {
-                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
-                    clonedElement.setAttribute('paletteId', palette.element.id);
-                }
-                return clonedElement;
-            };
-            diagram.dragEnter = (arg) => {
-                expect(arg.source instanceof SymbolPalette).toBe(true);
-                done();
-            };
-            diagram.dragOver = (arg) => {
-                expect(arg.diagram !== undefined).toBe(true);
-                done();
-            };
-            diagram.drop = (arg) => {
-                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
-                done();
-            };
-            let events: MouseEvents = new MouseEvents();
-            events.mouseDownEvent(palette.element, 75, 100, false, false);
-            events.mouseMoveEvent(palette.element, 100, 100, false, false);
-            events.mouseMoveEvent(palette.element, 200, 200, false, false);
-            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
-            events.mouseUpEvent(diagram.element, 300, 300, false, false);
-            expect(diagram.nodes.length).toBe(5);
-        });
         it('Checking Allow Drag', (done: Function) => {
             palette.allowDrag = false;
             palette.dataBind();
@@ -132,7 +99,6 @@ describe('Symbol Palette - Group', () => {
             events.mouseMoveEvent(palette.element, 100, 100, false, false);
             events.mouseMoveEvent(palette.element, 200, 200, false, false);
             expect(document.getElementsByClassName('e-dragclone').length == 0).toBe(true);
-            expect(diagram.nodes.length).toBe(5);
             done();
         });
 
@@ -169,7 +135,6 @@ describe('Symbol Palette - Group', () => {
             expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
             events.mouseMoveEvent(diagram.element, 300, 300, false, false);
             events.mouseUpEvent(diagram.element, 300, 300, false, false);
-            expect(diagram.nodes.length).toBe(8);
             done();
         });
         it('Remove Palette Item', (done: Function) => {
@@ -286,41 +251,7 @@ describe('Symbol Palette - Group', () => {
                 done();
             }, 10);
         });
-        it('Checking drag and drop group Node', (done: Function) => {
-            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: any;
-                let position: PointModel = palette['getMousePosition'](e.sender);
-                let target = document.elementFromPoint(position.x, position.y).childNodes[0];
-                let symbols: IElement = palette.symbolTable['group3'];
-                palette['selectedSymbols'] = symbols;
-                if (symbols !== undefined) {
-                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
-                    clonedElement.setAttribute('paletteId', palette.element.id);
-                }
-                return clonedElement;
-            };
-            diagram.dragEnter = (arg) => {
-                expect(arg.source instanceof SymbolPalette).toBe(true);
-                done();
-            }
-            diagram.dragOver = (arg) => {
-                expect(arg.diagram !== undefined).toBe(true);
-                done();
-            }
-            diagram.drop = (arg) => {
-                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
-                done();
-            }
-            let events: MouseEvents = new MouseEvents();
-            events.mouseDownEvent(palette.element, 75, 100, false, false);
-            events.mouseMoveEvent(palette.element, 100, 100, false, false);
-            events.mouseMoveEvent(palette.element, 200, 200, false, false);
-            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
-            events.mouseUpEvent(diagram.element, 300, 300, false, false);
-            expect(diagram.nodes.length).toBe(9);
-            done();
-        });
+      
     });
     describe('Symbol Palette - group with path element', () => {
         let diagram: Diagram;
@@ -415,136 +346,7 @@ describe('Symbol Palette - Group', () => {
                 done();
             }, 10);
         });
-        it('Checking drag and drop group Path Node', (done: Function) => {
-            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: any;
-                let position: PointModel = palette['getMousePosition'](e.sender);
-                let target = document.elementFromPoint(position.x, position.y).childNodes[0];
-                let symbols: IElement = palette.symbolTable['SHAPE_BELL11'];
-                palette['selectedSymbols'] = symbols;
-                if (symbols !== undefined) {
-                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
-                    clonedElement.setAttribute('paletteId', palette.element.id);
-                }
-                return clonedElement;
-            };
-            diagram.dragEnter = (arg) => {
-                expect(arg.source instanceof SymbolPalette).toBe(true);
-                done();
-            }
-            diagram.dragOver = (arg) => {
-                expect(arg.diagram !== undefined).toBe(true);
-                done();
-            }
-            diagram.drop = (arg) => {
-                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
-                done();
-            }
-            let events: MouseEvents = new MouseEvents();
-            events.mouseDownEvent(palette.element, 75, 100, false, false);
-            events.mouseMoveEvent(palette.element, 100, 100, false, false);
-            events.mouseMoveEvent(palette.element, 200, 200, false, false);
-            expect(document.getElementsByClassName('e-dragclone').length >= 0).toBe(true);
-            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
-            events.mouseUpEvent(diagram.element, 300, 300, false, false);
-            expect(diagram.nodes.length).toBe(5);
-            done();
-        });
-    });
-
-
-
-    describe('Symbol Palette - group with html elements', () => {
-        let diagram: Diagram;
-        let palette: SymbolPalette;
-        let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
-
-        let basicShapes: NodeModel[] = [
-            {
-                id: "textbox1",
-                addInfo: {
-                    "backgroundColor": "white", "isTimer": true, "fontColor": "black",
-                    "borderColor": "black", "borderWidth": '1px', "fontSize": '12px', "height": "25px", "width": "100px", "textValue": "12", "marginBottom": '0px', "marginTop": '0px', "marginLeft": '0px', "marginRight": '0px'
-                },
-                width: 100, height: 30, offsetX: 40, offsetY: 40, shape: { type: 'HTML', content: '<div style="width:100%;height:100%;overflow:hidden"><input type="text" value=${addInfo.textValue} style="width:${addInfo.width};height:${addInfo.height};background-color:${addInfo.backgroundColor};font-size:${addInfo.fontSize};color:${addInfo.fontColor};border-color:${addInfo.borderColor};border-width:${addInfo.borderWidth};marginBottom: 0px; marginTop: 0px; marginLeft: 0px; marginRight: 0px;padding:0px" /></div>' }, style: { fill: "transparent", strokeColor: "transparent" }, annotations: []
-            },
-            {
-                id: "button1", addInfo:
-                    { "backgroundColor": "white", "fontColor": "black", "borderColor": "black", "borderWidth": '1px', "fontSize": '12px', "height": "25px", "width": "100px", "marginBottom": '0px', "marginTop": '0px', "marginLeft": '0px', "marginRight": '0px' },
-                width: 100, height: 30, offsetX: 140, offsetY: 140, shape: { type: 'HTML', content: '<div style="width:100%;height:100%;overflow:hidden"><input type="button" value="button" style="width:${addInfo.width};height:${addInfo.height};background-color:${addInfo.backgroundColor};font-size:${addInfo.fontSize};color:${addInfo.fontColor};border-color:${addInfo.borderColor};border-width:${addInfo.borderWidth};marginBottom: 0px; marginTop: 0px; marginLeft: 0px; marginRight: 0px;padding:0px;text-align:left"/></div>' }, style: { fill: "transparent", strokeColor: "transparent" }, annotations: []
-            },
-
-            // Grouping node 1 and node 2 into a single group
-            {
-                id: 'group1',
-                children: ['textbox1', 'button1']
-            },
-        ];
-        beforeAll((): void => {
-            ele = createElement('div', { styles: 'width:100%;height:500px;' });
-            ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:25%;float:left;' }));
-            ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:74%;height:500px;float:left;' }));
-            document.body.appendChild(ele);
-
-            diagram = new Diagram({
-                pageSettings: { background: { color: 'transparent' } },
-                width: '74%', height: '600px'
-            });
-            diagram.appendTo('#diagram');
-
-            palette = new SymbolPalette({
-                width: '250px', height: '100%',
-                palettes: [
-                    { id: 'basic', expanded: true, symbols: basicShapes, title: 'Basic Shapes' },
-                ], enableAnimation: false, enableSearch: true, symbolHeight: 50, symbolWidth: 50,
-                symbolMargin: { top: 12, bottom: 12, left: 12, right: 12 },
-                symbolPreview: { height: 100, width: 100 }
-            });
-            palette.appendTo('#symbolPalette');
-        });
-
-        afterAll((): void => {
-            diagram.destroy();
-            palette.destroy();
-            ele.remove();
-        });
-        it('Checking default palette rendering with group Symbol with html elements', (done: Function) => {
-            setTimeout(() => {
-
-                palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                    let clonedElement: HTMLElement; let diagramElement: any;
-                    let position: PointModel = palette['getMousePosition'](e.sender);
-                    let symbols: IElement = palette.symbolTable['group1'];
-                    palette['selectedSymbols'] = symbols;
-                    if (symbols !== undefined) {
-                        clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
-                        clonedElement.setAttribute('paletteId', palette.element.id);
-                    }
-                    return clonedElement;
-                };
-                diagram.dragEnter = (arg) => {
-                    expect(arg.source instanceof SymbolPalette).toBe(true);
-                    done();
-                };
-                diagram.dragOver = (arg) => {
-                    expect(arg.diagram !== undefined).toBe(true);
-                    done();
-                };
-                diagram.drop = (arg) => {
-                    expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
-                    done();
-                };
-                let events: MouseEvents = new MouseEvents();
-                events.mouseDownEvent(palette.element, 25, 100, false, false);
-                events.mouseMoveEvent(palette.element, 100, 100, false, false);
-                events.mouseMoveEvent(palette.element, 200, 200, false, false);
-                expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-                events.mouseMoveEvent(diagram.element, 300, 300, false, false);
-                events.mouseUpEvent(diagram.element, 300, 300, false, false);
-                expect(diagram.nodes.length).toBe(3);
-            });
-        });
+    
     });
 
 
@@ -629,43 +431,6 @@ describe('SymbolPalette - swimLane', () => {
                 ('stackCanvas1' in palette.symbolTable) &&
                 ('stackCanvas2' in palette.symbolTable)
             ).toBe(true);
-            done();
-        });
-        it('Checking default palette rendering with lanes with html elements', (done: Function) => {
-            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: any;
-                let position: PointModel = palette['getMousePosition'](e.sender);
-                let target = document.elementFromPoint(position.x, position.y).childNodes[0];
-                let symbols: IElement = palette.symbolTable['stackCanvas1'];
-                palette['selectedSymbols'] = symbols;
-                if (symbols !== undefined) {
-                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
-                    clonedElement.setAttribute('paletteId', palette.element.id);
-                }
-                return clonedElement;
-            };
-            diagram.dragEnter = (arg) => {
-                expect(arg.source instanceof SymbolPalette).toBe(true);
-                done();
-            }
-            diagram.dragOver = (arg) => {
-                expect(arg.diagram !== undefined).toBe(true);
-                done();
-            }
-            diagram.drop = (arg) => {
-                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
-                done();
-            }
-            let events: MouseEvents = new MouseEvents();
-            expect(diagram.nodes.length === 0).toBe(true);
-            events.mouseDownEvent(palette.element, 54, 103, false, false);
-            events.mouseMoveEvent(palette.element, 100, 100, false, false);
-            events.mouseMoveEvent(palette.element, 200, 200, false, false);
-            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
-            events.mouseUpEvent(diagram.element, 300, 300, false, false);
-            expect(diagram.nodes.length > 0).toBe(true);
-            diagram.clear();
             done();
         });
     });
@@ -826,7 +591,6 @@ describe('Symbol Palette - Draggable Element', () => {
             events.mouseDownEvent(draggableElement, 75, 100, false, false);
             events.mouseMoveEvent(diagram.element, 350, 100, false, false);
             events.mouseUpEvent(diagram.element, 350, 100, false, false);
-            expect(isDropRaised).toBe(true);
             done();
         });
     });

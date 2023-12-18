@@ -121,8 +121,10 @@ export class PagerDropDown {
         if (this.pagerCons) {
             if (this.isPageSizeAll(this.pagerModule.pageSize)) {
                 this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+                this.pagerCons.parentElement.classList.add('e-page-all');
             } else {
                 this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerDropDown');
+                this.pagerCons.parentElement.classList.remove('e-page-all');
             }
             this.pagerDropDownDiv.classList.remove('e-hide');
         }

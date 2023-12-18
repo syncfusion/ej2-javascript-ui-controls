@@ -32,13 +32,8 @@
       cursor: pointer;
       font-size: $msg-close-icon-size;
       margin: $msg-close-icon-margin;
-      padding: 0;
-      @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast') {
-        height: $msg-close-icon-size;
-      }
-      @else {
-        height: $msg-icon-size;
-      }
+      padding: $msg-close-icon-padding;
+      height: $msg-close-icon-height;
     }
 
     .e-msg-content {
@@ -90,12 +85,8 @@
     .e-msg-close-icon {
       font-size: $msg-bigger-close-icon-size;
       margin: $msg-bigger-close-icon-margin;
-      @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast') {
-        height: $msg-bigger-close-icon-size;
-      }
-      @else {
-        height: $msg-bigger-icon-size;
-      }
+      padding: $msg-bigger-close-icon-padding;
+      height: $msg-bigger-close-icon-height;
     }
 
     .e-msg-content {

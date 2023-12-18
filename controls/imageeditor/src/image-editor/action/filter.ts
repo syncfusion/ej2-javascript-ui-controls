@@ -1,6 +1,6 @@
 import { ImageEditor, ImageFinetuneOption, CurrentObject, SelectionPoint, Point, ActivePoint, Adjustment, FinetuneSettingsModel } from '../index';
-import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { FrameValue } from '../base';
+import { isNullOrUndefined, extend, isBlazor } from '@syncfusion/ej2-base';
+import { FinetuneEventArgs, FrameValue, ImageFilterEventArgs, ImageFilterOption } from '../base';
 
 export class Filter {
     private parent: ImageEditor;
@@ -11,7 +11,10 @@ export class Filter {
         exposure: 0, transparency: 100, sharpen: false, bw: false}; // for temp toolbar slider value
     private adjustmentValue: string = ''; // for internal slider value
     private isBrightnessAdjusted: boolean = false;
-    private appliedFilter: string = '';
+    private bevelFilter: string = 'none';
+    private tempAdjVal: Adjustment = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0, blur: 0,
+        exposure: 0, transparency: 100, sharpen: false, bw: false};
+    private tempFilVal: string = '';
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -65,10 +68,10 @@ export class Filter {
             this.getCurrentObj(args.value['object']);
             break;
         case 'getAdjustmentLevel':
-            if (isNullOrUndefined(this.parent.activeObj.imageTransparency)) {
+            if (isNullOrUndefined(this.parent.activeObj.opacity)) {
                 this.adjustmentLevel.transparency = 100;
             } else {
-                this.adjustmentLevel.transparency = this.parent.activeObj.imageTransparency * 100;
+                this.adjustmentLevel.transparency = this.parent.activeObj.opacity * 100;
             }
             args.value['obj']['adjustmentLevel'] = this.adjustmentLevel;
             break;
@@ -93,6 +96,18 @@ export class Filter {
                 this.isBrightnessAdjusted = false;
             }
             break;
+        case 'getBevelFilter':
+            args.value['obj']['bevelFilter'] = this.bevelFilter;
+            break;
+        case 'setBevelFilter':
+            this.bevelFilter = args.value['bevelFilter'];
+            break;
+        case 'setTempAdjVal':
+            this.tempAdjVal = extend({}, this.adjustmentLevel, {}, true) as Adjustment;
+            break;
+        case 'setTempFilVal':
+            this.tempFilVal = this.parent.currentFilter;
+            break;
         case 'reset':
             this.reset();
             break;
@@ -114,41 +129,22 @@ export class Filter {
         this.tempAdjustmentLevel = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0,
             blur: 0, exposure: 0, transparency: 100, sharpen: false, bw: false};
         this.adjustmentValue = this.parent.getDefaultFilter();
-        this.isBrightnessAdjusted =  false; this.appliedFilter = '';
+        this.isBrightnessAdjusted =  false; this.bevelFilter = 'none'; this.tempFilVal = '';
+        this.tempAdjVal = {brightness: 0, contrast: 0, hue: 0, opacity: 100, saturation: 0,
+            blur: 0, exposure: 0, transparency: 100, sharpen: false, bw: false};
     }
 
     private updateFinetunes(): void {
         const parent: ImageEditor = this.parent;
         const fs: FinetuneSettingsModel = parent.finetuneSettings;
         if (fs) {
-            if (fs.brightness) {
-                this.adjustmentLevel.brightness = fs.brightness.defaultValue;
-                this.tempAdjustmentLevel.brightness = fs.brightness.defaultValue;
-            }
-            if (fs.contrast) {
-                this.adjustmentLevel.contrast = fs.contrast.defaultValue;
-                this.tempAdjustmentLevel.contrast = fs.contrast.defaultValue;
-            }
-            if (fs.hue) {
-                this.adjustmentLevel.hue = fs.hue.defaultValue;
-                this.tempAdjustmentLevel.hue = fs.hue.defaultValue;
-            }
-            if (fs.saturation) {
-                this.adjustmentLevel.saturation = fs.saturation.defaultValue;
-                this.tempAdjustmentLevel.saturation = fs.saturation.defaultValue;
-            }
-            if (fs.exposure) {
-                this.adjustmentLevel.exposure = fs.exposure.defaultValue;
-                this.tempAdjustmentLevel.exposure = fs.exposure.defaultValue;
-            }
-            if (fs.opacity) {
-                this.adjustmentLevel.opacity = fs.opacity.defaultValue;
-                this.tempAdjustmentLevel.opacity = fs.opacity.defaultValue;
-            }
-            if (fs.blur) {
-                this.adjustmentLevel.blur = fs.blur.defaultValue;
-                this.tempAdjustmentLevel.blur = fs.blur.defaultValue;
-            }
+            const propertiesToSet: string[] = ['brightness', 'contrast', 'hue', 'saturation', 'exposure', 'opacity', 'blur'];
+            propertiesToSet.forEach((property: string) => {
+                if (fs[property as string]) {
+                    this.adjustmentLevel[property as string] = fs[property as string].defaultValue;
+                    this.tempAdjustmentLevel[property as string] = fs[property as string].defaultValue;
+                }
+            });
             parent.notify('draw', { prop: 'isInitialLoading', onPropertyChange: false, value: { isInitialLoading: true } });
         }
     }
@@ -167,9 +163,7 @@ export class Filter {
         const parent: ImageEditor = this.parent;
         this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
         let splitWords: string[] = this.lowerContext.filter.split(' ');
-        let values: string[] = []; let opacityValue: number; let brightnessValue: number;
-        if (splitWords[4]) {opacityValue = parseFloat(splitWords[4].split('(')[1]); }
-        if (splitWords[0]) {brightnessValue = parseFloat(splitWords[0].split('(')[1]); }
+        let values: string[] = [];
         const brightness: number = this.getFilterValue(this.adjustmentLevel.brightness);
         const excludedTypes: string[] = ['brightness', 'contrast', 'hue', 'saturation', 'exposure', 'opacity', 'blur'];
         if (excludedTypes.indexOf(type) === -1) {
@@ -188,7 +182,7 @@ export class Filter {
         let saturatePercentage: number;
         switch (type) {
         case 'brightness':
-            value = this.getFilterValue(this.adjustmentLevel.exposure) +  (value * 0.005)
+            value = this.getFilterValue(this.adjustmentLevel.exposure) +  (value * 0.005);
             splitWords[0] = 'brightness(' + value + ')';
             if (this.adjustmentLevel.brightness !== 0) {
                 value = (this.adjustmentLevel.opacity / 100) - (this.adjustmentLevel.opacity * 0.3) / 100;
@@ -216,8 +210,8 @@ export class Filter {
             if (parseFloat(splitWords[0].split('(')[1]) !== 1) {
                 value -= 0.2;
             }
+            if (value < 0) {value = 0; }
             splitWords[4] = 'opacity(' + value + ')';
-            opacityValue = value;
             this.adjustmentValue = splitWords.join(' ');
             break;
         case 'blur':
@@ -336,17 +330,35 @@ export class Filter {
             parent.notify('draw', { prop: 'setRotateZoom', onPropertyChange: false, value: {isRotateZoom: true }});
             parent.notify('draw', { prop: 'updateCurrTransState', onPropertyChange: false,
                 value: {type: 'initial', isPreventDestination: null, isRotatePan: null} });
-            this.appliedFilter = this.lowerContext.filter;
+            let tempFilter: string;
+            if (parent.frameObj.type === 'bevel') {
+                tempFilter = this.lowerContext.filter;
+                this.bevelFilter = tempFilter;
+            }
+            if (parent.transform.degree === 0 && parent.rotateFlipColl.length > 0) {
+                parent.img.destLeft += parent.panPoint.totalPannedPoint.x;
+                parent.img.destTop += parent.panPoint.totalPannedPoint.y;
+            }
+            parent.img.destLeft += parent.panPoint.totalPannedInternalPoint.x;
+            parent.img.destTop += parent.panPoint.totalPannedInternalPoint.y;
+            if (parent.transform.degree === 0) {
+                parent.notify('transform', { prop: 'setDestPointsForFlipState', onPropertyChange: false });
+            }
             parent.notify('draw', { prop: 'drawImage', onPropertyChange: false});
             parent.notify('draw', { prop: 'updateCurrTransState', onPropertyChange: false,
                 value: {type: 'reverse', isPreventDestination: null, isRotatePan: null} });
             parent.notify('draw', { prop: 'setRotateZoom', onPropertyChange: false, value: {isRotateZoom: false }});
+            if (parent.transform.degree === 0 && parent.rotateFlipColl.length > 0) {
+                parent.img.destLeft += parent.panPoint.totalPannedPoint.x;
+                parent.img.destTop += parent.panPoint.totalPannedPoint.y;
+            }
             splitWords = this.setTempFilterValue(brightness, isPreview, splitWords, type);
             if (isNullOrUndefined(isPreview)) {this.lowerContext.filter = splitWords.join(' '); }
             parent.initialAdjustmentValue = splitWords.join(' ');
-            const tempFilter: string = this.lowerContext.filter;
+            tempFilter = this.lowerContext.filter;
             this.lowerContext.filter = 'brightness(' + 1 + ') ' + 'contrast(' + 100 + '%) ' + 'hue-rotate(' + 0 + 'deg) ' +
                 'saturate(' + 100 + '%) ' + 'opacity(' + 1 + ') ' + 'blur(' + 0 + 'px) ' + 'sepia(0%) ' + 'grayscale(0%) ' + 'invert(0%)';
+            this.bevelFilter = tempFilter;
             parent.notify('shape', { prop: 'iterateObjColl', onPropertyChange: false});
             parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
                 value: {context: this.lowerContext, points: null} });
@@ -379,17 +391,7 @@ export class Filter {
 
     private getDefaultCurrentFilter(splitWords: string[]): string[] {
         const values: string[] = this.adjustmentValue.split(' ');
-        splitWords = [
-            values[0],
-            values[1],
-            values[2],
-            values[3],
-            values[4],
-            values[5],
-            'sepia(0%)',
-            'grayscale(0%)',
-            'invert(0%)'
-        ];
+        splitWords = [ values[0], values[1], values[2], values[3], values[4], values[5], 'sepia(0%)', 'grayscale(0%)', 'invert(0%)' ];
         return splitWords;
     }
 
@@ -418,12 +420,10 @@ export class Filter {
             value = this.getSaturationFilterValue(value) * 100;
             break;
         case 'opacity':
-            if (value >= 50) {value /= 100; }
-            else if (value === 40) {value = 0.45; }
-            else if (value === 30) {value = 0.40; }
-            else if (value === 20) {value = 0.35; }
-            else if (value === 10) {value = 0.30; }
-            else if (value === 0) {value = 0.25; }
+            if (value < 10) {
+                value += 1;
+            }
+            value /= 100;
             break;
         case 'blur':
             if (value !== 0) {
@@ -442,22 +442,10 @@ export class Filter {
         parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false, value: { obj: selPointCollObj } });
         prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
         this.updateAdj(type, value);
-        parent.notify('undo-redo', {
-            prop: 'updateUndoRedoColl',
-            onPropertyChange: false,
-            value: {
-                operation: type,
-                previousObj: prevObj,
-                previousObjColl: prevObj.objColl,
-                previousPointColl: prevObj.pointColl,
-                previousSelPointColl: prevObj.selPointColl,
-                previousCropObj: prevCropObj,
-                previousText: null,
-                currentText: null,
-                previousFilter: null,
-                isCircleCrop: null
-            }
-        });
+        parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false, value: { operation: type, previousObj: prevObj,
+            previousObjColl: prevObj.objColl, previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
+            previousCropObj: prevCropObj, previousText: null, currentText: null, previousFilter: null, isCircleCrop: null
+        }});
     }
 
     private setFilter(type: string): void {
@@ -472,15 +460,13 @@ export class Filter {
         prevObj.pointColl = extend([], parent.pointColl, [], true) as Point[];
         prevObj.afterCropActions = extend([], parent.afterCropActions, [], true) as string[];
         const selPointCollObj: Object = {selPointColl: null };
-        parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
-            value: {obj: selPointCollObj }});
+        parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false, value: {obj: selPointCollObj }});
         prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
         this.updateAdj(type, null);
         parent.notify('draw', { prop: 'setImageEdited', onPropertyChange: false });
         parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
-            value: {operation: type, previousObj: prevObj, previousObjColl: prevObj.objColl,
-                previousPointColl: prevObj.pointColl, previousSelPointColl: prevObj.selPointColl,
-                previousCropObj: prevCropObj, previousText: null,
+            value: {operation: type, previousObj: prevObj, previousObjColl: prevObj.objColl, previousPointColl: prevObj.pointColl,
+                previousSelPointColl: prevObj.selPointColl, previousCropObj: prevCropObj, previousText: null,
                 currentText: null, previousFilter: prevFilter, isCircleCrop: null}});
     }
 
@@ -588,6 +574,7 @@ export class Filter {
     }
 
     private setCurrAdjValue(type: string, value: number): void {
+        const parent: ImageEditor = this.parent;
         this.parent.notify('draw', { prop: 'setImageEdited', onPropertyChange: false });
         switch (type) {
         case 'brightness':
@@ -612,6 +599,8 @@ export class Filter {
             this.setFilterAdj('exposure', value);
             break;
         }
+        parent.isFinetuneBtnClick = true;
+        parent.curFinetuneObjEvent = { finetune: parent.toPascalCase(type) as ImageFinetuneOption, value: value };
     }
 
     private getCurrentObj(dummyObj?: Object): CurrentObject {
@@ -620,21 +609,25 @@ export class Filter {
         parent.notify('crop', {prop: 'getTempFlipPanPoint', value: {obj: tempFlipPanPointObj }});
         const zoomObj: Object = {previousZoomValue: null };
         parent.notify('transform', {prop: 'getPreviousZoomValue', value: {obj: zoomObj }});
+        const straightenObj: Object = {zoomFactor: null };
+        parent.notify('draw', {prop: 'getStraightenInitZoom', value: {obj: straightenObj }});
         const obj: CurrentObject = {cropZoom: 0, defaultZoom: 0, totalPannedPoint: {x: 0, y: 0}, totalPannedClientPoint: {x: 0, y: 0},
             totalPannedInternalPoint: {x: 0, y: 0}, tempFlipPanPoint: {x: 0, y: 0}, activeObj: {} as SelectionPoint,
-            rotateFlipColl: [], degree: 0, currFlipState: '', zoomFactor: 0, previousZoomValue : 0,
+            rotateFlipColl: [], degree: 0, currFlipState: '', zoomFactor: 0, previousZoomValue : 0, straighten: 0,
             destPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, frame: 'none',
             srcPoints: {startX: 0, startY: 0, width: 0, height: 0} as ActivePoint, filter : '', isBrightAdjust: this.isBrightnessAdjusted,
-            aspectWidth: null, aspectHeight: null };
+            aspectWidth: null, aspectHeight: null, straightenZoom: 0, adjustmentLevel: extend({}, this.tempAdjVal, {}, true) as Adjustment,
+            currentFilter: this.tempFilVal };
         obj.cropZoom = parent.transform.cropZoomFactor; obj.defaultZoom = parent.transform.defaultZoomFactor;
         obj.zoomFactor = parent.zoomSettings.zoomFactor; obj.previousZoomValue = zoomObj['previousZoomValue'];
+        obj.straightenZoom = straightenObj['zoomFactor'];
         obj.totalPannedPoint = extend({}, parent.panPoint.totalPannedPoint, {}, true) as Point;
         obj.totalPannedClientPoint = extend({}, parent.panPoint.totalPannedClientPoint, {}, true) as Point;
         obj.totalPannedInternalPoint = extend({}, parent.panPoint.totalPannedInternalPoint, {}, true) as Point;
         obj.tempFlipPanPoint = extend({}, tempFlipPanPointObj['point'], {}, true) as Point;
         obj.activeObj = extend({}, parent.activeObj, {}, true) as SelectionPoint;
         obj.rotateFlipColl = extend([], parent.rotateFlipColl, [], true) as string[] | number[];
-        obj.degree = parent.transform.degree;
+        obj.degree = parent.transform.degree; obj.straighten = parent.cropObj.straighten;
         obj.currFlipState = parent.transform.currFlipState;
         obj.destPoints = {startX: parent.img.destLeft, startY: parent.img.destTop, endX: 0, endY: 0,
             width: parent.img.destWidth, height: parent.img.destHeight};

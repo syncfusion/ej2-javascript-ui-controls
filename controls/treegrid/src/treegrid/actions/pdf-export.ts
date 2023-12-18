@@ -136,7 +136,7 @@ export class PdfExport {
         if (!isLocal) {
             this.parent.flatData = [];
         }
-        if (prop && prop.dataSource) {
+        if (prop && prop.dataSource && isLocal) {
             const flatDatas: Object[] = this.parent.flatData;
             const dataSrc: Object = prop.dataSource instanceof DataManager ? prop.dataSource.dataSource.json : prop.dataSource;
             this.parent.dataModule.convertToFlatData(dataSrc);
@@ -145,6 +145,7 @@ export class PdfExport {
         }
         prop = isNullOrUndefined(prop) ? {} : prop;
         prop.dataSource = new DataManager({json: <Object[]>dtSrc});
+        prop.query = args['query'];
         return prop;
     }
     /**

@@ -74,6 +74,9 @@ export class Resize implements IAction {
         const columnName: string[] = (fName === undefined || fName === null || fName.length <= 0) ?
             this.parent.getColumns().map((x: Column) => x.field) : (typeof fName === 'string') ? [fName] : fName;
         this.parent.isAutoFitColumns = true;
+        if (this.parent.enableAdaptiveUI) {
+            this.parent.element.classList.add('e-grid-autofit');
+        }
         this.findColumn(columnName);
     }
 
@@ -242,7 +245,8 @@ export class Resize implements IAction {
      */
     protected createTable(table: Element, text: Element[], tag: string): number {
         const myTableDiv: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
-        myTableDiv.className = this.parent.element.className;
+        const adaptiveClass: string = this.parent.enableAdaptiveUI ? ' e-bigger' : '';
+        myTableDiv.className = this.parent.element.className + adaptiveClass;
         myTableDiv.style.cssText = 'display: inline-block;visibility:hidden;position:absolute';
         const mySubDiv: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
         mySubDiv.className = tag;

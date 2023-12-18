@@ -303,6 +303,13 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             },
             beforeItemRender: (args: MenuEventArgs): void => {
                 this.trigger('beforeFileMenuItemRender', args);
+            },
+            created: (): void => {
+                menuObj.element.removeAttribute('tabindex');
+                const fileItem: Element = menuObj.element.querySelector('.e-menu-item');
+                if (fileItem) {
+                    fileItem.removeAttribute('tabindex');
+                }
             }
         });
         menuObj.createElement = this.createElement;

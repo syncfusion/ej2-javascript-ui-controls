@@ -3,7 +3,7 @@
  */
 import { createElement, L10n } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram'; import { BackgroundModel } from '../../../src/diagram/diagram/page-settings-model';
-import { DiagramModel, ConnectorModel, NodeModel } from '../../../src/diagram/index';
+import { DiagramModel, ConnectorModel, NodeModel, ContextMenuSettings } from '../../../src/diagram/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';

@@ -5,14 +5,14 @@
 import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';
 import { measureText, Rect, TextOption, Size, PathOption, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Chart, ILegendRegions } from '../../chart';
-import { LegendSettingsModel, LocationModel } from './legend-model';
-import { Font, Border, Margin, ContainerPadding } from '../model/base';
+import { LegendSettingsModel } from './legend-model';
+import { Font, Border, Margin, ContainerPadding, Location } from '../model/base';
 import { Theme } from '../model/theme';
-import { MarginModel, FontModel, BorderModel, ContainerPaddingModel } from '../model/base-model';
+import { MarginModel, FontModel, BorderModel, ContainerPaddingModel, LocationModel } from '../model/base-model';
 import { subtractThickness, Thickness, drawSymbol, ChartLocation, titlePositionX, getTitle, textTrim, getTextAnchor } from '../utils/helper';
 import { RectOption, textElement, stringToNumber } from '../utils/helper';
 import { removeElement, showTooltip, getElement, appendChildElement } from '../utils/helper';
-import { LegendPosition, LegendShape, ChartSeriesType, ChartShape, LegendMode } from '../../chart/utils/enum';
+import { ChartSeriesType, ChartShape, LegendMode } from '../../chart/utils/enum';
 import { Series } from '../../chart/series/chart-series';
 import { Legend } from '../../chart/legend/legend';
 import { AccumulationType } from '../../accumulation-chart/model/enum';
@@ -20,39 +20,19 @@ import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { AccumulationLegend } from '../../accumulation-chart/renderer/legend';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
 import { BulletChartLegend } from '../../bullet-chart/legend/legend';
-import { Alignment, LegendTitlePosition, TextWrap, LabelOverflow} from '../utils/enum';
+import { Alignment, LegendTitlePosition, TextWrap, LabelOverflow, LegendShape, LegendPosition} from '../utils/enum';
 import { StockChart } from '../../stock-chart';
 import { StockLegend } from '../../stock-chart/legend/legend';
-/**
- * Configures the location for the legend.
- */
-export class Location extends ChildProperty<Location>  {
-    /**
-     * X coordinate of the legend in pixels.
-     *
-     * @default 0
-     */
-
-    @Property(0)
-    public x: number;
-
-    /**
-     * Y coordinate of the legend in pixels.
-     *
-     * @default 0
-     */
-
-    @Property(0)
-    public y: number;
-}
-
+import { Chart3D } from '../../chart3d';
+import { Legend3D } from '../../chart3d/legend/legend';
+import { Chart3DLegendSettingsModel } from '../../chart3d/legend/legend-model';
 /**
  * Configures the legends in charts.
  */
 export class LegendSettings extends ChildProperty<LegendSettings> {
 
     /**
-     * If set to true, legend will be visible.
+     * If set to true, the legend will be displayed for the chart.
      *
      * @default true
      */
@@ -102,13 +82,13 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public location: LocationModel;
 
     /**
-     * Position of the legend in the chart are,
-     * * Auto: Places the legend based on area type.
+     * Position of the legend in the chart. Available options include:
+     * * Auto: Places the legend based on the area type.
      * * Top: Displays the legend at the top of the chart.
      * * Left: Displays the legend at the left of the chart.
      * * Bottom: Displays the legend at the bottom of the chart.
      * * Right: Displays the legend at the right of the chart.
-     * * Custom: Displays the legend  based on the given x and y values.
+     * * Custom: Displays the legend based on the given x and y values.
      *
      * @default 'Auto'
      */
@@ -231,7 +211,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public opacity: number;
 
     /**
-     * If set to true, series' visibility collapses based on the legend visibility.
+     * If set to true, series visibility collapses based on the legend visibility.
      *
      * @default true
      */
@@ -350,7 +330,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public isInversed: boolean;
 
     /**
-     * If `reverse` set to true, then it reverse the legend items order.
+     * If `reverse` is set to true, it reverses the order of legend items.
      *
      * @default false
      */
@@ -367,7 +347,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
 export class BaseLegend {
 
     // Internal variables
-    protected chart: Chart | AccumulationChart | BulletChart | StockChart;
+    protected chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D;;
     protected legend: LegendSettingsModel;
     protected maxItemHeight: number = 0;
     protected rowHeights: number[] = [];
@@ -396,7 +376,7 @@ export class BaseLegend {
     private accessbilityText: string;
     protected arrowWidth: number;
     protected arrowHeight: number;
-    protected library: Legend | AccumulationLegend | BulletChartLegend | StockLegend;
+    protected library: Legend | AccumulationLegend | BulletChartLegend | StockLegend | Legend3D;
     /**  @private */
     public position: LegendPosition;
     public chartRowCount : number = 1;
@@ -433,11 +413,11 @@ export class BaseLegend {
      * @private
      */
 
-    constructor(chart?: Chart | AccumulationChart | BulletChart | StockChart) {
+    constructor(chart?: Chart | AccumulationChart | BulletChart | StockChart  | Chart3D) {
         this.chart = chart;
         this.legend = chart.legendSettings;
         this.legendID = chart.element.id + '_chart_legend';
-        this.isChartControl = (chart.getModuleName () === 'chart');
+        this.isChartControl = (chart.getModuleName() === 'chart' || chart.getModuleName() === 'chart3d');
         this.isAccChartControl = (chart.getModuleName () === 'accumulationchart');
         this.isBulletChartControl = (chart.getModuleName() === 'bulletChart');
         this.isStockChartControl = (chart.getModuleName() === 'stockChart');
@@ -478,7 +458,11 @@ export class BaseLegend {
             this.legendBounds.width = stringToNumber(legend.width, availableSize.width) || rect.width;
             this.legendBounds.height = stringToNumber(legend.height || defaultValue, availableSize.height);
         }
-        this.library.getLegendBounds(availableSize, this.legendBounds, legend);
+        if (this.chart.getModuleName() === 'chart3d') {
+            (this.library as Legend3D).get3DLegendBounds(availableSize, this.legendBounds, (legend as Chart3DLegendSettingsModel));
+        } else {
+            (this.library as Legend | BulletChartLegend | AccumulationLegend | StockLegend).getLegendBounds(availableSize, this.legendBounds, legend);
+        }
         if (!this.isBulletChartControl) {
             this.legendBounds.width += (this.legend.containerPadding.left + this.legend.containerPadding.right);
             this.legendBounds.height += (this.legend.containerPadding.top + this.legend.containerPadding.bottom);
@@ -709,7 +693,7 @@ export class BaseLegend {
      */
 
     public renderLegend(
-        chart: Chart | AccumulationChart | BulletChart | StockChart, legend: LegendSettingsModel, legendBounds: Rect, redraw?: boolean
+        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D, legend: LegendSettingsModel, legendBounds: Rect, redraw?: boolean
     ): void {
         let titleHeight: number = 0; let titlePlusArrowWidth: number = 0;
         let pagingLegendBounds: Rect = new Rect(0, 0, 0, 0);
@@ -801,7 +785,7 @@ export class BaseLegend {
                 legendOption = this.legendCollections[i as number];
                 legendIndex = !this.isReverse ? count : (this.legendCollections.length - 1) -  count;
                 if (this.chart.getModuleName() === 'accumulationchart') {
-                    legendOption.fill = (this.chart as Chart || this.chart as AccumulationChart || this.chart as StockChart).visibleSeries[0].points[legendOption.pointIndex].color;
+                    legendOption.fill = (this.chart as Chart || this.chart as AccumulationChart || this.chart as StockChart || this.chart as Chart3D).visibleSeries[0].points[legendOption.pointIndex].color;
                 }
                 if (this.chart.getModuleName() === 'stockChart'){
                     legendOption.type = (this.chart as StockChart).visibleSeries[count as number].type;
@@ -814,6 +798,7 @@ export class BaseLegend {
                     if  (legendSeriesGroup) {
                         legendSeriesGroup.setAttribute('tabindex', i === 0 ? '0' : '');
                         legendSeriesGroup.setAttribute('aria-label', legend.description || (legendOption.text + ' series is ' + (legendOption.visible ? 'showing, press enter to hide the ' : 'hidden, press enter to show the ') + legendOption.text + ' series'));
+                        legendSeriesGroup.setAttribute('role', 'button');
                         legendSeriesGroup.setAttribute('aria-pressed', legendOption.visible ? 'true' : 'false');
                     }
                     this.library.getRenderPoint(legendOption, start, textPadding, previousLegend, requireLegendBounds, count, firstLegend);
@@ -848,7 +833,7 @@ export class BaseLegend {
 
     /** @private */
     private getLinearLegend(
-        legendBounds: Rect, chart: Chart | AccumulationChart | BulletChart | StockChart, legend: LegendSettingsModel, legendTranslateGroup: Element
+        legendBounds: Rect, chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D, legend: LegendSettingsModel, legendTranslateGroup: Element
     ): void {
         const xmlns: string = 'http://www.w3.org/2000/svg';
         const previousLegend: LegendOptions = this.legendCollections[0];
@@ -1048,7 +1033,7 @@ export class BaseLegend {
      */
 
     private renderLegendTitle(
-        chart: Chart | AccumulationChart | BulletChart | StockChart, legend: LegendSettingsModel, legendBounds: Rect, legendGroup: Element
+        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D, legend: LegendSettingsModel, legendBounds: Rect, legendGroup: Element
     ): void {
         const padding: number = legend.padding;
         const alignment: Alignment = legend.titleStyle.textAlignment;
@@ -1077,7 +1062,7 @@ export class BaseLegend {
      */
 
     private createLegendElements(
-        chart: Chart | AccumulationChart | BulletChart | StockChart, legendBounds: Rect, legendGroup: Element, legend: LegendSettingsModel,
+        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D, legendBounds: Rect, legendGroup: Element, legend: LegendSettingsModel,
         id: string, redraw?: boolean
     ): Element {
         const padding: number = legend.padding;
@@ -1228,7 +1213,7 @@ export class BaseLegend {
      */
 
     protected renderText(
-        chart: Chart | AccumulationChart | BulletChart | StockChart, legendOption: LegendOptions, group: Element, textOptions: TextOption,
+        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D, legendOption: LegendOptions, group: Element, textOptions: TextOption,
         i: number, legendIndex: number): void {
         const legend: LegendSettingsModel = chart.legendSettings;
         const hiddenColor: string = '#D3D3D3';
@@ -1282,7 +1267,7 @@ export class BaseLegend {
 
     // tslint:disable-next-line:max-func-body-length
     private renderPagingElements(
-        chart: Chart | AccumulationChart | BulletChart | StockChart, bounds: Rect, textOption: TextOption, legendGroup: Element): void {
+        chart: Chart | AccumulationChart | BulletChart | StockChart | Chart3D, bounds: Rect, textOption: TextOption, legendGroup: Element): void {
         const paginggroup: Element = chart.renderer.createGroup({ id: this.legendID + '_navigation' });
         const isCanvas: boolean = this.isStockChartControl ? false : (chart as Chart).enableCanvas;
         const titleHeight: number = this.isBulletChartControl ? 0 : this.legendTitleSize.height;

@@ -143,7 +143,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_linearLabel');
                 pos = path.getAttribute('x');
-                expect(pos === '41' || pos === '10'|| pos === '200').toBe(true);
+                expect(pos === '41' || pos === '10' || pos === '200').toBe(true);
             };
             progress.enableRtl = false;
             progress.minimum = 10;

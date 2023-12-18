@@ -1,6 +1,7 @@
 import { formatUnit, EventHandler, getValue, isNullOrUndefined} from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { ScrollArgs } from '../base/interface';
+import { NonWorkingDay } from '../renderer/nonworking-day';
 
 /**
  * To handle scroll event on chart and from TreeGrid
@@ -9,9 +10,13 @@ import { ScrollArgs } from '../base/interface';
  */
 export class ChartScroll {
     private parent: Gantt;
-    private element: HTMLElement;
+    public element: HTMLElement;
     private isScrolling: number;
     private isFromTreeGrid: boolean;
+    public previousCount: number = -1;
+    public isBackwardScrolled: boolean;
+    private nonworkingDayRender: NonWorkingDay;
+    private isSetScrollLeft: boolean = false;
     public previousScroll: { top: number, left: number } = { top: 0, left: 0 };
     /**
      * Constructor for the scrolling.
@@ -61,6 +66,83 @@ export class ChartScroll {
      * @returns {void} .
      * @private
      */
+    public updateContent(): void {
+        let ganttElement: HTMLElement = this.parent.element;
+        let currentCount: number = Math.round(this.element.scrollLeft / ganttElement.offsetWidth);
+        if (this.previousCount != currentCount || this.parent.timelineModule['performedTimeSpanAction']) {
+            this.deleteTableElements();
+            this.parent.timelineModule.createTimelineSeries();
+            if (this.parent.gridLines === 'Vertical' || this.parent.gridLines === 'Both') {
+                this.parent['renderChartVerticalLines']();
+            }
+            if (this.parent.dayMarkersModule) {
+                this.parent.dayMarkersModule['eventMarkerRender'].renderEventMarkers();
+            }
+            this.parent.timelineModule['performedTimeSpanAction'] = false;
+            if (this.parent.dayMarkersModule) {
+                this.parent.dayMarkersModule.nonworkingDayRender.renderWeekends();
+                this.parent.dayMarkersModule.nonworkingDayRender.renderHolidays();
+            }
+            this.updateChartElementStyles();
+            this.previousCount = currentCount;
+            if (this.isSetScrollLeft) {
+                this.parent.ganttChartModule.chartTimelineContainer.scrollLeft = this.element.scrollLeft;
+            }
+        }
+    } 
+
+    public getTimelineLeft(): number {
+        let tLeft : number;
+        let ganttElement: HTMLElement = this.parent.element;
+        let resultantWidth: number = this.parent.timelineModule.wholeTimelineWidth - ganttElement.offsetWidth * 3;
+        if (this.element.scrollLeft == (this.parent.enableRtl ? -resultantWidth : resultantWidth)) {
+            tLeft = this.element.scrollLeft;
+        } else {
+            let left: number = this.parent.enableRtl ? -this.element.scrollLeft : this.element.scrollLeft;
+            tLeft = (left > ganttElement.offsetWidth) ? left - ganttElement.offsetWidth : 0;
+        }
+        if(tLeft >= resultantWidth ){
+            tLeft = resultantWidth;
+        }
+        if((tLeft <= ganttElement.offsetWidth) && this.isBackwardScrolled){
+            tLeft = 0;
+        }
+        if (this.parent.timelineModule.isZoomToFit || this.parent.timelineModule.isZooming) {
+            tLeft = 0;
+        }
+        return tLeft;
+    }
+    
+    public deleteTableElements(): void {
+        const tableContainer: HTMLCollectionOf<Element> = this.parent.element.getElementsByClassName('e-timeline-header-table-container');
+        do {
+            tableContainer[0].remove();
+        }
+        while(tableContainer.length > 0)
+        if (this.parent.element.querySelector('#ganttContainerline-container')) {
+            this.parent.element.querySelector('#ganttContainerline-container').innerHTML = '';
+        }
+        if (this.parent.element.querySelector('.e-nonworking-day-container')) {
+            this.parent.element.querySelector('.e-nonworking-day-container').outerHTML = null;
+        }
+      }
+
+    public updateChartElementStyles(): void {
+        let translateXValue: number = this.getTimelineLeft();
+        if (this.parent.enableTimelineVirtualization) {
+            // updating connector line & task table styles
+            let dependencyViewer: HTMLElement =  this.parent.connectorLineModule.dependencyViewContainer;
+            let taskTable: HTMLElement = this.parent.chartRowsModule.taskTable;
+            if (!this.parent.enableRtl) {
+                dependencyViewer.style.left = -translateXValue + "px";
+                taskTable.style.left = -translateXValue + "px";
+            }
+            else {
+                dependencyViewer.style.left = translateXValue + "px";
+            }
+            taskTable.style.width = this.parent.timelineModule.wholeTimelineWidth + "px";
+        }
+    }
     public updateTopPosition(): void {
         const content: HTMLElement = this.parent.treeGrid.element.querySelector('.e-content');
         const contentScrollTop: number = content.scrollTop;
@@ -107,7 +189,7 @@ export class ChartScroll {
                 }
                 parent.contentHeight = parent.enableRtl ? parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
                     parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
-                document.getElementsByClassName('e-chart-rows-container')[0]['style'].height = parent.contentHeight + 'px';
+                parent.element.getElementsByClassName('e-chart-rows-container')[0]['style'].height = parent.contentHeight + 'px';
             }
         }, 0);
     }
@@ -143,22 +225,51 @@ export class ChartScroll {
             this.updateTopPosition();
         }
         if (this.element.scrollLeft !== this.previousScroll.left) {
+            this.isBackwardScrolled = (this.element.scrollLeft < this.previousScroll.left && !this.parent.enableRtl);
             this.parent.ganttChartModule.chartTimelineContainer.scrollLeft = this.element.scrollLeft;
             scrollArgs.previousScrollLeft = this.previousScroll.left;
             this.previousScroll.left = this.element.scrollLeft;
             scrollArgs.scrollLeft = this.element.scrollLeft;
             scrollArgs.scrollDirection = 'Horizontal';
             scrollArgs.action = 'HorizontalScroll';
+            if (this.parent.enableTimelineVirtualization && this.parent.timelineModule.wholeTimelineWidth > this.parent.element.offsetWidth * 3) {
+                this.isSetScrollLeft = true;
+                if (this.parent.timelineModule.totalTimelineWidth > this.parent.element.offsetWidth * 3) {
+                    this.updateContent();
+                }
+                this.parent.ganttChartModule.updateWidthAndHeight();
+                if (this.parent.element.getElementsByClassName('e-weekend-container')[0]) {
+                    this.parent.element.getElementsByClassName('e-weekend-container')[0]['style'].height = '100%';
+                }
+                if (this.parent.element.getElementsByClassName('e-holiday-container')[0]) {
+                   this.parent.element.getElementsByClassName('e-holiday-container')[0]['style'].height = '100%';
+                }
+            }
         }
-        if ((scrollArgs.scrollDirection !== 'Horizontal' && !isNullOrUndefined(scrollArgs.scrollDirection)) && this.parent.enableVirtualization === true && (this.parent.isToolBarClick
+        this.parent.timelineModule['performedTimeSpanAction'] = false;
+        if ((!isNullOrUndefined(scrollArgs.scrollDirection)) && (this.parent.enableVirtualization === true || this.parent.enableTimelineVirtualization === true) && (this.parent.isToolBarClick
             || isNullOrUndefined(this.parent.isToolBarClick))) {
             this.parent.isVirtualScroll = true;
             if (this.parent.showIndicator || isNullOrUndefined(this.parent.showIndicator)) {
                 if (!this.parent.enableVirtualMaskRow && this.parent.enableVirtualization && this.parent.loadingIndicator.indicatorType === 'Spinner') {
                     this.updateSpinner();
                 }
+                else if (this.parent.enableTimelineVirtualization && !this.parent['isRowSelected'] && Math.abs(this.element.scrollLeft - scrollArgs.previousScrollLeft) > 1000) {
+                    if (!this.parent.enableVirtualMaskRow && this.parent.loadingIndicator.indicatorType === 'Spinner') {
+                        this.updateSpinner();
+                    }
+                    else {
+                        this.parent.showMaskRow();
+                        const parent: any = this;
+                        setTimeout(function () {
+                            parent.removeShimmer();
+                        }, 0);
+                    }
+                }
+                this.parent['isRowSelected'] = false;
             }
         }
+        this.isSetScrollLeft = false;
         this.parent.isToolBarClick = true;
         scrollArgs.requestType = 'scroll';
         this.parent.trigger('actionComplete', scrollArgs);
@@ -205,9 +316,12 @@ export class ChartScroll {
         if (leftSign) {
             scrollLeft = leftSign === -1 && this.parent.enableRtl ? -scrollLeft : scrollLeft;
         }
+        this.isSetScrollLeft = true;
         this.element.scrollLeft = scrollLeft;
         this.parent.ganttChartModule.chartTimelineContainer.scrollLeft = this.element.scrollLeft;
-        this.previousScroll.left = this.element.scrollLeft;
+        if (!this.parent.enableTimelineVirtualization || (!this.parent.enableTimelineVirtualization && this.parent.timelineModule.totalTimelineWidth > this.parent.element.offsetWidth * 3)) {
+           this.previousScroll.left = this.element.scrollLeft;
+        }
     }
 
     /**

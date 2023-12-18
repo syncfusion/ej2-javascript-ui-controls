@@ -767,9 +767,9 @@ export class VerticalView extends ViewBase implements IRenderer {
         const msStartHour: number = startHour.getTime();
         const msEndHour: number = endHour.getTime();
         if (msStartHour !== msEndHour) {
-            const duration: number = this.parent.activeViewOptions.timeScale.interval / this.parent.activeViewOptions.timeScale.slotCount;
-            length = (Math.abs(msEndHour - msStartHour) / msInterval) - ((new Date(msEndHour).getTimezoneOffset()
-                - new Date(msStartHour).getTimezoneOffset()) / duration);
+            let milliSeconds: number = (startHour.getTimezoneOffset() !== endHour.getTimezoneOffset()) ?
+            (msEndHour - msStartHour) - 3600000 : (msEndHour - msStartHour);
+            length = Math.round(milliSeconds / msInterval);
         }
         if (!this.parent.activeViewOptions.timeScale.enable) {
             length = 1;

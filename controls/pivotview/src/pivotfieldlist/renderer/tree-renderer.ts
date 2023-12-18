@@ -62,7 +62,8 @@ export class TreeViewRenderer implements IAction {
                 className: cls.FIELD_TABLE_CLASS + ' ' + (this.parent.dataType === 'olap' ? cls.OLAP_FIELD_TABLE_CLASS : '')
             });
             const treeHeader: HTMLElement = createElement('div', {
-                className: cls.FIELD_HEADER_CLASS
+                className: cls.FIELD_HEADER_CLASS,
+                attrs: { title: this.parent.localeObj.getConstant('allFields') }
             });
             treeHeader.innerText = this.parent.localeObj.getConstant('allFields');
             const searchWrapper: HTMLElement = createElement('div', {

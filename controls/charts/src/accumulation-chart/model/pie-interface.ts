@@ -4,7 +4,7 @@
 import { AccumulationSeries, AccPoints } from './acc-base';
 import { AccumulationSeriesModel } from './acc-base-model';
 import { IChartEventArgs } from '../../chart/model/chart-interface';
-import { LegendShape } from '../../chart/utils/enum';
+import { LegendShape } from '../../common/utils/enum';
 import { Size } from '@syncfusion/ej2-svg-base';
 import { BorderModel, FontModel } from '../../common/model/base-model';
 import { AccumulationChart} from '../accumulation';

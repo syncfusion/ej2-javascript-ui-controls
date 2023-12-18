@@ -59,7 +59,7 @@ describe('TreeMap Component Spec', () => {
             { EmployeeID: 9, LastName: "Leverling", FirstName: "Janet", Title: "Sales Representative" }
             ] as Object) as JSON[];
             treemap.loaded = (args: ILoadedEventArgs) => {
-                let element: Element = document.getElementById(args.treemap.element.id + ' _TreeMap_Squarified_Layout');
+                let element: Element = document.getElementById(args.treemap.element.id + '_TreeMap_Squarified_Layout');
                 expect(element.childElementCount).toBeGreaterThan(1);
             };
             treemap.dataSource = new DataManager(employeesData);

@@ -229,6 +229,7 @@ export let toolsLocale: { [key: string]: string } = {
     'bulletformatlist': 'bulletFormatList',
     'undo': 'undo',
     'redo': 'redo',
+    'filemanager': 'fileManager',
     'superscript': 'superscript',
     'subscript': 'subscript',
     'createlink': 'createLink',
@@ -295,6 +296,7 @@ export let toolsLocale: { [key: string]: string } = {
     'emojiPickerTypeToFind': 'Type to find',
     'emojiPickerNoResultFound': 'No results found',
     'emojiPickerTrySomethingElse': 'Try something else',
+    'ImageLinkAriaLabel': 'Open in new window',
 };
 
 export let fontNameLocale : { [ket: string]: string }[] = [

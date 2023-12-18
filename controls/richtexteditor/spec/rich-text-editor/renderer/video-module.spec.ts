@@ -11,7 +11,7 @@ function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
 }
 
-describe('insert Video', () => {
+describe('Video Module ', () => {
 
     describe('video resize', () => {
         let rteEle: HTMLElement;
@@ -1064,11 +1064,11 @@ client side. Customer easy to edit the contents and get the HTML content for
         (<any>rteObj).videoModule.onDocumentClick(eventsArgs);
         expect(document.body.contains((<any>rteObj).videoModule.dialogObj.element)).toBe(true);
 
-            eventsArgs = { target: document.querySelector('[title="Insert Video (Ctrl+Shift+V)"]'), preventDefault: function () { } };
+            eventsArgs = { target: document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]'), preventDefault: function () { } };
             (<any>rteObj).videoModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).videoModule.dialogObj.element)).toBe(true);
 
-            eventsArgs = { target: document.querySelector('[title="Insert Video (Ctrl+Shift+V)"]').parentElement, preventDefault: function () { } };
+            eventsArgs = { target: document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]').parentElement, preventDefault: function () { } };
             (<any>rteObj).videoModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).videoModule.dialogObj.element)).toBe(true);
         });
@@ -3439,7 +3439,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         it('Check the insertVideoUrl', (done: Function) => {
             (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
             (<any>rteObj).videoModule.uploadUrl = { url: "https://www.w3schools.com/html/mov_bbb.mp4" };
-            (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Shift+V)"]')as HTMLElement).click()
+            (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
@@ -3470,7 +3470,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         it('Check the insert button - without input URL', (done: Function) => {
             (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
-            (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Shift+V)"]')as HTMLElement).click()
+            (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
             (dialogEle.querySelector('.e-video-url-wrap input#embedURL')as HTMLElement).click();
@@ -3578,7 +3578,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         it('Close the dialog while video insert', (done: Function) => {
             (<any>QTBarModule).renderQuickToolbars(rteObj.videoModule);
             (<any>rteObj).videoModule.uploadUrl = { url: "https://www.w3schools.com/html/mov_bbb.mp4" };
-            (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Shift+V)"]')as HTMLElement).click()
+            (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
             (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
             (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
@@ -3724,7 +3724,7 @@ client side. Customer easy to edit the contents and get the HTML content for
     //     });
     //     it('Check the video quick toolbar render after the insert the video', (done: Function) => {
     //         (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-    //         (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Shift+V)"]')as HTMLElement).click()
+    //         (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
     //         let dialogEle: any = rteObj.element.querySelector('.e-dialog');
     //         (dialogEle.querySelector('.e-video-url-wrap input#webURL')as HTMLElement).click();
     //         (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/mov_bbb.mp4';
@@ -3882,6 +3882,37 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj).videoModule.onKeyUp();
             expect(!isNullOrUndefined(rteObj.element.querySelector('.e-video-wrap'))).toBe(true);
             done();
+        });
+    });
+
+    describe('850567 - Browser shortcut CTRL + SHIFT + V does not work when Video module is injected', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video']
+                },
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check the browser shortcut should not open the insert dialog', () => {
+            // tslint:disable-next-line
+            const keyEvent = new KeyboardEvent("keydown", {
+                key: "V",
+                ctrlKey: true,
+                shiftKey: true,
+                bubbles: true,
+                cancelable: true,
+                code: "KeyV",
+                charCode: 86,
+                keyCode: 86,
+                which: 86
+            } as EventInit);
+            rteObj.focusIn();
+            rteObj.contentModule.getEditPanel().dispatchEvent(keyEvent);
+            expect(rteObj.element.querySelector('.e-rte-video-dialog')).toBe(null);
         });
     });
 });

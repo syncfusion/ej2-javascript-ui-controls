@@ -90,6 +90,8 @@ export class DateTimePicker extends DatePicker {
     protected moduleName: string = this.getModuleName();
     protected touchDTModule: Touch;
     protected touchDTStart: boolean;
+    private formatRegex : RegExp = /dddd|ddd|dd|d|MMMM|MMM|MM|M|yyyy|yyy|yy|y|'[^']*'|'[^']*'/g;
+    private dateFormatString : string = '';
 
     /**
      * Specifies the format of the time value that to be displayed in time popup list.
@@ -973,8 +975,9 @@ export class DateTimePicker extends DatePicker {
     private listCreation(): void {
         let dateObject: Date;
         if (this.calendarMode === 'Gregorian') {
+            this.cldrDateTimeFormat().replace(this.formatRegex, this.TimePopupFormat())
             dateObject = this.globalize.parseDate(this.inputElement.value, {
-                format: this.cldrDateTimeFormat(), type: 'datetime'
+                format: this.dateFormatString, type: 'datetime'
             });
         } else {
             dateObject = this.globalize.parseDate(this.inputElement.value, {
@@ -1006,7 +1009,7 @@ export class DateTimePicker extends DatePicker {
         if (type === 'date') {
             if (!this.readonly && this.popupWrapper) {
                 addClass([this.popupWrapper], DATETIMEPOPUPWRAPPER);
-                attributes(this.popupWrapper, { 'id': this.element.id + '_datepopup' });
+                attributes(this.popupWrapper, { 'id': this.element.id + '_options' });
             }
         } else {
             if (!this.readonly) {
@@ -1063,6 +1066,7 @@ export class DateTimePicker extends DatePicker {
                 addClass([this.inputWrapper.container], [ICONANIMATION]);
                 attributes(this.inputElement, { 'aria-expanded': 'true' });
                 attributes(this.inputElement, {  'aria-owns': this.inputElement.id + '_options'});
+                attributes(this.inputElement, {  'aria-controls': this.inputElement.id});
                 EventHandler.add(document, 'mousedown touchstart', this.documentClickHandler, this);
             }
         });
@@ -1449,6 +1453,41 @@ export class DateTimePicker extends DatePicker {
         return this.calculateStartEnd(tempStartValue, start, 'starttime');
     }
 
+    private TimePopupFormat(): any {
+        var format: string = '';
+        var formatCount: number = 0;
+        const proxy: this = this;
+        function formatValueSpecifier(formattext: string): string {
+            switch(formattext) {
+                case 'd':
+                case 'dd':
+                case 'ddd':
+                case 'dddd':
+                case 'M':
+                case 'MM':
+                case 'MMM':
+                case 'MMMM':
+                case 'y':
+                case 'yy':
+                case 'yyy':
+                case 'yyyy':
+                    if (format == '') {
+                        format = format + formattext;
+                    }
+                    else {
+                        format = format + "/" + formattext;
+                    }
+                    formatCount = formatCount + 1;
+                    break;
+            }
+            if (formatCount > 2) {
+                proxy.dateFormatString = format;
+            }
+            return format;
+        }
+        return formatValueSpecifier;
+    }
+
     private endTime(date: Date): Date {
         let tempEndValue: Date;
         let end: boolean;
@@ -1523,6 +1562,7 @@ export class DateTimePicker extends DatePicker {
             this.inputWrapper.container.classList.remove(ICONANIMATION);
             attributes(this.inputElement, { 'aria-expanded': 'false' });
             this.inputElement.removeAttribute('aria-owns');
+            this.inputElement.removeAttribute('aria-controls');
             EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
         }
     }

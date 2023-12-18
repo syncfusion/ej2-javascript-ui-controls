@@ -177,6 +177,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
                 argsData.border.color, series.opacity, series.dashArray, direction
             )
         ) as HTMLElement;
+        element.setAttribute('role', 'img');
         element.setAttribute('aria-label', point.x.toString() + ':' + point.maximum.toString()
             + ':' + point.minimum.toString() + ':' + point.lowerQuartile.toString() + ':' + point.upperQuartile.toString());
         const parentElement: Element = series.chart.renderer.createGroup({

@@ -7,6 +7,7 @@ import { IndexesModel } from '../../common/model/base-model';
 import { Chart, Series, SelectionPattern, ChartSeriesType} from '../../chart';
 import { AccumulationChart, AccumulationSeries, AccumulationType} from '../../accumulation-chart';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
+import { Chart3D } from '../../chart3d';
 
 /**
  * Selection Module handles the selection for chart.
@@ -18,8 +19,8 @@ export class BaseSelection {
     /** @private */
     public styleId: string;
     protected unselected: string;
-    protected control: Chart | AccumulationChart;
-    constructor(control: Chart | AccumulationChart) {
+    protected control: Chart | AccumulationChart | Chart3D;
+    constructor(control: Chart | AccumulationChart | Chart3D) {
         this.control = control;
     }
     /**
@@ -50,13 +51,13 @@ export class BaseSelection {
                             opacity = visibleSeries.opacity;
                             fill = this.pattern(this.control, (this.styleId.indexOf('highlight') > 0 && (this.control as AccumulationChart).highlightColor !== '') ? (this.control as AccumulationChart).highlightColor : (visibleSeries.points[i as number]).color, series.points[i as number].index, patternName, opacity);
                             pattern = '{ fill:' + fill + '}';
-                            seriesclass = series.selectionStyle || this.styleId + '_series_' + series.index + '_point_' + series.points[i as number].index + ',' + '.' +
+                            seriesclass = (series as Series | AccumulationSeries).selectionStyle || this.styleId + '_series_' + series.index + '_point_' + series.points[i as number].index + ',' + '.' +
                                 this.styleId + '_series_' + series.index + '_point_' + series.points[i as number].index + '> *';
                             if ((this.control as AccumulationChart).highlightMode === 'None' && (this.control as AccumulationChart).legendSettings.enableHighlight) {
                                 style.innerText += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (3) + ';} ';
                             }
                             pattern = (pattern.indexOf('None') > -1) ? '{fill:' + this.control.highlightColor + '!important}' : pattern;
-                            style.innerText += series.selectionStyle ? '' : '.' + seriesclass + pattern;
+                            style.innerText += (series as Series | AccumulationSeries).selectionStyle ? '' : '.' + seriesclass + pattern;
                         }
                     } else if (visibleSeries.type as ChartSeriesType && (this.control as Chart).highlightColor !== 'transparent') {
                         opacity = visibleSeries.opacity;
@@ -67,13 +68,13 @@ export class BaseSelection {
 
                     }
                 }
-                seriesclass = series.selectionStyle || this.styleId + '_series_' + series.index + ',' + '.' +
+                seriesclass = (series as Series | AccumulationSeries).selectionStyle || this.styleId + '_series_' + series.index + ',' + '.' +
                     this.styleId + '_series_' + series.index + '> *';
                 if ((this.control as Chart).highlightMode === 'None' && (this.control as Chart).legendSettings.enableHighlight) {
-                    style.innerText += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (parseFloat(series.width.toString()) + 1) + ';} ';
+                    style.innerText += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (parseFloat(((series as Series | AccumulationSeries).width ? (series as Series | AccumulationSeries).width.toString() : '0')) + 1) + ';} ';
                 }
                 pattern = (pattern.indexOf('None') > -1) ? '{}' : pattern;
-                style.innerText += series.selectionStyle ? '' : '.' + seriesclass + pattern;
+                style.innerText += (series as Series | AccumulationSeries).selectionStyle ? '' : '.' + seriesclass + pattern;
             }
             let unSelectOpacity: number = (this.control).highlightColor !== 'transparent' ? 0.3 : opacity;
             if (isNullOrUndefined((this.control as Chart).selectionModule) && (this.control as Chart).selectionMode === 'None' && (this.control as Chart).highlightColor !== '') {
@@ -113,12 +114,13 @@ export class BaseSelection {
      * @param opacity
      */
 
-    public pattern(chart: Chart | AccumulationChart, color: string, index: number, patternName: SelectionPattern, opacity: number): string {
+    public pattern(chart: Chart | AccumulationChart | Chart3D, color: string, index: number,
+                   patternName: SelectionPattern, opacity: number): string {
         const backgroundColor: string = '#ffffff';
         const svg: Element = chart.svgObject;
         const pathOptions: { [x: string]: unknown }[] = [];
         const patternGroup: { id: string, patternUnits: string } = {
-            'id': chart.element.id + '_' + patternName + '_Selection' + '_' + index, 'patternUnits': 'userSpaceOnUse' };
+            'id': chart.element.id + '_' + patternName + '_Selection' + '_' + index, 'patternUnits': 'userSpaceOnUse' };;
         const heightStr: string = 'height';
         const widthStr: string = 'width';
         const width: number = 10;
@@ -439,7 +441,7 @@ export class BaseSelection {
      * @param selectedIndexes
      */
 
-    protected checkVisibility(selectedIndexes: Indexes[], chart: Chart = null): boolean {
+    protected checkVisibility(selectedIndexes: Indexes[], chart: Chart | Chart3D = null): boolean {
         if (!selectedIndexes) {
             return false;
         }
@@ -451,8 +453,8 @@ export class BaseSelection {
             }
         }
         for (const index of uniqueSeries) {
-            if (chart != null && chart.rangeColorSettings && chart.rangeColorSettings.length > 0 &&
-                 chart.rangeColorSettings[0].colors.length > 0 ) {
+            if (chart != null && (chart as Chart).rangeColorSettings && (chart as Chart).rangeColorSettings.length > 0 &&
+            (chart as Chart).rangeColorSettings[0].colors.length > 0 ) {
                 if (this.control.series[0].visible) {
                     visible = true;
                     break;

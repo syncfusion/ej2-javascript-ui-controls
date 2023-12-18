@@ -661,6 +661,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     private focusedIndex: number = -1;
     private keyboardModule: KeyboardEvents;
     private popupKeyboardModule: KeyboardEvents;
+    private documentKeyboardModule: KeyboardEvents;
     private removeRippleEffect: Function;
     private keyConfigs: { [key: string]: string };
 
@@ -755,6 +756,12 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         this.popupKeyboardModule = new KeyboardEvents(this.popupEle, {
             keyAction: this.popupKeyActionHandler.bind(this),
             keyConfigs: { esc: 'escape' },
+            eventName: 'keydown'
+        }
+        );
+        this.documentKeyboardModule = new KeyboardEvents(document.body, {
+            keyAction: this.popupKeyActionHandler.bind(this),
+            keyConfigs: { enter: 'enter', space: 'space' },
             eventName: 'keydown'
         }
         );
@@ -958,6 +965,12 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         switch (e.action) {
         case 'esc':
             this.hidePopupEle(e);
+            break;
+        case 'enter':
+        case 'space':
+            if (this.isMenuOpen && e.target !== this.element) {
+                this.hidePopupEle(e);   
+            }
             break;
         }
     }
@@ -1568,8 +1581,10 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         this.removeRippleEffect = null;
         this.keyboardModule.destroy();
         this.popupKeyboardModule.destroy();
+        this.documentKeyboardModule.destroy();
         this.keyboardModule = null;
         this.popupKeyboardModule = null;
+        this.documentKeyboardModule = null;
         EventHandler.remove(this.popupEle, 'click', this.popupClick);
         EventHandler.remove(this.popupEle, 'mouseleave', this.popupMouseLeaveHandle);
     }

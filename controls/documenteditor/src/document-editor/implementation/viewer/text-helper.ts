@@ -340,6 +340,31 @@ export class TextHelper {
     /**
      * @private
      * @param {string} text - Specifies the text
+     * @param {FontScriptType} scriptType - Specifies the script type
+     * @returns {boolean} - Returns true if given text is unicode text.
+     */
+    public isUnicodeText(text: string, scriptType: FontScriptType): boolean {
+        let isUnicode: boolean = false;
+        if (!isNullOrUndefined(text)) {
+            for (let i: number = 0; i < text.length; i++) {
+                let temp: string = text[i];
+                if (((temp >= '\u3000' && temp <= '\u30ff') // Japanese characters
+                    || (temp >= '\uff00' && temp <= '\uffef') // Full-width roman characters and half-width katakana
+                    || (temp >= '\u4e00' && temp <= '\u9faf') //CJK unifed ideographs - Common and uncommon kanji
+                    || (temp >= '\u3400' && temp <= '\u4dbf') //CJK unified ideographs Extension A - Rare kanji
+                    || (temp >= '\uac00' && temp <= '\uffef') //Korean Hangul characters
+                    || (temp >= '\u0d80' && temp <= '\u0dff')) && scriptType !== 0) //Sinhala characters
+                {
+                    isUnicode = true;
+                    break;
+                }
+            }
+        }
+        return isUnicode;
+    }
+    /**
+     * @private
+     * @param {string} text - Specifies the text
      * @returns {RtlInfo} - Returns the text info.
      */
     public getRtlLanguage(text: string): RtlInfo {

@@ -3,7 +3,7 @@
  */
 import { Spreadsheet } from '../base/index';
 import { getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosition, completeAction } from '../common/event';
-import { insertImage, refreshImgElem, refreshImgCellObj, getRowIdxFromClientY } from '../common/event';
+import { insertImage, refreshImgCellObj, getRowIdxFromClientY } from '../common/event';
 import { Overlay, Dialog } from '../services/index';
 import { OpenOptions, overlay, dialog, BeforeImageData, BeforeImageRefreshData, addDPRValue } from '../common/index';
 import { removeClass, L10n, isUndefined, getUniqueID, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -25,7 +25,6 @@ export class SpreadsheetImage {
      */
     private addEventListener(): void {
         this.parent.on(insertImage, this.insertImage, this);
-        this.parent.on(refreshImgElem, this.refreshImgElem, this);
         this.parent.on(refreshImgCellObj, this.refreshImgCellObj, this);
         this.parent.on(createImageElement, this.createImageElement, this);
         this.parent.on(deleteImage, this.deleteImage, this);
@@ -148,13 +147,6 @@ export class SpreadsheetImage {
                 args.options.height : 300, imageWidth: args.options.width ? args.options.width : 400, imageData: args.options.src, id: id,
             sheetIndex: sheetIndex };
             this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'insertImage' });
-        }
-    }
-
-    private refreshImgElem(): void {
-        const overlayElem: HTMLElement = document.getElementsByClassName('e-ss-overlay-active')[0] as HTMLElement;
-        if (overlayElem) {
-            removeClass([overlayElem], 'e-ss-overlay-active');
         }
     }
 

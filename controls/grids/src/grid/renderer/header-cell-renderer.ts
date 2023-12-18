@@ -16,7 +16,7 @@ import { headerCellInfo } from '../base/constant';
 export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 
     public element: HTMLElement = this.parent
-        .createElement('TH', { className: 'e-headercell', attrs: { tabindex: '-1' } });
+        .createElement('TH', { className: 'e-headercell', attrs: { tabindex: '-1', role: 'columnheader' } });
     private ariaService: AriaService = new AriaService();
     private hTxtEle: Element = this.parent.createElement('span', { className: 'e-headertext' });
     private sortEle: Element = this.parent.createElement('div', { className: 'e-sortfilterdiv e-icons', attrs: {'aria-hidden': 'true'} });
@@ -140,7 +140,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             ariaAttr.grabbed = false;
             elementDesc = elementDesc.length ? elementDesc + '. ' + this.localizer.getConstant('GroupDescription') : this.localizer.getConstant('GroupDescription');
         }
-        if (this.parent.showColumnMenu) {
+        if (this.parent.showColumnMenu && column.type !== 'checkbox' && !column.template) {
             elementDesc = elementDesc.length ? elementDesc + '. ' + this.localizer.getConstant('ColumnMenuDescription') : this.localizer.getConstant('ColumnMenuDescription');
         }
         node = this.extendPrepareHeader(column, node);
@@ -188,7 +188,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             }
         }
         if (elementDesc) {
-            node.setAttribute('aria-description', elementDesc);
+            const titleElem: HTMLElement = (this.parent.createElement('span', { id: 'headerTitle-'+ column.uid , innerHTML: elementDesc, attrs: { style: 'display:none' } }));
+            node.appendChild(titleElem);
+            node.setAttribute('aria-describedby',titleElem.id);
         }
         node.setAttribute('aria-rowspan', (!isNullOrUndefined(cell.rowSpan) ? cell.rowSpan : 1).toString());
         node.setAttribute('aria-colspan', '1');

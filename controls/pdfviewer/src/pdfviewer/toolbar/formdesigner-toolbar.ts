@@ -124,22 +124,22 @@ export class FormDesignerToolbar {
                 }
                 this.adjustViewer(false);
                 // eslint-disable-next-line max-len
-
+                
                 //this.deselectAllItems();
                 if (this.pdfViewer.formFieldCollection) {
                     let filteredFields: any = this.pdfViewer.formFieldCollection.filter((field: any) => {
-                    return field.formFieldAnnotationType === 'Textbox' && field.isMultiline && field.isReadonly;
-                });
-                filteredFields.forEach((field: any) => {
-                    const resize = document.getElementById(field.id);
-                    if (resize) {
-                        (resize as HTMLElement).style.pointerEvents = 'none';
-                    }
-                });
-            }
-            this.toolbarElement.style.display = 'none';
-            this.pdfViewer.formDesignerModule.setMode("edit");
-            this.pdfViewer.designerMode = false;
+                        return field.formFieldAnnotationType === 'Textbox' && field.isMultiline && field.isReadonly;
+                    });
+                    filteredFields.forEach((field: any) => {
+                        const resize = document.getElementById(field.id);
+                        if (resize) {
+                            (resize as HTMLElement).style.pointerEvents = 'none';
+                        }
+                    });
+                }
+                this.toolbarElement.style.display = 'none';
+                this.pdfViewer.formDesignerModule.setMode("edit");
+                this.pdfViewer.designerMode = false;
                 if (!isInitialLoading) {
                     this.pdfViewer.isFormDesignerToolbarVisible = false;
                 }
@@ -323,23 +323,25 @@ export class FormDesignerToolbar {
         // eslint-disable-next-line
         let items: any[] = [];
         // eslint-disable-next-line max-len
-        items.push({ prefixIcon: 'e-pv-textbox-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_textbox', align: 'Left' });
-        items.push({ prefixIcon: 'e-pv-password-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_passwordfield', align: 'Left' });
-        items.push({ prefixIcon: 'e-pv-checkbox-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_checkbox', align: 'Left' });
-        items.push({ prefixIcon: 'e-pv-radiobutton-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_radiobutton', align: 'Left' });
-        items.push({ prefixIcon: 'e-pv-dropdown-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_dropdown', align: 'Left' });
-        items.push({ prefixIcon: 'e-pv-listbox-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_listbox', align: 'Left' });
-        items.push({ template: signTemplate, align: 'Left' });
-        items.push({ type: 'Separator', align: 'Left' });
+        items.push({ prefixIcon: 'e-pv-textbox-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_textbox', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ prefixIcon: 'e-pv-password-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_passwordfield', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ prefixIcon: 'e-pv-checkbox-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_checkbox', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ prefixIcon: 'e-pv-radiobutton-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_radiobutton', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ prefixIcon: 'e-pv-dropdown-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_dropdown', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ prefixIcon: 'e-pv-listbox-icon e-pv-icon', className: 'e-pv-annotation-shapes-container', id: this.pdfViewer.element.id + '_formdesigner_listbox', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ template: signTemplate, align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
+        items.push({ type: 'Separator', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
         // eslint-disable-next-line max-len
-        items.push({ prefixIcon: 'e-pv-annotation-delete-icon e-pv-icon', className: 'e-pv-annotation-delete-container', id: this.pdfViewer.element.id + '_formdesigner_delete', align: 'Left' });
+        items.push({ prefixIcon: 'e-pv-annotation-delete-icon e-pv-icon', className: 'e-pv-annotation-delete-container', id: this.pdfViewer.element.id + '_formdesigner_delete', align: 'Left', attr:{'tabindex': 0, 'data-tabindex': 0} });
      
-        items.push({ prefixIcon: 'e-pv-annotation-tools-close-icon e-pv-icon', className: 'e-pv-annotation-tools-close-container', id: this.pdfViewer.element.id + '_formdesigner_close', align: 'Right' });
+        items.push({ prefixIcon: 'e-pv-annotation-tools-close-icon e-pv-icon', className: 'e-pv-annotation-tools-close-container', id: this.pdfViewer.element.id + '_formdesigner_close', align: 'Right', attr:{'tabindex': 0, 'data-tabindex': 0} });
         return items;
     }
 
     private createSignContainer(): void {
         this.handWrittenSignatureItem = this.pdfViewerBase.getElement('_formfield_signature');
+        this.handWrittenSignatureItem.setAttribute('tabindex', '0');
+        this.handWrittenSignatureItem.setAttribute('data-tabindex', '0');
         // eslint-disable-next-line max-len
         this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_formfield_signature'), this.pdfViewer.localeObj.getConstant('HandwrittenSignatureDialogHeaderText'));
         // eslint-disable-next-line
@@ -478,22 +480,39 @@ export class FormDesignerToolbar {
     private afterToolbarCreation(): void {
         // eslint-disable-next-line max-len
         this.textboxItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_textbox', 'e-pv-formdesigner-textbox', this.pdfViewer.localeObj.getConstant('Textbox'));
+        this.textboxItem.setAttribute('tabindex', '0');
+        this.textboxItem.setAttribute('data-tabindex', '0');
         this.passwordItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_passwordfield', 'e-pv-formdesigner-passwordfield', this.pdfViewer.localeObj.getConstant('Password'));
+        this.passwordItem.setAttribute('tabindex', '0');
+        this.passwordItem.setAttribute('data-tabindex', '0');
         this.checkboxItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_checkbox', 'e-pv-formdesigner-checkbox', this.pdfViewer.localeObj.getConstant('Check Box'));
+        this.checkboxItem.setAttribute('tabindex', '0');
+        this.checkboxItem.setAttribute('data-tabindex', '0');
         this.radioButtonItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_radiobutton', 'e-pv-formdesigner-radiobutton', this.pdfViewer.localeObj.getConstant('Radio Button'));
+        this.radioButtonItem.setAttribute('tabindex', '0');
+        this.radioButtonItem.setAttribute('data-tabindex', '0');
         this.dropdownItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_dropdown', 'e-pv-formdesigner-dropdown', this.pdfViewer.localeObj.getConstant('Dropdown'));
+        this.dropdownItem.setAttribute('tabindex', '0');
+        this.dropdownItem.setAttribute('data-tabindex', '0');
         this.listboxItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_listbox', 'e-pv-formdesigner-listbox', this.pdfViewer.localeObj.getConstant('List Box'));
+        this.listboxItem.setAttribute('tabindex', '0');
+        this.listboxItem.setAttribute('data-tabindex', '0');
         //this.signatureItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_signature', 'e-pv-formdesigner-signature', this.pdfViewer.localeObj.getConstant('Signature'));
         this.deleteItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_delete', 'e-pv-formdesigner-delete', this.pdfViewer.localeObj.getConstant('Delete FormField'));
         
         this.closeItem = this.primaryToolbar.addClassToolbarItem('_formdesigner_close', 'e-pv-annotation-tools-close', null);
+        this.closeItem.setAttribute('tabindex', '0');
+        this.closeItem.setAttribute('data-tabindex', '0');
         this.showHideDeleteIcon(false);
         //this.enableTextMarkupAnnotationPropertiesTools(false); 
     }
 
     public showHideDeleteIcon(isEnable: boolean): void {
-        if (this.toolbar)
+        if (this.toolbar){
             this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
+            this.deleteItem.setAttribute('tabindex', isEnable ? '0' : '-1');
+            this.deleteItem.setAttribute('data-tabindex', isEnable ? '0' : '-1');
+        }
     }
     /**
      * @private

@@ -140,7 +140,7 @@ export class ExcelExport {
         if (!this.isLocal()) {
             this.parent.flatData = [];
         }
-        if (property && property.dataSource) {
+        if (property && property.dataSource && this.isLocal()) {
             const flatsData: Object[] = this.parent.flatData;
             const dataSrc: Object = property.dataSource instanceof DataManager ? property.dataSource.dataSource.json : property.dataSource;
             this.parent.dataModule.convertToFlatData(dataSrc);
@@ -149,6 +149,7 @@ export class ExcelExport {
         }
         property = isNullOrUndefined(property) ? Object() : property;
         property.dataSource = new DataManager({json: <Object[]>dtSrc});
+        property.query = args['query'];
         return property;
     }
     /**

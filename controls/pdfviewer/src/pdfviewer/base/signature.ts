@@ -512,7 +512,7 @@ export class Signature {
         }
     }
 
-    /**
+     /**
      * @param data
      * @param isSignature
      * @param currentField
@@ -585,7 +585,7 @@ export class Signature {
             return { left: signBounds.currentLeftDiff, top: signBounds.currentTopDiff, width: signBounds.currentWidth, height: signBounds.currentHeight };
         }
     }
-
+    
     private calculateSignatureBounds(signatureCavasWidth: number, signatureCavasHeight: number, newdifferenceX: number, newdifferenceY: number, isSignature: boolean, currentField: any, currentData?: any): any {
         const ratioX: number = newdifferenceX / signatureCavasWidth;
         const ratioY: number = newdifferenceY / signatureCavasHeight;
@@ -670,8 +670,11 @@ export class Signature {
             currentLeftDiff = (currentLeftDiff / signatureCavasWidth) * currentWidth;
             currentTopDiff = (currentTopDiff / signatureCavasHeight) * currentHeight;
         }
-        currentWidth = currentWidth * ratioX;
-        currentHeight = currentHeight * ratioY;
+        if(this.pdfViewer.signatureFitMode !== "Stretch")
+        {
+            currentWidth = currentWidth * ratioX;
+            currentHeight = currentHeight * ratioY;
+        }
         return { currentLeftDiff: currentLeftDiff, currentTopDiff: currentTopDiff, currentWidth: currentWidth, currentHeight: currentHeight };
     }
 
@@ -690,10 +693,10 @@ export class Signature {
         }
     }
 
-    /**
+     /**
      * @private
      */
-    public removeFocus(): void {
+     public removeFocus(): void {
         if (this.signatureFieldCollection) {
             // eslint-disable-next-line
             let signatureFields: any[] = this.signatureFieldCollection;
@@ -701,7 +704,7 @@ export class Signature {
                 signatureFields = this.getSignField();
             }
             for (let i: number = 0; i < this.signatureFieldCollection.length; i++) {
-                let signatureFieldId: string = this.pdfViewer.formDesignerModule?this.signatureFieldCollection[parseInt(i.toString(), 10)].FormField.uniqueID: this.signatureFieldCollection[parseInt(i.toString(), 10)].uniqueID;
+                let signatureFieldId: string = this.pdfViewer.formDesignerModule ? this.signatureFieldCollection[parseInt(i.toString(), 10)].FormField.uniqueID : this.signatureFieldCollection[parseInt(i.toString(), 10)].uniqueID;
                 let signatureElement: HTMLElement = document.getElementById(signatureFieldId);
                 if (signatureElement) {
                     signatureElement.classList.remove('e-pv-signature-focus');
@@ -722,7 +725,7 @@ export class Signature {
             this.signatureFieldCollection = this.getFormFieldSignField();
         } 
         return this.signatureFieldCollection;
-    }
+    } 
 
     public getFormFieldSignField(): any[] {
         // eslint-disable-next-line
@@ -742,7 +745,7 @@ export class Signature {
             }
         }
         return this.signatureFieldCollection;
-    } 
+    }
 
     private checkSaveFiledSign(initialField: boolean, saveSign: boolean) {
         if (initialField) {
@@ -779,8 +782,16 @@ export class Signature {
             const fontSize:  number =  16;
             let currentLeft: number = 0;
             let currentTop: number = 0;
-            const currentHeight: number = 65;
-            const currentWidth: number = 200;
+            let currentHeight: number = 65;
+            let currentWidth: number = 200;
+            if(!isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.height) && (this.pdfViewer.signatureFitMode === "Stretch" ))
+            {
+                currentHeight = this.pdfViewer.handWrittenSignatureSettings.height;
+            }
+            if(!isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.width) && (this.pdfViewer.signatureFitMode === "Stretch" ))
+            {
+                currentWidth = this.pdfViewer.handWrittenSignatureSettings.width;
+            }
             currentLeft = ((parseFloat(pageDiv.style.width) / 2) - (currentWidth / 2)) / zoomvalue;
             currentTop = ((parseFloat(pageDiv.style.height) / 2) - (currentHeight / 2)) / zoomvalue;
             const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
@@ -881,16 +892,30 @@ export class Signature {
             let currentHeight: number = 0; 
             let currentWidth: number = 0;
              // eslint-disable-next-line max-len
-            if(this.signatureImageHeight >= this.signatureImageWidth)
+            if(!isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.height) && (this.pdfViewer.signatureFitMode === "Stretch" ))
             {
-              currentHeight = ((this.signatureImageHeight/this.signatureImageHeight)*standardImageRatio);
-              currentWidth = ((this.signatureImageWidth/this.signatureImageHeight)*standardImageRatio);
+                currentHeight = this.pdfViewer.handWrittenSignatureSettings.height;
+            }
+            else if(this.signatureImageHeight >= this.signatureImageWidth)
+            {
+                currentHeight = ((this.signatureImageHeight/this.signatureImageHeight)*standardImageRatio);
+            }                    
+            else 
+            {
+                currentHeight = ((this.signatureImageHeight/this.signatureImageWidth)*standardImageRatio);
+            }
+            if(!isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.width) && (this.pdfViewer.signatureFitMode === "Stretch" ))
+            {
+                currentWidth = this.pdfViewer.handWrittenSignatureSettings.width;
+            }
+            else if(this.signatureImageHeight >= this.signatureImageWidth)
+            {
+                currentWidth = ((this.signatureImageWidth/this.signatureImageHeight)*standardImageRatio);
             }
             else 
             {
-              currentHeight = ((this.signatureImageHeight/this.signatureImageWidth)*standardImageRatio);
-              currentWidth = ((this.signatureImageWidth/this.signatureImageWidth)*standardImageRatio);
-            }
+                currentWidth = ((this.signatureImageWidth/this.signatureImageWidth)*standardImageRatio);
+            }             
             currentLeft = ((parseFloat(pageDiv.style.width) / 2) - (currentWidth / 2)) / zoomvalue;
             currentTop = ((parseFloat(pageDiv.style.height) / 2) - (currentHeight / 2)) / zoomvalue;
             const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
@@ -1339,9 +1364,9 @@ export class Signature {
         let items: any = [];
         if (this.pdfViewerBase.isToolbarSignClicked) {
             if (this.pdfViewerBase.isInitialField) {
-                items = this.showHideSignatureTab(this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings && this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings.displayMode, appearanceDiv, typeDiv, uploadDiv);
+                items = this.showHideSignatureTab((this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings  ? this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings : this.pdfViewer.initialDialogSettings) && (this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings ? this.pdfViewer.handWrittenSignatureSettings.initialDialogSettings.displayMode: this.pdfViewer.initialDialogSettings.displayMode), appearanceDiv, typeDiv, uploadDiv);
             } else {
-                items = this.showHideSignatureTab(this.pdfViewer.handWrittenSignatureSettings.signatureDialogSettings && this.pdfViewer.handWrittenSignatureSettings.signatureDialogSettings.displayMode, appearanceDiv, typeDiv, uploadDiv);
+                items = this.showHideSignatureTab((this.pdfViewer.handWrittenSignatureSettings.signatureDialogSettings ? this.pdfViewer.handWrittenSignatureSettings.signatureDialogSettings : this.pdfViewer.signatureDialogSettings) && (this.pdfViewer.handWrittenSignatureSettings.signatureDialogSettings ? this.pdfViewer.handWrittenSignatureSettings.signatureDialogSettings.displayMode :this.pdfViewer.signatureDialogSettings.displayMode) , appearanceDiv, typeDiv, uploadDiv);
             }
         } else {
             if (this.pdfViewerBase.isInitialField) {

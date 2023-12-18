@@ -516,8 +516,8 @@ export class Dependency {
      * @returns {void} .
      */
     private validateChildGanttRecord(parentGanttRecord: IGanttData, childGanttRecord: IGanttData): void {
-        if (this.parent.editedTaskBarItem === childGanttRecord || isNullOrUndefined(isScheduledTask(parentGanttRecord.ganttProperties))
-            || isNullOrUndefined(isScheduledTask(childGanttRecord.ganttProperties))) {
+        if (this.parent.editedTaskBarItem === childGanttRecord || (parentGanttRecord && isNullOrUndefined(isScheduledTask(parentGanttRecord.ganttProperties)))
+            || (childGanttRecord && isNullOrUndefined(isScheduledTask(childGanttRecord.ganttProperties)))) {
             return;
         }
         if (this.parent.isInPredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule ||

@@ -32,21 +32,22 @@ import { getRangeThemeColor } from './utils/theme';
 import { RangeValueType, LabelAlignment, RangeLabelIntersectAction, NavigatorPlacement } from './utils/enum';
 import { Font } from '../common/model/base';
 import { FontModel } from '../common/model/base-model';
-import { MajorGridLines, MajorTickLines, VisibleRangeModel } from '../chart/axis/axis';
+import { MajorGridLines, MajorTickLines, } from '../chart/axis/axis';
 import { MajorGridLinesModel, MajorTickLinesModel } from '../chart/axis/axis-model';
-import { SkeletonType, AxisPosition, ChartTheme } from '../chart/utils/enum';
+import { AxisPosition } from '../chart/utils/enum';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Double } from '../chart/axis/double-axis';
 import { Data } from '../common/model/data';
 import { ExportUtils } from '../common/utils/export';
-import { RangeIntervalType, ExportType } from '../common/utils/enum';
+import { RangeIntervalType, ExportType, SkeletonType, ChartTheme } from '../common/utils/enum';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { PeriodSelector } from '../common/period-selector/period-selector';
 import { AccumulationChart } from '../accumulation-chart/accumulation';
 import { IRangeSelectorRenderEventArgs, IPrintEventArgs } from '../chart/model/chart-interface';
 import { StockChart } from '../stock-chart/stock-chart';
 import { DateTimeCategory } from '../chart/axis/date-time-category-axis';
-import { PrintUtils } from '../common/utils/print'
+import { PrintUtils } from '../common/utils/print';
+import { VisibleRangeModel } from '../common/model/interface';
 
 /**
  * Range Navigator
@@ -634,7 +635,9 @@ export class RangeNavigator extends Component<HTMLElement> {
             this.renderComplete();
             this.allowServerDataBinding = true;
         });
-
+        this.element.setAttribute('tabindex', '0');
+        this.element.setAttribute('role', 'region');
+        this.element.setAttribute('aria-label', 'Range navigator' + ' Syncfusion interactive chart.');
     }
 
     /**

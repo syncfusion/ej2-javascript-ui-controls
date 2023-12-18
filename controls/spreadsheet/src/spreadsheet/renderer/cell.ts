@@ -283,6 +283,7 @@ export class CellRenderer implements ICellRenderer {
         args.cell.value = getCell(
             args.rowIdx, args.colIdx, isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() :
                 getSheet(this.parent, args.sheetIndex)).value;
+        args.cell.formula = args.cell.formula.indexOf('^+') > -1 || args.cell.formula.indexOf('&+') > -1 ?  eventArgs.value as string : args.cell.formula; // for correcting the formulas 5^+3=>5^3 and 5&+3=>5&3 while rendering like Excel.
     }
     private checkMerged(args: CellRenderArgs): boolean {
         if (args.cell && (args.cell.colSpan < 0 || args.cell.rowSpan < 0)) {

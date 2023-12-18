@@ -107,6 +107,9 @@ export class Selection {
             this.selectedRowIndexes = index;
         }
         if (this.parent.autoFocusTasks) {
+            if (this.parent.enableTimelineVirtualization) {
+                this.parent['isRowSelected'] = true;
+            }
             this.parent.ganttChartModule.updateScrollLeft(getValue('data.ganttProperties.left', args));
         }
         args.target = this.actualTarget as Element;
@@ -222,7 +225,7 @@ export class Selection {
             index = this.parent.flatData.indexOf(this.parent.currentViewData[index as number]);
             this.parent.treeGridModule.addedRecord = false
         }
-        const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('aria-rowindex'), 0) === index)[0];
+        const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('data-rowindex'), 0) === index)[0];
         let condition: boolean;
         if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
             return;
@@ -344,7 +347,7 @@ export class Selection {
         this.isSelectionFromChart = fromChart;
         if (fromChart) {
             const selectedRow: Element = closest((e.target as Element), 'tr.e-chart-row');
-            const rIndex: number = parseInt(selectedRow.getAttribute('aria-rowindex'), 10);
+            const rIndex: number = parseInt(selectedRow.getAttribute('data-rowindex'), 10);
             const isToggle: boolean = this.parent.selectionSettings.enableToggle;
             if (this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) {
                 if (!this.parent.allowTaskbarDragAndDrop || (this.parent.allowTaskbarDragAndDrop && (this.parent.rowDragAndDropModule &&
@@ -401,7 +404,7 @@ export class Selection {
         for (let i: number = 0; i < records.length; i++) {
             const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) =>
             // eslint-disable-next-line
-                parseInt(e.getAttribute('aria-rowindex'), 0) === records[i])[0];
+                parseInt(e.getAttribute('data-rowindex'), 0) === records[i])[0];
             if (!isNullOrUndefined(selectedRow)) {
                 // eslint-disable-next-line
                 this.getSelectedRowIndexes().indexOf(records[i]) > -1 ? this.addClass(selectedRow) : this.removeClass(selectedRow);

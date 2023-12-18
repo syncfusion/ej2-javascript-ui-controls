@@ -192,6 +192,27 @@ export interface SelectionSettingsModel {
 }
 
 /**
+ * Interface for a class FontFamily
+ */
+export interface FontFamilyModel {
+
+    /**
+     * Specifies default font family selection
+     *
+     * @default 'Arial'
+     */
+    default?: string;
+
+    /**
+     * Specifies default font family items
+     *
+     * @default null
+     */
+    items?: DropDownButtonItemModel[];
+
+}
+
+/**
  * Interface for a class ImageEditor
  */
 export interface ImageEditorModel extends ComponentModel{
@@ -458,6 +479,11 @@ export interface ImageEditorModel extends ComponentModel{
     selectionSettings?: SelectionSettingsModel;
 
     /**
+     * Predefine the font families that populate in font family dropdown list from the toolbar.
+     */
+    fontFamily?: FontFamilyModel;
+
+    /**
      * Event callback that is raised before an image is saved.
      *
      * @event beforeSave
@@ -587,6 +613,15 @@ export interface ImageEditorModel extends ComponentModel{
     click?: EmitType<ImageEditorClickEventArgs>
 
     /**
+     * Event callback that is raised after shape changing action is performed in an image editor. 
+     * @remarks 
+     * This event is triggered after changing stroke color, fill Color, and stroke width property for the shapes and after the shape is applied to the canvas while clicking the OK button in toolbar.
+     *
+     * @event shapeChange
+     */
+    shapeChange?: EmitType<ShapeChangeEventArgs>
+
+    /**
      * Event callback that is raised when opening the quick access toolbar.
      *
      * @event quickAccessToolbarOpen
@@ -631,10 +666,10 @@ export interface ImageEditorModel extends ComponentModel{
     quickAccessToolbarItemClick?: EmitType<ClickEventArgs>
 
     /**
-     *  Event callback that is raised while applying frames on an image. 
+     *  Event callback that is raised while applying frames on an image.
      *
      * @event frameChange
-     */ 
+     */
     frameChange?: EmitType<FrameChangeEventArgs>
 
 }

@@ -28,9 +28,11 @@ export interface ImageFinetuneValue {
     defaultValue: number;
 }
 
-/**
- * The Interface which contains the properties for zoom transition occur in the Image Editor.
- */
+/** 
+ * The Interface which contains the properties for zoom transition occur in the Image Editor. 
+ * @remarks   
+ * The `cancel` and `previousZoomFactor` properties were used for `zooming` event.   
+ */ 
 export interface ZoomEventArgs {
     /**
      * Returns the point in which the zooming action was performed.
@@ -62,7 +64,7 @@ export interface ZoomEventArgs {
     /**
      * Specifies a value that indicates whether the zooming action can be canceled in image editor.
      */
-    cancel: boolean;
+    cancel?: boolean;
 
     /**
      * Returns the type of zooming performed in the image editor.
@@ -102,9 +104,11 @@ export interface PanEventArgs {
     cancel: boolean;
 }
 
-/**
- * The Interface which contains the properties for crop transition occurs in the Image Editor.
- */
+/** 
+ * The Interface which contains the properties for crop transition occurs in the Image Editor. 
+ * @remarks 
+ * The `cancel` and `preventScaling` properties were used for `cropping` event. 
+ */  
 export interface CropEventArgs {
     /**
      * Returns the start point of the crop region.
@@ -127,17 +131,19 @@ export interface CropEventArgs {
     /**
      * Specifies whether to prevent scale-based cropping in the image editor.
      */
-    preventScaling: boolean;
+    preventScaling?: boolean;
 
     /**
      * Defines whether to cancel the cropping action of image editor.
      */
-    cancel: boolean;
+    cancel?: boolean;
 }
 
-/**
- * The Interface which contains the properties for rotate transition in the Image Editor.
- */
+/** 
+ * The Interface which contains the properties for rotate transition in the Image Editor. 
+ * @remarks 
+ * The `cancel` and `previousDegree` properties were used for `rotating` event. 
+ */ 
 export interface RotateEventArgs {
     /**
      * Returns the current degree to be rotated.
@@ -152,12 +158,14 @@ export interface RotateEventArgs {
     /**
      * Defines whether to cancel the rotating action of image editor.
      */
-    cancel: boolean;
+    cancel?: boolean;
 }
 
-/**
- * The Interface which contains the properties for flip transition in the Image Editor.
- */
+/** 
+ * The Interface which contains the properties for flip transition in the Image Editor. 
+ * @remarks 
+ * The `cancel` and `previousDirection` properties were used for `flipping` event. 
+ */  
 export interface FlipEventArgs {
     /**
      * Returns the direction(Horizontal and vertical) to be flipped.
@@ -166,17 +174,23 @@ export interface FlipEventArgs {
     /**
      * Defines the cancel option to cancel the flip action.
      */
-    cancel: boolean;
+    cancel?: boolean;
     /**
      * Returns the previous flipped direction of image.
      */
     previousDirection: string;
 }
 
-/**
- * The Interface which contains the properties for shape change in Image Editor.
- */
+/** 
+ * The Interface which contains the properties for shape change in Image Editor. 
+ * @remarks 
+ * The `cancel` and `previousShapeSettings` properties were used for `shapeChanging` event. 
+ */ 
 export interface ShapeChangeEventArgs {
+    /**
+     * Defines the cancel option to cancel the shape change action.
+     */
+    cancel?: boolean;
     /**
      * Returns the name of the action.
      */
@@ -370,6 +384,10 @@ export interface ShapeSettings {
      */
     startY: number;
     /**
+     * Returns the opacity value of the shape.
+     */
+    opacity?: number;
+    /**
      * Returns the width of the shape.
      */
     width?: number;
@@ -431,9 +449,11 @@ export interface ShapeSettings {
     imageData?: string | ImageData;
 }
 
-/**
- * Interface for filter option for the image.
- */
+/** 
+ * The interface which contains the properties for filter option for the image. 
+ * @remarks 
+ * The `cancel` property is used for `imageFiltering` event. 
+ */ 
 export interface ImageFilterEventArgs {
     /**
      * Specifies the when applying filter to an image.
@@ -442,12 +462,14 @@ export interface ImageFilterEventArgs {
     /**
      * Defines the cancel option to cancel the filter action.
      */
-    cancel: boolean;
+    cancel?: boolean;
 }
 
-/**
- * Interface for fine tunes option for the image.
- */
+/** 
+ * The interface which contains the properties for fine tunes option for the image. 
+ * @remarks 
+ * The `cancel` property is used for `finetuneValueChanging` event. 
+ */ 
 export interface FinetuneEventArgs {
     /**
      * Specifies the type of fine tunes.
@@ -460,7 +482,7 @@ export interface FinetuneEventArgs {
     /**
      * Defines the cancel option to cancel the fine tunes action.
      */
-    cancel: boolean;
+    cancel?: boolean;
 }
 
 /**
@@ -496,14 +518,16 @@ export interface ImageEditorClickEventArgs {
     point: Point;
 }
 
-/**
- * The Interface which contains the properties for resize action in the Image Editor.
- */
+/** 
+ * The Interface which contains the properties for resize action in the Image Editor. 
+ * @remarks 
+ * The `cancel`, `previousWidth`, and `previousHeight` properties were used for `resizing` event. 
+ */ 
 export interface ResizeEventArgs {
     /**
      * Defines whether to cancel the resizing action of image editor.
      */
-    cancel: boolean;
+    cancel?: boolean;
     /**
      * Returns the width of the image before resizing can be performed.
      */
@@ -557,22 +581,24 @@ export interface QuickAccessToolbarEventArgs {
     shape?: string;
 }
 
-/**
- * The Interface which contains the properties for frame action in the Image Editor.
- */
+/** 
+ * The Interface which contains the properties for frame action in the Image Editor. 
+ * @remarks 
+ * The `cancel` and `previousFrameSetting` properties were used for `frameChange` event. 
+ */
 export interface FrameChangeEventArgs {
     /**
      * Defines whether to cancel the frame changing action of image editor.
      */
-    cancel : boolean;
+    cancel?: boolean;
     /**
      * Returns the previous frame settings applied on the image.
      */
-    previousFrameSetting : FrameSettings,
+    previousFrameSetting : FrameSettings;
     /**
      * Defines the current frame settings to be applied on the image. 
      */
-    currentFrameSetting : FrameSettings
+    currentFrameSetting : FrameSettings;
 }
 
 /**
@@ -736,6 +762,10 @@ export interface CurrentObject {
     /**
      * Specifies the stroke color for the object in Image Editor.
      */
+    straightenZoom: number;
+    /**
+     * Specifies the stroke color for the object in Image Editor.
+     */
     totalPannedPoint: Point;
     /**
      * Specifies the stroke color for the object in Image Editor.
@@ -768,6 +798,10 @@ export interface CurrentObject {
     /**
      * Specifies the stroke color for the object in Image Editor.
      */
+    straighten: number;
+    /**
+     * Specifies the stroke color for the object in Image Editor.
+     */
     destPoints: ActivePoint;
     /**
      * Specifies the stroke color for the object in Image Editor.
@@ -793,6 +827,14 @@ export interface CurrentObject {
      * Specifies the frame to be drawn in the image in Image Editor.
      */
     frame: string;
+    /**
+     * Specifies the finetune value in Image Editor.
+     */
+    adjustmentLevel: Adjustment;
+    /**
+     * Specifies the selected filter value in Image Editor.
+     */
+    currentFilter: string;
     /**
      * Specifies the frame object to be drawn on the image in Image Editor.
      */
@@ -909,6 +951,10 @@ export interface TransformValue {
      * Specifies the zoomed value of image in non-selection state on the canvas.
      */
     defaultZoomFactor: number;
+    /**
+     * Specifies the straighten value of image on the canvas.
+     */
+    straighten: number;
 }
 
 /**
@@ -1037,6 +1083,14 @@ export interface Transition {
      * Specifies the circle crop value in Image Editor.
      */
     isCircleCrop?: boolean;
+    /**
+     * Specifies the finetune slider value in Image Editor.
+     */
+    adjustmentLevel?: Adjustment;
+    /**
+     * Specifies the selected filter value in Image Editor.
+     */
+    currentFilter?: string;
 }
 
 /**
@@ -1422,11 +1476,11 @@ export interface SelectionPoint {
      */
     isVerImageFlip?: boolean;
     /**
-     * Gets the image transparency value.
-     */
-    imageTransparency?: number;
-    /**
      * Gets the transform collection values.
      */
     rotateFlipColl?: any;
+    /**
+     * Gets the opacity value of image annotation.
+     */
+    opacity?: number;
 }

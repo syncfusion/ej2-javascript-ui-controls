@@ -468,6 +468,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         this.endType = new DropDownList({
             dataSource: this.getEndData(),
             popupWidth: this.getPopupWidth(),
+            floatLabelType: 'Always',
+            placeholder: this.localeObj.getConstant(END),
             enableRtl: this.enableRtl,
             index: 1,
             fields: {
@@ -802,6 +804,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     private setTemplate(): void {
         const dayData: { [key: string]: string }[] = this.getDayData('narrow');
         const fullDay: { [key: string]: string }[] = this.getDayData('wide');
+        const labelId: string = this.element.id + '_' + 'end_label';
         this.element.innerHTML = '<div class="' + HEADER + '">' +
             '<div class="' + INPUTWARAPPER + ' ' + FORMLEFT + '">' +
             '<input type="text" tabindex="0" class="' + REPEATELEMENT +
@@ -846,10 +849,9 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             '<input type="text" tabindex="0" class="' + MONTHWEEK + '"title="' + this.localeObj.getConstant('monthWeek') + '" />' +
             '</div></td></tr></table>' +
             '</div></div>' +
-            '<div class="' + INPUTWARAPPERSIDE + ' ' + ENDON + ' ' + FORMRIGHT + '">' +
-            '<div class=' + ENDONLABEL + '>' + this.localeObj.getConstant(END) + '</div>' +
+            '<div class="' + INPUTWARAPPERSIDE + ' ' + ENDON + ' ' + FORMRIGHT + '">' + 
             '<div class="' + INPUTWARAPPER + ' ' + ENDONLEFT + '">' +
-            '<input type="text" tabindex="0" class="' + ENDONELEMENT + '"title="' + this.localeObj.getConstant(END) + '" />' +
+            '<input type="text" tabindex="0" class="' + ENDONELEMENT + '" aria-labelledby="' + labelId + '"title="' + this.localeObj.getConstant(END) + '" />' +
             '</div>' +
             '<div class="' + INPUTWARAPPER + ' ' + ENDONDATE + '" >' +
             '<input type="text" tabindex="0" class="' + UNTILDATE + '"title="' + this.localeObj.getConstant(UNTIL) + '" />' +

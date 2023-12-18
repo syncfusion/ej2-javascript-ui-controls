@@ -1,14 +1,14 @@
 /**
  * Table module spec
  */
-import { addClass, Browser, closest, isNullOrUndefined } from "@syncfusion/ej2-base";
+import { addClass, Browser, closest, createElement, isNullOrUndefined } from "@syncfusion/ej2-base";
 import { RichTextEditor, dispatchEvent, DialogType } from "../../../src/rich-text-editor/index";
 import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
 import { NodeSelection } from '../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, androidUA, iPhoneUA, currentBrowserUA, ieUA } from './../render.spec';
 import { getLastTextNode } from "../../../src/common/util";
 
-describe('Table creation', () => {
+describe('Table Module', () => {
 
     describe('div content ', () => {
         let rteEle: HTMLElement;
@@ -730,7 +730,6 @@ describe('Table creation', () => {
         });
     });
 
-
     describe('table keyboard support ', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -930,6 +929,7 @@ describe('Table creation', () => {
             expect((rteObj as any).tableModule.popupObj).toBe(null);
         });
     });
+
     describe('table resize start args ', () => {
         let rteObj: RichTextEditor;
         let value: any = `<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in
@@ -967,6 +967,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             expect(rteObj.contentModule.getEditPanel().querySelector('.e-column-resize')).toBe(null);
         });
     });
+
     describe('table resizing args ', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -1005,6 +1006,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             (rteObj.tableModule as any).destroy();
         });
     });
+    
     describe('EJ2-50697 - table resizing -', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -1041,6 +1043,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             (rteObj.tableModule as any).destroy();
         });
     });
+
     describe('mobile resize', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2258,10 +2261,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 item.click();
                 let listItem: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_OrderedList') as HTMLElement;
                 listItem.click();
-                expect((window.getSelection().anchorNode as any).nextElementSibling.nodeName === 'BR').toBe(true);
-                // const anchorOffset: number = window.getSelection().anchorOffset;
-                // expect((window.getSelection().anchorNode.childNodes[anchorOffset - 1]).nodeName === 'OL').toBe(true);
-                // expect((window.getSelection().anchorNode.childNodes[anchorOffset - 1]).childNodes[0].childNodes[0].nodeName).toEqual('BR');
+                expect((window.getSelection().anchorNode as any).firstElementChild.nodeName === 'BR').toBe(true);
                 done();
             });
         });
@@ -2302,6 +2302,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             });
         });
     });
+
     describe(' Quick Toolbar showOnRightClick property testing', () => {
         let rteObj: any;
         let ele: HTMLElement;
@@ -2980,6 +2981,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 400);
         });
     });
+
     describe(" EJ2-28899: RTE text align property is not working properly in table header cell", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -3021,6 +3023,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 600);
         });
     });
+
     describe(" IPhone - iFrame alignments testing", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -3060,6 +3063,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             expect(((rteObj as any).inputElement.querySelector("p") as HTMLElement).style.textAlign === 'right').toBe(true);
         });
     });
+
     describe(" EJ2-28564:  Applying heading to table after inserting table inside another table not works properly", () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -3115,6 +3119,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 600);
         });
     });
+
     describe(" EJ2-28994 - IE table insert on new line testing", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -3167,6 +3172,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 500);
         });
     });
+
     describe(" EJ2-59189 - Images removed from list when inserting table", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -3213,6 +3219,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 500);
         });
     });
+
     describe(" EJ2-43332 - Table getting removed while using bulleting/numbering", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -3278,6 +3285,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 500);
         });
     });
+
     describe("Table cell merge - Header", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -3387,7 +3395,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
     
-     describe("Table remove rows with cell merge", () => {
+    describe("Table remove rows with cell merge", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
         beforeEach(() => {
@@ -3646,7 +3654,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             rteEle.querySelectorAll("td")[0].dispatchEvent(ev);
         });
     });
-
 
     describe("Table cell merge -multiple row -single columns", () => {
         let rteObj: RichTextEditor;
@@ -4011,7 +4018,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
-
     describe("Delete row", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -4069,6 +4075,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 400);
         });
     });
+
     describe("EJ2-46995 - Resizing a table column and dragging over another table will resize the another table column", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -4098,6 +4105,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-table-box').length === 1).toBe(true);
         });
     });
+
     describe('Inserting table from the toolbar', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -4296,6 +4304,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 400);
         });
     });
+
     describe('EJ2-49981 - ShowDialog, CloseDialog method testing', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
@@ -4458,6 +4467,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             done();
         });
     });
+
     describe('table resize', function () {
         let rteObj: RichTextEditor;
         var rteEle: HTMLElement;
@@ -4513,6 +4523,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 800);
         });
     });
+
     describe('836937 - Checking with the Mozilla Browser', function () {
         let rteObj: RichTextEditor;
         var rteEle: HTMLElement;
@@ -4549,6 +4560,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 1000);
         });
     });
+
     describe('836937 - Improve coverage for the table module in the Rich Text Editor', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -4578,6 +4590,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             expect(closest(table, 'table').nodeName == "TABLE").toBe(true)
         });  
     });
+
     describe('836937 - The read-only setting is true in the Rich Text Editor', () => {
         let rteObj : RichTextEditor;
         beforeAll(() => {
@@ -4618,6 +4631,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             expect(rteObj.readonly).toBe(true);
         });
     });
+
     describe("When you press backspace while the focus is on the tbody, the table will be deleted from the Rich Text Editor", function () {
         var rteObj :RichTextEditor;
         var keyboardEventArgs = {
@@ -4649,6 +4663,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             done();
         });
     });
+
     describe('When existing styles are present in the table, the table style gets removed.', function () {
         let rteObj : RichTextEditor;
         beforeEach(function () {
@@ -4681,6 +4696,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             },0);
         });
     });
+    
     describe('Nested list inside the table using the TAB key in the Rich Text Editor', function () {
         let rteObj : RichTextEditor;
         beforeEach(function () {
@@ -4757,6 +4773,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             },100)
         });
     });
+
     describe('Checking the table insert without the br tag', function () {
         let rteObj : RichTextEditor;
         var rteEle :any;
@@ -4794,6 +4811,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             done();
         });
     });
+
     describe('Table dialogClose event trigger testing', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
@@ -4822,6 +4840,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 100);
         });
     });
+
     describe('The cursor focuses on the previous element when you press the shift and left arrow.', function () {
         let rteObj : RichTextEditor;
         var rteEle :any;
@@ -4858,6 +4877,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             done();
         });
     });
+
     describe('Add the custom class in the table dialog through the cssClass property.', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
@@ -4881,6 +4901,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 100);
         });
     });
+
     describe('When you click the outside table dialog, the dialog will be hidden', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
@@ -4907,6 +4928,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 100);
         });
     });
+
     describe('A custom class added the button element for the table dialog', function () {
         var rteObj: RichTextEditor ;
         beforeAll(function (done) {
@@ -4931,6 +4953,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 100);
         });
     });
+
     describe('When you open the table dialog, you need to close the existing one', function () {
         var rteObj : RichTextEditor;
         beforeAll(function (done) {
@@ -4955,6 +4978,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 100);
         });
     });
+
     describe('Cursor with empty text in the table when pressing the upper arrow', function () {
         var rteObj: RichTextEditor;
         var keyboardEventArgs = {
@@ -4987,6 +5011,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             done();
         });
     });
+
     describe('Background colour applied for the selected table td element', function () {
         var rteObj: RichTextEditor;
         beforeEach(function () {
@@ -5027,6 +5052,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             done();
         });
     });
+
     describe('Table dialog popup position', function () {
         var rteObj: RichTextEditor;
         beforeEach(function () {
@@ -5061,6 +5087,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             done();
         });
     });
+
     describe('Remove the table helper element when selecting the table', function () {
         var rteObj: RichTextEditor;
         beforeEach(function () {
@@ -5096,6 +5123,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             done();
         });
     });
+
     describe('Add table element padding', function () {
         var rteEle;
         var rteObj: RichTextEditor;
@@ -5133,6 +5161,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 500);
         });
     });
+
     describe('The dialog popup is closed when set to beforeClose args.cancel to true', function () {
         var rteObj: RichTextEditor;
         beforeAll(function () {
@@ -5165,6 +5194,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 100);
         });
     });
+
     describe('When the enter key action is DIV, the inserted table next to it is a div element.', function () {
         var rteObj: RichTextEditor;
         beforeAll(function () {
@@ -5201,6 +5231,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 100);
         });
     });
+
     describe('An empty LI tag was removed while inserting the table', function () {
         var rteObj: RichTextEditor;
         beforeAll(function () {
@@ -5246,6 +5277,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 100);
         });
     });
+
     describe("When you set the table width ('300') as a string, it's converted to the PX.", function () {
         var rteObj: RichTextEditor;
         beforeAll(function () {
@@ -5272,6 +5304,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 100);
         });
     });
+
     describe("Press the enter key DIV with the empty value in the Rich Text Editor.", function () {
         var rteObj: RichTextEditor;
         beforeAll(function () {
@@ -5302,6 +5335,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             done();
         });
     });
+
     describe("Press the enter key BR with the empty value in the Rich Text Editor.", function () {
         var rteObj: RichTextEditor;
         beforeAll(function () {
@@ -5332,6 +5366,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             done();
         });
     });
+
     describe("Table last column resizing is not working when table is pasted from MS Word.", () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -5392,6 +5427,153 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             let width: any = table.querySelectorAll("tr")[0].querySelectorAll("td")[2].offsetWidth;
             (rteObj.tableModule as any).resizing({ target: reCol1, pageX: 200, pageY: 200, preventDefault: function () { } });
             expect(width).not.toEqual((table as HTMLTableElement).querySelectorAll("tr")[0].querySelectorAll("td")[2].offsetWidth);
+        });
+    });
+
+    describe('850000 - In iframe mode table popup doesnot close properly', () =>  {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['CreateTable']
+                }
+            });
+        });
+        
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('Should close the Create table popup on the edit area click', () => {
+            rteObj.focusIn();
+            (rteObj.element.querySelector('.e-toolbar-item button') as HTMLButtonElement).click();
+            expect(rteObj.element.querySelector('.e-rte-table-popup').classList.contains('e-popup-open')).toBe(true);
+            const mouseDownEvent = new MouseEvent('mousedown', { 'view': window, 'bubbles': true, 'cancelable': true });
+            rteObj.inputElement.dispatchEvent(mouseDownEvent);
+            expect(rteObj.element.querySelector('.e-rte-table-popup')).toBe(null);
+        });
+    });
+
+    describe('850230 - CTRL + SHIFT + E Does not insert the table at the current cursor position ', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let innerHTML: string = `<p class="focusNode">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href='https://ej2.syncfusion.com/home/' target='_blank'>HTML markup</a> or <a href='https://ej2.syncfusion.com/home/' target='_blank'>markdown</a> of the content</p>
+        <p><b>Toolbar</b></p>
+        <ol>
+            <li>
+                <p>The Toolbar contains commands to align the text, insert a link, insert an image, insert list, undo/redo operations, HTML view, etc </p>
+            </li>
+            <li>
+                <p>The Toolbar is fully customizable </p>
+            </li>
+        </ol>  `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check that the inserted table is in the current cursor position.', () => {
+            rteObj.focusIn();
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector("p");
+            setCursorPoint(node, 5);
+            node.focus();
+            const keyEvent = new KeyboardEvent("keydown", {
+                key: "E",
+                ctrlKey: true,
+                shiftKey: true,
+                bubbles: true,
+                cancelable: true,
+                code: "KeyE",
+                charCode: 0,
+                keyCode: 69,
+                which: 69
+            } as EventInit);
+            rteObj.contentModule.getEditPanel().dispatchEvent(keyEvent);
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            let target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            let focusNode: Element = (rteObj as any).inputElement.querySelector(".focusNode").nextSibling as Element;
+            expect(focusNode.classList.contains('e-rte-table')).toBe(true);
+        });
+    });
+
+    describe('850079 - Link and table Quick toolbar has open while .Paste the bolded link inside the table ', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let innerHTML: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 33.3333%;"><p class="MsoNormal"><b><span lang="EN-IN"><a href="https://en.wikipedia.org/wiki/Forest_ecology"><i><span class="targetSpan"style="font-size: 10.5pt; line-height: 107%; font-family: Arial, sans-serif; color: rgb(51, 102, 204); background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial;">Forest ecology</span></i></a><o:p></o:p></span></b></p></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>  `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check the number of quick toolbar open', () => {
+            rteObj.focusIn();
+            let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(clickEvent);
+            target = document.querySelector('.targetSpan');
+            setCursorPoint(target, 0);
+            target.focus();
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, ctrlKey: false };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            expect(document.querySelectorAll('.e-rte-quick-popup').length == 1).toBe(true);
+        });
+    });
+
+    describe("821533 - Table does not inserted in the selected area", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                value: `<p class="focusNode">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href='https://ej2.syncfusion.com/home/' target='_blank'>HTML markup</a> or <a href='https://ej2.syncfusion.com/home/' target='_blank'>markdown</a> of the content</p>
+                <p><b>Toolbar</b></p>`
+            });
+            rteEle = rteObj.element;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Checking that the table is inserted in the selected area', (done) => {
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector("p");
+            let nodeSelection: NodeSelection = new NodeSelection();
+            nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 3, 108);
+            node.focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            target.dispatchEvent(clickEvent);
+            let focusNode: Element = (rteObj as any).inputElement.querySelector(".focusNode").nextSibling as Element;
+            expect(focusNode.classList.contains('e-rte-table')).toBe(true);
+            done();
         });
     });
 });

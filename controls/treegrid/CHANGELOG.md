@@ -2,53 +2,7 @@
 
 ## [Unreleased]
 
-## 23.2.7 (2023-12-05)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#I517211` - Exception throws on dynamically changing the stacked column and normal column.
-- `#FB48417` - Fixed the issue where a Script Error was thrown when searching for an invalid value and when rendering empty data.
-
-## 23.2.6 (2023-11-28)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#I522828` - Fixed an issue where the Excel export datasource properties were not being applied correctly for remote data binding.
-- `#I523652` - Fixed an issue where the cell saving functionality was not working correctly after pressing enter or update in the treegrid.
-
-## 23.2.4 (2023-11-20)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#I511389` - Fixed an issue where the expand all/collapse all functionality was not working correctly when the `EnableCollapseAll` property enabled in the virtualization feature.
-- `#I507506` - Fixed an issue where the template was not rendered when using frozen columns in a treegrid.
-- `#I512641` - Fixed the issue where the header checkbox was not functioning correctly in the checkbox column.
-- `#I520059` - Fixed an issue where the clipboard functionality (Copy/Paste) on excel would paste hidden column values when selecting a row.
-
-## 23.1.43 (2023-10-31)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#I499002` - Fixed a bug where a script error would occur when editing and focusing out on a record.
-- `#I502660` - Fixed issue with external filter not working properly when using virtualization feature.
-
-## 23.1.39 (2023-10-04)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I502102` - Fixed the issue where the drop index was displaying as `Nan` when dropping a row in white space.
-
-## 23.1.36 (2023-09-15)
+## 24.1.41 (2023-12-18)
 
 ### Tree Grid
 
@@ -58,18 +12,23 @@
 
 - Added support for the new `fixed` mode within the `freeze` property of column settings. When a column is set as `fixed`, it will stay within the viewport during horizontal scrolling, enhancing the user experience with improved visibility and efficiency.
 
-#### Breaking changes
+#### Breaking Changes
 
-- Optimized the frozen columns feature in Tree Grid and thus changed the dom structure of tree grid from two table to single table architecture. Also, the following methods have been deprecated, and it's recommended to use the following alternatives instead.
+- Optimized the frozen columns feature in Tree Grid and thus changed the dom structure of tree grid from two table to single table architecture. Also, the following methods have been removed, and it's recommended to use the following alternatives instead.
 
-Deprecated Methods | Previous | Current | Suggested Alternative Methods
- ---  | --- | --- | ---
-| `getMoavableRows` | This method returns only the movable table rows `(tr's)`. | This method will return all table rows `(tr's)` of the entire table. The movable cells within the tr element can be selected using the `e-unfreeze` class. | `getRows()` |
-`getFrozenRightRows()` | This method returns only the table rows `(tr's)` from the freeze right table. | This method will return all the rows `(tr’s)` of the entire table. The frozen right cells can be selected using the `e-rightfreeze` class. | `getRows()`
-`getMovableRowByIndex()` <br> `getFrozenRightRowByIndex()` | * `getMovableRowByIndex` - select a movable row <br> *`getFrozenRightRowByIndex` - select a right freeze row. | This method will return the table row `(tr)` based on the given index. Additionally, class names for table cells `(td's)` have been separated as follows: <br> * Left-Freeze: `e-leftfreeze` <br> * Movable: `e-unfreeze` <br>  | `getRowByIndex()`
-`getMovableCellFromIndex()` <br> `getFrozenRightCellFromIndex()` |  * `getMovableCellFromIndex()` - select a particular cell in the movable table. <br> *`getFrozenRightCellFromIndex()` - select a particular cell in the right freeze table.|No change| `getCellFromIndex()`
-`getMovableDataRows()` <br> `getFrozenRightDataRows()` | These methods return the viewport data rows for the freeze, movable tables separately. | This method, will return the entire viewport data rows.| `getDataRows()`
-`getMovableColumnHeaderByIndex()` <br> `getFrozenRightColumnHeaderByIndex()` <br> `getFrozenLeftColumnHeaderByIndex()` | These methods select the movable, right freeze, and left freeze headers from the table separately. | No change | `getColumnHeaderByIndex`()
+| Removed methods  | Suggested to use alternative methods |
+|----------|----------|
+| `getMoavableRows`, `getFrozenRightRows` | `getRows` |
+| `getMovableRowByIndex`, `getFrozenRowByIndex`, `getFrozenRightRowByIndex` | `getRowByIndex` |
+| `getMovableCellFromIndex`, `getFrozenRightCellFromIndex` | `getCellFromIndex` |
+| `getMovableDataRows`, `getFrozenRightDataRows`, `getFrozenDataRows` | `getDataRows` |
+| `getAllMovableDataRows`, `getAllFrozenDataRows`, `getAllFrozenRightDataRows` | `getAllDataRows` |
+| `getMovableColumnHeaderByIndex`, `getFrozenRightColumnHeaderByIndex`, `getFrozenLeftColumnHeaderByIndex` | `getColumnHeaderByIndex` |
+| `getFrozenRightHeader`, `getMovableHeader` | `getHeaderContent` |
+| `getFrozenRightRowsObject`, `getMovableRwsObject` | `getRowsObject` |
+| `getFrozenRightHeaderTbody`, `getMovableHeaderTbody`, `getFrozenHeaderTbody` | `getContent().querySelector(‘tbody’)` |
+| `getFrozenLeftContentTbody`, `getFrozenRightContentTbody`, `getMovableContentTbody` | `getHeaderContent().querySelector(‘tbody’)` |
+| `getFrozenRightContent`, `getMovableContent` | `getContent` |
 
 ## 20.2.36 (2022-06-30)
 

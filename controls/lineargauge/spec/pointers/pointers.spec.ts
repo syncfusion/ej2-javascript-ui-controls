@@ -111,6 +111,16 @@ describe('Linear gauge control', () => {
             gauge.orientation = 'Horizontal';
             gauge.refresh();
         });
+        it('checking with marker pointer in Text', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                expect(svg != null).toBe(true);
+            };
+            gauge.axes[0].pointers[0].markerType = 'Text';
+            gauge.axes[0].pointers[0].text = 'One';
+            gauge.orientation = 'Horizontal';
+            gauge.refresh();
+        });
         it('checking with marker pointer in InvertedTriangle', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_AxisIndex_0_MarkerPointer_0');

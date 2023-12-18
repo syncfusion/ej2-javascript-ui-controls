@@ -128,7 +128,7 @@ export class Filter implements IAction {
                 const cellrender: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
                 cellrender.addCellRenderer(CellType.Filter, new FilterCellRenderer(this.parent, this.serviceLocator));
                 this.valueFormatter = this.serviceLocator.getService<IValueFormatter>('valueFormatter');
-                rowRenderer.element = this.parent.createElement('tr', { className: 'e-filterbar'});
+                rowRenderer.element = this.parent.createElement('tr', { className: 'e-filterbar', attrs: { role: 'row' } });
                 const row: Row<Column> = this.generateRow();
                 row.data = this.values;
                 this.parent.getHeaderContent().querySelector('thead:not(.e-masked-thead)').appendChild(rowRenderer.element);
@@ -174,6 +174,10 @@ export class Filter implements IAction {
     public showCustomFilter(enable: boolean): void {
         this.responsiveDialogRenderer.isCustomDialog = enable;
         this.responsiveDialogRenderer.showResponsiveDialog(this.column);
+    }
+
+    private renderResponsiveChangeAction(args: { action?: number }): void {
+        this.responsiveDialogRenderer.action = args.action;
     }
 
     /**
@@ -423,6 +427,7 @@ export class Filter implements IAction {
         this.parent.on(events.headerRefreshed, this.render, this);
         this.parent.on(events.contentReady, this.initialEnd, this);
         this.parent.on(events.filterMenuClose, this.filterMenuClose, this);
+        this.parent.on(events.renderResponsiveChangeAction, this.renderResponsiveChangeAction, this);
         this.docClickHandler = this.clickHandler.bind(this);
         EventHandler.add(document, 'click', this.docClickHandler, this);
         EventHandler.add(this.parent.element, 'mousedown', this.refreshClearIcon, this);
@@ -452,6 +457,7 @@ export class Filter implements IAction {
         this.parent.off(events.headerRefreshed, this.render);
         this.parent.off(events.filterOpen, this.columnMenuFilter);
         this.parent.off(events.filterMenuClose, this.filterMenuClose);
+        this.parent.off(events.renderResponsiveChangeAction, this.renderResponsiveChangeAction);
         this.parent.off(events.click, this.filterIconClickHandler);
         this.parent.off(events.closeFilterDialog, this.clickHandler);
         this.parent.off(events.destroy, this.destroy);
@@ -499,7 +505,7 @@ export class Filter implements IAction {
             && isNullOrUndefined(this.column.filterBarTemplate) && isNullOrUndefined(this.column.filterTemplate)) {
             filterOperator = this.getOperatorName(fieldName);
         }
-        if (filterOperator === 'like' && (filterValue as string).indexOf('%') === -1) {
+        if (filterOperator === 'like' && filterValue && (filterValue as string).indexOf('%') === -1) {
             filterValue = '%' + filterValue + '%';
         }
         if (!this.column) {
@@ -532,7 +538,6 @@ export class Filter implements IAction {
         if (this.column.type === 'number' || this.column.type === 'date') {
             this.matchCase = true;
         }
-        gObj.getColumnHeaderByField(this.column.isForeignColumn() ? this.column.field : fieldName).setAttribute('aria-filtered', 'true');
         if (filterCell && this.filterSettings.type === 'FilterBar') {
             if ((filterValue && (filterValue as string).length < 1) || (!this.filterByMethod &&
                 this.checkForSkipInput(this.column, (filterValue as string)))) {
@@ -707,7 +712,6 @@ export class Filter implements IAction {
         if (this.filterSettings.columns.length === 0 && this.parent.element.querySelector('.e-filtered')) {
             const fltrIconElement: Element[] = [].slice.call(this.parent.element.getElementsByClassName('e-filtered'));
             for (let i: number = 0, len: number = fltrIconElement.length; i < len; i++) {
-                fltrIconElement[parseInt(i.toString(), 10)].removeAttribute('aria-filtered');
                 fltrIconElement[parseInt(i.toString(), 10)].classList.remove('e-filtered');
             }
         }
@@ -768,7 +772,6 @@ export class Filter implements IAction {
         if (this.parent.filterSettings.columns.length === 0 && this.parent.element.querySelector('.e-filtered')) {
             const fltrElement: Element[] = [].slice.call(this.parent.element.getElementsByClassName('e-filtered'));
             for (let i: number = 0, len: number = fltrElement.length; i < len; i++) {
-                fltrElement[0].removeAttribute('aria-filtered');
                 fltrElement[0].classList.remove('e-filtered');
             }
         }
@@ -834,7 +837,11 @@ export class Filter implements IAction {
             actualPredicate: this.actualPredicate, localeObj: gObj.localeObj,
             isRemote: gObj.getDataModule().isRemote(), allowCaseSensitive: this.filterSettings.enableCaseSensitivity,
             isResponsiveFilter: this.parent.enableAdaptiveUI,
-            operator: this.actualPredicate[col.field] && type === 'Menu' ? this.actualPredicate[col.field][0].operator : 'equal'
+            operator: this.actualPredicate[col.field] && type === 'Menu' ? this.actualPredicate[col.field][0].operator : 'equal',
+            parentTotalDataCount: gObj.getDataModule().isRemote() && gObj.allowPaging ? gObj.pagerModule.pagerObj.totalRecordsCount :
+            gObj.getDataModule().isRemote() ? gObj.totalDataRecordsCount : (gObj.getFilteredRecords() as Object[]).length,
+            parentCurrentViewDataCount: gObj.currentViewData.length,
+            parentFilteredLocalRecords: !gObj.getDataModule().isRemote() ? (gObj.getFilteredRecords() as Object[]) : []
         };
         return options;
     }
@@ -886,7 +893,6 @@ export class Filter implements IAction {
                     }
                 }
                 const fltrElement: Element = this.parent.getColumnHeaderByField(column.field);
-                fltrElement.removeAttribute('aria-filtered');
                 if (this.filterSettings.type !== 'FilterBar' || this.parent.showColumnMenu) {
                     const iconClass: string = this.parent.showColumnMenu && column.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
                     fltrElement.querySelector(iconClass).classList.remove('e-filtered');
@@ -1335,7 +1341,8 @@ export class Filter implements IAction {
         for (let i: number = 0; i < this.checkboxPrevFilterObject.length; i++) {
             let index: number = -1;
             for (let j: number = 0; j < this.filterSettings.columns.length; j++) {
-                if (this.checkboxPrevFilterObject[parseInt(i.toString(), 10)].field === this.filterSettings.columns[parseInt(j.toString(), 10)].field) {
+                if (this.checkboxPrevFilterObject[parseInt(i.toString(), 10)].field ===
+                    this.filterSettings.columns[parseInt(j.toString(), 10)].field) {
                     index = j;
                     break;
                 }

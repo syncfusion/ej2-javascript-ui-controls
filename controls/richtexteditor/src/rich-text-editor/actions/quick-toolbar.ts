@@ -71,7 +71,7 @@ export class QuickToolbar {
             toolbarItems: items,
             mode: mode as OverflowMode,
             renderType: type,
-            cssClass: this.parent.cssClass
+            cssClass: this.parent.getCssClass()
         };
     }
 
@@ -295,6 +295,9 @@ export class QuickToolbar {
             && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
             this.hideInlineQTBar();
         }
+        if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close')) {
+            this.textQTBar.hidePopup();
+        }
     }
 
     private inlineQTBarMouseDownHandler(): void {
@@ -310,8 +313,8 @@ export class QuickToolbar {
     }
 
     private keyUpHandler(e: NotifyArgs): void {
+        const args: KeyboardEvent = e.args as KeyboardEvent;
         if (this.parent.inlineMode.enable && !Browser.isDevice) {
-            const args: KeyboardEvent = e.args as KeyboardEvent;
             if (this.parent.inlineMode.onSelection) {
                 if (this.parent.getSelection().length > 0) {
                     if ((args.ctrlKey && args.keyCode === 65) || (args.shiftKey && (args.keyCode === 33 || args.keyCode === 34 ||
@@ -323,6 +326,13 @@ export class QuickToolbar {
                 return;
             }
             this.deBounce(this.offsetX, this.offsetY, args.target as HTMLElement);
+        }
+        if (this.parent.quickToolbarSettings.text && !Browser.isDevice) {
+            if ((args.ctrlKey && args.keyCode === 65) || (args.shiftKey && (args.keyCode === 33 || args.keyCode === 34 ||
+                args.keyCode === 35 || args.keyCode === 36 || args.keyCode === 37 || args.keyCode === 38 ||
+                args.keyCode === 39 || args.keyCode === 40))) {
+                this.textQTBar.showPopup(this.offsetX, this.offsetY, args.target as HTMLElement , 'text');
+            }
         }
     }
 
@@ -486,6 +496,15 @@ export class QuickToolbar {
             if (this.videoQTBar && !hasClass(this.videoQTBar.element, 'e-popup-close')) {
                 this.videoQTBar.hidePopup();
             }
+            if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close')) {
+                this.tableQTBar.hidePopup();
+            }
+            if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close')) {
+                this.linkQTBar.hidePopup();
+            }
+            if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close')) {
+                this.textQTBar.hidePopup();
+            }
         }
     }
 
@@ -540,6 +559,9 @@ export class QuickToolbar {
      * @deprecated
      */
     public removeEventListener(): void {
+        if (this.deBouncer) {
+            clearTimeout(this.deBouncer);
+        }
         if (this.parent.isDestroyed) {
             return;
         }
@@ -560,9 +582,7 @@ export class QuickToolbar {
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.hidePopup, this.hideQuickToolbars);
-        if (this.deBouncer) {
-            clearTimeout(this.deBouncer);
-        }
+
     }
 
     /**

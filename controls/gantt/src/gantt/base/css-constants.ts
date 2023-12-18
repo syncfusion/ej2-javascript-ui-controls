@@ -25,6 +25,8 @@ export const timelineHeaderCellLabel: string = 'e-header-cell-label';
 export const weekendHeaderCell: string = 'e-weekend-header-cell';
 export const timelineSingleHeaderCell: string = 'e-timeline-single-header-cell';
 export const timelineSingleHeaderOuterDiv: string = 'e-timeline-single-header-outer-div';
+export const virtualTable: string = 'e-virtualtable';
+export const virtualTrack: string = 'e-virtualtrack';
 // Chart Rows-Class
 export const leftLabelContainer: string = 'e-left-label-container';
 export const leftLabelTempContainer: string = 'e-left-label-container e-left-label-temp-container';

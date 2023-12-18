@@ -146,7 +146,7 @@ export class TableOfContentsDialog {
 
         let showLevelDiv: HTMLDivElement = createElement('div', { className: 'e-de-toc-dlg-showlevel-div' }) as HTMLDivElement;
 
-        let showLevel: HTMLInputElement = createElement('input', { id: ownerId + '_showLevel', attrs: { 'type': 'text' } }) as HTMLInputElement;
+        let showLevel: HTMLInputElement = createElement('input', { id: ownerId + '_showLevel', attrs: { 'type': 'text' ,'aria-label':'showLevel'} }) as HTMLInputElement;
         showLevelDiv.appendChild(showLevel); showDiv.appendChild(showLevelLabelDiv); showDiv.appendChild(showLevelDiv);
         tabDivContainer.appendChild(showDiv);
         generalDiv.appendChild(tabDivContainer);
@@ -202,7 +202,7 @@ export class TableOfContentsDialog {
         });
         td3.appendChild(heading1Label);
         let td4: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-        this.heading1 = createElement('input', { id: '_heading1', className: 'e-input e-de-toc-dlg-toc-level' }) as HTMLInputElement;
+        this.heading1 = createElement('input', { id: '_heading1', className: 'e-input e-de-toc-dlg-toc-level', attrs:{'aria-label':locale.getConstant('Heading') + ' 1'}}) as HTMLInputElement;
         this.heading1.value = '1';
         this.heading1.addEventListener('keyup', this.changeStyle);
         td4.appendChild(this.heading1);
@@ -216,7 +216,7 @@ export class TableOfContentsDialog {
         });
         td5.appendChild(heading2Label);
         let td6: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-        this.heading2 = createElement('input', { id: '_heading2', className: 'e-input e-de-toc-dlg-toc-level' }) as HTMLInputElement;
+        this.heading2 = createElement('input', { id: '_heading2', className: 'e-input e-de-toc-dlg-toc-level', attrs:{'aria-label':locale.getConstant('Heading') + ' 2'} }) as HTMLInputElement;
         this.heading2.value = '2';
         this.heading2.addEventListener('keyup', this.changeStyle);
         td6.appendChild(this.heading2);
@@ -230,7 +230,7 @@ export class TableOfContentsDialog {
         });
         td7.appendChild(heading3Label);
         let td8: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-        this.heading3 = createElement('input', { id: '_heading3', className: 'e-input e-de-toc-dlg-toc-level' }) as HTMLInputElement;
+        this.heading3 = createElement('input', { id: '_heading3', className: 'e-input e-de-toc-dlg-toc-level', attrs:{'aria-label':locale.getConstant('Heading') + ' 3'} }) as HTMLInputElement;
         this.heading3.value = '3';
         this.heading3.addEventListener('keyup', this.changeStyle);
         td8.appendChild(this.heading3);
@@ -244,7 +244,7 @@ export class TableOfContentsDialog {
         });
         td9.appendChild(heading4Label);
         let td10: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-        this.heading4 = createElement('input', { id: '_heading4', className: 'e-input e-de-toc-dlg-toc-level' }) as HTMLInputElement;
+        this.heading4 = createElement('input', { id: '_heading4', className: 'e-input e-de-toc-dlg-toc-level', attrs:{'aria-label':locale.getConstant('Heading') + ' 4'} }) as HTMLInputElement;
         this.heading4.addEventListener('keyup', this.changeStyle);
         td10.appendChild(this.heading4);
         tr5.appendChild(td9); tr5.appendChild(td10);
@@ -257,7 +257,7 @@ export class TableOfContentsDialog {
         });
         td11.appendChild(heading5Label);
         let td12: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-        this.heading5 = createElement('input', { id: '_heading5', className: 'e-input e-de-toc-dlg-toc-level' }) as HTMLInputElement;
+        this.heading5 = createElement('input', { id: '_heading5', className: 'e-input e-de-toc-dlg-toc-level', attrs:{'aria-label':locale.getConstant('Heading') + ' 5'} }) as HTMLInputElement;
         this.heading5.addEventListener('keyup', this.changeStyle);
         td12.appendChild(this.heading5);
         tr6.appendChild(td11); tr6.appendChild(td12);
@@ -270,7 +270,7 @@ export class TableOfContentsDialog {
         });
         td13.appendChild(heading6Label);
         let td14: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-        this.heading6 = createElement('input', { id: '_heading6', className: 'e-input e-de-toc-dlg-toc-level' }) as HTMLInputElement;
+        this.heading6 = createElement('input', { id: '_heading6', className: 'e-input e-de-toc-dlg-toc-level', attrs:{'aria-label':locale.getConstant('Heading') + ' 6'} }) as HTMLInputElement;
         this.heading6.addEventListener('keyup', this.changeStyle);
         td14.appendChild(this.heading6);
         tr7.appendChild(td13); tr7.appendChild(td14);
@@ -283,7 +283,7 @@ export class TableOfContentsDialog {
         });
         td15.appendChild(heading7Label);
         let td16: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-        this.heading7 = createElement('input', { id: '_heading7', className: 'e-input e-de-toc-dlg-toc-level' }) as HTMLInputElement;
+        this.heading7 = createElement('input', { id: '_heading7', className: 'e-input e-de-toc-dlg-toc-level', attrs:{'aria-label':locale.getConstant('Heading') + ' 7'} }) as HTMLInputElement;
         this.heading7.addEventListener('keyup', this.changeStyle);
         td16.appendChild(this.heading7);
         tr8.appendChild(td15); tr8.appendChild(td16);
@@ -296,7 +296,7 @@ export class TableOfContentsDialog {
         });
         td17.appendChild(heading8Label);
         let td18: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-        this.heading8 = createElement('input', { id: '_heading8', className: 'e-input e-de-toc-dlg-toc-level' }) as HTMLInputElement;
+        this.heading8 = createElement('input', { id: '_heading8', className: 'e-input e-de-toc-dlg-toc-level',attrs:{'aria-label':locale.getConstant('Heading') + ' 8'} }) as HTMLInputElement;
         this.heading8.addEventListener('keyup', this.changeStyle);
         td18.appendChild(this.heading8);
         tr9.appendChild(td17); tr9.appendChild(td18);
@@ -309,7 +309,7 @@ export class TableOfContentsDialog {
         });
         td19.appendChild(heading9Label);
         let td20: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-        this.heading9 = createElement('input', { id: '_heading9', className: 'e-input e-de-toc-dlg-toc-level' }) as HTMLInputElement;
+        this.heading9 = createElement('input', { id: '_heading9', className: 'e-input e-de-toc-dlg-toc-level',attrs:{'aria-label':locale.getConstant('Heading') + ' 9'} }) as HTMLInputElement;
         this.heading9.addEventListener('keyup', this.changeStyle);
         td20.appendChild(this.heading9);
         tr10.appendChild(td19); tr10.appendChild(td20);
@@ -322,7 +322,7 @@ export class TableOfContentsDialog {
         });
         td23.appendChild(normalLabel);
         let td24: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
-        this.normal = createElement('input', { id: '_normal', className: 'e-input e-de-toc-dlg-toc-level' }) as HTMLInputElement;
+        this.normal = createElement('input', { id: '_normal', className: 'e-input e-de-toc-dlg-toc-level',attrs:{'aria-label':locale.getConstant('Normal')} }) as HTMLInputElement;
         this.normal.addEventListener('keyup', this.changeHeadingStyle);
         td24.appendChild(this.normal);
         tr12.appendChild(td23); tr12.appendChild(td24);
@@ -389,7 +389,7 @@ export class TableOfContentsDialog {
 
         let textBoxDiv: HTMLElement = createElement('div');
         rightBottomGeneralDiv.appendChild(textBoxDiv);
-        this.textBoxInput = createElement('input', { className: 'e-input'}) as HTMLInputElement;
+        this.textBoxInput = createElement('input', { className: 'e-input',attrs:{'aria-label':'Type of TOC'}}) as HTMLInputElement;
         this.textBoxInput.setAttribute('type', 'text');
         textBoxDiv.appendChild(this.textBoxInput);
 

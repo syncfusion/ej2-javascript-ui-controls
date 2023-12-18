@@ -49,6 +49,9 @@ export class BaseQuickToolbar {
 
     private appendPopupContent(): void {
         this.toolbarElement = this.parent.createElement('div', { className: classes.CLS_QUICK_TB });
+        if (this.element.classList.contains(classes.CLS_TEXT_POP)) {
+            this.toolbarElement.classList.add(classes.CLS_TEXT_QUICK_TB);
+        }
         this.element.appendChild(this.toolbarElement);
     }
 
@@ -230,7 +233,7 @@ export class BaseQuickToolbar {
                     editPanelTop = (cntEle) ? cntEle.scrollTop : 0;
                     editPanelHeight = (cntEle) ? cntEle.offsetHeight : 0;
                 }
-                if (!this.parent.inlineMode.enable && !closest(target, 'table') && type !== 'text') {
+                if ((!this.parent.inlineMode.enable && !closest(target, 'table') && type !== 'text' && type !== 'link') || target.tagName === 'IMG') {
                     this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
                     this.parent.enableToolbarItem(['Undo', 'Redo']);
                 }
@@ -376,7 +379,18 @@ export class BaseQuickToolbar {
             tbItems: this.quickTBarObj.toolbarObj.items
         };
         setToolbarStatus(options, true, this.parent);
-        if (!select('.e-rte-srctextarea', this.parent.element)) {
+        if (this.parent.quickToolbarSettings.text && this.parent.quickToolbarModule.textQTBar) {
+            const options: ISetToolbarStatusArgs = {
+                args: args,
+                dropDownModule: this.parent.quickToolbarModule.textQTBar.dropDownButtons,
+                parent: this.parent,
+                tbElements: selectAll('.' + classes.CLS_TB_ITEM, this.parent.quickToolbarModule.textQTBar.element),
+                tbItems: this.parent.quickToolbarModule.textQTBar.quickTBarObj.toolbarObj.items
+            };
+            setToolbarStatus(options, true, this.parent);
+            updateUndoRedoStatus(this.parent.quickToolbarModule.textQTBar.quickTBarObj, this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
+        }
+        if (!select('.'+ classes.CLS_RTE_SOURCE_CODE_TXTAREA, this.parent.element)) {
             updateUndoRedoStatus(this.parent.getBaseToolbarObject(), this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
         }
     }
@@ -409,7 +423,7 @@ export class BaseQuickToolbar {
         }
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
-        if (this.parent.inlineMode.enable) {
+        if (this.parent.inlineMode.enable || this.parent.quickToolbarSettings.text) {
             this.parent.on(events.toolbarUpdated, this.updateStatus, this);
         }
     }
@@ -449,7 +463,7 @@ export class BaseQuickToolbar {
         }
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
-        if (this.parent.inlineMode.enable) {
+        if (this.parent.inlineMode.enable || this.parent.quickToolbarSettings.text) {
             this.parent.off(events.toolbarUpdated, this.updateStatus);
         }
     }

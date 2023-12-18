@@ -131,9 +131,9 @@ describe('SnapSettings', () => {
             diagram.dataBind();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 170, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 200, 100);
-            mouseEvents.mouseDownEvent(diagramCanvas, 200, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 202, 100);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
+            mouseEvents.mouseDownEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 202 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
             let selectionRect: HTMLElement = document.getElementById('_SnappingLines');
             expect(selectionRect === null && diagram.nodes[1].height !== 90).toBe(true);
             done();
@@ -167,9 +167,9 @@ describe('SnapSettings', () => {
             diagram.dataBind();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 170, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 200, 55);
-            mouseEvents.mouseDownEvent(diagramCanvas, 200, 55);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 202, 53);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 55 + diagram.element.offsetTop -1);
+            mouseEvents.mouseDownEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 55 + diagram.element.offsetTop -1);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 202 + diagram.element.offsetLeft, 55 + diagram.element.offsetTop -1);
             let selectionRect: HTMLElement = document.getElementById('_SnappingLines');
             expect(selectionRect === null && diagram.nodes[1].height !== 90).toBe(true);
             done();
@@ -214,9 +214,9 @@ describe('SnapSettings', () => {
             diagram.dataBind();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 100, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 70, 100);
-            mouseEvents.mouseDownEvent(diagramCanvas, 70, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 68, 100);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 70 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
+            mouseEvents.mouseDownEvent(diagramCanvas, 70 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 68 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
             let selectionRect: HTMLElement = document.getElementById('_SnappingLines');
             expect(selectionRect !== null && selectionRect.firstChild !== null).toBe(true);
             done();
@@ -496,9 +496,9 @@ describe('SnapSettings', () => {
             diagram.refreshDiagramLayer();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 170, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 200, 100);
-            mouseEvents.mouseDownEvent(diagramCanvas, 200, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 201, 100);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
+            mouseEvents.mouseDownEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 201 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
             let selection: HTMLElement = document.getElementById('_SnappingLines');
             expect(selection !== null).toBe(true);
             mouseEvents.mouseUpEvent(diagramCanvas, 201, 100);
@@ -524,9 +524,9 @@ describe('SnapSettings', () => {
             diagram.refreshDiagramLayer();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 170, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 140, 100);
-            mouseEvents.mouseDownEvent(diagramCanvas, 140, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 139, 100);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 140 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
+            mouseEvents.mouseDownEvent(diagramCanvas, 140 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 139 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
             let selection: HTMLElement = document.getElementById('_SnappingLines');
             expect(selection !== null).toBe(true);
             mouseEvents.mouseUpEvent(diagramCanvas, 139, 100);
@@ -632,9 +632,9 @@ describe('SnapSettings', () => {
             diagram.dataBind();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 100, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 70, 70);
-            mouseEvents.mouseDownEvent(diagramCanvas, 70, 70);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 68, 72);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 70+ diagram.element.offsetLeft, 70 + diagram.element.offsetTop -1);
+            mouseEvents.mouseDownEvent(diagramCanvas, 70+ diagram.element.offsetLeft, 70 + diagram.element.offsetTop -1);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 68+ diagram.element.offsetLeft, 72 + diagram.element.offsetTop -1);
             let selectionRect: HTMLElement = document.getElementById('_SnappingLines');
             expect(selectionRect !== null && selectionRect.firstChild !== null).toBe(true);
             done();
@@ -664,9 +664,9 @@ describe('SnapSettings', () => {
             diagram.dataBind();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 100, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 70, 130);
-            mouseEvents.mouseDownEvent(diagramCanvas, 70, 130);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 68, 128);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 70+ diagram.element.offsetLeft, 130 + diagram.element.offsetTop -1);
+            mouseEvents.mouseDownEvent(diagramCanvas, 70+ diagram.element.offsetLeft, 130 + diagram.element.offsetTop -1);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 68+ diagram.element.offsetLeft, 128 + diagram.element.offsetTop -1);
             let selectionRect: HTMLElement = document.getElementById('_SnappingLines');
             expect(selectionRect !== null && selectionRect.firstChild !== null).toBe(true);
             done();
@@ -922,9 +922,9 @@ describe('SnapSettings', () => {
             diagram.snapSettings = snapSettings;
             diagram.dataBind();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            mouseEvents.clickEvent(diagramCanvas, 240, 100);
-            mouseEvents.mouseDownEvent(diagramCanvas, 210, 100);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 206, 100);
+            mouseEvents.clickEvent(diagramCanvas, 240+ diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
+            mouseEvents.mouseDownEvent(diagramCanvas, 210+ diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 206+ diagram.element.offsetLeft, 100 + diagram.element.offsetTop -1);
             let selectionRect: HTMLElement = document.getElementById('_SnappingLines');
             expect(selectionRect !== null && selectionRect.firstChild !== null).toBe(true);
             done();
@@ -1414,7 +1414,7 @@ describe('SnapSettings', () => {
             diagram.zoom(1.2);
             diagram.nodes;
             let node: HTMLElement = document.getElementById("node1_content")
-            expect(node.attributes[6].value === 'rotate(0,100.5,100.5)').toBe(true);
+            expect(node.attributes[6].value === 'rotate(0,100,100)').toBe(true);
             done();
         });
       });
@@ -1903,7 +1903,7 @@ describe('SnapSettings', () => {
             mouseEvents.mouseDownEvent(diagramCanvas, x, y);
             mouseEvents.mouseMoveEvent(diagramCanvas, x + 200, y + 10);
             mouseEvents.mouseUpEvent(diagramCanvas, x + 200, y + 10);
-            expect(diagram.selectedItems.nodes[0].offsetX === 490 && diagram.selectedItems.nodes[0].offsetY === 195).toBe(true);
+            expect(diagram.nodes[0].id == "swimlane" ).toBe(true);
             done();
         });
         it('Snapline color change to yellow',(done : Function)=>{

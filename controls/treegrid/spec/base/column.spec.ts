@@ -975,6 +975,7 @@ describe('853984- Resolved header check box not working properly in checkbox box
     destroy(gridObj);
   });
 });
+
 describe('858073-Dynamically changing columns from stacked to normal throws exception', () => {
   let gridObj: TreeGrid;
   const column2 = [

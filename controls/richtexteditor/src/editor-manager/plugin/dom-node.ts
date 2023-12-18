@@ -478,18 +478,6 @@ export class DOMNode {
         let end: Element = this.parent.querySelector('.' + markerClassName.endSelection);
         let startTextNode: Element;
         let endTextNode: Element;
-        if (start.textContent === '' && isNOU(end) && action !== 'tab') {
-            // To Do Apply Heading and Back space press in empty content.
-            // if (isNOU(action) && save.range.startContainer.nodeType === 1 &&
-            //     (save.range.startContainer as HTMLElement).querySelectorAll('audio,video,image').length === 0)  {
-            //     start.innerHTML = '<br>';
-            // }
-            if (start.childNodes.length === 1 && start.childNodes[0].nodeName === 'BR') {
-                start.innerHTML = '&#65279;&#65279;<br>';
-            } else {
-                start.innerHTML = '&#65279;&#65279;';
-            }
-        }
         if (this.hasClass(start, markerClassName.startSelection) && start.classList.length > 1) {
             const replace: string = this.createTagString(CONSTANT.DEFAULT_TAG, start, this.encode(start.textContent));
             this.replaceWith(start, replace);
@@ -606,7 +594,7 @@ export class DOMNode {
         } else if (start.tagName === 'BR') {
             this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
             const markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + className);
-            markerStart.appendChild(start);
+            markerStart.parentElement.appendChild(start);
         } else {
             if (start.tagName === 'IMG') {
                 const parNode: HTMLParagraphElement = document.createElement('p');

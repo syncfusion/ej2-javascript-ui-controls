@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex, extend } from '@syncfusion/ej2-base';
 import { BorderModel, FontModel, RangeTooltipModel } from '../model/base-model';
 import { Placement, ContainerType, TooltipPosition } from '../utils/enum';
 
@@ -52,6 +52,39 @@ export class Font extends ChildProperty<Font> {
     @Property(1)
     public opacity: number;
 
+}
+
+/**
+ * Defines the font properties such as font-size, font family and others for the text pointer. 
+ */
+export class TextStyle extends ChildProperty<TextStyle> {
+    /**
+     * Defines the font-size of the text pointer.
+     */
+     @Property('16px')
+     public size: string;
+
+     /**
+     * Defines the font-family of the text pointer. The default value of this property varies based on the `theme` set in the Linear Gauge.
+     */
+    @Property('')
+    public fontFamily: string;
+
+    /**
+     * Defines the font-weight of the text pointer. 
+     *
+     * @default 'normal'
+     */
+    @Property('normal')
+    public fontWeight: string;
+
+    /**
+     * Defines the font-style of the text pointer. 
+     *
+     * @default 'normal'
+     */
+    @Property('normal')
+    public fontStyle: string;
 }
 
 /**

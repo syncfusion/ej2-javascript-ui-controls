@@ -94,20 +94,27 @@ export class PdfExport {
             if (pdfExportProperties.exportType === 'CurrentViewData') {
                 this.helper.beforeSinglePageExport['cloneFlatData'] = extend([], this.parent.currentViewData, null, true);
             }
-            else {
+            else if (pdfExportProperties.exportType === 'AllData') {
                 this.helper.beforeSinglePageExport['cloneFlatData'] = extend([], this.parent.flatData, null, true);
+            }
+            else {
+                this.helper.beforeSinglePageExport['cloneFlatData'] = extend([], this.parent.updatedRecords, null, true)
             }
             this.helper.beforeSinglePageExport['cloneCurrentViewData'] = extend([], this.parent.currentViewData, null, true);
             data = this.helper.beforeSinglePageExport['cloneFlatData'];
         }
         else {
-        if (pdfExportProperties.exportType === 'CurrentViewData') {
-            data = this.parent.currentViewData
+            if (!isNullOrUndefined(pdfExportProperties.exportType)) {
+                if (pdfExportProperties.exportType === 'CurrentViewData') {
+                    data = this.parent.currentViewData;
+                } else {
+                    data = this.parent.flatData;
+                }
+            }
+            else {
+                data = this.parent.updatedRecords;
+            }
         }
-        else {
-            data = this.parent.flatData;
-        }
-    }
         this.initGantt();
         if (!isNullOrUndefined(pdfDoc)) {
             this.pdfDocument = <PdfDocument>pdfDoc;

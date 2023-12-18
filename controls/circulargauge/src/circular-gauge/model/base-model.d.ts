@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
+import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Alignment, GaugeShape, LegendPosition } from '../utils/enum';import { Theme } from '../model/theme';
 
 /**
  * Interface for a class Border
@@ -301,5 +301,166 @@ export interface TooltipSettingsModel {
      * @default Pointer
      */
     type?: string[];
+
+}
+
+/**
+ * Interface for a class Location
+ */
+export interface LocationModel {
+
+    /**
+     * Sets and gets the X coordinate of the legend in the circular gauge.
+     *
+     * @default 0
+     */
+    x?: number;
+
+    /**
+     * Sets and gets the Y coordinate of the legend in the circular gauge.
+     *
+     * @default 0
+     */
+    y?: number;
+
+}
+
+/**
+ * Interface for a class LegendSettings
+ */
+export interface LegendSettingsModel {
+
+    /**
+     * Enable and disables the visibility of the legend in circular gauge.
+     *
+     * @default false
+     */
+    visible?: boolean;
+
+    /**
+     * Enables and disables the visibility of the ranges. When the legend is clicked, the visibility of the legend will be toggled.
+     *
+     * @default true
+     */
+    toggleVisibility?: boolean;
+
+    /**
+     * Sets and gets the alignment of the legend in the circular gauge.
+     *
+     * @default 'Center'
+     */
+    alignment?: Alignment;
+
+    /**
+     * Sets and gets the options to customize the style properties of the border of the legend.
+     *
+     */
+    border?: BorderModel;
+
+    /**
+     * Sets and gets the options to customize the style properties of the border for the shape of the legend in the circular gauge.
+     */
+    shapeBorder?: BorderModel;
+
+    /**
+     * Sets and gets the options to customize the padding between legend items.
+     *
+     * @default 8
+     */
+    padding?: number;
+
+    /**
+     * Sets and gets the opacity of the legend.
+     *
+     * @default 1
+     */
+    opacity?: number;
+
+    /**
+     * Sets and gets the position of the legend in the circular gauge.
+     *
+     * @default 'Auto'
+     */
+    position?: LegendPosition;
+
+    /**
+     * Sets and gets the shape of the legend in circular gauge.
+     *
+     * @default Circle
+     */
+    shape?: GaugeShape;
+
+    /**
+     * Sets and gets the height of the legend in the circular gauge.
+     *
+     * @default null
+     */
+    height?: string;
+
+    /**
+     * Sets and gets the width of the legend in the circular gauge.
+     *
+     * @default null
+     */
+    width?: string;
+
+    /**
+     * Sets and gets the options to customize the text of the legend item.
+     */
+    textStyle?: FontModel;
+
+    /**
+     * Sets and gets the height of the legend shape in circular gauge.
+     *
+     * @default 10
+     */
+    shapeHeight?: number;
+
+    /**
+     * Sets and gets the width of the legend shape in circular gauge.
+     *
+     * @default 10
+     */
+    shapeWidth?: number;
+
+    /**
+     * Sets and gets the padding for the legend shape in circular gauge.
+     *
+     * @default 5
+     */
+    shapePadding?: number;
+
+    /**
+     * Sets and gets the location of the legend, relative to the circular gauge.
+     * If x is 20, legend moves by 20 pixels to the right of the gauge. It requires the `position` to be `Custom`.
+     * ```html
+     * <div id='Gauge'></div>
+     * ```
+     * ```typescript
+     * let gauge: CircularGauge = new CircularGauge({
+     * ...
+     *   legendSettings: {
+     *     visible: true,
+     *     position: 'Custom',
+     *     location: { x: 100, y: 150 },
+     *   },
+     * ...
+     * });
+     * this.gauge.appendTo('#Gauge');
+     * ```
+     */
+    location?: LocationModel;
+
+    /**
+     * Sets and gets the background color of the legend in circular gauge.
+     *
+     * @default 'transparent'
+     */
+    background?: string;
+
+    /**
+     * Sets and gets the options to customize the legend margin.
+     */
+    margin?: MarginModel;
 
 }

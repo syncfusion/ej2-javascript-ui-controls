@@ -217,6 +217,86 @@ describe('Linear gauge control', () => {
             ]
             gauge.refresh();
         });
+        it('Checking animation annotation position for multiple axis ', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Annotation_0');
+                let width = svg.getBoundingClientRect().width;
+                element = document.getElementById('container_AxisLine_0');
+                expect(svg.getBoundingClientRect().left + (width/2) == element.getBoundingClientRect().left).toBe(true);
+            };
+            gauge.orientation = 'Vertical'
+            gauge.animationDuration = 100;
+            gauge.refresh();
+        });
+    });
+    describe('Checking animation properties', () => {
+        let gauge: LinearGauge;
+        let element: HTMLElement;
+        let svg: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            element = createElement('div', { id: 'container' });
+            document.body.appendChild(element);
+            gauge = new LinearGauge({
+                animationDuration: 1000,
+                orientation: 'Horizontal',
+                axes: [{
+                    line: {
+                        color: '#9E9E9E'
+                    },
+                    pointers: [{
+                        value: 10,
+                        height: 15,
+                        width: 15,
+                        placement: 'Near',
+                        color: '#757575',
+                        offset: -50,
+                        markerType: 'Triangle'
+                    }],
+                    majorTicks: {
+                        color: '#9E9E9E',
+                        interval: 10
+                    },
+                    minorTicks: {
+                        color: '#9E9E9E',
+                        interval: 2
+                    },
+                    labelStyle: {
+                        font: {
+                            color: '#424242'
+                        },
+                        offset: 48
+                    }
+                }],
+                annotations: [{
+                    content: '<div id="pointer" style="width:70px"><h1 style="font-size:14px;color:#424242">10 MPH</h1></div>',
+                    axisIndex: 0,
+                    axisValue: 10,
+                    x: 10, zIndex: '1',
+                    y: -70
+                }]
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+            element.remove();
+        });
+
+        it('checking with annotation group', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AnnotationsGroup');
+                expect(svg !== null).toBe(true);
+            };
+            gauge.refresh();
+        });
+        it('checking with animation group', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AnnotationsGroup');
+                expect(svg.childElementCount === 1).toBe(true);
+            };
+            gauge.animationDuration = 100;
+            gauge.refresh();
+        });
     });
     it('memory leak', () => {     
         profile.sample();

@@ -171,7 +171,7 @@ export class TocProperties {
     public createDropDownButton(id: string, parentDiv: HTMLElement, iconCss: string, content: string[], selectedIndex: number): DropDownList {
         const buttonElement: HTMLButtonElement = createElement('input', { id: id }) as HTMLButtonElement;
         parentDiv.appendChild(buttonElement);
-        const dropDownBtn: DropDownList = new DropDownList({ index: selectedIndex, dataSource: content, popupHeight: '150px', cssClass: 'e-de-prop-font-button' }, buttonElement);
+        const dropDownBtn: DropDownList = new DropDownList({ index: selectedIndex, dataSource: content, popupHeight: '150px', cssClass: 'e-de-prop-font-button', placeholder:this.localObj.getConstant('Levels')}, buttonElement);
         return dropDownBtn;
     }
     /* eslint-disable */

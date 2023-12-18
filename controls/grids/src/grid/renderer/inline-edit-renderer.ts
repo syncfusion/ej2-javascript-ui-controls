@@ -99,10 +99,12 @@ export class InlineEditRender {
         }
         let m: number = 0;
         i = 0;
+        let inputValue: string;
         const cols: Column[] = args.isCustomFormValidation ? (<{ columnModel?: Column[] }>this.parent).columnModel : gObj.getColumns();
         while ((isEdit && m < tdElement.length && i < cols.length) || i < cols.length) {
             const span: string = isEdit ? tdElement[parseInt(m.toString(), 10)].getAttribute('colspan') : null;
             const col: Column = cols[parseInt(i.toString(), 10)] as Column;
+            inputValue = (elements[col.uid]).value;
             const td: HTMLElement = this.parent.createElement(
                 'td',
                 {
@@ -138,6 +140,7 @@ export class InlineEditRender {
                     }
                 }
             }
+            td.setAttribute('aria-label', inputValue + this.parent.localeObj.getConstant('ColumnHeader') + col.headerText);
             tr.appendChild(td);
             i = span ? i + parseInt(span, 10) : i + 1;
             m++;

@@ -17,6 +17,7 @@ import { FieldList } from '../../src/common/actions/field-list';
 import { Pager } from '../../src/pivotview/actions/pager';
 import { Grouping } from '../../src/common/popups/grouping';
 import { TreeView } from '@syncfusion/ej2-navigations';
+import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
 
 describe('PivotView spec', () => {
     /**
@@ -2114,6 +2115,73 @@ describe('PivotView spec', () => {
                     expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
                     done();
                 }, 100);
+            });
+        });
+
+        describe('Binding an empty data source', () => {
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(GroupingBar);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: [],
+                        columns: [{ name: 'CustomerID', caption: 'Customer ID' }],
+                        rows: [{ name: 'ShipCountry', caption: 'Ship Country' }, { name: 'ShipCity', caption: 'Ship City' }],
+                        values: [{ name: 'Freight' }]
+                    },
+                    showGroupingBar: true,
+                    dataBound: dataBound
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            it(' - Loading the remote data', function (done) {
+                let remoteData: DataManager = new DataManager({
+                    url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+                    adaptor: new ODataV4Adaptor(),
+                    crossDomain: true
+                });
+                remoteData.defaultQuery = new Query().take(5);
+                pivotGridObj.dataSourceSettings.dataSource = remoteData;
+                setTimeout(function () {
+                    expect(document.querySelector('.e-pivotview') !== null).toBeTruthy;
+                    done();
+                }, 3000);
+            });
+            it(' - Checking the pivot buttons', function (done) {
+                setTimeout(function () {
+                    expect(pivotGridObj.pivotValues.length === 0).toBeTruthy;
+                    done();
+                }, 3000);
+            });
+            it(' - Redering empty data', function (done) {
+                let remoteData: DataManager = new DataManager({
+                    url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+                    adaptor: new ODataV4Adaptor(),
+                    crossDomain: true
+                });
+                remoteData.defaultQuery = new Query().take(0);
+                pivotGridObj.dataSourceSettings.dataSource = remoteData;
+                setTimeout(function () {
+                    expect(pivotGridObj.pivotValues.length > 0).toBeTruthy;
+                    done();
+                }, 3000);
+            });
+            it(' - Redering empty data', function (done) {
+                setTimeout(function () {
+                    expect(pivotGridObj.pivotValues.length > 0).toBeTruthy;
+                    done();
+                }, 3000);
             });
         });
     });

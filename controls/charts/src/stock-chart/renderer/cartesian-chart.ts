@@ -5,7 +5,7 @@ import { Chart } from '../../chart/chart';
 import { Series } from '../../chart/series/chart-series';
 import { StockChart } from '../stock-chart';
 import { Size } from '@syncfusion/ej2-svg-base';
-import { Axis, VisibleRangeModel } from '../../chart/axis/axis';
+import { Axis } from '../../chart/axis/axis';
 import { remove, extend } from '@syncfusion/ej2-base';
 import { StockSeriesModel } from '../model/base-model';
 import { ITooltipRenderEventArgs, IAxisLabelRenderEventArgs, IZoomCompleteEventArgs } from '../../chart/model/chart-interface';
@@ -17,6 +17,7 @@ import { MarginModel } from '../../common/model/base-model';
 import { BaseLegend } from '../../common/legend/legend';
 import { StockLegend } from '../legend/legend';
 import { DataUtil } from '@syncfusion/ej2-data';
+import { VisibleRangeModel } from '../../common/model/interface';
 
 interface Range {
     start: number;

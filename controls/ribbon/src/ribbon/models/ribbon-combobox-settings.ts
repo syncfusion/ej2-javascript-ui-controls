@@ -35,6 +35,14 @@ export class RibbonComboBoxSettings extends ChildProperty<RibbonComboBoxSettings
     public cssClass: string;
 
     /**
+     * Specifies the label text for the overflow item.
+     *
+     * @default ''
+     */
+    @Property('')
+    public label: string;
+
+    /**
      * Defines the list of items to shown in the combobox.
      *
      * @default []

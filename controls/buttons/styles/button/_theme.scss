@@ -43,7 +43,7 @@
 
       &:focus-visible { // only for keybord
         @if $skin-name == 'FluentUI' {
-          background: $btn-bgcolor;
+          background: $btn-focus-bgcolor;
         }
         @if $skin-name == 'Material3' {
           background: $btn-active-bgcolor;
@@ -123,7 +123,7 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background: $btn-bgcolor;
+            background: $btn-focus-bgcolor;
           }
           @if $skin-name == 'Material3' {
             background: $btn-active-bgcolor;
@@ -175,7 +175,7 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background: $btn-primary-bgcolor;
+              background: $btn-primary-focus-bgcolor;
             }
             @if $skin-name == 'Material3' {
               background: $btn-primary-active-bgcolor;
@@ -201,7 +201,7 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background: $btn-success-bgcolor;
+              background: $btn-success-focus-bgcolor;
             }
             @if $skin-name == 'Material3' {
               background: $btn-success-active-bgcolor;
@@ -227,7 +227,7 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background: $btn-info-bgcolor;
+              background: $btn-info-focus-bgcolor;
             }
             @if $skin-name == 'Material3' {
               background: $btn-info-active-bgcolor;
@@ -253,7 +253,7 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background: $btn-warning-bgcolor;
+              background: $btn-warning-focus-bgcolor;
             }
             @if $skin-name == 'Material3' {
               background: $btn-warning-active-bgcolor;
@@ -279,7 +279,7 @@
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
-              background: $btn-danger-bgcolor;
+              background: $btn-danger-focus-bgcolor;
             }
             @if $skin-name == 'Material3' {
               background: $btn-danger-active-bgcolor;
@@ -323,7 +323,7 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background: $btn-primary-bgcolor;
+            background: $btn-primary-focus-bgcolor;
           }
           @if $skin-name == 'Material3' {
             background: $btn-primary-active-bgcolor;
@@ -392,7 +392,7 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background: $btn-success-bgcolor;
+            background: $btn-success-focus-bgcolor;
           }
           @if $skin-name == 'Material3' {
             background: $btn-success-active-bgcolor;
@@ -449,7 +449,7 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background: $btn-info-bgcolor;
+            background: $btn-info-focus-bgcolor;
           }
           @if $skin-name == 'Material3' {
             background: $btn-info-active-bgcolor;
@@ -506,7 +506,7 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background: $btn-warning-bgcolor;
+            background: $btn-warning-focus-bgcolor;
           }
           @if $skin-name == 'Material3' {
             background: $btn-warning-active-bgcolor;
@@ -563,7 +563,7 @@
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
-            background: $btn-danger-bgcolor;
+            background: $btn-danger-focus-bgcolor;
           }
           @if $skin-name == 'Material3' {
             background: $btn-danger-active-bgcolor;

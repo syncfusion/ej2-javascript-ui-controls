@@ -1114,8 +1114,6 @@ export function drawSymbol(location: Location, shape: string, size: Size, url: s
     const svgRenderer: SvgRenderer = new SvgRenderer('');
     const temp: IShapes = renderLegendShape(location, size, shape, options, url);
     const htmlElement: Element = svgRenderer['draw' + temp.functionName](temp.renderOption);
-    htmlElement.setAttribute('aria-label', label);
-    htmlElement.setAttribute('role', 'region');
     return htmlElement;
 }
 /**

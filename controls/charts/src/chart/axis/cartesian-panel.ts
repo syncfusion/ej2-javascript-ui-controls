@@ -7,17 +7,17 @@
 import { Chart } from '../chart';
 import { DateFormatOptions, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataUtil } from '@syncfusion/ej2-data';
-import { Axis, Row, Column, VisibleRangeModel, VisibleLabels } from '../axis/axis';
-import { Orientation } from '../utils/enum';
+import { Axis, Row, Column, VisibleLabels } from '../axis/axis';
 import { subtractThickness, valueToCoefficient, sum, redrawElement, isBreakLabel, ChartLocation, withInBounds, rotateTextSize } from '../../common/utils/helper';
 import { subArray, inside, appendChildElement, stringToNumber } from '../../common/utils/helper';
-import { TextAlignment } from '../../common/utils/enum';
+import { Orientation, TextAlignment } from '../../common/utils/enum';
 import { Thickness, logBase, createZoomingLabels, getElement } from '../../common/utils/helper';
 import { Size, Rect, measureText, TextOption, PathOption } from '@syncfusion/ej2-svg-base';
 import { textElement, textTrim, getRotatedRectangleCoordinates, isRotatedRectIntersect, isZoomSet } from '../../common/utils/helper';
 import { BorderModel } from '../../common/model/base-model';
 import { MajorGridLinesModel, MinorGridLinesModel, MajorTickLinesModel, MinorTickLinesModel } from './axis-model';
 import { IThemeStyle } from '../model/chart-interface';
+import { VisibleRangeModel } from '../../common/model/interface';
 /**
  * Specifies the Cartesian Axis Layout.
  */
@@ -1065,12 +1065,24 @@ export class CartesianAxisLayoutPanel {
                 padding += axis.isAxisOpposedPosition ? axis.titleSize.width / 2 + axis.labelPadding : -axis.titleSize.width / 2 - axis.labelPadding;
                 isRotated = true;
             }
-            const x: number =  rect.x + padding;
-
-            const y: number = rect.y + rect.height * 0.5;
+            const x: number = rect.x + padding;
+            let y: number;
+            let anchor: string;
+            if (axis.titleStyle.textAlignment === 'Center') {
+                anchor = 'middle';
+                y = rect.y + rect.height * 0.5;
+            }
+            else if (axis.titleStyle.textAlignment === 'Near') {
+                anchor = axis.opposedPosition ? 'end' : 'start';
+                y = rect.height + rect.y;
+            }
+            else {
+                anchor = axis.opposedPosition ? 'start' : 'end';
+                y = rect.y;
+            }
             const titleSize: number = (axis.titleSize.height * (axis.titleCollection.length - 1));
             const options: TextOption = new TextOption(
-                chart.element.id + '_AxisTitle_' + index, x, y + (isRotated ? - titleSize : - axis.labelPadding - titleSize), 'middle',
+                chart.element.id + '_AxisTitle_' + index, x, y + (isRotated ? - titleSize : - axis.labelPadding - titleSize), anchor,
                 axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation
             );
             const element: Element = textElement(
@@ -1401,7 +1413,7 @@ export class CartesianAxisLayoutPanel {
                     break;
                 case 'Hide':
                     if (((i === 0 || (isInverse && i === len - 1)) && options.x < rect.x) ||
-                            ((i === len - 1 || (isInverse && i === 0)) && (options.x + width > rect.x + rect.width))) {
+                            ((i === len - 1 || (isInverse && i === 0)) && (options.x + (angle === 0 ? width : rotatedLabelSize.width) > rect.x + rect.width))) {
                         continue;
                     }
                     break;
@@ -1451,11 +1463,6 @@ export class CartesianAxisLayoutPanel {
                         else{
                             options.x = pointX = !isHorizontalAngle ? rect.x + rect.width - intervalLength / 2 : rect.x + rect.width - intervalLength;
                         }
-                    }
-                    if (this.chart.primaryYAxis.opposedPosition && i === 0 && options.x <= rect.x) {
-                        intervalLength -= (rect.x - options.x);
-                        options.x += rect.x + (width / 2);
-                        pointX += rect.x + (width / 2);
                     }
                     break;
                 }
@@ -1759,15 +1766,26 @@ export class CartesianAxisLayoutPanel {
             padding = axis.isAxisOpposedPosition ? -(padding + elementSize.height / 4 + scrollBarHeight + titleSize) : (padding + (3 *
                 elementSize.height / 4) + scrollBarHeight);
             const labelRotation: number = axis.titleRotation ? axis.titleRotation : 0;
-            const x: number = rect.x + rect.width * 0.5;
+            let x: number;
             let y: number = rect.y + padding;
+            let anchor: string;
+            if (axis.titleStyle.textAlignment === 'Center') {
+                anchor = 'middle';
+                x = rect.x + rect.width * 0.5;
+            } else if (axis.titleStyle.textAlignment === 'Near') {
+                anchor = 'start';
+                x = rect.x;
+            } else {
+                anchor = 'end';
+                x = rect.x + rect.width;
+            }
             if (labelRotation !== 0) {
                 y += axis.opposedPosition ? - (axis.titleSize.height / 2 + elementSize.height / 4) :
                     axis.titleSize.height / 2 - elementSize.height / 4;
             }
             const options: TextOption = new TextOption(
                 chart.element.id + '_AxisTitle_' + index, x,
-                y, 'middle', axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation
+                y, anchor, axis.titleCollection, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation
             );
             const element: Element = textElement(
                 chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitleFont.color, parent,

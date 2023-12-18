@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusion/ej2-base';import { EmptyPointMode, FadeOutMode, TooltipPosition } from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, TextOverflow } from '../utils/enum';import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';import {  Theme } from '../model/theme';
+import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusion/ej2-base';import { FadeOutMode, TooltipPosition } from '../../chart/utils/enum';import { AccEmptyPointMode, ConnectorType} from '../../accumulation-chart/model/enum';import { Alignment, EmptyPointMode, TextOverflow, TitlePosition} from '../utils/enum';import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';import {  Theme } from '../model/theme';
 
 /**
  * Interface for a class Connector
@@ -46,6 +46,171 @@ export interface ConnectorModel {
      */
 
     dashArray?: string;
+
+}
+
+/**
+ * Interface for a class titleBorder
+ */
+export interface titleBorderModel {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default 'transparent'
+     */
+
+    color?: string;
+
+    /**
+     * The width of the border in pixels.
+     *
+     * @default 0
+     */
+
+    width?: number;
+
+    /**
+     * corder radius for the border.
+     *
+     * @default 0.8
+     */
+
+    cornerRadius?: number;
+
+}
+
+/**
+ * Interface for a class titleSettings
+ */
+export interface titleSettingsModel {
+
+    /**
+     * FontStyle for the text.
+     *
+     * @default 'Normal'
+     */
+
+    fontStyle?: string;
+
+    /**
+     * Font size for the text.
+     *
+     * @default '15px'
+     */
+
+    size?: string;
+
+    /**
+     * FontWeight for the text.
+     *
+     * @default '500'
+     */
+
+    fontWeight?: string;
+
+    /**
+     * Color for the text.
+     *
+     * @default ''
+     */
+
+    color?: string;
+
+    /**
+     * text alignment.
+     *
+     * @default 'Center'
+     */
+
+    textAlignment?: Alignment;
+
+    /**
+     * FontFamily for the text.
+     */
+    fontFamily?: string;
+
+    /**
+     * Opacity for the text.
+     *
+     * @default 1
+     */
+
+    opacity?: number;
+
+    /**
+     * Specifies the chart title text overflow.
+     *
+     * @default 'Wrap'
+     */
+
+    textOverflow?: TextOverflow;
+
+    /**
+     * Defines the position for the chart title.
+     * * Top: Displays the title at the top of the chart.
+     * * Left: Displays the title at the left of the chart.
+     * * Bottom: Displays the title at the bottom of the chart.
+     * * Right: Displays the title at the right of the chart.
+     * * Custom: Displays the title based on the given x and y values.
+     *
+     * @default 'Top'
+     */
+
+    position?: TitlePosition;
+
+    /**
+     * Defines the X coordinate for the chart title.
+     *
+     * @default 0
+     */
+
+    x?: number;
+
+    /**
+     * Defines the Y coordinate for the chart title.
+     *
+     * @default 0
+     */
+
+    y?: number;
+
+    /**
+     * Background of the title border.
+     *
+     * @default 'transparent'
+     */
+
+    background?: string;
+
+    /**
+     * Options to customize the border of the chart title.
+     */
+
+    border?: titleBorderModel;
+
+}
+
+/**
+ * Interface for a class Location
+ */
+export interface LocationModel {
+
+    /**
+     * X coordinate of the legend or tooltip in pixels.
+     *
+     * @default 0
+     */
+
+    x?: number;
+
+    /**
+     * Y coordinate of the legend or tooltip in pixels.
+     *
+     * @default 0
+     */
+
+    y?: number;
 
 }
 
@@ -490,7 +655,7 @@ export interface CenterLabelModel {
 export interface TooltipSettingsModel {
 
     /**
-     * Enables / Disables the visibility of the tooltip.
+     * If set to true, enables the tooltip for the data points.
      *
      * @default false.
      */
@@ -498,7 +663,7 @@ export interface TooltipSettingsModel {
     enable?: boolean;
 
     /**
-     * Enables / Disables the visibility of the marker.
+     * If set to true, enables the marker in the chart tooltip.
      *
      * @default true.
      */
@@ -514,7 +679,7 @@ export interface TooltipSettingsModel {
     shared?: boolean;
 
     /**
-     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+     * The fill color of the tooltip, specified as a valid CSS color string in hex or rgba format.
      *
      * @default null
      */
@@ -522,7 +687,7 @@ export interface TooltipSettingsModel {
     fill?: string;
 
     /**
-     * Header for tooltip. By default, the shared tooltip displays the point x value and the series name for each individual tooltip.
+     * The header text for the tooltip. By default, it displays the series name.
      *
      * @default null
      */
@@ -530,7 +695,7 @@ export interface TooltipSettingsModel {
     header?: string;
 
     /**
-     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+     * The opacity of the tooltip, expressed as a numerical value.
      *
      * @default null
      */
@@ -538,13 +703,13 @@ export interface TooltipSettingsModel {
     opacity?: number;
 
     /**
-     * Options to customize the ToolTip text.
+     * Options for customizing the tooltip text appearance.
      */
 
     textStyle?: FontModel;
 
     /**
-     * Format the ToolTip content.
+     * The format for customizing the tooltip content.
      *
      * @default null.
      */
@@ -552,7 +717,7 @@ export interface TooltipSettingsModel {
     format?: string;
 
     /**
-     * Custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
+     * A custom template used to format the Tooltip content. You can use ${x} and ${y} as placeholder text to display the corresponding data points.
      *
      * @default null.
      * @aspType string
@@ -561,14 +726,14 @@ export interface TooltipSettingsModel {
     template?: string | Function;
 
     /**
-     * If set to true, ToolTip will animate while moving from one point to another.
+     * If set to true, tooltip will animate while moving from one point to another.
      *
      * @default true.
      */
     enableAnimation?: boolean;
 
     /**
-     * Duration for the ToolTip animation.
+     * Duration for the Tooltip animation.
      *
      * @default 300
      */
@@ -576,7 +741,7 @@ export interface TooltipSettingsModel {
     duration?: number;
 
     /**
-     * Fade Out duration for the ToolTip hide.
+     * Duration of the fade-out animation for hiding the Tooltip.
      *
      * @default 1000
      */
@@ -609,10 +774,31 @@ export interface TooltipSettingsModel {
     showNearestPoint?: boolean;
 
     /**
-     * Options to customize tooltip borders.
+     * Options for customizing the tooltip borders.
      */
 
     border?: BorderModel;
+
+    /**
+     * Specifies the location of the tooltip, relative to the chart. 
+     * If x is 20, tooltip moves by 20 pixels to the right of the chart 
+     * ```html 
+     * <div id='Chart'></div> 
+     * ``` 
+     * ```typescript 
+     * let chart: Chart = new Chart({ 
+     * ... 
+     * tooltipSettings: { 
+     * enable: true, 
+     * location: { x: 100, y: 150 }, 
+     *   }, 
+     * ... 
+     * }); 
+     * chart.appendTo('#Chart'); 
+     * ``` 
+     */
+
+    location?: LocationModel;
 
 }
 

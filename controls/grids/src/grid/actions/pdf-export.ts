@@ -158,6 +158,9 @@ export class PdfExport {
         if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)) {
             pdfExportProperties.dataSource = pdfExportProperties.dataSource instanceof DataManager ?
                 pdfExportProperties.dataSource : new DataManager(pdfExportProperties.dataSource);
+            if (isNullOrUndefined(query.isCountRequired) || parent.aggregates) {
+                query.isCountRequired = true;
+            }
             return new Promise((resolve: Function, reject: Function) => {
                 (<DataManager>pdfExportProperties.dataSource).executeQuery(query).then((returnType: Object) => {
                     this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport, reject);

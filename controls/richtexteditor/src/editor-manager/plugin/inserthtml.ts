@@ -132,6 +132,8 @@ export class InsertHtml {
                     } else {
                         InsertMethods.AppendBefore(node as HTMLElement, parentNode.firstChild as HTMLElement, false);
                     }
+                } else if (isNOU(preNode.previousSibling) && (insertNode as HTMLElement).tagName === 'TABLE') {
+                    (parentNode as Element).prepend(node);
                 } else {
                     parentNode.appendChild(node);
                 }

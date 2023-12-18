@@ -1,7 +1,7 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction } from './index';
 import { HideShowEventArgs, invalidData } from './../common/index';
-import { Cell, CellUpdateArgs, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, moveSheet, protectsheetHandler, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
+import { Cell, CellUpdateArgs, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, moveSheet, protectsheetHandler, refreshChartSize, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
 import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
 import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, CFArgs, RowModel } from '../../workbook/index';
@@ -1610,15 +1610,22 @@ export function updateAction(
                 prevLeft: options.eventArgs.currentLeft, prevRowIdx: options.eventArgs.currentRowIdx,
                 prevTop: options.eventArgs.currentTop, prevWidth: options.eventArgs.currentWidth, isUndoRedo: true
             }));
+            spreadsheet.notify(refreshChartSize, { height: options.eventArgs.prevHeight.toString(), width: options.eventArgs.prevWidth.toString(), overlayEle: chartElement });
         } else {
             options.eventArgs.isUndoRedo = true;
             spreadsheet.notify(refreshChartCellObj, options.eventArgs);
+            spreadsheet.notify(refreshChartSize, { height: options.eventArgs.currentHeight.toString(), width: options.eventArgs.currentWidth.toString(), overlayEle: chartElement });
         }
         break;
     case 'chartDesign':
         spreadsheet.notify(chartDesignTab, options.eventArgs);
         break;
     case 'autofill':
+        if (isFromUpdateAction && eventArgs.undoArgs) {
+            eventArgs.undoArgs.isFromUpdateAction = eventArgs.undoArgs.isUndo = eventArgs.undoArgs.preventEvt = true;
+            eventArgs.undoArgs.isPublic = true;
+            spreadsheet.notify(performUndoRedo, eventArgs.undoArgs);
+        }
         spreadsheet.notify(
             setAutoFill, { fillRange: options.eventArgs.fillRange, dataRange: options.eventArgs.dataRange,
                 fillType: options.eventArgs.fillType, direction: options.eventArgs.direction });

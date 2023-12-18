@@ -2999,7 +2999,14 @@ export class OlapEngine {
             }
         }
     }
-    private getFormattedFields(formats: IFormatSettings[]): void {
+    /**
+     * It used to set format a field.
+     *
+     * @param {IFormatSettings[]} formats - It cotains the formatSettings.
+     * @returns {void}
+     * @hidden
+     */
+    public getFormattedFields(formats: IFormatSettings[]): void {
         this.formatFields = {};
         let cnt: number = formats.length;
         while (cnt--) {

@@ -4,7 +4,7 @@ import { Spreadsheet } from '../base/spreadsheet';
 import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged } from '../common/index';
 import { completeAction, BeforeWrapEventArgs, getLines, getExcludedColumnWidth, getTextHeightWithBorder } from '../common/index';
 import { positionAutoFillElement, colWidthChanged, getLineHeight } from '../common/index';
-import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook } from '../../workbook/index';
+import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook, ApplyCFArgs, applyCF } from '../../workbook/index';
 import { getRowHeight, getAddressFromSelectedRange, beginAction } from '../../workbook/index';
 
 
@@ -129,6 +129,9 @@ export class WrapText {
                         if (j === args.range[3] && ((args.wrap && maxHgt > 20 && getMaxHgt(args.sheet, i) <= maxHgt) || ((!args.wrap ||
                             !displayText) && getMaxHgt(args.sheet, i) < getRowHeight(args.sheet, i) && getRowHeight(args.sheet, i) > 20))) {
                             setRowEleHeight(this.parent, args.sheet, maxHgt, i, args.row, args.hRow);
+                            if (args.sheet.conditionalFormats && args.sheet.conditionalFormats.length) {
+                                this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [i, j], isAction: true });
+                            }
                         }
                     }
                     if (isCustomHgt && !isMerge) {

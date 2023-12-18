@@ -393,6 +393,15 @@ export interface TooltipModel extends ComponentModel{
     isTextWrap?: boolean;
 
     /**
+     * Specifies the location of the tooltip in a fixed position.
+     *
+     * @default false.
+     * @private
+     */
+
+    isFixed?: boolean;
+
+    /**
      * To place tooltip in a particular position.
      *
      * @default null.

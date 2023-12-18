@@ -17,7 +17,7 @@ import { IMouseEventArgs, IPrintEventArgs } from './model/interface';
 import { removeElement, getElement, stringToNumber, measureText, toPixel, textElement, getAngleFromValue, getAngleFromLocation, getPathArc, getPointer, RectOption, Size, GaugeLocation, Rect, TextOption } from './utils/helper-common';
 import { setStyles, getValueFromAngle, getRange } from './utils/helper-circular-gauge';
 import { GaugeTheme } from './utils/enum';
-import { Border, Margin, Font, TooltipSettings } from './model/base';
+import { Border, Margin, Font, TooltipSettings, LegendSettings } from './model/base';
 import { BorderModel, MarginModel, FontModel, TooltipSettingsModel } from './model/base-model';
 import { Axis, Range, Pointer, Annotation, VisibleRangeModel } from './axes/axis';
 import { Annotations } from './annotations/annotations';
@@ -28,8 +28,9 @@ import {  rangeMove, pointerStart, rangeStart, pointerEnd, rangeEnd } from './mo
 import { gaugeMouseUp, dragEnd, dragMove, dragStart, resized } from './model/constants';
 import { AxisLayoutPanel } from './axes/axis-panel';
 import { getThemeStyle } from './model/theme';
-import { LegendSettingsModel } from './legend/legend-model';
-import { LegendSettings, Legend } from './legend/legend';
+import { textTrim, titleTooltip } from './utils/helper-legend';
+import { Legend } from './legend/legend';
+import { LegendSettingsModel } from './model/base-model';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { ExportType } from '../circular-gauge/utils/enum';
 import { PdfExport } from  './model/pdf-export';
@@ -148,6 +149,15 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public title: string;
 
     /**
+     * Sets and gets the duration of animation in milliseconds in circular gauge.
+     *
+     * @default 0
+     */
+
+    @Property(0)
+    public animationDuration: number;
+
+    /**
      * Sets and gets the options for customizing the title for circular gauge.
      */
     @Complex<FontModel>({ size: null, color: null, fontWeight: null, fontFamily: null }, Font)
@@ -212,7 +222,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public allowPdfExport: boolean;
 
      /**
-     * Allow the range element to be rendered ahead of the axis element, when this property is set to "true".
+     * Allow the range element to be rendered ahead of the axis element, when this property is set to "true". 
      *
      * @default true
      */
@@ -272,9 +282,9 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Sets and gets the tab index value for the circular gauge.
      *
-     * @default 1
+     * @default 0
      */
-    @Property(1)
+    @Property(0)
     public tabIndex: number;
 
     /**
@@ -442,6 +452,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /** @private */
     public renderer: SvgRenderer;
     /** @private */
+    public loadingAnimationDuration: number[];
+    /** @private */
+    public allowLoadingAnimation: boolean = false;
+    /** @private */
     public svgObject: Element;
     /** @private */
     public availableSize: Size;
@@ -474,7 +488,15 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /** @private */
     public allowComponentRender: boolean;
     /** @private */
+    private clearTimeout: number;
+    /** @private */
     public isPropertyChange: boolean;
+    /** @private */
+    public isAnimationProgress: boolean = true;
+    /** @private */
+    public isResize: boolean = false;
+    /** @private */
+    public isOverAllAnimationComplete: boolean = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private resizeEvent: any;
     /**
@@ -540,7 +562,12 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
         this.isPropertyChange = false;
 
-        this.renderElements();
+        this.allowLoadingAnimation = ((this.animationDuration === 0 && animationMode === 'Enable') || this.animationDuration > 0)
+            && !this.isOverAllAnimationComplete;
+
+        this.renderElements(true);
+
+        this.renderAnimation();
 
         this.renderComplete();
     }
@@ -677,6 +704,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             }
         }
         this.notify(Browser.touchMoveEvent, e);
+        if (this.title && (args.target.id === (this.element.id + '_CircularGaugeTitle') ||
+        (args.target.id.indexOf('_Pointer_') === -1 && document.getElementsByClassName('EJ2-CircularGauge-Tooltip').length > 0))) {
+            titleTooltip(e, e.clientX, e.clientY, this, false);
+        }
         return false;
     }
 
@@ -770,7 +801,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 this.axes[axisIndex as number].ranges[rangeIndex as number].end = this.endValue;
                 if (this.isTouch) {
                     this.setRangeValue(axisIndex, rangeIndex, this.startValue, this.endValue);
-                }  
+                }
             }
         }
     }
@@ -894,6 +925,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         }
         this.svgObject.setAttribute('cursor', 'auto');
         this.notify(Browser.touchEndEvent, e);
+        if (args.target.id === (this.element.id + '_CircularGaugeTitle') || args.target.id.indexOf('_gauge_legend_') > -1) {
+            const touchArg: TouchEvent = <TouchEvent & PointerEvent>e;
+            titleTooltip(e, touchArg.changedTouches[0].pageX, touchArg.changedTouches[0].pageY, this, true);
+        }
         return false;
     }
 
@@ -945,9 +980,16 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                     this.animatePointer = false;
                     this.resizeTo = window.setTimeout(
                         (): void => {
+                            this.isResize = true;
+                            this.isPropertyChange = true;
                             this.createSvg();
                             this.calculateBounds();
+                            this.allowLoadingAnimation = false;
+                            if (this.isOverAllAnimationComplete) {
+                                this.loadingAnimationDuration = [];
+                            }
                             this.renderElements();
+                            this.isResize = false;
                         },
                         500);
                 }
@@ -1238,6 +1280,14 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
     }
 
+    private renderAnimation(): void {
+        if (this.allowLoadingAnimation) {
+            for (let i: number = 0; i < this.axes.length; i++) {
+                this.gaugeAxisLayoutPanel.axisLineAnimation(i, this.loadingAnimationDuration[i as number], this);
+            }
+        }
+    }
+
     /**
      * Method to render legend for accumulation chart
      *
@@ -1271,12 +1321,14 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             if (!isNaN(Number(titleSize))) {
                 style.size = titleSize + 'px';
             }
-            const size: Size = measureText(this.title, style);
+            const width: number = Math.abs((this.margin.left + this.margin.right) - this.availableSize.width);
+            const trimmedTitle: string = textTrim(width, this.title, style);
+            const size: Size = measureText(trimmedTitle, style);
             const options: TextOption = new TextOption(
                 this.element.id + '_CircularGaugeTitle',
                 this.availableSize.width / 2,
                 this.margin.top + 3 * (size.height / 4),
-                'middle', this.title
+                'middle', trimmedTitle
             );
             const element: Element = textElement(
                 options, style, style.color || this.themeStyle.titleFontColor, this.svgObject, ''
@@ -1317,18 +1369,21 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         const axis: Axis = <Axis>this.axes[axisIndex as number];
         const pointer: Pointer = <Pointer>axis.pointers[pointerIndex as number];
         const pointerRadius: number = pointer.currentRadius;
+        this.allowLoadingAnimation = false;
         if (!this.isDestroyed && pointer.currentValue !== value) {
             const enableAnimation: boolean = pointer.animation.enable || animationMode === 'Enable';
             value = value < axis.visibleRange.min ? axis.visibleRange.min : value;
             value = value > axis.visibleRange.max ? axis.visibleRange.max : value;
             pointer['isPointerAnimation'] = true;
+            document.getElementById(this.element.id + '_Axis_' + axisIndex + '_Pointer_' + pointerIndex).style.visibility = 'visible';
             pointer.pathElement.map((element: Element) => {
                 if (pointer.type === 'RangeBar') {
                     setStyles(element as HTMLElement, pointer.color, pointer.border);
                     if (enableAnimation) {
                         this.gaugeAxisLayoutPanel.pointerRenderer.performRangeBarAnimation(
-                            element as HTMLElement, pointer.currentValue, value, axis, pointer);
+                            element as HTMLElement, pointer.currentValue, value, axis, pointer, axisIndex);
                     } else {
+                        this.isAnimationProgress = false; 
                         this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, pointer, value);
                     }
                 } else {
@@ -1343,17 +1398,21 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                     }
                     if (enableAnimation) {
                         if (pointer.type === 'Marker' && pointer.markerShape === 'Text') {
-                            this.gaugeAxisLayoutPanel.pointerRenderer.performTextAnimation(element as HTMLElement, pointer.currentValue, value, axis, pointer);
+                            this.gaugeAxisLayoutPanel.pointerRenderer.performTextAnimation(element as HTMLElement, pointer.currentValue, value, axis, pointer, axisIndex);
                         }
                         else {
                             this.gaugeAxisLayoutPanel.pointerRenderer.performNeedleAnimation(
-                                element as HTMLElement, pointer.currentValue, value, axis, pointer);
+                                element as HTMLElement, pointer.currentValue, value, axis, pointer, axisIndex);
                         }
                     } else {
                         this.gaugeAxisLayoutPanel.pointerRenderer.setPointerValue(axis, pointer, value);
                     }
                 }
             });
+            if (this.allowLoadingAnimation && !pointer.animation.enable) {                    
+                this.allowLoadingAnimation = false;
+                pointer.value = value;
+            }
         }
         this.isProtectedOnChange = true;
         pointer.previousValue = pointer.currentValue;
@@ -1372,10 +1431,11 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     public setAnnotationValue(axisIndex: number, annotationIndex: number, content: string | Function): void {
         if (!this.isDestroyed) {
+            this.allowLoadingAnimation = false;
             const isElementExist: boolean = getElement(this.element.id + '_Annotations_' + axisIndex) !== null;
             const element: HTMLElement = <HTMLElement>getElement(this.element.id + '_Annotations_' + axisIndex) ||
                 createElement('div', {
-                    id: this.element.id + '_Annotations_' + axisIndex
+                    id: this.element.id + '_Annotations_' + axisIndex, styles : this.animationDuration > 0 ? 'opacity: 0' : 'opacity: 1'
                 });
             const annotation: Annotation = <Annotation>this.axes[axisIndex as number].annotations[annotationIndex as number];
             if (content !== null) {
@@ -1463,6 +1523,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * @param {number} end - Specifies the end value for the current range in circular gauge.
      */
     public setRangeValue(axisIndex: number, rangeIndex: number, start: number, end: number): void {
+        this.allowLoadingAnimation = false;
         const element: Element = getElement(
             this.element.id + '_Axis_' + axisIndex + '_Range_' + rangeIndex
         );
@@ -1641,6 +1702,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         if (!this.isDestroyed) {
             this.isPropertyChange = true;
             let renderer: boolean = false;
+            this.allowLoadingAnimation = this.animationDuration > 0 && !this.isOverAllAnimationComplete ? true : false;
             let refreshBounds: boolean = false;
             let refreshWithoutAnimation: boolean = false;
             const isPointerValueSame: boolean = (Object.keys(newProp).length === 1 && newProp instanceof Object &&
@@ -1654,6 +1716,9 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 case 'margin':
                     this.createSvg();
                     refreshBounds = true;
+                    break;
+                case 'animationDuration':
+                    this.allowLoadingAnimation = true;
                     break;
                 case 'title':
                     refreshBounds = (newProp.title === '' || oldProp.title === '');
@@ -1677,7 +1742,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                     break;
                 case 'axes':
                     // eslint-disable-next-line no-case-declarations
-                    const axesPropertyLength: number = Object.keys(newProp.axes).length;
+                    const axesPropertyLength: number = this.axes.length;
                     for (let x: number = 0; x < axesPropertyLength; x++) {
                         if (!isNullOrUndefined(newProp.axes[x as number])) {
                             const collection: string[] = Object.keys(newProp.axes[x as number]);
@@ -1687,6 +1752,9 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                                     for (let y: number = 0; y < pointerPropertyLength; y++) {
                                         const index: number = parseInt(Object.keys(newProp.axes[x as number].pointers)[y as number], 10);
                                         if (!isNullOrUndefined(Object.keys(newProp.axes[x as number].pointers[index as number]))) {
+                                            this.allowLoadingAnimation = false;
+                                            this.loadingAnimationDuration = [];
+                                            this.isAnimationProgress = this.axes[x as number].pointers[index as number].animation.enable;
                                             this.axes[x as number].pointers[index as number]['previousValue'] = this.axes[x as number].pointers[index as number]['currentValue'];
                                             this.axes[x as number].pointers[index as number]['isPointerAnimation'] = Object.keys(newProp.axes[x as number].pointers[index as number]).indexOf('value') > -1;
                                         }
@@ -1704,12 +1772,16 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                     this.removeSvg();
                     this.renderElements();
                 }
-                if (refreshBounds) {
+                if (refreshBounds || this.allowLoadingAnimation) {
                     this.removeSvg();
                     this.calculateBounds();
                     this.renderElements();
+                    if (this.allowLoadingAnimation) {
+                        this.allowLoadingAnimation = this.animationDuration > 0 && !this.isOverAllAnimationComplete ? true : false;
+                        this.renderAnimation();
+                    }
                 }
-                if (refreshWithoutAnimation && !renderer && !refreshBounds) {
+                if (refreshWithoutAnimation && !renderer && !refreshBounds && !this.allowLoadingAnimation) {
                     this.removeSvg();
                     this.calculateBounds();
                     this.renderElements(false);

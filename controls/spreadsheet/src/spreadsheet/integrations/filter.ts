@@ -3,18 +3,18 @@ import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilte
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort } from '../index';
 import { filterRangeAlert, getFilteredCollection, beforeDelete, sheetsDestroyed, initiateFilter, duplicateSheetFilterHandler } from '../../workbook/common/event';
-import { FilterCollectionModel, getRangeIndexes, getCellAddress, updateFilter, ColumnModel, beforeInsert } from '../../workbook/index';
+import { FilterCollectionModel, getRangeIndexes, getCellAddress, updateFilter, ColumnModel, beforeInsert, parseLocaleNumber } from '../../workbook/index';
 import { getIndexesFromAddress, getSwapRange, getColumnHeaderText, CellModel, getDataRange, isCustomDateTime } from '../../workbook/index';
 import { getData, Workbook, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet, inRange } from '../../workbook/index';
 import { SheetModel, sortImport, clear, getColIndex, SortCollectionModel, setRow, ExtendedRowModel, hideShow } from '../../workbook/index';
 import { beginAction, FilterOptions, BeforeFilterEventArgs, FilterEventArgs, ClearOptions, getValueFromFormat } from '../../workbook/index';
 import { isFilterHidden, isNumber } from '../../workbook/index';
-import { getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser, KeyboardEventArgs, removeClass, detach } from '@syncfusion/ej2-base';
-import { L10n } from '@syncfusion/ej2-base';
+import { getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
+import { L10n, detach, classList, getNumericObject, getNumberDependable, defaultCurrencyCode } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { IFilterArgs, PredicateModel, ExcelFilterBase, beforeFltrcMenuOpen, CheckBoxFilterBase, getUid } from '@syncfusion/ej2-grids';
 import { filterCmenuSelect, filterCboxValue, filterDialogCreated, filterDialogClose, createCboxWithWrap } from '@syncfusion/ej2-grids';
-import { parentsUntil } from '@syncfusion/ej2-grids';
+import { parentsUntil, toogleCheckbox, fltrPrevent } from '@syncfusion/ej2-grids';
 import { Query, DataManager, Predicate, Deferred } from '@syncfusion/ej2-data';
 import { SortOrder, MenuItemModel, NodeKeyPressEventArgs, NodeClickEventArgs, NodeCheckEventArgs } from '@syncfusion/ej2-navigations';
 import { TreeView } from '@syncfusion/ej2-navigations';
@@ -82,6 +82,7 @@ export class Filter {
         this.parent.on(filterDialogCreated, this.filterDialogCreatedHandler, this);
         this.parent.on(filterDialogClose, this.removeFilterClass, this);
         this.parent.on(duplicateSheetFilterHandler, this.duplicateSheetFilterHandler, this);
+        this.parent.on(fltrPrevent, this.beforeFilteringHandler, this);
     }
 
     private removeEventListener(): void {
@@ -110,6 +111,7 @@ export class Filter {
             this.parent.off(filterDialogCreated, this.filterDialogCreatedHandler);
             this.parent.off(filterDialogClose, this.removeFilterClass);
             this.parent.off(duplicateSheetFilterHandler, this.duplicateSheetFilterHandler);
+            this.parent.off(fltrPrevent, this.beforeFilteringHandler);
         }
     }
 
@@ -647,6 +649,284 @@ export class Filter {
         }
     }
 
+    private cboxListSelected(args: FilterCheckboxArgs, selectedList: string[], listCount: number, e: MouseEvent, searched?: boolean): void {
+        const wrapper: Element = parentsUntil(<Element>e.target, 'e-ftrchk');
+        if (wrapper) {
+            const addCurCbox: Element = searched && wrapper.querySelector('.e-add-current');
+            if (addCurCbox) {
+                if (addCurCbox.classList.contains('e-check')) {
+                    classList(addCurCbox, ['e-uncheck'], ['e-check']);
+                    if (!selectedList.length) {
+                        (args.btnObj.element as HTMLButtonElement).disabled = true;
+                    }
+                } else {
+                    classList(addCurCbox, ['e-check'], ['e-uncheck']);
+                    (args.btnObj.element as HTMLButtonElement).disabled = false;
+                }
+                return;
+            }
+            let selectAll: Element = wrapper.querySelector('.e-selectall');
+            if (selectAll) {
+                (wrapper.querySelector('.e-chk-hidden') as HTMLInputElement).indeterminate = false;
+                const uncheck: boolean = wrapper.querySelector('.e-frame').classList.contains('e-check');
+                let checkBoxFrame: Element; let text: string;
+                for (let idx: number = searched ? 2 : 1, len: number = args.element.childElementCount; idx < len; idx++) {
+                    checkBoxFrame = args.element.children[idx as number].querySelector('.e-frame');
+                    removeClass([checkBoxFrame], ['e-check', 'e-stop', 'e-uncheck']);
+                    if (uncheck) {
+                        (<HTMLInputElement>args.element.children[idx as number].querySelector('.e-chk-hidden')).checked = false;
+                        checkBoxFrame.classList.add('e-uncheck');
+                        selectedList.splice(0, 1);
+                    } else {
+                        (<HTMLInputElement>args.element.children[idx as number].querySelector('.e-chk-hidden')).checked = true;
+                        checkBoxFrame.classList.add('e-check');
+                        text = args.element.children[idx as number].querySelector('.e-checkboxfiltertext').textContent;
+                        if (selectedList.indexOf(text) === -1) {
+                            selectedList.push(text);
+                        }
+                    }
+                }
+            } else {
+                const text: string = wrapper.querySelector('.e-checkboxfiltertext').textContent;
+                if (wrapper.querySelector('.e-frame').classList.contains('e-check')) {
+                    selectedList.splice(selectedList.indexOf(text), 1);
+                } else {
+                    selectedList.push(text);
+                }
+                toogleCheckbox(wrapper);
+                selectAll = args.element.querySelector('.e-selectall');
+            }
+            this.updateState(
+                args, selectAll, selectAll.parentElement.querySelector('.e-chk-hidden') as HTMLInputElement,
+                selectedList.length !== listCount, selectedList.length);
+        }
+    }
+
+    private initCboxList(args: FilterCheckboxArgs, excelFilter: ExcelFilterBase): void {
+        const sortedData: { [key: string]: string }[] = new DataManager(
+            args.dataSource).executeLocal(new Query().sortBy('value', 'ascending')) as { [key: string]: string }[];
+        const listData: string[] = []; const field: string = args.column.field;
+        let isBlank: boolean; const sheet: SheetModel = this.parent.getActiveSheet();
+        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+        const cBoxFrag: DocumentFragment = document.createDocumentFragment();
+        const selectAll: Element = this.createSelectAll(args, excelFilter);
+        cBoxFrag.appendChild(selectAll);
+        const idCol: { [key: string]: boolean } = {}; let hidden: boolean;
+        const initSelectedList: string[] = [];
+        let selectedList: string[] = []; let dataVal: string;
+        sortedData.forEach((data: { [key: string]: string }): void => {
+            if (data[field as string] === '') {
+                if (!idCol['isBlank']) {
+                    idCol['isBlank'] = true;
+                    const blankObj: { [key: string]: string } = {};
+                    blankObj[args.column.field] = l10n.getConstant('Blanks');
+                    hidden = isFilterHidden(sheet, Number(data['__rowIndex']) - 1);
+                    const blankCbox: Element = createCboxWithWrap(
+                        getUid('cbox'), (excelFilter as any).createCheckbox(blankObj[args.column.field], !hidden, blankObj), 'e-ftrchk');
+                    cBoxFrag.childElementCount === 1 ? cBoxFrag.appendChild(blankCbox) :
+                        cBoxFrag.insertBefore(blankCbox, cBoxFrag.children[1]);
+                    listData.splice(0, 0, blankObj[args.column.field]);
+                    if (!hidden) {
+                        initSelectedList.push(blankObj[args.column.field]);
+                        selectedList.push(blankObj[args.column.field]);
+                    }
+                }
+            } else if (!idCol[data[field as string]]) {
+                idCol[data[field as string]] = true;
+                hidden = isFilterHidden(sheet, Number(data['__rowIndex']) - 1);
+                dataVal = data[field as string].toString();
+                cBoxFrag.appendChild(
+                    createCboxWithWrap(getUid('cbox'), (excelFilter as any).createCheckbox(dataVal, !hidden, data), 'e-ftrchk'));
+                listData.push(dataVal);
+                if (!hidden) {
+                    initSelectedList.push(dataVal);
+                    selectedList.push(dataVal);
+                }
+            }
+        });
+        args.element.appendChild(cBoxFrag);
+        const cBoxFrame: Element = selectAll.querySelector('.e-frame');
+        cBoxFrame.classList.add('e-selectall');
+        const cBox: HTMLInputElement = selectAll.querySelector('.e-chk-hidden') as HTMLInputElement;
+        this.updateState(args, cBoxFrame, cBox, selectedList.length !== listData.length, selectedList.length);
+        const mainCboxList: Element[] = [].slice.call(args.element.childNodes);
+        let searchedSelectedList: string[];
+        args.element.addEventListener('click', (e: MouseEvent): void => {
+            if (searchedSelectedList) {
+                this.cboxListSelected(args, searchedSelectedList, args.element.childElementCount - 2, e, true);
+            } else {
+                this.cboxListSelected(args, selectedList, listData.length, e);
+            }
+        });
+        const refreshCheckbox: Function = (e: { event: KeyboardEvent }): void => {
+            let searchValue: string;
+            if (e.event.type === 'keyup') {
+                searchValue = (e.event.target as HTMLInputElement).value.toLowerCase();
+            } else if ((e.event.target as Element).classList.contains('e-search-icon')) {
+                return;
+            }
+            const cBoxFrag: DocumentFragment = document.createDocumentFragment();
+            cBoxFrag.appendChild(selectAll);
+            if (searchValue) {
+                searchedSelectedList = [];
+                listData.forEach((data: string): void => {
+                    if (data.toLowerCase().includes(searchValue)) {
+                        const obj: { [key: string]: string } = {};
+                        obj[args.column.field] = data;
+                        cBoxFrag.appendChild(
+                            createCboxWithWrap(getUid('cbox'), (excelFilter as any).createCheckbox(data, true, obj), 'e-ftrchk'));
+                        searchedSelectedList.push(data);
+                    }
+                });
+                if (!searchedSelectedList.length) {
+                    selectAll.classList.add('e-hide');
+                    const noRecordEle: Element = this.parent.createElement('div', { className: 'e-checkfltrnmdiv' });
+                    const noRecordText: HTMLElement = this.parent.createElement('span');
+                    noRecordText.innerText = l10n.getConstant('NoResult');
+                    noRecordEle.appendChild(noRecordText);
+                    cBoxFrag.appendChild(noRecordEle);
+                    (args.btnObj.element as HTMLButtonElement).disabled = true;
+                } else {
+                    this.updateState(args, cBoxFrame, cBox, false, 0);
+                    selectAll.classList.remove('e-hide');
+                    const obj: { [key: string]: string } = {};
+                    obj[args.column.field] = l10n.getConstant('AddCurrentSelection');
+                    const addCurrentCbox: Element = createCboxWithWrap(
+                        getUid('cbox'), (excelFilter as any).createCheckbox(obj[args.column.field], false, obj), 'e-ftrchk');
+                    cBoxFrag.insertBefore(addCurrentCbox, cBoxFrag.children[1]);
+                    addCurrentCbox.querySelector('.e-frame').classList.add('e-add-current');
+                }
+            } else if (mainCboxList) {
+                searchedSelectedList = null;
+                this.updateState(args, cBoxFrame, cBox, selectedList.length !== listData.length, selectedList.length);
+                selectAll.classList.remove('e-hide');
+                mainCboxList.forEach((element: Element): void => {
+                    cBoxFrag.appendChild(element);
+                });
+            }
+            args.element.innerHTML = '';
+            args.element.appendChild(cBoxFrag);
+        };
+        const applyBtnClickHandler: Function = (): void => {
+            const addCurCbox: Element = args.element.querySelector('.e-add-current');
+            if (addCurCbox) {
+                if (addCurCbox.classList.contains('e-check')) {
+                    let cBox: Element; let text: string; let index: number;
+                    selectedList = initSelectedList;
+                    for (let idx: number = 2, len: number = args.element.childElementCount; idx < len; idx++) {
+                        cBox = args.element.children[idx as number];
+                        text = cBox.querySelector('.e-checkboxfiltertext').textContent;
+                        if (cBox.querySelector('.e-frame').classList.contains('e-check')) {
+                            if (selectedList.indexOf(text) === -1) {
+                                selectedList.push(text);
+                            }
+                        } else {
+                            index = selectedList.indexOf(text);
+                            if (index > -1) {
+                                selectedList.splice(index, 1);
+                            }
+                        }
+                    }
+                } else {
+                    selectedList = searchedSelectedList;
+                }
+            }
+            const checkedLength: number = selectedList.length;
+            if (checkedLength === listData.length) {
+                this.filterSuccessHandler(new DataManager(args.dataSource), { action: 'clear-filter', field: args.column.field });
+            } else {
+                const predicates: PredicateModel[] = [];
+                const model: PredicateModel = { field: field, ignoreAccent: false, matchCase: false };
+                const curSymbol: string = getNumberDependable(locale, defaultCurrencyCode);
+                const localeObj: { decimal: string, group: string } = getNumericObject(
+                    this.parent.locale) as { decimal: string, group: string };
+                const updatePredicate: Function = (val: string): void => {
+                    let type: string = args.type;
+                    if (type === 'number') {
+                        if (val === l10n.getConstant('Blanks')) {
+                            val = ''; type = 'string';
+                        } else if (!isNumber(parseLocaleNumber([val], this.parent.locale, curSymbol, localeObj)[0])) {
+                            type = 'string';
+                        }
+                    }
+                    predicates.push(Object.assign({ value: val, type: type }, model));
+                };
+                if (checkedLength > listData.length / 2) {
+                    model.operator = 'notequal'; model.predicate = 'and';
+                    for (let idx: number = 0, len: number = listData.length; idx < len; idx++) {
+                        if (selectedList.indexOf(listData[idx as number]) === -1) {
+                            updatePredicate(listData[idx as number]);
+                        }
+                    }
+                } else {
+                    model.operator = 'equal'; model.predicate = 'or';
+                    for (let idx: number = 0, len: number = checkedLength; idx < len; idx++) {
+                        updatePredicate(selectedList[idx as number]);
+                    }
+                }
+                excelFilter.initiateFilter(predicates);
+            }
+        };
+        this.wireFilterEvents(args, applyBtnClickHandler, refreshCheckbox.bind(this));
+    }
+
+    private createSelectAll(args: FilterCheckboxArgs, excelFilter: ExcelFilterBase): Element {
+        const selectAllObj: { [key: string]: Object } = {};
+        selectAllObj[args.column.field] = this.parent.serviceLocator.getService<L10n>(locale).getConstant('SelectAll');
+        const selectAll: Element = createCboxWithWrap(
+            getUid('cbox'), (excelFilter as any).createCheckbox(selectAllObj[args.column.field], false, selectAllObj), 'e-ftrchk');
+        return selectAll;
+    }
+
+    private updateState(
+        args: FilterCheckboxArgs, cBoxFrame: Element, cBox: HTMLInputElement, indeterminate: boolean, checkedCount: number): void {
+        removeClass([cBoxFrame], ['e-check', 'e-stop', 'e-uncheck']);
+        if ((args.btnObj.element as HTMLButtonElement).disabled) {
+            (args.btnObj.element as HTMLButtonElement).disabled = false;
+        }
+        if (indeterminate) {
+            if (checkedCount) {
+                cBoxFrame.classList.add('e-stop');
+            } else {
+                cBoxFrame.classList.add('e-uncheck');
+                const addCurCbox: Element = args.element.querySelector('.e-add-current');
+                (args.btnObj.element as HTMLButtonElement).disabled = !addCurCbox || !addCurCbox.classList.contains('e-check');
+            }
+        } else {
+            cBoxFrame.classList.add('e-check');
+        }
+        cBox.indeterminate = indeterminate;
+        cBox.checked = !indeterminate;
+    }
+
+    private beforeFilteringHandler(
+        evt: { instance: { options: { isFormatted: boolean } }, arg3: number | string, arg8: number | string }): void {
+        if (evt.instance && evt.instance.options && evt.instance.options.isFormatted) {
+            if (isNumber(evt.arg3)) {
+                evt.arg3 = evt.arg3.toString();
+            }
+            if (isNumber(evt.arg8)) {
+                evt.arg3 = evt.arg3.toString();
+            }
+        }
+    }
+
+    private wireFilterEvents(args: FilterCheckboxArgs, applyBtnClickHandler: Function, refreshCheckboxes: Function): void {
+        args.btnObj.element.addEventListener('click', applyBtnClickHandler.bind(this));
+        (args as { searchBox?: Element }).searchBox.addEventListener('keydown', (e: KeyboardEvent): void => {
+            if (e.keyCode === 13) {
+                applyBtnClickHandler();
+            }
+        });
+        const filterDlgCloseHandler: Function = (args: any): void => {
+            this.parent.off(refreshCheckbox, refreshCheckboxes);
+            this.parent.off(filterDialogClose, filterDlgCloseHandler);
+            focus(this.parent.element);
+        };
+        this.parent.on(filterDialogClose, filterDlgCloseHandler, this);
+        this.parent.on(refreshCheckbox, refreshCheckboxes, this);
+    }
+
     private initTreeView(args: FilterCheckboxArgs, excelFilter: ExcelFilterBase): void {
         let checkedNodes: string[] = [];
         const allNodes: string[] = [];
@@ -748,32 +1028,11 @@ export class Filter {
                 cBox.checked = true;
             }
         };
-        const updateState: Function = (): void => {
-            removeClass([cBoxFrame], ['e-check', 'e-stop', 'e-uncheck']);
-            if ((args.btnObj.element as HTMLButtonElement).disabled) {
-                (args.btnObj.element as HTMLButtonElement).disabled = false;
-            }
-            if (indeterminate) {
-                if (treeViewObj.checkedNodes.length) {
-                    cBoxFrame.classList.add('e-stop');
-                } else {
-                    cBoxFrame.classList.add('e-uncheck');
-                    (args.btnObj.element as HTMLButtonElement).disabled = true;
-                }
-            } else {
-                cBoxFrame.classList.add('e-check');
-            }
-            cBox.indeterminate = indeterminate;
-            cBox.checked = !indeterminate;
-        };
-        const selectAllObj: { [key: string]: Object } = {};
-        selectAllObj[args.column.field] = this.parent.serviceLocator.getService<L10n>(locale).getConstant('SelectAll');
-        const selectAll: Element = createCboxWithWrap(
-            getUid('cbox'), (excelFilter as any).createCheckbox(selectAllObj[args.column.field], false, selectAllObj), 'e-ftrchk');
+        const selectAll: Element = this.createSelectAll(args, excelFilter);
+        selectAll.addEventListener('click', selectAllClick.bind(this));
         selectAll.classList.add('e-spreadsheet-ftrchk');
         const cBoxFrame: Element = selectAll.querySelector('.e-frame');
         cBoxFrame.classList.add('e-selectall');
-        selectAll.addEventListener('click', selectAllClick.bind(this));
         args.element.appendChild(selectAll);
         const cBox: HTMLInputElement = selectAll.querySelector('.e-chk-hidden') as HTMLInputElement;
         const treeViewEle: HTMLElement = this.parent.createElement('div');
@@ -782,10 +1041,10 @@ export class Filter {
             enableRtl: this.parent.enableRtl, showCheckBox: true, cssClass: 'e-checkboxtree', checkedNodes: checkedNodes,
             nodeClicked: nodeClick.bind(this),
             keyPress: nodeClick.bind(this),
-            nodeChecked: (args: NodeCheckEventArgs): void => {
-                if (args.action !== 'indeterminate') {
+            nodeChecked: (e: NodeCheckEventArgs): void => {
+                if (e.action !== 'indeterminate') {
                     indeterminate = treeViewObj.checkedNodes.length !== (treeViewObj.fields.dataSource as Object[]).length;
-                    updateState();
+                    this.updateState(args, cBoxFrame, cBox, indeterminate, treeViewObj.checkedNodes.length);
                 }
             }
         });
@@ -793,7 +1052,7 @@ export class Filter {
         treeViewObj.appendTo(treeViewEle);
         args.element.appendChild(treeViewEle);
         checkedNodes = treeViewObj.checkedNodes;
-        updateState();
+        this.updateState(args, cBoxFrame, cBox, indeterminate, treeViewObj.checkedNodes.length);
         const applyBtnClickHandler: Function = (): void => {
             if (treeViewObj.checkedNodes.length === groupedData.length) {
                 this.filterSuccessHandler(new DataManager(args.dataSource), { action: 'clear-filter', field: args.column.field });
@@ -803,14 +1062,7 @@ export class Filter {
                     treeViewObj.checkedNodes.length > groupedData.length / 2);
             }
         };
-        args.btnObj.element.addEventListener('click', applyBtnClickHandler.bind(this));
-        const refreshCheckboxes: Function = this.refreshCheckbox.bind(this, groupedData, treeViewObj, checkedNodes);
-        const filterDlgCloseHandler: Function = (): void => {
-            this.parent.off(refreshCheckbox, refreshCheckboxes);
-            this.parent.off(filterDialogClose, filterDlgCloseHandler);
-        };
-        this.parent.on(filterDialogClose, filterDlgCloseHandler, this);
-        this.parent.on(refreshCheckbox, refreshCheckboxes, this);
+        this.wireFilterEvents(args, applyBtnClickHandler, this.refreshCheckbox.bind(this, groupedData, treeViewObj, checkedNodes));
     }
 
     private generatePredicate(
@@ -975,28 +1227,35 @@ export class Filter {
             range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         }
         const fullRange: number[] = [range[0], colIndex - 1, range[2], colIndex - 1];
-        const totalRange: { address: string, filteredCol: boolean, otherColPredicate: PredicateModel[] } = this.getPredicateRange(
-            fullRange, this.filterCollection.get(sheetIdx), colIndex - 1) as { address: string, filteredCol: boolean,
-            otherColPredicate: PredicateModel[] };
+        const totalRange: { address: string, filteredCol: boolean, otherColPredicate: PredicateModel[], curPredicate: PredicateModel[] } =
+            this.getPredicateRange(
+                fullRange, this.filterCollection.get(sheetIdx), colIndex - 1) as { address: string, filteredCol: boolean,
+                    otherColPredicate: PredicateModel[], curPredicate: PredicateModel[] };
         const otherColPredicate: PredicateModel[] = totalRange.otherColPredicate;
+        let curColPredicates: { [key: string]: PredicateModel[] };
+        if (totalRange.curPredicate.length) {
+            curColPredicates = {};
+            curColPredicates[field as string] = totalRange.curPredicate;
+        }
         const addr: string = `${sheet.name}!${totalRange.address}`;
         const fullAddr: string = getRangeAddress(fullRange);
-        const col: { type: string, isDateAvail: boolean } = this.getColumnType(sheet, colIndex - 1, range);
+        const col: { type: string, isDateAvail: boolean, numFormatApplied: boolean } = this.getColumnType(sheet, colIndex - 1, range);
         const type: string = col.type;
-        let dateColData: { [key: string]: Object }[];
+        let templateColData: { [key: string]: Object }[];
         const isDateCol: boolean = type === 'date' || col.isDateAvail;
-        if (isDateCol && !totalRange.filteredCol) {
-            dateColData = [];
+        const templateFilter: boolean = isDateCol || col.numFormatApplied;
+        if (templateFilter && !totalRange.filteredCol) {
+            templateColData = [];
         }
         getData(
-            this.parent, addr, true, true, null, true, null, null, false, fullAddr, null, dateColData).then((
+            this.parent, addr, true, true, null, true, null, null, false, fullAddr, null, templateColData, col.numFormatApplied && field).then((
             jsonData: { [key: string]: CellModel }[]) => {
             let checkBoxData: DataManager;
             this.parent.element.style.position = 'relative';
             this.parent.element.classList.add('e-filter-open');
-            if (isDateCol) {
-                if (dateColData || !otherColPredicate.length) {
-                    checkBoxData = new DataManager(dateColData || jsonData);
+            if (templateFilter) {
+                if (templateColData || !otherColPredicate.length) {
+                    checkBoxData = new DataManager(templateColData || jsonData);
                 } else {
                     const data: Object[] = new DataManager(jsonData).executeLocal(
                         new Query().where(Predicate.and(this.getPredicates(otherColPredicate))));
@@ -1005,7 +1264,11 @@ export class Filter {
                 const beforeCboxRender: Function = (args: FilterCheckboxArgs): void => {
                     this.parent.off(beforeCheckboxRender, beforeCboxRender);
                     args.isCheckboxFilterTemplate = true;
-                    this.initTreeView(args, excelFilter);
+                    if (isDateCol) {
+                        this.initTreeView(args, excelFilter);
+                    } else {
+                        this.initCboxList(args, excelFilter);
+                    }
                 };
                 this.parent.on(beforeCheckboxRender, beforeCboxRender, this);
             } else {
@@ -1016,16 +1279,17 @@ export class Filter {
                 });
             }
             const target: HTMLElement = cell.querySelector('.e-filter-btn');
-            const options: IFilterArgs = {
+            const options: { isFormatted?: boolean } | IFilterArgs = {
                 type: type, field: field, format: (type === 'date' ? this.getDateFormatFromColumn(sheet, colIndex, range) : null),
                 displayName: displayName || 'Column ' + field,
                 dataSource: checkBoxData, height: this.parent.element.classList.contains('e-bigger') ? 800 : 500, columns: [],
                 hideSearchbox: false, filteredColumns: this.filterCollection.get(sheetIdx), column: { 'field': field, 'filter': {} },
                 handler: this.filterSuccessHandler.bind(this, new DataManager(jsonData)), target: target,
-                position: { X: 0, Y: 0 }, localeObj: this.parent.serviceLocator.getService(locale)
+                position: { X: 0, Y: 0 }, localeObj: this.parent.serviceLocator.getService(locale), actualPredicate: curColPredicates,
+                isFormatted: templateFilter && !isDateCol
             };
             const excelFilter: ExcelFilterBase = new ExcelFilterBase(this.parent, this.getLocalizedCustomOperators());
-            excelFilter.openDialog(options);
+            excelFilter.openDialog(<IFilterArgs>options);
             const filterPopup: HTMLElement = document.querySelector('.e-filter-popup');
             if (filterPopup && filterPopup.id.includes(this.parent.element.id)) {
                 EventHandler.add(filterPopup, getStartEvent(), this.filterMouseDownHandler, this);
@@ -1058,10 +1322,10 @@ export class Filter {
 
     private getPredicateRange(
         range: number[], predicates: PredicateModel[], col?: number):
-        string | { address: string, filteredCol: boolean, otherColPredicate: PredicateModel[] } {
+        string | { address: string, filteredCol: boolean, otherColPredicate: PredicateModel[], curPredicate: PredicateModel[] } {
         let addr: string = getRangeAddress(range);
         let filteredCol: boolean;
-        const otherColPredicate: PredicateModel[] = [];
+        const otherColPredicate: PredicateModel[] = []; const curPredicate: PredicateModel[] = [];
         if (predicates && predicates.length) {
             let predicateRange: string; let colIdx: number;
             predicates.forEach((predicate: PredicateModel): void => {
@@ -1076,6 +1340,7 @@ export class Filter {
                     if (col !== undefined) {
                         if (colIdx === col) {
                             filteredCol = true;
+                            curPredicate.push(predicate);
                         } else {
                             otherColPredicate.push(predicate);
                         }
@@ -1085,7 +1350,8 @@ export class Filter {
         } else {
             filteredCol = true;
         }
-        return col === undefined ? addr : { address: addr, filteredCol: filteredCol, otherColPredicate: otherColPredicate };
+        return col === undefined ? addr :
+            { address: addr, filteredCol: filteredCol, otherColPredicate: otherColPredicate, curPredicate: curPredicate };
     }
 
     private filterDialogCreatedHandler(): void {
@@ -1266,7 +1532,9 @@ export class Filter {
             if (!isInternal) {
                 delete eventArgs.cancel;
                 this.parent.notify(completeAction, { action: 'filter', eventArgs: eventArgs });
-                focus(this.parent.element);
+                if (document.activeElement.id !== `${this.parent.element.id}_SearchBox`) {
+                    focus(this.parent.element);
+                }
             }
             return Promise.resolve(args);
         }).catch((error: string) => {
@@ -1298,18 +1566,20 @@ export class Filter {
      * @param {number[]} range - Specify the range.
      * @returns {string} - Gets the column type to pass it into the excel filter options.
      */
-    private getColumnType(sheet: SheetModel, colIndex: number, range: number[]): { type: string, isDateAvail: boolean } {
-        let num: number = 0; let str: number = 0; let date: number = 0; const time: number = 0;
+    private getColumnType(
+        sheet: SheetModel, colIndex: number, range: number[]): { type: string, isDateAvail: boolean, numFormatApplied: boolean } {
+        let num: number = 0; let str: number = 0; let date: number = 0; const time: number = 0; let numFormat: boolean; let cell: CellModel;
         for (let i: number = range[0]; i <= range[2]; i++) {
-            const cell: CellModel = getCell(i, colIndex, sheet);
+            cell = getCell(i, colIndex, sheet);
             if (cell) {
-                if (cell.format) {
+                if (cell.format && cell.format !== 'General') {
                     const type: string = getTypeFromFormat(cell.format).toLowerCase();
                     switch (type) {
                     case 'number':
                     case 'currency':
                     case 'accounting':
                     case 'percentage':
+                        numFormat = true;
                         num++;
                         break;
                     case 'shortdate':
@@ -1320,9 +1590,11 @@ export class Filter {
                         num++;
                         break;
                     default:
-                        if (isCustomDateTime(cell.format)) {
-                            date++;
+                        const formatOption: { type?: string } = {};
+                        if (isCustomDateTime(cell.format, true, formatOption)) {
+                            formatOption.type === 'date' ? date++ : num++;
                         } else if (isNumber(cell.value)) {
+                            numFormat = true;
                             num++;
                         } else if (cell.value) {
                             str++;
@@ -1337,7 +1609,7 @@ export class Filter {
             }
         }
         return { type: (num > str && num > date && num > time) ? 'number' : (str >= num && str >= date && str >= time) ? 'string'
-            : (date > num && date > str && date > time) ? 'date' : 'datetime', isDateAvail: !!date };
+            : (date > num && date > str && date > time) ? 'date' : 'datetime', isDateAvail: !!date, numFormatApplied: numFormat };
     }
 
     private getDateFormatFromColumn(sheet: SheetModel, colIndex: number, range: number[]): string {

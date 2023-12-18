@@ -61,6 +61,9 @@ export class EmojiPicker {
             spanElement = this.parent.element.ownerDocument.querySelector('.e-emoji');
         }
         this.divElement = spanElement.closest('div');
+        if (!(this.parent.inputElement.contains(this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument()).startContainer))) {
+            (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
+        }
         const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
         this.save = this.parent.formatter.editorManager.nodeSelection.save(
             range, this.parent.contentModule.getDocument());
@@ -705,7 +708,8 @@ export class EmojiPicker {
 
     private onkeyPress(e: NotifyArgs): void {
         const originalEvent: KeyboardEventArgs = e.args as KeyboardEventArgs;
-        const selection: Selection = this.parent.contentModule.getDocument().getSelection();
+        const selection: Selection = (this.parent.iframeSettings.enable) ? (this.parent.contentModule.getPanel() as HTMLIFrameElement).contentWindow.getSelection() : 
+            this.parent.contentModule.getDocument().getSelection();
         if (selection.rangeCount <= 0) { return; }
         const range: Range = selection.getRangeAt(0);
         const cursorPos: number = range.startOffset;
@@ -723,6 +727,10 @@ export class EmojiPicker {
         }
         if (originalEvent.keyCode === 32 && isPrevColon && this.popupObj) {
             removeClass([this.divElement], 'e-active');
+            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument : this.parent.contentModule.getDocument();
+            if (this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {
+                this.parent.notify(events.destroyTooltip, {args: event});
+            }
             this.popupObj.hide();
         }
         if (this.popupObj && (originalEvent.keyCode === 37 || originalEvent.keyCode === 38 || originalEvent.keyCode === 39
@@ -734,7 +742,8 @@ export class EmojiPicker {
 
     private onkeyUp(e: NotifyArgs): void {
         const originalEvent: KeyboardEventArgs = e.args as KeyboardEventArgs;
-        const selection: Selection = this.parent.contentModule.getDocument().getSelection();
+        const selection: Selection = (this.parent.iframeSettings.enable) ? (this.parent.contentModule.getPanel() as HTMLIFrameElement).contentWindow.getSelection() : 
+            this.parent.contentModule.getDocument().getSelection();
         if (selection.rangeCount <= 0) { return; }
         const range: Range = selection.getRangeAt(0);
         const cursorPos: number = range.startOffset;
@@ -759,7 +768,7 @@ export class EmojiPicker {
 
     private getCoordinates(): { [key: string]: number } {
         let coordinates: { [key: string]: number };
-        const selection: Selection = this.parent.contentModule.getDocument().getSelection();
+        const selection: Selection = (this.parent.iframeSettings.enable) ? (this.parent.contentModule.getPanel() as HTMLIFrameElement).contentWindow.getSelection() : window.getSelection();
         const range: Range = selection.getRangeAt(0);
         let firstChild: HTMLElement;
         if (range.startContainer.nodeName === 'P' || range.startContainer.nodeName === 'DIV') {

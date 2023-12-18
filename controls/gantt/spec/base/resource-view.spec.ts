@@ -1079,7 +1079,7 @@ describe('Self reference data', () => {
             Duration: 3,
             Progress: 50
         };
-        ganttObj.editModule.addRecord(record, 'Below', 2);
+        ganttObj.editModule.addRecord(record, 'Below', 7);
         expect(ganttObj.flatData.length).toBe(12);
     });
   });
@@ -2916,3 +2916,80 @@ describe('Other instance of the taskbar not moved in the resource view issue', (
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[8].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/11/2019');
     });
 });
+describe("MT-858829-Virtual date Resource View sample is not rendering", () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+      ganttObj = createGantt(
+        {
+          dataSource: [
+            {
+                TaskID: 1,
+                TaskName: "Identify Site location",
+                StartDate: new Date("04/02/2019"),
+                Duration: 4,
+                resources: [{ resourceId: 1, resourceUnit: 50 }],
+            },
+            {
+                TaskID: 2,
+                TaskName: "Identify Soil",
+                StartDate: new Date("04/02/2019"),
+                Duration: 0,
+                resources: [{ resourceId: 1, resourceUnit: 50 }],
+            },
+          ],
+          resources: [
+            { resourceId: 1, resourceName: "Martin Tamer" }
+          ],
+          viewType: "ResourceView",
+          taskFields: {
+            id: "TaskID",
+            name: "TaskName",
+            startDate: "StartDate",
+            duration: "Duration",
+            resourceInfo: "resources",
+           },
+           resourceFields: {
+            id: "resourceId",
+            name: "resourceName",
+            unit: "resourceUnit",
+          },
+          splitterSettings: {
+            columnIndex: 4
+          },
+          columns: [
+            { field: 'TaskID', visible: true },
+            { field: 'TaskName', headerText: 'Name', width: 250 },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+          ],
+          editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+          },
+          toolbar: [ "Add", "Edit", "Update", "Delete", "Cancel", "ExpandAll", "CollapseAll"],
+          height: "450px",
+        },
+        done
+      );
+    });
+    afterAll(() => {
+      if (ganttObj) {
+        destroyGantt(ganttObj);
+      }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 1500);
+    });
+    it("Resourceview duartion cell edit", () => {
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = 0;
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        ganttObj.treeGrid.saveCell();
+        expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(4);
+      });    
+  });

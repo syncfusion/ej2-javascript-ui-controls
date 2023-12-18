@@ -16,6 +16,7 @@ import { StockChart } from '../../stock-chart/stock-chart';
 import { ITooltipRenderEventArgs, ISharedTooltipRenderEventArgs } from '../model/chart-interface';
 import { tooltipRender, sharedTooltipRender } from '../../common/model/constants';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { TooltipSettingsModel } from '../../common/model/base-model';
 
 /**
  * `Tooltip` module is used to render the tooltip for chart series.
@@ -199,6 +200,7 @@ export class Tooltip extends BaseTooltip {
         };
         const borderWidth : number = this.chart.border.width;
         const padding : number = 3;
+        const tooltip: TooltipSettingsModel = this.chart.tooltip
         const chartTooltipSuccess: Function = (argsData: ITooltipRenderEventArgs) => {
             if (!argsData.cancel) {
                 if (point.series.type === 'BoxAndWhisker') {
@@ -208,8 +210,13 @@ export class Tooltip extends BaseTooltip {
                 this.headerText = argsData.headerText;
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = this.formattedText;
+                let location: ChartLocation = this.getSymbolLocation(point);
+                location = location ? location : new ChartLocation(null, null);
+                location.x = tooltip.location.x !== null ? tooltip.location.x : location.x;
+                location.y = tooltip.location.y !== null ? tooltip.location.y : location.y;
+                location = (location.x === null && location.y === null) ? null : location;
                 this.createTooltip(
-                    this.chart, isFirst, this.getSymbolLocation(point),
+                    this.chart, isFirst, location,
                     point.series.clipRect, point.point, this.findShapes(),
                     this.findMarkerHeight(<PointData>this.currentPoints[0]),
                     new Rect(borderWidth, borderWidth, this.chart.availableSize.width - padding - borderWidth * 2, this.chart.availableSize.height - padding - borderWidth * 2),
@@ -475,9 +482,15 @@ export class Tooltip extends BaseTooltip {
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = argsData.text;
                 this.headerText = argsData.headerText;
+                const tooltip: TooltipSettingsModel = this.chart.tooltip
                 this.findMouseValue(point, this.chart);
+                let location: ChartLocation = this.findSharedLocation();
+                location = location ? location : new ChartLocation(null, null);
+                location.x = tooltip.location.x !== null ? tooltip.location.x : location.x;
+                location.y = tooltip.location.y !== null ? tooltip.location.y : location.y;
+                location = (location.x === null && location.y === null) ? null : location;
                 this.createTooltip(
-                    chart, isFirst, this.findSharedLocation(),
+                    chart, isFirst, location,
                     this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null, dataCollection.length === 1 ? dataCollection[0].point : null,
                     this.findShapes(), this.findMarkerHeight(<PointData>this.currentPoints[0]),
                     new Rect(borderWidth, (chart.stockChart ? (toolbarHeight + titleHeight + borderWidth) : borderWidth), this.chart.availableSize.width - padding - borderWidth * 2, this.chart.availableSize.height - padding - borderWidth * 2),

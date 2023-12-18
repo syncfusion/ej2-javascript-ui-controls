@@ -985,6 +985,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             className: ROOT + ' ' + POPUP,
             attrs: { 'id': this.element.id + '_popup', 'style': 'visibility:hidden' }
         });
+        this.popupWrapper.setAttribute( 'aria-label', this.element.id );
+        this.popupWrapper.setAttribute( 'role', 'dialog' );
         if (!isNullOrUndefined(this.cssClass)) {
             this.popupWrapper.className += ' ' + this.cssClass;
         }
@@ -1533,6 +1535,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     removeClass([this.inputWrapper.container], [ICONANIMATION]);
                     attributes(this.inputElement, { 'aria-expanded': 'false' });
                     this.inputElement.removeAttribute('aria-owns');
+                    this.inputElement.removeAttribute('aria-controls');
                     this.inputElement.removeAttribute('aria-activedescendant');
                     EventHandler.remove(document, 'mousedown touchstart', this.documentClickHandler);
                 }
@@ -2622,6 +2625,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     this.setActiveDescendant();
                     attributes(this.inputElement, { 'aria-expanded': 'true' });
                     attributes(this.inputElement, { 'aria-owns': this.inputElement.id + '_options'});
+                    attributes(this.inputElement, { 'aria-controls': this.inputElement.id});
                     addClass([this.inputWrapper.container], FOCUS);
                     EventHandler.add(document, 'mousedown touchstart', this.documentClickHandler, this);
                     this.setOverlayIndex(this.mobileTimePopupWrap, this.popupObj.element, this.modal, Browser.isDevice as any);

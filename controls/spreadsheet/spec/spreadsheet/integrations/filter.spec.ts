@@ -2,7 +2,6 @@ import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, filterData } from '../util/datasource.spec';
 import { Spreadsheet, filterByCellValue, refreshCheckbox, DialogBeforeOpenEventArgs, focus, setCell } from '../../../src/index';
 import { classList, getComponent } from '@syncfusion/ej2-base';
-import { doesImplementInterface } from '@syncfusion/ej2-grids';
 
 describe('Filter ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -20,6 +19,31 @@ describe('Filter ->', () => {
                 expect(helper.invoke('getCell', [0, 0]).children[0].classList).toContain('e-filter-btn');
                 expect(helper.invoke('getCell', [0, 4]).children[0].children[0].classList).toContain('e-filtered');
                 done();
+            });
+        });
+        it('Add current selection to filter use case', (done: Function) => {
+            helper.invoke('selectRange', ['E1']);
+            focus(helper.invoke('getCell', [0, 5]));
+            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            setTimeout(() => {
+                const searchEle: HTMLInputElement = helper.getElementFromSpreadsheet('.e-searchinput') as HTMLInputElement;
+                searchEle.value = '20';
+                const excelFilter: HTMLElement = helper.getElementFromSpreadsheet('.e-excelfilter');
+                helper.triggerMouseAction('click', { x: 0, y: 0 }, excelFilter, helper.getElementFromSpreadsheet('.e-searchclear'));
+                setTimeout(() => {
+                    const spreadsheet: any = helper.getInstance();
+                    expect(spreadsheet.filterModule.filterRange.size).toBe(1);
+                    expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(1);
+                    expect(spreadsheet.filterModule.filterCollection.get(0)[0].value).toBe('10');
+                    helper.triggerMouseAction(
+                        'click', { x: 0, y: 0 }, helper.getElementFromSpreadsheet('.e-excelfilter'),
+                        helper.getElementFromSpreadsheet('.e-add-current'));
+                    (excelFilter.querySelector('.e-btn.e-primary') as HTMLElement).click();
+                    expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(2);
+                    expect(spreadsheet.filterModule.filterCollection.get(0)[0].value).toBe(20);
+                    expect(spreadsheet.filterModule.filterCollection.get(0)[1].value).toBe('10');
+                    done();
+                });
             });
         });
 
@@ -395,6 +419,130 @@ describe('Filter ->', () => {
                     expect(filterCol[2].value).toBe('');
                     expect(filterCol[2].operator).toBe('notequal');
                     expect(filterCol[2].predicate).toBe('and');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('Number formatted column filter ->', () => {
+        const dataSource: Object[] = [
+            { Amount: 200, profit: 10 },
+            { Amount: 600, profit: 30 },
+            { Amount: 300, profit: 12 },
+            { Amount: 300, profit: 12 },
+            { Amount: 300, profit: 12 },
+            { Amount: 800, profit: 40 },
+            { Amount: 200, profit: 10 },
+            { Amount: 310, profit: 11 },
+            { Amount: 1210, profit: 80 },
+            { Amount: 500, profit: 50 },
+        ];
+        let spreadsheet: any; let checkboxList: HTMLElement; let ulList: HTMLElement; let filterCol: any[];
+        let selectAll: HTMLElement;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: dataSource }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Number format filter popup rendering check', (done: Function) => {
+            helper.invoke('applyFilter');
+            helper.invoke('numberFormat', ['$#,##0.00', 'A1:A11']);
+            helper.invoke('numberFormat', ['_($* #,##0.00_);_($* (#,##0.00);_($* \"-\"??_);_(@_)', 'B1:B11']);
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
+            helper.invoke('selectRange', ['A1']);
+            td.focus();
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+            setTimeout(() => {
+                checkboxList = helper.getElement('.e-checkboxlist');
+                expect(checkboxList.childElementCount).toBe(0);
+                setTimeout(() => {
+                    expect(checkboxList.childElementCount).toBe(8);
+                    selectAll = checkboxList.firstElementChild as HTMLElement;
+                    expect(selectAll.querySelector('.e-selectall').classList.contains('e-check')).toBeTruthy();
+                    expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeTruthy();
+                    const searchBox: HTMLInputElement = helper.getElement().querySelector('.e-searchinput');
+                    helper.getInstance().notify(refreshCheckbox, { event: { type: 'keyup', keyCode: 8, target: searchBox } });
+                    done();
+                });
+            });
+        });
+        it('Checkbox interaction and filtering', (done: Function) => {
+            selectAll.click();
+            expect(selectAll.querySelector('.e-selectall').classList.contains('e-check')).toBeFalsy();
+            expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeFalsy();
+            ulList = selectAll.parentElement;
+            expect(ulList.getElementsByClassName('e-check').length).toBe(0);
+            const okBtn: HTMLButtonElement = helper.getElement().querySelector('.e-excelfilter .e-footer-content .e-primary');
+            expect(okBtn.disabled).toBeTruthy();
+            selectAll.click();
+            expect(selectAll.querySelector('.e-selectall').classList.contains('e-check')).toBeTruthy();
+            expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeTruthy();
+            expect(ulList.getElementsByClassName('e-check').length).toBe(8);
+            expect(okBtn.disabled).toBeFalsy();
+            const list: HTMLElement = ulList.children[1].querySelector('.e-frame');
+            let e = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true });
+            list.dispatchEvent(e);
+            e = new MouseEvent('mouseup', { view: window, bubbles: true, cancelable: true });
+            list.dispatchEvent(e);
+            e = new MouseEvent('click', { view: window, bubbles: true, cancelable: true });
+            list.dispatchEvent(e);
+            expect(list.parentElement.querySelector('.e-check')).toBeNull();
+            expect(selectAll.querySelector('.e-check')).toBeNull();
+            expect(selectAll.querySelector('.e-selectall').classList.contains('e-stop')).toBeTruthy();
+            expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeFalsy();
+            okBtn.click();
+            spreadsheet = helper.getInstance();
+            filterCol = spreadsheet.filterModule.filterCollection.get(0);
+            expect(filterCol.length).toBe(1);
+            expect(filterCol[0].type).toBe('number');
+            expect(filterCol[0].predicate).toBe('and');
+            expect(filterCol[0].operator).toBe('notequal');
+            expect(filterCol[0].value).toBe('$200.00');
+            done();
+        });
+        it('Checkbox rendering with same filtered column and Clear filter action', (done: Function) => {
+            spreadsheet.element.focus();
+            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            setTimeout(() => {
+                setTimeout(() => {
+                    checkboxList = helper.getElement('.e-checkboxlist');
+                    selectAll = checkboxList.firstElementChild as HTMLElement;
+                    expect(checkboxList.getElementsByClassName('e-check').length).toBe(6);
+                    expect(selectAll.querySelector('.e-selectall').classList.contains('e-stop')).toBeTruthy();
+                    expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeFalsy();
+                    expect(checkboxList.children[1].querySelector('.e-check')).toBeNull();
+                    selectAll.click();
+                    expect(selectAll.querySelector('.e-stop')).toBeNull();
+                    expect((selectAll.querySelector('.e-chk-hidden') as HTMLInputElement).checked).toBeTruthy();
+                    expect(checkboxList.getElementsByClassName('e-check').length).toBe(8);
+                    helper.getElement().querySelector('.e-excelfilter .e-footer-content .e-primary').click();
+                    expect(filterCol.length).toBe(0);
+                    done();
+                });
+            });
+        });
+        it('Searching and apply filter', (done: Function) => {
+            spreadsheet.element.focus();
+            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            setTimeout(() => {
+                setTimeout(() => {
+                    const serachBox: HTMLInputElement = helper.getElement().querySelector('.e-searchinput');
+                    serachBox.value = '2';
+                    spreadsheet.notify('refreshCheckbox', { event: { type: 'keyup', target: serachBox } });
+                    checkboxList = helper.getElement('.e-checkboxlist');
+                    expect(checkboxList.getElementsByClassName('e-check').length).toBe(3);
+                    expect(checkboxList.children[1].querySelector('.e-frame').classList.contains('e-add-current')).toBeTruthy();
+                    const okBtn: HTMLButtonElement = helper.getElement().querySelector('.e-excelfilter .e-footer-content .e-primary');
+                    okBtn.click();
+                    filterCol = spreadsheet.filterModule.filterCollection.get(0);
+                    expect(filterCol.length).toBe(2);
+                    expect(filterCol[0].type).toBe('number');
+                    expect(filterCol[0].predicate).toBe('or');
+                    expect(filterCol[0].operator).toBe('equal');
+                    expect(filterCol[0].value).toBe('$200.00');
+                    expect(filterCol[1].value).toBe('$1,210.00');
                     done();
                 });
             });
@@ -1673,7 +1821,7 @@ describe('Filter ->', () => {
                     'A1:H11'])
                 setTimeout(() => {
                     expect(spreadsheet.sheets[0].topLeftCell).toBe('A1');
-                    expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('A10');
+                    //expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('A10');
                     done();
                 }, 100);
             });

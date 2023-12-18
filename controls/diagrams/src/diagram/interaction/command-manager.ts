@@ -222,7 +222,7 @@ export class CommandHandler {
             }
         }
         //840454- support to provide isSticky property for tooltip in diagram control
-        (this.diagram.tooltipObject as Tooltip).isSticky = false;    
+        (this.diagram.tooltipObject as Tooltip).isSticky = false;        
         if (isBlazor() && isTooltipVisible) {
             this.diagram.tooltipObject.close();
         }
@@ -3088,7 +3088,7 @@ export class CommandHandler {
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                 (this.diagram.nameTable[`${temp}`] instanceof Node) ? undoObject.nodes.push(cloneObject(this.diagram.nameTable[`${temp}`])) :
                     undoObject.connectors.push(cloneObject(this.diagram.nameTable[`${temp}`]));
-                let clonedNode = cloneObject( this.diagram.nameTable[zIndexTable[parseInt(overlapObject.toString(), 10)]]);
+                let clonedNode = cloneObject( this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]]);
                 (this.diagram.layers[0] as Layer).zIndexTable[parseInt(currentObject.toString(), 10)] = intersectArray[0].id;
                 this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]].zIndex = currentObject;
                 this.triggerOrderCommand(clonedNode, this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]], this.diagram.nameTable[zIndexTable[parseInt(currentObject.toString(), 10)]]);
@@ -5929,7 +5929,7 @@ Remove terinal segment in initial
             //848061 - Enabling BPMN Group Nodes to Function Like Subprocess Nodes
             if (((targetNodes as Node).shape as BpmnShape).shape === 'Group') {
                 ((targetNodes as Node).shape as BpmnShape).activity.subProcess.collapsed = false
-            } 
+            }   
             if (node && node.shape.type === 'Bpmn') {
                 if ((node.processId === (targetNodes as Node).id) || (node.id === (targetNodes as Node).processId) ||
                     (targetNodes as Node).shape.type === 'Bpmn'

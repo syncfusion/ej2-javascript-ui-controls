@@ -92,7 +92,12 @@ export class FieldList implements IAction {
             this.parent.actionObj.actionName = 'Field list refreshed';
         }
         if (this.element) {
-            this.element.style.display = 'block';
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (((this.parent.toolbar as any).includes('FieldList')) && this.parent.dataSourceSettings.mode === 'Server'){
+                this.element.style.display = 'none';
+            } else {
+                this.element.style.display = 'block';
+            }
             prepend([this.element], this.parent.element);
             if (this.parent.showGroupingBar && this.parent.groupingBarModule) {
                 clearTimeout(this.timeOutObj);

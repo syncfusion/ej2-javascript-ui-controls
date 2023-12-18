@@ -182,7 +182,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         const formatItems: IDropDownItemModel[] = e.parent.format.types;
                         const formatContent: string = isNOU(e.parent.format.default) ? formatItems[0].text :
                             e.parent.format.default;
-                        result = value === 'empty' ? '' :getDropDownValue(formatItems, value, 'subCommand', 'text');
+                        result = value === 'empty' ? '' : getDropDownValue(formatItems, value, 'subCommand', 'text');
                         dropDown.formatDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.format.width + '" >' +
                                 '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
@@ -224,7 +224,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         const fontSizeItems: IDropDownItemModel[] = e.parent.fontSize.items;
                         const fontSizeContent: string = isNOU(e.parent.fontSize.default) ? fontSizeItems[1].text :
                             e.parent.fontSize.default;
-                        result =  value === 'empty' ? '' : getDropDownValue(
+                        result = value === 'empty' ? '' : getDropDownValue(
                             fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), 'value', 'text');
                         dropDown.fontSizeDropDown.content = ('<span style="display: inline-flex;' +
                             'width:' + e.parent.fontSize.width + '" >' +
@@ -268,10 +268,10 @@ export function getTBarItemsIndex(items: string[], toolbarItems: IToolbarItemMod
             if (toolbarItems[j as number].type === 'Separator') {
                 continue;
             } else {
-                if (items[i as number] === 'OrderedList' && toolbarItems[j as number].subCommand === 'OL') {
+                if ((items[i as number] === 'OrderedList' || items[i as number] === 'NumberFormatList') && toolbarItems[j as number].subCommand === 'OL') {
                     itemsIndex.push(j);
                     break;
-                } else if (items[i as number] === 'UnorderedList' && toolbarItems[j as number].subCommand === 'UL') {
+                } else if ((items[i as number] === 'UnorderedList' || items[i as number] === 'BulletFormatList') && toolbarItems[j as number].subCommand === 'UL') {
                     itemsIndex.push(j);
                     break;
                 } else if (items[i as number] === 'InsertCode' && toolbarItems[j as number].subCommand === 'Pre') {
@@ -415,6 +415,15 @@ export function updateTextNode(value: string, rteObj?: IRichTextEditor): string 
             const emptyBlockElem: NodeListOf<Element> = tempNode.querySelectorAll(CONSTANT.blockEmptyNodes);
             for (let i: number = 0; i < emptyBlockElem.length; i++) {
                 emptyBlockElem[i as number].innerHTML = '<br>';
+            }
+            // To handle the Empty block node with \n
+            const allPNodes: NodeListOf<Element> = tempNode.querySelectorAll('p');
+            for (let i: number = 0; i < allPNodes.length; i++) {
+                if (allPNodes[i as number].textContent.trim().length === 0 && allPNodes[i as number].childNodes.length === 1
+                    && allPNodes[i as number].childNodes[0].nodeName === '#text' &&
+                    isNOU(allPNodes[i as number].childNodes[0].textContent.match(/\u00a0/g))) {
+                    allPNodes[i as number].innerHTML = '<br>';
+                }
             }
             const emptyInlineElem: NodeListOf<Element> = tempNode.querySelectorAll(CONSTANT.inlineEmptyNodes);
             for (let i: number = 0; i < emptyInlineElem.length; i++) {

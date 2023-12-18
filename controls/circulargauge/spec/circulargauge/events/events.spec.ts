@@ -139,7 +139,6 @@ describe('Circular-Gauge Control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Pointer_0');
                 expect(svg.childElementCount).toBe(4);
-                svg = document.getElementById('container_Axis_0_Pointer_Needle_0');
                 expect(svg.getAttribute('aria-label')).toBe('Pointer:50');
                 done();
             };

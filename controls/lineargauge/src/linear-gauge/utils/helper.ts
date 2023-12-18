@@ -444,14 +444,17 @@ export class Align {
 }
 
 /** @private */
-export function textElement(options: TextOption, font: FontModel, color: string, parent: HTMLElement | Element): Element {
+export function textElement(options: TextOption, font: FontModel, color: string, opacity: number, parent: HTMLElement | Element): Element {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let renderOptions: any = {};
     const renderer: SvgRenderer = new SvgRenderer('');
+    if (!isNullOrUndefined(options.id)) {
+        removeElement(options.id);
+    }
     const style: string = 'fill:' + color + '; font-size:' + font.size +
         '; font-style:' + font.fontStyle + ' ; font-weight:' + font.fontWeight + '; font-family:' +
         font.fontFamily + '; text-anchor:' + options.anchor + '; transform:' + options.transform +
-        '; opacity:' + font.opacity + '; dominant-baseline:' + options.baseLine + ';';
+        '; opacity:' + (!isNullOrUndefined(opacity) ? opacity : font.opacity) + '; dominant-baseline:' + options.baseLine + ';';
     renderOptions = {
         'id': options.id,
         'x': options.x,
@@ -677,6 +680,33 @@ export function calculateShapes(
 }
 
 /** @private */
+export function calculateTextPosition(
+    location: Rect, shape: MarkerType,
+    options: TextOption, orientation: Orientation, axis: Axis, pointer: Pointer): TextOption {
+    let width: number;
+    let height: number;
+    let textSize : Size;
+    let locX: number = location.x;
+    let locY: number = location.y;
+    switch (shape) {
+    case 'Text':
+        textSize = measureText(pointer.text, pointer.textStyle);
+        height = textSize.height;
+        width = textSize.width;
+        locX = (orientation === 'Horizontal') ? ((locX - (width / 2))) : ((!axis.opposedPosition && pointer.placement !== 'Far') ||
+            (axis.opposedPosition && pointer.placement === 'Near')) ? (pointer.position === 'Inside' && !axis.opposedPosition) ||
+            (pointer.position === 'Cross') || (axis.opposedPosition && pointer.placement === 'Near' && pointer.position === 'Outside') ? locX - (width / 2) : locX - width : (pointer.position === 'Cross' && pointer.placement === 'Far') ||
+            (axis.opposedPosition && pointer.position === 'Cross' && (pointer.placement === 'None' || pointer.placement === 'Center')) ? locX + (width / 2) : locX;
+        locY = (orientation === 'Vertical') ? locY + (height / 4) : (!axis.opposedPosition) ?
+            (pointer.placement === 'Far') ? pointer.position === 'Cross' ? locY + (height / 2) + (height / 4) : pointer.position === 'Inside' ? locY + height : locY + (height / 2) : locY :
+            (pointer.placement === 'Near') ? locY : pointer.position === 'Cross' ? locY + (height / 2) + (height / 4) : pointer.position === 'Outside' ? locY + height : locY + (height / 2);
+        merge(options, { x: locX, y: locY });
+        break;
+    }
+    return options;
+}
+
+/** @private */
 export function getBox(
     location: Rect, boxName: string, orientation: Orientation,
     size: Size, type: string, containerWidth: number, axis: Axis, cornerRadius: number): string {
@@ -765,4 +795,35 @@ export function getExtraWidth(gaugeElement: HTMLElement): number {
         extraWidth = gaugeElement.getBoundingClientRect().left - svgElement.getBoundingClientRect().left;
     }
     return extraWidth;
+}
+
+/**
+ * @param {string} text - Specifies the text.
+ * @returns {void}
+ * @private */
+export function showTooltip(text: string, gauge: LinearGauge): void {
+    let tooltip: HTMLElement = getElement(gauge.element.id + '_EJ2_Title_Tooltip');
+    if (!tooltip) {
+        let titleWidth: number = measureText(text, { size: "12px", fontFamily: 'Segoe UI' }).width + 10;
+        titleWidth = titleWidth < gauge.actualRect.width ? titleWidth : gauge.actualRect.width - 10;        
+        tooltip = createElement('div', { id: gauge.element.id + '_EJ2_Title_Tooltip', className: 'EJ2-LinearGauge-Tooltip' });
+        tooltip.innerText = text;
+        tooltip.style.cssText = 'top:' + (gauge.actualRect.y + 10).toString() + 'px; left:' + (gauge.actualRect.x).toString() +
+        'px; background-color:rgb(255, 255, 255) !important; color:black !important; ' +
+        'position:absolute; border:1px solid rgb(112, 112, 112); padding-left:3px; padding-right:2px;' +
+        'padding-bottom:2px; padding-top:2px; font-size:12px; font-family:"Segoe UI";' + 'width:' + (titleWidth) + 'px;';
+        document.body.style.overflow = 'hidden';
+        getElement(gauge.element.id + '_Secondary_Element').appendChild(tooltip);
+    } else {
+        tooltip.innerText = text;
+        tooltip.style.top = (gauge.actualRect.y + 10).toString() + 'px';
+        tooltip.style.left = (gauge.actualRect.x).toString() + 'px';
+    }
+}
+
+/** @private */
+export function removeTooltip(): void {
+    if (document.getElementsByClassName('EJ2-LinearGauge-Tooltip').length > 0) {
+        document.getElementsByClassName('EJ2-LinearGauge-Tooltip')[0].remove();
+    }
 }

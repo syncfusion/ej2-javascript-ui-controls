@@ -146,7 +146,7 @@ export class TrackChangesPane {
                     text: this.locale.getConstant('User') + ':', cssClass: 'e-de-track-toolbar-overlay', disabled: true
                 },
                 {
-                    template: createElement('div', { id: 'e-de-user-list' })
+                    template: createElement('div', { id: 'e-de-user-list', attrs:{'role':'button'} })
                 },
                 {
                     type: 'Separator'
@@ -155,7 +155,7 @@ export class TrackChangesPane {
                     text: this.locale.getConstant('View') + ':', cssClass: 'e-de-track-toolbar-overlay', disabled: true
                 },
                 {
-                    template: createElement('div', { id: 'e-de-revision-list' })
+                    template: createElement('div', { id: 'e-de-revision-list', attrs:{'role':'button'}  })
                 },
                 {
                     prefixIcon: 'e-de-nav-left-arrow e-de-tc-tbr', align: 'Right', cssClass: 'e-de-nvgte-left',
@@ -166,7 +166,7 @@ export class TrackChangesPane {
                     tooltipText: this.locale.getConstant('Next Changes'), click: this.navigateNextChanges.bind(this)
                 },
                 {
-                    template: createElement('div', { id: 'e-de-menu-option' }), align: 'Right', cssClass: 'e-de-tc-tbr',
+                    template: createElement('div', { id: 'e-de-menu-option' , attrs:{'role':'button'} }), align: 'Right', cssClass: 'e-de-tc-tbr',
                     tooltipText: this.locale.getConstant('More Options') + '...'
                 }]
         });
@@ -424,6 +424,10 @@ export class TrackChangesPane {
                 for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
                     let revision: Revision = this.owner.revisions.changes[i];
                     let ranges: object = this.owner.revisions.changes[i].range[0];
+                    if ((ranges instanceof TextElementBox || ranges instanceof FieldElementBox) &&
+                        ranges.paragraph.containerWidget instanceof HeaderFooterWidget && isNullOrUndefined(ranges.paragraph.containerWidget.sectionFormat)) {
+                        continue;
+                    }
                     if (ranges instanceof TextElementBox &&
                         ranges.paragraph.containerWidget instanceof HeaderFooterWidget) {
                         let headerFooterType: HeaderFooterType = ranges.paragraph.containerWidget.headerFooterType;

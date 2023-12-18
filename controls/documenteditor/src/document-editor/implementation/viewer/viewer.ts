@@ -24,7 +24,7 @@ import {
 } from '../editor/editor-helper';
 import { TextHelper, TextHeightInfo } from './text-helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Selection, CommentReviewPane, HistoryInfo } from '../index';
+import { Selection, CommentReviewPane, HistoryInfo, ActionInfo } from '../index';
 import { TextPosition } from '../selection/selection-helper';
 import { Zoom } from './zooming';
 import { Dialog, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
@@ -42,6 +42,7 @@ import { Revision } from '../track-changes/track-changes';
 import { TrackChangesPane } from '../track-changes/track-changes-pane';
 import { Themes } from '../themes/themes';
 import { beforeAutoResize, internalAutoResize } from '../../base/constants';
+import { incrementalOps } from '../../base/index';
 /**
  * @private
  */
@@ -641,12 +642,10 @@ export class DocumentHelper {
     }
     /**
      * @private
-     * @param {string} text - Specifies the file name.
-     * @param {string} formatType - Specifies the format type.
+     * @param {string} text - Specifies the text string.
      */
-    public openTextFile(text: string, formatType?: string): void {
+    public openTextFile(text: string): void {
         this.layout.isTextFormat = true;
-        let type: string = formatType;
         let arr: string[] = [];
         text = text.replace(/\r\n/g, '\n');
         arr = text.split('\n');
@@ -701,7 +700,7 @@ export class DocumentHelper {
             paragraph.containerWidget = bodyWidget;
             bodyWidget.childWidgets.push(paragraph);
         }
-        this.onDocumentChanged([bodyWidget]);
+        this.onDocumentChanged([bodyWidget],{});
         this.layout.isTextFormat = false;
     }
     /**
@@ -1314,7 +1313,8 @@ export class DocumentHelper {
             attrs: {
                 'scrolling': 'no',
                 'title': 'Document Editor',
-                'style': 'pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden'
+                'style': 'pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden',
+                'tabindex':"0"
             },
             className: 'e-de-text-target'
         }) as HTMLIFrameElement;
@@ -1743,6 +1743,9 @@ export class DocumentHelper {
      * @returns {void}
      */
     public updateFocus = (): void => {
+        if (this.owner.enableCollaborativeEditing && this.owner.editor.isRemoteAction) {
+            return;
+        }
         if (!isNullOrUndefined(this.currentSelectedComment) && !this.owner.commentReviewPane.commentPane.isEditMode) {
             if (this.owner.commentReviewPane && this.owner.commentReviewPane.commentPane.isEditMode) {
                 this.owner.commentReviewPane.commentPane.selectComment(this.currentSelectedComment);
@@ -1831,7 +1834,7 @@ export class DocumentHelper {
      * @param {BodyWidget[]} sections - Specified document content.
      * @returns {void}
      */
-    public onDocumentChanged(sections: BodyWidget[]): void {
+    public onDocumentChanged(sections: BodyWidget[], iOps?: Record<string, ActionInfo[]>): void {
         this.clearContent();
         if (this.owner.editorModule) {
             this.owner.editorModule.tocStyles = {};
@@ -1876,6 +1879,19 @@ export class DocumentHelper {
             if (this.isDocumentProtected) {
                 this.restrictEditingPane.showHideRestrictPane(true);
             }
+        }
+        if (this.owner.enableCollaborativeEditing && this.owner.collaborativeEditingHandlerModule && this.owner.enableEditor) {
+            this.owner.editor.isRemoteAction = true;
+            this.owner.editor.isIncrementalSave = true;
+            if (iOps && !isNullOrUndefined(iOps[incrementalOps[0]]) 
+            && !isNullOrUndefined(iOps[incrementalOps[0]].length > 0)) {
+                for (let k: number = 0; k < iOps[incrementalOps[0]].length; k++) {
+                    this.owner.collaborativeEditingHandlerModule.applyRemoteAction('action', iOps[incrementalOps[0]][k]);
+                }
+            }
+            this.owner.editor.isRemoteAction = false;
+            this.owner.editor.isIncrementalSave = false;
+            this.owner.selection.selectRange(this.owner.documentStart, this.owner.documentStart);
         }
         if (this.owner.optionsPaneModule) {
             this.owner.optionsPaneModule.showHideOptionsPane(false);
@@ -2154,11 +2170,11 @@ export class DocumentHelper {
                             this.owner.editorModule.tableResize.handleResizing(touchPoint);
                         }
                     } else {
-                        if (!this.isDragStarted
+                        if ((!this.isDragStarted
                             && this.isMouseDownInSelection
                             && this.isLeftButtonPressed(event)
                             && !this.owner.selection.isEmpty
-                            && this.selection.checkCursorIsInSelection(widget, touchPoint)) {
+                            && this.selection.checkCursorIsInSelection(widget, touchPoint)) || (!this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && !this.isDragStarted && this.isLeftButtonPressed(event) && !this.owner.selection.isEmpty && this.owner.imageResizerModule.selectedImageWidget.containsKey(widget) && !this.owner.imageResizerModule.isImageResizing)) {
                             this.isDragStarted = true;
                             this.isMouseDownInSelection = false;
                             if (this.selection.isForward) {
@@ -4787,6 +4803,12 @@ export abstract class LayoutViewer {
         this.clientActiveArea.y = bottom;
         this.clientActiveArea.height = this.clientActiveArea.height - diff;
     }
+    private updateBoundsBasedOnTextWrapTable(bottom: number) {
+        let diff: number = bottom - this.clientArea.y;
+        this.clientArea.y = bottom;
+        this.clientArea.height = this.clientArea.height - diff;
+        this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
+    }
     public updateClientAreaByWidget(widget: ParagraphWidget): void {
         this.clientArea.x = widget.x;
         this.clientArea.y = widget.y;
@@ -4915,6 +4937,10 @@ export abstract class LayoutViewer {
                 // Sort based on X position
                 bodyWidget.floatingElements.sort(function (a, b) { return a.x - b.x; });
                 let previousItem: BlockWidget = paragraph.previousRenderedWidget as BlockWidget;
+                if (previousItem && (previousItem instanceof TableWidget) && previousItem.wrapTextAround
+                    && !isEmptyPara && !paragraph.isContainsShapeAlone() && isWord2013 && rect.y < previousItem.y) {
+                    rect.y = previousItem.y;
+                }
                 for (let i: number = 0; i < bodyWidget.floatingElements.length; i++) {
                     let floatingItem: ShapeBase | TableWidget = bodyWidget.floatingElements[i];
                     let isInsideHeaderFooter: boolean = false;
@@ -4934,8 +4960,8 @@ export abstract class LayoutViewer {
 
                     let minimumWidthRequired: number = 24;
                     if (!(clientLayoutArea.x > (textWrappingBounds.right + minimumWidthRequired) || clientLayoutArea.right < textWrappingBounds.x - minimumWidthRequired)) {
-                        if ((((rect.y + paragraph.height > textWrappingBounds.y || isFirstItemBottomPositionUpdated)
-                            && rect.y < (textWrappingBounds.bottom))) && textWrappingStyle !== 'Inline'
+                        if ((((rect.y + (floatingItem instanceof TableWidget && !isEmptyPara && paragraph.floatingElements.length === 0 ? paragraphHeight : paragraph.height) > textWrappingBounds.y 
+                            || isFirstItemBottomPositionUpdated) && rect.y < (textWrappingBounds.bottom))) && textWrappingStyle !== 'Inline'
                             && textWrappingStyle !== 'TopAndBottom' && textWrappingStyle !== 'InFrontOfText'
                             && textWrappingStyle !== 'Behind') {
                             let rightIndent: number = 0;
@@ -4987,7 +5013,11 @@ export abstract class LayoutViewer {
                                         }
                                         // Skip to wrap the immediate paragraph of floating table based on corresponding floating table.
                                         if ((isWord2013) && !isPositionsUpdated) {
-                                            this.updateBoundsBasedOnTextWrap(textWrappingBounds.bottom);
+                                            if (floatingItem instanceof TableWidget && previousItem === floatingItem) {
+                                                this.updateBoundsBasedOnTextWrapTable(textWrappingBounds.bottom);
+                                            } else {
+                                                this.updateBoundsBasedOnTextWrap(textWrappingBounds.bottom);
+                                            }
                                             rect = this.clientActiveArea;
                                         }
                                         if ((!isEmptyPara && (paragraph.childWidgets[0] as LineWidget).isFirstLine() || isEmptyPara) && isWord2013 ? true : !isInsideHeaderFooter) {

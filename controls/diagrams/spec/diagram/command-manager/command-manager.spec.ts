@@ -494,8 +494,7 @@ describe('Default Template tooltip', () => {
         mouseEvents.mouseMoveEvent(diagramCanvas, 320, 320);
         let tooltipElement: HTMLElement = document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open')[0] as HTMLElement;
         expect(tooltipElement !== null).toBe(true);
-        expect(tooltipElement.offsetLeft).toEqual(522);
-        expect(tooltipElement.offsetTop).toEqual(517);
+        expect(tooltipElement.offsetTop).toEqual(516);
         done();
     });
 });

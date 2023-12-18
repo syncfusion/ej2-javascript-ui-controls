@@ -760,7 +760,6 @@ describe('Command Column ', () => {
             gridObj = commandClick = null;
         });
     });
-
     describe('851553 - Column freeze is not working properly for the command columns', () => {
         let row: HTMLTableRowElement;
         let grid: Grid;

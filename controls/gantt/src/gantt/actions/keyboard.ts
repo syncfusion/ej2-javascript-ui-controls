@@ -1,5 +1,5 @@
 import { Gantt } from '../base/gantt';
-import { KeyboardEventArgs, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, isNullOrUndefined, getValue, removeClass } from '@syncfusion/ej2-base';
 import { IKeyPressedEventArgs, IGanttData, ColumnModel, ITaskData } from '..';
 import { TextBox } from '@syncfusion/ej2-inputs';
 import { ISelectedCell, IIndex } from '@syncfusion/ej2-grids';
@@ -272,6 +272,10 @@ export class FocusModule {
         if (ganttObj.selectionModule) {
             if (ganttObj.selectionSettings.mode !== 'Cell' && ganttObj.selectedRowIndex !== -1) {
                 const selectedItem: IGanttData = ganttObj.currentViewData[ganttObj.selectedRowIndex];
+                const focussedElement: HTMLElement = <HTMLElement>ganttObj.element.querySelector('.e-focused');
+                if(focussedElement){
+                    removeClass([focussedElement], 'e-focused');
+                }
                 const focusedRowIndex: number = this.parent.ganttChartModule.focusedRowIndex;
                 const selectingRowIndex: number = expandedRecords.indexOf(selectedItem);
                 const currentSelectingRecord: IGanttData = e.action === 'downArrow' ? expandedRecords[selectingRowIndex + 1] :

@@ -1309,3 +1309,338 @@ describe('Drag drop records for critical path', () => {
         ganttObj_self.reorderRows([1],3,'child');
     });
 });
+describe('Check datasource position after Drag drop in resource view', () => {
+    let ganttObj_self: Gantt;
+    let multiTaskbarData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                    Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+                },
+                {
+                    TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('04/03/2019'), Duration: 4,
+                    resources: [{ resourceId: 1, resourceUnit: 70 }], Predecessor: 2, Progress: 30, work: 20
+                },
+                {
+                    TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/09/2019'), Duration: 4,
+                    resources: [{ resourceId: 1, resourceUnit: 25 }], Predecessor: 3, Progress: 30, work: 10,
+                },
+            ]
+        },
+        {
+            TaskID: 5,
+            TaskName: 'Project estimation', StartDate: new Date('03/29/2019'), EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('04/01/2019'),
+                    Duration: 5, Progress: 30, resources: [{ resourceId: 2, resourceUnit: 50 }], work: 30
+                },
+                {
+                    TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/04/2019'), Duration: 4,
+                    resources: [{ resourceId: 2, resourceUnit: 40 }], Predecessor: '6FS-2', Progress: 30, work: 40
+                },
+                {
+                    TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/09/2019'),
+                    Duration: 4, resources: [{ resourceId: 2, resourceUnit: 75 }], Predecessor: '7FS-1', Progress: 30, work: 60,
+                }
+            ]
+        },
+        {
+            TaskID: 9,
+            TaskName: 'Site work',
+            StartDate: new Date('04/04/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 10, TaskName: 'Install temporary power service', StartDate: new Date('04/01/2019'), Duration: 14,
+                    Progress: 30, resources: [{ resourceId: 3, resourceUnit: 75 }]
+                },
+                {
+                    TaskID: 11, TaskName: 'Clear the building site', StartDate: new Date('04/08/2019'),
+                    Duration: 9, Progress: 30, Predecessor: '10FS-9', resources: [3]
+                },
+                {
+                    TaskID: 12, TaskName: 'Sign contract', StartDate: new Date('04/12/2019'),
+                    Duration: 5, resources: [3], Predecessor: '11FS-5'
+                },
+            ]
+        },
+        {
+            TaskID: 13,
+            TaskName: 'Foundation',
+            StartDate: new Date('04/04/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 14, TaskName: 'Excavate for foundations', StartDate: new Date('04/01/2019'),
+                    Duration: 2, Progress: 30, resources: [4]
+                },
+                {
+                    TaskID: 15, TaskName: 'Dig footer', StartDate: new Date('04/04/2019'),
+                    Duration: 2, Predecessor: '14FS + 1', resources: [4]
+                },
+                {
+                    TaskID: 16, TaskName: 'Install plumbing grounds', StartDate: new Date('04/08/2019'), Duration: 2,
+                    Progress: 30, Predecessor: 15, resources: [4]
+                }
+            ]
+        },
+        {
+            TaskID: 17,
+            TaskName: 'Framing',
+            StartDate: new Date('04/04/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 18, TaskName: 'Add load-bearing structure', StartDate: new Date('04/03/2019'),
+                    Duration: 2, Progress: 30, resources: [5]
+                },
+                {
+                    TaskID: 19, TaskName: 'Natural gas utilities', StartDate: new Date('04/08/2019'),
+                    Duration: 4, Predecessor: '18', resources: [5]
+                },
+                {
+                    TaskID: 20, TaskName: 'Electrical utilities', StartDate: new Date('04/11/2019'),
+                    Duration: 2, Progress: 30, Predecessor: '19FS + 1', resources: [5]
+                }
+            ]
+        }
+    ];
+    let resources = [
+        { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team', isExpand: false },
+        { resourceId: 2, resourceName: 'Rose Fuller', resourceGroup: 'Testing Team', isExpand: true },
+        { resourceId: 3, resourceName: 'Margaret Buchanan', resourceGroup: 'Approval Team', isExpand: false },
+        { resourceId: 4, resourceName: 'Fuller King', resourceGroup: 'Development Team', isExpand: false },
+        { resourceId: 5, resourceName: 'Davolio Fuller', resourceGroup: 'Approval Team', isExpand: true }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj_self = createGantt(
+            {
+                dataSource: multiTaskbarData,
+                resources: resources,
+                allowRowDragAndDrop: true,
+                viewType: 'ResourceView',
+                enableMultiTaskbar: true,
+                showOverAllocation: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    dependency: 'Predecessor',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    expandState: 'isExpand',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                labelSettings: {
+                    taskLabel: 'TaskName'
+                },
+                splitterSettings: {
+                    columnIndex: 2
+                },
+                allowResizing: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                allowTaskbarDragAndDrop: true,
+                height: '450px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+    }, done);
+    });
+    afterAll(() => {
+        if (ganttObj_self) {
+            destroyGantt(ganttObj_self);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('Check datasource position', function () {
+        ganttObj_self.actionComplete= (args) : void => {
+        if(args.requestType == 'save') {
+            expect(ganttObj_self.dataSource['subtasks'][2].TaskID).toBe(4);
+        }
+       }
+        ganttObj_self.dataBind();
+        ganttObj_self.reorderRows([3],6,'below');
+    });
+});
+describe('Predecessor not updated after row drag drop', () => {
+    let ganttObj_self: Gantt;
+    var resourcesData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project Schedule',
+            StartDate: new Date('02/04/2019'),
+            EndDate: new Date('03/10/2019'),
+            subtasks: [
+                {
+                    TaskID: 2,
+                    TaskName: 'Planning',
+                    StartDate: new Date('02/04/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 3, TaskName: 'Plan timeline', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                            Duration: 10, Progress: '60',
+                            Segments: [
+                                { StartDate: new Date('02/04/2019'), Duration: 2 },
+                                { StartDate: new Date('02/05/2019'), Duration: 5 },
+                                { StartDate: new Date('02/08/2019'), Duration: 3 }
+                            ]
+                        },
+                        {
+                            TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                            Duration: 10, Progress: '90'
+                        },
+                        {
+                            TaskID: 5, TaskName: 'Allocate resources', StartDate: new Date('02/04/2019'), EndDate: new Date('02/10/2019'),
+                            Duration: 10, Progress: '75',
+                            Segments: [
+                                { StartDate: new Date('02/04/2019'), Duration: 4 },
+                                { StartDate: new Date('02/08/2019'), Duration: 2 }
+                            ]
+                        },
+                        {
+                            TaskID: 6, TaskName: 'Planning complete', StartDate: new Date('02/21/2019'), EndDate: new Date('02/21/2019'),
+                            Duration: 0, Predecessor: '3FS,5FS'
+                        },
+                    ]
+                },
+                {
+                    TaskID: 7,
+                    TaskName: 'Design',
+                    StartDate: new Date('02/25/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 8, TaskName: 'Software Specification', StartDate: new Date('02/25/2019'), EndDate: new Date('03/02/2019'),
+                            Duration: 5, Progress: '60', Predecessor: '6FS'
+                        },
+                        {
+                            TaskID: 9, TaskName: 'Develop prototype', StartDate: new Date('02/25/2019'), EndDate: new Date('03/02/2019'),
+                            Duration: 5, Progress: '100', Predecessor: '6FS',
+                            Segments: [
+                                { StartDate: new Date('02/25/2019'), Duration: 2 },
+                                { StartDate: new Date('02/28/2019'), Duration: 3 }
+                            ]
+                        },
+                        {
+                            TaskID: 10, TaskName: 'Get approval from customer', StartDate: new Date('02/25/2019'),
+                            EndDate: new Date('03/01/2019'), Duration: 4, Progress: '100', Predecessor: '9FS'
+                        },
+                        {
+                            TaskID: 11, TaskName: 'Design complete', StartDate: new Date('02/25/2019'), EndDate: new Date('02/25/2019'),
+                            Duration: 0, Predecessor: '10FS'
+                        }
+                    ]
+                }
+            ]
+        }
+    ];
+    var resourceCollection = [
+        { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team', isExpand: false },
+        { resourceId: 2, resourceName: 'Rose Fuller', resourceGroup: 'Testing Team', isExpand: true },
+        { resourceId: 3, resourceName: 'Margaret Buchanan', resourceGroup: 'Approval Team', isExpand: false },
+        { resourceId: 4, resourceName: 'Fuller King', resourceGroup: 'Development Team', isExpand: false },
+        { resourceId: 5, resourceName: 'Davolio Fuller', resourceGroup: 'Approval Team', isExpand: true }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj_self = createGantt(
+            {
+                dataSource: resourcesData,
+        allowTaskbarDragAndDrop: true,
+        allowRowDragAndDrop: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            child: 'subtasks',
+            segments: 'Segments'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', width: 80 },
+            { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+            { field: 'StartDate' },
+            { field: 'EndDate' },
+            { field: 'Duration' },
+            { field: 'Progress' },
+            { field: 'Predecessor' }
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        enableContextMenu: true,
+        allowSelection: true,
+        height: '450px',
+        treeColumnIndex: 1,
+        highlightWeekends: true,
+        splitterSettings: {
+            position: "35%"
+        },
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: '${Progress}%'
+        },
+        projectStartDate: new Date('01/30/2019'),
+        projectEndDate: new Date('03/04/2019'),
+        enableVirtualization: true
+    }, done);
+    });
+    afterAll(() => {
+        if (ganttObj_self) {
+            destroyGantt(ganttObj_self);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('reorder rows', function () {
+        ganttObj_self.actionComplete = (args): void => {
+            if (args.requestType == 'save') {
+                expect(ganttObj_self.currentViewData[4].ganttProperties.predecessor.length).toBe(3);
+            }
+        }
+        ganttObj_self.dataBind();
+        ganttObj_self.reorderRows([2], 5, 'child');
+    });
+});

@@ -2083,7 +2083,7 @@ describe('Row Drag and Drop module', () => {
             (childGrid.focusModule as any).onKeyPress({ action: 'shiftTab', preventDefault: function () { }, target: header });
             (childGrid.focusModule as any).onKeyPress({ action: 'shiftTab', preventDefault: function() {}, target: childGrid.element } as any);
         });
-
+    
         it('for coverage - 2 - coverage pager focus', () => {
             const pagerItems = (gridObj.pagerModule as any).element.querySelectorAll('.e-numericitem');
             gridObj.pagerModule.pagerObj.element.tabIndex = 0;

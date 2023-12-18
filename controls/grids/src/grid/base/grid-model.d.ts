@@ -292,6 +292,30 @@ export interface FilterSettingsModel {
     ignoreAccent?: boolean;
 
     /**
+     * If `enableInfiniteScrolling` set to true, then the data will be loaded in Checkbox filter `Popup` content, when the scrollbar reaches the end.
+     * This helps to load large dataset in Checkbox filter `Popup` content.
+     * {% codeBlock src='grid/enableInfiniteScrolling/index.md' %}{% endcodeBlock %}
+     * @default false
+     */
+    enableInfiniteScrolling?: boolean;
+
+    /**
+     * If `enableInfiniteScrolling` set to true, For on demand request, Gets data from the parent data source based on given number of records count.
+     *
+     * @default 100
+     */
+    itemsCount?: number;
+
+    /**
+     * Defines the loading indicator. The available loading indicator are:
+     * * Spinner
+     * * Shimmer
+     *
+     * @default Shimmer
+     */
+    loadingIndicator?: IndicatorType;
+
+    /**
      * If `enableCaseSensitivity` is set to true then searches grid records with exact match based on the filter
      * operator. It will have no effect on number, boolean and Date fields.
      *
@@ -1173,6 +1197,14 @@ export interface GridModel extends ComponentModel{
      * @aspType string
      */
     rowTemplate?: string | Function;
+
+    /**
+     * The empty record template that renders customized element or text or image instead of displaying the empty record message in the grid.
+     * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
+     * @default null
+     * @aspType string
+     */
+    emptyRecordTemplate?: string | Function;
 
     /**
      * The detail template allows you to show or hide additional information about a particular row.

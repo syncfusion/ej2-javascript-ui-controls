@@ -277,7 +277,7 @@ export class DragAndDrop extends ActionBase {
         if (this.parent.quickPopup) {
             this.parent.quickPopup.quickPopupHide(true);
         }
-        if ((!isNullOrUndefined(e.target)) && (e.target as HTMLElement).classList && (e.target as HTMLElement).classList.contains(cls.DISABLE_DATES)) {
+        if ((!isNullOrUndefined(e.target)) && (e.target as HTMLElement).classList &&(e.target as HTMLElement).classList.contains(cls.DISABLE_DATES)) {
             return;
         }
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
@@ -546,7 +546,7 @@ export class DragAndDrop extends ActionBase {
     private calculateVerticalTime(e: MouseEvent & TouchEvent): void {
         if (isNullOrUndefined(this.actionObj.target) ||
             (this.actionObj.target && isNullOrUndefined(closest((<HTMLTableCellElement>this.actionObj.target), 'tr'))) ||
-            (!(closest(this.actionObj.target as Element, 'td').classList.contains(cls.WORK_CELLS_CLASS)) &&
+            (!isNullOrUndefined(closest(this.actionObj.target as Element, 'td')) && !(closest(this.actionObj.target as Element, 'td').classList.contains(cls.WORK_CELLS_CLASS)) &&
                 !(closest(this.actionObj.target as Element, 'td').classList.contains(cls.ALLDAY_CELLS_CLASS)))) {
             return;
         }
@@ -582,8 +582,8 @@ export class DragAndDrop extends ActionBase {
             tr = trCollections[parseInt(rowIndex.toString(), 10)] as HTMLElement;
         }
         let index: number;
-        if (closest(this.actionObj.target as Element, 'td').classList.contains(cls.WORK_CELLS_CLASS) ||
-            closest(this.actionObj.target as Element, 'td').classList.contains(cls.ALLDAY_CELLS_CLASS)) {
+        if (!isNullOrUndefined(closest(this.actionObj.target as Element, 'td')) && (closest(this.actionObj.target as Element, 'td').classList.contains(cls.WORK_CELLS_CLASS) ||
+            closest(this.actionObj.target as Element, 'td').classList.contains(cls.ALLDAY_CELLS_CLASS))) {
             index = (closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement).cellIndex;
         }
         const colIndex: number = isNullOrUndefined(index) ? (<HTMLTableCellElement>closest(this.actionObj.clone, 'td')).cellIndex : index;
@@ -882,7 +882,7 @@ export class DragAndDrop extends ActionBase {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private swapDragging(e: MouseEvent & TouchEvent): void {
-        const colIndex: number = (closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement).cellIndex;
+        const colIndex: number = !isNullOrUndefined(closest((<HTMLTableCellElement>this.actionObj.target), 'td')) && (closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement).cellIndex;
         if (closest(this.actionObj.target as Element, '.' + cls.DATE_HEADER_WRAP_CLASS) &&
             !closest(this.actionObj.clone, '.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS)) {
             addClass([this.actionObj.clone], cls.ALLDAY_APPOINTMENT_CLASS);

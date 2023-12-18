@@ -99,7 +99,7 @@ export class WorkbookOpen {
 
     private fetchSuccess(data: string, eventArgs: OpenOptions, file?: File, isOpenFromJson?: boolean, isImport?:boolean): void {
         const openError: string[] = ['UnsupportedFile', 'InvalidUrl', 'NeedPassword', 'InCorrectPassword', 'InCorrectSheetPassword',
-            'CorrectSheetPassword', 'DataLimitExceeded', 'FileSizeLimitExceeded'];
+            'CorrectSheetPassword', 'DataLimitExceeded', 'FileSizeLimitExceeded', 'ExternalWorkbook'];
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         let workbookData: { Workbook?: WorkbookModel, Guid?: string } = <any>data;
         workbookData = (typeof data === 'string') ? JSON.parse(data) : data;

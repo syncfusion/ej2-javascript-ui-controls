@@ -427,7 +427,6 @@ export class NavigationPane {
     private onFinalizeEnd(args: ReadArgs): void {
         this.onInit();
         const id: string = getValue('_fm_id', args.cwd);
-        this.removeChildNodes(id);
         this.addChild(args.files, id, false);
         this.treeObj.selectedNodes = [this.parent.pathId[this.parent.pathId.length - 1]];
     }

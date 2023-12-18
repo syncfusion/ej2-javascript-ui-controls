@@ -552,11 +552,6 @@
     }
 
     &.e-rtl {
-      .e-treeview .e-list-item div.e-icons {
-        height: 24px;
-        width: 24px;
-      }
-
       .e-treeview .e-list-item div.e-edit.e-icons,
       .e-treeview .e-list-item div.e-edited.e-icons,
       .e-treeview .e-list-item div.e-remove-report.e-icons {
@@ -930,7 +925,6 @@
     }
 
     .e-footer-content {
-      padding-right: $pivot-dialog-footer-paddingright;
       padding-top: $pivot-dialog-footer-padding;
     }
 
@@ -1327,8 +1321,8 @@
         padding: 20px;
         padding-bottom: 0;
 
-		/* stylelint-disable */
         .e-filter-text-div {
+          /* stylelint-disable */
           color: $field-list-button-icon-color !important;
           /* stylelint-enable */
           font-size: 13px;
@@ -1368,6 +1362,21 @@
             .e-filter-sort {
               margin-left: 0;
               margin-right: $field-list-sort-wrapper-padding-size;
+
+              .e-member-sort {
+                &:first-of-type {
+                  @if ($skin-name == 'Material3') {
+                    border-top-left-radius: 0;
+                    border-bottom-left-radius: 0;
+                  }
+                }
+                &:last-of-type {
+                  @if ($skin-name == 'Material3') {
+                    border-top-right-radius: 0;
+                    border-bottom-right-radius: 0;
+                  }
+                }
+              }
             }
           }
         }
@@ -1640,6 +1649,9 @@
         font-size: $field-list-drag-clone-font-size;
         padding: 0;
         width: 100%;
+        @if ($skin-name == 'Material3') {
+          min-height: auto;
+        }
       }
     }
 

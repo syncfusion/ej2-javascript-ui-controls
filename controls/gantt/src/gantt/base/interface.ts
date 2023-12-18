@@ -1,9 +1,10 @@
 import { PdfTreeGridCell } from './../export/pdf-base/pdf-grid-table';
 import { PdfBorders } from './../export/pdf-base/pdf-borders';
 import { ColumnModel } from './../models/column';
-import { PointF, PdfColor, PdfFontFamily, PdfFontStyle, PdfStringFormat, PdfTrueTypeFont } from '@syncfusion/ej2-pdf-export';
+import { PointF, PdfColor, PdfFontFamily, PdfFontStyle, PdfStringFormat, PdfTrueTypeFont,PdfStandardFont, PdfTextWebLink, PdfImage  } from '@syncfusion/ej2-pdf-export';
 import {
-    ContextMenuType, PdfPageSize, PageOrientation, ExportType, PdfTheme, TaskType
+    ContextMenuType, PdfPageSize, PageOrientation, ExportType, PdfTheme, TaskType,ContentType,PdfPageNumberType, PdfDashStyle,
+    PdfHAlign, PdfVAlign
 } from './enum';
 import { ContextMenuOpenEventArgs as GridContextMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { ContextMenuClickEventArgs as GridContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
@@ -229,6 +230,8 @@ export interface IIndicator {
     date?: Date | string;
     /** Defines the icon class of indicator. */
     iconClass?: string;
+    /** Defines the pdf image of indicator. */
+    base64?: string;
     /** Defines the name of indicator. */
     name?: string;
     /** Defines the tooltip of indicator. */
@@ -660,6 +663,12 @@ export interface RowDeselectEventArgs extends GridRowDeselectEventArgs {
     row?: Element;
 }
 
+export interface IEventMarkerInfo{
+    id?:number;
+    left?:number;
+    label?:string;
+    date?:Date;
+}
 export interface ActionCompleteArgs extends ZoomEventArgs, IKeyPressedEventArgs {
     element?: HTMLElement;
     requestType?: string;
@@ -837,6 +846,8 @@ export interface PdfExportProperties {
     pageSize?: PdfPageSize;
     /** Enable the footer. */
     enableFooter?: boolean;
+    /** Enable the header. */
+    enableHeader?: boolean;
     /** Indicates whether to show the hidden columns in exported Pdf */
     includeHiddenColumn?: boolean;
     /** Defines the theme for exported Gantt  */
@@ -851,6 +862,10 @@ export interface PdfExportProperties {
     showPredecessorLines?: boolean;
     /** Defines the export options in rendering each row fit to the PDF page width */
     fitToWidthSettings?: FitToWidthSettings;
+    /** Defines the Pdf header. */
+    header?: PdfHeader;
+    /** Defines the Pdf footer. */
+    footer?: PdfFooter;
 }
 export interface PdfQueryCellInfoEventArgs {
     /** Defines the column of the current cell. */
@@ -858,11 +873,29 @@ export interface PdfQueryCellInfoEventArgs {
     /** Defines the style of the current cell. */
     style?: PdfGanttCellStyle;
     /** Defines the value of the current cell. */
-    value?: Date | string | number | boolean | Object;
+    value?: Date | string | number | boolean | PdfTextWebLink  | PdfImage;
     /** Defines the data of the cell */
     data?: Object;
     /** Defines the current PDF cell */
     cell?: PdfTreeGridCell;
+    /** Defines the image details */
+    image?: Image;
+    /** Defines the hyperlink of the cell */
+    hyperLink?: Hyperlink;
+}
+export interface Image {
+    /**  Defines the base 64 string for image */
+    base64: string;
+    /**  Defines the height for the image */
+    height?: number;
+    /**  Defines the height for the image */
+    width?: number;
+}
+export interface Hyperlink {
+    /** Defines the Url for hyperlink */
+    target?: string;
+    /** Defines the display text for hyperlink */
+    displayText?: string;
 }
 export interface TimelineDetails {
     startPoint?: number;
@@ -942,6 +975,25 @@ export interface ITaskbarStyle {
     baselineColor?: PdfColor;
     /** Defines the baseline border color */
     baselineBorderColor?: PdfColor;
+    /** Defines the split line background color */
+    splitLineBackground?:PdfColor;
+    /** Defines the unscheduled taskbar background color */
+    unscheduledTaskBarColor?:PdfColor;
+    /** Defines the manualParent Background color */
+    manualParentBackground?: PdfColor;
+    /** Defines the manualParent Progress color */
+    manualParentProgress?: PdfColor;
+    /** Defines the manualChild Background color */
+    manualChildBackground?: PdfColor;
+    /** Defines the manualChild Progress color */
+    manualChildProgress?: PdfColor;
+     /** Defines the manual line color */
+    manualLineColor?:PdfColor;
+    /** Defines the manualParent Background color */
+    manualParentBorder?:PdfColor;
+    /** Defines the manualChild Background color */
+    manualChildBorder?:PdfColor;
+
 }
 
 export interface FitToWidthSettings{
@@ -990,6 +1042,8 @@ export interface PdfQueryTaskbarInfoEventArgs {
     taskbar?: ITaskbarStyle;
     /** Specify the value of the task data */
     data?: IGanttData;
+     /** Defines the Indicator */
+     indicators ?:IIndicator[];
 }
 
 export interface PdfColumnHeaderQueryCellInfoEventArgs {
@@ -1029,4 +1083,87 @@ export enum PdfHorizontalOverflowType {
      * @private
      */
     LastPage
+}
+export interface PdfHeader {
+    /** Defines the header content distance from top. */
+    fromTop?: number;
+    /** Defines the height of header content. */
+    height?: number;
+    /** Defines the header contents. */
+    contents?: PdfHeaderFooterContent[];
+}
+
+export interface PdfFooter {
+    /** Defines the footer content distance from bottom. */
+    fromBottom?: number;
+    /** Defines the height of footer content. */
+    height?: number;
+    /** Defines the footer contents */
+    contents?: PdfHeaderFooterContent[];
+}
+
+export interface PdfHeaderFooterContent {
+    /** Defines the content type */
+    type: ContentType;
+    /** Defines the page number type */
+    pageNumberType?: PdfPageNumberType;
+    /** Defines the style of content */
+    style?: PdfContentStyle;
+    /** Defines the pdf points for drawing line */
+    points?: PdfPoints;
+    /** Defines the format for customizing page number */
+    format?: string;
+    /** Defines the position of the content */
+    position?: PdfPosition;
+    /** Defines the size of content */
+    size?: PdfSize;
+    /** Defines the base64 string for image content type */
+    src?: string;
+    /** Defines the value for content */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    value?: any;
+    /** Defines the font for the content */
+    font?: PdfStandardFont | PdfTrueTypeFont;
+    /** Defines the alignment of header */
+    stringFormat?: PdfStringFormat;
+}
+export interface PdfContentStyle {
+    /** Defines the pen color. */
+    penColor?: string;
+    /** Defines the pen size. */
+    penSize?: number;
+    /** Defines the dash style. */
+    dashStyle?: PdfDashStyle;
+    /** Defines the text brush color. */
+    textBrushColor?: string;
+    /** Defines the text pen color. */
+    textPenColor?: string;
+    /** Defines the font size. */
+    fontSize?: number;
+    /** Defines the horizontal alignment. */
+    hAlign?: PdfHAlign;
+    /** Defines the vertical alignment. */
+    vAlign?: PdfVAlign;
+}
+export interface PdfPoints {
+    /** Defines the x1 position */
+    x1: number;
+    /** Defines the y1 position */
+    y1: number;
+    /** Defines the x2 position */
+    x2: number;
+    /** Defines the y2 position */
+    y2: number;
+}
+export interface PdfPosition {
+    /** Defines the x position */
+    x: number;
+    /** Defines the y position */
+    y: number;
+}
+export interface PdfSize {
+    /** Defines the height */
+    height: number;
+    /** Defines the width */
+    width: number;
 }

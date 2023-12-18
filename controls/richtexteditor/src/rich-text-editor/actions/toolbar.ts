@@ -77,6 +77,10 @@ export class Toolbar {
         case 'escape':
             (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
             break;
+        case 'enter':
+            if ((e.target as Element).classList.contains('e-hor-nav')) {
+                this.adjustContentHeight(e.target as Element, true);
+            }
         }
     }
     private createToolbarElement(): void {
@@ -131,7 +135,7 @@ export class Toolbar {
             items: this.parent.toolbarSettings.items,
             mode: tBarMode,
             target: ele,
-            cssClass: this.parent.cssClass
+            cssClass: this.parent.getCssClass()
         } as IToolbarRenderOptions);
         if (this.parent.toolbarSettings.type === ToolbarType.Expand) {
             addClass([ele], ['e-rte-tb-mobile']);
@@ -244,7 +248,7 @@ export class Toolbar {
                 items: this.parent.toolbarSettings.items,
                 mode: this.getToolbarMode(),
                 target: this.tbElement,
-                cssClass: this.parent.cssClass
+                cssClass: this.parent.getCssClass()
             } as IToolbarRenderOptions);
             if (!this.parent.inlineMode.enable) {
                 if (this.parent.toolbarSettings.enableFloating) {
@@ -274,7 +278,7 @@ export class Toolbar {
             } as IColorPickerRenderArgs);
             this.refreshToolbarOverflow();
         }
-        const divEle: HTMLElement = this.parent.element.querySelector('.e-rte-srctextarea') as HTMLElement;
+        const divEle: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA) as HTMLElement;
         const iframeEle: HTMLElement = this.parent.element.querySelector('.e-source-content') as HTMLElement;
         if ((!this.parent.iframeSettings.enable && (!isNOU(divEle) && divEle.style.display === 'block')) ||
           (this.parent.iframeSettings.enable && (!isNOU(iframeEle) && iframeEle.style.display === 'block'))) {
@@ -414,7 +418,7 @@ export class Toolbar {
                 baseToolbar.toolbarObj.enableItems(item, isEnable);
             }
         }
-        if (!select('.e-rte-srctextarea', this.parent.element) && !muteToolbarUpdate) {
+        if (!select('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA , this.parent.element) && !muteToolbarUpdate) {
             updateUndoRedoStatus(baseToolbar, this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
         }
     }
@@ -598,19 +602,24 @@ export class Toolbar {
 
     private toolbarClickHandler(e: ClickEventArgs): void {
         const trg: Element = closest(e.originalEvent.target as Element, '.e-hor-nav');
+        this.adjustContentHeight(trg, false);
+    }
+
+    private adjustContentHeight(trg: Element, isKeyboard?: boolean): void {
         if (trg && this.parent.toolbarSettings.type === ToolbarType.Expand && !isNOU(trg)) {
             const extendedTbar: HTMLElement = this.tbElement.querySelector('.e-toolbar-extended');
             if (!isNOU(extendedTbar)) {
                 setStyleAttribute(extendedTbar, { maxHeight: '', display: 'block' });
                 setStyleAttribute(extendedTbar, { maxHeight: extendedTbar.offsetHeight + 'px', display: '' });
             }
-            if (!trg.classList.contains('e-nav-active')) {
-                removeClass([this.tbElement], [classes.CLS_EXPAND_OPEN]);
-                this.parent.setContentHeight('toolbar', false);
-            } else {
+            const hasActiveClass: boolean = trg.classList.contains('e-nav-active');
+            const isExpand: boolean = isKeyboard ? (hasActiveClass ? false : true) : (hasActiveClass ? true : false);
+            if (isExpand) {
                 addClass([this.tbElement], [classes.CLS_EXPAND_OPEN]);
-                this.parent.setContentHeight('toolbar', true);
+            } else {
+                removeClass([this.tbElement], [classes.CLS_EXPAND_OPEN]);
             }
+            this.parent.setContentHeight('toolbar', isExpand);
         } else if (Browser.isDevice || this.parent.inlineMode.enable) {
             this.isToolbar = true;
         }
@@ -738,7 +747,7 @@ export class Toolbar {
             this.addEventListener();
             this.renderToolbar();
             this.parent.wireScrollElementsEvents();
-            if (!select('.e-rte-srctextarea', this.parent.element)) {
+            if (!select('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA , this.parent.element)) {
                 updateUndoRedoStatus(this.baseToolbar, this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
             }
             this.parent.notify(events.dynamicModule, {});

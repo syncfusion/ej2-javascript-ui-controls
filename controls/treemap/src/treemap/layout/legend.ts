@@ -120,9 +120,9 @@ export class TreeMapLegend {
                 * parseFloat(legend.width) : parseFloat(legend.width) : null;
             let legendHeight: number = (legend.height.length > 1) ? (legend.height.indexOf('%') > -1) ?
                 (treemap.availableSize.height / 100) * parseFloat(legend.height) : parseFloat(legend.height) : null;
-            titleTextStyle.fontFamily = treemap.themeStyle.fontFamily || titleTextStyle.fontFamily;
+            titleTextStyle.fontFamily = titleTextStyle.fontFamily || treemap.themeStyle.fontFamily;
             titleTextStyle.fontWeight = titleTextStyle.fontWeight || treemap.themeStyle.titleFontWeight;
-            titleTextStyle.size = treemap.themeStyle.legendFontSize || titleTextStyle.size;
+            titleTextStyle.size = titleTextStyle.size || treemap.themeStyle.legendFontSize;
             const legendTitleSize: Size = measureText(legendTitle, titleTextStyle);
             let startX: number = 0; let startY: number = 0; const shapePadding: number = legend.shapePadding;
             const itemTextStyle: FontModel = legend.textStyle;
@@ -626,8 +626,10 @@ export class TreeMapLegend {
             for (let i: number = 0; i < (<any[]>this.totalPages[page as number]['Collection']).length; i++) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const collection: any = <any[]>this.totalPages[page as number]['Collection'][i as number];
-                const legendElement: Element = render.createGroup({ id: treemap.element.id + '_Legend_Index_' + i });
                 const legendText: string = collection['DisplayText'];
+                const legendElement: Element = render.createGroup({ id: treemap.element.id + '_Legend_Index_' + i });
+                legendElement.setAttribute('aria-label', legendText + ' Legend');
+                legendElement.setAttribute('role', 'region');
                 const shapeId: string = treemap.element.id + '_Legend_Shape_Index_' + i;
                 const textId: string = treemap.element.id + '_Legend_Text_Index_' + i;
                 let shapeLocation: Location = collection['Shape'];

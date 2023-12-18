@@ -320,8 +320,8 @@ export class UndoRedo {
     private undoEntry(entry: HistoryEntry, diagram: Diagram): void {
         let obj: SelectorModel; let nodeObject: SelectorModel | Node;
         if (entry.type !== 'PropertyChanged' && entry.type !== 'CollectionChanged' && entry.type !== 'LabelCollectionChanged') {
-            obj = (entry.undoObject) as SelectorModel;
-            nodeObject = (entry.undoObject) as SelectorModel;
+            obj = entry.undoObject ? (entry.undoObject as SelectorModel) : (entry.previous.undoObject) as SelectorModel;
+            nodeObject = obj;
         }
         if (entry.type !== 'StartGroup' && entry.type !== 'EndGroup') {
             if (diagram.historyManager.undoStack.length > 0) {
@@ -402,6 +402,9 @@ export class UndoRedo {
             break;
         case 'AddChildToGroupNode':
             this.recordAddChildToGroupNode(entry, diagram, false);
+            break;
+        case 'RemoveChildFromGroupNode':
+            this.recordRemoveChildFromGroupNode(entry, diagram, false);
             break;
         case "ExternalEntry":
             //EJ2-848643 - Need to consider custom entries in start and end group action
@@ -688,6 +691,19 @@ export class UndoRedo {
         const group: Node = diagram.nameTable[(entry.undoObject as NodeModel).id];
         const child: Node = diagram.nameTable[entry.objectId];
         if (isRedo && entry.changeType === 'Insert') {
+            diagram.addChildToGroup(group, child.id);
+        }
+        else{
+            diagram.removeChildFromGroup(group, child.id);
+        }
+    }
+    private recordRemoveChildFromGroupNode(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void{
+        const group: Node = diagram.nameTable[(entry.undoObject as NodeModel).id];
+        const child: Node = diagram.nameTable[entry.objectId];
+        if (isRedo && entry.changeType === 'Remove') {
+            diagram.removeChildFromGroup(group, child.id);
+        }
+        else{
             diagram.addChildToGroup(group, child.id);
         }
     }
@@ -1212,6 +1228,8 @@ export class UndoRedo {
             this.recordOrderCommandChanged(historyEntry, diagram, true); break;
         case 'AddChildToGroupNode':
             this.recordAddChildToGroupNode(historyEntry, diagram, true); break;
+        case 'RemoveChildFromGroupNode':
+            this.recordRemoveChildFromGroupNode(historyEntry, diagram, true); break;
         case "ExternalEntry":
             //EJ2-848643 - Need to consider custom entries in start and end group action
             diagram.historyManager.redo(historyEntry);

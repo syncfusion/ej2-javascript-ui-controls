@@ -117,3 +117,33 @@ export interface IPDFArgs {
      */
     y?: number;
 }
+
+/**
+ * Axis visible range
+ *
+ * @public
+ */
+export interface VisibleRangeModel {
+    /** axis minimum value. */
+    min?: number;
+    /** axis maximum value. */
+    max?: number;
+    /** axis interval value. */
+    interval?: number;
+    /** axis delta value. */
+    delta?: number;
+}
+
+/**
+ * Interface representing the arguments passed to an event that occurs after exporting data.
+ *
+ * @interface
+ */
+export interface IAfterExportEventArgs {
+    /** Defines the name of the event. */
+    name: string;
+    /** Defines the event cancel status. */
+    cancel: boolean;
+    /** The data URL generated after exporting. */
+    dataUrl: string;
+}

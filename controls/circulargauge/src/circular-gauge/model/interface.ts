@@ -285,7 +285,49 @@ export interface IVisibleRange {
     rangeIndex?: number;
 
 }
-
+/**
+ * Specifies the visible range
+ *
+ * @private
+ */
+export interface ICircularGaugeAnimation {
+    /**
+     * Enables and disables the axis line element to append in gauge.
+     */
+    isAxisLine?: boolean;
+    /**
+     * Enables and disables the major tick element to append in gauge.
+     */
+    isMajorTick?: boolean;
+    /**
+     * Count of major tick element to append in gauge.
+     */
+    majorTickCount?: number;
+    /**
+     * Enables and disables the minor tick element to append in gauge.
+     */
+    isMinorTick?: boolean;
+    /**
+     * Enables and disables the minor tick element to append in gauge.
+     */
+    minorTickCount?: number;
+    /**
+     * Enables and disables the label element to append in gauge.
+     */
+    isAxisLabel?: boolean;
+    /**
+     * Count of major tick element to append in gauge.
+     */
+    axisLabelCount?: number;
+    /**
+     * Enables and disables the range element to append in gauge.
+     */
+    isRange?: boolean;
+    /**
+     * Enables and disables the pointer element to append in gauge.
+     */
+    isPointer?: boolean;
+}
 /**
  * Specifies the event arguments for the font settings of the axis label and legend in circular gauge.
  *

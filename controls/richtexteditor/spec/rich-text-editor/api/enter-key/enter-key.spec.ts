@@ -1711,12 +1711,10 @@ describe('Enter Key press just outside the table at the start', () => {
     });
 });
 
-describe( 'EJ2-62198 Place holder displayed again when focusing out after pressing enter key on empty editor', () =>
-{
+describe( 'EJ2-62198 Place holder displayed again when focusing out after pressing enter key on empty editor', () => {
     let rteObj: RichTextEditor;
     keyboardEventArgs.shiftKey = false;
-    beforeEach( () =>
-    {
+    beforeEach( () => {
         rteObj = renderRTE( {
             height: '200px',
             enterKey: "P",
@@ -1724,12 +1722,10 @@ describe( 'EJ2-62198 Place holder displayed again when focusing out after pressi
             placeholder: 'Enter Key Support Sample'
         } );
     } );
-    afterEach( () =>
-    {
+    afterEach( () => {
         destroy( rteObj );
     } );
-    it( 'After Render Placeholder span element style.display should be block', () =>
-    {
+    it( 'After Render Placeholder span element style.display should be block', () => {
         rteObj.dataBind();
         rteObj.focusIn();
         let spanElemement: HTMLElement = document.querySelector( '.e-rte-placeholder' );
@@ -1737,8 +1733,7 @@ describe( 'EJ2-62198 Place holder displayed again when focusing out after pressi
         rteObj.focusOut();
         expect( spanElemement.style.display == 'block' ).toBe( true );
     } );
-    it( 'After One Enter key Press Placeholder span element style.display should be none', () =>
-    {
+    it( 'After One Enter key Press Placeholder span element style.display should be none', () => {
         rteObj.dataBind();
         rteObj.focusIn();
         const startNode: any = rteObj.inputElement.querySelector( '.focusNode' );
@@ -2197,7 +2192,7 @@ describe('843688 - The Enter key press before the video duplicates the video', f
     it('Press enter key curser places before the embaded video', (done: Function) => {
     const startNode: any = rteObj.inputElement.childNodes[2];
         let sel: void = new NodeSelection().setSelectionText(document, startNode, startNode, 1, 1);
-        (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Shift+V)"]')as HTMLElement).click()
+        (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
         let dialogEle: any = rteObj.element.querySelector('.e-dialog');
         (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = '<iframe width="560" height="315" src="https://www.youtube.com/embed/H661HyVGu7I?si=ROQf-Grd6u37RlX6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
         (dialogEle.querySelector('.e-embed-video-url') as HTMLElement).dispatchEvent(new Event("keyup"));
@@ -2232,7 +2227,7 @@ describe('843688 - The Enter key press before the video duplicates the video', f
     it('Press enter key curser places before the embaded video', (done: Function) => {
     const startNode: any = rteObj.inputElement.childNodes[2];
         let sel: void = new NodeSelection().setSelectionText(document, startNode, startNode, 1, 1);
-        (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Shift+V)"]')as HTMLElement).click()
+        (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
         let dialogEle: any = rteObj.element.querySelector('.e-dialog');
         (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = '<iframe width="560" height="315" src="https://www.youtube.com/embed/H661HyVGu7I?si=ROQf-Grd6u37RlX6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
         (dialogEle.querySelector('.e-embed-video-url') as HTMLElement).dispatchEvent(new Event("keyup"));
@@ -2267,7 +2262,7 @@ describe('843688 - The Enter key press before the video duplicates the video', f
     it('Press enter key curser places before the embaded video', (done: Function) => {
     const startNode: any = rteObj.inputElement.childNodes[2];
         let sel: void = new NodeSelection().setSelectionText(document, startNode, startNode, 1, 1);
-        (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Shift+V)"]')as HTMLElement).click()
+        (<HTMLElement>document.querySelector('[title="Insert Video (Ctrl+Alt+V)"]')as HTMLElement).click()
         let dialogEle: any = rteObj.element.querySelector('.e-dialog');
         (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = '<iframe width="560" height="315" src="https://www.youtube.com/embed/H661HyVGu7I?si=ROQf-Grd6u37RlX6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
         (dialogEle.querySelector('.e-embed-video-url') as HTMLElement).dispatchEvent(new Event("keyup"));
@@ -2281,7 +2276,34 @@ describe('843688 - The Enter key press before the video duplicates the video', f
     });
 });
 
-describe('854608 - The text alignment is not maintained when pressing the enter key in the Rich Text Editor.', () => {
+describe('849992 - When press the enter key at the last position at last audio getting duplicate . ', function () {
+    let rteEle: HTMLElement;
+    let rteObj: RichTextEditor;
+    
+    var innerHTML: string = `<p><span class="e-audio-wrap" contenteditable="false" title="mixkit-rain-and-thunder-storm-2390.mp3"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="blob:https://ej2.syncfusion.com/bbc0d9c4-e49b-4f65-8ad3-89388fa0b965" type="audio/mp3"></audio></span></span><br></p>`;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            height: 400,
+            toolbarSettings: {
+                items: ['Audio']
+            },
+            value: innerHTML,
+        });
+        rteEle = rteObj.element;
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Press enter key curser places after the audio', (done: Function) => {
+    const startNode: any = rteObj.inputElement.querySelector('p');
+    let sel: void = new NodeSelection().setSelectionText(document, startNode, startNode, 1, 1);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(document.querySelectorAll('.e-audio-wrap').length === 1).toBe(true);
+        done();
+    });
+});
+
+describe('850231 - Enter key press does not copy the styles content of Previous block Node', () => {
     let rteObj: RichTextEditor;
     keyboardEventArgs.shiftKey = false;
     beforeAll((done: Function) => {

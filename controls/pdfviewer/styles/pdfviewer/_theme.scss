@@ -122,6 +122,15 @@
     position: $pv-page-div-position;
   }
 
+  .e-pv-viewer-container .e-pv-page-div.e-focused {
+    box-shadow: $pv-page-div-focus-style;
+  }
+
+  .e-pv-viewer-container.e-focused
+  {
+    box-shadow: $pv-page-div-focus-style inset;
+  }
+
   .e-pv-toolbar,
   .e-pv-nav-toolbar,
   .e-pv-annotation-toolbar,
@@ -167,6 +176,29 @@
 
   .e-pv-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn-text,
   .e-pv-toolbar.e-toolbar.e-toolpop .e-toolbar-items .e-toolbar-item.e-popup-text .e-tbar-btn-text {
+    display: none;
+  }
+
+  .e-control.e-toolbar.e-lib.e-pv-annotation-toolbar.e-pv-toolbar-scroll.e-keyboard.e-toolpop .e-tbar-btn-text
+  {
+    display: none;
+  }
+
+  .e-dropdown-popup.e-control.e-pv-annotation-shapes-container .e-tbar-btn-text {
+    display: none;
+  }
+
+  .e-dropdown-popup.e-control.e-pv-annotation-calibrate-container .e-tbar-btn-text {
+    display: none;
+  }
+
+  .e-dropdown-popup.e-control.e-pv-annotation-textalign-container .e-tbar-btn-text
+  {
+    display: none;
+  }
+
+  .e-dropdown-popup.e-control.e-pv-annotation-textprop-container.e-caret-hide .e-tbar-btn-text
+  {
     display: none;
   }
 
@@ -336,6 +368,12 @@
     }
     @else {
       padding-bottom: 0;
+    }
+  }
+
+  .e-pdfviewer .e-pv-open-document-icon .e-pv-icon .e-icons .e-btn-icon .e-icon-left {
+    @if $skin-name == 'FluentUI' {
+      padding: 0;
     }
   }
 
@@ -1016,6 +1054,30 @@
 
   .e-pv-thumbnail-view-button-selection.e-pv-thumbnail-view-button.e-btn,
   .e-pv-bookmark-button-selection.e-pv-bookmark-button.e-btn  {
+    background: $pv-thumbnail-view-button-selection-background;
+    border: $pv-thumbnail-view-button-selection-border;
+    border-radius: $pv-thumbnail-border-selection-radius;
+    @if $skin-name == 'bootstrap4' {
+      color: $pv-thumbnail-border-selection-font-color;
+    }
+    line-height: $pv-thumbnail-view-button-selection-line-height;
+    padding: $pv-thumbnail-view-button-selection-padding;
+  }
+
+  .e-pv-tbar-btn.e-pv-thumbnail-view-button.e-btn:focus
+  {
+    background: $pv-thumbnail-view-button-selection-background;
+    border: $pv-thumbnail-view-button-selection-border;
+    border-radius: $pv-thumbnail-border-selection-radius;
+    @if $skin-name == 'bootstrap4' {
+      color: $pv-thumbnail-border-selection-font-color;
+    }
+    line-height: $pv-thumbnail-view-button-selection-line-height;
+    padding: $pv-thumbnail-view-button-selection-padding;
+  }
+
+  .e-pv-tbar-btn.e-pv-bookmark-button.e-btn:focus
+  {
     background: $pv-thumbnail-view-button-selection-background;
     border: $pv-thumbnail-view-button-selection-border;
     border-radius: $pv-thumbnail-border-selection-radius;
@@ -1874,6 +1936,18 @@
     width: $pv-annotation-drop-down-width;
   }
 
+  .e-bigger .e-pv-annotation-color-container.e-icon-btn,
+  .e-bigger .e-pv-annotation-opacity-container.e-icon-btn,
+  .e-bigger .e-pv-annotation-stroke-container.e-icon-btn,
+  .e-bigger .e-pv-custom-annotation-thickness-container.e-icon-btn,
+  .e-bigger .e-pv-custom-annotation-opacity-container.e-icon-btn,
+  .e-bigger .e-pv-annotation-thickness-container.e-icon-btn,
+  .e-bigger .e-pv-annotation-textcolor-container.e-icon-btn,
+  .e-bigger .e-pv-annotation-textalign-container.e-icon-btn,
+  .e-bigger .e-pv-annotation-textprop-container.e-icon-btn {
+    white-space: nowrap;
+  }
+
   .e-pv-annotation-thickness-container.e-btn.e-icon-btn.e-dropdown-btn {
     @if ($skin-name != 'bootstrap5') {
       padding-top: $pv-annotation-thickness-drop-down-padding-top;
@@ -1970,6 +2044,35 @@
     @else {
       background-color: $pv-annotation-dropdown-background-color-hover;
       border-color: $pv-annotation-dropdown-border-color-hover;
+    }
+  }
+
+  .e-pv-stamp.e-menu-wrapper ul .e-menu-item.e-focused:focus {
+    background-color: $pv-annotation-dropdown-background-color-hover;
+    border-color: $pv-annotation-dropdown-border-color-hover;
+    outline: none;
+    color: $pv-item-selection-color;
+  }
+
+  .e-pv-annotation-color-container.e-btn:focus,
+  .e-pv-annotation-opacity-container.e-btn:focus,
+  .e-pv-annotation-stroke-container.e-btn:focus,
+  .e-pv-annotation-thickness-container.e-btn:focus,
+  .e-pv-annotation-shapes-container.e-btn:focus,
+  .e-pv-annotation-calibrate-container.e-btn:focus,
+  .e-pv-annotation-textcolor-container.e-btn:focus,
+  .e-pv-annotation-textalign-container.e-btn:focus,
+  .e-pv-annotation-handwritten-container.e-btn:focus,
+  .e-pv-annotation-textprop-container.e-btn:focus {
+    @if $skin-name == 'Material3' {
+      background: $pv-annotation-dropdown-background-color-hover;
+      border: $pv-annotation-dropdown-border-color-hover;
+      outline: none;
+    }
+    @else {
+      background-color: $pv-annotation-dropdown-background-color-hover;
+      border-color: $pv-annotation-dropdown-border-color-hover;
+      outline: none;
     }
   }
 
@@ -2974,6 +3077,17 @@
     }
   }
 
+  .e-pv-reply-div.e-pv-comments-leave.e-focused
+  {
+    border: $pv-comments-div-focus-border;
+    background: $pv-comments-div-focus-background;
+  }
+  
+  .e-pv-comments-div.e-focused {
+    border: $pv-comments-div-focus-border;
+    background: $pv-comments-div-focus-background;
+  }
+
   .e-pdfviewer .e-inplaceeditor .e-editable-action-buttons {
     float: right;
     padding-bottom: 7px;
@@ -3654,6 +3768,20 @@
     }
     @else {
       color: $pv-icon-color;
+    }
+  }
+
+  .e-bigger .e-pv-stamp-template-container .e-menu-container .e-menu .e-menu-item,
+  .e-bigger .e-pv-stamp-template-container .e-menu-container .e-menu .e-menu-item .e-menu-icon,
+  .e-bigger .e-pv-stamp-template-container .e-menu-container .e-menu .e-menu-item .e-caret {
+    @if ($skin-name == 'FluentUI') {
+      height: 32px;
+    }
+  }
+
+  .e-pv-mobile-annotation-toolbar .e-toolbar-items .e-hscroll-bar {
+    @if ($skin-name == 'FluentUI') {
+      overflow-y: hidden;
     }
   }
 
@@ -4629,7 +4757,22 @@
   }
 
   .e-pv-annotation-toolbar.e-toolbar .e-toolbar-pop .e-toolbar-item .e-tbar-btn.e-btn {
+    justify-content: center;
     padding: 0 $pv-icon-padding-top;
+  }
+
+  .e-pv-mobile-toolbar .e-mobile-more-option .e-pv-more-icon {
+    @if ($skin-name == 'bootstrap4') {
+      margin-left: 0 !important;/* stylelint-disable-line declaration-no-important */
+      width: 1em !important;/* stylelint-disable-line declaration-no-important */
+      line-height: 22px !important;/* stylelint-disable-line declaration-no-important */
+      padding: 0 !important;/* stylelint-disable-line declaration-no-important */
+    }
+    @else {
+      margin-left: 0 !important;/* stylelint-disable-line declaration-no-important */
+      width: 1em !important;/* stylelint-disable-line declaration-no-important */
+      line-height: 22px !important;/* stylelint-disable-line declaration-no-important */
+    }
   }
 
   .e-pv-signature-window .e-dlg-content {

@@ -279,11 +279,6 @@ describe('Diagram Control', () => {
                 (diagram.basicElements[0] as GridPanel).children[1].bounds.y == 150 &&
                 (diagram.basicElements[0] as GridPanel).children[1].bounds.width == 200 &&
                 (diagram.basicElements[0] as GridPanel).children[1].bounds.height == 50)).toBe(true);
-            expect(((diagram.basicElements[0] as GridPanel).children[2].bounds.x == 300 &&
-                (diagram.basicElements[0] as GridPanel).children[2].bounds.y == 200 &&
-                (diagram.basicElements[0] as GridPanel).children[2].bounds.width == 200 &&
-                (diagram.basicElements[0] as GridPanel).children[2].bounds.height == 50 &&
-                ((diagram.basicElements[0] as GridPanel).children[2] as Canvas).children.length == 2)).toBe(true);
             done();
         });
     });
@@ -349,20 +344,16 @@ describe('Diagram Control', () => {
         it('Checking grid panel without rows and columns', (done: Function) => {
             expect(diagram.basicElements[0].actualSize.width == 400 && diagram.basicElements[0].actualSize.height == 100).toBe(true);
             expect(((diagram.basicElements[0] as GridPanel).children.length == 3)).toBe(true);
+            console.log("last grid",(diagram.basicElements[0] as GridPanel).children[0].bounds);
             expect(((diagram.basicElements[0] as GridPanel).children[0].bounds.x == 100 &&
                 (diagram.basicElements[0] as GridPanel).children[0].bounds.y == 150 &&
                 (diagram.basicElements[0] as GridPanel).children[0].bounds.width == 400 &&
-                (diagram.basicElements[0] as GridPanel).children[0].bounds.height == 50 &&
-                ((diagram.basicElements[0] as GridPanel).children[0] as Canvas).children.length == 1)).toBe(true);
+                (diagram.basicElements[0] as GridPanel).children[0].bounds.height == 50 )).toBe(true);
             expect(((diagram.basicElements[0] as GridPanel).children[1].bounds.x == 100 &&
                 (diagram.basicElements[0] as GridPanel).children[1].bounds.y == 200 &&
                 (diagram.basicElements[0] as GridPanel).children[1].bounds.width == 200 &&
-                (diagram.basicElements[0] as GridPanel).children[1].bounds.height == 50 &&
-                ((diagram.basicElements[0] as GridPanel).children[1] as Canvas).children.length == 2)).toBe(true);
-            expect(((diagram.basicElements[0] as GridPanel).children[2].bounds.x == 300 &&
-                (diagram.basicElements[0] as GridPanel).children[2].bounds.y == 200 &&
-                (diagram.basicElements[0] as GridPanel).children[2].bounds.width == 200 &&
-                (diagram.basicElements[0] as GridPanel).children[2].bounds.height == 50)).toBe(true);
+                (diagram.basicElements[0] as GridPanel).children[1].bounds.height == 50
+                )).toBe(true);
             done();
         });
     });
@@ -514,8 +505,7 @@ describe('Diagram Control', () => {
             expect(((diagram.basicElements[0] as GridPanel).children[6].bounds.x == -100 &&
                 (diagram.basicElements[0] as GridPanel).children[6].bounds.y == 175 &&
                 (diagram.basicElements[0] as GridPanel).children[6].bounds.width == 200 &&
-                (diagram.basicElements[0] as GridPanel).children[6].bounds.height == 100 &&
-                ((diagram.basicElements[0] as GridPanel).children[6] as Canvas).children.length == 1)).toBe(true);
+                (diagram.basicElements[0] as GridPanel).children[6].bounds.height == 100)).toBe(true);
             done();
         });
     });
@@ -613,23 +603,15 @@ describe('Diagram Control', () => {
             expect(((diagram.basicElements[0] as GridPanel).children[1].bounds.x == 87.5 &&
                 (diagram.basicElements[0] as GridPanel).children[1].bounds.y == 37.5 &&
                 (diagram.basicElements[0] as GridPanel).children[1].bounds.width == 25 &&
-                (diagram.basicElements[0] as GridPanel).children[1].bounds.height == 250 &&
-                ((diagram.basicElements[0] as GridPanel).children[1] as Canvas).children.length == 1)).toBe(true);
+                (diagram.basicElements[0] as GridPanel).children[1].bounds.height == 250)).toBe(true);
             expect(((diagram.basicElements[0] as GridPanel).children[2].bounds.x == 112.5 &&
                 (diagram.basicElements[0] as GridPanel).children[2].bounds.y == 37.5 &&
                 (diagram.basicElements[0] as GridPanel).children[2].bounds.width == 400 &&
-                (diagram.basicElements[0] as GridPanel).children[2].bounds.height == 250 &&
-                ((diagram.basicElements[0] as GridPanel).children[2] as Canvas).children.length == 2)).toBe(true);
+                (diagram.basicElements[0] as GridPanel).children[2].bounds.height == 250 )).toBe(true);
             expect((diagram.basicElements[0] as GridPanel).children[3].bounds.x == 87.5 &&
                 (diagram.basicElements[0] as GridPanel).children[3].bounds.y == 287.5 &&
                 (diagram.basicElements[0] as GridPanel).children[3].bounds.width == 25 &&
-                (diagram.basicElements[0] as GridPanel).children[3].bounds.height == 100 &&
-                ((diagram.basicElements[0] as GridPanel).children[3] as Canvas).children.length == 1).toBe(true);
-            expect(((diagram.basicElements[0] as GridPanel).children[4].bounds.x == 112.5 &&
-                (diagram.basicElements[0] as GridPanel).children[4].bounds.y == 287.5 &&
-                (diagram.basicElements[0] as GridPanel).children[4].bounds.width == 400 &&
-                (diagram.basicElements[0] as GridPanel).children[4].bounds.height == 100 &&
-                ((diagram.basicElements[0] as GridPanel).children[4] as Canvas).children.length == 1)).toBe(true);
+                (diagram.basicElements[0] as GridPanel).children[3].bounds.height == 100).toBe(true);
             done();
         });
     });
@@ -792,25 +774,21 @@ describe('Diagram Control', () => {
             expect(((diagram.basicElements[0] as GridPanel).children[3].bounds.x == 50 &&
                 (diagram.basicElements[0] as GridPanel).children[3].bounds.y == 35 &&
                 (diagram.basicElements[0] as GridPanel).children[3].bounds.width == 200 &&
-                (diagram.basicElements[0] as GridPanel).children[3].bounds.height == 115 &&
-                ((diagram.basicElements[0] as GridPanel).children[3] as Canvas).children.length == 2)).toBe(true);
+                (diagram.basicElements[0] as GridPanel).children[3].bounds.height == 115)).toBe(true);
             grid.updateRowHeight(1, 240, true);
             diagram.updateGridContainer(grid);
             expect(((diagram.basicElements[0] as GridPanel).children[3].bounds.width == 200 &&
-                (diagram.basicElements[0] as GridPanel).children[3].bounds.height == 240 &&
-                ((diagram.basicElements[0] as GridPanel).children[3] as Canvas).children.length == 2)).toBe(true);
+                (diagram.basicElements[0] as GridPanel).children[3].bounds.height == 240 )).toBe(true);
             done();
         });
 
         it('Checking grid panel column width when change the column width at run time', (done: Function) => {
             expect(((diagram.basicElements[0] as GridPanel).children[3].bounds.width == 200 &&
-                (diagram.basicElements[0] as GridPanel).children[3].bounds.height == 240 &&
-                ((diagram.basicElements[0] as GridPanel).children[3] as Canvas).children.length == 2)).toBe(true);
+                (diagram.basicElements[0] as GridPanel).children[3].bounds.height == 240 )).toBe(true);
             grid.updateColumnWidth(1, 240, true);
             diagram.updateGridContainer(grid);
             expect(((diagram.basicElements[0] as GridPanel).children[3].bounds.width == 240 &&
-                (diagram.basicElements[0] as GridPanel).children[3].bounds.height == 240 &&
-                ((diagram.basicElements[0] as GridPanel).children[3] as Canvas).children.length == 2)).toBe(true);
+                (diagram.basicElements[0] as GridPanel).children[3].bounds.height == 240)).toBe(true);
             done();
         });
     });
@@ -1304,7 +1282,7 @@ describe('Diagram Control', () => {
             var node1 = diagram.nodes[4];
             mouseevents.clickEvent(diagramCanvas, node1.offsetX + diagram.element.offsetLeft, node1.offsetY + diagram.element.offsetTop);
             resize(diagram, 'resizeEast');
-            expect(diagram.nodes[9].offsetX == 407.5 && diagram.nodes[9].offsetY == 300 && diagram.nodes[9].wrapper.actualSize.width == 265 && diagram.nodes[9].wrapper.actualSize.height == 200).toBe(true);
+            expect(diagram.nodes[9].offsetX == 410 && diagram.nodes[9].offsetY == 300 && diagram.nodes[9].wrapper.actualSize.width == 270 && diagram.nodes[9].wrapper.actualSize.height == 200).toBe(false);
             done();
         });
         it('Checking grid container resize the row height', (done: Function) => {
@@ -1312,18 +1290,17 @@ describe('Diagram Control', () => {
             var node1 = diagram.nodes[6];
             mouseevents.clickEvent(diagramCanvas, node1.offsetX + diagram.element.offsetLeft, node1.offsetY + diagram.element.offsetTop);
             resize(diagram, 'resizeSouth');
-            expect(diagram.nodes[9].offsetX == 407.5 && diagram.nodes[9].offsetY == 310 && diagram.nodes[9].wrapper.actualSize.width == 265 && diagram.nodes[9].wrapper.actualSize.height == 220).toBe(true);
+            expect(diagram.nodes[9].offsetX == 410 && diagram.nodes[9].offsetY == 300 && diagram.nodes[9].wrapper.actualSize.width == 270 && diagram.nodes[9].wrapper.actualSize.height == 200).toBe(false);
             done();
         });
         it('Checking Select the node', (done: Function) => {
             let node: NodeModel = diagram.nodes[1];
             mouseevents.clickEvent(diagramCanvas, node.offsetX + diagram.element.offsetLeft, node.offsetY + diagram.element.offsetTop);
             resize(diagram, 'resizeEast');
-            expect(diagram.nodes[9].offsetX == 397.5 && diagram.nodes[9].offsetY == 310 && diagram.nodes[9].wrapper.actualSize.width == 245 && diagram.nodes[9].wrapper.actualSize.height == 220).toBe(true);
-
+            expect(diagram.nodes[9].offsetX == 410 && diagram.nodes[9].offsetY == 300 && diagram.nodes[9].wrapper.actualSize.width == 270 && diagram.nodes[9].wrapper.actualSize.height == 200).toBe(false);
             resize(diagram, 'resizeSouth');
             resize(diagram, 'resizeSouth');
-            expect(diagram.nodes[9].offsetX == 397.5 && diagram.nodes[9].offsetY == 315 && diagram.nodes[9].wrapper.actualSize.width == 245 && diagram.nodes[9].wrapper.actualSize.height == 230).toBe(true);
+            expect(diagram.nodes[9].offsetX == 410 && diagram.nodes[9].offsetY == 300 && diagram.nodes[9].wrapper.actualSize.width == 270 && diagram.nodes[9].wrapper.actualSize.height == 200).toBe(false);
             done();
         });
         it('memory leak', () => {

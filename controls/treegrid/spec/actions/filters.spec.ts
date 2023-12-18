@@ -735,81 +735,82 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
       });
     });
 
-    // describe('EJ2-23098: Editing with Filtering ', () => {
-    //   let gridObj: TreeGrid;
-    //   let rows: Element[];
-    //   let actionComplete: ()=> void;
-    //   beforeAll((done: Function) => {
-    //     gridObj = createGrid(
-    //       {
-    //         dataSource: newSampledata,
-    //         childMapping: 'Children',
-    //         treeColumnIndex: 1,
-    //         allowFiltering: true,
-    //         editSettings: {
-    //           allowAdding: true,
-    //           allowEditing: true,
-    //           allowDeleting: true,
-    //           mode: 'Cell',
-    //           newRowPosition: 'Below'
-    //         },
-    //         columns: [
-    //             { field: 'TaskId', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 80 },
-    //             { field: 'TaskName', headerText: 'Task Name', width: 200 },
-    //             { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
-    //             { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
-    //             { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
-    //         ]
-    //       },
-    //       done
-    //     );
-    //   });
+    describe('EJ2-23098: Editing with Filtering ', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let actionComplete: ()=> void;
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: newSampledata,
+            childMapping: 'Children',
+            treeColumnIndex: 1,
+            allowFiltering: true,
+            editSettings: {
+              allowAdding: true,
+              allowEditing: true,
+              allowDeleting: true,
+              mode: 'Cell',
+              newRowPosition: 'Below'
+            },
+            columns: [
+                { field: 'TaskId', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 80 },
+                { field: 'TaskName', headerText: 'Task Name', width: 200 },
+                { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
+                { field: 'Duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+                { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+            ]
+          },
+          done
+        );
+      });
   
-    //   it('Editing', () => {
-    //     let event: MouseEvent = new MouseEvent('dblclick', {
-    //       'view': window,
-    //       'bubbles': true,
-    //       'cancelable': true
-    //     });
-    //     gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
-    //     gridObj.actionComplete = (args?: SaveEventArgs): void => {
-    //       expect(args.target.textContent).toBe('SP');
-    //     };
-    //     gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'SP';
-    //     gridObj.getRows()[0].click();
-    //   });
-    //   it('Filter after editing', () => {
-    //     gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
-    //       expect(gridObj.getRows()[1].querySelector('span.e-treecell').innerHTML).toBe('SP');
-    //     };
-    //     gridObj.filterByColumn('TaskName', 'startswith', 'SP');
-    //   });
-    //   it('Clear filtering', () => {
-    //     gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
-    //       expect((<Object[]>(gridObj.grid.dataSource)).length == gridObj.getRows().length).toBe(true);
-    //     };
-    //     gridObj.clearFiltering();
-    //   });
+      it('Editing', () => {
+        let event: MouseEvent = new MouseEvent('dblclick', {
+          'view': window,
+          'bubbles': true,
+          'cancelable': true
+        });
+        gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
+        gridObj.actionComplete = (args?: SaveEventArgs): void => {
+          expect(args.target.textContent).toBe('SP');
+        };
+        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'SP';
+        gridObj.getRows()[0].click();
+      });
+      it('Filter after editing', () => {
+        gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
+          expect(gridObj.getRows()[1].querySelector('span.e-treecell').innerHTML).toBe('SP');
+        };
+        gridObj.filterByColumn('TaskName', 'startswith', 'SP');
+      });
+      it('Clear filtering', (done: Function) => {
+        gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
+          expect((<Object[]>(gridObj.grid.dataSource)).length == gridObj.getRows().length).toBe(true);
+          done();
+        };
+        gridObj.clearFiltering();
+      });
   
-    //   it('Check filter tree', (done: Function) => {
-    //     gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
-    //       expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
-    //       expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
-    //       done();
-    //     };
-    //     gridObj.filterByColumn('TaskName', 'startswith', 'Task 1');
-    //   });
-    //   it('Check filter tree after clearing filtering', () => {
-    //     gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
-    //       expect(!isNullOrUndefined((<HTMLTableRowElement>
-    //           (gridObj.getRowByIndex(0))).cells[1].querySelector('.e-treegridexpand'))).toBe(true);
-    //     };
-    //     gridObj.clearFiltering();
-    //   });
-    //   afterAll(() => {
-    //     destroy(gridObj);
-    //   });
-    // });
+      it('Check filter tree', (done: Function) => {
+        gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
+          expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
+          expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
+          done();
+        };
+        gridObj.filterByColumn('TaskName', 'startswith', 'Task 1');
+      });
+      // it('Check filter tree after clearing filtering', () => {
+      //   gridObj.grid.actionComplete = (args?: ActionEventArgs) => {
+      //     expect(!isNullOrUndefined((<HTMLTableRowElement>
+      //         (gridObj.getRowByIndex(0))).cells[1].querySelector('.e-treegridexpand'))).toBe(true);
+      //   };
+      //   gridObj.clearFiltering();
+      // });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
 
     describe('EJ2-23097: Records are not properly collapsed after filter/search is performed', () => {
       let gridObj: TreeGrid;

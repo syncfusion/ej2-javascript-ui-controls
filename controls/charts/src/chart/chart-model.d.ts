@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, Internationalization } from '@syncfusion/ej2-base';import { ModuleDeclaration, L10n, setValue, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';import { TapEventArgs, EmitType, ChildProperty } from '@syncfusion/ej2-base';import { remove, extend } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, Browser, Touch } from '@syncfusion/ej2-base';import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, blazorTemplatesReset, withInBounds } from '../common/utils/helper';import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement, getTextAnchor } from '../common/utils/helper';import { appendClipElement, ChartLocation } from '../common/utils/helper';import { MarginModel, BorderModel, ChartAreaModel, FontModel, TooltipSettingsModel } from '../common/model/base-model';import { getSeriesColor, Theme, getThemeColor } from '../common/model/theme';import { IndexesModel } from '../common/model/base-model';import { Margin, Border, ChartArea, Font, Indexes, TooltipSettings } from '../common/model/base';import { AxisModel, RowModel, ColumnModel } from './axis/axis-model';import { Row, Column, Axis } from './axis/axis';import { Highlight } from './user-interaction/high-light';import { CartesianAxisLayoutPanel } from './axis/cartesian-panel';import { DateTime } from './axis/date-time-axis';import { Category } from './axis/category-axis';import { DateTimeCategory } from './axis/date-time-category-axis';import { CandleSeries } from './series/candle-series';import { ErrorBar } from './series/error-bar';import { Logarithmic } from './axis/logarithmic-axis';import { Rect, measureText, TextOption, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { ChartData } from './utils/get-data';import { SelectionMode, HighlightMode, LineType, ZoomMode, ToolbarItems, ChartTheme } from './utils/enum';import { Points, Series, SeriesBase } from './series/chart-series';import { SeriesModel } from './series/chart-series-model';import { Data } from '../common/model/data';import { LineSeries } from './series/line-series';import { AreaSeries } from './series/area-series';import { BarSeries } from './series/bar-series';import { HistogramSeries } from './series/histogram-series';import { StepLineSeries } from './series/step-line-series';import { StepAreaSeries } from './series/step-area-series';import { ColumnSeries } from './series/column-series';import { ParetoSeries } from './series/pareto-series';import { StackingColumnSeries } from './series/stacking-column-series';import { StackingBarSeries } from './series/stacking-bar-series';import { StackingAreaSeries } from './series/stacking-area-series';import { StackingStepAreaSeries } from './series/stacking-step-area-series';import { StackingLineSeries } from './series/stacking-line-series';import { ScatterSeries } from './series/scatter-series';import { SplineSeries } from './series/spline-series';import { SplineAreaSeries } from './series/spline-area-series';import { RangeColumnSeries } from './series/range-column-series';import { PolarSeries } from './series/polar-series';import { RadarSeries } from './series/radar-series';import { HiloSeries } from './series/hilo-series';import { HiloOpenCloseSeries } from './series/hilo-open-close-series';import { WaterfallSeries } from './series/waterfall-series';import { BubbleSeries } from './series/bubble-series';import { RangeAreaSeries } from './series/range-area-series';import { RangeStepAreaSeries } from './series/range-step-area-series';import { SplineRangeAreaSeries } from './series/spline-range-area-series';import { Tooltip } from './user-interaction/tooltip';import { Crosshair } from './user-interaction/crosshair';import { DataEditing } from './user-interaction/data-editing';import { Marker, markerShapes } from './series/marker';import { LegendSettings } from '../common/legend/legend';import { LegendSettingsModel } from '../common/legend/legend-model';import { Legend } from './legend/legend';import { Zoom } from './user-interaction/zooming';import { Selection } from './user-interaction/selection';import { DataLabel } from './series/data-label';import { StripLine } from './axis/strip-line';import { MultiLevelLabel } from './axis/multi-level-labels';import { BoxAndWhiskerSeries } from './series/box-and-whisker-series';import { PolarRadarPanel } from './axis/polar-radar-panel';import { StripLineSettingsModel } from './model/chart-base-model';import { Trendline } from './series/chart-series';import { Trendlines } from './trend-lines/trend-line';import { TechnicalIndicator } from './technical-indicators/technical-indicator';import { SmaIndicator } from './technical-indicators/sma-indicator';import { EmaIndicator } from './technical-indicators/ema-indicator';import { TmaIndicator } from './technical-indicators/tma-indicator';import { AccumulationDistributionIndicator } from './technical-indicators/ad-indicator';import { AtrIndicator } from './technical-indicators/atr-indicator';import { BollingerBands } from './technical-indicators/bollinger-bands';import { MomentumIndicator } from './technical-indicators/momentum-indicator';import { StochasticIndicator } from './technical-indicators/stochastic-indicator';import { MacdIndicator } from './technical-indicators/macd-indicator';import { RsiIndicator } from './technical-indicators/rsi-indicator';import { TechnicalIndicatorModel } from './technical-indicators/technical-indicator-model';import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs, IResizeEventArgs } from '../chart/model/chart-interface';import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs, IAxisLabelClickEventArgs } from '../chart/model/chart-interface';import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs, ISharedTooltipRenderEventArgs } from '../chart/model/chart-interface';import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs, IBeforeResizeEventArgs } from '../chart/model/chart-interface';import { chartMouseClick, chartDoubleClick, pointClick, pointDoubleClick, axisLabelClick, beforeResize  } from '../common/model/constants';import { chartMouseDown, chartMouseMove, chartMouseUp, load, pointMove, chartMouseLeave, resized } from '../common/model/constants';import { IPrintEventArgs, IAxisRangeCalculatedEventArgs, IDataEditingEventArgs } from '../chart/model/chart-interface';import { ChartAnnotationSettingsModel } from './model/chart-base-model';import { ChartAnnotationSettings } from './model/chart-base';import { ChartAnnotation } from './annotation/annotation';import { getElement, getTitle } from '../common/utils/helper';import { Alignment, ExportType, SelectionPattern, TextOverflow, TitlePosition } from '../common/utils/enum';import { MultiColoredLineSeries } from './series/multi-colored-line-series';import { MultiColoredAreaSeries } from './series/multi-colored-area-series';import { ScrollBar } from '../common/scrollbar/scrollbar';import { DataManager } from '@syncfusion/ej2-data';import { StockChart } from '../stock-chart/stock-chart';import { Export } from './print-export/export';import { PrintUtils } from '../common/utils/print'
+import { Component, Property, NotifyPropertyChanges, Internationalization } from '@syncfusion/ej2-base';import { ModuleDeclaration, L10n, setValue, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';import { TapEventArgs, EmitType, ChildProperty } from '@syncfusion/ej2-base';import { remove, extend } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, Browser, Touch } from '@syncfusion/ej2-base';import { Event, EventHandler, Complex, Collection } from '@syncfusion/ej2-base';import { findClipRect, showTooltip, ImageOption, removeElement, appendChildElement, blazorTemplatesReset, withInBounds } from '../common/utils/helper';import { textElement, RectOption, createSvg, firstToLowerCase, titlePositionX, PointData, redrawElement, getTextAnchor } from '../common/utils/helper';import { appendClipElement, ChartLocation } from '../common/utils/helper';import { MarginModel, BorderModel, ChartAreaModel, FontModel, TooltipSettingsModel } from '../common/model/base-model';import { getSeriesColor, Theme, getThemeColor } from '../common/model/theme';import { IndexesModel, titleSettingsModel } from '../common/model/base-model';import { Margin, Border, ChartArea, Font, Indexes, TooltipSettings, titleSettings } from '../common/model/base';import { AxisModel, RowModel, ColumnModel } from './axis/axis-model';import { Row, Column, Axis } from './axis/axis';import { Highlight } from './user-interaction/high-light';import { CartesianAxisLayoutPanel } from './axis/cartesian-panel';import { DateTime } from './axis/date-time-axis';import { Category } from './axis/category-axis';import { DateTimeCategory } from './axis/date-time-category-axis';import { CandleSeries } from './series/candle-series';import { ErrorBar } from './series/error-bar';import { Logarithmic } from './axis/logarithmic-axis';import { Rect, measureText, TextOption, Size, SvgRenderer, BaseAttibutes, CanvasRenderer } from '@syncfusion/ej2-svg-base';import { ChartData } from './utils/get-data';import { LineType, ZoomMode, ToolbarItems } from './utils/enum';import { SelectionMode, HighlightMode, ChartTheme } from '../common/utils/enum';import { Points, Series, SeriesBase } from './series/chart-series';import { SeriesModel } from './series/chart-series-model';import { Data } from '../common/model/data';import { LineSeries } from './series/line-series';import { AreaSeries } from './series/area-series';import { BarSeries } from './series/bar-series';import { HistogramSeries } from './series/histogram-series';import { StepLineSeries } from './series/step-line-series';import { StepAreaSeries } from './series/step-area-series';import { ColumnSeries } from './series/column-series';import { ParetoSeries } from './series/pareto-series';import { StackingColumnSeries } from './series/stacking-column-series';import { StackingBarSeries } from './series/stacking-bar-series';import { StackingAreaSeries } from './series/stacking-area-series';import { StackingStepAreaSeries } from './series/stacking-step-area-series';import { StackingLineSeries } from './series/stacking-line-series';import { ScatterSeries } from './series/scatter-series';import { SplineSeries } from './series/spline-series';import { SplineAreaSeries } from './series/spline-area-series';import { RangeColumnSeries } from './series/range-column-series';import { PolarSeries } from './series/polar-series';import { RadarSeries } from './series/radar-series';import { HiloSeries } from './series/hilo-series';import { HiloOpenCloseSeries } from './series/hilo-open-close-series';import { WaterfallSeries } from './series/waterfall-series';import { BubbleSeries } from './series/bubble-series';import { RangeAreaSeries } from './series/range-area-series';import { RangeStepAreaSeries } from './series/range-step-area-series';import { SplineRangeAreaSeries } from './series/spline-range-area-series';import { Tooltip } from './user-interaction/tooltip';import { Crosshair } from './user-interaction/crosshair';import { DataEditing } from './user-interaction/data-editing';import { Marker, markerShapes } from './series/marker';import { LegendSettings } from '../common/legend/legend';import { LegendSettingsModel } from '../common/legend/legend-model';import { Legend } from './legend/legend';import { Zoom } from './user-interaction/zooming';import { Selection } from './user-interaction/selection';import { DataLabel } from './series/data-label';import { StripLine } from './axis/strip-line';import { MultiLevelLabel } from './axis/multi-level-labels';import { BoxAndWhiskerSeries } from './series/box-and-whisker-series';import { PolarRadarPanel } from './axis/polar-radar-panel';import { StripLineSettingsModel } from './model/chart-base-model';import { Trendline } from './series/chart-series';import { Trendlines } from './trend-lines/trend-line';import { TechnicalIndicator } from './technical-indicators/technical-indicator';import { SmaIndicator } from './technical-indicators/sma-indicator';import { EmaIndicator } from './technical-indicators/ema-indicator';import { TmaIndicator } from './technical-indicators/tma-indicator';import { AccumulationDistributionIndicator } from './technical-indicators/ad-indicator';import { AtrIndicator } from './technical-indicators/atr-indicator';import { BollingerBands } from './technical-indicators/bollinger-bands';import { MomentumIndicator } from './technical-indicators/momentum-indicator';import { StochasticIndicator } from './technical-indicators/stochastic-indicator';import { MacdIndicator } from './technical-indicators/macd-indicator';import { RsiIndicator } from './technical-indicators/rsi-indicator';import { TechnicalIndicatorModel } from './technical-indicators/technical-indicator-model';import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs, IResizeEventArgs } from '../chart/model/chart-interface';import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs } from '../chart/model/chart-interface';import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs, IAxisLabelClickEventArgs } from '../chart/model/chart-interface';import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs, ISharedTooltipRenderEventArgs } from '../chart/model/chart-interface';import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs, IBeforeResizeEventArgs } from '../chart/model/chart-interface';import { chartMouseClick, chartDoubleClick, pointClick, pointDoubleClick, axisLabelClick, beforeResize } from '../common/model/constants';import { chartMouseDown, chartMouseMove, chartMouseUp, load, pointMove, chartMouseLeave, resized } from '../common/model/constants';import { IPrintEventArgs, IAxisRangeCalculatedEventArgs, IDataEditingEventArgs } from '../chart/model/chart-interface';import { ChartAnnotationSettingsModel } from './model/chart-base-model';import { ChartAnnotationSettings } from './model/chart-base';import { ChartAnnotation } from './annotation/annotation';import { getElement, getTitle } from '../common/utils/helper';import { Alignment, ExportType, SelectionPattern, TextOverflow, TitlePosition } from '../common/utils/enum';import { MultiColoredLineSeries } from './series/multi-colored-line-series';import { MultiColoredAreaSeries } from './series/multi-colored-area-series';import { ScrollBar } from '../common/scrollbar/scrollbar';import { DataManager } from '@syncfusion/ej2-data';import { StockChart } from '../stock-chart/stock-chart';import { Export } from './print-export/export';import { PrintUtils } from '../common/utils/print';import { IAfterExportEventArgs } from '../common/model/interface';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -202,155 +202,13 @@ export interface ZoomSettingsModel {
 }
 
 /**
- * Interface for a class titleBorder
- */
-export interface titleBorderModel {
-
-    /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
-     *
-     * @default 'transparent'
-     */
-
-    color?: string;
-
-    /**
-     * The width of the border in pixels.
-     *
-     * @default 0
-     */
-
-    width?: number;
-
-    /**
-     * corder radius for the border.
-     *
-     * @default 0.8
-     */
-
-    cornerRadius?: number;
-
-}
-
-/**
- * Interface for a class titleSettings
- */
-export interface titleSettingsModel {
-
-    /**
-     * FontStyle for the text.
-     *
-     * @default 'Normal'
-     */
-
-    fontStyle?: string;
-
-    /**
-     * Font size for the text.
-     *
-     * @default '15px'
-     */
-
-    size?: string;
-
-    /**
-     * FontWeight for the text.
-     *
-     * @default '500'
-     */
-
-    fontWeight?: string;
-
-    /**
-     * Color for the text.
-     *
-     * @default ''
-     */
-
-    color?: string;
-
-    /**
-     * text alignment.
-     *
-     * @default 'Center'
-     */
-
-    textAlignment?: Alignment;
-
-    /**
-     * FontFamily for the text.
-     */
-    fontFamily?: string;
-
-    /**
-     * Opacity for the text.
-     *
-     * @default 1
-     */
-
-    opacity?: number;
-
-    /**
-     * Specifies the chart title text overflow.
-     *
-     * @default 'Wrap'
-     */
-
-    textOverflow?: TextOverflow;
-
-    /**
-     * Defines the position for the chart title.
-     * * Top: Displays the title at the top of the chart.
-     * * Left: Displays the title at the left of the chart.
-     * * Bottom: Displays the title at the bottom of the chart.
-     * * Right: Displays the title at the right of the chart.
-     * * Custom: Displays the title based on the given x and y values.
-     *
-     * @default 'Top'
-     */
-
-    position?: TitlePosition; 
-
-    /**
-    * Defines the X coordinate for the chart title.
-    *
-    * @default 0
-    */
-
-    x?: number;
-
-    /**
-    * Defines the Y coordinate for the chart title.
-    *
-    * @default 0
-    */
-
-    y?: number;
-
-    /**
-    * Background of the title border.
-    *
-    * @default 'transparent'
-    */
-
-    background?: string;
-
-    /**
-    * Options to customize the border of the chart title.
-    */
-
-    border?: titleBorderModel;
-
-}
-
-/**
  * Interface for a class Chart
  */
 export interface ChartModel extends ComponentModel{
 
     /**
-     * The width of the chart as a string accepts input as both like '100px' or '100%'.
-     * If specified as '100%, chart renders to the full width of its parent element.
+     * The width of the chart as a string, accepting input as both '100px' or '100%'.
+     * If specified as '100%', the chart renders to the full width of its parent element.
      *
      * @default null
      */
@@ -358,8 +216,8 @@ export interface ChartModel extends ComponentModel{
     width?: string;
 
     /**
-     * The height of the chart as a string accepts input both as '100px' or '100%'.
-     * If specified as '100%, chart renders to the full height of its parent element.
+     * The height of the chart as a string, accepting input as both '100px' or '100%'.
+     * If specified as '100%', the chart renders to the full height of its parent element.
      *
      * @default null
      */
@@ -367,7 +225,7 @@ export interface ChartModel extends ComponentModel{
     height?: string;
 
     /**
-     * Title of the chart
+     * The title of the chart.
      *
      * @default ''
      */
@@ -409,7 +267,7 @@ export interface ChartModel extends ComponentModel{
     titleStyle?: titleSettingsModel;
 
     /**
-     * SubTitle of the chart.
+     * The subtitle of the chart
      *
      * @default ''
      */
@@ -417,13 +275,13 @@ export interface ChartModel extends ComponentModel{
     subTitle?: string;
 
     /**
-     * Options for customizing the Subtitle of the Chart.
+     * Options for customizing the subtitle of the Chart.
      */
 
     subTitleStyle?: titleSettingsModel;
 
     /**
-     *  Options to customize left, right, top and bottom margins of the chart.
+     * Options to customize the left, right, top, and bottom margins of the chart.
      */
 
     margin?: MarginModel;
@@ -448,13 +306,13 @@ export interface ChartModel extends ComponentModel{
     chartArea?: ChartAreaModel;
 
     /**
-     * Options to configure the horizontal axis.
+     * Configuration options for the horizontal axis.
      */
 
     primaryXAxis?: AxisModel;
 
     /**
-     * Options to configure the vertical axis.
+     * Configuration options for the vertical axis.
      */
 
     primaryYAxis?: AxisModel;
@@ -480,7 +338,7 @@ export interface ChartModel extends ComponentModel{
     axes?: AxisModel[];
 
     /**
-     * The configuration for series in the chart.
+     * Configuration options for the chart's series.
      */
 
     series?: SeriesModel[];
@@ -506,7 +364,7 @@ export interface ChartModel extends ComponentModel{
     theme?: ChartTheme;
 
     /**
-     * Options for customizing the tooltip of the chart.
+     * The chart tooltip configuration options.
      */
 
     tooltip?: TooltipSettingsModel;
@@ -517,7 +375,7 @@ export interface ChartModel extends ComponentModel{
     crosshair?: CrosshairSettingsModel;
 
     /**
-     * Options for customizing the legend of the chart.
+     * The chart legend configuration options.
      */
     legendSettings?: LegendSettingsModel;
 
@@ -532,7 +390,7 @@ export interface ChartModel extends ComponentModel{
     zoomSettings?: ZoomSettingsModel;
 
     /**
-     * Define the color for the data point on highlight.
+     * Defines the color for the highlighted data point.
      *
      * @default ''
      */
@@ -540,26 +398,26 @@ export interface ChartModel extends ComponentModel{
     highlightColor?: string;
 
     /**
-     * Specifies whether series or data point has to be selected. They are,
-     * * none: Disables the selection.
-     * * series: selects a series.
-     * * point: selects a point.
-     * * cluster: selects a cluster of point
-     * * dragXY: selects points by dragging with respect to both horizontal and vertical axes
-     * * dragX: selects points by dragging with respect to horizontal axis.
-     * * dragY: selects points by dragging with respect to vertical axis.
-     * * lasso: selects points by dragging with respect to free form.
+     * Specifies whether a series or data point should be highlighted. The options are:
+     * * 'none': Disables the highlight.
+     * * 'series': Highlights a series.
+     * * 'point': Highlights a single data point.
+     * * 'cluster': Highlights a cluster of data points.
+     * * 'dragXY': Selects points by dragging with respect to both horizontal and vertical axes.
+     * * 'dragX': Selects points by dragging with respect to horizontal axis.
+     * * 'dragY': Selects points by dragging with respect to vertical axis.
+     * * 'lasso': Selects points by dragging with respect to free form.
      *
      * @default None
      */
     selectionMode?: SelectionMode;
 
     /**
-     * Specifies whether series or data point has to be selected. They are,
-     * * none: Disables the highlight.
-     * * series: highlight a series.
-     * * point: highlight a point.
-     * * cluster: highlight a cluster of point
+     * Specifies whether a series or data point should be highlighted. The options are:
+     * * 'none': Disables the highlight
+     * * 'series': Highlights a series
+     * * 'point': Highlights a single data point.
+     * * 'cluster': Highlights a cluster of data points.
      *
      * @default None
      */
@@ -620,7 +478,7 @@ export interface ChartModel extends ComponentModel{
     highlightPattern?: SelectionPattern;
 
     /**
-     * If set true, enables the multi selection in chart. It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
+     * If set to true, enables multi-selection in the chart. It requires the `selectionMode` to be `Point`, `Series`, or `Cluster`.
      *
      * @default false
      */
@@ -669,7 +527,7 @@ export interface ChartModel extends ComponentModel{
     selectedDataIndexes?: IndexesModel[];
 
     /**
-     * Specifies whether a grouping separator should be used for a number.
+     * Specifies whether a grouping separator should be used for numbers.
      *
      * @default false
      */

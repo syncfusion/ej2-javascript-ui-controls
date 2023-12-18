@@ -18,7 +18,7 @@ import { PredicateModel } from '../base/grid-model';
  */
 export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Column> {
 
-    public element: HTMLElement = this.parent.createElement('TH', { className: 'e-filterbarcell' });
+    public element: HTMLElement = this.parent.createElement('TH', { className: 'e-filterbarcell', attrs: { role: 'columnheader' } });
     private dropOptr: DropDownList;
     /**
      * Function to return the wrapper for the TH content.
@@ -102,7 +102,7 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                         id: column.field + '_filterBarcell', className: 'e-filtertext',
                         attrs: {
                             type: 'search', title: column.headerText + (cell.attributes as { title: string }).title,
-                            value: data[cell.column.field] ? data[cell.column.field] : '', role: 'search'
+                            value: data[cell.column.field] ? data[cell.column.field] : ''
                         }
                     });
                     innerDIV.appendChild(input);

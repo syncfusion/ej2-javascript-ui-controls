@@ -2909,13 +2909,24 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         const formattedMembers: any = {};
                         const members: any = {};
                         /* eslint-enable @typescript-eslint/no-explicit-any */
-                        for (let i: number = 0; i < currentMembers.length; i++) {
+                        this.engineModule.globalize = !isNullOrUndefined(this.globalize) ? this.globalize : new Internationalization();
+                        this.engineModule.formatFields =  this.engineModule.setFormattedFields(this.dataSourceSettings.formatSettings);
+                        let isFormatAvail: boolean = false;
+                        if (this.engineModule.formatFields.hasOwnProperty(engine.memberName))  // eslint-disable-line no-prototype-builtins
+                        {
+                            isFormatAvail = true;
+                        }
+                        const valuesCollection: any = Object.keys(currentMembers).map((key: string) => currentMembers[key as string]);  // eslint-disable-line @typescript-eslint/no-explicit-any
+                        for (let i: number = 0; i < valuesCollection.length; i++) {
+                            const formattedText: string = isFormatAvail ?
+                                this.engineModule.getFormattedValue(valuesCollection[i as number].Name, engine.memberName).formattedText :
+                                valuesCollection[i as number].Name;
                             dateMembers.push({
-                                formattedText: currentMembers[i as number].FormattedText,
-                                actualText: currentMembers[i as number].ActualText
+                                formattedText: formattedText,
+                                actualText: valuesCollection[i as number].Name
                             });
-                            formattedMembers[currentMembers[i as number].FormattedText] = {};
-                            members[currentMembers[i as number].ActualText] = {};
+                            formattedMembers[formattedText as string] = {};
+                            members[valuesCollection[i as number].Name] = {};
                         }
                         this.engineModule.fieldList[engine.memberName].dateMember = dateMembers;
                         this.engineModule.fieldList[engine.memberName].formattedMembers = formattedMembers;
@@ -4631,7 +4642,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private onContentReady(): void {
         const horiScrollHeight: number = getScrollBarWidth();
         this.isPopupClicked = false;
-        if (this.showFieldList && this.pivotFieldListModule) {
+        if (this.showFieldList && this.pivotFieldListModule && this.dataSourceSettings.mode !== 'Server') {
             this.pivotFieldListModule.element.style.display = 'block';
             hideSpinner(this.pivotFieldListModule.fieldListSpinnerElement as HTMLElement);
         } else if (this.fieldListSpinnerElement) {
@@ -4764,11 +4775,18 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 const hScrollPos: number = (ele.scrollWidth - (Math.abs(eleScrollLeft) + ele.offsetWidth));
                 if (this.virtualscrollModule && exactSize > 0 && hScrollPos <= exactSize && (eleScrollLeft > 0)) {
                     let mCntScrollPos: number = (mCnt.scrollWidth - (Math.abs(mCnt.scrollLeft) + mCnt.parentElement.offsetWidth));
+                    let vertiTop: number = undefined;
                     if (mCntScrollPos < 1 && this.scrollDirection === 'horizondal') {
+                        if (mCnt.parentElement.scrollTop > 0) {
+                            vertiTop = mCnt.parentElement.scrollTop;
+                        }
                         this.virtualDiv.style.display = 'none';
                         mCntScrollPos = (mCnt.scrollWidth - (Math.abs(mCnt.scrollLeft) + mCnt.parentElement.offsetWidth));
                     }
                     this.virtualDiv.style.display = '';
+                    if (vertiTop) {
+                        mCnt.parentElement.scrollTop = vertiTop;
+                    }
                     const mCntVScrollPos: number = (mCnt.scrollWidth - (Math.abs(mCnt.scrollLeft) + mCnt.parentElement.offsetWidth));
                     if (mCntScrollPos > 1) {
                         this.scrollPosObject.horizontalSection -= (hScrollPos <= 0 ? (mCntScrollPos > hScrollPos ? mCntScrollPos

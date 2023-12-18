@@ -234,6 +234,16 @@ export class FocusStrategy {
                 this.getContent().matrix.current = [lastRow, lastColumn];
             }
         }
+        if (this.parent.filterSettings.type === 'Excel') {
+            if ((e.target as HTMLElement) === document.querySelectorAll('.e-excelfilter .e-menu-item')[0] && e.key === 'Tab' && e.shiftKey && (e.target as HTMLElement).classList.contains('e-menufocus')) {
+                e.preventDefault();
+                (e.target as HTMLElement).classList.remove('e-menufocus');
+                (document.querySelector('.e-excelfilter .e-footer-content button:nth-child(2)') as HTMLElement).focus();
+            } else if ((e.target as HTMLElement) === document.querySelector('.e-excelfilter .e-footer-content button:nth-child(2)') && e.key === 'Tab' && !e.shiftKey && document.activeElement === document.querySelector('.e-excelfilter .e-footer-content button:nth-child(2)')) {
+                e.preventDefault();
+                (document.querySelectorAll('.e-excelfilter .e-menu-item')[0] as HTMLElement).focus();
+            }
+        }
         if (this.skipOn(e)) {
             return;
         }
@@ -1111,8 +1121,18 @@ export class ContentFocus implements IFocus {
     }
 
     public onKeyPress(e: KeyboardEventArgs): void | boolean {
-        const navigator: number[] = this.keyActions[e.action];
-        let current: number[] = this.getCurrentFromAction(e.action, navigator, e.action in this.keyActions, e);
+        const isMacLike: boolean = /(Mac)/i.test(navigator.platform);
+        if (isMacLike && e.metaKey) {
+            if (e.action === 'home') {
+                e.action = 'ctrlHome';
+            } else if (e.action === 'end') {
+                e.action = 'ctrlEnd';
+            } else if (['downArrow', 'upArrow', 'leftArrow', 'rightArrow'].indexOf(e.action) !== -1) {
+                return;
+            }
+        }
+        const navigators: number[] = this.keyActions[e.action];
+        let current: number[] = this.getCurrentFromAction(e.action, navigators, e.action in this.keyActions, e);
         if (!current) { return; }
         if (((['tab', 'shiftTab'].indexOf(e.action) > -1 && this.matrix.current || []).toString() === current.toString())
             || (this.parent.allowPaging && !this.parent.pagerModule.pagerObj.checkPagerHasFocus()

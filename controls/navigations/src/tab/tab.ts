@@ -1737,7 +1737,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         const scrCnt: HTEle = <HTEle>select('.' + this.scrCntClass, this.tbItems);
         if (!this.isVertical() && !isNOU(scrCnt)) {
             const scrBar: HTEle = <HTEle>select('.e-hscroll-bar', this.tbItems);
-            scrBar.removeAttribute('tabindex');
             const scrStart: number = scrBar.scrollLeft;
             const scrEnd: number = scrStart + scrBar.offsetWidth;
             const eleStart: number = target.offsetLeft;

@@ -25,7 +25,7 @@ import { setCell } from './../index';
 export function getData(
     context: Workbook, address: string, columnWiseData?: boolean, valueOnly?: boolean, frozenIndexes?: number[], filterDialog?: boolean,
     formulaCellRef?: string, idx?: number, skipHiddenRows: boolean = true, commonAddr?: string, dateValueForSpecificColIdx?: number,
-    dateColData?: { [key: string]: Object }[]): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
+    dateColData?: { [key: string]: Object }[], field?: string): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise((resolve: Function, reject: Function) => {
         resolve((() => {
@@ -75,11 +75,16 @@ export function getData(
                                 key = getColumnHeaderText(i + 1);
                                 const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
                                 if (valueOnly) {
-                                    cellProp = row ? getValueFromFormat(context, getCell(sRow, i, sheet), sRow, i) : '';
-                                    if (typeof cellProp === 'string' && isNumber(<string>cellProp) && !(cell.format && cell.format === '@')) {
+                                    cellProp = getValueFromFormat(context, cell, sRow, i);
+                                    if (typeof cellProp === 'string' && isNumber(<string>cellProp) && (!cell.format ||
+                                        (key === field ? cell.format === 'General' : cell.format !== '@'))) {
                                         cellProp = parseFloat(<string>cellProp);
                                     }
                                     cells[`${key}`] = cellProp;
+                                    if (key === field) {
+                                        cells['value'] = cell && (cell.value || <unknown>cell.value === 0) ? (isNumber(cell.value) ?
+                                            parseFloat(cell.value) : cell.value) : '';
+                                    }
                                 } else {
                                     if ((cell && (cell.formula || !isNullOrUndefined(cell.value))) || Object.keys(cells).length) {
                                         if (i === dateValueForSpecificColIdx) {

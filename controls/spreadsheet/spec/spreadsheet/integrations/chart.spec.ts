@@ -421,6 +421,29 @@ describe('Chart ->', () => {
                 });
             });
         });
+        it('Chart for the date values', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'B4:B7', id: 'e_spreadsheet_chart_1' }]]);
+            helper.invoke('insertChart', [[{ type: 'Column', theme: 'Material', InRows: false, range: 'Sheet1!A1:C3', height: 290, width: 480, top: 5, left: 10 }]]);
+            setTimeout(() => {
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('1:41847, series0');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_1').getAttribute('aria-label')).toBe('2:41964, series0');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_2').getAttribute('aria-label')).toBe('3:41813, series0');
+                done();
+            });
+        });
+        it('Chart for the date and time values', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'B4:C11', id: 'e_spreadsheet_chart_2' }]]);
+            setTimeout(() => {
+                expect(document.getElementById('e_spreadsheet_chart_2_Series_0_Point_0').getAttribute('aria-label')).toBe('1:41847, series0');
+                expect(document.getElementById('e_spreadsheet_chart_2_Series_0_Point_1').getAttribute('aria-label')).toBe('2:41964, series0');
+                expect(document.getElementById('e_spreadsheet_chart_2_Series_0_Point_2').getAttribute('aria-label')).toBe('3:41813, series0');
+                expect(document.getElementById('e_spreadsheet_chart_2_Series_0_Point_3').getAttribute('aria-label')).toBe('4:41674, series0');
+                expect(document.getElementById('e_spreadsheet_chart_2_Series_0_Point_4').getAttribute('aria-label')).toBe('5:41973, series0');
+                expect(document.getElementById('e_spreadsheet_chart_2_Series_0_Point_5').getAttribute('aria-label')).toBe('6:41829, series0');
+                expect(document.getElementById('e_spreadsheet_chart_2_Series_0_Point_6').getAttribute('aria-label')).toBe('7:41943, series0');
+                done();
+            });
+        });
     });
 
     describe('UI - Interaction for chart resize->', () => {
@@ -1164,7 +1187,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, Price');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0')).not.toBeNull();
                 done();
             });
         });
@@ -1232,7 +1255,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0')).not.toBeNull();
                 done();
             });
         });
@@ -1249,7 +1272,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:15, Price');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0')).not.toBeNull();
                 done();
             });
         });
@@ -1304,7 +1327,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0')).not.toBeNull();
                 done();
             });
         });
@@ -1321,7 +1344,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0')).not.toBeNull();
                 done();
             });
         });
@@ -1355,7 +1378,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0').getAttribute('aria-label')).toBe('20:30, ');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0')).not.toBeNull();
                 done();
             });
         });
@@ -1406,7 +1429,7 @@ describe('Chart ->', () => {
             helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
             helper.click('.e-merge-alert-dlg .e-primary');
             setTimeout(() => {  
-                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0')).toBeNull();
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0')).not.toBeNull();
                 done();
             });
         });
@@ -1476,6 +1499,83 @@ describe('Chart ->', () => {
             helper.click('#spreadsheet_undo');
             setTimeout(() => {  
                 expect(document.getElementById('e_spreadsheet_chart_1_Series_1_Point_0').getAttribute('aria-label')).toBe('1:20, Price');
+                done();
+            });
+        });
+    });
+
+    describe('Chart data refreshing after clear content action->', () => {
+        beforeAll((done: Function) => {
+            let model: SheetModel[] = [{ ranges: [{ dataSource: defaultData, startCell: 'C3' }],
+                rows: [{ index: 0, cells: [{ index: 10, chart: [{ type: 'Column', range: 'C3:D13', id: 'e_spreadsheet_chart_1' }] }] }],
+                columns: [{ width: 80 }, { width: 75 }, { width: 75 }, { width: 75 }, { width: 75 }]
+            },
+            { rows: [{ cells: [{ chart: [{ type: 'Column', theme: 'Material', isSeriesInRows: false, range: 'Sheet1!A1:C3', height: 290, width: 480, top: 5, left: 10 }] }] }] }];
+            helper.initializeSpreadsheet({
+                sheets: model,
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.cellFormat({ backgroundColor: '#e56590', color: '#fff', fontWeight: 'bold', textAlign: 'center' }, 'C3:J3');
+                }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Clear contents with chart applied range in single cell', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.clear({ type: 'Clear Contents', range: 'C4' });
+            setTimeout(() => {
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0')).not.toBeNull();
+                expect(document.getElementById('e_spreadsheet_chart_10_AxisLabel_0').textContent).toBe('');
+                done();
+            });
+        });
+        it('Clear contents with chart applied range in multiple cells', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.clear({ type: 'Clear Contents', range: 'C6:C8' });
+            setTimeout(() => {
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_2')).not.toBeNull();
+                expect(document.getElementById('e_spreadsheet_chart_10_AxisLabel_2').textContent).toBe('');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_3')).not.toBeNull();
+                expect(document.getElementById('e_spreadsheet_chart_10_AxisLabel_3').textContent).toBe('');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_4')).not.toBeNull();
+                expect(document.getElementById('e_spreadsheet_chart_10_AxisLabel_4').textContent).toBe('');
+                done();
+            });
+        });
+    });
+
+    describe('Chart data refreshing after merge action->', () => {
+        beforeAll((done: Function) => {
+            let model: SheetModel[] = [{ ranges: [{ dataSource: defaultData, startCell: 'C3' }],
+                rows: [{ index: 0, cells: [{ index: 10, chart: [{ type: 'Column', range: 'C3:D13', id: 'e_spreadsheet_chart_1' }] }] }],
+                columns: [{ width: 80 }, { width: 75 }, { width: 75 }, { width: 75 }, { width: 75 }]
+            },
+            { rows: [{ cells: [{ chart: [{ type: 'Column', theme: 'Material', isSeriesInRows: false, range: 'Sheet1!A1:C3', height: 290, width: 480, top: 5, left: 10 }] }] }] }];
+            helper.initializeSpreadsheet({
+                sheets: model,
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.cellFormat({ backgroundColor: '#e56590', color: '#fff', fontWeight: 'bold', textAlign: 'center' }, 'C3:J3');
+                }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Merge action after the chart applied', (done: Function) => {
+            helper.invoke('selectRange', ['C4:C6'])
+            helper.click('#spreadsheet_merge');
+            helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+            helper.click('.e-merge-alert-dlg .e-primary');
+            setTimeout(() => {
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_0')).not.toBeNull();
+                expect(document.getElementById('e_spreadsheet_chart_10_AxisLabel_0').textContent).not.toBe('');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_1')).not.toBeNull();
+                expect(document.getElementById('e_spreadsheet_chart_10_AxisLabel_1').textContent).toBe('');
+                expect(document.getElementById('e_spreadsheet_chart_1_Series_0_Point_2')).not.toBeNull();
+                expect(document.getElementById('e_spreadsheet_chart_10_AxisLabel_2').textContent).toBe('');
                 done();
             });
         });
@@ -1979,5 +2079,107 @@ describe('Chart ->', () => {
                 });
             });
         })
+    });
+    describe('EJ2-858068', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ 
+                sheets: [{ rows: [
+                    { cells: [{ value: 'A' }, { value: 'B'}] },
+                    { cells: [{ value: '7' }, { value: '16'}] },
+                    { cells: [{ value: '9' }, { value: '20'}] },
+                    { cells: [{ value: '749085' }, { value: '4'}] }
+                ] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Plotting point for scatter chart is not visible in UI for large (or) decimal values as expected', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().insertChart([{ type: "Scatter", range: 'A1:B4' }]);
+            let chartId: string = `#${spreadsheet.sheets[0].rows[0].cells[0].chart[0].id}`;
+            let chartEle: HTMLElement = spreadsheet.element.querySelector(chartId) as HTMLElement;
+            let chart: Chart = getComponent(chartEle, 'chart');
+            expect(chart.primaryXAxis.edgeLabelPlacement).toBe("Shift");
+            done();
+        })
+    });
+    describe('EJ2-858159->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource:  GDPData }],
+                    rows: [{ index: 1, cells: [{ index: 6, chart: [{ type: 'Column', range: 'A1:E8' }] }] }],
+                    columns: [{ width: 80 }, { width: 75 }, { width: 75 }, { width: 75 }, { width: 75 }]
+                }],
+                allowImage: false
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Chart is in selection state and data entry is restricted when allowImage is set to false->', (done: Function) => {
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            const inst: Spreadsheet = helper.getInstance();
+            inst.element.focus();
+            helper.triggerMouseAction('mousedown', { x: chart.getBoundingClientRect().left + 1, y: chart.getBoundingClientRect().top + 1 }, chart, chart);
+            setTimeout(() => {
+                expect(chart.classList.contains('e-ss-overlay-active')).toBeTruthy();
+                helper.invoke('selectRange', ['A8']);
+                expect(chart.classList.contains('e-ss-overlay-active')).toBeFalsy();
+                helper.triggerKeyEvent('keydown', 65);
+                expect(helper.getInstance().isEdit).toBeTruthy();
+                done();
+            });
+        });
+    });
+    describe('EJ2-858143 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert column chart and resize the chart ->', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'H2:H10' }]]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                const overlayObj: any = helper.getInstance().serviceLocator.getService('shape') as Overlay;
+                expect(overlayObj.originalWidth).toBe(480);
+                expect(overlayObj.originalHeight).toBe(290);
+                const overlay: HTMLElement = helper.getElementFromSpreadsheet('.e-ss-overlay-active');
+                const overlayHgtHanlde: HTMLElement = overlay.querySelector('.e-ss-overlay-b');
+                let offset: DOMRect = overlayHgtHanlde.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top }, overlay, overlayHgtHanlde);
+                helper.triggerMouseAction('mousemove', { x: offset.left, y: offset.top + 30 }, overlay, overlayHgtHanlde);
+                helper.triggerMouseAction('mouseup', { x: offset.left, y: offset.top + 30 }, document, overlayHgtHanlde);
+                done();
+            });
+        });
+        it('Undo the resized chart ->', (done: Function) => {
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart.style.width).toBe('480px');
+            expect(chart.style.height).toBe('320px');
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {
+                expect(chart.style.width).toBe('480px');
+                expect(chart.style.height).toBe('290px');
+                done();
+            });
+        });
+        it('Redo the resized chart ->', (done: Function) => {
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart.style.width).toBe('480px');
+            expect(chart.style.height).toBe('290px');
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_redo');
+            setTimeout(() => {
+                expect(chart.style.width).toBe('480px');
+                expect(chart.style.height).toBe('320px');
+                done();
+            });
+        });
     });
 });

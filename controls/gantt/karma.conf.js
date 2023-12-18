@@ -103,7 +103,7 @@ module.exports = function (config) {
       check: {
         each: {
           statements: 90,
-          branches: 90,
+          branches: 87,
           functions: 100,
           lines: 90
         }

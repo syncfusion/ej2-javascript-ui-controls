@@ -2,7 +2,19 @@
 
 ## [Unreleased]
 
-## 23.2.7 (2023-12-05)
+## 24.1.41 (2023-12-18)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I527917` - The chart area border customization properties will now work properly with the pivot chart.
+
+#### New features
+
+- Introduced a new Syncfusion assembly [Syncfusion.Pivot.Engine](https://www.nuget.org/packages/Syncfusion.Pivot.Engine) is a .NET Core compatible alternative to the [Syncfusion.EJ2.Pivot](https://www.nuget.org/packages/Syncfusion.EJ2.Pivot) package that is used in a server side application to perform all Pivot calculations such as aggregation, filtering, sorting, grouping, and so on, and only the information to be displayed in the Pivot Table's viewport is passed to the client side (browser) via web service (Web API) rather than the entire data source.
+
+## 23.2.6 (2023-11-28)
 
 ### PivotTable
 

@@ -79,12 +79,8 @@
       max-height: 440px !important;
       min-width: 370px !important;
 
-      .e-member-editor-container-outer-div {
-        min-height: 75px !important;
-
-        .e-list-parent .e-ul {
-          height: auto;
-        }
+      .e-member-editor-container-outer-div .e-list-parent .e-ul {
+        height: auto;
       }
     }
   }
@@ -202,7 +198,6 @@
         max-width: 45%;
         overflow: visible;
       }
-
     }
 
     .e-checkbox-layout {
@@ -332,6 +327,7 @@
           padding: $field-list-table-header-padding;
           text-align: left;
           text-overflow: ellipsis;
+          white-space: nowrap;
           word-break: break-all;
           @if ($field-list-skin == 'tailwind') {
             text-transform: uppercase;
@@ -586,6 +582,7 @@
             padding: 0 8px;
             text-overflow: ellipsis;
             text-transform: $field-list-text-transform;
+            white-space: nowrap;
             width: 100%;
             @if ($skin-name == 'Material3') {
               font-weight: $field-list-table-header-font-weight;
@@ -1085,6 +1082,38 @@
           }
         }
       }
+
+      .e-layout-footer {
+        .e-checkbox-layout {
+          align-items: center;
+          display: flex;
+          margin-top: 0;
+          overflow: hidden;
+          width: 100%;
+  
+          .e-checkbox-wrapper {
+            width: 100%;
+  
+            label {
+              width: 100%;
+  
+              .e-label {
+                overflow: hidden;
+                /* stylelint-disable */
+                text-overflow: ellipsis !important;
+                /* stylelint-enable */
+                white-space: unset;
+                width: calc(100% - 20px);
+              }
+            }
+          }
+        }
+  
+        .e-button-layout {
+          display: flex;
+          justify-content: flex-end;
+        }
+      }
     }
 
     &.e-device {
@@ -1108,7 +1137,8 @@
       }
 
       .e-adaptive-field-list-dialog,
-      .e-member-editor-dialog {
+      .e-member-editor-dialog,
+      .e-value-field-settings {
         .e-dlg-header-content {
           background-color: transparent;
           color: $field-list-mobile-header-font-color;
@@ -1400,7 +1430,7 @@
             .e-pivot-add-button,
             .e-pivot-cancel-button {
               float: right;
-              margin-right: 20px;
+              margin-right: calc(10% - 20px);
               margin-top: 32px;
             }
 
@@ -1462,7 +1492,7 @@
             }
 
             &.e-olap-calc-outer-div {
-              max-height: 350px;
+              max-height: 575px;
               overflow: hidden;
               overflow-y: auto;
             }
@@ -1723,7 +1753,6 @@
 
           .e-axis-header {
             font-size: $field-list-bigger-header-font-size;
-            line-height: $field-list-bigger-header-content-line-height;
             padding: 0 12px;
           }
         }
@@ -1804,17 +1833,6 @@
           .e-right-axis-fields .e-field-list-values {
             margin-top: $field-list-default-bigger-padding-size;
           }
-
-          .e-left-axis-fields .e-field-list-filters,
-          .e-left-axis-fields .e-field-list-rows,
-          .e-right-axis-fields .e-field-list-columns,
-          .e-right-axis-fields .e-field-list-values {
-            .e-axis-container {
-              .e-axis-icon-container {
-                padding-top: $field-list-static-bigger-header-icon-wrapper-padding;
-              }
-            }
-          }
         }
       }
 
@@ -1829,6 +1847,10 @@
             padding: 0 !important;
           }
         }
+      }
+
+      .e-layout-footer .e-checkbox-layout .e-checkbox-wrapper label .e-label {
+        width: calc(100% - 30px);
       }
     }
 

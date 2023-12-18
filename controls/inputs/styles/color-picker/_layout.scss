@@ -939,6 +939,18 @@
         }
       }
 
+      @media only screen and (max-width: 600px) {
+        @if $skin-name == 'material' or $skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'Material3' {
+          &.e-color-picker {
+            width: 100% !important; /* stylelint-disable-line declaration-no-important */
+          }
+
+          &.e-colorpicker-popup {
+            width: calc(100% - 20px) !important; /* stylelint-disable-line declaration-no-important */
+          }
+        }
+      }
+
       & .e-palette {
         & .e-tile {
           @if $skin-name == 'Material3' {
@@ -948,6 +960,14 @@
             height: $cpicker-bigger-tile-size;
           }
           width: $cpicker-bigger-tile-size;
+        }
+
+        @media only screen and (max-width: 600px) {
+          @if $skin-name == 'Material3' {
+            & .e-tile {
+              width: 33px !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
         }
       }
 
@@ -986,6 +1006,14 @@
           }
           @else {
             top: 0;
+          }
+        }
+
+        @media only screen and (max-width: 600px) {
+          & .e-preview-container {
+            @if $skin-name == 'material' or $skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'Material3' {
+              margin-left: 4.6% !important; /* stylelint-disable-line declaration-no-important */
+            }
           }
         }
 
@@ -1086,6 +1114,14 @@
             & input {
               height: $cpicker-bigger-numeric-input-height;
             }
+          }
+        }
+      }
+
+      @media only screen and (max-width: 600px) {
+        & .e-input-container {
+          @if $skin-name == 'fabric' {
+            width: 89.8%;
           }
         }
       }

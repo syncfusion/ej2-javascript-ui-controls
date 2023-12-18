@@ -552,7 +552,8 @@ describe('Diagram Control', () => {
             };
             diagram.dataBind();
             let pathElement: HTMLElement = document.getElementById('node2_1_tasktType');
-            expect(pathElement.getAttribute('transform') === 'rotate(0,465.5,65.5)translate(455.5,55.5)').toBe(true);
+            console.log("path element for task", pathElement.getAttribute('transform') );
+            expect(pathElement.getAttribute('transform') === 'rotate(0,465,65)translate(455,55)').toBe(true);
             done();
         });
         it('Update BPMN task Shape-Bussiness', (done: Function) => {

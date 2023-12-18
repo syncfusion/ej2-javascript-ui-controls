@@ -39,7 +39,6 @@ export namespace Input {
     };
     let floatType: string;
     let isBindClearAction: boolean = true;
-    let floatLabelElement: HTMLElement;
 
     /**
      * Create a wrapper to input element with multiple span elements and set the basic properties to input based components.
@@ -187,7 +186,7 @@ export namespace Input {
             inputObject.container.classList.add(CLASSNAMES.FLOATINPUT);
         }
         const floatLinelement: HTMLElement = makeElement('span', { className: CLASSNAMES.FLOATLINE });
-        floatLabelElement = makeElement('label', { className: CLASSNAMES.FLOATTEXT });
+        const floatLabelElement = makeElement('label', { className: CLASSNAMES.FLOATTEXT });
         if (!isNullOrUndefined(args.element.id) && args.element.id !== '') {
             floatLabelElement.id = 'label_' + args.element.id.replace(/ /g, '_');
             attributes(args.element, { 'aria-labelledby': floatLabelElement.id });
@@ -223,11 +222,11 @@ export namespace Input {
         if (args.floatLabelType === 'Auto') {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             args.element.addEventListener('input', (event: KeyboardEvent) => {
-                updateLabelState(args.element.value, floatLabelElement, args.element);
+                validateLabel(args.element, args.floatLabelType);
             });
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             args.element.addEventListener('blur', (event: FocusEvent) => {
-                updateLabelState(args.element.value, floatLabelElement);
+                validateLabel(args.element, args.floatLabelType);
             });
         }
         if (!isNullOrUndefined(args.element.getAttribute('id'))) {
@@ -359,7 +358,6 @@ export namespace Input {
         });
     }
     export function destroy(): void {
-        floatLabelElement = null;
         privateInputObj = null;
     }
     function validateLabel(element: HTMLInputElement | HTMLTextAreaElement, floatLabelType: string) : void {

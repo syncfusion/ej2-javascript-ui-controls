@@ -36,7 +36,7 @@ import { Resize } from '../actions/resize';
 import { DragAndDrop } from '../actions/drag';
 import { VirtualScroll } from '../actions/virtual-scroll';
 import { WorkCellInteraction } from '../actions/work-cells';
-import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel } from '../models/models';
+import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel, ToolbarItemModel } from '../models/models';
 import { QuickInfoTemplatesModel, HeaderRowsModel } from '../models/models';
 import { EventSettings } from '../models/event-settings';
 import { Group } from '../models/group';
@@ -56,6 +56,7 @@ import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
+import { ToolbarItem } from '../models/toolbar';
 
 /**
  * Represents the Schedule component that displays a list of events scheduled against specific date and timings,
@@ -205,6 +206,21 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public allowSwiping: boolean;
+
+    /**
+    * To render the custom toolbar items, the `toolbarItems` property can be used. It contains built-in and custom toolbar items.
+    * To avail the built-in toolbar items, the below string values are assigned to the `name` property of the `ToolbarItemModel`.
+    * * `Previous`: Schedule component navigates to the previous date from the current date.
+    * * `Next`: Schedule component navigates to the next date from the current date.
+    * * `Today`: Schedule component navigates to the current date from any date.
+    * * `Views`: Schedule component render the defined view options in the toolbar. If view option is not defined, then it will render default view options in the Schedule.
+    * * `DateRangeText`: Schedule component displays the current date text range.
+    * * `NewEvent`: Schedule component render the icon to add a new event.
+    *
+    * @default []
+    */
+        @Collection<ToolbarItemModel>([], ToolbarItem)
+        public toolbarItems: ToolbarItemModel[]
 
     /**
      * To set the active view on scheduler, the `currentView` property can be used and it usually accepts either of the following available
@@ -2499,6 +2515,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 break;
             case 'showHeaderBar':
+            case 'toolbarItems':
                 this.destroyHeaderModule();
                 if (newProp.showHeaderBar) {
                     this.headerModule = new HeaderRenderer(this);

@@ -876,6 +876,41 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
             gridObj = actionBegin = null;
         });
     });
+
+    describe('Feature - EJ2-850006 - Implementation of pager dropdownlist in adaptive / mobile pager', () => {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 24),
+                    allowPaging: true,
+                    rowRenderingMode: 'Vertical',
+                    enableAdaptiveUI: true,
+                    height: '100%',
+                    width: 600,
+                    pageSettings: { pageSize: 12, pageSizes: true },
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 120},
+                        { field: 'CustomerID', headerText: 'Customer ID', validationRules: { required: true }, width: 140},
+                        { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2'},
+                    ],
+                    actionBegin: actionBegin
+                }, done);
+        });
+
+        it('Setting adaptive mode CSS to trigger mimic media query css for code coverage purpose', function () {
+            (gridObj.element.querySelector('.e-pager') as HTMLElement).style.borderStyle = 'solid'; //code to trigger pager resizing.
+            (gridObj.element.querySelector('.e-mfirst') as HTMLElement).style.display = 'block';
+            (gridObj.element.querySelector('.e-mfirst') as HTMLElement).style.setProperty('--mq-type', 'small');
+            gridObj.pagerModule.refresh();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionBegin = null;
+        });
+    });
     
     describe('Grid Not Showing All Records when Filter is Cleared', () => {
         let gridObj: Grid;

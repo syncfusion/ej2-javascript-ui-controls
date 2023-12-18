@@ -1,9 +1,10 @@
 /*! recurrence editor theme wise definitions*/
 $recurrence-label-bottom: 8px !default;
-$recurrence-month-label-bottom: 8px !default;
+$recurrence-month-label-bottom: -2px !default;
+$recurrence-month-label-bottom-bgr: -1px !default;
 $recurrence-week-label-bottom: 10px !default;
 $recurrence-label-font-weight: $font-weight-normal !default;
-$recurrence-label-font-nrml-size: $text-xxs !default;
+$recurrence-label-font-nrml-size: $text-xs !default;
 $recurrence-label-font-bgr-size: $text-xs !default;
 $recurrence-left-padding: 0 8px 16px 0 !default;
 $recurrence-week-position-bgr-min-width: 130px !default;
@@ -11,3 +12,4 @@ $recurrence-day-position-bgr-min-width: 190px !default;
 $recurrence-day-position-bgr-padding-left: 54px !default;
 $recurrence-end-bgr-padding-right: 16px !default;
 $recurrence-week-position-min-width: 98px !default;
+$recurrence-end-on-date-margin-top: 16px !default;

@@ -13,6 +13,7 @@ export * from './layers/layer-panel';
 export * from './layers/bubble';
 export * from './layers/bing-map';
 export * from './layers/marker';
+export * from './layers/polygon';
 export * from './layers/color-mapping';
 export * from './layers/data-label';
 export * from './layers/navigation-selected-line';

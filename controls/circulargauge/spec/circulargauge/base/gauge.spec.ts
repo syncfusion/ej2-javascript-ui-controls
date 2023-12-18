@@ -156,7 +156,7 @@ describe('Circular-Gauge Control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_CircularGaugeTitle');
                 expect(svg != null).toBe(true);
-                expect(svg.textContent == 'This is circular-gauge').toBe(true);
+                expect(svg.textContent == 'This is circ...').toBe(true);
                 expect(svg.getAttribute('aria-label')).toBe('This is circular-gauge');
                 done();
             };
@@ -168,7 +168,7 @@ describe('Circular-Gauge Control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_CircularGaugeTitle');
                 expect(svg != null).toBe(true);
-                expect(svg.textContent == 'circular-gauge').toBe(true);
+                expect(svg.textContent == 'circular-ga...').toBe(true);
                 expect(svg.getAttribute('aria-label')).toBe('this is title');
                 done();
             };
@@ -330,7 +330,7 @@ describe('Circular-Gauge Control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_CircularGaugeTitle');
                 expect(svg != null).toBe(true);
-                svg = document.getElementById('container_Axis_Major_TickLine_0_20');
+                svg = document.getElementById('container_Axis_Major_TickLine_0_2');
                 expect(svg.getAttribute('stroke')).toEqual('#FFFFFF');
                 done();
             };
@@ -344,7 +344,7 @@ describe('Circular-Gauge Control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_CircularGaugeTitle');
                 expect(svg != null).toBe(true);
-                svg = document.getElementById('container_Axis_Major_TickLine_0_20');
+                svg = document.getElementById('container_Axis_Major_TickLine_0_2');
                 expect(svg.getAttribute('stroke')).toEqual('#ADB5BD');
                 done();
             };
@@ -356,7 +356,7 @@ describe('Circular-Gauge Control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_CircularGaugeTitle');
                 expect(svg != null).toBe(true);
-                svg = document.getElementById('container_Axis_Major_TickLine_0_20');
+                svg = document.getElementById('container_Axis_Major_TickLine_0_2');
                 expect(svg.getAttribute('stroke')).toEqual('#C8C8C8');
                 done();
             };

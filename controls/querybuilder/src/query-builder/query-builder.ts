@@ -1179,7 +1179,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     if (rule.rules[index as number].value instanceof Array) {
                         valArray = rule.rules[index as number].value as string[] | number[];
                     }
-                    if (excludeOprs.indexOf(rule.rules[index as number].operator) < 0 &&
+                    if (excludeOprs.indexOf(rule.rules[index as number].operator) < -1 &&
                     (isNullOrUndefined(rule.rules[index as number].value) &&
                     rule.rules[index as number].type !== 'date') || rule.rules[index as number].value === '' ||
                     (rule.rules[index as number].value instanceof Array && valArray.length < 1)) {
@@ -1597,11 +1597,20 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const groupID: string = groupElem && groupElem.id.replace(this.element.id + '_', '');
         const ruleID: string = ruleElem.id.replace(this.element.id + '_', '');
         const dateElement: CalendarChangeEventArgs = args as CalendarChangeEventArgs;
+        let dropDownObj: DropDownList | DropDownTree;
         if (dateElement.element && dateElement.element.className.indexOf('e-datepicker') > -1) {
             element = dateElement.element;
+            dropDownObj = getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input') as HTMLElement, 'dropdownlist');
+            if (dropDownObj) {
+                this.selectedColumn = (dropDownObj as DropDownList).getDataByValue(dropDownObj.value as string) as ColumnsModel;
+            }
+            dropDownObj = getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input') as HTMLElement, 'dropdowntree');
+            if (dropDownObj) {
+                this.selectedColumn = this.getColumn(dropDownObj.value[0]) as ColumnsModel;
+            }
         }
         let value: string | number | Date | boolean | string[];
-        let rbValue: number; let dropDownObj: DropDownList | DropDownTree;
+        let rbValue: number;
         if (element.className.indexOf('e-radio') > -1) {
             // eslint-disable-next-line
             rbValue = parseInt(element.id.split('valuekey')[1], 0);
@@ -1872,7 +1881,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.GetRootColumnName(rule.field) === this.GetRootColumnName(this.previousColumn.field))) {
             const subField: ColumnsModel[] = this.selectedColumn.columns;
             for (let i: number = 0; i < subField.length; i++) {
-                if (rule.field === subField[i as number].field) {
+                if (rule.field === subField[i as number].field || rule.field.indexOf(subField[i as number].field) > -1) {
                     dropDownList.value = subField[i as number].field;
                     this.selectedColumn = subField[i as number];
                     subFieldValue = true;
@@ -2635,7 +2644,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
         const operator: string = tempRule.operator.toString(); let isTempRendered: boolean = false;
-        if (!(operator.indexOf('null') > -1 || operator.indexOf('empty') > -1)) {
+        if (!(operator.indexOf('null') > -1 || operator.indexOf('isempty') > -1 || operator.indexOf('isnotempty') > -1)) {
             const parentId: string = closest(target, '.e-rule-container').id;
             prevItemData = this.getPreviousItemData(prevItemData, column);
             if (prevItemData && prevItemData.template === undefined) {
@@ -2750,7 +2759,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 const valElemColl: Element[] = this.columnTemplateFn(args, this, ruleID, templateID);
                 valElem = (valElemColl[0].nodeType === 3) ? valElemColl[1] : valElemColl[0];
                 target.nextElementSibling.appendChild(valElem as Element);
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } else if ((this as any).isVue3) {
                 valElem = this.columnTemplateFn(args, this, 'Template', templateID);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4832,7 +4840,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             return true;
         } else {
             const secParser: string[] = this.parser[this.parser.length - 2];
+            const betweenParser: string[]  = this.parser[this.parser.length - 3];
             if (lastParser[0] === 'Left' && (secParser && secParser[0] === 'Conditions')) {
+                return true;
+            }
+            const betweenOperator: string = 'between';
+            if (lastParser[0] === 'Conditions' && (betweenParser && betweenParser[1].indexOf(betweenOperator) < 0)) {
                 return true;
             }
         }

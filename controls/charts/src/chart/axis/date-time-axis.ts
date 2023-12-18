@@ -8,7 +8,7 @@ import { isZoomSet, setRange, triggerLabelRender } from '../../common/utils/help
 import { Size } from '@syncfusion/ej2-svg-base';
 import { RangeIntervalType } from '../../common/utils/enum';
 import { DoubleRange } from '../utils/double-range';
-import { IntervalType, ChartRangePadding } from '../utils/enum';
+import { IntervalType, ChartRangePadding } from '../../common/utils/enum';
 import { withIn, firstToLowerCase } from '../../common/utils/helper';
 import { Chart } from '../chart';
 import { DataUtil } from '@syncfusion/ej2-data';

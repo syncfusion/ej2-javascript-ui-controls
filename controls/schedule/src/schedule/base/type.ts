@@ -117,3 +117,16 @@ export type WeekRule = 'FirstDay' | 'FirstFourDayWeek' | 'FirstFullWeek';
  * ```
  */
 export type SpannedEventPlacement = 'AllDayRow' | 'TimeSlot';
+
+/**
+ * An enum that holds the options to define name of the toolbar items to access default toolbar items in the Scheduler.
+ * ```props
+ * Previous :- Denotes the previous date navigation button in the Schedule toolbar.
+ * Next :- Denotes the next date navigation button in the Schedule toolbar.
+ * Today :- Denotes the today button in the Schedule toolbar.
+ * Views :- Denotes the view-switching in the Schedule toolbar.
+ * DateRangeText :- Denotes the date range text in the Schedule toolbar.
+ * NewEvent :- Denotes the new event button in the Schedule toolbar.
+ * ```
+ */
+export type ToolbarName = 'Custom' | 'Previous' | 'Next' | 'Today' | 'Views' | 'DateRangeText' | 'NewEvent';

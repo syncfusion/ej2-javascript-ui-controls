@@ -148,7 +148,7 @@ export class Link {
                 pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + parentTop + args.clientY : args.pageY;
             }
             if (this.quickToolObj.linkQTBar) {
-                this.quickToolObj.linkQTBar.showPopup(pageX, pageY, range.endContainer as Element);
+                this.quickToolObj.linkQTBar.showPopup(pageX, pageY, range.endContainer as Element, 'link');
             }
         }
     }
@@ -181,12 +181,32 @@ export class Link {
                 if (isPopupOpen) {
                     return;
                 }
-                this.showLinkQuickToolbar({
-                    args: args,
-                    isNotify: false,
-                    type: 'Links',
-                    elements: [args.target as Element]
-                } as IShowPopupArgs);
+                if ((e.args as MouseEvent).ctrlKey === false) {
+                    this.showLinkQuickToolbar({
+                        args: args,
+                        isNotify: false,
+                        type: 'Links',
+                        elements: [args.target as Element]
+                    } as IShowPopupArgs);
+                }
+                else {
+                    const selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection;
+                    const range: Range = selection.getRange(this.parent.contentModule.getDocument());
+                    const args: object = {
+                        args: {
+                            item: {
+                                subCommand: 'OpenLink',
+                                command: 'Links',
+                                name: ''
+                            },
+                            originalEvent: e.args
+                        },
+                        selectNode: selection.getNodeCollection(range),
+                        selectParent: selection.getParentNodeCollection(range),
+                        selection: selection.save(range, this.parent.contentModule.getDocument())
+                    };
+                    this.parent.notify(events.openLink, args);
+                }
             } else {
                 this.hideLinkQuickToolbar();
             }
@@ -243,7 +263,7 @@ export class Link {
     }
     private showDialog(): void {
         this.openDialog(false);
-        this.setCssClass({cssClass: this.parent.cssClass});
+        this.setCssClass({cssClass: this.parent.getCssClass()});
     }
     private closeDialog(): void {
         if (this.dialogObj) { this.dialogObj.hide({ returnValue: true } as Event); }
@@ -272,21 +292,21 @@ export class Link {
         const textPlace: string = this.i10n.getConstant('textPlaceholder');
         const title: string = this.i10n.getConstant('linkTitle');
         const linkDialogEle: HTMLElement = this.parent.createElement('div', {
-            className: 'e-rte-link-dialog' + ' ' + this.parent.cssClass, id: this.rteID + '_rtelink' });
+            className: 'e-rte-link-dialog' + this.parent.getCssClass(true), id: this.rteID + '_rtelink' });
         this.parent.element.appendChild(linkDialogEle);
         const linkContent: HTMLElement = this.parent.createElement('div', {
-            className: 'e-rte-linkcontent' + ' ' + this.parent.cssClass, id: this.rteID + '_linkContent'
+            className: 'e-rte-linkcontent' + this.parent.getCssClass(true), id: this.rteID + '_linkContent'
         });
         const htmlTextbox: string = (this.parent.editorMode === 'HTML') ? '<label>' + linkTooltip +
-            '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
-            '<input type="text" data-role ="none" spellcheck="false" placeholder = "' + title + '"aria-label="' + this.i10n.getConstant('linkTitle') + '" class="e-input e-rte-linkTitle' + ' ' + this.parent.cssClass + '"></div>' +
-            '<div class="e-rte-label' + ' ' + this.parent.cssClass + '"></div>' + '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
-            '<input type="checkbox" class="e-rte-linkTarget' + ' ' + this.parent.cssClass + '"  data-role ="none"></div>' : '';
-        const content: string = '<div class="e-rte-label' + ' ' + this.parent.cssClass + '"><label>' + linkWebAddress + '</label></div>' + '<div class="e-rte-field' + ' ' + this.parent.cssClass + '">' +
-            '<input type="text" data-role ="none" spellcheck="false" placeholder="' + urlPlace + '"aria-label="' + this.i10n.getConstant('linkWebUrl') + '" class="e-input e-rte-linkurl' + ' ' + this.parent.cssClass + '"/></div>' +
-            '<div class="e-rte-label' + ' ' + this.parent.cssClass + '">' + '<label>' + linkDisplayText + '</label></div><div class="e-rte-field' + ' ' + this.parent.cssClass + '"> ' +
-            '<input type="text" data-role ="none" spellcheck="false" class="e-input e-rte-linkText' + ' ' + this.parent.cssClass + '"aria-label="' + this.i10n.getConstant('linkText') + '" placeholder="' + textPlace + '">' +
-            '</div><div class="e-rte-label' + ' ' + this.parent.cssClass + '">' + htmlTextbox;
+            '</label></div><div class="e-rte-field' + this.parent.getCssClass(true) + '">' +
+            '<input type="text" data-role ="none" spellcheck="false" placeholder = "' + title + '"aria-label="' + this.i10n.getConstant('linkTitle') + '" class="e-input e-rte-linkTitle' + this.parent.getCssClass(true) + '"></div>' +
+            '<div class="e-rte-label' + this.parent.getCssClass(true) + '"></div>' + '<div class="e-rte-field' + this.parent.getCssClass(true) + '">' +
+            '<input type="checkbox" class="e-rte-linkTarget' + this.parent.getCssClass(true) + '"  data-role ="none"></div>' : '';
+        const content: string = '<div class="e-rte-label' + this.parent.getCssClass(true) + '"><label>' + linkWebAddress + '</label></div>' + '<div class="e-rte-field' + this.parent.getCssClass(true) + '">' +
+            '<input type="text" data-role ="none" spellcheck="false" placeholder="' + urlPlace + '"aria-label="' + this.i10n.getConstant('linkWebUrl') + '" class="e-input e-rte-linkurl' + this.parent.getCssClass(true) + '"/></div>' +
+            '<div class="e-rte-label' + this.parent.getCssClass(true) + '">' + '<label>' + linkDisplayText + '</label></div><div class="e-rte-field' + this.parent.getCssClass(true) + '"> ' +
+            '<input type="text" data-role ="none" spellcheck="false" class="e-input e-rte-linkText' + this.parent.getCssClass(true) + '"aria-label="' + this.i10n.getConstant('linkText') + '" placeholder="' + textPlace + '">' +
+            '</div><div class="e-rte-label' + this.parent.getCssClass(true) + '">' + htmlTextbox;
         const contentElem: DocumentFragment = parseHtml(content);
         linkContent.appendChild(contentElem);
         const linkTarget: HTMLInputElement = linkContent.querySelector('.e-rte-linkTarget') as HTMLInputElement;
@@ -295,7 +315,7 @@ export class Link {
         const linkTitle: HTMLInputElement = linkContent.querySelector('.e-rte-linkTitle') as HTMLInputElement;
         const linkOpenLabel: string = this.i10n.getConstant('linkOpenInNewWindow');
         this.checkBoxObj = new CheckBox({ label: linkOpenLabel, checked: true, enableRtl: this.parent.enableRtl,
-            cssClass: this.parent.cssClass });
+            cssClass: this.parent.getCssClass() });
         this.checkBoxObj.isStringTemplate = true;
         this.checkBoxObj.createElement = this.parent.createElement;
         this.checkBoxObj.appendTo(linkTarget);
@@ -308,16 +328,16 @@ export class Link {
         const dialogModel: DialogModel = {
             header: this.i10n.getConstant('linkHeader'),
             content: linkContent,
-            cssClass: CLS_RTE_ELEMENTS + ' ' + this.parent.cssClass,
+            cssClass: CLS_RTE_ELEMENTS + this.parent.getCssClass(true),
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             showCloseIcon: true, closeOnEscape: true, width: (Browser.isDevice) ? '290px' : '310px',
             isModal: (Browser.isDevice as boolean),
             buttons: [{
                 click: this.insertlink.bind(selectObj),
-                buttonModel: { content: linkInsert, cssClass: 'e-flat e-insertLink' + ' ' + this.parent.cssClass, isPrimary: true }
+                buttonModel: { content: linkInsert, cssClass: 'e-flat e-insertLink' + this.parent.getCssClass(true), isPrimary: true }
             },
-            { click: this.cancelDialog.bind(selectObj), buttonModel: { cssClass: 'e-flat' + ' ' + this.parent.cssClass, content: linkCancel } }],
+            { click: this.cancelDialog.bind(selectObj), buttonModel: { cssClass: 'e-flat' + this.parent.getCssClass(true), content: linkCancel } }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
             close: (event: { [key: string]: object }) => {
@@ -381,7 +401,7 @@ export class Link {
             linkTitle = (linkEle.querySelector('.e-rte-linkTitle') as HTMLInputElement).value;
         }
         const target: string = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? '_blank' : null;
-        const linkLabel: string = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? (this as NotifyArgs).selfLink.i10n.getConstant('linkAriaLabel') : null;
+        const linkLabel = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? (this as NotifyArgs).selfLink.i10n.getConstant('linkAriaLabel') : null;
         if (linkUrl === '') {
             (this as NotifyArgs).selfLink.checkUrl(true);
             return;

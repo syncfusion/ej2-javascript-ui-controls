@@ -138,7 +138,7 @@ export class Render {
 
     public updateLabelText(view: string): void {
         const content: string = this.parent.activeView.getLabelText(view);
-        this.parent.element.setAttribute('role', 'main');
+        this.parent.element.setAttribute('role', 'application');
         this.parent.element.setAttribute('aria-label', content);
     }
 

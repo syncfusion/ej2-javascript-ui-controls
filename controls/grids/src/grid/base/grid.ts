@@ -398,6 +398,33 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
     public ignoreAccent: boolean;
 
     /**
+     * If `enableInfiniteScrolling` set to true, then the data will be loaded in Checkbox filter `Popup` content, when the scrollbar reaches the end.
+     * This helps to load large dataset in Checkbox filter `Popup` content.
+     * {% codeBlock src='grid/enableInfiniteScrolling/index.md' %}{% endcodeBlock %}
+     * @default false
+     */
+    @Property(false)
+    public enableInfiniteScrolling: boolean;
+
+    /**
+     * If `enableInfiniteScrolling` set to true, For on demand request, Gets data from the parent data source based on given number of records count.
+     *
+     * @default 100
+     */
+    @Property(50)
+    public itemsCount: number;
+
+    /**
+     * Defines the loading indicator. The available loading indicator are:
+     * * Spinner
+     * * Shimmer
+     *
+     * @default Shimmer
+     */
+    @Property('Shimmer')
+    public loadingIndicator: IndicatorType;
+    
+    /**
      * If `enableCaseSensitivity` is set to true then searches grid records with exact match based on the filter
      * operator. It will have no effect on number, boolean and Date fields.
      *
@@ -858,6 +885,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public isPreventScrollEvent: boolean = false;
     private columnModel: Column[];
     private rowTemplateFn: Function;
+    private emptyRecordTemplateFn: Function;
     private editTemplateFn: Function;
     private editHeaderTemplateFn: Function;
     private editFooterTemplateFn: Function;
@@ -1663,6 +1691,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property()
     public rowTemplate: string | Function;
+
+    /**
+     * The empty record template that renders customized element or text or image instead of displaying the empty record message in the grid.
+     * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
+     * @default null
+     * @aspType string
+     */
+    @Property()
+    public emptyRecordTemplate: string | Function;
 
     /**
      * The detail template allows you to show or hide additional information about a particular row.
@@ -2832,6 +2869,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             ConfirmDelete: 'Are you sure you want to Delete Record?',
             CancelEdit: 'Are you sure you want to Cancel the changes?',
             ChooseColumns: 'Choose Column',
+            ColumnMenu: 'Column Menu',
             SearchColumns: 'search columns',
             Matchs: 'No matches found',
             FilterButton: 'Filter',
@@ -2901,10 +2939,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             AND: 'AND',
             OR: 'OR',
             ShowRowsWhere: 'Show rows where:',
-            FilterMenuDialogARIA: 'Filter menu dialog',
-            ExcelFilterDialogARIA: 'Excel filter dialog',
+            ToolbarMenuDialogARIA: 'Toolbar menu dialog',
+            FilterMenuDialogARIA: 'Filter menu',
+            ExcelFilterDialogARIA: 'Excel filter',
+            CheckBoxFilterDialogARIA: 'Checkbox filter',
             DialogEditARIA: 'Edit dialog',
-            ColumnChooserDialogARIA: 'Column chooser',
             ColumnMenuDialogARIA: 'Column menu dialog',
             CustomFilterDialogARIA: 'Customer filter dialog',
             SortAtoZ: 'Sort A to Z',
@@ -2980,7 +3019,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     protected render(): void {
         this.log(['module_missing', 'promise_enabled', 'locale_missing', 'check_datasource_columns']);
-        this.ariaService.setOptions(this.element, { datarole: 'grid' });
+        this.ariaService.setOptions(this.element, { role: 'grid' });
         createSpinner({ target: this.element, cssClass: this.cssClass ? this.cssClass : null }, this.createElement);
         this.renderModule = new Render(this, this.serviceLocator);
         this.searchModule = new Search(this);
@@ -3150,9 +3189,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const maskTable: Element = table.cloneNode() as Element;
         maskTable.removeAttribute('role');
         maskTable.removeAttribute('id');
-        maskTable.removeAttribute('aria-multiselectable');
-        maskTable.removeAttribute('aria-colcount');
-        maskTable.removeAttribute('aria-rowcount');
         (maskTable as HTMLElement).style.position = 'absolute';
         (maskTable as HTMLElement).style.zIndex = '5';
         (maskTable as HTMLElement).style.width = table.getBoundingClientRect().width + 'px';
@@ -3681,8 +3717,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 requireRefresh = true;
                 if (this.height === '100%') {
                     this.scrollModule.refresh();
-                }
-                break;
+                } break;
             case 'pageSettings':
                 if (this.pageTemplateChange) {
                     this.pageTemplateChange = false;
@@ -3742,6 +3777,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 break;
             case 'rowTemplate':
                 this.rowTemplateFn = templateCompiler(this.rowTemplate);
+                requireRefresh = true; break;
+            case 'emptyRecordTemplate':
+                this.emptyRecordTemplateFn = templateCompiler(this.emptyRecordTemplate);
                 requireRefresh = true; break;
             case 'detailTemplate':
                 this.detailTemplateFn = templateCompiler(this.detailTemplate);
@@ -3854,7 +3892,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 (<EJ2Intance>this.contextMenuModule.getContextMenu()).ej2_instances[0].enableRtl = newProp.enableRtl;
                 (<EJ2Intance>this.contextMenuModule.getContextMenu()).ej2_instances[0].dataBind();
             }
-            if (this.showColumnMenu && this.columnMenuModule) {
+            if (this.showColumnMenu && this.columnMenuModule && !this.enableAdaptiveUI) {
                 (<EJ2Intance>this.columnMenuModule.getColumnMenu()).ej2_instances[0].enableRtl = newProp.enableRtl;
                 (<EJ2Intance>this.columnMenuModule.getColumnMenu()).ej2_instances[0].dataBind();
             }
@@ -3907,11 +3945,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.notify(events.freezeRender, { case: 'textwrap', isModeChg: (prop === 'textWrapSettings') });
             break;
         case 'dataSource':
-            if (this.allowSelection && this.isPersistSelection) {
-                this.clearSelection();
-            }
             // eslint-disable-next-line no-case-declarations
             const pending: PendingState = this.getDataModule().getState();
+            if (this.allowSelection && this.isPersistSelection && !(pending && pending.isPending)) {
+                this.clearSelection();
+            }
             if (Object.getPrototypeOf(newProp).deepWatch) {
                 const pKeyField: string = this.getPrimaryKeyFieldNames()[0];
                 for (let i: number = 0, props: string[] = Object.keys(newProp.dataSource); i < props.length; i++) {
@@ -3922,8 +3960,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             } else if (pending.isPending) {
                 let gResult: Object = !isNullOrUndefined(this.dataSource) ? (<DataResult>this.dataSource).result : [];
                 const names: string[] = (pending.group || []);
-                for (let i: number = 0; i < names.length; i++) {
-                    gResult = DataUtil.group(<Object[]>gResult, names[parseInt(i.toString(), 10)], pending.aggregates || []);
+                if (names.length && !this.groupSettings.enableLazyLoading && !((gResult as Object[]).length && gResult[0].field)) {
+                    for (let i: number = 0; i < names.length; i++) {
+                        gResult = DataUtil.group(<Object[]>gResult, names[parseInt(i.toString(), 10)], pending.aggregates || []);
+                    }
                 }
                 this.dataSource = {
                     result: gResult, count: (<DataResult>this.dataSource).count,
@@ -5127,6 +5167,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
+     * Gets a compiled empty Record template.
+     *
+     * @returns {Function} Returns the empty Record template
+     * @private
+     */
+    public getEmptyRecordTemplate(): Function {
+        return this.emptyRecordTemplateFn;
+    }
+
+    /**
      * Gets a compiled detail row template.
      *
      * @private
@@ -5717,12 +5767,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.isVisibleColumns(column.columns[parseInt(i.toString(), 10)] as Column, arr);
                 if ((column.columns[parseInt(i.toString(), 10)] as Column).visible &&
                     isNullOrUndefined((column.columns[parseInt(i.toString(), 10)] as Column).columns) &&
-                    !isNullOrUndefined((column.columns[parseInt(i.toString(), 10)] as Column).freeze)) {
+                    (!isNullOrUndefined((column.columns[parseInt(i.toString(), 10)] as Column).freeze) ||
+                    (column.columns[parseInt(i.toString(), 10)] as Column).isFrozen)) {
                     arr.push('true');
                 }
             }
         } else {
-            if (column.visible && !isNullOrUndefined(column.freeze)) {
+            if (column.visible && (!isNullOrUndefined(column.freeze) || column.isFrozen)) {
                 arr.push('true');
             }
         }
@@ -6664,6 +6715,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         this.rowTemplateFn = templateCompiler(this.rowTemplate);
+        this.emptyRecordTemplateFn = templateCompiler(this.emptyRecordTemplate);
         this.detailTemplateFn = templateCompiler(this.detailTemplate);
         this.editTemplateFn = templateCompiler(this.editSettings.template as string);
         this.editHeaderTemplateFn = templateCompiler(this.editSettings.headerTemplate as string);
@@ -6943,11 +6995,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         myTableDiv.style.cssText = 'display: inline-block;visibility:hidden;position:absolute';
         const mySubDiv: HTMLDivElement = this.createElement('div') as HTMLDivElement;
         mySubDiv.className = tag;
-        const myTable: HTMLTableElement = this.createElement('table', { attrs: { role: 'grid' } }) as HTMLTableElement;
+        const myTable: HTMLTableElement = this.createElement('table') as HTMLTableElement;
         myTable.className = table.className;
         myTable.style.cssText = 'table-layout: auto;width: auto';
         const ele: string = (type === 'header') ? 'th' : 'td';
-        const myTr: HTMLTableRowElement = this.createElement('tr') as HTMLTableRowElement;
+        const myTr: HTMLTableRowElement = this.createElement('tr', { attrs: { role: 'row' } }) as HTMLTableRowElement;
         const mytd: HTMLElement = this.createElement(ele) as HTMLElement;
         myTr.appendChild(mytd);
         myTable.appendChild(myTr);
@@ -8399,6 +8451,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public showResponsiveCustomSort(isCustom?: boolean): void {
         if (this.sortModule) {
             this.sortModule.showCustomSort(isCustom || this.rowRenderingMode === 'Vertical');
+        }
+    }
+
+    /**
+     * @param {boolean} isCustom - Defines custom column chooser dialog open
+     * @returns {void}
+     * @hidden
+     */
+    public showResponsiveCustomColumnChooser(isCustom?: boolean): void {
+        if (this.columnChooserModule) {
+            this.columnChooserModule.showCustomColumnChooser(isCustom || this.rowRenderingMode === 'Vertical');
         }
     }
 

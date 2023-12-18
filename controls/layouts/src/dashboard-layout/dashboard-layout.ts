@@ -530,6 +530,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      */
 
     protected render(): void {
+        this.element.setAttribute('role', 'list');
         this.initialize();
         this.isRenderComplete = true;
         if (this.showGridLines && !this.checkMediaQuery()) {
@@ -544,6 +545,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.table = document.createElement('table');
         const tbody: HTMLElement = document.createElement('tbody');
         this.table.classList.add('e-dashboard-gridline-table');
+        this.table.setAttribute('role', 'presentation');
         for (let i: number = 0; i < this.maxRow(); i++) {
             const tr: HTMLElement = document.createElement('tr');
             for (let j: number = 0; j < this.columns; j++) {
@@ -665,9 +667,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected updateOldRowColumn(): void {
         for (let i: number = 0; i < this.panels.length; i++) {
             const id: string = this.panels[i as number].id;
-            if (document.getElementById(id)) {
-                const row: number = parseInt(document.getElementById(id).getAttribute('data-row'), 10);
-                const col: number = parseInt(document.getElementById(id).getAttribute('data-col'), 10);
+            if (this.element.querySelector("[id='" + id + "']")) {
+                const row: number = parseInt(this.element.querySelector("[id='" + id + "']").getAttribute('data-row'), 10);
+                const col: number = parseInt(this.element.querySelector("[id='" + id + "']").getAttribute('data-col'), 10);
                 this.oldRowCol[this.panels[i as number].id] = { row: row, col: col };
             } else {
                 continue;
@@ -733,6 +735,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     protected renderPanels(cellElement: HTMLElement, panelModel: PanelModel, panelId: string, isStringTemplate: boolean): HTMLElement {
         addClass([cellElement], [panel, panelTransition]);
+        cellElement.setAttribute('role', 'listitem');
+        if (this.allowDragging) {
+            cellElement.setAttribute('aria-grabbed', 'false');
+        }
         const cssClass: string[] = panelModel.cssClass ? panelModel.cssClass.split(' ') : null;
         this.panelContent = cellElement.querySelector('.e-panel-container') ?
             cellElement.querySelector('.e-panel-container') :
@@ -1513,9 +1519,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         for (let h: number = 0; h < sizeY; ++h) {
             for (let w: number = 0; w < sizeX; ++w) {
                 item = this.getPanel(row + h, col + w, ignore);
-                if (item && (!ignore || (<HTMLElement[]>ignore).indexOf(document.getElementById(item.id)) === -1) &&
-                    (<HTMLElement[]>items).indexOf(document.getElementById(item.id)) === -1) {
-                    items.push(document.getElementById(item.id));
+                if (item && (!ignore || (<HTMLElement[]>ignore).indexOf(this.element.querySelector("[id='" + item.id + "']")) === -1) &&
+                    (<HTMLElement[]>items).indexOf(this.element.querySelector("[id='" + item.id + "']")) === -1) {
+                    items.push(this.element.querySelector("[id='" + item.id + "']"));
                 }
             }
         }
@@ -1870,7 +1876,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
         if (this.mainElement && this.oldRowCol !== this.cloneObject) {
             for (let i: number = 0; i < this.panels.length; i++) {
-                const element: HTMLElement = document.getElementById(this.panels[i as number].id);
+                const element: HTMLElement = this.element.querySelector("[id='" + this.panels[i as number].id + "']");
                 if (element === this.mainElement) {
                     continue;
                 }

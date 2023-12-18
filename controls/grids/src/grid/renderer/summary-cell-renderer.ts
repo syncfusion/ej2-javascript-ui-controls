@@ -16,7 +16,7 @@ import { refreshAggregateCell } from '../base/constant';
 export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<AggregateColumnModel> {
 
     public element: HTMLElement = this.parent
-        .createElement('TD', { className: 'e-summarycell', attrs: { tabindex: '-1' } });
+        .createElement('TD', { className: 'e-summarycell', attrs: { tabindex: '-1', role: 'gridcell' } });
 
     public getValue(field: string, data: Object, column: AggregateColumnModel): Object {
         const key: string = !isNullOrUndefined(column.type) ?
@@ -64,7 +64,9 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
                 prop[`${groupKey}`] = prop[`${key}`];
             }
             tempObj.fn(prop, this.parent, tempObj.property, tempID, null, null, node);
-            this.parent.renderTemplates();
+            if (!this.parent.isInitialLoad) {
+                this.parent.renderTemplates();
+            }
         } else {
             appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID));
         }

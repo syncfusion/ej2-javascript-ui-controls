@@ -170,7 +170,8 @@ export class Edit implements IAction {
             return;
         }
         this.parent.element.classList.add('e-editing');
-        if (!gObj.getSelectedRows().length) {
+        if (!gObj.getSelectedRows().length || isNullOrUndefined(this.parent.getRowByIndex(
+            parseInt(this.parent.getSelectedRows()[0].getAttribute('data-rowindex'), 10)))) {
             if (!tr) {
                 this.showDialog('EditOperationAlert', this.alertDObj);
                 return;
@@ -831,6 +832,10 @@ export class Edit implements IAction {
     }
 
     private keyPressHandler(e: KeyboardEventArgs): void {
+        const isMacLike: boolean = /(Mac)/i.test(navigator.platform);
+        if (isMacLike && e.metaKey && e.action === 'ctrlEnter') {
+            e.action = 'insert';
+        }
         switch (e.action) {
         case 'insert':
             this.addRecord();

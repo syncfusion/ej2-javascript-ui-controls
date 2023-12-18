@@ -369,13 +369,13 @@ export class PageRenderer{
                             this.pdfViewerBase.pngData.push(stampAnnotation);
                             rubberStampAnnotation.IsDynamic = false;
                             rubberStampAnnotation.AnnotType = 'stamp';
-                            if (stampAnnotation._dictionary.hasOwnProperty("iconName")) { 
+                            if (stampAnnotation._dictionary.hasOwnProperty("iconName")) {
                                 rubberStampAnnotation.IconName = stampAnnotation.getValues("iconName")[0];
                             } else if (stampAnnotation.subject !== null) {
                                 rubberStampAnnotation.IconName = stampAnnotation.subject;
                             } else {
                                 rubberStampAnnotation.IconName = "";
-                            }  
+                            } 
                             if (stampAnnotation.flags === PdfAnnotationFlag.readOnly) {
                                 rubberStampAnnotation.IsCommentLock = true;
                             } else {
@@ -515,7 +515,7 @@ export class PageRenderer{
         let stream: any = annotation._dictionary.get("AP").get("N");
         if (!isNullOrUndefined(stream)) {
             let appearance: _PdfBaseStream = stream as _PdfBaseStream;
-            let data: string = _bytesToString(appearance.getBytes());
+            let data: string = appearance.getString();
             let content: number[] = _stringToBytes(data, true) as number[];
             let parser: _ContentParser = new _ContentParser(content);
             let result: _PdfRecord[] = parser._readContent();
@@ -527,8 +527,8 @@ export class PageRenderer{
     private stampAnnoattionRender(recordCollection: _PdfRecord[], dictionary: any) {
         if (!isNullOrUndefined(recordCollection)) {
             for (let i = 0; i < recordCollection.length; i++) {
-                let element: string[] = recordCollection[i]._operands;
-                switch (recordCollection[i]._operator) {
+                let element: string[] = recordCollection[parseInt(i.toString(), 10)]._operands;
+                switch (recordCollection[parseInt(i.toString(), 10)]._operator) {
                     case "q": {
                         let Json = { restorecanvas: false };
                         this.htmldata.push(Json);
@@ -545,13 +545,13 @@ export class PageRenderer{
                     }
                     case "TJ":
                     case "Tj": {
-                        this.textString = recordCollection[i]._operands[0];
+                        this.textString = recordCollection[parseInt(i.toString(), 10)]._operands[0];
                         let Json = { type: "string", text: this.textString, currentFontname: this.currentFont, baseFontName: this.baseFont, fontSize: this.fontSize };
                         this.htmldata.push(Json);
                         break;
                     }
                     case "'": {
-                        this.textString = recordCollection[i]._operands[0];
+                        this.textString = recordCollection[parseInt(i.toString(), 10)]._operands[0];
                         let Json = { type: "string", text: this.textString, currentFontname: this.currentFont, baseFontName: this.baseFont, fontSize: this.fontSize };
                         this.htmldata.push(Json);
                         break;
@@ -559,8 +559,8 @@ export class PageRenderer{
                     case "Tf": {
                         let j: number = 0;
                         for (j = 0; j < element.length; j++) {
-                            if (element[j].includes("/")) {
-                                this.currentFont = element[j].replace("/", "");
+                            if (element[parseInt(j.toString(), 10)].includes("/")) {
+                                this.currentFont = element[parseInt(j.toString(), 10)].replace("/", "");
                                 break;
                             }
                         }
@@ -569,7 +569,7 @@ export class PageRenderer{
                             let stdic: any = dictionary.dictionary.get("Resources");
                             if (!isNullOrUndefined(stdic)) {
                                 let fontObject: any = stdic.get("Font");
-                                if (!isNullOrUndefined(fontObject) && recordCollection[i]._operator == "Tf") {
+                                if (!isNullOrUndefined(fontObject) && recordCollection[parseInt(i.toString(), 10)]._operator == "Tf") {
                                     let name: string = element[0].replace("/", "");
                                     let refernceholder: any = fontObject.get(name);
                                     if (!isNullOrUndefined(refernceholder) && !isNullOrUndefined(refernceholder.dictionary)) {
@@ -588,7 +588,7 @@ export class PageRenderer{
                             let stdic: any = dictionary.dictionary.get("Resources");
                             if (!isNullOrUndefined(stdic)) {
                                 let xObject: any = stdic.get("XObject");
-                                if (!isNullOrUndefined(xObject) && recordCollection[i]._operator == "Do") {
+                                if (!isNullOrUndefined(xObject) && recordCollection[parseInt(i.toString(), 10)]._operator == "Do") {
                                     let name: string = element[0].replace("/", "");
                                     if (xObject.has(name)) {
                                         let refernceholder: _PdfBaseStream = xObject.get(name);
@@ -606,7 +606,7 @@ export class PageRenderer{
                                             }
                                             else if (sub.dictionary.get("Subtype").name === "Form") {
                                                 let appearance: _PdfBaseStream = sub as _PdfBaseStream;
-                                                let data: string = _bytesToString(appearance.getBytes());
+                                                let data: string = appearance.getString();
                                                 let content: number[] = _stringToBytes(data, true) as number[];
                                                 let parser: _ContentParser = new _ContentParser(content);
                                                 let result: _PdfRecord[] = parser._readContent();
@@ -830,7 +830,7 @@ export class StampAnnotationBase{
     public IsMaskedImage: boolean;
     public AnnotType: string;
     public Icon: PdfRubberStampAnnotationIcon;
-    public IconName: string;
+    public IconName: string
     public State: string;
     public StateModel: any;
     public Comments: PopupAnnotationBase[];

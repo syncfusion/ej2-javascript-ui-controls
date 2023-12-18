@@ -4,8 +4,8 @@
 import { remove, createElement } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
 import {
-    ChartSeriesType, ChartRangePadding, ValueType,
-    ChartShape, LabelPlacement
+    ChartSeriesType,
+    ChartShape
 } from '../../../src/chart/utils/enum';
 import { SplineSeries } from '../../../src/chart/series/spline-series';
 import { SplineAreaSeries } from '../../../src/chart/series/spline-area-series';

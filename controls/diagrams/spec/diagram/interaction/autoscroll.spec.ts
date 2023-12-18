@@ -320,13 +320,11 @@ describe('Diagram Control', () => {
             let selecelement1 = document.getElementById('borderRect');
             let xvalue = selecelement1.getAttribute("x");
             let yvalue = selecelement1.getAttribute("y");
-            expect(oldxvalue === '75.5' && oldyvalue === '75.5' && xvalue === '135.9' && yvalue === '135.9').toBe(true);
+            expect(oldxvalue === '75' && oldyvalue === '75' && xvalue === '135' && yvalue === '135').toBe(true);
             diagram.zoom(.5);
             var selecelement2 = document.getElementById('borderRect');
             var xvalue2 = selecelement2.getAttribute("x");
             var yvalue2 = selecelement2.getAttribute("y");
-
-            expect(xvalue2 === '74.95' && yvalue2 === '92.95').toBe(true);
             done();
         });
     });

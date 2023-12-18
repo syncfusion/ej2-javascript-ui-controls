@@ -1,6 +1,6 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase } from '../index';
-import {_PdfBaseStream, _PdfDictionary, _PdfName, _PdfReference, _PdfStream } from '@syncfusion/ej2-pdf';
+import {_PdfBaseStream, _PdfDictionary, _PdfName, _PdfReference, _PdfStream, _stringToBytes } from '@syncfusion/ej2-pdf';
 
 /**
  * ImageStructureBase
@@ -47,7 +47,7 @@ export class ImageStructureBase {
                 if (imageFilter.length > 1) {
                     this.isDualFilter = true;
                 }
-                switch (imageFilter[i]) {
+                switch (imageFilter[parseInt(i.toString(), 10)]) {
                     case "DCTDecode": {
                         if (!this.m_imageDictionary.has("SMask") && !this.m_imageDictionary.has("Mask")) {
                             let colorSpace: any = this.setColorSpace();
@@ -125,7 +125,7 @@ export class ImageStructureBase {
     }
 
     private imageStream(): any {
-        let content: Uint8Array = this.m_imageStream.getBytes();
+        let content: Uint8Array = _stringToBytes(this.m_imageStream.getString()) as Uint8Array;
         return content;
 
     }

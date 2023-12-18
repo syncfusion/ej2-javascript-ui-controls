@@ -267,7 +267,7 @@ export class AgendaBase extends ViewBase {
     private createResourceTableRow(tContent: TdData[][], tBody: Element): void {
         const tr: Element = createElement('tr');
         let ntr: Element;
-        const td: Element = createElement('td', { attrs: { 'aria-selected': 'false' } });
+        const td: Element = createElement('td');
         let tempData: AgendaSlotData;
         let rowSpan: number = 0;
         let level: string;

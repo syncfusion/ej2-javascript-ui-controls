@@ -10,14 +10,14 @@ import { Index } from '../../common/model/base';
 import { TextAttributes } from '@syncfusion/ej2-svg-base';
 import { PathAttributes, RectAttributes, CircleAttributes, SVGCanvasAttributes, BaseAttibutes } from '@syncfusion/ej2-svg-base';
 import { FontModel, BorderModel, MarginModel } from '../model/base-model';
-import { VisibleRangeModel, VisibleLabels } from '../../chart/axis/axis';
+import { VisibleLabels } from '../../chart/axis/axis';
 import { Series, Points } from '../../chart/series/chart-series';
 import { Axis } from '../../chart/axis/axis';
 import { Chart } from '../../chart/chart';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { RangeNavigator } from '../../range-navigator/range-navigator';
 import { AccumulationSeries, AccPoints } from '../../accumulation-chart/model/acc-base';
-import { IShapes } from '../model/interface';
+import { IShapes, VisibleRangeModel } from '../model/interface';
 import { IAxisLabelRenderEventArgs } from '../../chart/model/chart-interface';
 import { axisLabelRender, regSub } from '../model/constants';
 import { StockChart } from '../../stock-chart/stock-chart';
@@ -26,6 +26,9 @@ import { BulletChart } from '../../bullet-chart/bullet-chart';
 import { RangeColorSettingModel } from '../../chart/chart-model';
 import { AccumulationDataLabelSettingsModel, IAccTextRenderEventArgs } from '../../accumulation-chart';
 import {Alignment} from './enum';
+import { Chart3D } from '../../chart3d';
+import { Chart3DAxis } from '../../chart3d/axis/axis';
+import { Chart3DPoint, Chart3DSeries} from '../../chart3d/series/chart-series';
 
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
@@ -67,7 +70,7 @@ export function isBreakLabel(label: string): boolean {
 }
 
 /** @private */
-export function getVisiblePoints(series: Series): Points[] {
+export function getVisiblePoints(series: Series | Chart3DSeries): Points[] {
     const points: Points[] = extend([], series.points, null, true) as Points[];
     const tempPoints: Points[] = [];
     let tempPoint: Points;
@@ -85,7 +88,7 @@ export function getVisiblePoints(series: Series): Points[] {
 }
 
 /** @private */
-export function rotateTextSize(font: FontModel, text: string, angle: number, chart: Chart): Size {
+export function rotateTextSize(font: FontModel, text: string, angle: number, chart: Chart| Chart3D): Size {
     let transformValue: string = chart.element.style.transform;
     if (transformValue) {
         chart.element.style.transform = '';
@@ -140,12 +143,12 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
     if (!chart.delayRedraw && !chart.redraw) {
         remove(chart.svgObject);
     }
-    if (chart.enableCanvas) {
-        const textWidth = measureText(text, font, chart.themeStyle.axisLabelFont).width;
-        const textHeight = measureText(text, font, chart.themeStyle.axisLabelFont).height;
-        const angleInRadians = (angle * Math.PI) / 180;// Convert the rotation angle to radians
-        const rotatedTextWidth = Math.abs(Math.cos(angleInRadians) * textWidth) + Math.abs(Math.sin(angleInRadians) * textHeight);
-        const rotatedTextHeight = Math.abs(Math.sin(angleInRadians) * textWidth) + Math.abs(Math.cos(angleInRadians) * textHeight);
+    if ((chart as Chart).enableCanvas) {
+        const textWidth: number = measureText(text, font, chart.themeStyle.axisLabelFont).width;
+        const textHeight: number = measureText(text, font, chart.themeStyle.axisLabelFont).height;
+        const angleInRadians: number = (angle * Math.PI) / 180; // Convert the rotation angle to radians
+        const rotatedTextWidth: number = Math.abs(Math.cos(angleInRadians) * textWidth) + Math.abs(Math.sin(angleInRadians) * textHeight);
+        const rotatedTextHeight: number = Math.abs(Math.sin(angleInRadians) * textWidth) + Math.abs(Math.cos(angleInRadians) * textHeight);
         return new Size(rotatedTextWidth, rotatedTextHeight);
     }
     return new Size((box.right - box.left), (box.bottom - box.top));
@@ -186,7 +189,7 @@ export function showTooltip(
                 'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
                 'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
         });
-        tooltip.innerText = text; 
+        tooltip.innerText = text;
         element.appendChild(tooltip);
         const left: number = parseInt(tooltip.style.left.replace('px', ''), 10);
         if (left < 0) {
@@ -720,7 +723,7 @@ export function getTransform(xAxis: Axis, yAxis: Axis, invertedAxis: boolean): R
     return new Rect(x, y, width, height);
 }
 /** @private */
-export function getMinPointsDelta(axis: Axis, seriesCollection: Series[]): number {
+export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Series[]): number {
     let minDelta: number = Number.MAX_VALUE;
     let xValues: Object[];
     let minVal: number;
@@ -949,11 +952,11 @@ export function appendClipElement(
  * @private
  */
 export function triggerLabelRender(
-    chart: Chart | RangeNavigator, tempInterval: number, text: string, labelStyle: FontModel,
-    axis: Axis
+    chart: Chart | RangeNavigator| Chart3D, tempInterval: number, text: string, labelStyle: FontModel,
+    axis: Axis | Chart3DAxis
 ): void {
     const argsData: IAxisLabelRenderEventArgs = {
-        cancel: false, name: axisLabelRender, axis: axis,
+        cancel: false, name: axisLabelRender, axis: axis as Axis,
         text: text, value: tempInterval, labelStyle: labelStyle
     };
     chart.trigger(axisLabelRender, argsData);
@@ -971,7 +974,7 @@ export function triggerLabelRender(
  * @returns {boolean} It returns true if the axis range is set otherwise false.
  * @private
  */
-export function setRange(axis: Axis): boolean {
+export function setRange(axis: Axis| Chart3DAxis): boolean {
     return (axis.minimum != null && axis.maximum != null);
 }
 /**
@@ -988,7 +991,7 @@ export function isZoomSet(axis: Axis): boolean {
  * @returns {void} It returns desired interval count.
  * @private
  */
-export function getActualDesiredIntervalsCount(availableSize: Size, axis: Axis): number {
+export function getActualDesiredIntervalsCount(availableSize: Size, axis: Axis | Chart3DAxis): number {
 
     const size: number = axis.orientation === 'Horizontal' ? availableSize.width : availableSize.height;
     if (isNullOrUndefined(axis.desiredIntervals)) {
@@ -1070,7 +1073,7 @@ export function calculateShapes(
         break;
     case 'Cross':
         dir = 'M' + ' ' + x + ' ' + (ly + (-height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (height / 2)) + ' ' +
-                'M' + ' ' + x + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (-height / 2))
+                'M' + ' ' + x + ' ' + (ly + (height / 2)) + ' ' + 'L' + ' ' + (lx + (width / 2)) + ' ' + (ly + (-height / 2));
         merge(options, { 'd': dir });
         break;
     case 'Multiply':
@@ -1888,7 +1891,7 @@ export function textElement(
 /**
  * Method to calculate the width and height of the chart.
  */
-export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator | StockChart): void {
+export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator | StockChart | Chart3D): void {
     // fix for Chart rendered with default width in IE issue
     let containerWidth: number = chart.element.clientWidth || chart.element.offsetWidth;
     let containerHeight: number = chart.element.clientHeight;
@@ -1941,7 +1944,7 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
  *
  * @param {Chart} chart chart instance
  */
-export function createSvg(chart: Chart | AccumulationChart | RangeNavigator): void {
+export function createSvg(chart: Chart | AccumulationChart | RangeNavigator | Chart3D): void {
     (chart as Chart).canvasRender = new CanvasRenderer(chart.element.id);
     chart.renderer = (chart as Chart).enableCanvas ? (chart as Chart).canvasRender : new SvgRenderer(chart.element.id);
     calculateSize(chart);
@@ -2113,7 +2116,7 @@ export function getUnicodeText(text: string, regexp: RegExp): string {
  * Method to reset the blazor templates.
  */
 export function blazorTemplatesReset(control: Chart | AccumulationChart): void {
-    for (let i: number = 0; i < control.annotations.length; i++) {
+    for (let i: number = 0; i < (control as Chart | AccumulationChart).annotations.length; i++) {
         resetBlazorTemplate((control.element.id + '_Annotation_' + i).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate');
     }
     //This reset the tooltip templates
@@ -2291,6 +2294,17 @@ export class AccPointData {
     }
 }
 
+/** @private */
+export class Point3D {
+
+    public point: Chart3DPoint;
+    public series: Chart3DSeries;
+    /** @private */
+    constructor(point: Chart3DPoint, series: Chart3DSeries) {
+        this.point = point;
+        this.series = series;
+    }
+}
 /** @private */
 export class ControlPoints {
     public controlPoint1: ChartLocation;

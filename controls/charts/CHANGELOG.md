@@ -2,6 +2,43 @@
 
 ## [Unreleased]
 
+## 24.1.41 (2023-12-18)
+
+### Chart
+
+#### Features
+
+- `#I489636`, `#F185569` - Provided support to align the axis title to the near, far, and center of the chart area.
+- `#I482069`, `#I510188`, `#I511613` - Provided support to position the tooltip at a fixed location within the chart.
+
+#### Bug Fixes
+
+- `#F185567` - The data label now renders properly for the waterfall chart.
+- `#I185614` - The 100% stacking bar is now rendered properly even when the data value is 0.
+
+### BulletChart
+
+#### Features
+
+- `#I495253` - Provided support to apply different colors to value and target bars in the bullet chart.
+
+### 3DChart
+
+A 3D chart is a graphical representation of data in three dimensions, showcasing relationships and trends among variables. Unlike traditional 2D charts, 3D charts add depth to the visualization, allowing for a more immersive and comprehensive understanding of data patterns.
+
+- **Series** - The 3D chart can plot over six chart types, including column, bar, stacking column, stacking bar, 100% stacked column, and 100% stacked bar.
+- **Data Binding** - Bind the 3D chart component with an array of JSON objects or a DataManager. In addition to chart series, data labels, and tooltips can also be bound to your data.
+- **Data Labels** - Support data labels to annotate points with labels to improve the readability of data.
+- **Axis Types** - Able to plot different data types such as numbers, datetime, logarithmic, and string.
+- **Axis Features** - Supports multiple axes, inverted axes, multiple panes, opposed positions, and smart labels.
+- **Legend** - Supports a legend to provide additional information about a series with customization options.
+- **Animation** - The 3D chart series will be animated when rendering and refreshing the chart widget.
+- **User Interaction** - Supports interactive features such as tooltips and data point selection.
+- **Export** - Supports printing the 3D chart directly from the browser and exporting the chart in both JPEG and PNG formats.
+- **RTL** - Provides a full-fledged right-to-left mode that aligns the axis, tooltip, legend, and data in the 3D chart component from right to left.
+- **Appearance** - Colors for the 3D charts are picked by the built-in theme, but each element of the 3D chart can be customized with simple configuration options.
+- **Accessibility** - Designed to be accessible to users with disabilities, with features such as WAI-ARIA standard compliance and keyboard navigation to ensure that the 3D chart can be effectively used with assistive technologies such as screen readers.
+
 ## 23.2.7 (2023-12-05)
 
 ### Chart

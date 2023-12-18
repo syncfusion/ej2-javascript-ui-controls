@@ -117,6 +117,7 @@ export class Layout {
     private endNoteHeight: number = 0;
     private isMultiColumnSplit = false;
     private skipUpdateContainerWidget = false;
+    private isIFfield: boolean = false;
     /**
      * @private
      */
@@ -308,6 +309,7 @@ export class Layout {
         this.isFieldCode = undefined;
         this.footnoteHeight = undefined;
         this.isMultiColumnDoc = undefined;
+        this.isIFfield = undefined;
     }
 
     public layoutItems(sections: BodyWidget[], isReLayout: boolean, isContinuousSection?: boolean): void {
@@ -414,13 +416,15 @@ export class Layout {
                 && !block.tableFormat.allowAutoFit) {
                 block.calculateGrid();
             }
-            this.viewer.updateClientAreaForBlock(block, true, undefined, true);
-            let bodyIndex: number = block.containerWidget.indexInOwner;
-            nextBlock = this.layoutBlock(block, index);
-            index = 0;
-            this.viewer.updateClientAreaForBlock(block, false);
-            prevBlock = block;
-            block = nextBlock;
+            if (!isNullOrUndefined(block)) {
+                this.viewer.updateClientAreaForBlock(block, true, undefined, true);
+                let bodyIndex: number = block.containerWidget.indexInOwner;
+                nextBlock = this.layoutBlock(block, index);
+                index = 0;
+                this.viewer.updateClientAreaForBlock(block, false);
+                prevBlock = block;
+                block = nextBlock;
+            }
         } while (block);
         block = section.firstChild as BlockWidget;
         if (this.viewer instanceof PageLayoutViewer && section.sectionFormat.numberOfColumns > 1 && !isNullOrUndefined(nextSection) && nextSection.sectionFormat.breakCode === 'NoBreak' && (section.sectionFormat.breakCode === 'NoBreak' || (section.sectionIndex === section.page.bodyWidgets[0].sectionIndex))) {
@@ -1144,6 +1148,10 @@ export class Layout {
             if (nextBlockToLayout) {
                 nextBlock = nextBlockToLayout;
             }
+            // this.updateLinearIndex(block);
+            // if (block != nextBlock) {
+            //     this.updateLinearIndex(nextBlock);
+            // }
         } else {
             nextBlock = this.layoutTable(block as TableWidget, index);
             this.checkAndRelayoutPreviousOverlappingBlock(block);
@@ -1151,6 +1159,15 @@ export class Layout {
         }
         return nextBlock.nextRenderedWidget as BlockWidget;
     }
+    // /**
+    //  * @private
+    //  */
+    // private updateLinearIndex(block: BlockWidget, skipParaMark?: boolean): void {
+    //     if (!isNullOrUndefined(block) && block instanceof ParagraphWidget) {
+    //         let splittedWidgets = block.getSplitWidgets();
+    //         (splittedWidgets[0] as ParagraphWidget).length = block.getTotalLength();
+    //     }
+    // }
     private updateTableYPositionBasedonTextWrap(table: TableWidget): void {
         if (!isNullOrUndefined(table.bodyWidget) && !(table.containerWidget instanceof TextFrame)) {
             const tableY: number = table.y;
@@ -1608,6 +1625,7 @@ export class Layout {
         }
         this.updateWidgetToPage(this.viewer, paragraph);
         paragraph.isLayouted = true;
+        // this.updateLinearIndex(paragraph);
         paragraph.isFieldCodeBlock = false;
         return paragraph;
     }
@@ -3135,8 +3153,11 @@ export class Layout {
             nextLine.paragraph.childWidgets.splice(nextLine.indexInOwner, 1);
             line.paragraph.childWidgets.push(nextLine);
             nextLine.paragraph = line.paragraph;
+            // this.updateLinearIndex(nextLine.paragraph);
             if (splittedParagraph.childWidgets.length === 0) {
                 splittedParagraph.destroy();
+            } else {
+            //     this.updateLinearIndex(splittedParagraph);
             }
         }
     }
@@ -3187,6 +3208,10 @@ export class Layout {
                 if (this.documentHelper.fieldStacks.indexOf(element) === -1) {
                     this.documentHelper.fieldStacks.push(element);
                 }
+                if (this.isRelayout) {
+                    let fieldCode: string = HelperMethods.trimEnd(this.documentHelper.selection.getFieldCode(element));
+                    this.isIFfield = HelperMethods.startsWith(fieldCode, 'IF');
+                }
                 this.isFieldCode = true;
                 element.hasFieldEnd = true;
             }
@@ -3201,6 +3226,7 @@ export class Layout {
                 if (element === field.fieldEnd) {
                     this.documentHelper.fieldStacks.pop();
                     this.isFieldCode = false;
+                    this.isIFfield = false;
                 }
             }
         }
@@ -3813,7 +3839,7 @@ export class Layout {
             if (index > 0) {
                 textWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.slice(0, index), characterFormat, element.scriptType);
             }
-            if (this.viewer.clientActiveArea.width < textWidth) {
+            if (this.viewer.clientActiveArea.width < textWidth && !this.documentHelper.textHelper.isUnicodeText(text, element.scriptType)) {
                 //Check and split the previous text elements to next line.
                 isSplitByWord = this.checkPreviousElement(lineWidget, lineWidget.children.indexOf(element));
                 if (isSplitByWord) {
@@ -4060,10 +4086,18 @@ export class Layout {
                 maxElementBottomMargin = elementBox.margin.bottom;
                 maxElementTopMargin = elementBox.margin.top;
             }
-            if (i !== 0 && elementBox instanceof ShapeElementBox && elementBox.textWrappingStyle === "Inline") {
-                elementBox.x += children[0].margin.left;
-                for (let i: number = 0; i < elementBox.textFrame.childWidgets.length; i++) {
-                    (elementBox.textFrame.childWidgets[i] as Widget).x += children[0].margin.left;
+            if (elementBox instanceof ShapeElementBox && elementBox.textWrappingStyle === "Inline") {
+                if (i !== 0) {
+                    elementBox.x += children[0].margin.left;
+                    for (let i: number = 0; i < elementBox.textFrame.childWidgets.length; i++) {
+                        (elementBox.textFrame.childWidgets[i] as Widget).x += children[0].margin.left;
+                    }
+                }
+                if (elementBox.margin.top > 0) {
+                    elementBox.y += elementBox.margin.top;
+                    for (let j: number = 0; j < elementBox.textFrame.childWidgets.length; j++) {
+                        (elementBox.textFrame.childWidgets[j] as Widget).y += elementBox.margin.top;
+                    }
                 }
             }
         }
@@ -4106,7 +4140,8 @@ export class Layout {
 
     private splitParagraphForMultiColumn(line: LineWidget, index: number): void {
         this.splitParagraph(line.paragraph, index, undefined);
-        if (isNullOrUndefined(line.paragraph.previousRenderedWidget) && index == 0) {
+        if ((isNullOrUndefined(line.paragraph.previousRenderedWidget) && index == 0) ||
+            (!isNullOrUndefined(line.paragraph.previousRenderedWidget) && (line.paragraph.previousRenderedWidget as ParagraphWidget).bodyWidget.sectionIndex !== line.paragraph.bodyWidget.sectionIndex)) {
             this.moveBlocksToNextPage(line.paragraph as BlockWidget);
         } else {
             this.moveBlocksToNextPage(line.paragraph.previousRenderedWidget as BlockWidget);
@@ -4339,6 +4374,8 @@ export class Layout {
                     nextParagraph = new ParagraphWidget();
                 }
                 nextParagraph = this.moveChildsToParagraph(paragraphWidget, index, nextParagraph);
+                // this.updateLinearIndex(paragraphWidget);
+                // this.updateLinearIndex(nextParagraph);
                 nextParagraph.containerWidget = nextBody;
                 const footWidget: BodyWidget[] = this.getFootNoteWidgetsOf(nextParagraph);
                 this.moveFootNotesToPage(footWidget, paragraphWidget.bodyWidget, nextBody);
@@ -4627,6 +4664,8 @@ export class Layout {
         if (paragarph.childWidgets.length === 0 || isMoveCurrentBlock) {
             paragarph.containerWidget.childWidgets.splice(paragarph.indexInOwner, 1);
         }
+        // this.updateLinearIndex(paragarph);
+        // this.updateLinearIndex(nextParagraph);
         return nextParagraph;
     }
 
@@ -4860,7 +4899,7 @@ export class Layout {
                     }
                     isSplitByWord = true;
                     break;
-                } else if (text === '\t') {
+                } else if (text === '\t' || this.documentHelper.textHelper.isUnicodeText(text, textElement.scriptType)) {
                     return false;
                 } else if (text.indexOf(' ') >= 0) {
                     isSplitByWord = true;
@@ -6407,8 +6446,9 @@ export class Layout {
             if(line.children[i] instanceof FootnoteElementBox) {
                 footNoteCollection.push((line.children[i] as FootnoteElementBox));
             }
-        } 
+        }
     }
+
     public updateWidgetsToTable(tableWidgets: TableWidget[], rowWidgets: TableRowWidget[], row: TableRowWidget, rearrangeRow: boolean, lineIndexInCell?: number, cellIndex?: number, isMultiColumnSplit?: boolean): void {
         let startRowIndex: number = row.bodyWidget.page.index;
         let rowHeight: number = this.getRowHeight(row, [row]);
@@ -6523,21 +6563,28 @@ export class Layout {
                     }
                 } else {
                     let isInsertSplittedWidgets: boolean = false;
+                    let headerHeight: number = 0;
+                    if (!isNullOrUndefined(tableRowWidget.ownerTable.headerHeight)) {
+                        headerHeight = tableRowWidget.ownerTable.headerHeight;
+                    }
                     // Splitting handled for the merged cell with allowRowBreakAcross pages. 
                     if (this.isVerticalMergedCellContinue(row) && (isAllowBreakAcrossPages ||
                         (isInsertSplittedWidgets = (tableRowWidget.y === viewer.clientArea.y
-                            || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)))) {
+                            || tableRowWidget.y === this.viewer.clientArea.y + headerHeight)))) {
                         if (isInsertSplittedWidgets) {
                             this.insertSplittedCellWidgets(viewer, tableWidgets, splittedWidget, tableRowWidget.indexInOwner - 1);
                         } else {
                             splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow, footnoteElements, undefined, undefined, undefined, true);
                             if (isNullOrUndefined(splittedWidget)) {
                                 isInsertSplittedWidgets = (tableRowWidget.y === viewer.clientArea.y
-                                    || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight);
+                                    || tableRowWidget.y === this.viewer.clientArea.y + headerHeight);
                                 if (isInsertSplittedWidgets) {
                                     this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.indexInOwner - 1);
                                     count--;
                                     continue;
+                                }
+                                if (this.isRowSpanEnd(row, viewer)) {
+                                    splittedWidget = tableRowWidget;
                                 }
                             }
                         }
@@ -6959,6 +7006,7 @@ export class Layout {
         if (!isNullOrUndefined(splittedCell)) {
             //Adds the splitted contents of a vertical merged cell, in order preserve in next page.
             this.documentHelper.splittedCellWidgets.push(splittedCell);
+            splittedCell.isSplittedCell = true;
         }
     }
 
@@ -7339,6 +7387,7 @@ export class Layout {
             lineBottom += lineWidget.height;
             count++;
         }
+        // this.updateLinearIndex(splittedWidget);
         return splittedWidget;
     }
 
@@ -7823,7 +7872,7 @@ export class Layout {
                 break;
             }
             updateNextBlockList = true;
-            if (viewer.owner.isShiftingEnabled && this.documentHelper.fieldStacks.length === 0) {
+            if ((viewer.owner.isShiftingEnabled && this.documentHelper.fieldStacks.length === 0) || this.isIFfield) {
                 this.documentHelper.blockToShift = block;
                 break;
             } else if (isNullOrUndefined(this.viewer.owner.editorModule) || !this.viewer.owner.editorModule.isInsertingTOC) {
@@ -7927,6 +7976,7 @@ export class Layout {
             paragraphWidget.bodyWidget.headerFooterType.indexOf('Footer') !== -1) {
             this.shiftFooterChildLocation(paragraphWidget.bodyWidget, this.viewer);
         }
+        // this.updateLinearIndex(paragraphWidget);
     }
 
     private getParentRow(block: BlockWidget): TableRowWidget {
@@ -8162,6 +8212,9 @@ export class Layout {
 
     /* eslint-disable-next-line max-len */
     public layoutBodyWidgetCollection(blockIndex: number, bodyWidget: Widget, block: BlockWidget, shiftNextWidget: boolean, isSkipShifting?: boolean): void {
+        if (!isNullOrUndefined(block) && block.isFieldCodeBlock) {
+            return;
+        }
         if (!isNullOrUndefined(this.documentHelper.owner)
             && this.documentHelper.owner.isLayoutEnabled) {
             if (bodyWidget instanceof BlockContainer || bodyWidget instanceof TextFrame) {
@@ -8214,9 +8267,13 @@ export class Layout {
                 }
 
                 if (blockIndex > 0 || (curretBlock.bodyWidget.sectionFormat.breakCode === 'NoBreak' && curretBlock.bodyWidget.index !== 0 && curretBlock === bodyWidget.firstChild)) {
+                    curretBlock = curretBlock.combineWidget(this.viewer) as BlockWidget;
                     let prevWidget: Widget = curretBlock.getSplitWidgets()[0].previousRenderedWidget as Widget;
                     if (!isNullOrUndefined(prevWidget) && (prevWidget as TableWidget).wrapTextAround && !isNullOrUndefined(prevWidget.getSplitWidgets()[0].previousRenderedWidget) && prevWidget.y < (prevWidget.getSplitWidgets()[0].previousRenderedWidget as BlockWidget).y) {
                         prevWidget = prevWidget.getSplitWidgets()[0].previousRenderedWidget as Widget;
+                    }
+                    while (prevWidget instanceof BlockWidget && prevWidget.isFieldCodeBlock) {
+                        prevWidget = prevWidget.getSplitWidgets()[0].previousRenderedWidget;
                     }
                     if (!(isNullOrUndefined(prevWidget) || prevWidget instanceof ParagraphWidget) ||
                         (prevWidget instanceof ParagraphWidget) && !prevWidget.isEndsWithPageBreak && !prevWidget.isEndsWithColumnBreak) {
@@ -8241,7 +8298,7 @@ export class Layout {
                                 this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
                             }
                         } else {
-                            if (prevWidget instanceof ParagraphWidget && prevWidget.height <= 0) {
+                            if (prevWidget instanceof ParagraphWidget && prevWidget.height <= 0 && this.isMultiColumnDoc) {
                                 let prevPara: ParagraphWidget = prevWidget as ParagraphWidget;
                                 this.viewer.updateClientAreaForBlock(prevPara, true);
                                 this.layoutParagraph(prevPara, 0);

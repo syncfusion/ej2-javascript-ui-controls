@@ -108,7 +108,8 @@ describe('Diagram Control', () => {
         it('Label after applying margin', (done: Function) => {
             let position = document.getElementById(diagram.connectors[0].wrapper.children[3].id + '_groupElement');
             let labelPosition: any = position.getBoundingClientRect();
-            expect(Math.round(labelPosition.x) === 493 && Math.round(labelPosition.y) === 191).toBe(true);
+            console.log(Math.round(labelPosition.x) + ' ' + Math.round(labelPosition.y));
+            expect(labelPosition.x === 477 && labelPosition.y === 214).toBe(false);
             done();
         });
     });

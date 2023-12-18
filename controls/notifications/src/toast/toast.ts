@@ -873,7 +873,8 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
                 const clo: HTEle = isNOU(<HTEle>elem) ? tempVar : <HTEle>elem.cloneNode(true);
                 // eslint-disable-next-line
         prob === 'content' ? this.contentTemplate = clo : this.toastTemplate = clo;
-            } else {
+            }
+            else {
                 templateFn = templateCompiler(value);
             }
         } catch (e) {

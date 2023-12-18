@@ -1157,6 +1157,14 @@ export interface UmlClassAttributeModel extends MethodArgumentsModel{
      */
     isSeparator?: boolean;
 
+    /**
+     * Specify the style attributes such as strokeWidth, strokeColor, and fill for the separator.
+     *
+     * @default new ShapeStyle()
+     * @aspType object
+    */
+    separatorStyle?: ShapeStyleModel;
+
 }
 
 /**
@@ -1227,6 +1235,14 @@ export interface UmlInterfaceModel extends UmlClassModel{
      */
     isSeparator?: boolean;
 
+    /**
+     * Specify the style attributes such as strokeWidth, strokeColor, and fill for the separator.
+     *
+     * @default new ShapeStyle()
+     * @aspType object
+    */
+    separatorStyle?: ShapeStyleModel;
+
 }
 
 /**
@@ -1257,6 +1273,14 @@ export interface UmlEnumerationMemberModel {
      * @IgnoreSingular
      */
     isSeparator?: boolean;
+
+    /**
+      * Specify the style attributes such as strokeWidth, strokeColor, and fill for the separator.
+      *
+      * @default new ShapeStyle()
+      * @aspType object
+    */
+    separatorStyle?: ShapeStyleModel;
 
     /**
      * Sets the shape style of the node

@@ -3,7 +3,7 @@
  */
 import { createElement, remove, TapEventArgs, TouchEventArgs, MouseEventArgs } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
-import { ChartSeriesType, ChartRangePadding, ValueType, ChartShape, LabelPlacement, LineType } from '../../../src/chart/utils/enum';
+import { ChartSeriesType, ChartShape, LineType } from '../../../src/chart/utils/enum';
 import { Series, Points } from '../../../src/chart/series/chart-series';
 import { LineSeries } from '../../../src/chart/series/line-series';
 import { ColumnSeries } from '../../../src/chart/series/column-series';

@@ -24,8 +24,7 @@ import { ColumnChooser } from '../../../src/grid/actions/column-chooser';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { Filter } from '../../../src/grid/actions/filter';
-
-Grid.Inject(Aggregate, Page, Edit, Toolbar, Group, ColumnChooser, DetailRow, Filter);
+Grid.Inject(Aggregate, Page, Edit, Toolbar, Group, ColumnChooser, DetailRow);
 
 describe('Grid base module', () => {
     describe('Grid properties', () => {

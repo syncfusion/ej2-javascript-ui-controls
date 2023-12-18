@@ -30,7 +30,7 @@ export class PagerMessage implements IRender {
      * @hidden
      */
     public render(): void {
-        const div: Element = createElement('div', { className: 'e-parentmsgbar', attrs: { 'aria-label': this.pagerModule.getLocalizedLabel('Information') } });
+        const div: Element = createElement('div', { className: 'e-parentmsgbar' });
         this.pageNoMsgElem = createElement('span', { className: 'e-pagenomsg', styles: 'textalign:right' });
         this.pageCountMsgElem = createElement('span', { className: 'e-pagecountmsg', styles: 'textalign:right' });
         append([this.pageNoMsgElem, this.pageCountMsgElem], div);
@@ -40,7 +40,7 @@ export class PagerMessage implements IRender {
 
     /**
      * Refreshes the pager information.
-     *
+    *
      * @returns {void}
      */
     public refresh(): void {
@@ -53,7 +53,6 @@ export class PagerMessage implements IRender {
             [pagerObj.totalRecordsCount || 0, pagerObj.totalRecordsCount ? (pagerObj.pageSize * (pagerObj.currentPage - 1)) + 1 : 0,
                 pagerObj.pageSize * pagerObj.currentPage > pagerObj.totalRecordsCount ? pagerObj.totalRecordsCount :
                     pagerObj.pageSize * pagerObj.currentPage]);
-        this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
         this.pageNoMsgElem.parentElement.classList.remove('e-hide');
     }
 
@@ -96,7 +95,14 @@ export class PagerMessage implements IRender {
         //destroy
     }
 
-    private format(str: string, args: number[]): string {
+    /**
+     * To format the PagerMessage
+     *
+     * @function format
+     * @returns {string}
+     * @hidden
+     */
+    public format(str: string, args: number[]): string {
         let regx: RegExp;
         for (let i: number = 0; i < args.length; i++) {
             // eslint-disable-next-line security/detect-non-literal-regexp

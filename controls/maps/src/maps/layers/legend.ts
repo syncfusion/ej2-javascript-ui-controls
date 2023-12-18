@@ -1861,7 +1861,7 @@ export class Legend {
         const legendToggleBorderWidth: number = this.maps.legendSettings.toggleLegendSettings.border.width;
         const legendToggleBorderOpacity: number = isNullOrUndefined(this.maps.legendSettings.toggleLegendSettings.border.opacity) ?
             this.maps.legendSettings.toggleLegendSettings.opacity : this.maps.legendSettings.toggleLegendSettings.border.opacity;
-        if (targetEle.parentNode['id'].indexOf(this.maps.element.id + '_Legend_Index_') > -1) {
+        if (!isNullOrUndefined(targetEle.parentNode) && targetEle.parentNode['id'].indexOf(this.maps.element.id + '_Legend_Index_') > -1) {
             let mapElement: Element;
             const legendIndex: number = parseFloat(targetEle.parentElement.id.substr((this.maps.element.id + '_Legend_Index_').length));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base';
-import { getCellPosition, refreshImgCellObj, BeforeImageRefreshData, refreshChartCellObj, insertDesignChart } from '../common/index';
+import { getCellPosition, refreshImgCellObj, BeforeImageRefreshData, refreshChartCellObj, insertDesignChart, refreshOverlayElem } from '../common/index';
 import { getRowIdxFromClientY, getColIdxFromClientX, overlayEleSize, getStartEvent, getMoveEvent, selectionStatus } from '../common/index';
 import { getEndEvent, getClientX, getClientY, addDPRValue, spreadsheetDestroyed, getPageX, getPageY, isTouchMove } from '../common/index';
 import { getRangeIndexes, SheetModel, refreshChartSize, focusChartBorder, getRowsHeight, getCellIndexes } from '../../workbook/index';
@@ -43,6 +43,7 @@ export class Overlay {
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.parent.on(selectionStatus, this.isOverlaySelected, this);
+        this.parent.on(refreshOverlayElem, this.refreshOverlayElem, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
     }
 
@@ -355,6 +356,13 @@ export class Overlay {
         args.isOverlayClicked = this.isOverlayClicked;
     }
 
+    private refreshOverlayElem(): void {
+        const overlayElem: HTMLElement = document.getElementsByClassName('e-ss-overlay-active')[0] as HTMLElement;
+        if (overlayElem) { 
+            removeClass([overlayElem], 'e-ss-overlay-active');
+        }
+    }
+
     private overlayClickHandler(e: TouchEvent & MouseEvent): void {
         if (this.parent.getActiveSheet().isProtected) {
             return;
@@ -435,6 +443,7 @@ export class Overlay {
         EventHandler.remove(document, getEndEvent(), this.overlayMouseUpHandler);
         this.parent.off(overlayEleSize, this.setOriginalSize);
         this.parent.off(selectionStatus, this.isOverlaySelected);
+        this.parent.off(refreshOverlayElem, this.refreshOverlayElem);
         this.parent.off(spreadsheetDestroyed, this.destroy);
     }
 

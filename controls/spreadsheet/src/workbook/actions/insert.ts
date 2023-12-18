@@ -1,5 +1,5 @@
 import { RangeModel, Workbook, getCell, SheetModel, RowModel, CellModel, getSheetIndex, getSheetName, Cell } from '../base/index';
-import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, checkUniqueRange, ConditionalFormatModel, updateSheetFromDataSource } from '../../workbook/common/index';
+import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, ConditionalFormatModel, updateSheetFromDataSource } from '../../workbook/common/index';
 import { insert, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard, refreshInsertDelete } from '../../workbook/common/index';
 import { ModelType, CellStyleModel, updateRowColCount, beginAction, ActionEventArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { insertFormatRange } from '../../workbook/index';

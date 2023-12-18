@@ -1,7 +1,7 @@
 /**
  * HTML Toolbar status spec
  */
-import { detach } from '@syncfusion/ej2-base';
+import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IToolbarStatus } from '../../../src';
 import { RichTextEditor, dispatchEvent, ToolbarStatusEventArgs } from "../../../src/rich-text-editor/index";
 import { NodeSelection } from '../../../src/selection/selection';
@@ -502,5 +502,34 @@ describe(' HTML editor update toolbar ', () => {
             expect(rteObj.readonly).toBe(true);
             done();
         });
+    });
+    describe('854829 - Quick toolbar tooltip is hidden behind popup while opening it ', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done)=> {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold','FontColor', 'FullScreen']
+                },
+                value : "Rich Text Editor"
+            });
+            done();
+        });
+        it('Check the Tooltip when click toolbar items', (done: Function) => {
+            let event = new MouseEvent('mouseover', { bubbles: true, cancelable: true });
+            let toolbarEle = document.querySelector('[title="Font Color"]')
+            toolbarEle.dispatchEvent(event);
+            expect(!isNullOrUndefined(document.querySelector('.e-tooltip-wrap'))).toBe(true);
+            ((document.querySelectorAll('.e-toolbar-item')[1] as HTMLElement).querySelector('.e-icon-right') as HTMLElement).click();
+                setTimeout( function () {
+                    expect(document.querySelector('.data-tooltip-id') === null).toBe(true);
+                    toolbarEle = document.querySelector('[data-title]');
+                    event = new MouseEvent('mouseout', { bubbles: true, cancelable: true });
+                    toolbarEle.dispatchEvent(event);
+                    done();
+                },100)
+        });
+        afterAll(() => {
+            destroy(rteObj);
+       });
     });
 });

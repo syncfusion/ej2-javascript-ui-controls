@@ -115,6 +115,7 @@ export class TextSearch {
         }
         // eslint-disable-next-line max-len
         this.searchBtn = createElement('span', { id: this.pdfViewer.element.id + '_search_box-icon', className: 'e-input-group-icon e-input-search-group-icon e-pv-search-icon' });
+        this.searchBtn.setAttribute('tabindex', '0');
         searchInputContainer.appendChild(this.searchInput);
         searchInputContainer.appendChild(this.searchBtn);
         searchElementsContainer.appendChild(searchInputContainer);
@@ -155,9 +156,16 @@ export class TextSearch {
             matchCaseContainer.appendChild(matchCaseText);
         } else {
             // eslint-disable-next-line max-len
-            const checkBox: CheckBox = new CheckBox({ cssClass: 'e-pv-match-case', label: this.pdfViewer.localeObj.getConstant('Match case'), change: this.checkBoxOnChange.bind(this) });
+            const checkBox: CheckBox = new CheckBox({ cssClass: 'e-pv-match-case', label: this.pdfViewer.localeObj.getConstant('Match case'),htmlAttributes:{'tabindex': '0'}, change: this.checkBoxOnChange.bind(this) });
             checkBox.appendTo(matchCaseInput);
         }
+        matchCaseContainer.firstElementChild.addEventListener('keydown', (event: KeyboardEvent) => {
+            if (event.key === "Enter" || event.key === " ") {
+                (event.target as any).click();
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
         const waitingPopup: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_textSearchLoadingIndicator' });
         searchInputContainer.appendChild(waitingPopup);
         waitingPopup.style.position = 'absolute';
@@ -181,6 +189,13 @@ export class TextSearch {
         });
         this.searchInput.addEventListener('keydown', this.searchKeypressHandler.bind(this));
         this.searchBtn.addEventListener('click', this.searchClickHandler.bind(this));
+        this.searchBtn.addEventListener('keydown', (event: KeyboardEvent) => {
+            if (event.key === "Enter" || event.key === " ") {
+                this.searchClickHandler(event);
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
         this.nextSearchBtn.addEventListener('click', this.nextButtonOnClick.bind(this));
         this.prevSearchBtn.addEventListener('click', this.prevButtonOnClick.bind(this));
     }
@@ -357,6 +372,7 @@ export class TextSearch {
             this.initiateTextSearch(this.searchInput);
         }
     }
+
     private prevSearch(): void {
         searchTextCollection.push(this.searchPageIndex);
         this.isPrevSearch = true;
@@ -586,7 +602,7 @@ export class TextSearch {
                         }
                         this.searchedPages = [this.startIndex];
                     }
-                    else if(searchTextCollection[0] == this.searchPageIndex) {
+                    else if (searchTextCollection[0] == this.searchPageIndex) {
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }

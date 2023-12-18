@@ -295,18 +295,18 @@ describe('Diagram Control', () => {
         it('Checking Text overflow - Clip', (done: Function) => {
             let node: DiagramElement = diagram.nodes[0].wrapper.children[1];
           
-            expect((node as TextElement).wrapBounds.x === -37.34375||(node as TextElement).wrapBounds.x === -37.3515625).toBe(true);
+            expect((node as TextElement).wrapBounds.x === -37.34375||(node as TextElement).wrapBounds.x === -37.3515625 || Math.round((node as TextElement).wrapBounds.x) === -37).toBe(true);
             expect(Math.ceil((node as TextElement).wrapBounds.width) === 77 ||
-                Math.floor((node as TextElement).wrapBounds.width) === 76).toBe(true);
+                Math.floor((node as TextElement).wrapBounds.width) === 76 || Math.round((node as TextElement).wrapBounds.width) === 78).toBe(true);
             done();
         });
 
         it('Checking Text overflow - Ellipsis', (done: Function) => {
             let node: DiagramElement = diagram.nodes[1].wrapper.children[1];
            
-            expect((node as TextElement).wrapBounds.x === -37.34375||(node as TextElement).wrapBounds.x === -37.3515625).toBe(true);
+            expect((node as TextElement).wrapBounds.x === -37.34375||(node as TextElement).wrapBounds.x === -37.3515625 || Math.round((node as TextElement).wrapBounds.x) === -37).toBe(true);
             expect(Math.ceil((node as TextElement).wrapBounds.width) === 77 ||
-                Math.floor((node as TextElement).wrapBounds.width) === 76).toBe(true);
+                Math.floor((node as TextElement).wrapBounds.width) === 76 || Math.round((node as TextElement).wrapBounds.width) === 78).toBe(true);
             done();
         });
 

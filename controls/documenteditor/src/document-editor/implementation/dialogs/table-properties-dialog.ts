@@ -1297,6 +1297,7 @@ export class TablePropertiesDialog {
         textBox.step = 1;
         textBox.decimals = 2;
         textBox.value = value;
+        textBox.htmlAttributes={'aria-label':'cellWidth'};
     }
     /**
      * @private

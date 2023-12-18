@@ -48,7 +48,7 @@ export class KeyboardNavigation {
         const isNameBox: boolean = target.id === `${this.parent.element.id}_name_box`;
         if (this.parent.selectionSettings.mode === 'None' || dlgInst || this.parent.isEdit || (target.classList.contains('e-ss-ddb') &&
             e.keyCode !== 117 && e.keyCode !== 9) || (isNameBox && e.keyCode !== 117) || target.classList.contains('e-sheet-rename') ||
-            target.id === `${this.parent.element.id}_SearchBox` || (target.classList.contains('e-ddl') &&
+            target.id === `${this.parent.element.id}_SearchBox` || target.classList.contains('e-chk-hidden') || (target.classList.contains('e-ddl') &&
             target.classList.contains('e-input-focus'))) {
             if (dlgInst) {
                 if (e.keyCode === 13) {
@@ -455,7 +455,7 @@ export class KeyboardNavigation {
         }
         if (isNavigate && (!this.parent.scrollModule || this.parent.scrollModule.isKeyScroll) && !isSheetTabFocus &&
             !closest(document.activeElement, '.e-ribbon') && !target.classList.contains('e-insert-function')
-            && !target.classList.contains('e-formula-bar')) {
+            && (!target.classList.contains('e-formula-bar') || (target.classList.contains('e-formula-bar') && target.nodeName === 'TEXTAREA' && e.keyCode === 13))) {
             if (e.keyCode === 40 || e.keyCode === 38 || e.keyCode === 13) { /* down || up */
                 while (isHiddenRow(sheet, actIdxes[0])) {
                     if (e.keyCode === 40 || (!e.shiftKey && e.keyCode === 13)) {

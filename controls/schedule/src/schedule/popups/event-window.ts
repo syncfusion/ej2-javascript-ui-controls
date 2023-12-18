@@ -416,15 +416,11 @@ export class EventWindow {
         const titleLocationDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_TITLE_LOCATION_DIV_CLASS);
         parentDiv.appendChild(titleLocationDiv);
         titleLocationDiv.appendChild(this.renderTextBox(cls.SUBJECT_CLASS));
-        titleLocationDiv.querySelector('.' + cls.SUBJECT_CLASS).setAttribute('title', this.parent.editorTitles.subject);
         titleLocationDiv.appendChild(this.renderTextBox(cls.LOCATION_CLASS));
-        titleLocationDiv.querySelector('.' + cls.LOCATION_CLASS).setAttribute('title', this.parent.editorTitles.location);
         const startEndDateTimeDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_START_END_DIV_CLASS);
         parentDiv.appendChild(startEndDateTimeDiv);
         startEndDateTimeDiv.appendChild(this.renderDateTimePicker(cls.EVENT_WINDOW_START_CLASS, this.onTimeChange.bind(this)));
-        startEndDateTimeDiv.querySelector('.' + cls.EVENT_WINDOW_START_CLASS).setAttribute('title', this.parent.editorTitles.startTime);
         startEndDateTimeDiv.appendChild(this.renderDateTimePicker(cls.EVENT_WINDOW_END_CLASS));
-        startEndDateTimeDiv.querySelector('.' + cls.EVENT_WINDOW_END_CLASS).setAttribute('title', this.parent.editorTitles.endTime);
         const allDayTimezoneDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_ALLDAY_TZ_DIV_CLASS);
         parentDiv.appendChild(allDayTimezoneDiv);
         allDayTimezoneDiv.appendChild(this.renderCheckBox(cls.EVENT_WINDOW_ALL_DAY_CLASS));
@@ -460,7 +456,6 @@ export class EventWindow {
         }
         const description: HTMLElement = this.createDivElement(cls.DESCRIPTION_CLASS + '-row');
         description.appendChild(this.renderTextBox(cls.DESCRIPTION_CLASS));
-        description.querySelector('.' + cls.DESCRIPTION_CLASS).setAttribute('title', this.parent.editorTitles.description);
         parentDiv.appendChild(description);
         const submit: HTMLElement = createElement('button', { attrs: { type: 'hidden', title: 'submit', style: 'display:none' } });
         parentDiv.appendChild(submit);
@@ -482,9 +477,7 @@ export class EventWindow {
     private createInputElement(className: string, fieldName: string, type?: string): HTMLElement {
         return createElement(type || 'input', {
             className: className, attrs: {
-                type: 'text', name: fieldName, value: '', id: fieldName,
-                title: ((this.l10n.getConstant(fieldName.charAt(0).toLowerCase() + fieldName.slice(1))) === '') ?
-                    fieldName : this.l10n.getConstant(fieldName.charAt(0).toLowerCase() + fieldName.slice(1))
+                type: 'text', name: fieldName, value: '', id: fieldName
             }
         });
     }
@@ -508,6 +501,7 @@ export class EventWindow {
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             floatLabelType: 'Always',
+            strictMode: true,
             timeFormat: this.parent.activeViewOptions.timeFormat,
             format: (isNullOrUndefined(this.parent.dateFormat) ?
                 this.getFormat('dateFormats') : this.parent.dateFormat) + ' ' + this.parent.activeViewOptions.timeFormat,
@@ -579,7 +573,7 @@ export class EventWindow {
                     text: resourceData.textField,
                     value: resourceData.idField
                 },
-                htmlAttributes: { 'title': labelValue, 'name': fieldName },
+                htmlAttributes: {'name': fieldName },
                 floatLabelType: 'Always',
                 placeholder: labelValue,
                 popupHeight: '230px',
@@ -597,7 +591,7 @@ export class EventWindow {
                     text: resourceData.textField,
                     value: resourceData.idField
                 },
-                htmlAttributes: { 'title': labelValue, 'name': fieldName },
+                htmlAttributes: { 'name': fieldName },
                 floatLabelType: 'Always',
                 placeholder: labelValue,
                 popupHeight: '230px',

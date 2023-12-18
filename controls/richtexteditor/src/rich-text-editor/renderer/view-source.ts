@@ -59,7 +59,7 @@ export class ViewSource {
     }
 
     private getSourceCode(): HTMLElement | HTMLTextAreaElement | void {
-        return this.parent.createElement('textarea', { className: CLS_RTE_SOURCE_CODE_TXTAREA + ' ' + this.parent.cssClass });
+        return this.parent.createElement('textarea', { className: CLS_RTE_SOURCE_CODE_TXTAREA + this.parent.getCssClass(true) });
     }
     private wireEvent(element: HTMLElement): void {
         this.keyboardModule = new KeyboardEvents(element, {
@@ -159,8 +159,10 @@ export class ViewSource {
             rteContent.style.display = 'block';
             (this.getPanel() as HTMLTextAreaElement).style.display = 'block';
         } else {
+            const height: number = this.parent.inputElement.offsetHeight;
             this.contentModule.getPanel().appendChild(this.previewElement);
             (this.getPanel() as HTMLTextAreaElement).value = this.getTextAreaValue();
+            this.previewElement.style.height = height + 'px';
             (this.contentModule.getEditPanel() as HTMLElement).style.display = 'none';
             this.previewElement.style.display = 'block';
         }

@@ -2,131 +2,32 @@
 
 ## [Unreleased]
 
-## 23.2.7 (2023-12-05)
+## 24.1.41 (2023-12-18)
 
 ### Grid
 
 #### Bug fixes
 
-- `#I517291` - Resolved an issue with calling the `hideColumns` method multiple times.
-- `#I517408` - The issue with the alignment of the text is not being at the centre when sorting is enabled in the grid has been resolved.
-- `#FB48215` - The problem with drag and drop rows not updating properly in the UI has been fixed.
-- `#I510993` - Resolved the script error when rendering the `captionTemplate` and aggregate `groupCaptionTemplate` simultaneously.
-- `#I518869` - The problem with header checkbox selection in remote data has been resolved.
+- Enhanced keyboard navigation support for `Mac` devices.
+- `#I513158` - Selection issue with selection mode as `Both` and checkbox column has been resolved.
+- `#F185441` - Dropping the record below the last row adds the data in first position issue has been resolved.
+- `#FB49107` - `PersistSelection` does not working with `custom-binding` issue has been resolved.
+- `#I516297` - Resolved the issue where the checkbox state in the column chooser was not being properly announced with the JAWS screen reader.
 
-## 23.2.6 (2023-11-28)
+#### Features
 
-### Grid
+- Introduced adaptive support for the pager dropdown, dynamically rendering on mobile and tablet devices alongside the pager component. The `pager message` element now adjusts its rendering based on the screen size, ensuring a more responsive and user-friendly experience. Explore the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/grid/adaptive-layout.html).
+- Provided support for the `column chooser` and `column menu` features in the `adaptive` Grid. Explore the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/grid/adaptive-layout.html).
+- Implemented support to render custom content using the `emptyRecordTemplate` property of the Grid. This feature allows the utilization of a string or an HTML element ID value as a template when there's no data to display. Explore the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/grid/empty-record-template.html).
+- `#FB43913` - Provided keyboard navigation support for `Excel Filter` menu items. Navigation through the items can be done using `tab`/`shift-tab` keys or `up`/`down` arrow keys. Sub-menu items can be opened and closed using `right` and `left` arrow keys. Explore the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/grid/filter-menu.html).
+- `#I390332` - Implemented the `OnDemand` concept for `Checkbox` and `Excel` type filters. This functionality can be enabled by setting the `enableInfiniteScrolling` property as true within the `filterSettings` property of the Grid. Explore the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/grid/filter-menu.html).
+- The `Lazy Load Grouping` feature now supports compatibility with the Grid's `custom-binding` feature.
+- The Grid export functionality has been enhanced to export grid data as a `blob` instead of initiating direct browser file downloads during client-side grid exports.
+- Enhanced the visual indication effect on rows during the drag-and-drop interaction within the grouped drag-and-drop feature for improved visualization.
 
-#### Bug fixes
+#### Breaking Changes
 
-- `#I517762` - Resolved the issue with paste functionality of the Grid on Mac devices.
-- `#I520019` - The filter dialog `popup` is closed when no records are found during the search and press Enter key has been fixed.
-- `#I514004` - Fixed an issue with the space between the arrow in the tooltip and the content.
-- `#I511050` - Error thrown while sorting columns after filtering has been resolved.
-- `#I464878` - The issue where the focus style for checkbox items was not applying to the spreadsheet component has been resolved.
-- `#F185039` - Resolved a problem where the grid would not display all records when the filter was cleared.
-- `#I513685` - Aria-label for `SelectAllCheckbox` is now descriptive for accessibility.
-
-## 23.2.4 (2023-11-20)
-
-### Grid
-
-#### Bug fixes
-
-- `#I508354` - Cell selection is now working fine with row drag and drop.
-
-## 23.1.44 (2023-11-07)
-
-### Grid
-
-#### Bug fixes
-
-- `#I511490` - The problem of adding a row in batch mode not working when the first field is disabled with `allowEditing` set to false has been resolved.
-- `#FB47714` - Improved the drag behaviour of the grouping disabled column
-- `#I512845` - Fixed an issue in batch editing where, after editing a cell, holding and copying the items and releasing the hold on a nearby cell would close the editing.
-- `#I511052` - Error thrown while sorting from largest to smallest or from smallest to largest has been fixed.
-- `#I507810` - The issue of removing an add form upon clicking the cancel button in a command column has been resolved.
-- `#FB47309`, `#FB47308` - Actual page navigation is prevented while clicking the grid pager numeric items and the expand-collapse icon.
-
-## 23.1.43 (2023-10-31)
-
-### Grid
-
-#### Bug fixes
-
-- `#I507979` - The issue where the clipboard was not cleared after using 'CTRL+A' + 'CTRL+C' + 'ESC' combination has been resolved.
-- `#I513196` - The script error that occurred when printing a grouped hierarchical grid has been resolved.
-- `#I511776` - The tooltip in the header template is now properly destroyed.
-- `#I508400` - The problem where the aria-label was repeated twice when a string template was rendered in a column template has been resolved.
-- `#I509734` - The issue where the `freeze` property was not working properly when the column field value was not defined has been fixed.
-- `#I510683` - The problem of white space occurring while using `AutoFit` on a frozen column has been fixed.
-- `#I508457` - When `virtualization` is enabled, the problem where editing a single field also changed the other field values with the previous edited value has been fixed.
-- `#I496847` - The problem of hidden columns showing empty columns while copy pasting the grid content has been resolved.
-- `#I508408` - The issue where freezing command columns were not working properly has been fixed.
-- `#I513536` - Grouped column headers are now displaying properly in all themes.
-- `#FB46958` - The problem with filtering the foreign key field having the same name has been resolved.
-
-## 23.1.42 (2023-10-24)
-
-### Grid
-
-#### Bug fixes
-
-- `#I507214` - The problem of displaying an empty tooltip with batch-edited cells has been resolved.
-- `#I504365` - Fixed an issue where the request for aggregate was not sent when the `disablePageWiseAggregate` property was enabled in custom binding.
-- `#I507080` - The issue related to the styling of the Lazy Load Group with a `groupCaptionTemplate` has been resolved.
-- `#I501881` - Fixed an issue where the drop indicator for the column should be displayed when dragging a column into another column.
-- `#I511484` - The issue where the Grid did not render properly when the `editSetting` property was defined without injecting the `editModule` has been resolved.
-
-## 23.1.41 (2023-10-17)
-
-### Grid
-
-#### Bug fixes
-
-- `#I510239` - Error occurs when changing the State through clicking the button rendered in the Column Template has been fixed.
-- `#I494272` - In mobile view unable to interact with the page after double-clicking on the filter date icon issue has been fixed.
-- `#I423460` - Fixed an issue where the grid froze with a loading spinner when collapsing grouped items in an infinite scroll enabled grid.
-- `#I503487` - In the `actionFailure` event, the failure message argument is now sent correctly.
-- `#I509249` - The script error that occurred when saving the edited row at the bottom in the presence of grouping has been fixed.
-- `#I508136` - Row reorder occurs while editing with inline mode with grouping in complex data has been fixed.
-- `#I490262` - The problem where checkbox filtering was not working properly when cancelling the filtering has been fixed.
-- `#I504493` - The pager elements are now rendered correctly when the grid is hidden and then shown again.
-- `#I511064` - The problem with `frozenColumns` are not working when declared in the `dataBound` event has been resolved.
-
-## 23.1.40 (2023-10-10)
-
-### Grid
-
-#### Bug fixes
-
-- `#I503161` - The additional default declaration in the `bootstrap4` theme definition file has been removed.
-
-## 23.1.39 (2023-10-04)
-
-### Grid
-
-#### Bug fixes
-
-- `#I504671` - The issue regarding cell changes not being saved when clicking outside of the grid has been resolved.
-- `#I501004` - The header template is now rendering correctly, regardless of the header cell height.
-- `#FB46829` - The issue where the selection was not properly removed for the checkbox column has been resolved.
-
-## 23.1.38 (2023-09-26)
-
-### Grid
-
-#### Bug fixes
-
-- `#I490971` - Fixed a time zone conversion issue while applying a date filtering in a grid using the `UrlAdaptor`.
-- `#I489490` - Resolved an issue where `changeDataSource` was not functioning correctly when column virtual scrolling was enabled.
-- `#I499794` - Fixed an issue where the disabled cursor was not showing when dragging rows outside the grid with the `RowDragandDrop` feature.
-- `#I501376` - During batch editing, a script issue was fixed after the checkbox column was dynamically disabled.
-- `#I494495` - Fixed a script issue that occurred when sorting was performed while a validation message was displayed in Batch edit mode for the same column.
-- `#I500511` - Resolved a script error related to the persistence of selection actions when utilizing the `WebAPIAdaptor`.
-- `#I497445` - Searching value with trailing zero shows no records to display in grid has been fixed.
-- `#I500931` - Fixed the alignment issue of the child grid header when sub-child grids are added dynamically within the child grid.
+- Improved the grid accessibility over different screen readers by removing the `aria-label` and updating the suitable roles for each elements(`th`,`td`,`tr`) in the grid. Removed the deprecated `aria-description` attribute and updated the alternate attribute `aria-describedby` in grid header cells by including a new `span` element with the content to describe and with the display property as `none`, when the features like Grouping, Sorting, Column menu and Filter Menu are enabled in the grid.
 
 ## 23.1.36 (2023-09-15)
 
@@ -136,31 +37,17 @@
 
 - `#I488183` - Fixed an issue where the frozen columns get hidden while using auto-generated columns.
 - `#I473780` - Resolved an issue where the frozen horizontal scroll did not work when a validation error message is shown.
-- `#I486159` - Fixed an issue where the Column Reorder was not working properly when the frozen right feature is enabled.
-- `#I498644` - Resolved an issue where the skip and take parameters are not passed to the server-side while performing grid actions only in the case of the total number of records and page sizes are equal.
+- `#I486159` - Fixed an issue where the Column Reorder was not working properly when frozen right feature is enabled.
 
 #### Features
 
-- `#FB10384` - Provided the support for exporting the grid with Column template and Detail template at the client side by using the `exportDetailTemplate` event of the grid where each cell of the grid rows can be customized.
-- `#FB10132` - Provided the support for exporting multiple grids in the same or different pages into PDF and Excel formats by listing the id values of each grid that needs to be exported in the `exportGrids` property of Grid.
+- `#FB10384` - Provided the support for exporting grid with Column template and Detail template at client side by using the `exportDetailTemplate` event of grid where each cells of the grid rows can be customized.
+- `#FB10132` - Provided the support for exporting multiple grids in same or different pages into pdf and excel formats by listing the id values of each grid that needs to be exported in the `exportGrids` property of Grid.
 - `#FB44392` - Provided the support for Column Virtualization with pagination in Grid.
-- Improved frozen rows and columns by enabling previously limited features such as Grouping, Row templates, Infinite scrolling, Stacked Header, and Column Virtualization.
-- Introduced a new column freezing mode known as `Fixed`, in addition to the existing `Left`, `Right`, and `Center` modes within the column settings' freeze property. This `Fixed` mode locks columns in place, ensuring their visibility during horizontal scrolling.
 
 #### Breaking Changes
 
-- Revamped the frozen feature by replacing the previous three-table approach with a single table, resulting in significant performance improvements and a reduction in file size. This update eliminates the need to inject the `Freeze` module to utilize the frozen feature, making it more efficient. We have listed the deprecated methods of frozen feature and their alternatives.
-
-**Deprecated Methods**
-
-Deprecated Methods | Previous | Current | Suggested Alternative Methods
- ---  | --- | --- | ---
-`getMovableRows()` | This method returns only the movable table rows `(tr's)`. | This method will return all table rows `(tr's)` of the entire table. The movable cells within the `tr` element can be selected using the `e-unfreeze` class. | `getRows()`
-`getFrozenRightRows()` | This method returns only the table rows `(tr's)` from the freeze right table. | This method will return all the rows `(tr’s)` of the entire table. The frozen right cells can be selected using the `e-rightfreeze` class. | `getRows()`
-`getMovableRowByIndex()` <br> `getFrozenRowByIndex()` <br> `getFrozenRightRowByIndex()` | * `getMovableRowByIndex` - select a movable row <br> * `getFrozenRowByIndex` - select a freeze row  <br> * `getFrozenRightRowByIndex` - select a right freeze row. | This method will return the table row `(tr)` based on the given index. Additionally, class names for table cells `(td's)` have been separated as follows: <br> * Left-Freeze: `e-leftfreeze` <br> * Movable: `e-unfreeze` <br> * Right-Freeze : `e-rightfreeze`  | `getRowByIndex()`
-`getMovableCellFromIndex()` <br> `getFrozenRightCellFromIndex()` |  * `getMovableCellFromIndex()` - select a particular cell in the movable table. <br> * `getFrozenRightCellFromIndex()` - select a particular cell in the right freeze table.|No change| `getCellFromIndex()`
-`getMovableDataRows()` <br> `getFrozenRightDataRows()` <br> `getFrozenDataRows()` | These methods return the viewport data rows for the freeze, movable, and right tables separately. | This method, will return the entire viewport data rows.| `getDataRows()`
-`getMovableColumnHeaderByIndex()` <br> `getFrozenRightColumnHeaderByIndex()` <br> `getFrozenLeftColumnHeaderByIndex()` | These methods select the movable, right freeze, and left freeze headers from the table separately. | No change | `getColumnHeaderByIndex`()
+- Revamped the frozen feature by replacing the previous three-table approach with a single table, resulting in significant performance improvements. This enhancement now enables support for previously limited features with frozen columns, such as `column virtualization` and `grouping`. Additionally, added a new mode `Fixed` alongside the existing `Left`, `Right`, and `Center` modes in freeze property of column settings. This update eliminates the need to inject modules for utilizing the frozen feature.
 
 ## 22.1.34 (2023-06-21)
 

@@ -93,6 +93,15 @@ export class RibbonColorPicker {
      * @hidden
      */
     public addOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement, overflowButton: DropDownButton): void {
+        let colorPickerSettings: RibbonColorPickerSettingsModel = item.colorPickerSettings;
+        if (colorPickerSettings.label && this.parent.activeLayout === 'Simplified') {
+            const label: HTMLElement = this.parent.createElement('div', {
+                className: 'e-ribbon-colorpicker-label',
+                id: item.id + '_label',
+                innerHTML: colorPickerSettings.label
+            });
+            itemEle.insertBefore(label, itemEle.firstChild);
+        }
         const colorPickerEle: HTMLElement = itemEle.querySelector('#' + item.id);
         colorPickerEle.setAttribute('data-control', item.type.toString());
         const colorPickerObj: ColorPicker = getComponent(colorPickerEle, ColorPicker);
@@ -122,6 +131,13 @@ export class RibbonColorPicker {
      * @hidden
      */
     public removeOverFlowEvents(item: RibbonItemModel, itemEle: HTMLElement): void {
+        let colorPickerSettings: RibbonColorPickerSettingsModel = item.colorPickerSettings;
+        if (colorPickerSettings.label) {
+            const label: HTMLElement = itemEle.querySelector('#' + item.id + '_label');
+            if (label) {
+                label.remove();
+            }
+        }
         const colorPickerEle: HTMLElement = itemEle.querySelector('#' + item.id);
         const colorPickerObj: ColorPicker = getComponent(colorPickerEle, ColorPicker);
         let cssClass: string[] = colorPickerObj.cssClass.split(SPACE);

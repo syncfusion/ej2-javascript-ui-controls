@@ -324,6 +324,14 @@ export class Group implements IAction {
                 }
             }
         }
+        const isMacLike: boolean = /(Mac)/i.test(navigator.platform);
+        if (isMacLike && e.metaKey) {
+            if (e.action === 'downArrow') {
+                e.action = 'ctrlDownArrow';
+            } else if (e.action === 'upArrow') {
+                e.action = 'ctrlUpArrow';
+            }
+        }
         if (e.action !== 'ctrlSpace' && (!this.groupSettings.columns.length ||
             ['altDownArrow', 'altUpArrow', 'ctrlDownArrow', 'ctrlUpArrow', 'enter'].indexOf(e.action) === -1)) {
             return;
@@ -631,12 +639,20 @@ export class Group implements IAction {
         }
     }
 
-    private lastCaptionRowBorder(): void {
+    /**
+     * The function is used to set border in last row
+     *
+     * @returns { void }
+     * @hidden
+     */
+
+    public lastCaptionRowBorder(): void {
         const table: Element = this.parent.getContentTable();
         const clientHeight: number = this.parent.getContent().clientHeight;
-        if (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) {
+        if ((!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) ||
+            this.parent.groupSettings.enableLazyLoading) {
             if (table.scrollHeight < clientHeight || this.isAppliedCaptionRowBorder) {
-                if (this.isAppliedCaptionRowBorder) {
+                if (this.isAppliedCaptionRowBorder || table.querySelector('.e-lastrowcell')) {
                     const borderCells: NodeListOf<Element> = table.querySelectorAll('.e-lastrowcell');
                     for (let i: number = 0, len: number = borderCells.length; i < len; i++) {
                         removeClass([borderCells[parseInt(i.toString(), 10)]], 'e-lastrowcell');
@@ -767,7 +783,7 @@ export class Group implements IAction {
         }
         this.updateGroupDropArea();
         this.parent.element.insertBefore(this.element, this.parent.element.firstChild);
-        if (!this.groupSettings.showDropArea) {
+        if (!this.groupSettings.showDropArea || this.parent.rowRenderingMode === 'Vertical') {
             this.element.style.display = 'none';
         }
     }
@@ -964,7 +980,7 @@ export class Group implements IAction {
         }
         childDiv.appendChild(this.parent.createElement('span', {
             className: 'e-grouptext', innerHTML: column.headerText,
-            attrs: { tabindex: '-1', 'aria-label': this.l10n.getConstant('GroupedSortIcon') + column.headerText }
+            attrs: { tabindex: '-1' }
         }));
         // }
 

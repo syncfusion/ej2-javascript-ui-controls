@@ -2,7 +2,7 @@
  * Base RTE spec
  */
 import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach } from '@syncfusion/ej2-base';
-import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent, ITableCommandsArgs,DialogType, ToolbarType } from '../../../src/rich-text-editor/index';
+import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent, ITableCommandsArgs,DialogType, ToolbarType, PasteCleanup, HtmlEditor, Toolbar } from '../../../src/rich-text-editor/index';
 import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
 import { renderRTE, destroy, dispatchKeyEvent } from './../render.spec';
@@ -3579,7 +3579,7 @@ describe('RTE base module', () => {
             expect(linkElm.getAttribute('target')).toBe('_self');
             expect(linkElm.innerHTML).toBe('text text&nbsp;&nbsp;&nbsp;text&nbsp;&nbsp;&nbsp;');
         });
-        
+
         it('EJ2-59978 - Insert link after Max char count - Execute Command Module', () => {
             destroy(rteObj);
             rteObj = renderRTE({
@@ -5457,40 +5457,39 @@ describe('EJ2-23205 Revert the headings and blockquotes format while applying th
     afterAll(() => {
         destroy(rteObj);
     });
-});
 
-describe('EJ2-23858 Iframe angular destroy issue', () => {
-    let rteObj: RichTextEditor;
-    let elem: HTMLElement;
-    let innerHTML: string = `Lists are a piece of cake
-        They even auto continue as you type
-        A double enter will end them
-        Tabs and shift-tabs work too`;
-    let controlId: string;
-    let isDestroyed: boolean = false;
-    let editNode: HTMLTextAreaElement;
-    beforeAll(() => {
-        rteObj = renderRTE({
-            iframeSettings: { enable: true },
-            value: innerHTML, toolbarSettings: {
-                items: ['Formats', 'UnorderedList', 'ClearFormat']
-            },
-            destroyed: () => {
-                isDestroyed = true;
-            }
+    describe('EJ2-23858 Iframe angular destroy issue', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLElement;
+        let innerHTML: string = `Lists are a piece of cake
+            They even auto continue as you type
+            A double enter will end them
+            Tabs and shift-tabs work too`;
+        let controlId: string;
+        let isDestroyed: boolean = false;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                iframeSettings: { enable: true },
+                value: innerHTML, toolbarSettings: {
+                    items: ['Formats', 'UnorderedList', 'ClearFormat']
+                },
+                destroyed: () => {
+                    isDestroyed = true;
+                }
+            });
+            elem = rteObj.element;
+            controlId = elem.id;
+            editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
         });
-        elem = rteObj.element;
-        controlId = elem.id;
-        editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
-    });
 
-    it(' Check the destroyed event after remove the element from DOM ', () => {
-        rteObj.element.remove();
-        rteObj.destroy();
-        expect(isDestroyed).toBe(true);
-    });
-    afterAll(() => {
-        destroy(rteObj);
+        it(' Check the destroyed event after remove the element from DOM ', () => {
+            rteObj.element.remove();
+            rteObj.destroy();
+            expect(isDestroyed).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
     });
 });
 
@@ -6694,6 +6693,7 @@ describe('842745 - Space Keypress causes the console error and the cursor positi
         destroy(rteObj);
     });
 });
+
 describe('846696 - Ctrl+Z undo doesn’t works in smart suggestion sample', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: null, which: 65, key: '' };
@@ -6716,6 +6716,30 @@ describe('846696 - Ctrl+Z undo doesn’t works in smart suggestion sample', () =
         destroy(rteObj);
     });
 });
+
+describe('820213 - Text get deleted while applying bold', () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: `<p class='focusNode'>Rich Text Editor</p>`
+        });
+    });
+    it('apply the bold to the text', () => {
+        let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+        editNode.focus();
+        let focusNode: any = editNode.querySelector('.focusNode')
+        let sel1 = new NodeSelection().setSelectionText(document, focusNode.firstChild, focusNode.firstChild, 8, 8);
+        let boldEle : HTMLElement = document.querySelector('[title="Bold (Ctrl+B)"]');
+        boldEle.click();
+        boldEle = document.querySelector('[title="Bold (Ctrl+B)"]');
+        boldEle.click();
+        expect(rteObj.inputElement.innerHTML === '<p class="focusNode">Rich Text Editor</p>').toBe(true);
+       });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe("852045 - Not able to resize the table when having saveInterval as 1.", function () {
     var rteObj: RichTextEditor;
     beforeAll(function () {
@@ -6751,5 +6775,135 @@ describe("852045 - Not able to resize the table when having saveInterval as 1.",
         resizeElement.innerHTML = rteObj.getHtml();
         expect(resizeElement.querySelectorAll(".e-table-box").length == 0).toBe(true);
         done();
+    });
+});
+
+describe('849092 - Triple click a word doesnt select the whole paragraph (block node) in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: `<h3>
+            <span>Plan voor training en bewustzijn</span>
+            </h3>
+            <p>
+                Om bij het personeel van Spectator bewustzijn met betrekking tot
+                informatiebeveiliging te creëren worden verschillende
+                activiteiten georganiseerd. <br />
+            </p>
+            <p />
+            <p>
+                In de bijlage van het ISMS is een aanwezigheidsregistratie
+                opgenomen waarin per activiteit aangegeven staat welke
+                medewerkers hierbij aanwezig geweest zijn, daarnaast is er een
+                bijlage beschikbaar met een overzicht van de trainingen en
+                details hierover.
+            </p>`
+        });
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it ('Should render the paragraph with br tag', () => {
+        expect(rteObj.element.querySelectorAll('p')[1].innerHTML).toBe('<br>');
+    });
+});
+
+describe('69081 - When user paste the table in insert media option, It doesn’t paste properly ', () => {
+    let editor: RichTextEditor;
+    let editorElem: HTMLElement;
+    beforeAll(() => {
+        editorElem = createElement('div', { id: '69081_RTE' });
+        document.body.appendChild(editorElem);
+        RichTextEditor.Inject(HtmlEditor, Toolbar, QuickToolbar, PasteCleanup);
+        editor = new RichTextEditor({});
+        editor.appendTo('#69081_RTE');
+    });
+    afterAll(() => {
+        editor.destroy();
+        detach(editorElem);
+    });
+    it ('Paste the table copied to the editor should remove resize elements when paste cleanup injected', (done: DoneFn) => {
+        editor.focusIn();
+        const clipBoardData: string = `<!--StartFragment--><table class="e-rte-table" style="box-sizing: border-box; border-spacing: 0px; border-collapse: collapse; background-color: rgb(255, 255, 255); empty-cells: show; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; width: 1503px; min-width: 0px;"><tbody style="box-sizing: border-box;"><tr style="box-sizing: border-box;"><td class="" style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.688px;"><br style="box-sizing: border-box;"></td></tr><tr style="box-sizing: border-box; height: 25px;"><td class="e-cell-select" style="box-sizing: border-box; padding: 2px 5px; border: 1px double rgb(4, 120, 215); height: 24.67px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td class="" style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.688px;"><br style="box-sizing: border-box;"></td></tr><tr style="box-sizing: border-box;"><td class="" style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td class="" style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.688px;"><br style="box-sizing: border-box;"></td></tr></tbody></table><p style="box-sizing: border-box; margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><br style="box-sizing: border-box;"></p><span data-col="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: col-resize; height: 76px; overflow: visible; position: absolute; width: 4px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 16px; left: 16px;"></span><span data-col="1" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: col-resize; height: 76px; overflow: visible; position: absolute; width: 4px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 16px; left: 517px;"></span><span data-col="2" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: col-resize; height: 76px; overflow: visible; position: absolute; width: 4px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 16px; left: 1017px;"></span><span data-col="3" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: col-resize; height: 76px; overflow: visible; position: absolute; width: 4px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 16px; left: 1518px;"></span><span data-row="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: row-resize; height: 4px; overflow: visible; position: absolute; width: 1503px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 39px; left: 16px;"></span><span data-row="1" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: row-resize; height: 4px; overflow: visible; position: absolute; width: 1503px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 64px; left: 16px;"></span><span data-row="2" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: row-resize; height: 4px; overflow: visible; position: absolute; width: 1503px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 89px; left: 16px;"></span><br class="Apple-interchange-newline"><!--EndFragment-->`;
+        const dataTransfer: DataTransfer = new DataTransfer();
+        dataTransfer.setData('text/html', clipBoardData);
+        const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+        editor.onPaste(pasteEvent);
+        setTimeout(() => {
+            expect(editor.contentModule.getEditPanel().querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize').length).toBe(0);
+            done();
+        }, 100);
+    });
+});
+
+describe('852939 - Undo redo is enabled by default in the quick format toolbar sample issue', () => {
+    let rteObj: RichTextEditor;
+    let elem: HTMLElement;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            quickToolbarSettings: {
+                text: ['FormatPainter', 'Bold', 'Italic', 'Underline', 'Formats', '-', 'Alignments', 'OrderedList', 'UnorderedList', 'CreateLink', 'Image']
+            },
+            toolbarSettings: {
+                type: ToolbarType.MultiRow,
+                enableFloating: false,
+            },
+            value: '<p>data</p>'
+        });
+        elem = rteObj.element;
+        done();
+    });
+    it('Checking the undo and rendo is in the disable state when the toolbar type is multi-row.', () => {
+        expect(elem.querySelectorAll(".e-toolbar-item")[0].classList.contains("e-overlay")).toBe(false);
+        expect(elem.querySelectorAll(".e-toolbar-item")[13].classList.contains("e-overlay")).toBe(true);
+        expect(elem.querySelectorAll(".e-toolbar-item")[14].classList.contains("e-overlay")).toBe(true);
+    });
+    it('Checking the undo and rendo is in the disable state when the toolbar type is Scrollable', () => {
+        rteObj.toolbarSettings.type = ToolbarType.Scrollable;
+        expect(elem.querySelectorAll(".e-toolbar-item")[0].classList.contains("e-overlay")).toBe(false);
+        expect(elem.querySelectorAll(".e-toolbar-item")[13].classList.contains("e-overlay")).toBe(true);
+        expect(elem.querySelectorAll(".e-toolbar-item")[14].classList.contains("e-overlay")).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('849074 - List not cleared properly after selection of the whole list and then pressing empty space', () => {
+    let rteObj: RichTextEditor;
+    let startNode: HTMLElement;
+    let endNode: HTMLElement;
+    let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 32 };
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: `<ol id="content-edit" contenteditable="true">
+            <li class="startNode">
+                <p id="firstli">The Toolbar contains commands to align the text, insert a link, insert an image, insert list, undo/redo operations, HTML view, etc </p>
+            </li>
+            <li class="endNode">
+                <p id="secondli">The Toolbar is fully customizable </p>
+            </li>
+        </ol>`
+        });
+    });
+
+    it('Checking that the list is cleared properly when pressing the empty space', () => {
+        let keyBoardEvent: any = { preventDefault: () => { }, key: ' ', stopPropagation: () => { }, shiftKey: false, which: 32 };
+        let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+        startNode = editNode.querySelector('#firstli');
+        endNode = editNode.querySelector('#secondli');
+        let sel = new NodeSelection().setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 0);
+        rteObj.focusIn();
+        keyBoardEvent.which = 32;
+        keyBoardEvent.code = 'Space';
+        keyBoardEvent.type = 'keydown';
+        (rteObj as any).keyDown(keyBoardEvent);
+        keyBoardEvent.type = 'keyup';
+        (rteObj as any).keyUp(keyBoardEvent);
+        expect(!isNullOrUndefined(startNode)).toBe(true);
+        expect (startNode.childNodes.length === 1).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
     });
 });

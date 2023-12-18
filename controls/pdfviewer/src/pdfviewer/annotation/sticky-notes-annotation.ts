@@ -327,7 +327,7 @@ export class StickyNotesAnnotation {
                 let bounds: any = { left: annot.bounds.x, top: annot.bounds.y, width: annot.bounds.width, height: annot.bounds.height };
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
                 // eslint-disable-next-line
-                let settings: any = { opacity: annot.opacity, author: author, modifiedDate: annot.modifiedDate, subject: subject  };
+                let settings: any = { opacity: annot.opacity, author: author, modifiedDate: annot.modifiedDate, subject: subject };
                 this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'StickyNotes', bounds, settings);
             }
             if (canvas) {
@@ -910,7 +910,7 @@ export class StickyNotesAnnotation {
                 this.createTitleContainer(commentDiv, title, pageIndex, annotationSubType);
             }
             // eslint-disable-next-line max-len
-            const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox_'+ pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-textbox' });
+            const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox_'+ pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-textbox', attrs: { 'role': 'textbox', 'aria-label': "comment textbox" } });
             // eslint-disable-next-line
             let editObj: any = new InPlaceEditor({
                 mode: 'Inline',
@@ -1390,7 +1390,7 @@ export class StickyNotesAnnotation {
             }
         }
         // eslint-disable-next-line max-len
-        const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox_' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-textbox' });
+        const commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox_' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-textbox', attrs: { 'role': 'textbox', 'aria-label': "comment textbox" } });
         // eslint-disable-next-line
         let editObj: any = new InPlaceEditor({
             mode: 'Inline',
@@ -1903,7 +1903,7 @@ export class StickyNotesAnnotation {
     private commentsDivClickEvent(event: any): void {
         // eslint-disable-next-line
         let annotation: any = this.findAnnotationObject(event.currentTarget.parentElement.id);
-        let isLocked : boolean = this.checkAnnotationSettings(event.target.id);
+        let isLocked : boolean = (annotation.annotationSettings.isLock || annotation.isLock);
         if (!isLocked) {
             let isCommentsSelect: boolean = false;
             if (event.clientX === 0 && event.clientY === 0) {

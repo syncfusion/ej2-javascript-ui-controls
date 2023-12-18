@@ -114,19 +114,17 @@ describe('Circular-Gauge Control', () => {
         it('Checking pointer value with aria-label', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Pointer_0');
+                expect(svg.getAttribute('aria-label')).toBe('Pointer:90');
                 expect(svg.childElementCount == 4).toBe(true);
                 svg = document.getElementById('container_Axis_0_Pointer_Needle_0');
                 expect(svg.getAttribute('transform') == 'rotate(38,379,225)' ||
                     svg.getAttribute('transform') == 'rotate(38,384.5,225)').toBe(true);
-                expect(svg.getAttribute('aria-label')).toBe('Pointer:90');
                 svg = document.getElementById('container_Axis_0_Pointer_NeedleTail_0');
                 expect(svg.getAttribute('transform') == 'rotate(38,379,225)' ||
                     svg.getAttribute('transform') == 'rotate(38,384.5,225)').toBe(true);
-                expect(svg.getAttribute('aria-label')).toBe('Pointer:90');
                 svg = document.getElementById('container_Axis_0_Pointer_NeedleCap_0');
                 expect(svg.getAttribute('transform') == 'rotate(38,379,225)' ||
                     svg.getAttribute('transform') == 'rotate(38,384.5,225)').toBe(true);
-                expect(svg.getAttribute('aria-label')).toBe('Pointer:90');
                 done();
             };
             gauge.axes[0].pointers[0].value = 90;
@@ -136,19 +134,17 @@ describe('Circular-Gauge Control', () => {
         it('Checking pointer value as maximum with description', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Pointer_0');
+                expect(svg.getAttribute('aria-label')).toBe('This is pointer');
                 expect(svg.childElementCount == 4).toBe(true);
                 svg = document.getElementById('container_Axis_0_Pointer_Needle_0');
                 expect(svg.getAttribute('transform') == 'rotate(70,384.5,225)' ||
                     svg.getAttribute('transform') == 'rotate(70,379,225)').toBe(true);
-                expect(svg.getAttribute('aria-label')).toBe('This is pointer');
                 svg = document.getElementById('container_Axis_0_Pointer_NeedleTail_0');
                 expect(svg.getAttribute('transform') == 'rotate(70,384.5,225)' ||
                     svg.getAttribute('transform') == 'rotate(70,379,225)').toBe(true);
-                expect(svg.getAttribute('aria-label')).toBe('This is pointer');
                 svg = document.getElementById('container_Axis_0_Pointer_NeedleCap_0');
                 expect(svg.getAttribute('transform') == 'rotate(70,384.5,225)' ||
                     svg.getAttribute('transform') == 'rotate(70,379,225)').toBe(true);
-                expect(svg.getAttribute('aria-label')).toBe('This is pointer');
                 done();
             };
             gauge.axes[0].pointers[0].description = 'This is pointer';

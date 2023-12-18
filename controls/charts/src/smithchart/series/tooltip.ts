@@ -111,6 +111,8 @@ export class TooltipRender {
             this.tooltipElement.textStyle.size = smithchart.themeStyle.tooltipFontSize || '13px';
             this.tooltipElement.textStyle.color = smithchart.themeStyle.tooltipBoldLabel || this.tooltipElement.textStyle.color;
             this.tooltipElement.appendTo(div as HTMLElement);
+            let element: HTMLElement = document.getElementById(smithchart.element.id + '_smithchart_tooltip_div_Trackball_0');
+            if (element) { element.setAttribute('role', 'img'); } 
         };
         smithChartTooltipSuccess.bind(this, smithchart);
         smithchart.trigger('tooltipRender', argsData, smithChartTooltipSuccess);

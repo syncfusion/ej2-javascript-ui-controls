@@ -509,10 +509,11 @@ export class Kanban extends Component<HTMLElement> {
         if (this.cssClass) {
             addClasses.push(this.cssClass);
         }
-        this.element.setAttribute('role', 'presentation');
         classList(this.element, addClasses, removeClasses);
         this.element.style.width = formatUnit(this.width);
         this.element.style.height = formatUnit(this.height);
+        this.element.setAttribute('role', 'application');
+        this.element.setAttribute('aria-label', 'Kanban Board');
         createSpinner({ target: this.element });
         this.showSpinner();
         this.initializeModules();

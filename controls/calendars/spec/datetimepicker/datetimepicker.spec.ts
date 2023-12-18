@@ -318,7 +318,7 @@ describe('DateTimepicker', () => {
             if (!datetimepicker.isDatePopupOpen() && !datetimepicker.isTimePopupOpen()) {
                 (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
             }
-            expect(datetimepicker.popupWrapper.getAttribute('id')).toBe(datetimepicker.inputElement.getAttribute('id') + '_datepopup');
+            expect(datetimepicker.popupWrapper.getAttribute('id')).toBe(datetimepicker.inputElement.getAttribute('id') + '_options');
         });
         it('popup opened state display style attribute', () => {
             if (!datetimepicker.isDatePopupOpen() && !datetimepicker.isTimePopupOpen()) {

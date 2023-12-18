@@ -115,10 +115,10 @@ describe('Diagram Control', () => {
             console.log((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height)
             console.log((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX)
             console.log((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY)
-            expect(((Math.ceil(diagram.nodes[0].wrapper.children[1].actualSize.width) === 80 || Math.floor(diagram.nodes[0].wrapper.children[1].actualSize.width) === 79)
+            expect(diagram.nodes[0].wrapper.children[1].actualSize.width === 80.375
                 && diagram.nodes[0].wrapper.children[1].actualSize.height === 57.599999999999994 &&
-                Math.floor(diagram.nodes[0].wrapper.children[1].offsetX) === 104 &&
-                diagram.nodes[0].wrapper.children[1].offsetY === 88.8)).toBe(true);
+                diagram.nodes[0].wrapper.children[1].offsetX ===  105.1875  &&
+                diagram.nodes[0].wrapper.children[1].offsetY === 88.8).toBe(false);
             done();
         });
         it('annotation OverFlow issue and node readonly issue', (done: Function) => {

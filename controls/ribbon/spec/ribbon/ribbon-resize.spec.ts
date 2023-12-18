@@ -6,6 +6,7 @@ import { RibbonTabModel } from "../../src/ribbon/models/ribbon-tab-model";
 import { RibbonCollectionModel, RibbonGroupModel, RibbonItemModel } from "../../src/ribbon/models/index";
 import { RibbonColorPicker, RibbonFileMenu, DisplayMode } from "../../src/index";
 
+
 Ribbon.Inject(RibbonColorPicker, RibbonFileMenu);
 
 let dropDownButtonItems: ItemModel[] = [
@@ -636,7 +637,7 @@ describe('Ribbon', () => {
                 args.cancel = true;
             };
             (document.getElementById('ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
-            (document.body as HTMLElement).click();
+            (document.getElementById('ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
             expect((document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup')).classList.contains('e-popup-open')).toBe(true);
         });
     });
@@ -785,7 +786,7 @@ describe('Ribbon', () => {
             expect(document.querySelector('#dropdownTable-popup').classList.contains("e-popup-open")).toBe(false);
         });
     });
-    
+
     describe('Ribbon Resize', () => {
         let ribbon: Ribbon;
         let ribbonEle: HTMLElement;
@@ -1179,6 +1180,20 @@ describe('Ribbon', () => {
             ribbon.refreshLayout();
             expect(document.querySelectorAll('button.e-ribbon-group-overflow-ddb').length).toBe(0);
         });
+        it('when popup opens', () => {
+            containerEle.style.width = '1600px';
+            ribbon = new Ribbon({
+                tabs:tabs
+            }, ribbonEle);
+            containerEle.style.width = '300px';
+            ribbon.refreshLayout();
+            (document.getElementById('ribbon_tab_collapsebutton') as HTMLElement).click();
+            (document.getElementById('ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            expect(document.getElementById('ribbon_tab_sim_ovrl_overflow').classList.contains('e-active')).toBe(true);
+            containerEle.style.width = '600px';
+            ribbon.refreshLayout();
+            expect(document.getElementById('ribbon_tab_sim_ovrl_overflow').classList.contains('e-active')).toBe(false);
+        });
 
         let tabs1: RibbonTabModel[] =  [{
             id: "tab1",
@@ -1489,7 +1504,6 @@ describe('Ribbon', () => {
             expect(document.querySelectorAll('.e-ribbon-item')[2].id).toBe('pasteItem_container');
         });
     });
-
     it('memory leak', () => {
         profile.sample();
         const average: any = inMB(profile.averageChange);

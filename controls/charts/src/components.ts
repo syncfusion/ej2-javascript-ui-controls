@@ -8,3 +8,4 @@ export * from './range-navigator/range-navigator';
 export * from './smithchart/smithchart';
 export * from './sparkline/sparkline';
 export * from './bullet-chart/bullet-chart';
+export * from './chart3d/chart3D'

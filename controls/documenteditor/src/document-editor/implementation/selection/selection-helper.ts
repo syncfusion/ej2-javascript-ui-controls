@@ -2249,6 +2249,7 @@ export class Hyperlink {
         }
         codes = value.split(' ');
         let isLocalRef: boolean = false;
+        let hyperlinkRef: boolean = true;
         if (isHyperlink) {
             for (let i: number = 0; i < codes.length; i++) {
                 let code: string = codes[i];
@@ -2264,7 +2265,10 @@ export class Hyperlink {
                     if (isLocalRef) {
                         this.localRef = code;
                         isLocalRef = false;
-                    }else {
+                        hyperlinkRef = false;
+                    } else if (hyperlinkRef) {
+                        this.linkInternal = value;
+                    } else {
                         this.linkInternal = code;
                     }
                 }
@@ -2318,7 +2322,7 @@ export class Hyperlink {
 /**
  * @private
  */
-export class ImageInfo {
+export class ImageSizeInfo {
     /**
      * @private
      */

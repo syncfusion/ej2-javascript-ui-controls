@@ -16,6 +16,23 @@
           font-size: 18px;
         }}
       .e-gantt-chart {
+        
+        .e-taskbar-left-resizer,
+        .e-taskbar-right-resizer {
+          display: inline-block;
+          position: absolute;
+          top: 0;
+          width: 25px;
+          z-index: 4;
+        }
+
+        .e-left-resize-gripper,
+        .e-right-resize-gripper {
+          align-items: center;
+          cursor: ew-resize;
+          display: inline-flex;
+        }
+
         .e-timeline-header-container {
           height: $gantt-bigger-header-border-height;
         }
@@ -135,7 +152,13 @@
           padding: $gantt-bigger-dialog-header-padding; /* stylelint-disable-line declaration-no-important */
 
           .e-btn.e-dlg-closeicon-btn {
-            left: $gantt-bigger-dialog-close-button-left;
+            left: -11px;
+            @if ($skin-name == 'bootstrap5-dark' or $skin-name == 'bootstrap5'){
+              top: 2px;
+            }
+            @else {
+              top: 3px;
+            }
           }
         }
         @if ($skin-name == 'FluentUI' or $skin-name == 'fluent-dark') {
@@ -165,8 +188,13 @@
           }
         }
 
-        .e-dlg-header {
-          line-height: 28px;
+        .e-dlg-header:not(.e-gantt-adaptive-dialog .e-dialog .e-dlg-header) {
+          @if ($skin-name== 'Material3-dark' or $skin-name == 'Material3') {
+            line-height: 28px;
+          }
+          @else if ($skin-name != 'FluentUI' or $skin-name != 'fluent-dark'){
+            line-height: 37px;
+          }
         }
       }
 
@@ -197,7 +225,7 @@
     .e-gantt-dialog {
       .e-dialog {
         border-radius: 6px;
-        //width: $gantt-bigger-dialog-width;
+        width: $gantt-bigger-dialog-width;
       }
       .e-tab .e-tab-header .e-toolbar-item .e-tab-wrap {
         padding: 0 16px !important;    /* stylelint-disable-line declaration-no-important */
@@ -243,7 +271,7 @@
           }
         }
         @else{
-          .e-btn.e-dlg-closeicon-btn {
+          .e-btn.e-dlg-closeicon-btn:not(.e-gantt-adaptive-dialog .e-dialog .e-dlg-closeicon-btn) {
             border-radius: 50%;
             height: auto !important; /* stylelint-disable-line declaration-no-important */
             width: auto;
@@ -342,6 +370,16 @@
         .e-input-group.e-control-wrapper .e-input-group-icon {
           padding: 7px 0 !important; /* stylelint-disable-line declaration-no-important */
         }
+      }
+      .e-gantt-adaptive-dialog .e-dialog {
+        position: absolute !important; /* stylelint-disable-line declaration-no-important */
+        left: 0 !important; /* stylelint-disable-line declaration-no-important */
+      }
+      .e-gantt-adaptive-dialog .e-dialog .e-dlg-header-content {
+        padding: 16px !important; /* stylelint-disable-line declaration-no-important */
+      }
+      .e-gantt-adaptive-dialog .e-dialog td{
+        width: 100% !important; /* stylelint-disable-line declaration-no-important */
       }
     }
 
@@ -638,10 +676,6 @@
         overflow-x: scroll !important; /* stylelint-disable-line declaration-no-important */
       }
 
-      .e-gridcontent .e-gantt-frozen {
-        overflow-x: hidden !important; /* stylelint-disable-line declaration-no-important */
-      }
-
       .e-gridcontent .e-content.e-gantt-scroll-padding {
         width: calc(100% + 17px);
       }
@@ -779,7 +813,7 @@
       }
 
       .e-zero-spacing {
-        border-spacing: 0;
+        border-spacing: .25px;
       }
 
       .e-chart-row:first-child .e-chart-row-border {
@@ -821,10 +855,6 @@
         position: absolute;
         vertical-align: middle;
         z-index: 3;
-      }
-
-      .e-taskbar-main-container:hover{
-        z-index: 4;
       }
       
       .e-taskbar-main-container.e-gantt-multi-taskbar:hover {
@@ -1407,7 +1437,7 @@
     }
 
     .e-item {
-      height: $gantt-dialog-general-height;
+      height: 100%;
     }
 
     .e-dependent-div {
@@ -1486,6 +1516,10 @@
       }
     }
 
+    .e-dlg-header {
+      line-height: 30px;
+    }
+
     .e-dlg-header-content {
       border-bottom: 0 !important; /* stylelint-disable-line declaration-no-important */
     }
@@ -1493,6 +1527,11 @@
     .e-dlg-header-content {
       border-radius: $gantt-dialog-border-radius;
       padding-bottom: $gantt-dialog-padding-bottom;
+      
+      .e-btn.e-dlg-closeicon-btn {
+        left: -11px;
+        top: $gantt-dialog-close-button-top;
+      }
       
       @if ($skin-name == 'bootstrap-dark'){
         .e-btn.e-dlg-closeicon-btn {
@@ -1574,12 +1613,14 @@
   .e-bigger .e-gantt .e-gantt-chart .e-label {
     font-size: $gantt-bigger-label-font-size;
   }
-  .e-bigger .e-gantt .e-gantt-chart .e-timeline-single-header-outer-div{
-    height: 64px !important; /* stylelint-disable-line declaration-no-important */
+
+  .e-bigger .e-filter-popup .e-control .e-dialog .e-lib .e-popup .e-popup-open .e-excelfilter .e-gantt,
+  .e-bigger .e-gantt .e-excelfilter .e-dialog .e-dlg-content {
+    padding: 0 18px 0 0 !important; /* stylelint-disable-line declaration-no-important */
   }
-  .e-bigger .e-timeline-single-header-cell {
-    height: 64px !important; /* stylelint-disable-line declaration-no-important */
-    line-height: 64px !important; /* stylelint-disable-line declaration-no-important */
+  .e-bigger .e-filter-popup .e-control .e-dialog .e-lib .e-popup .e-popup-open .e-excelfilter .e-gantt,
+  .e-bigger .e-gantt .e-contextmenu-wrapper ul {
+    padding: 0 !important; /* stylelint-disable-line declaration-no-important */
   }
 
   .e-gantt-tooltip-label {
@@ -1739,5 +1780,36 @@
     height: 100%;
     position: absolute;
     z-index: 1;
+  }
+  .e-gantt .e-gantt-chart .e-chart-root-container .e-content td.e-chart-row-cell.e-droptop{
+    border-top: $gantt-rowdd-topbottom-border;
+    border-width: $gantt-rowdd-childborder-width;
+  }
+  .e-gantt .e-gantt-chart .e-chart-root-container .e-content td.e-chart-row-cell.e-dropbottom{
+    border-bottom: $gantt-rowdd-topbottom-border;
+    box-shadow: $gantt-rowdd-boxshadow;
+  }
+  
+  .e-gantt .e-gantt-chart .e-chart-root-container .e-content td.e-chart-row-cell.e-childborder {
+    border-bottom: $gantt-rowdd-topbottom-border;
+    border-top: $gantt-rowdd-topbottom-border;
+    box-shadow: $gantt-rowdd-boxshadow;
+  }
+}
+@media (max-width: 767px)
+{
+  .e-bigger{
+    .e-gantt {
+      .e-dialog {
+        .e-edit-form-column {
+          &:nth-child(odd),
+          &:nth-child(even) {
+            float: none;
+            padding: $gantt-mobile-bigger-dialog-edit-form-padding;
+            width: 100%;
+          }
+        }
+      }
+    }
   }
 }

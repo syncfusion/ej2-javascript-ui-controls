@@ -5,8 +5,8 @@
 import { remove, createElement } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
 import {
-    ChartSeriesType, ChartRangePadding, ValueType,
-    ChartShape, LabelPlacement
+    ChartSeriesType,
+    ChartShape
 } from '../../../src/chart/utils/enum';
 import { unbindResizeEvents } from '../base/data.spec';
 import { StepLineSeries } from '../../../src/chart/series/step-line-series';

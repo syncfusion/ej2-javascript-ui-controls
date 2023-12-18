@@ -307,6 +307,15 @@ describe('RadioButton', () => {
             radio.click();
             radio.focusIn();
         });
+        it('Refresh methods ', () => {
+            document.body.appendChild(createElement('input', { id: 'group1', attrs: { 'type': 'radio' } }));
+            document.body.appendChild(createElement('input', { id: 'group2', attrs: { 'type': 'radio' } }));
+            radio = new RadioButton({ name: 'group', value: '1' }, '#group1');
+            const radio2: RadioButton = new RadioButton({ name: 'group', value: '2' }, '#group2');
+            radio.refresh();
+            radio2.refresh();
+        });
+
         it('HtmlAttributes property not working properly in RadioButton', () => {
             radio = new RadioButton({htmlAttributes: { 'data-containerid': 'error-agreement', 'test': 'test' }}, '#radio');
             expect(radio.element.parentElement.getAttribute('data-containerid').indexOf('error-agreement')).toEqual(0);

@@ -73,9 +73,9 @@ export class QuickPopups {
 
     private renderMorePopup(): void {
         const moreEventPopup: string = `<div class="${cls.MORE_EVENT_POPUP_CLASS}"><div class="${cls.MORE_EVENT_HEADER_CLASS}">` +
-            `<div class="${cls.MORE_EVENT_CLOSE_CLASS}" title="${this.l10n.getConstant('close')}" tabindex="0"></div>` +
+            `<div class="${cls.MORE_EVENT_CLOSE_CLASS}" title="${this.l10n.getConstant('close')}" tabindex="0" role="button"></div>` +
             `<div class="${cls.MORE_EVENT_DATE_HEADER_CLASS}"><div class="${cls.MORE_EVENT_HEADER_DAY_CLASS}"></div>` +
-            `<div class="${cls.MORE_EVENT_HEADER_DATE_CLASS} ${cls.NAVIGATE_CLASS}" tabindex="0"></div></div></div></div>`;
+            `<div class="${cls.MORE_EVENT_HEADER_DATE_CLASS} ${cls.NAVIGATE_CLASS}" tabindex="0" role="link"></div></div></div></div>`;
         const moreEventWrapper: HTMLElement = createElement('div', {
             className: cls.MORE_POPUP_WRAPPER_CLASS + ' e-popup-close',
             innerHTML: moreEventPopup

@@ -8,7 +8,7 @@ import { getValue } from '@syncfusion/ej2-base';
  */
 export class DayMarkers {
     private parent: Gantt;
-    private nonworkingDayRender: NonWorkingDay;
+    public nonworkingDayRender: NonWorkingDay;
     private eventMarkerRender: EventMarker;
 
     constructor(parent: Gantt) {

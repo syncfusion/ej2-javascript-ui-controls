@@ -439,6 +439,19 @@ describe('Recurrence Editor Base Module', () => {
             expect(recObj.element.querySelectorAll('.e-form-left')[1].classList.contains("e-hide-recurrence-element")).toEqual(true);
             expect(recObj.element.querySelectorAll('.e-form-left')[2].classList.contains("e-hide-recurrence-element")).toEqual(true);
         });
+        it('recurrence editor end on label testing', () => {
+            recObj = new RecurrenceEditor();
+            recObj.appendTo('#editor');
+            recObj.frequencies = ['daily', 'monthly'];
+            recObj.endTypes = ['count', 'until', 'never'];
+            recObj.dataBind();
+            const repeatField: HTMLElement = recObj.element.querySelector('.e-editor option') as HTMLElement;
+            expect(repeatField.innerText).toBe('Daily');
+            const endOnElement: HTMLElement = recObj.element.querySelector('.e-end-on-left .e-float-input.e-control-wrapper') as HTMLElement;
+            const endOnElementLabel: HTMLElement = endOnElement.querySelector('.e-float-text.e-label-top') as HTMLElement;
+            expect(endOnElementLabel.innerText).toBe('End');
+            expect(endOnElementLabel.getAttribute('id')).toBe(endOnElement.querySelector('.e-end-on-element').getAttribute('aria-labelledby'));
+        })
     });
 
     describe('recurrence editor destroy testing in wrost case', () => {

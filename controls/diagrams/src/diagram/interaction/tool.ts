@@ -1185,8 +1185,8 @@ export class MoveTool extends ToolBase {
             newValue: cloneBlazorObject(oldValues),
             target: args.target, targetPosition: args.position, allowDrop: arg.allowDrop, cancel: arg.cancel
         };
-        //(EJ2-277624)-In the positionChange event, during the completed state, old and new values remain identical.
-        if(!this.isStartAction){
+         //(EJ2-277624)-In the positionChange event, during the completed state, old and new values remain identical.
+         if(!this.isStartAction){
             this.intialValue= { offsetX: object.wrapper.offsetX, offsetY: object.wrapper.offsetY}
         }
         if (isSame && !isBlazor()) {

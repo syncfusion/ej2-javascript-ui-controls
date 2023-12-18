@@ -1,6 +1,6 @@
 import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption, ITooltipRenderCompleteEventArgs, FontModel } from '../index';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
-import { createElement, Browser, isNullOrUndefined, extend, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined, extend, remove } from '@syncfusion/ej2-base';
 import { TooltipSettingsModel, LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
 import { MapLocation, getMousePosition, Internalize, checkPropertyPath, getValueFromObject,
     formatValue, convertStringToValue } from '../utils/helper';
@@ -33,7 +33,7 @@ export class MapsTooltip {
     public renderTooltip(e: PointerEvent): void {
         let pageX: number; let pageY: number;
         let target: Element; let touchArg: TouchEvent;
-        let tooltipArgs: ITooltipRenderEventArgs; let tooltipTemplateElement: HTMLElement;
+        let tooltipArgs: ITooltipRenderEventArgs;
         if (e.type.indexOf('touch') !== - 1) {
             this.isTouch = true;
             touchArg = <TouchEvent & PointerEvent>e;
@@ -179,7 +179,11 @@ export class MapsTooltip {
                     id: this.maps.element.id + '_mapsTooltip',
                     className: 'EJ2-maps-Tooltip'
                 });
-                tooltipEle.style.cssText = 'position: absolute;pointer-events:none;';
+                if (isNullOrUndefined(option.template) || option.template === '' || this.maps.tooltipDisplayMode === 'MouseMove') {
+                    tooltipEle.style.cssText = 'position: absolute;pointer-events:none;';
+                } else {
+                    tooltipEle.style.position = 'absolute';
+                }
                 document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(tooltipEle);
             }
             if (typeof option.template !== 'function' && option.template !== null && Object.keys(typeof option.template === 'object' ? option.template : {}).length === 1) {
@@ -223,8 +227,8 @@ export class MapsTooltip {
                             header: '',
                             data: option['data'],
                             template: option['template'],
-                            content: tooltipArgs.content.toString() !== currentData.toString() ? [SanitizeHtmlHelper.sanitize(tooltipArgs.content.toString())] :
-                                [SanitizeHtmlHelper.sanitize(currentData.toString())],
+                            content: tooltipArgs.content.toString() !== currentData.toString() ? [tooltipArgs.content.toString()] :
+                                [currentData.toString()],
                             shapes: [],
                             location: option['location'],
                             palette: [markerFill],
@@ -240,8 +244,8 @@ export class MapsTooltip {
                             header: '',
                             data: tooltipArgs.options['data'],
                             template: tooltipArgs.options['template'],
-                            content: tooltipArgs.content.toString() !== currentData.toString() ? [SanitizeHtmlHelper.sanitize(tooltipArgs.content.toString())] :
-                                [SanitizeHtmlHelper.sanitize(currentData.toString())],
+                            content: tooltipArgs.content.toString() !== currentData.toString() ? [tooltipArgs.content.toString()] :
+                                [currentData.toString()],
                             shapes: [],
                             location: tooltipArgs.options['location'],
                             palette: [markerFill],
@@ -260,13 +264,6 @@ export class MapsTooltip {
                     this.svgTooltip.appendTo(tooltipEle);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.maps as any).renderReactTemplates();
-                    tooltipTemplateElement = document.getElementById(this.maps.element.id + '_mapsTooltip');
-                    if (tooltipTemplateElement !== null && tooltipTemplateElement.innerHTML.indexOf('href') !== -1
-                        && tooltipTemplateElement.innerHTML.indexOf('</a>') !== -1) {
-                        let templateStyle: string = tooltipTemplateElement.getAttribute('style');
-                        templateStyle = templateStyle.replace('pointer-events: none;', 'position-events:all;');
-                        tooltipTemplateElement.style.cssText = templateStyle;
-                    }
                 } else {
                     this.clearTooltip(<HTMLElement>e.target);
                 }
@@ -286,11 +283,8 @@ export class MapsTooltip {
                 this.clearTooltip(<HTMLElement>e.target);
             }
         } else {
-            tooltipTemplateElement = document.getElementById(this.maps.element.id + '_mapsTooltip');
-            if (tooltipTemplateElement !== null && tooltipTemplateElement.innerHTML.indexOf('href') !== -1
-                && tooltipTemplateElement.innerHTML.indexOf('</a>') !== -1) {
-                this.maps.notify(click, this);
-            } else {
+            let tooltipElement: Element = (e.target as HTMLElement).closest('#' + this.maps.element.id + '_mapsTooltipparent_template');
+            if (isNullOrUndefined(tooltipElement)) {
                 this.clearTooltip(<HTMLElement>e.target);
             }
         }

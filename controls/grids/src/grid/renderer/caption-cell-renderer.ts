@@ -48,13 +48,13 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
                 if (gObj.getVisibleColumns()[0].field === gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)]
                     .field && gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].groupCaptionTemplate) {
                     const gCaptionTemp: string | Function = (gObj.aggregates[parseInt(j.toString(), 10)]
-                    .columns[parseInt(i.toString(), 10)].groupCaptionTemplate as string);
+                        .columns[parseInt(i.toString(), 10)].groupCaptionTemplate as string);
                     if (typeof gCaptionTemp === 'string' && gCaptionTemp.includes('$')) {
                         gTemplateValue = (gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)]
                             .groupCaptionTemplate as string).split('$')[0] + data[gObj.getVisibleColumns()[0].field][gObj
                                 .aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)].type] +
                             (gObj.aggregates[parseInt(j.toString(), 10)].columns[parseInt(i.toString(), 10)]
-                            .groupCaptionTemplate as string).split('}')[1];
+                                .groupCaptionTemplate as string).split('}')[1];
                     }
                     else {
                         const column: AggregateColumn = <AggregateColumn>(gObj.aggregates[parseInt(j.toString(), 10)]

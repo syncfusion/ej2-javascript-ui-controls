@@ -378,6 +378,7 @@ export class StripLine {
                 rect.height, stripline.verticalAlignment
             );
             anchor = stripline.horizontalAlignment;
+            anchor = chart.enableRtl ? (anchor === 'End' ? 'Start' : anchor === 'Start' ? 'End' : anchor) : anchor;
         }
         textElement(
             chart.renderer,

@@ -11,7 +11,7 @@ import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, merge
 import { createStyle } from './utils/helper';
 import { ZoomSettings, LegendSettings } from './model/base';
 import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation, CenterPosition } from './model/base';
-import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel } from './model/base-model';
+import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel, PolygonSettingsModel } from './model/base-model';
 import { MarkerSettingsModel, SelectionSettingsModel, InitialMarkerSelectionSettingsModel } from './model/base-model';
 import { TitleSettingsModel, BorderModel, MarginModel, CenterPositionModel, InitialShapeSelectionSettingsModel } from './model/base-model';
 import { MapsAreaSettingsModel, AnnotationModel } from './model/base-model';
@@ -22,11 +22,11 @@ import { Highlight } from './user-interaction/highlight';
 import { Selection } from './user-interaction/selection';
 import { MapsTooltip } from './user-interaction/tooltip';
 import { Zoom } from './user-interaction/zoom';
-import { load, click, onclick, rightClick, loaded, doubleClick, resize, shapeSelected, itemSelection, zoomIn } from './model/constants';
+import { load, click, onclick, rightClick, loaded, doubleClick, resize, shapeSelected, zoomIn } from './model/constants';
 import { ProjectionType, MapsTheme, PanDirection, TooltipGesture } from './utils/enum';
 import { MapsModel } from './maps-model';
 import { getThemeStyle, Theme } from './model/theme';
-import { ILoadEventArgs, ILoadedEventArgs, IMouseEventArgs, IResizeEventArgs, ITooltipRenderEventArgs } from './model/interface';
+import { ILoadEventArgs, ILoadedEventArgs, IMinMaxLatitudeLongitude, IMouseEventArgs, IResizeEventArgs, ITooltipRenderEventArgs } from './model/interface';
 import { GeoPosition, ITooltipRenderCompleteEventArgs, ILegendRenderingEventArgs } from './model/interface';
 import { ILayerRenderingEventArgs, IShapeRenderingEventArgs, IMarkerRenderingEventArgs, IMarkerClickEventArgs } from './model/interface';
 import { IMarkerMoveEventArgs, ILabelRenderingEventArgs, IBubbleMoveEventArgs, IBubbleClickEventArgs } from './model/interface';
@@ -40,6 +40,7 @@ import { Annotations } from '../maps/user-interaction/annotation';
 import { FontModel, DataLabel, MarkerSettings, IAnnotationRenderingEventArgs, IMarkerDragEventArgs } from './index';
 import { NavigationLineSettingsModel, changeBorderWidth } from './index';
 import { NavigationLine } from './layers/navigation-selected-line';
+import { Polygon } from './layers/polygon';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { ExportType } from '../maps/utils/enum';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
@@ -48,7 +49,7 @@ import { PdfExport } from './model/export-pdf';
 import { ImageExport } from './model/export-image';
 
 /**
- * Represents the maps control. It is ideal for rendering maps from GeoJSON data or other map providers like OpenStreetMap, Google Maps, Bing Maps, etc that 
+ * Represents the maps control. It is ideal for rendering maps from GeoJSON data or other map providers like OpenStreetMap, Google Maps, Bing Maps, etc that
  * has rich feature set that includes markers, labels, bubbles and much more.
  * ```html
  * <div id="maps"/>
@@ -64,61 +65,67 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     //Module Declaration of Maps.
     /**
      * Gets or sets the module to add bubbles in the maps.
-     * 
+     *
      * @private
      */
     public bubbleModule: Bubble;
     /**
      * Sets and get the module to add the marker in the maps.
-     * 
+     *
      * @private
      */
     public markerModule: Marker;
     /**
      * Gets or sets the module to add the data-label in the maps.
-     * 
+     *
      * @private
      */
     public dataLabelModule: DataLabel;
     /**
      * Gets or sets the module to highlight the element when mouse has hovered on it in maps.
-     * 
+     *
      * @private
      */
     public highlightModule: Highlight;
     /**
      * Gets or sets the module to add the navigation lines in the maps.
-     * 
+     *
      * @private
      */
     public navigationLineModule: NavigationLine;
     /**
+     * Gets or sets the module to add the polygon shapes over the maps.
+     *
+     * @private
+     */
+    public polygonModule: Polygon;
+    /**
      * Gets or sets the module to add the legend in maps.
-     * 
+     *
      * @private
      */
     public legendModule: Legend;
     /**
      * Gets or sets the module to select the geometric shapes when clicking in maps.
-     * 
+     *
      * @private
      */
     public selectionModule: Selection;
     /**
      * Gets or sets the module to add the tooltip when mouse has hovered on an element in maps.
-     * 
+     *
      * @private
      */
     public mapsTooltipModule: MapsTooltip;
     /**
      * Gets or sets the module to add the zooming operations in maps.
-     * 
+     *
      * @private
      */
     public zoomModule: Zoom;
     /**
      * Gets or sets the module to add annotation elements in maps.
-     * 
+     *
      * @private
      */
     public annotationsModule: Annotations;
@@ -790,6 +797,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public selectedNavigationElementId: string[] = [];
     /** @private */
+    public polygonSelectionClass: Element;
+    /** @private */
+    public selectedPolygonElementId: string[] = [];
+    /** @private */
     public legendSelectionClass: SelectionSettingsModel;
     /** @private */
     public selectedLegendElementId: number[] = [];
@@ -816,6 +827,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public initialTileTranslate: Point = new Point(0, 0);
     /** @private */
     public previousTileWidth: number;
+    /** @private */
+    public isMarkerZoomCompleted: boolean = false;
     /** @private */
     public markerDragId: string = '';
     /** @private */
@@ -1009,8 +1022,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const fetchApiModule: Fetch = new Fetch(localAjax.dataOptions, localAjax.type, localAjax.contentType);
         fetchApiModule.onSuccess = (args: any) => {
             if (!isNullOrUndefined(args.type) && args.type === 'application/octet-stream') {
-                let reader: FileReader = new FileReader();
-                let map: Maps = this;
+                const reader: FileReader = new FileReader();
+                const map: Maps = this;
                 reader.onload = function (data) {
                     args = JSON.parse(reader.result.toString());
                     map.processResponseJsonData('Fetch', args, layer, type);
@@ -1172,9 +1185,19 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.zoomModule.removeToolbarOpacity(this.isTileMap ? Math.round(this.tileZoomLevel) : this.mapScaleValue, this.element.id + '_Zooming_');
         }
         if (!this.isZoomByPosition && !this.zoomNotApplied) {
-            this.trigger(loaded, { maps: this, isResized: this.isResize });
+            this.triggerZoomEvent();
         }
         this.isResize = false;
+    }
+    private triggerZoomEvent(): void { 
+        let loadedArgs: ILoadedEventArgs;
+        const minMaxLatitudeLongitude: IMinMaxLatitudeLongitude = this.getMinMaxLatitudeLongitude();
+        loadedArgs = {
+            maps: this, isResized: this.isResize, minLatitude: minMaxLatitudeLongitude.minLatitude,
+            maxLatitude: minMaxLatitudeLongitude.maxLatitude, minLongitude: minMaxLatitudeLongitude.minLongitude,
+            maxLongitude: minMaxLatitudeLongitude.maxLongitude, cancel: false, name: 'Loaded'
+        }
+        this.trigger('loaded', loadedArgs);
     }
 
     /**
@@ -1360,6 +1383,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
+    /**
+     * @returns {void}
+     */
+    public getMinMaxLatitudeLongitude(): IMinMaxLatitudeLongitude {
+        const element: ClientRect = document.getElementById(this.element.id).getBoundingClientRect();
+        let minPosition: GeoPosition = this.isTileMap ? this.pointToLatLong((this.mapAreaRect.x - this.margin.left),
+            - this.mapAreaRect.y) : this.getGeoLocation(0, (this.mapAreaRect.x + element.left), this.mapAreaRect.y);
+        let maxPosition: GeoPosition = this.isTileMap ? this.pointToLatLong(this.mapAreaRect.width, (this.mapAreaRect.height - this.mapAreaRect.y)) :
+            this.getGeoLocation(0, (this.mapAreaRect.x + element.left + this.mapAreaRect.width), (this.mapAreaRect.y + this.mapAreaRect.height));
+        const MinMaxLatitudeLongitude: IMinMaxLatitudeLongitude = {
+            minLatitude: minPosition.latitude, maxLatitude: maxPosition.latitude, minLongitude: minPosition.longitude,
+            maxLongitude: maxPosition.longitude
+        };
+        return MinMaxLatitudeLongitude;
+    }
     /**
      * @returns {void}
      * @private
@@ -2309,7 +2347,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public zoomByPosition(centerPosition: { latitude: number, longitude: number }, zoomFactor: number): void {
         if (!this.isDestroyed) {
-            this.zoomNotApplied = false;
+            this.zoomNotApplied = this.isMarkerZoomCompleted = false;
             let isRefresh: boolean = this.zoomSettings.zoomFactor === zoomFactor;
             this.previousProjection = null;
             if (!this.isTileMap && this.zoomModule) {
@@ -2406,14 +2444,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {void}
      */
     public addMarker(layerIndex: number, markerCollection: MarkerSettingsModel[]): void {
-        if (!this.isDestroyed) {
+        if (!this.isDestroyed && !isNullOrUndefined(this.markerModule)) {
             const layerEle: Element = document.getElementById(this.element.id + '_LayerIndex_' + layerIndex);
             if (markerCollection.length > 0 && layerEle) {
                 for (const newMarker of markerCollection) {
                     this.layersCollection[layerIndex as number].markerSettings.push(new MarkerSettings(this, 'markerSettings', newMarker));
                 }
-                const markerModule: Marker = new Marker(this);
-                markerModule.markerRender(this, layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
+                this.markerModule.markerRender(this, layerEle, layerIndex, this.mapLayerPanel['currentFactor'], 'AddMarker');
                 this.arrangeTemplate();
             }
         }
@@ -2540,6 +2577,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public zoomToCoordinates(minLatitude: number, minLongitude: number, maxLatitude: number, maxLongitude: number): void {
         if (!this.isDestroyed) {
+            this.isMarkerZoomCompleted = false;
             let centerLatitude: number;
             let centerLongtitude: number;
             let isTwoCoordinates: boolean = false;
@@ -2577,13 +2615,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.maxLongOfGivenLocation = maxLongitude;
             this.zoomNotApplied = true;
             this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude,
-                                                           this.mapAreaRect.width, this.mapAreaRect.height, this, true);
+                                                           this.mapAreaRect.width, this.mapAreaRect.height, this, true);            
+            const minMaxLatitudeLongitude: IMinMaxLatitudeLongitude = this.getMinMaxLatitudeLongitude();
             const zoomArgs: IMapZoomEventArgs = {
                 cancel: false, name: 'zoom', type: zoomIn, maps: this,
                 tileTranslatePoint: {}, translatePoint: {},
                 tileZoomLevel: this.isTileMap ? { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation } : {},
                 scale: !this.isTileMap ? { previous: this.scale, current: this.scaleOfGivenLocation } :
-                    { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation }
+                    { previous: this.tileZoomLevel, current: this.scaleOfGivenLocation },                
+                minLatitude: minMaxLatitudeLongitude.minLatitude, maxLatitude: minMaxLatitudeLongitude.maxLatitude,
+                minLongitude: minMaxLatitudeLongitude.minLongitude, maxLongitude: minMaxLatitudeLongitude.maxLongitude
             };
             this.trigger('zoom', zoomArgs);
             this.refresh();
@@ -2756,6 +2797,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                             render = false;
                         } else if (newProp.zoomSettings.shouldZoomInitially !== oldProp.zoomSettings.shouldZoomInitially) {
                             this.zoomSettings.zoomFactor = 1;
+                            this.previousProjection = null;
+                            this.scale = this.isMarkerZoomCompleted ? null : this.scale;
+                            this.isMarkerZoomCompleted = !newProp.zoomSettings.shouldZoomInitially;
                             render = true;
                         } else if (newProp.zoomSettings.enable !== oldProp.zoomSettings.enable) {
                             this.zoomSettings.zoomFactor = 1;
@@ -2855,6 +2899,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 args: [this]
             });
         }
+        if (this.isPolygonVisible()) {
+            modules.push({
+                member: 'Polygon',
+                args: [this]
+            });
+        }
 
         if (isVisible.tooltip) {
             modules.push({
@@ -2937,6 +2987,24 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         Array.prototype.forEach.call(this.layers, (layer: LayerSettings) => {
             for (let i: number = 0; i < layer.navigationLineSettings.length; i++) {
                 if (layer.navigationLineSettings[i as number].visible) {
+                    isVisible = true;
+                    break;
+                }
+            }
+        });
+        return isVisible;
+    }
+
+    /**
+     * To find navigation line visibility
+     *
+     * @returns {boolean} - Returns whether the navigation lines are visible or not.
+     */
+    private isPolygonVisible(): boolean {
+        let isVisible: boolean = false;
+        Array.prototype.forEach.call(this.layers, (layer: LayerSettings) => {
+            for (let i: number = 0; i < layer.polygonSettings.polygons.length; i++) {
+                if (layer.polygonSettings.polygons.length > 0) {
                     isVisible = true;
                     break;
                 }
@@ -3056,17 +3124,24 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     ): { layer: boolean, bubble: boolean, tooltip: boolean, selection: boolean, highlight: boolean } {
         let bubbles: BubbleSettingsModel[];
         let markers: MarkerSettingsModel[];
-        let navigationLine: NavigationLineSettingsModel[];
+        let polygonSetting: PolygonSettingsModel;
         for (const layer of layers) {
             isLayerVisible = layer.visible || isLayerVisible;
             if (layer.visible) {
                 bubbles = layer.bubbleSettings;
                 markers = layer.markerSettings;
-                navigationLine = layer.navigationLineSettings;
+                polygonSetting = layer.polygonSettings;
+                let navigationLine: NavigationLineSettingsModel[] = layer.navigationLineSettings;
                 for (const navigation of navigationLine) {
                     if (navigation.visible) {
                         isSelection = (!isNullOrUndefined(navigation.highlightSettings) && navigation.highlightSettings.enable) || isSelection;
                         isHighlight = (!isNullOrUndefined(navigation.selectionSettings) && navigation.selectionSettings.enable) || isHighlight;
+                    }
+                }
+                for (const polygon of polygonSetting.polygons) {
+                    if (polygon.points.length > 0) {
+                        isSelection = layer.polygonSettings.highlightSettings.enable || isSelection;
+                        isHighlight = layer.polygonSettings.selectionSettings.enable || isHighlight;
                     }
                 }
                 for (const marker of markers) {
@@ -3161,7 +3236,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public pointToLatLong(pageX: number, pageY: number): Object {
         let latitude: number = 0;
         let longitude: number = 0;
-        if (!this.isDestroyed) {
+        if (!this.isDestroyed && !isNullOrUndefined(this.translatePoint)) {
             const padding: number = this.layers[this.layers.length - 1].layerType === 'GoogleStaticMap' ? 0 : 10;
             pageY = pageY + padding;
             const mapSize: number = 256 * Math.pow(2, this.tileZoomLevel);

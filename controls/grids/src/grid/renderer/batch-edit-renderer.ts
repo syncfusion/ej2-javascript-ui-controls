@@ -32,6 +32,7 @@ export class BatchEditRender {
             args.cell.remove();
             args.cell = newTd;
         }
+        args.cell.setAttribute('aria-label',args.cell.innerHTML + this.parent.localeObj.getConstant('ColumnHeader') + args.columnObject.field);
         args.cell.innerHTML = '';
         args.cell.appendChild(this.getEditElement(elements, args));
         args.cell.classList.add('e-editedbatchcell');

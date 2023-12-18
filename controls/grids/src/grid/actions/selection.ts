@@ -1154,7 +1154,8 @@ export class Selection implements IAction {
             let isUnSelected: boolean = index > -1;
             if (isUnSelected) {
                 const selectedCellIdx: number[] = this.selectedRowCellIndexes[parseInt(index.toString(), 10)].cellIndexes;
-                if (selectedCellIdx.indexOf(cellIndex.cellIndex) > -1) {
+                if (selectedCellIdx.indexOf(cellIndex.cellIndex) > -1 || (this.selectionSettings.mode === 'Both' &&
+                    selectedCell.classList.contains('e-gridchkbox') && !selectedCell.getAttribute('aria-selected'))) {
                     this.cellDeselect(
                         events.cellDeselecting, [{ rowIndex: cellIndex.rowIndex, cellIndexes: [cellIndex.cellIndex] }],
                         selectedData, [selectedCell], foreignKeyData);

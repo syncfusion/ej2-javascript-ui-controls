@@ -2,23 +2,19 @@
 
 ## [Unreleased]
 
-## 23.1.43 (2023-10-31)
+## 24.1.41 (2023-12-18)
 
 ### DropDownButton
 
 #### Bug Fixes
 
-- `#I510977` - Provide the original event arguments support in the DropDownButton select event.
-
-## 23.1.41 (2023-10-17)
+- `#I524330` - Issue DropDownButton Popup not repositioning on the resizing window has been resolved.
 
 ### DropDownButton
 
 #### Bug Fixes
 
-- `#I511002` - Issue in `Aria-label` accessibility issue in DropDownButton has been resolved
-
-## 23.1.36 (2023-09-15)
+- `#I511002` - Issue in `Aria-label` accessibility issue in DropDownButton has been resolved.
 
 ### DropDownButton
 

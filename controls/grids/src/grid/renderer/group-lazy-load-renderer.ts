@@ -392,6 +392,9 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         if (this.parent.scrollModule['content'].scrollTop > this.scrollTopCache && !this.parent.enableVirtualization) {
             this.parent.scrollModule['content'].scrollTop = this.scrollTopCache;
         }
+        if (this.parent.getContentTable().scrollHeight < this.parent.getContent().clientHeight && this.parent.height !== 'auto') {
+            this.parent.scrollModule.setLastRowCell();
+        }
         this.parent.notify(events.refreshExpandandCollapse, { rows: this.refRowsObj[parseInt(page.toString(), 10)] });
     }
 
@@ -488,6 +491,9 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         this.childCount = 0;
         for (let i: number = 0; i < rows.length; i++) {
             this.refRowsObj[this.parent.pageSettings.currentPage].splice(captionIndex + i + 1, 0, rows[parseInt(i.toString(), 10)]);
+        }
+        if (lastRow && tr.querySelector('.e-lastrowcell')) {
+            (this.parent as Grid).groupModule.lastCaptionRowBorder();
         }
         this.parent.notify(events.refreshExpandandCollapse, { rows: this.refRowsObj[this.parent.pageSettings.currentPage] });
         if (this.parent.enableVirtualMaskRow) {
@@ -1151,6 +1157,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const pred: Predicate = generateExpandPredicates(args.fields, args.keys, this);
         const predicateList: Predicate[] = getPredicates(pred);
         const lazyLoad: Object = { level: level, skip: args.skip, take: args.take, where: predicateList };
+        args.lazyLoadQuery = lazyLoad;
+        args.requestType = 'onDemandGroupInfo';
         if (args.makeRequest) {
             const query: Query = this.parent.renderModule.data.generateQuery(true);
             if (!query.isCountRequired) {
@@ -1163,7 +1171,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             } else {
                 this.parent.showSpinner();
             }
-            this.parent.renderModule.data.getData({}, query).then((e: ReturnType) => {
+            this.parent.renderModule.data.getData(args, query).then((e: ReturnType) => {
                 if (this.parent.enableVirtualization) {
                     this.parent.islazyloadRequest = true;
                 }

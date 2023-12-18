@@ -1,7 +1,7 @@
 import { extend, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dimension } from '@syncfusion/ej2-inputs';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { BeforeSaveEventArgs, FileType, ImageEditor, Point, SaveEventArgs, SelectionPoint, ActivePoint } from '../index';
+import { BeforeSaveEventArgs, FileType, ImageEditor, Point, SaveEventArgs, SelectionPoint, ActivePoint, CurrentObject } from '../index';
 
 export class Export {
     private parent: ImageEditor;
@@ -49,6 +49,9 @@ export class Export {
         case 'drawAnnotation':
             this.drawAnnotation(args.value['context'], args.value['ratio']);
             break;
+        case 'updateSaveContext':
+            this.updateSaveContext(args.value['context']);
+            break;
         }
     }
 
@@ -78,7 +81,7 @@ export class Export {
                 parent.currObjType.isZoomed = true;
                 parent.notify('shape', { prop: 'apply', onPropertyChange: false, value: {shape: null, obj: null, canvas: null}});
             }
-            if (parent.textArea.style.display === 'block') {
+            if (parent.textArea.style.display === 'block' || parent.textArea.style.display === 'inline-block') {
                 parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,
                     value: {x: null, y: null, isMouseDown: null}});
             }
@@ -172,12 +175,25 @@ export class Export {
     private exportToCanvas(object?: Object): HTMLCanvasElement {
         const parent: ImageEditor = this.parent;
         let width: number; let height: number;
+        const tempCropObj: CurrentObject = extend({}, parent.cropObj, {}, true) as CurrentObject;
+        const tempObj: Object = {currObj: {} as CurrentObject };
+        parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: tempObj }});
+        const prevObj: CurrentObject = tempObj['currObj'];
+        prevObj.objColl = extend([], parent.objColl, [], true) as SelectionPoint[];
+        prevObj.pointColl = extend([], parent.pointColl, [], true) as Point[];
+        prevObj.afterCropActions = extend([], parent.afterCropActions, [], true) as string[];
+        const selPointCollObj: Object = {selPointColl: null };
+        parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
+            value: {obj: selPointCollObj }});
         if (this.parent.aspectWidth) {
+            parent.notify('undo-redo', { prop: 'setPreventUR', value: { bool: true } });
             if (!isBlazor()) {
                 parent.notify('toolbar', { prop: 'resizeClick', value: {bool: false }}); 
             } else {
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                 (parent as any).performResizeClick();
             }
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             (parent as any).currentToolbar = 'resize-toolbar';
             parent.okBtn();
             if (parent.transform.degree % 90 === 0 && parent.transform.degree % 180 !== 0) {
@@ -185,6 +201,7 @@ export class Export {
             } else {
                 width = this.parent.aspectWidth; height = this.parent.aspectHeight;
             }
+            parent.notify('undo-redo', { prop: 'setPreventUR', value: { bool: false } });
         }
         else if (parent.currSelectionPoint) { width = parent.img.srcWidth; height = parent.img.srcHeight; }
         else {width = parent.baseImgCanvas.width; height = parent.baseImgCanvas.height; }
@@ -214,9 +231,8 @@ export class Export {
         const temp: string = this.lowerContext.filter;
         tempContext.filter = this.lowerContext.filter;
         this.downScaleImgCanvas(tempContext, width, height);
-        this.updateFrame(tempContext);
         this.lowerContext.filter = temp;
-        if (parent.transform.degree !== 0 || parent.transform.currFlipState !== '') {
+        if (parent.transform.degree !== 0 || parent.transform.currFlipState !== '' || parent.transform.straighten !== 0) {
             this.updateSaveContext(tempContext);
             this.exportTransformedImage(tempContext);
         }
@@ -228,6 +244,29 @@ export class Export {
         this.updateFrame(tempContext, true);
         this.lowerContext.filter = tempContextFilter; parent.canvasFilter = tempContextFilter;
         if (object) { object['canvas'] = tempCanvas; }
+        if (parent.aspectWidth) {
+            parent.objColl = []; parent.pointColl = []; parent.freehandCounter = 0;
+            parent.notify('freehand-draw', { prop: 'setSelPointColl', onPropertyChange: false,
+                value: {obj: {selPointColl: [] }}});
+            parent.notify('draw', { prop: 'setCurrentObj', onPropertyChange: false, value: {obj: prevObj }});
+            prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
+            parent.notify('freehand-draw', { prop: 'setSelPointColl', onPropertyChange: false,
+                value: {obj: {selPointColl: prevObj.selPointColl }}});
+            parent.cropObj = tempCropObj;
+            parent.objColl = extend([], prevObj.objColl, [], true) as SelectionPoint[];
+            parent.pointColl = extend([], prevObj.pointColl, [], true) as Point[];
+            parent.freehandCounter = parent.pointColl.length;
+            parent.transform.straighten = 0;
+            this.lowerContext.filter = 'none';
+            parent.notify('shape', { prop: 'zoomObjColl', onPropertyChange: false, value: {isPreventApply: null}});
+            parent.notify('freehand-draw', { prop: 'zoomFHDColl', onPropertyChange: false, value: {isPreventApply: null}});
+            this.lowerContext.filter = prevObj.filter;
+            parent.notify('draw', { prop: 'clearOuterCanvas', onPropertyChange: false, value: {context: this.lowerContext}});
+            if (parent.isCircleCrop || (parent.currSelectionPoint && parent.currSelectionPoint.shape === 'crop-circle')) {
+                parent.notify('crop', { prop: 'cropCircle', onPropertyChange: false,
+                    value: {context: this.lowerContext, isSave: null, isFlip: null}});
+            }
+        }
         return tempCanvas;
     }
 
@@ -238,7 +277,8 @@ export class Export {
             tempContext.filter = 'none';
             const tempObjColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
             for (let i: number = 0, len: number = parent.objColl.length ; i < len; i++) {
-                const activePoint: ActivePoint = parent.objColl[i as number].activePoint;
+                const currObj: SelectionPoint = parent.objColl[i as number];
+                const activePoint: ActivePoint = currObj.activePoint;
                 // Subtracting destination left and top points
                 activePoint.startX -= parent.img.destLeft;
                 activePoint.startY -= parent.img.destTop;
@@ -253,19 +293,19 @@ export class Export {
                 activePoint.endY *= ratio.height;
                 activePoint.width = activePoint.endX - activePoint.startX;
                 activePoint.height = activePoint.endY - activePoint.startY;
-                parent.objColl[i as number].strokeSettings.strokeWidth *= ((ratio.width + ratio.height) / 2);
-                if (parent.objColl[i as number].shape === 'text') {
-                    parent.objColl[i as number].textSettings.fontSize *= ((ratio.width + ratio.height) / 2);
-                } else if (parent.objColl[i as number].shape === 'path') {
-                    for (let l: number = 0; l < parent.objColl[i as number].pointColl.length; l++) {
-                        parent.objColl[i as number].pointColl[l as number].x =
-                            (parent.objColl[i as number].pointColl[l as number].x - parent.img.destLeft) * ratio.width;
-                        parent.objColl[i as number].pointColl[l as number].y =
-                            (parent.objColl[i as number].pointColl[l as number].y - parent.img.destTop) * ratio.height;
+                currObj.strokeSettings.strokeWidth *= ((ratio.width + ratio.height) / 2);
+                if (currObj.shape === 'text') {
+                    currObj.textSettings.fontSize *= ((ratio.width + ratio.height) / 2);
+                } else if (currObj.shape === 'path') {
+                    for (let l: number = 0; l < currObj.pointColl.length; l++) {
+                        currObj.pointColl[l as number].x =
+                            (currObj.pointColl[l as number].x - parent.img.destLeft) * ratio.width;
+                        currObj.pointColl[l as number].y =
+                            (currObj.pointColl[l as number].y - parent.img.destTop) * ratio.height;
                     }
-                } else if (parent.objColl[i as number].shape === 'image') {
+                } else if (currObj.shape === 'image') {
                     parent.activeObj = extend({}, parent.objColl[i as number], {}, true) as SelectionPoint;
-                    parent.notify('selection', { prop: 'upgradeImageQuality', onPropertyChange: false});
+                    parent.notify('selection', { prop: 'upgradeImageQuality', onPropertyChange: false });
                     parent.objColl[i as number] = extend({}, parent.activeObj, {}, true) as SelectionPoint;
                 }
                 parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: {canvas: 'saveContext', obj: parent.objColl[i as number], isCropRatio: null,
@@ -276,6 +316,8 @@ export class Export {
             parent.objColl = tempObjColl;
         }
         if (parent.freehandCounter > 0) {
+            const widthObj: Object = {penStrokeWidth: null };
+            parent.notify('freehand-draw', {prop: 'getPenStrokeWidth', onPropertyChange: false, value: {obj: widthObj }});
             // eslint-disable-next-line
             const tempPointColl: any = extend({}, parent.pointColl, {}, true);
             for (let n: number = 0; n < parent.freehandCounter; n++) {
@@ -291,6 +333,7 @@ export class Export {
             parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
                 value: {context: tempContext, points: null} });
             parent.pointColl = tempPointColl;
+            parent.notify('freehand-draw', {prop: 'setPenStrokeWidth', onPropertyChange: false, value: {value: widthObj['penStrokeWidth'] }});
         }
     }
 
@@ -336,15 +379,17 @@ export class Export {
     private exportTransformedImage(tempContext: CanvasRenderingContext2D): void {
         const parent: ImageEditor = this.parent;
         const degree: number = parent.transform.degree;
-        for (let i: number = 0, len: number = parent.rotateFlipColl.length; i < len; i++) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const flip: any = parent.rotateFlipColl[i as number];
-            if (typeof flip === 'number') {
-                this.exportRotate(tempContext, flip as number);
-            } else if (flip === 'horizontal') {
-                this.exportFlip(tempContext, true, false);
-            } else if (flip === 'vertical') {
-                this.exportFlip(tempContext, false, true);
+        if (parent.rotateFlipColl.length > 0) {
+            for (let i: number = 0, len: number = parent.rotateFlipColl.length; i < len; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const flip: any = parent.rotateFlipColl[i as number];
+                if (typeof flip === 'number') {
+                    this.exportRotate(tempContext, flip as number);
+                } else if (flip === 'horizontal') {
+                    this.exportFlip(tempContext, true, false);
+                } else if (flip === 'vertical') {
+                    this.exportFlip(tempContext, false, true);
+                }
             }
         }
         parent.transform.degree = degree;
@@ -352,6 +397,7 @@ export class Export {
 
     private exportRotate(tempContext: CanvasRenderingContext2D, degree: number): void {
         const parent: ImageEditor = this.parent;
+        tempContext.clearRect(0, 0, tempContext.canvas.width, tempContext.canvas.height);
         this.setMaxDim(parent.transform.degree, tempContext.canvas);
         tempContext.translate(tempContext.canvas.width / 2, tempContext.canvas.height / 2);
         tempContext.rotate(Math.PI / 180 * degree);
@@ -361,6 +407,7 @@ export class Export {
     }
 
     private exportFlip(tempContext: CanvasRenderingContext2D, flipHorizontal: boolean, flipVertical: boolean): void {
+        tempContext.clearRect(0, 0, tempContext.canvas.width, tempContext.canvas.height);
         if (flipHorizontal) {
             tempContext.translate(tempContext.canvas.width, 0);
             tempContext.scale(-1, 1);
@@ -383,12 +430,23 @@ export class Export {
 
     private setMaxDim(degree: number, tempCanvas: HTMLCanvasElement): void {
         let newWidth: number; let newHeight: number;
+
         if (degree % 90 === 0 && degree % 180 !== 0) {
-            newWidth = isNullOrUndefined(this.parent.currSelectionPoint) ? this.parent.baseImgCanvas.height : this.parent.img.srcHeight;
-            newHeight = isNullOrUndefined(this.parent.currSelectionPoint) ? this.parent.baseImgCanvas.width : this.parent.img.srcWidth;
+            if (isNullOrUndefined(this.parent.currSelectionPoint)) {
+                newWidth = this.parent.baseImgCanvas.height;
+                newHeight = this.parent.baseImgCanvas.width;
+            } else {
+                newWidth = this.parent.img.srcHeight;
+                newHeight = this.parent.img.srcWidth;
+            }
         } else if (degree % 180 === 0 || degree === 0) {
-            newWidth = isNullOrUndefined(this.parent.currSelectionPoint) ? this.parent.baseImgCanvas.width : this.parent.img.srcWidth;
-            newHeight = isNullOrUndefined(this.parent.currSelectionPoint) ? this.parent.baseImgCanvas.height : this.parent.img.srcHeight;
+            if (isNullOrUndefined(this.parent.currSelectionPoint)) {
+                newWidth = this.parent.baseImgCanvas.width;
+                newHeight = this.parent.baseImgCanvas.height;
+            } else {
+                newWidth = this.parent.img.srcWidth;
+                newHeight = this.parent.img.srcHeight;
+            }
         }
         if (!isNullOrUndefined(this.parent.aspectWidth)) {
             newWidth = this.parent.aspectWidth;

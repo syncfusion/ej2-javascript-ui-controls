@@ -1,7 +1,7 @@
 import { IAction, IGrid, ResponsiveDialogArgs, KeyboardEventArgs, NotifyArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { EventHandler, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
+import { EventHandler, isNullOrUndefined, remove, Browser } from '@syncfusion/ej2-base';
 import { parentsUntil, addBiggerDialog, addRemoveEventListener } from '../base/util';
 import { Column } from '../models/column';
 import * as events from '../base/constant';
@@ -28,6 +28,7 @@ export class ResponsiveDialogRenderer implements IAction {
     private backBtn: Button;
     private sortPredicate: SortDescriptorModel[] = [];
     private filteredCol: Column;
+    private menuCol: Column;
     private isCustomDlgRender: boolean;
     private isFiltered: boolean;
     private isRowResponsive: boolean;
@@ -123,69 +124,110 @@ export class ResponsiveDialogRenderer implements IAction {
         if (this.saveBtn) {
             this.saveBtn.disabled = args.disabled;
         }
+        if (this.parent.columnChooserModule && this.parent.columnChooserModule.responsiveDialogRenderer.saveBtn) {
+            this.parent.columnChooserModule.responsiveDialogRenderer.saveBtn.disabled = args.disabled;
+        }
     }
 
-    private renderResponsiveContent(col?: Column): HTMLElement {
+    private columnMenuResponsiveContent(str?: string, locale?: string, disabled?: boolean): void {
+        const cDiv: HTMLElement = this.parent.createElement('div', { className:  'e-responsivecoldiv e-responsive' + str.toLowerCase() + 'div' + (disabled ? ' e-disabled' : '')});
+        const span: HTMLElement = this.parent.createElement('span', { className: 'e-icons e-res' + str.toLowerCase() + '-icon e-btn-icon' });
+        const icon: HTMLElement = this.parent.createElement('span', { innerHTML: locale, className: 'e-rescolumn-menu e-res-header-text' });
+        cDiv.appendChild(span);
+        cDiv.appendChild(icon);
+        this.customColumnDiv.appendChild(cDiv);
+    }
+
+    private renderResponsiveContent(col?: Column, column?: Column): HTMLElement {
         const gObj: IGrid = this.parent;
-        if (col) {
+        const isColumnChooser: boolean = this.action === ResponsiveDialogAction.isColumnChooser;
+        if (col || isColumnChooser) {
             this.filterParent = this.parent.createElement(
                 'div',
-                { className: 'e-mainfilterdiv e-default-filter', id: col.uid + '-main-filter' }
-            );
+                { className: (isColumnChooser ? 'e-maincolumnchooserdiv ' : '') + 'e-mainfilterdiv e-default-filter',
+                    id: (isColumnChooser ? 'columchooser' : col.uid) + '-main-filter' }
+        );
             return this.filterParent;
         } else {
-            const cols: Column[] = gObj.getColumns();
-            this.customColumnDiv = gObj.createElement('div', { className: 'columndiv', styles: 'width: 100%' });
-            const sortBtnParent: HTMLElement = gObj.createElement('div', { className: 'e-ressortbutton-parent' });
-            const filteredCols: string[] = [];
-            const isSort: boolean = this.action === ResponsiveDialogAction.isSort;
-            const isFilter: boolean = this.action === ResponsiveDialogAction.isFilter;
-            if (isFilter) {
-                for (let i: number = 0; i < gObj.filterSettings.columns.length; i++) {
-                    filteredCols.push(gObj.filterSettings.columns[parseInt(i.toString(), 10)].field);
+            this.customColumnDiv = gObj.createElement('div', { className: 'columndiv columnmenudiv', styles: 'width: 100%' });
+            if (this.parent.showColumnMenu && this.parent.rowRenderingMode === 'Horizontal' && this.action === ResponsiveDialogAction.isColMenu) {
+                this.columnMenuResponsiveContent('AutoFitAll', gObj.localeObj.getConstant('AutoFitAll'));
+                this.columnMenuResponsiveContent('AutoFit', gObj.localeObj.getConstant('AutoFit'));
+                if (column.allowGrouping && gObj.allowGrouping) {
+                    this.columnMenuResponsiveContent('Group', gObj.localeObj.getConstant('Group'), gObj.groupSettings.columns.indexOf(column.field) >= 0);
+                    this.columnMenuResponsiveContent('UnGroup', gObj.localeObj.getConstant('Ungroup'), gObj.groupSettings.columns.indexOf(column.field) < 0);
                 }
-            }
-            for (let i: number = 0; i < cols.length; i++) {
-                if (!cols[parseInt(i.toString(), 10)].visible || (!cols[parseInt(i.toString(), 10)].allowSorting && isSort)
-                    || (!cols[parseInt(i.toString(), 10)].allowFiltering && isFilter)) {
-                    continue;
-                }
-                const cDiv: HTMLElement = gObj.createElement('div', { className: 'e-responsivecoldiv' });
-                cDiv.setAttribute('data-e-mappingname', cols[parseInt(i.toString(), 10)].field);
-                cDiv.setAttribute('data-e-mappinguid', cols[parseInt(i.toString(), 10)].uid);
-                const span: HTMLElement = gObj.createElement('span', { innerHTML: cols[parseInt(i.toString(), 10)].headerText, className: 'e-res-header-text' });
-                cDiv.appendChild(span);
-                this.customColumnDiv.appendChild(cDiv);
-                if (isSort) {
-                    const fields: string[] = this.getSortedFieldsAndDirections('field');
-                    const index: number = fields.indexOf(cols[parseInt(i.toString(), 10)].field);
-                    const button: HTMLElement = gObj.createElement('button', { id: gObj.element.id + cols[parseInt(i.toString(), 10)].field + 'sortbutton' });
-                    const clone: Element = sortBtnParent.cloneNode() as Element;
-                    clone.appendChild(button);
-                    cDiv.appendChild(clone);
-                    const btnObj: Button = new Button({
-                        cssClass: this.parent.cssClass ? 'e-ressortbutton' + ' ' + this.parent.cssClass : 'e-ressortbutton'
-                    });
-                    btnObj.appendTo(button);
-                    let buttonInnerText : string;
-                    if ((!isNullOrUndefined (this.parent.sortSettings.columns[parseInt(index.toString(), 10)]))) {
-                        buttonInnerText = (this.parent.sortSettings.columns[parseInt(index.toString(), 10)].direction === 'Ascending') ?
-                            this.parent.localeObj.getConstant('AscendingText') : this.parent.localeObj.getConstant('DescendingText');
+                if (column.allowSorting && gObj.allowSorting) {
+                    let direction: string = 'None';
+                    const sortColumns: SortDescriptorModel[] = this.parent.sortSettings.columns;
+                    for (let i: number = 0; i < sortColumns.length; i++) {
+                        if (sortColumns[parseInt(i.toString(), 10)].field === column.field) {
+                            direction = sortColumns[parseInt(i.toString(), 10)].direction;
+                            break;
+                        }
                     }
-                    button.innerHTML = index > -1 ? buttonInnerText : this.parent.localeObj.getConstant('NoneText');
-                    button.onclick = (e: MouseEvent) => {
-                        this.sortButtonClickHandler(e.target as Element);
-                    };
+                    this.columnMenuResponsiveContent('ascending', gObj.localeObj.getConstant('SortAscending'), direction === 'Ascending');
+                    this.columnMenuResponsiveContent('descending', gObj.localeObj.getConstant('SortDescending'), direction === 'Descending');
                 }
-                if (isFilter && filteredCols.indexOf(cols[parseInt(i.toString(), 10)].field) > -1) {
-                    const divIcon: HTMLElement = gObj.createElement('div', { className: 'e-icons e-res-icon e-filtersetdiv' });
-                    const iconSpan: HTMLElement = gObj.createElement('span', { className: 'e-icons e-res-icon e-filterset' });
-                    iconSpan.setAttribute('colType', cols[parseInt(i.toString(), 10)].type);
-                    divIcon.appendChild(iconSpan);
-                    cDiv.appendChild(divIcon);
+                if (gObj.showColumnChooser) {
+                    this.columnMenuResponsiveContent('Column', gObj.localeObj.getConstant('Columnchooser'));
+                }
+                if (column.allowFiltering && gObj.allowFiltering) {
+                    this.columnMenuResponsiveContent('Filter', gObj.localeObj.getConstant('FilterMenu'));
+                }
+            } else {
+                const cols: Column[] = gObj.getColumns();
+                const sortBtnParent: HTMLElement = gObj.createElement('div', { className: 'e-ressortbutton-parent' });
+                const filteredCols: string[] = [];
+                const isSort: boolean = this.action === ResponsiveDialogAction.isSort;
+                const isFilter: boolean = this.action === ResponsiveDialogAction.isFilter;
+                if (isFilter) {
+                    for (let i: number = 0; i < gObj.filterSettings.columns.length; i++) {
+                        filteredCols.push(gObj.filterSettings.columns[parseInt(i.toString(), 10)].field);
+                    }
+                }
+                for (let i: number = 0; i < cols.length; i++) {
+                    if (!cols[parseInt(i.toString(), 10)].visible || (!cols[parseInt(i.toString(), 10)].allowSorting && isSort)
+                        || (!cols[parseInt(i.toString(), 10)].allowFiltering && isFilter)) {
+                        continue;
+                    }
+                    const cDiv: HTMLElement = gObj.createElement('div', { className: 'e-responsivecoldiv' });
+                    cDiv.setAttribute('data-e-mappingname', cols[parseInt(i.toString(), 10)].field);
+                    cDiv.setAttribute('data-e-mappinguid', cols[parseInt(i.toString(), 10)].uid);
+                    const span: HTMLElement = gObj.createElement('span', { innerHTML: cols[parseInt(i.toString(), 10)].headerText, className: 'e-res-header-text' });
+                    cDiv.appendChild(span);
+                    this.customColumnDiv.appendChild(cDiv);
+                    if (isSort) {
+                        const fields: string[] = this.getSortedFieldsAndDirections('field');
+                        const index: number = fields.indexOf(cols[parseInt(i.toString(), 10)].field);
+                        const button: HTMLElement = gObj.createElement('button', { id: gObj.element.id + cols[parseInt(i.toString(), 10)].field + 'sortbutton' });
+                        const clone: Element = sortBtnParent.cloneNode() as Element;
+                        clone.appendChild(button);
+                        cDiv.appendChild(clone);
+                        const btnObj: Button = new Button({
+                            cssClass: this.parent.cssClass ? 'e-ressortbutton' + ' ' + this.parent.cssClass : 'e-ressortbutton'
+                        });
+                        btnObj.appendTo(button);
+                        let buttonInnerText : string;
+                        if ((!isNullOrUndefined (this.parent.sortSettings.columns[parseInt(index.toString(), 10)]))) {
+                            buttonInnerText = (this.parent.sortSettings.columns[parseInt(index.toString(), 10)].direction === 'Ascending') ?
+                                this.parent.localeObj.getConstant('AscendingText') : this.parent.localeObj.getConstant('DescendingText');
+                        }
+                        button.innerHTML = index > -1 ? buttonInnerText : this.parent.localeObj.getConstant('NoneText');
+                        button.onclick = (e: MouseEvent) => {
+                            this.sortButtonClickHandler(e.target as Element);
+                        };
+                    }
+                    if (isFilter && filteredCols.indexOf(cols[parseInt(i.toString(), 10)].field) > -1) {
+                        const divIcon: HTMLElement = gObj.createElement('div', { className: 'e-icons e-res-icon e-filtersetdiv' });
+                        const iconSpan: HTMLElement = gObj.createElement('span', { className: 'e-icons e-res-icon e-filterset' });
+                        iconSpan.setAttribute('colType', cols[parseInt(i.toString(), 10)].type);
+                        divIcon.appendChild(iconSpan);
+                        cDiv.appendChild(divIcon);
+                    }
                 }
             }
-            EventHandler.add(this.customColumnDiv, 'click', this.customFilterColumnClickHandler, this);
+            EventHandler.add(this.customColumnDiv, Browser.isDevice ? 'touchend' : 'click', this.customFilterColumnClickHandler, this);
             return this.customColumnDiv;
         }
     }
@@ -249,9 +291,42 @@ export class ResponsiveDialogRenderer implements IAction {
     }
 
     private customFilterColumnClickHandler(e: MouseEvent): void {
-        if (this.action !== ResponsiveDialogAction.isFilter) { return; }
         const gObj: IGrid = this.parent;
         const target: HTMLElement = e.target as HTMLElement;
+        if (parentsUntil(target, 'columnmenudiv') && this.action === ResponsiveDialogAction.isColMenu && !parentsUntil(target, 'e-disabled')) {
+            const column: Column = this.menuCol ? this.menuCol : this.filteredCol;
+            if (parentsUntil(target, 'e-responsiveautofitalldiv')) {
+                gObj.autoFitColumns([]);
+                this.closeCustomFilter();
+            } else if (parentsUntil(target, 'e-responsiveautofitdiv')) {
+                gObj.autoFitColumns(column.field);
+                this.closeCustomFilter();
+            } else if (parentsUntil(target, 'e-responsivegroupdiv')) {
+                gObj.groupColumn(column.field);
+                this.closeCustomFilter();
+            } else if (parentsUntil(target, 'e-responsiveungroupdiv')) {
+                gObj.ungroupColumn(column.field);
+                this.closeCustomFilter();
+            } else if (parentsUntil(target, 'e-responsiveascendingdiv')) {
+                gObj.sortColumn(column.field, 'Ascending');
+                this.closeCustomFilter();
+            } else if (parentsUntil(target, 'e-responsivedescendingdiv')) {
+                gObj.sortColumn(column.field, 'Descending');
+                this.closeCustomFilter();
+            } else if (parentsUntil(target, 'e-responsivecolumndiv')) {
+                gObj.notify(events.renderResponsiveChangeAction, { action: 5 });
+                gObj.showResponsiveCustomColumnChooser();
+            } else if (parentsUntil(target, 'e-responsivefilterdiv')) {
+                gObj.notify(events.renderResponsiveChangeAction, { action: 3 });
+                this.isRowResponsive = true;
+                this.isCustomDialog = false;
+                if (gObj.filterModule) {
+                    gObj.filterModule.responsiveDialogRenderer.showResponsiveDialog(column);
+                } 
+            }
+            e.preventDefault();
+        }
+        if (this.action !== ResponsiveDialogAction.isFilter) { return; } 
         if (gObj.filterSettings.type !== 'FilterBar') {
             if (target.classList.contains('e-responsivecoldiv') || target.parentElement.classList.contains('e-responsivecoldiv')) {
                 let field: string = target.getAttribute('data-e-mappingname');
@@ -279,18 +354,24 @@ export class ResponsiveDialogRenderer implements IAction {
     /**
      * Function to show the responsive dialog
      *
-     * @param {Column} col - specifies the column
+     * @param {Column} col - specifies the filter column
+     * @param {Column} column - specifies the menu column
      * @returns {void}
      */
-    public showResponsiveDialog(col?: Column): void {
-        if (this.isCustomDialog && this.action === ResponsiveDialogAction.isFilter && !this.isRowResponsive) {
-            this.renderCustomFilterDialog();
+    public showResponsiveDialog(col?: Column, column?: Column): void {
+        if ((this.isCustomDialog && this.action === ResponsiveDialogAction.isFilter && !this.isRowResponsive) ||
+            (column && this.action === ResponsiveDialogAction.isColMenu)) {
+            this.menuCol = column;
+            this.renderCustomFilterDialog(null, column);
         } else {
             this.filteredCol = col;
             this.renderResponsiveDialog(col);
             if (this.parent.enableAdaptiveUI && col) {
                 this.parent.filterModule.setFilterModel(col);
                 this.parent.filterModule.filterModule.openDialog(this.parent.filterModule.createOptions(col, undefined));
+            }
+            if (this.action === ResponsiveDialogAction.isColumnChooser) {
+                this.parent.notify(events.renderResponsiveColumnChooserDiv, { action: 'open'});
             }
             if (this.action === ResponsiveDialogAction.isSort) {
                 const args: { cancel: boolean, dialogObj: Dialog, requestType: string } = {
@@ -315,19 +396,21 @@ export class ResponsiveDialogRenderer implements IAction {
         }
     }
 
-    private renderCustomFilterDialog(col?: Column): void {
+    private renderCustomFilterDialog(col?: Column, column?: Column): void {
         const gObj: IGrid = this.parent;
+        const isColMenu: boolean = this.action === ResponsiveDialogAction.isColMenu;
         if (this.action === ResponsiveDialogAction.isFilter && gObj.filterSettings.type === 'FilterBar') { return; }
+        const colMenu: string = isColMenu ? 'e-customcolumnmenudiv ' : '';
         const outerDiv: HTMLElement = this.parent.createElement(
             'div',
             {
-                id: gObj.element.id + 'customfilter',
-                className: this.parent.cssClass ?
-                    'e-customfilterdiv e-responsive-dialog ' + this.parent.cssClass : 'e-customfilterdiv e-responsive-dialog'
+                id: gObj.element.id + (isColMenu ? 'customcolumnmenu' : 'customfilter'),
+                className: this.parent.cssClass ? colMenu +
+                    'e-customfilterdiv e-responsive-dialog ' + this.parent.cssClass : colMenu + 'e-customfilterdiv e-responsive-dialog'
             }
         );
         this.parent.element.appendChild(outerDiv);
-        this.customFilterDlg = this.getDialogOptions(col, true);
+        this.customFilterDlg = this.getDialogOptions(col, true, null, column);
         const args: { cancel: boolean, dialogObj: Dialog, requestType: string } = {
             cancel: false, dialogObj: this.customFilterDlg, requestType: 'beforeOpenAptiveFilterDialog'
         };
@@ -340,7 +423,7 @@ export class ResponsiveDialogRenderer implements IAction {
         this.customFilterDlg.element.style.maxHeight = '100%';
     }
 
-    private getDialogOptions(col: Column, isCustomFilter: boolean, id?: string): Dialog {
+    private getDialogOptions(col: Column, isCustomFilter: boolean, id?: string, column?: Column): Dialog {
         const options: Dialog = new Dialog({
             isModal: true,
             showCloseIcon: true,
@@ -349,7 +432,7 @@ export class ResponsiveDialogRenderer implements IAction {
             target: this.parent.adaptiveDlgTarget ? this.parent.adaptiveDlgTarget : document.body,
             visible: false,
             enableRtl: this.parent.enableRtl,
-            content: this.renderResponsiveContent(col),
+            content: this.renderResponsiveContent(col, column),
             open: this.dialogOpen.bind(this),
             created: this.dialogCreated.bind(this),
             close: this.beforeDialogClose.bind(this),
@@ -362,7 +445,8 @@ export class ResponsiveDialogRenderer implements IAction {
         options[`${isStringTemplate}`] = true;
         if (isCustomFilter) {
             options.header = this.renderResponsiveHeader(col, undefined, true);
-            options.cssClass = 'e-customfilter';
+            const colMenu: string = this.action === ResponsiveDialogAction.isColMenu ? 'e-customcolumnmenu ' : '';
+            options.cssClass = colMenu + 'e-customfilter';
         } else {
             options.header = this.renderResponsiveHeader(col);
             options.cssClass = this.parent.rowRenderingMode === 'Vertical' && this.action === ResponsiveDialogAction.isFilter
@@ -374,7 +458,8 @@ export class ResponsiveDialogRenderer implements IAction {
     private renderResponsiveDialog(col?: Column): void {
         const gObj: IGrid = this.parent;
         if (this.action === ResponsiveDialogAction.isFilter && gObj.filterSettings.type === 'FilterBar') { return; }
-        const id: string = this.action === ResponsiveDialogAction.isFilter ? 'filter' : 'sort';
+        let id: string = this.action === ResponsiveDialogAction.isFilter ? 'filter' : 'sort';
+        id = this.action === ResponsiveDialogAction.isColumnChooser  ? 'columnchooser' : id;
         const outerDiv: HTMLElement = this.parent.createElement(
             'div',
             {
@@ -412,8 +497,32 @@ export class ResponsiveDialogRenderer implements IAction {
             } else if (args.element.classList.contains('e-customfilterdiv')) {
                 this.closeCustomFilter();
             }
+            if (this.parent.rowRenderingMode === 'Horizontal' && this.parent.showColumnMenu) {
+                this.parent.notify(events.renderResponsiveChangeAction, { action: 4 });
+                const custom: Element = document.querySelector('.e-resfilter');
+                if (custom) {
+                    remove(custom);
+                }
+            }
         } else if (this.action === ResponsiveDialogAction.isSort) {
             this.closeCustomDialog();
+        } else if (this.action === ResponsiveDialogAction.isColMenu) {
+            this.closeCustomFilter();
+            const custom: Element = document.querySelector('.e-rescolummenu');
+            if (custom) {
+                remove(custom);
+            }
+        } else if (this.action === ResponsiveDialogAction.isColumnChooser) {
+            this.parent.notify(events.renderResponsiveColumnChooserDiv, { action: 'clear'});
+            const custom: Element = document.querySelector('.e-rescolumnchooser');
+            if (custom) {
+                remove(custom);
+            }
+            if (this.parent.rowRenderingMode === 'Horizontal' && this.parent.showColumnMenu) {
+                this.parent.notify(events.renderResponsiveChangeAction, { action: 4 });
+            }
+            this.isCustomDialog = false;
+            this.isDialogClose = false;
         }
         this.parent.off(events.enterKeyHandler, this.keyHandler);
     }
@@ -448,6 +557,10 @@ export class ResponsiveDialogRenderer implements IAction {
             title = col ? col.headerText || col.field : gObj.localeObj.getConstant('FilterButton');
         } else if (this.action === ResponsiveDialogAction.isSort) {
             title = gObj.localeObj.getConstant('Sort');
+        } else if (this.action === ResponsiveDialogAction.isColMenu) {
+            title = gObj.localeObj.getConstant('ColumnMenu');
+        } else if (this.action === ResponsiveDialogAction.isColumnChooser) {
+            title = gObj.localeObj.getConstant('ChooseColumns');
         }
         return title;
     }
@@ -458,6 +571,8 @@ export class ResponsiveDialogRenderer implements IAction {
             name = 'dialogEdit_wrapper_title';
         } else if (action === ResponsiveDialogAction.isFilter) {
             name = 'responsive_filter_dialog_wrapper';
+        }  else if (action === ResponsiveDialogAction.isColumnChooser) {
+            name = 'responsive_column_chooser_dialog_wrapper';
         }
         return name;
     }
@@ -466,7 +581,8 @@ export class ResponsiveDialogRenderer implements IAction {
         let text: string;
         if (action === ResponsiveDialogAction.isAdd || action === ResponsiveDialogAction.isEdit) {
             text = 'Save';
-        } else if (action === ResponsiveDialogAction.isFilter || this.action === ResponsiveDialogAction.isSort) {
+        } else if (action === ResponsiveDialogAction.isFilter || this.action === ResponsiveDialogAction.isSort ||
+            action === ResponsiveDialogAction.isColumnChooser || this.action === ResponsiveDialogAction.isColumnChooser) {
             text = 'OKButton';
         }
         return text;
@@ -546,13 +662,35 @@ export class ResponsiveDialogRenderer implements IAction {
         this.parent.filterModule.filterModule.closeResponsiveDialog();
     }
 
+    private removeCustomFilterElement(): void {
+        const elem: Element = document.getElementById(this.parent.element.id + 'customcolumnmenu');
+        if (elem) {
+            remove(elem);
+            const custom: Element = document.querySelector('.e-customfilter');
+            if (custom) {
+                remove(custom);
+            }
+        }
+        const custommenu: Element = document.querySelector('.e-rescolumnchooser');
+        if (custommenu) {
+            remove(custommenu);
+        }
+    }
+
     private dialogHdrBtnClickHandler(): void {
         if (this.action === ResponsiveDialogAction.isEdit || this.action === ResponsiveDialogAction.isAdd) {
             this.parent.endEdit();
         } else if (this.action === ResponsiveDialogAction.isFilter) {
             this.parent.filterModule.filterModule.applyCustomFilter({ col: this.filteredCol, isCustomFilter: this.isCustomDlgRender });
+            this.removeCustomFilterElement();
         } else if (this.action === ResponsiveDialogAction.isSort) {
             this.sortColumn();
+            this.removeCustomFilterElement();
+        } else if (this.action === ResponsiveDialogAction.isColumnChooser) {
+            this.parent.notify(events.renderResponsiveColumnChooserDiv, { action: 'confirm'});
+            this.removeCustomFilterElement();
+            this.isCustomDialog = false;
+            this.isDialogClose = false;
         }
     }
 
@@ -629,7 +767,7 @@ export class ResponsiveDialogRenderer implements IAction {
 
     public removeEventListener(): void {
         if (this.customColumnDiv) {
-            EventHandler.remove(this.customColumnDiv, 'click', this.customFilterColumnClickHandler);
+            EventHandler.remove(this.customColumnDiv, Browser.isDevice ? 'touchend' : 'click', this.customFilterColumnClickHandler);
         }
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
         this.parent.removeEventListener(events.actionComplete, this.onActionCompleteFn);

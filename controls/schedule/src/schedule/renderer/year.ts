@@ -170,6 +170,9 @@ export class Year extends ViewBase implements IRenderer {
                 let classList: string[] = [];
                 if (currentDate.getMonth() !== date.getMonth()) {
                     classList.push(cls.OTHERMONTH_CLASS);
+                    if (td.firstElementChild && !this.parent.activeViewOptions.cellTemplate) {
+                        td.firstElementChild.setAttribute('aria-disabled', 'true');
+                    }
                 }
                 if (this.isCurrentDate(date) && currentDate.getMonth() === date.getMonth()) {
                     classList = classList.concat(['e-today', 'e-selected']);

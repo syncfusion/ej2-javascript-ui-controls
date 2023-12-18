@@ -1550,7 +1550,8 @@ export class StampAnnotation {
        let stampAnnotationtype: string = 'Stamp';
        let apperarance: any = [];
        let isDynamic = false;
-       let author: string = annotationObject.author ? annotationObject.author : 'Guest';
+       let author: string =  annotationObject.author ? annotationObject.author : 'Guest';
+       let subject: string = annotationObject.subject ? annotationObject.subject : stampName;
        let annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings ? this.pdfViewer.stampSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
        let annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings);
        author = author ? author : this.pdfViewer.annotationModule.updateAnnotationAuthor('stamp', annotationSettings.annotationSubType);
@@ -1622,8 +1623,7 @@ export class StampAnnotation {
             annotationObject.height = annotationObject.height?annotationObject.height :30;
            }
        }
-       
-       let subject: string = annotationObject.subject ? annotationObject.subject : stampName;
+
        //Creating Annotation objects with it's proper properties
        let stickyNotes: any = {
         AllowedInteractions: annotationObject.allowedInteractions?annotationObject.allowedInteractions : allowedInteractions,

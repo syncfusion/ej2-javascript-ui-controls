@@ -29,7 +29,7 @@ import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
 import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel, CollaborativeEditingSettingsModel, DocumentSettingsModel, AutoResizeSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper, listsProperty, abstractListsProperty } from './index';
 import { PasteOptions } from './index';
-import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionData, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle } from './implementation/index';
+import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
 import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType } from './base';
@@ -451,15 +451,21 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public collaborativeEditingModule: CollaborativeEditing;
     /**
+     * Gets or sets the Collaborative editing module.
+     */
+    public collaborativeEditingHandlerModule: CollaborativeEditingHandler;
+    /**
      * Holds regular or optimized module based on DocumentEditorSettting `enableOptimizedTextMeasuring` property.
      *
      * @private
      */
     public textMeasureHelper: Regular | Optimized
     /**
-     * @private
+     * Enable collaborative editing in document editor.
+     * @default false
      */
-    public enableCollaborativeEditing: boolean = false;
+    @Property(false)
+    public enableCollaborativeEditing: boolean;
     /**
      * Gets or sets the default Paste Formatting Options
      *
@@ -1346,13 +1352,15 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public renderRulers() {
-        this.rulerHelper = new RulerHelper();
-        this.rulerContainer = this.rulerHelper.renderOverlapElement(this);
-        this.rulerHelper.renderRuler(this, true);
-        this.rulerHelper.renderRuler(this, false);
-        this.rulerHelper.renderRulerMarkerIndicatorElement(this);
-        this.rulerHelper.createIndicatorLines(this);
-        this.showHideRulers();
+        // if (this.documentEditorSettings.showRuler) {
+            this.rulerHelper = new RulerHelper();
+            this.rulerContainer = this.rulerHelper.renderOverlapElement(this);
+            this.rulerHelper.renderRuler(this, true);
+            this.rulerHelper.renderRuler(this, false);
+            this.rulerHelper.renderRulerMarkerIndicatorElement(this);
+            this.rulerHelper.createIndicatorLines(this);
+            this.showHideRulers();
+        // }
     }
     private showHideRulers(): void {
         if (this.rulerHelper && this.documentEditorSettings && !isNullOrUndefined(!this.documentEditorSettings.showRuler)) {
@@ -1523,7 +1531,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     }
                     if(!isNullOrUndefined(model.documentEditorSettings.showRuler)) { 
                         this.showHideRulers();
-                        if(model.documentEditorSettings.showRuler) {
+                        if (model.documentEditorSettings.showRuler) {
+                            // if (isNullOrUndefined(this.rulerHelper)) {
+                            //     this.renderRulers();
+                            // }
                             this.rulerHelper.updateRuler(this, true);
                         }
                     }
@@ -1679,6 +1690,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public fireContentChange(): void {
+        if(this.enableEditor && this.editor.isIncrementalSave) {
+            return;
+        }
         if (this.enableLockAndEdit && this.collaborativeEditingModule) {
             this.collaborativeEditingModule.saveContent();
         }
@@ -1732,6 +1746,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {void}
      */
     public fireSelectionChange(): void {
+        if(this.enableEditor && this.editor.isIncrementalSave) {
+            return;
+        }
         if (!this.documentHelper.isCompositionStart && Browser.isDevice && this.editorModule) {
             this.editorModule.predictText();
         }
@@ -1994,6 +2011,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     protected requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
 
+        if(this.enableCollaborativeEditing) {
+            modules.push({
+                member: 'CollaborativeEditingHandler', args: [this]
+            });
+        }
         if (this.enableLockAndEdit) {
             modules.push({
                 member: 'CollaborativeEditing', args: [this]
@@ -2683,8 +2705,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 }
             }
             if (!isNullOrUndefined(sfdtText) && this.viewer) {
+                let incrementalOps: Record<string, ActionInfo[]> = {};
                 this.documentHelper.setDefaultDocumentFormat();
-                this.documentHelper.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText));
+                this.documentHelper.onDocumentChanged(this.parser.convertJsonToDocument(sfdtText, incrementalOps), incrementalOps);
                 if (this.editorModule) {
                     this.editorModule.intializeDefaultStyles();
                 }
@@ -3145,7 +3168,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     paragraph.paragraphFormat.listFormat.baseStyle = style;
                 }
             }
-            this.documentHelper.onDocumentChanged(sections);
+            this.documentHelper.onDocumentChanged(sections,{});
         }
     }
     /**
@@ -3436,7 +3459,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             return;
         }
         this.isSettingOp = true;
-        let protectionData: ProtectionData;
+        let protectionData: ProtectionInfo;
         let operation: Operation;
         if (name === 'protection') {
             protectionData = {
@@ -3459,6 +3482,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             this.fireContentChange();
         }
         this.skipSettingsOps = false;
+        this.isSettingOp = false;
     }
     private destroyDependentModules(): void {
         if (this.printModule) {

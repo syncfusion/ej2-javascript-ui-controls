@@ -165,6 +165,7 @@ export class Tooltip {
                 theme: this.heatMap.theme as TooltipTheme,
                 content: tempTooltipText,
                 fill: this.heatMap.tooltipSettings.fill,
+                enableShadow: true,
                 template: this.heatMap.tooltipSettings.template === '' ? null : this.heatMap.tooltipSettings.template,
                 border: {
                     width: this.heatMap.tooltipSettings.border.width,
@@ -305,7 +306,7 @@ export class Tooltip {
      * To render tooltip.
      */
 
-    private tooltipCallback(currentRect: CurrentRect, tempTooltipText: string[]): void {
+    private tooltipCallback(currentRect: CurrentRect, tempTooltipText: string[]): void {        
         if (!this.tooltipObject) {
             this.createTooltip(
                 currentRect,
@@ -323,6 +324,9 @@ export class Tooltip {
                     this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
                 value: currentRect.value
             };
+        }
+        if ((this.heatMap as any).isVue || (this.heatMap as any).isVue3) {
+            this.tooltipObject.controlInstance = this.heatMap;
         }
         this.showHideTooltip(true);
         this.tooltipObject.enableAnimation = (this.isFirst || this.isFadeout) ? false : true;

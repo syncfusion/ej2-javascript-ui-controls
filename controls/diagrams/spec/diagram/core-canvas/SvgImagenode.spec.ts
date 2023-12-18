@@ -108,8 +108,7 @@ describe('Diagram Control', () => {
             expect(((diagram.nodes[0] as NodeModel).shape as ImageModel).source === 'https://www.w3schools.com/images/w3schools_green.jpg').toBe(true);
             done();
         });
-        it('832073 - checking with image node opacity with 0', (done: Function) => {
-            debugger
+        it('832073 - ', (done: Function) => {
             expect(diagram.nodes[0].style.opacity == 1).toBe(true);
             let diagramElement = document.getElementById('diagram99');
             var instance = 'ej2_instances';
@@ -119,6 +118,7 @@ describe('Diagram Control', () => {
             diagram.nodes[0].style.opacity = 0;
             diagram.dataBind();
             expect(diagram.nodes[0].style.opacity == 0).toBe(true);
+            done();
         })
     });
 

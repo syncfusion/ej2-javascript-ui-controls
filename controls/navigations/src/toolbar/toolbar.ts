@@ -1073,6 +1073,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             if (this.cssClass) {
                 addClass([<HTEle>innerItems[0]], this.cssClass.split(' '));
             }
+            const scrollEle: Element = this.scrollModule.element.querySelector('.' + CLS_HSCROLLBAR + ', .' + 'e-vscroll-bar');
+            if (scrollEle) {
+                scrollEle.removeAttribute('tabindex');
+            }
             this.remove(this.scrollModule.element, CLS_TBARPOS);
             setStyle(this.element, { overflow: 'hidden' });
         }
@@ -2221,7 +2225,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private activeEleRemove(curEle: HTEle): void {
         if (!isNOU(this.activeEle)) {
             this.activeEle.setAttribute('tabindex', this.getDataTabindex(this.activeEle));
-        }  
+        }
         this.activeEle = curEle;
         if (this.getDataTabindex(this.activeEle) === '-1') {
             if (isNOU(this.trgtEle) && !(<HTEle>curEle.parentElement).classList.contains(CLS_TEMPLATE)) {

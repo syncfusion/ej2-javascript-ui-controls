@@ -258,6 +258,7 @@ describe('BPMN dataobject node visibility issue', () => {
     });
 
 });
+
 describe('BPMN shapes', () => {
     describe('Changing of BPMN Shapes from one to another', () => {
         let diagram: Diagram;

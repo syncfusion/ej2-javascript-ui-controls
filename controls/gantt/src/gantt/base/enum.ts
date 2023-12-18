@@ -462,3 +462,37 @@ export type ScheduleMode =
 export type ViewType =
    'ProjectView' |
    'ResourceView';
+
+   /**
+ * Defines PDF ContentType.
+ * ```props
+ * * Image :- PDF content is Image type
+ * * Line :- PDF content is Line type
+ * * PageNumber :- PDF content is PageNumber type
+ * * Text :- PDF content is Text type
+ * ```
+ */
+export type ContentType =
+'Image' |
+'Line' |
+'PageNumber' |
+'Text';
+
+/**
+ * Defines PDF PageNumber Type.
+ * ```props
+ * * LowerLatin :- LowerCase Latin pageNumber
+ * * LowerRoman :- LowerCase Roman pageNumber
+ * * UpperLatin :- UpperCase Latin pageNumber
+ * * UpperRoman :- UpperCase Roman pageNumber
+ * * Numeric :- Numeric pageNumber
+ * * Arabic :- Arabic pageNumber
+ * ```
+ */
+export type PdfPageNumberType =
+    'LowerLatin' |
+    'LowerRoman' |
+    'UpperLatin' |
+    'UpperRoman' |
+    'Numeric' |
+    'Arabic';

@@ -301,10 +301,16 @@ describe('Ribbon', () => {
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[0]).classList.contains('e-active')).toBe(false);
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[1]).classList.contains('e-active')).toBe(true);
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[2]).classList.contains('e-active')).toBe(false);
+            expect((ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0]).selected).toBe(false);
+            expect((ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[1]).selected).toBe(true);
+            expect((ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[2]).selected).toBe(false);
             (ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[2] as HTMLElement).click();
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[0]).classList.contains('e-active')).toBe(false);
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[1]).classList.contains('e-active')).toBe(false);
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[2]).classList.contains('e-active')).toBe(true);
+            expect((ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0]).selected).toBe(false);
+            expect((ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[1]).selected).toBe(false);
+            expect((ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[2]).selected).toBe(true);
         });
         it('items selection in classic mode multiple selection', () => {
             ribbon = new Ribbon({
@@ -379,11 +385,17 @@ describe('Ribbon', () => {
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[0]).classList.contains('e-active')).toBe(true);
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[1]).classList.contains('e-active')).toBe(true);
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[2]).classList.contains('e-active')).toBe(false);
+            expect((ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0]).selected).toBe(true);
+            expect((ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[1]).selected).toBe(true);
+            expect((ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[2]).selected).toBe(false);
             (ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[1] as HTMLElement).click();
             (ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[2] as HTMLElement).click();
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[0]).classList.contains('e-active')).toBe(true);
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[1]).classList.contains('e-active')).toBe(false);
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[2]).classList.contains('e-active')).toBe(true);
+            expect((ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[0]).selected).toBe(true);
+            expect((ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[1]).selected).toBe(false);
+            expect((ribbon.tabs[0].groups[0].collections[0].items[0].groupButtonSettings.items[2]).selected).toBe(true);
             (ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[2] as HTMLElement).click();
             (ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[0] as HTMLElement).click();
             expect((ribbon.element.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[0]).classList.contains('e-active')).toBe(false);
@@ -405,6 +417,7 @@ describe('Ribbon', () => {
                                 id: "item1",
                                 type: RibbonItemType.GroupButton,
                                 groupButtonSettings: {
+                                    header: 'GroupButton',
                                     items: [{
                                         iconCss: 'e-icons e-copy',
                                         content: 'copy',
@@ -457,6 +470,8 @@ describe('Ribbon', () => {
             expect((document.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[2]).classList.contains('e-active')).toBe(false);
             expect(ribbon.element.querySelector('#item1').classList.contains('e-dropdown-btn')).toBe(true);
             expect((ribbon.element.querySelector('#item1')as any).ej2_instances[0].iconCss).toBe('e-icons e-copy');
+            (ribbon.element.querySelector('#item1') as HTMLElement).click();
+            expect(document.querySelector('#item1_header').innerHTML).toBe('GroupButton');
         });
         it('items not selected in simplified mode single selection', () => {
             ribbon = new Ribbon({
@@ -776,6 +791,7 @@ describe('Ribbon', () => {
                                 id: "item1",
                                 type: RibbonItemType.GroupButton,
                                 groupButtonSettings: {
+                                    header: 'GroupButton',
                                     selection: RibbonGroupButtonSelection.Multiple,
                                     items: [{
                                         iconCss: 'e-icons e-copy',
@@ -832,6 +848,7 @@ describe('Ribbon', () => {
             }, ribbonEle);
             expect(ribbon.element.querySelector('#item1').classList.contains('e-dropdown-btn')).toBe(true);
             (ribbon.element.querySelector('#item1') as HTMLElement).click();
+            expect(document.querySelector('#item1_header').innerHTML).toBe('GroupButton');
             expect(document.querySelector('#item1_grpbtn').classList.contains('e-ribbon-multiple-selection')).toBe(true);
             expect((document.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[0]).classList.contains('e-active')).toBe(true);
             expect((document.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[1]).classList.contains('e-active')).toBe(true);
@@ -1050,6 +1067,96 @@ describe('Ribbon', () => {
             expect(document.querySelector('#item3-popup').querySelectorAll('.e-ribbon-group-button')[0].classList.contains('e-active')).toBe(true);
             expect(document.querySelector('#item3-popup').querySelectorAll('.e-ribbon-group-button')[1].classList.contains('e-active')).toBe(false);
             expect(document.querySelector('#item3-popup').querySelectorAll('.e-ribbon-group-button')[2].classList.contains('e-active')).toBe(false);
+        });
+        it('header in overflow popup ', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: 'Row',
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                dropDownSettings: {
+                                    content: 'Edit1',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }, {
+                            id: "collection2",
+                            items: [{
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Medium,
+                                dropDownSettings: {
+                                    content: 'Edit',
+                                    iconCss: 'e-icons e-edit',
+                                    items: dropDownButtonItems
+                                }
+                            }]
+                        }, {
+                            id: "collection3",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.GroupButton,
+                                groupButtonSettings: {
+                                    header: 'GroupButton',
+                                    items: [{
+                                        iconCss: 'e-icons e-copy',
+                                        content: 'copy',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-paste',
+                                        content: 'paste',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-cut',
+                                        content: 'cut'
+                                    }]
+                                }
+                            },{
+                                id: "item2",
+                                type: RibbonItemType.GroupButton,
+                                groupButtonSettings: {
+                                    header: 'Edit option',
+                                    items: [{
+                                        iconCss: 'e-icons e-copy'
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-paste'
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-cut'
+                                    }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
+            containerEle.style.width = '300px';
+            ribbon.refreshLayout();
+            (ribbon.element.querySelector('#ribbon_tab_sim_ovrl_overflow') as HTMLElement).click();
+            (document.querySelector('#item1') as HTMLElement).click();
+            expect(document.querySelector('#item1_header').innerHTML).toBe('GroupButton');
+            (document.querySelector('#item1') as HTMLElement).click();
+            (document.querySelector('#item2') as HTMLElement).click();
+            expect(document.querySelector('#item2_header').innerHTML).toBe('Edit option');
+            expect(document.querySelector('#item1-popup').querySelector('.e-btn-group').classList.contains('e-icon-btn')).toBe(false);
+            expect(document.querySelector('#item2-popup').querySelector('.e-btn-group').classList.contains('e-icon-btn')).toBe(true);
+            (document.querySelector('#item2') as HTMLElement).click();
+            containerEle.style.width = '700px';
+            ribbon.refreshLayout();
+            expect(document.querySelector('#item1-popup').querySelector('.e-btn-group').classList.contains('e-icon-btn')).toBe(false);
+            expect(document.querySelector('#item2-popup').querySelector('.e-btn-group').classList.contains('e-icon-btn')).toBe(false);
         });
         it('tooltip', (done) => {
             ribbon = new Ribbon({

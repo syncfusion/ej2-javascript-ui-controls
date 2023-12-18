@@ -1,0 +1,38 @@
+@include export-module('data-form-theme') {
+
+  /*! data-form theme */
+  #{&}.e-data-form {
+
+    #{if(&, '&', '*')} .e-form-label {
+      color: $field-label-color;
+    }
+
+    #{if(&, '&', '*')} .e-group-title {
+      color: $group-title-color;
+    }
+
+    #{if(&, '&', '*')} .validation-message {
+      color: $form-tooltip-color;
+      font-size: $form-validation-message-font-size;
+      font-style: italic;
+    }
+  }
+
+  #{&}.e-tooltip-wrap.e-popup.e-error-tooltip {
+    background-color: $form-tooltip-background-color;
+    border: $form-tooltip-background-color;
+
+    #{if(&, '&', '*')} .e-tip-content .validation-message {
+      color: $form-tooltip-color;
+    }
+
+    #{if(&, '&', '*')} .e-arrow-tip {
+
+      #{if(&, '&', '*')} .e-arrow-tip-outer.e-tip-top,
+      #{if(&, '&', '*')} .e-arrow-tip-inner.e-tip-top {
+        border-bottom-color: $form-tooltip-background-color;
+        color: $form-tooltip-background-color;
+      }
+    }
+  }
+}

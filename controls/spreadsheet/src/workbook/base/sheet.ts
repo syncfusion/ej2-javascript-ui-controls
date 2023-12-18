@@ -511,7 +511,7 @@ export function getMaxSheetId(sheets: SheetModel[]): number {
  */
 export function initSheet(context: Workbook, sheet?: SheetModel[], isImport?: boolean): void {
     const sheets: SheetModel[] = sheet ? sheet : context.sheets;
-    sheets.forEach((sheet: ExtendedSheet) => {
+    sheets.forEach((sheet:  ExtendedSheet) => {
         sheet.id = sheet.id || 0;
         sheet.name = sheet.name || '';
         sheet.rowCount = isUndefined(sheet.rowCount) ? 100 : sheet.rowCount;

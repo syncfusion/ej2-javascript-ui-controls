@@ -16,7 +16,7 @@ import {
     removeElement, getElement
 } from '../../common/utils/helper';
 import { Rect, SvgRenderer, CanvasRenderer, PathOption } from '@syncfusion/ej2-svg-base';
-import { SelectionMode, HighlightMode } from '../utils/enum';
+import { SelectionMode, HighlightMode } from '../../common/utils/enum';
 import { Chart } from '../chart';
 import { Series, Points } from '../series/chart-series';
 import { SeriesModel } from '../series/chart-series-model';
@@ -486,7 +486,7 @@ export class Selection extends BaseSelection {
             name: selectionComplete,
             selectedDataValues: selectedPointValues,
             cancel: false,
-            chart:chart
+            chart: chart
         };
         chart.trigger(selectionComplete, args);
     }
@@ -652,7 +652,7 @@ export class Selection extends BaseSelection {
                 }
             }
         }
-        if ((this.control as Chart).legendModule && this.control.legendSettings.visible) {
+        if ((this.control as Chart).legendModule && (this.control as Chart).legendSettings.visible) {
             legendShape = getElement(this.control.element.id + '_chart_legend_shape_' + series);
             if (legendShape) {
                 if (legendShape.hasAttribute('class')) {

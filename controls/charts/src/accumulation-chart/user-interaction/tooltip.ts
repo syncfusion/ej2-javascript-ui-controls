@@ -102,6 +102,7 @@ export class AccumulationTooltip extends BaseTooltip {
     private triggerTooltipRender(point: AccPointData, isFirst: boolean, textCollection: string,
                                  headerText: string, firstText: boolean = true): void {
         //let template: string;
+        const tooltip: TooltipSettingsModel = this.chart.tooltip
         const argsData: ITooltipRenderEventArgs = {
             cancel: false, name: tooltipRender, text: textCollection, point: point.point, textStyle: this.textStyle,
             series: this.accumulation.isBlazor ? {} as AccumulationSeries : point.series, headerText: headerText,
@@ -115,8 +116,8 @@ export class AccumulationTooltip extends BaseTooltip {
                 this.formattedText = this.formattedText.concat(argsData.text);
                 this.text = this.formattedText;
                 this.headerText = argsData.headerText;
-                this.createTooltip(this.chart, isFirst, point.point.symbolLocation,
-                                   point.series.clipRect, point.point, !this.chart.tooltip.enableMarker ? [] : ['Circle'], 0, this.chart.initialClipRect, false,
+                this.createTooltip(this.chart, isFirst, { x: (tooltip.location.x !== null) ? tooltip.location.x : point.point.symbolLocation.x, y: (tooltip.location.y !== null) ? tooltip.location.y : point.point.symbolLocation.y },
+                                   point.series.clipRect, point.point, !tooltip.enableMarker ? [] : ['Circle'], 0, this.chart.initialClipRect, false,
                                    null, point.point, this.template ? argsData.template : '');
             } else {
                 this.removeHighlight();

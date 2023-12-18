@@ -326,12 +326,24 @@ export class SelectionCommands {
         const formatNodeStyles: string = (formatNode as HTMLElement).getAttribute('style');
         const formatNodeTagName: string = (formatNode as HTMLElement).tagName;
         let child: Node[];
-        if (formatNodeTagName === 'A' && format === 'underline') {
+        if(formatNodeTagName === 'A' && format === 'underline') {
             (formatNode as HTMLElement).style.textDecoration = 'none';
             child = [formatNode];
         }
         else {
             child = InsertMethods.unwrap(formatNode);
+            let liElement: HTMLElement = nodes[index as number].parentElement;
+            if (!isNOU(liElement) && liElement.tagName.toLowerCase() !== 'li'){
+                liElement = closest(liElement,'li') as HTMLElement;
+            }
+            if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
+                liElement.textContent.trim() === nodes[index as number].textContent.trim()) {
+                if (format === 'bold') {
+                    liElement.style.fontWeight = 'normal';
+                } else if (format === "italic") {
+                    liElement.style.fontStyle = 'normal';
+                }
+            }
         }
         if (child[0] && !isFontStyle) {
             let nodeTraverse: Node = child[index as number] ? child[index as number] : child[0];
@@ -380,6 +392,16 @@ export class SelectionCommands {
                     child[num as number] = InsertMethods.Wrap(
                         child[num as number] as HTMLElement,
                         this.GetFormatNode(format, value, formatNodeTagName, formatNodeStyles));
+                        let liElement: HTMLElement = nodes[index as number].parentElement;
+                        if (!isNOU(liElement) && liElement.tagName.toLowerCase() !== 'li'){
+                            liElement = closest(liElement,'li') as HTMLElement;
+                        }
+                        if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
+                            liElement.textContent.trim() === nodes[index as number].textContent.trim()) {
+                            if (format === 'fontname'){
+                                liElement.style.fontFamily = value;
+                            }
+                        }
                     if (child[num as number].textContent === startText) {
                         if (num === 0) {
                             range.setStartBefore(child[num as number]);
@@ -504,6 +526,8 @@ export class SelectionCommands {
                             } else if (format === 'fontcolor'){
                                 liElement.style.color = value;
                                 liElement.style.textDecoration = 'inherit';
+                            } else if (format === 'fontname'){
+                                liElement.style.fontFamily = value;
                             }
                         }
                         if (value === 'formatPainter') {
@@ -549,6 +573,18 @@ export class SelectionCommands {
                         }
                     } else {
                         nodes[index as number] = this.applyStyles(nodes, index, element);
+                        let liElement: HTMLElement = nodes[index as number].parentElement;
+                        if (!isNOU(liElement) && liElement.tagName.toLowerCase() !== 'li'){
+                            liElement = closest(liElement,'li') as HTMLElement;
+                        }
+                        if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
+                            liElement.textContent.trim() === nodes[index as number].textContent.trim()) {
+                            if (format === 'bold') {
+                                liElement.style.fontWeight = 'bold';
+                            } else if (format === "italic") {
+                                liElement.style.fontStyle = 'italic';
+                            }
+                        }
                     }
                 }
             } else {

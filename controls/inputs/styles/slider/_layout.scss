@@ -157,24 +157,28 @@
         }
 
         &.e-slider-horizontal-before {
+          transform: rotate(45deg);
           .e-tip-content {
             transform: rotate(-45deg);
           }
         }
 
         &.e-slider-horizontal-after {
+          transform: rotate(225deg);
           .e-tip-content {
             transform: rotate(-225deg);
           }
         }
 
         &.e-slider-vertical-before {
+          transform: rotate(-45deg);
           .e-tip-content {
             transform: rotate(45deg);
           }
         }
 
         &.e-slider-vertical-after {
+          transform: rotate(-225deg);
           .e-tip-content {
             transform: rotate(225deg);
           }

@@ -165,6 +165,7 @@ export class HeaderFooterProperties {
         headerTopLabel.innerHTML = localObj.getConstant('Header from Top');
         headerTopDiv.appendChild(headerTopLabel);
         const headerFromTop: HTMLInputElement = createElement('input', { id: this.documentEditor.element.id + '_headerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
+        headerFromTop.setAttribute('aria-label',localObj.getConstant('Header from Top'));
         headerTopDiv.appendChild(headerFromTop);
         this.headerFromTop = new NumericTextBox({
             value: 36, cssClass: 'e-de-prop-header-numeric',
@@ -177,6 +178,7 @@ export class HeaderFooterProperties {
         footerBottomLabel.innerHTML = localObj.getConstant('Footer from Bottom');
         footerBottomDiv.appendChild(footerBottomLabel);
         const footerFromTop: HTMLInputElement = createElement('input', { id: this.documentEditor.element.id + '_footerFromTop', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
+        footerFromTop.setAttribute('aria-label', localObj.getConstant('Footer from Bottom'));
         footerBottomDiv.appendChild(footerFromTop);
         this.footerFromTop = new NumericTextBox({
             value: 36, cssClass: 'e-de-prop-header-numeric',

@@ -505,7 +505,7 @@ export class Renderer {
         let isZeroShapeHeight: boolean = (shape.height === 0) ? true : false;
         let shapeType: any = shape.autoShapeType;
         let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
-        
+        shapeTop += shape.margin.top;
         this.pageContext.beginPath();
         if (shape.fillFormat && shape.fillFormat.color && shape.fillFormat.fill && shapeType !== 'StraightConnector') {
             this.pageContext.fillStyle = shape.fillFormat.color;
@@ -2216,7 +2216,6 @@ export class Renderer {
             this.pageContext.restore();
         }
     }
-
 
     private renderTableOutline(tableWidget: TableWidget): void {
         let layout: Layout = new Layout(this.documentHelper);

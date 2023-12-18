@@ -419,11 +419,11 @@ export class AnnotationToolbar {
             
             if (!this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                 if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line') {
-                    this.toolbar.enableItems(this.colorDropDownElement.parentElement, false);
+                    this.enableItems(this.colorDropDownElement.parentElement, false);
                 }
                 if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'HandWrittenSignature') {
                     let commentIcon: any = document.getElementById(this.pdfViewer.element.id + '_annotation_commentPanel');
-                    this.toolbar.enableItems(commentIcon.parentElement, false);
+                    this.enableItems(commentIcon.parentElement, false);
                 }
             }
             this.showPropertyTool(propertyToolbar, id);
@@ -1133,6 +1133,7 @@ export class AnnotationToolbar {
         this.handWrittenSignatureItem = this.pdfViewerBase.getElement('_annotation_signature');
         // eslint-disable-next-line max-len
         this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_annotation_signature'), this.pdfViewer.localeObj.getConstant('SignatureFieldDialogHeaderText'));
+        this.handWrittenSignatureItem.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('SignatureFieldDialogHeaderText'));
         // eslint-disable-next-line
         let proxy: any = this;
         let items: ItemModel[] =[];
@@ -1524,6 +1525,7 @@ export class AnnotationToolbar {
         this.stampElement = this.pdfViewerBase.getElement('_annotation_stamp');
         // eslint-disable-next-line max-len
         this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_annotation_stamp'), this.pdfViewer.localeObj.getConstant('Add Stamp'));
+        this.stampElement.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Add Stamp'));
         const contextMenuElement: HTMLElement = createElement('ul', { id: this.pdfViewer.element.id + 'contextMenuElement' });
         this.pdfViewerBase.getElement('_annotation_stamp').appendChild(contextMenuElement);
         const items: Object[] = [];
@@ -2558,6 +2560,7 @@ export class AnnotationToolbar {
         }
         dropDownButton.appendTo(element);
         this.primaryToolbar.createTooltip(element, tooltipText);
+        element.setAttribute('aria-label', tooltipText);
         return dropDownButton;
     }
 
@@ -2801,6 +2804,7 @@ export class AnnotationToolbar {
         }
         dropDownButton.appendTo(element);
         this.primaryToolbar.createTooltip(element, tooltipText);
+        element.setAttribute('aria-label', tooltipText);
         return dropDownButton;
     }
     // eslint-disable-next-line
@@ -2862,6 +2866,7 @@ export class AnnotationToolbar {
         this.fontSize.value = '16px';
         this.fontSize.appendTo(fontSelectElement);
         this.primaryToolbar.createTooltip(fontSelectElement, this.pdfViewer.localeObj.getConstant('Font size'));
+        fontSelectElement.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Font size'));
         this.fontSize.addEventListener('change', function(args: any): void {            
             let isUserInteracted : boolean = args.isInteracted;
             proxy.onFontSizeChange(proxy, isUserInteracted);
@@ -2905,6 +2910,7 @@ export class AnnotationToolbar {
         this.fontFamily.value = 'Helvetica';
         this.fontFamily.appendTo(fontSelectElement);
         this.primaryToolbar.createTooltip(fontSelectElement, this.pdfViewer.localeObj.getConstant('Font family'));
+        fontSelectElement.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Font family'));
         this.fontFamily.addEventListener('change', (): void => {
             this.onFontFamilyChange(this);
         });
@@ -3461,8 +3467,15 @@ export class AnnotationToolbar {
         // eslint-disable-next-line max-len
         this.inkAnnotationItem = this.primaryToolbar.addClassToolbarItem('_annotation_ink', 'e-pv-annotation-ink', this.pdfViewer.localeObj.getConstant('Draw Ink'));
         // eslint-disable-next-line max-len
+        this.pdfViewerBase.getElement('_annotation_shapes').setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Add Shapes'));
+        // eslint-disable-next-line max-len
+        this.pdfViewerBase.getElement('_annotation_calibrate').setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Calibrate'));
+        // eslint-disable-next-line max-len
+        this.pdfViewerBase.getElement('_comment').setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Add Comments'));
+        // eslint-disable-next-line max-len
         this.commentItem = this.primaryToolbar.addClassToolbarItem('_annotation_commentPanel', 'e-pv-annotation-comment-panel', this.pdfViewer.localeObj.getConstant('Comment Panel'));
         this.closeItem = this.primaryToolbar.addClassToolbarItem('_annotation_close', 'e-pv-annotation-tools-close', null);
+        this.pdfViewerBase.getElement('_annotation_close').setAttribute('aria-label', "Close Annotation Toolbar");
         this.selectAnnotationDeleteItem(false);
         this.enableTextMarkupAnnotationPropertiesTools(false);
         this.enableCommentPanelTool(this.pdfViewer.enableCommentPanel);
@@ -3474,6 +3487,8 @@ export class AnnotationToolbar {
         if ((args.originalEvent.target as HTMLElement).id) {
             this.pdfViewer.toolbarModule.updateStampItems();
         }
+        // eslint-disable-next-line max-len
+        let isKeyBoardEvent: boolean = args.originalEvent && (args.originalEvent as any).pointerType !== 'mouse' && (args.originalEvent as any).pointerType !== 'touch';
         this.pdfViewer.toolbarModule.deSelectCommentAnnotation();
         switch ((args.originalEvent.target as HTMLElement).id) {
         case this.pdfViewer.element.id + '_highlight':
@@ -3531,6 +3546,10 @@ export class AnnotationToolbar {
                 this.pdfViewerBase.navigationPane.closeCommentPanelContainer();
             } else {
                 this.pdfViewer.annotationModule.showCommentsPanel();
+                // eslint-disable-next-line max-len
+                if(isKeyBoardEvent && !isNullOrUndefined(commentPanel.firstElementChild) && !isNullOrUndefined(commentPanel.firstElementChild.lastElementChild) && commentPanel.firstElementChild.lastElementChild instanceof HTMLButtonElement) {
+                    commentPanel.firstElementChild.lastElementChild.focus();
+                }
             }
             break;
         case this.pdfViewer.element.id + '_annotation_close':
@@ -4483,16 +4502,16 @@ export class AnnotationToolbar {
                         // eslint-disable-next-line
                         if (annotation.annotationSettings && annotation.annotationSettings.isLock) {
                             if (this.pdfViewer.annotationModule.checkAllowedInteractions('Delete', annotation)) {
-                                this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
+                                this.enableItems(this.deleteItem.parentElement, isEnable);
                             } else {
-                                this.toolbar.enableItems(this.deleteItem.parentElement, false);
+                                this.enableItems(this.deleteItem.parentElement, false);
                             }
                         } else {
-                            this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
+                            this.enableItems(this.deleteItem.parentElement, isEnable);
                         }
                     }
                 } else {
-                    this.toolbar.enableItems(this.deleteItem.parentElement, isEnable);
+                    this.enableItems(this.deleteItem.parentElement, isEnable);
                 }
             }
         } else {
@@ -4528,16 +4547,16 @@ export class AnnotationToolbar {
     public enableTextMarkupAnnotationPropertiesTools(isEnable: boolean): void {
         if (!Browser.isDevice) {
             if (!isBlazor()) {
-                this.toolbar.enableItems(this.colorDropDownElement.parentElement, isEnable);
-                this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
+                this.enableItems(this.colorDropDownElement.parentElement, isEnable);
+                this.enableItems(this.opacityDropDownElement.parentElement, isEnable);
                 if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-                    this.toolbar.enableItems(this.strokeDropDownElement.parentElement, false);
-                    this.toolbar.enableItems(this.thicknessElement.parentElement, false);
-                    this.toolbar.enableItems(this.fontFamilyElement.parentElement, false);
-                    this.toolbar.enableItems(this.fontSizeElement.parentElement, false);
-                    this.toolbar.enableItems(this.fontColorElement.parentElement, false);
-                    this.toolbar.enableItems(this.textAlignElement.parentElement, false);
-                    this.toolbar.enableItems(this.textPropElement.parentElement, false);
+                    this.enableItems(this.strokeDropDownElement.parentElement, false);
+                    this.enableItems(this.thicknessElement.parentElement, false);
+                    this.enableItems(this.fontFamilyElement.parentElement, false);
+                    this.enableItems(this.fontSizeElement.parentElement, false);
+                    this.enableItems(this.fontColorElement.parentElement, false);
+                    this.enableItems(this.textAlignElement.parentElement, false);
+                    this.enableItems(this.textPropElement.parentElement, false);
                 }
             } else {
                 // this.pdfViewer._dotnetInstance.invokeMethodAsync('AnnotationSelect', 'TextMarkup');
@@ -4577,20 +4596,20 @@ export class AnnotationToolbar {
                 if (isPropertiesChanges) {
                     // eslint-disable-next-line max-len
                     if (this.pdfViewer.selectedItems.annotations[0] && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line')) {
-                        this.toolbar.enableItems(this.colorDropDownElement.parentElement, false);
+                        this.enableItems(this.colorDropDownElement.parentElement, false);
                     } else {
-                        this.toolbar.enableItems(this.colorDropDownElement.parentElement, isEnable);
+                        this.enableItems(this.colorDropDownElement.parentElement, isEnable);
                     }
-                    this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
-                    this.toolbar.enableItems(this.strokeDropDownElement.parentElement, isEnable);
-                    this.toolbar.enableItems(this.thicknessElement.parentElement, isEnable);
+                    this.enableItems(this.opacityDropDownElement.parentElement, isEnable);
+                    this.enableItems(this.strokeDropDownElement.parentElement, isEnable);
+                    this.enableItems(this.thicknessElement.parentElement, isEnable);
                     if (this.pdfViewer.enableShapeLabel) {
-                        this.toolbar.enableItems(this.fontFamilyElement.parentElement, isEnable);
-                        this.toolbar.enableItems(this.fontSizeElement.parentElement, isEnable);
-                        this.toolbar.enableItems(this.fontColorElement.parentElement, isEnable);
+                        this.enableItems(this.fontFamilyElement.parentElement, isEnable);
+                        this.enableItems(this.fontSizeElement.parentElement, isEnable);
+                        this.enableItems(this.fontColorElement.parentElement, isEnable);
                     }
-                    this.toolbar.enableItems(this.textAlignElement.parentElement, false);
-                    this.toolbar.enableItems(this.textPropElement.parentElement, false);
+                    this.enableItems(this.textAlignElement.parentElement, false);
+                    this.enableItems(this.textPropElement.parentElement, false);
                 }
             } else {
                 // this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableAnnotationPropertiesTools', isEnable, isPropertiesChanges);
@@ -4611,16 +4630,16 @@ export class AnnotationToolbar {
             }
             if (!isBlazor()) {
                 if (isPropertiesChanges) {
-                    this.toolbar.enableItems(this.colorDropDownElement.parentElement, false);
-                    this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
-                    this.toolbar.enableItems(this.strokeDropDownElement.parentElement, isEnable);
-                    this.toolbar.enableItems(this.thicknessElement.parentElement, isEnable);
-                    this.toolbar.enableItems(this.textAlignElement.parentElement, false);
-                    this.toolbar.enableItems(this.textPropElement.parentElement, false);
-                    this.toolbar.enableItems(this.fontFamilyElement.parentElement, false);
-                    this.toolbar.enableItems(this.fontSizeElement.parentElement, false);
-                    this.toolbar.enableItems(this.fontColorElement.parentElement, false);
-                    this.toolbar.enableItems(this.textAlignElement.parentElement, false);
+                    this.enableItems(this.colorDropDownElement.parentElement, false);
+                    this.enableItems(this.opacityDropDownElement.parentElement, isEnable);
+                    this.enableItems(this.strokeDropDownElement.parentElement, isEnable);
+                    this.enableItems(this.thicknessElement.parentElement, isEnable);
+                    this.enableItems(this.textAlignElement.parentElement, false);
+                    this.enableItems(this.textPropElement.parentElement, false);
+                    this.enableItems(this.fontFamilyElement.parentElement, false);
+                    this.enableItems(this.fontSizeElement.parentElement, false);
+                    this.enableItems(this.fontColorElement.parentElement, false);
+                    this.enableItems(this.textAlignElement.parentElement, false);
                 }
             } else {
                 //this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableSignaturePropertiesTools', isEnable, isPropertiesChanges);
@@ -4641,15 +4660,15 @@ export class AnnotationToolbar {
         }
         if (!isBlazor()) {
             if (isPropertiesChanges) {
-                this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
-                this.toolbar.enableItems(this.colorDropDownElement.parentElement, false);
-                this.toolbar.enableItems(this.strokeDropDownElement.parentElement, false);
-                this.toolbar.enableItems(this.thicknessElement.parentElement, false);
-                this.toolbar.enableItems(this.fontFamilyElement.parentElement, false);
-                this.toolbar.enableItems(this.fontSizeElement.parentElement, false);
-                this.toolbar.enableItems(this.fontColorElement.parentElement, false);
-                this.toolbar.enableItems(this.textAlignElement.parentElement, false);
-                this.toolbar.enableItems(this.textPropElement.parentElement, false);
+                this.enableItems(this.opacityDropDownElement.parentElement, isEnable);
+                this.enableItems(this.colorDropDownElement.parentElement, false);
+                this.enableItems(this.strokeDropDownElement.parentElement, false);
+                this.enableItems(this.thicknessElement.parentElement, false);
+                this.enableItems(this.fontFamilyElement.parentElement, false);
+                this.enableItems(this.fontSizeElement.parentElement, false);
+                this.enableItems(this.fontColorElement.parentElement, false);
+                this.enableItems(this.textAlignElement.parentElement, false);
+                this.enableItems(this.textPropElement.parentElement, false);
             }
         } else {
             // this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableStampAnnotationPropertiesTools', isEnable, isPropertiesChanges);
@@ -4668,15 +4687,15 @@ export class AnnotationToolbar {
         }
         if (!isBlazor()) {
             if (isPropertiesChanges) {
-                this.toolbar.enableItems(this.opacityDropDownElement.parentElement, isEnable);
-                this.toolbar.enableItems(this.colorDropDownElement.parentElement, isEnable);
-                this.toolbar.enableItems(this.strokeDropDownElement.parentElement, isEnable);
-                this.toolbar.enableItems(this.thicknessElement.parentElement, isEnable);
-                this.toolbar.enableItems(this.fontFamilyElement.parentElement, isEnable);
-                this.toolbar.enableItems(this.fontSizeElement.parentElement, isEnable);
-                this.toolbar.enableItems(this.fontColorElement.parentElement, isEnable);
-                this.toolbar.enableItems(this.textAlignElement.parentElement, isEnable);
-                this.toolbar.enableItems(this.textPropElement.parentElement, isEnable);
+                this.enableItems(this.opacityDropDownElement.parentElement, isEnable);
+                this.enableItems(this.colorDropDownElement.parentElement, isEnable);
+                this.enableItems(this.strokeDropDownElement.parentElement, isEnable);
+                this.enableItems(this.thicknessElement.parentElement, isEnable);
+                this.enableItems(this.fontFamilyElement.parentElement, isEnable);
+                this.enableItems(this.fontSizeElement.parentElement, isEnable);
+                this.enableItems(this.fontColorElement.parentElement, isEnable);
+                this.enableItems(this.textAlignElement.parentElement, isEnable);
+                this.enableItems(this.textPropElement.parentElement, isEnable);
             }
         } else {
             //this.pdfViewer._dotnetInstance.invokeMethodAsync('EnableFreeTextAnnotationPropertiesTools', isEnable, isPropertiesChanges);
@@ -4691,27 +4710,27 @@ export class AnnotationToolbar {
     public enableAnnotationAddTools(isEnable: boolean): void {
         if (this.toolbar && !Browser.isDevice) {
             if (this.pdfViewer.enableTextMarkupAnnotation) {
-                this.toolbar.enableItems(this.highlightItem.parentElement, isEnable);
-                this.toolbar.enableItems(this.underlineItem.parentElement, isEnable);
-                this.toolbar.enableItems(this.strikethroughItem.parentElement, isEnable);
+                this.enableItems(this.highlightItem.parentElement, isEnable);
+                this.enableItems(this.underlineItem.parentElement, isEnable);
+                this.enableItems(this.strikethroughItem.parentElement, isEnable);
             }
             if (this.pdfViewer.enableShapeAnnotation) {
-                this.toolbar.enableItems(this.shapeElement.parentElement, isEnable);
+                this.enableItems(this.shapeElement.parentElement, isEnable);
             }
             if (this.pdfViewer.enableStampAnnotations) {
                 this.toolbar.enableItems(this.stampElement.parentElement, isEnable);
             }
             if (this.pdfViewer.enableMeasureAnnotation && this.pdfViewerBase.isCalibrateAnnotationModule()) {
-                this.toolbar.enableItems(this.calibrateElement.parentElement, isEnable);
+                this.enableItems(this.calibrateElement.parentElement, isEnable);
             }
             if (this.pdfViewer.enableFreeText) {
-                this.toolbar.enableItems(this.freeTextEditItem.parentElement, isEnable);
+                this.enableItems(this.freeTextEditItem.parentElement, isEnable);
             }
             if (this.pdfViewer.enableHandwrittenSignature) {
-                this.toolbar.enableItems(this.handWrittenSignatureItem.parentElement, isEnable);
+                this.enableItems(this.handWrittenSignatureItem.parentElement, isEnable);
             }
             if (this.pdfViewer.enableInkAnnotation) {
-                this.toolbar.enableItems(this.inkAnnotationItem.parentElement, isEnable);
+                this.enableItems(this.inkAnnotationItem.parentElement, isEnable);
             }
             if (this.pdfViewer.enableCommentPanel) {
                 this.enableCommentPanelTool(isEnable);
@@ -4736,7 +4755,7 @@ export class AnnotationToolbar {
      */
     public enableCommentPanelTool(isEnable: boolean): void {
         if (this.toolbar) {
-        this.toolbar.enableItems(this.commentItem.parentElement, isEnable);
+        this.enableItems(this.commentItem.parentElement, isEnable);
         }
     }
 
@@ -4746,18 +4765,19 @@ export class AnnotationToolbar {
         } else {
             this.enableTextMarkupAddTools(false);
         }
-        this.toolbar.enableItems(this.shapeElement.parentElement, this.pdfViewer.enableShapeAnnotation);
+        this.enableItems(this.shapeElement.parentElement, this.pdfViewer.enableShapeAnnotation);
         this.toolbar.enableItems(this.stampElement.parentElement, this.pdfViewer.enableStampAnnotations);
-        this.toolbar.enableItems(this.calibrateElement.parentElement, this.pdfViewer.enableMeasureAnnotation);
-        this.toolbar.enableItems(this.freeTextEditItem.parentElement, this.pdfViewer.enableFreeText);
-        this.toolbar.enableItems(this.handWrittenSignatureItem.parentElement, this.pdfViewer.enableHandwrittenSignature);
-        this.toolbar.enableItems(this.inkAnnotationItem.parentElement, this.pdfViewer.enableInkAnnotation);
+        this.enableItems(this.calibrateElement.parentElement, this.pdfViewer.enableMeasureAnnotation);
+        this.enableItems(this.freeTextEditItem.parentElement, this.pdfViewer.enableFreeText);
+        this.enableItems(this.handWrittenSignatureItem.parentElement, this.pdfViewer.enableHandwrittenSignature);
+        this.enableItems(this.inkAnnotationItem.parentElement, this.pdfViewer.enableInkAnnotation);
+        this.closeItem.setAttribute('tabindex', '0');
     }
 
     private enableTextMarkupAddTools(isEnable: boolean): void {
-        this.toolbar.enableItems(this.highlightItem.parentElement, isEnable);
-        this.toolbar.enableItems(this.underlineItem.parentElement, isEnable);
-        this.toolbar.enableItems(this.strikethroughItem.parentElement, isEnable);
+        this.enableItems(this.highlightItem.parentElement, isEnable);
+        this.enableItems(this.underlineItem.parentElement, isEnable);
+        this.enableItems(this.strikethroughItem.parentElement, isEnable);
     }
 
     /**
@@ -5046,6 +5066,13 @@ export class AnnotationToolbar {
             if (colorElementBounds.left > this.pdfViewerBase.viewerContainer.clientWidth + colorElementBounds.width + sideBarElementWidth) {
                 colorElement[0].element.style.left = (colorElementBounds.left - (this.pdfViewerBase.viewerContainer.clientHeight/2)) + 'px';
             }
+        }
+    }
+    private enableItems(element: HTMLElement, isEnable: boolean): void {
+        this.toolbar.enableItems(element, isEnable);
+        if(element.firstElementChild) {
+            element.firstElementChild.setAttribute('tabindex', isEnable ? '0' : '-1');
+            element.firstElementChild.setAttribute('data-tabindex', isEnable ? '0' : '-1');
         }
     }
 }

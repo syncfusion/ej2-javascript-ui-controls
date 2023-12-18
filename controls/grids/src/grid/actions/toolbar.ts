@@ -1,12 +1,14 @@
 import { L10n, EventHandler, extend, isNullOrUndefined, MouseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { remove, select, removeClass } from '@syncfusion/ej2-base';
 import { Toolbar as tool, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { IGrid, NotifyArgs, FocusInfo } from '../base/interface';
+import { IGrid, NotifyArgs, FocusInfo, ColumnMenuClickEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { EditSettingsModel } from '../base/grid-model';
-import { templateCompiler, appendChildren, parentsUntil, addRemoveEventListener } from '../base/util';
+import { templateCompiler, appendChildren, parentsUntil, addRemoveEventListener, applyBiggerTheme } from '../base/util';
 import { ToolbarItems, ToolbarItem, ResponsiveToolbarAction } from '../base/enum';
+import { ContextMenu as Menu } from '@syncfusion/ej2-navigations';
+import { OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
 import { SearchBox } from '../services/focus-strategy';
 
 /**
@@ -33,6 +35,10 @@ export class Toolbar {
         'ColumnChooser', 'PdfExport', 'ExcelExport', 'CsvExport', 'WordExport'];
     private searchBoxObj: SearchBox;
     private evtHandlers: { event: string, handler: Function }[];
+    private isRightToolbarMenu: Boolean = false;
+    private responsiveToolbarMenu: Menu;
+    // internal variables
+    private toolbarMenuElement: HTMLUListElement;
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -65,11 +71,24 @@ export class Toolbar {
             tooltipText: this.l10n.getConstant('Search'), align: 'Right', cssClass: 'e-search-wrapper',
             type: 'Input'
         };
-        (this.predefinedItems as { ColumnChooser: ItemModel }).ColumnChooser = {
-            id: this.gridID + '_' + 'columnchooser', cssClass: 'e-cc e-ccdiv e-cc-toolbar', suffixIcon: 'e-' + 'columnchooser-btn',
-            text: isAdaptive ? '' : this.l10n.getConstant('Columnchooser'),
-            tooltipText: this.l10n.getConstant('Columnchooser'), align: 'Right'
-        };
+        this.isRightToolbarMenu = false;
+        if (this.parent.enableAdaptiveUI && this.isResponsiveToolbarMenuItems(true) && ((this.parent.rowRenderingMode === 'Horizontal') ||
+            (this.parent.rowRenderingMode === 'Vertical' && !this.parent.allowFiltering && !this.parent.allowSorting))) {
+            this.isRightToolbarMenu = true;
+        }
+
+        if (isAdaptive && this.isResponsiveToolbarMenuItems(false)) {
+            (this.predefinedItems as { responsiveToolbarItems: ItemModel }).responsiveToolbarItems = {
+                id: this.gridID + '_' + 'responsivetoolbaritems', cssClass: 'e-responsive-toolbar-items e-menu-toolbar', suffixIcon: 'e-' + 'responsivetoolbaritems-btn',
+                align:  this.isRightToolbarMenu ? 'Left' : 'Right'
+            };
+        } else {
+            (this.predefinedItems as { ColumnChooser: ItemModel }).ColumnChooser = {
+                id: this.gridID + '_' + 'columnchooser', cssClass: 'e-cc e-ccdiv e-cc-toolbar', suffixIcon: 'e-' + 'columnchooser-btn',
+                text: isAdaptive ? '' : this.l10n.getConstant('Columnchooser'),
+                tooltipText: this.l10n.getConstant('Columnchooser'), align: 'Right'
+            };
+        }
         if (this.parent.rowRenderingMode === 'Vertical') {
             if (this.parent.allowFiltering && this.parent.filterSettings.type !== 'FilterBar') {
                 (this.predefinedItems as { responsiveFilter: ItemModel }).responsiveFilter = {
@@ -91,6 +110,23 @@ export class Toolbar {
             };
         }
         this.createToolbar();
+        if (this.parent.enableAdaptiveUI) {
+            if (isNullOrUndefined(this.responsiveToolbarMenu)) {
+                this.renderResponsiveToolbarpopup();
+            }
+            this.toolbar.refreshOverflow();
+        }
+    }
+
+    private isResponsiveToolbarMenuItems(isRight?: boolean): boolean {
+        const items: string[] = isRight ? ['Add', 'Edit', 'Delete', 'Search'] : ['Print', 'ColumnChooser', 'PdfExport', 'ExcelExport', 'CsvExport'];
+        const toolbarItems: (ToolbarItems | string | ItemModel | ToolbarItem)[] = this.parent.toolbar || [];
+        for (let i: number = 0; i < items.length; i++) {
+            if (toolbarItems.indexOf(items[parseInt(i.toString(), 10)] as string) >= 0) {
+                return isRight ? false : true;
+            }
+        } 
+        return isRight ? true : false;
     }
 
     /**
@@ -111,6 +147,9 @@ export class Toolbar {
      */
     public destroy(): void {
         if (this.toolbar && !this.toolbar.isDestroyed) {
+            if (this.responsiveToolbarMenu) {
+                this.responsiveToolbarMenu.destroy();
+            }
             if (!this.toolbar.element) {
                 this.parent.destroyTemplate(['toolbarTemplate']);
                 if (this.parent.isReact) {
@@ -148,17 +187,23 @@ export class Toolbar {
                     <span id="' + this.gridID + '_clearbutton" class="e-input-group-icon e-icons e-sicon" \
                     tabindex="-1" aria-label= "clear" role= "button" style="cursor: default"></span>\
                     <span id="' + this.gridID + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
-                    tabindex="-1" title="' + this.l10n.getConstant('Search') + '" aria-label= "search" role= "search"></span> \
+                    tabindex="-1" title="' + this.l10n.getConstant('Search') + '" role= "search"></span> \
                     </div>';
             } else {
                 this.element.querySelector('.e-search-wrapper').innerHTML = '<span id="' + this.gridID
                 + '_clearbutton" class="e-input-group-icon e-icons e-sicon" \
-                    tabindex="-1" aria-label= "clear" style="cursor: default"></span>\
+                    tabindex="-1" role= "button" aria-label= "clear" style="cursor: default"></span>\
                     <span id="' + this.gridID
                     + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
-                    tabindex="-1" title="' + this.l10n.getConstant('Search') + '" aria-label= "search"></span> \
+                    tabindex="-1" role= "button" title="' + this.l10n.getConstant('Search') + '"></span> \
                     </div>';
             }
+        }
+        if (this.element.querySelector('.e-responsive-toolbar-items')) {
+            this.element.querySelector('.e-responsive-toolbar-items').innerHTML = '<button id="' + this.gridID
+                    + '_responsivetoolbaritems" class="e-tbar-btn e-control e-btn e-lib e-icon-btn" \
+                    type="button" data-ripple="true" tabindex="-1" data-tabindex="-1" aria-label="responsivetoolbaritems" \
+                     aria-disabled="false" style="width: auto;"><span class="e-btn-icon e-responsivetoolbaritems-btn e-icons"></span>';
         }
         this.bindSearchEvents();
     }
@@ -340,6 +385,7 @@ export class Toolbar {
     private getItems(): ItemModel[] {
         const items: ItemModel[] = [];
         const toolbarItems: (ToolbarItems | string | ItemModel | ToolbarItem)[] = this.parent.toolbar || [];
+        let toolbarItemsString: boolean = false; 
         if (typeof (this.parent.toolbar) === 'string') {
             return [];
         }
@@ -352,6 +398,11 @@ export class Toolbar {
             }
         }
         for (const item of toolbarItems) {
+            if (this.parent.enableAdaptiveUI && ['Print', 'ColumnChooser',
+                'PdfExport', 'ExcelExport', 'CsvExport'].indexOf(item as string) !== -1) {
+                toolbarItemsString = true;
+                continue;
+            }
             switch (typeof item) {
             case 'number':
                 items.push(this.getItemObject(this.items[item as number]));
@@ -365,6 +416,9 @@ export class Toolbar {
         }
         if (this.parent.enableAdaptiveUI && this.parent.toolbar && this.parent.toolbar.indexOf('Search') > -1) {
             items.push(this.getItemObject('responsiveBack'));
+        }
+        if (this.parent.enableAdaptiveUI && this.isResponsiveToolbarMenuItems(false)) {
+            items.push(this.getItemObject('responsiveToolbarItems'));
         }
         return items;
     }
@@ -398,72 +452,185 @@ export class Toolbar {
     private toolbarClickHandler(args: ClickEventArgs): void {
         const gObj: IGrid = this.parent;
         const gID: string = this.gridID;
-        extend(args, { cancel: false });
-        const newArgs: Object = args;
         const originalEvent: Event = args.originalEvent;
+        if (this.parent.enableAdaptiveUI && args.item.id === gID + '_responsivetoolbaritems') {
+            this.openResponsiveToolbarMenuPopup(originalEvent, args.item.id);
+        } else {
+            extend(args, { cancel: false });
+            const newArgs: Object = args;
+            gObj.trigger(events.toolbarClick, newArgs, (toolbarargs: ClickEventArgs) => {
+                toolbarargs.originalEvent = toolbarargs.originalEvent ? toolbarargs.originalEvent : originalEvent;
+                if (!toolbarargs.cancel) {
+                    switch (!isNullOrUndefined(toolbarargs.item) && toolbarargs.item.id) {
+                        case gID + '_print':
+                            gObj.print();
+                            break;
+                        case gID + '_edit':
+                            gObj.startEdit();
+                            break;
+                        case gID + '_update':
+                            gObj.endEdit();
+                            break;
+                        case gID + '_cancel':
+                            gObj.closeEdit();
+                            break;
+                        case gID + '_add':
+                            gObj.addRecord();
+                            break;
+                        case gID + '_delete':
+                            gObj.deleteRecord();
+                            break;
+                        case gID + '_search':
+                            if ((<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton' && this.searchElement) {
+                                this.search();
+                            } else if (gObj.enableAdaptiveUI && !this.searchElement
+                                && ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-search-wrapper')
+                                    || (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton')) {
+                                this.renderResponsiveSearch(true);
+                            }
+                            else if ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-clear-icon') && (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_clearbutton' && this.searchElement) {
+                                this.searchElement.value = '';
+                                if (this.searchElement) {
+                                    this.sIcon = this.searchElement.parentElement.querySelector('.e-sicon');
+                                    this.sIcon.classList.remove('e-clear-icon');
+                                    this.sIcon.removeAttribute('title');
+                                    this.sIcon.style.cursor = 'default';
+                                }
+                                if (this.isSearched || this.parent.searchSettings.key.length) {
+                                    this.parent.search(this.searchElement.value);
+                                    this.isSearched = false;
+                                }
+                            }
+                            break;
+                        case gID + '_columnchooser':
+                            if (this.parent.enableAdaptiveUI) {
+                                gObj.showResponsiveCustomColumnChooser();
+                            } else {
+                                /* eslint-disable */
+                                const tarElement: Element = this.parent.element.querySelector('.e-ccdiv');
+                                let y: number = tarElement.getBoundingClientRect().top;
+                                const x: number = tarElement.getBoundingClientRect().left;
+                                const targetEle: Element = (<HTMLElement>toolbarargs.originalEvent.target);
+                                /* eslint-enable */
+                                y = tarElement.getBoundingClientRect().top + (<HTMLElement>tarElement).offsetTop;
+                                gObj.createColumnchooser(x, y, targetEle);
+                            }
+                            break;
+                        case gID + '_responsivefilter':
+                            gObj.notify(events.renderResponsiveChangeAction, { action: 3 });
+                            gObj.showResponsiveCustomFilter();
+                            break;
+                        case gID + '_responsivesort':
+                            gObj.notify(events.renderResponsiveChangeAction, { action: 2 });
+                            gObj.showResponsiveCustomSort();
+                            break;
+                        case gID + '_responsiveback':
+                            this.renderResponsiveSearch(false);
+                            break;
+                    }
+                }
+            });
+        }
+    }
+
+    private openResponsiveToolbarMenuPopup(e: Event, id?: string): void {
+        let pos: OffsetPosition = { top: 0, left: 0 };
+        this.toolbarMenuElement.style.cssText = 'display:block;visibility:hidden';
+        const elePos: ClientRect = this.toolbarMenuElement.getBoundingClientRect();
+        const gClient: ClientRect = this.parent.element.getBoundingClientRect();
+        this.toolbarMenuElement.style.cssText = 'display:none;visibility:visible';
+        let target : Element;
+        if (isNullOrUndefined(e)) {
+            target = this.parent.element.querySelector('#' + id);
+        } else {
+            target = e.target as Element;
+        }
+        if (this.parent.enableRtl) {
+            pos = calculatePosition(target, 'left', 'bottom');
+            if (this.isRightToolbarMenu) {
+                pos.left -= elePos.width;
+            }
+        } else {
+            pos = calculatePosition(target, 'right', 'bottom');
+            if (!this.isRightToolbarMenu) {
+                pos.left -= elePos.width;
+            }
+            if ((pos.left + elePos.width + 1) >= gClient.right) {
+                pos.left -= 35;
+            }
+        }
+        this.responsiveToolbarMenu['open'](pos.top, pos.left);
+        if (e && e.preventDefault) {
+            e.preventDefault();
+        }
+        applyBiggerTheme(this.parent.element, this.responsiveToolbarMenu.element.parentElement);
+
+    }
+
+    private getMenuItems(): Object[] {
+        let items: Object[] = [];
+        const toolbarItems: (ToolbarItems | string | ItemModel | ToolbarItem)[] = this.parent.toolbar || [];
+        for (const item of toolbarItems) {
+            if (typeof item === 'string' && (item === 'ColumnChooser' || item === 'PdfExport'|| item === 'ExcelExport' ||
+                item === 'CsvExport' || item === 'Print')) {
+                items.push({
+                    text: this.getLocaleText(item), 
+                    id: this.gridID + '_' + item.toLowerCase(),
+                    iconCss: 'e-btn-icon e-' + item.toLowerCase() + ' e-icons' 
+                });
+            }
+        }
+        return items as Object[];
+    }
+
+    private getLocaleText(item: string): string {
+        let title: string;
+        if (item === 'ColumnChooser') {
+            title = this.l10n.getConstant('Columnchooser');
+        } else if (item === 'PdfExport') {
+            title = this.l10n.getConstant('Pdfexport');
+        } else if (item === 'ExcelExport') {
+            title = this.l10n.getConstant('Excelexport');
+        } else if (item === 'CsvExport') {
+            title = this.l10n.getConstant('Csvexport');
+        } else if (item === 'Print') {
+            title = this.l10n.getConstant('Print');
+        }
+        return title;
+    }
+
+    private renderResponsiveToolbarpopup(): void {
+        this.l10n = this.serviceLocator.getService<L10n>('localization');
+        this.toolbarMenuElement = this.parent.createElement('ul', {
+            id: this.gridID + '__toolbaritemsmenu', className: 'e-responsivetoolbar-menu' }) as HTMLUListElement;
+        this.element.setAttribute('aria-label', this.l10n.getConstant('ToolbarMenuDialogARIA'));
+        this.parent.element.appendChild(this.toolbarMenuElement);
+        this.responsiveToolbarMenu = new Menu({
+            cssClass: this.parent.cssClass ? 'e-grid-toolbarmenu' + ' ' + this.parent.cssClass : 'e-grid-toolbarmenu',
+            enableRtl: this.parent.enableRtl,
+            enablePersistence: this.parent.enablePersistence,
+            locale: this.parent.locale,
+            items: this.getMenuItems(),
+            select: this.ResponsiveToolbarMenuItemClick.bind(this),
+        });
+        this.responsiveToolbarMenu.appendTo(this.toolbarMenuElement);
+    }
+
+    private ResponsiveToolbarMenuItemClick(args: ColumnMenuClickEventArgs) {
+        const gObj: IGrid = this.parent;
+        const element: Element = args.element;
+        args.item.id = element.id;
+        const newArgs: Object = { cancel: false, name: 'clicked', item: args.item, originalEvent: args.event };
         gObj.trigger(events.toolbarClick, newArgs, (toolbarargs: ClickEventArgs) => {
-            toolbarargs.originalEvent = toolbarargs.originalEvent ? toolbarargs.originalEvent : originalEvent;
             if (!toolbarargs.cancel) {
                 switch (!isNullOrUndefined(toolbarargs.item) && toolbarargs.item.id) {
-                case gID + '_print':
-                    gObj.print();
-                    break;
-                case gID + '_edit':
-                    gObj.startEdit();
-                    break;
-                case gID + '_update':
-                    gObj.endEdit();
-                    break;
-                case gID + '_cancel':
-                    gObj.closeEdit();
-                    break;
-                case gID + '_add':
-                    gObj.addRecord();
-                    break;
-                case gID + '_delete':
-                    gObj.deleteRecord();
-                    break;
-                case gID + '_search':
-                    if ((<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton' && this.searchElement) {
-                        this.search();
-                    } else if (gObj.enableAdaptiveUI && !this.searchElement
-                        && ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-search-wrapper')
-                            || (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_searchbutton')) {
-                        this.renderResponsiveSearch(true);
-                    }
-                    else if ((<HTMLElement>toolbarargs.originalEvent.target).classList.contains('e-clear-icon') && (<HTMLElement>toolbarargs.originalEvent.target).id === gID + '_clearbutton' && this.searchElement){
-                        this.searchElement.value = '';
-                        if (this.searchElement) {
-                            this.sIcon = this.searchElement.parentElement.querySelector('.e-sicon');
-                            this.sIcon.classList.remove('e-clear-icon');
-                            this.sIcon.removeAttribute('title');
-                            this.sIcon.style.cursor = 'default';
-                        }
-                        if (this.isSearched || this.parent.searchSettings.key.length) {
-                            this.parent.search(this.searchElement.value);
-                            this.isSearched = false;
-                        }
-                    }
-                    break;
-                case gID + '_columnchooser':
-                    /* eslint-disable */
-                    const tarElement: Element = this.parent.element.querySelector('.e-ccdiv');
-                    let y: number = tarElement.getBoundingClientRect().top;
-                    const x: number = tarElement.getBoundingClientRect().left;
-                    const targetEle: Element = (<HTMLElement>toolbarargs.originalEvent.target);
-                    /* eslint-enable */
-                    y = tarElement.getBoundingClientRect().top + (<HTMLElement>tarElement).offsetTop;
-                    gObj.createColumnchooser(x, y, targetEle);
-                    break;
-                case gID + '_responsivefilter':
-                    gObj.showResponsiveCustomFilter();
-                    break;
-                case gID + '_responsivesort':
-                    gObj.showResponsiveCustomSort();
-                    break;
-                case gID + '_responsiveback':
-                    this.renderResponsiveSearch(false);
-                    break;
+                    case this.gridID + '_columnchooser':
+                        gObj.notify(events.renderResponsiveChangeAction, { action: 5 });
+                        gObj.showResponsiveCustomColumnChooser();
+                        break;
+                    case this.gridID + '_print':
+                        gObj.print();
+                        break;
                 }
             }
         });
@@ -642,6 +809,7 @@ export class Toolbar {
     private rowSelected(): void {
         if (this.parent.enableAdaptiveUI) {
             this.refreshResponsiveToolbarItems(ResponsiveToolbarAction.isInitial);
+            this.toolbar.refreshOverflow();
         }
     }
 

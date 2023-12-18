@@ -3212,5 +3212,3 @@ describe('EJ2-849870 - Checkbox filtering is not working properly while cancelin
         gridObj = actionBegin = actionComplete = null;
     });
 });
-
-

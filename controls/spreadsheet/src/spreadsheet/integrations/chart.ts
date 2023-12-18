@@ -11,7 +11,7 @@ import { Chart, ColumnSeries, Category, ILoadedEventArgs, StackingColumnSeries, 
 import { AreaSeries, StackingAreaSeries, AccumulationChart, IAccLoadedEventArgs } from '@syncfusion/ej2-charts';
 import { Legend, StackingBarSeries, SeriesModel, LineSeries, StackingLineSeries, AxisModel, ScatterSeries } from '@syncfusion/ej2-charts';
 import { AccumulationLegend, PieSeries, AccumulationTooltip, AccumulationDataLabel, AccumulationSeriesModel } from '@syncfusion/ej2-charts';
-import { L10n, isNullOrUndefined, getComponent, closest, detach, isUndefined } from '@syncfusion/ej2-base';
+import { L10n, isNullOrUndefined, getComponent, closest, detach, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { isCustomDateTime } from '../../workbook/index';
 import { updateChart, deleteChartColl, getFormattedCellObject, setChart, getCellAddress, ChartTheme } from '../../workbook/common/index';
@@ -152,31 +152,6 @@ export class SpreadsheetChart {
         }
     }
 
-    private getPropertyValue(rIdx: number, cIdx: number, sheetIndex: number): string | number {
-        const cell: CellModel = getCell(rIdx, cIdx, getSheet(this.parent, sheetIndex));
-        if (cell) {
-            let value: string | number;
-            if (cell.format) {
-                const formatObj: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, cell: cell,
-                    rowIndex: rIdx, colIndex: cIdx };
-                this.parent.notify(getFormattedCellObject, formatObj);
-                if (isNumber(cell.value) && !isCustomDateTime(cell.format, true, null, true)) {
-                    // eslint-disable-next-line no-useless-escape
-                    const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,{}|\":<>~_-]', 'g');
-                    formatObj.formattedText = (formatObj.formattedText.toString()).replace(escapeRegx, '');
-                    value = parseInt(formatObj.formattedText.toString(), 10);
-                } else {
-                    value = formatObj.formattedText && formatObj.formattedText.toString();
-                }
-            } else {
-                value = cell.value;
-            }
-            return isNullOrUndefined(value) ? '' : value;
-        } else {
-            return '';
-        }
-    }
-
     private updateChartHandler(args: { chart: ChartModel }): void {
         const series: SeriesModel[] = this.initiateChartHandler({ option: args.chart, isRefresh: true }) as SeriesModel[];
         const chartObj: HTMLElement = this.parent.element.querySelector('.' + args.chart.id);
@@ -250,13 +225,38 @@ export class SpreadsheetChart {
         const minr: number = range[0];
         const minc: number = range[1]; let isStringSeries: boolean = false;
         const maxr: number = range[2]; const maxc: number = range[3]; const isSingleRow: boolean = minr === maxr;
-        const isSingleCol: boolean = minc === maxc;
-        const trVal: number | string = this.getPropertyValue(minr, maxc, dataSheetIdx);
-        // trVal = this.getParseValue(trVal);
-        const blVal: number | string = this.getPropertyValue(maxr, minc, dataSheetIdx);
-        // blVal = this.getParseValue(blVal);
-        const tlVal: number | string = this.getPropertyValue(minr, minc, dataSheetIdx);
-        // tlVal = this.getParseValue(tlVal);
+        const isSingleCol: boolean = minc === maxc; let isDateTimeFormat: boolean;
+        const getPropertyValue: Function = (rIdx: number, cIdx: number, sheetIndex: number, checkDateTime?: boolean): string | number => {
+            const cell: CellModel = getCell(rIdx, cIdx, getSheet(this.parent, sheetIndex));
+            if (cell) {
+                let value: string | number;
+                if (cell.format) {
+                    const formatObj: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, cell: cell,
+                        rowIndex: rIdx, colIndex: cIdx };
+                    this.parent.notify(getFormattedCellObject, formatObj);
+                    const isNum: boolean = isNumber(cell.value);
+                    if (isNum && !isCustomDateTime(cell.format, true, null, true)) {
+                        // eslint-disable-next-line no-useless-escape
+                        const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,{}|\":<>~_-]', 'g');
+                        formatObj.formattedText = (formatObj.formattedText.toString()).replace(escapeRegx, '');
+                        value = parseInt(formatObj.formattedText.toString(), 10);
+                    } else {
+                        if (checkDateTime && isNum) {
+                            isDateTimeFormat = true;
+                        }
+                        value = formatObj.formattedText && formatObj.formattedText.toString();
+                    }
+                } else {
+                    value = cell.value;
+                }
+                return isNullOrUndefined(value) ? '' : value;
+            } else {
+                return '';
+            }
+        };
+        const trVal: number | string = getPropertyValue(minr, maxc, dataSheetIdx, true);
+        const blVal: number | string = getPropertyValue(maxr, minc, dataSheetIdx);
+        const tlVal: number | string = getPropertyValue(minr, minc, dataSheetIdx);
         if (!isNumber(blVal) || !tlVal) {
             isStringSeries = true;
         }
@@ -264,7 +264,7 @@ export class SpreadsheetChart {
             xRange = [minr + 1, minc, maxr, minc];
             yRange = [minr + 1, minc + 1, maxr, maxc];
             lRange = [minr, minc + 1, minr, maxc];
-        } else if ((!isNullOrUndefined(blVal) && isStringSeries && !isSingleRow && !isSingleCol)) {
+        } else if (!isNullOrUndefined(blVal) && isStringSeries && !isSingleRow && !isSingleCol && !isDateTimeFormat) {
             if (!isNullOrUndefined(trVal) && (!isNumber(trVal) || !tlVal)) {
                 xRange = [minr + 1, minc, maxr, minc];
                 yRange = [minr + 1, minc + 1, maxr, maxc];
@@ -275,7 +275,7 @@ export class SpreadsheetChart {
             }
         } else {
             yRange = [minr, minc, maxr, maxc];
-            if ((!isNullOrUndefined(trVal) && !isNumber(trVal) && !isDateTime(trVal))) {
+            if ((!isNullOrUndefined(trVal) && !isNumber(trVal) && !isDateTimeFormat)) {
                 lRange = [minr, minc, minr, maxc];
                 yRange[0] = yRange[0] + 1;
             } else if (isNullOrUndefined(tlVal) && (isSingleRow || isSingleCol)) {
@@ -420,6 +420,9 @@ export class SpreadsheetChart {
                         } else {
                             val = 0;
                         }
+                    }
+                    if (isNullOrUndefined(xValue[j as number]) && !isNullOrUndefined(val)) {
+                        xValue[j as number] = getUniqueID('spread-chart-empty-label-');
                     }
                     pArr.push({ x: xValue[j as number], y: val });
                 }
@@ -633,7 +636,8 @@ export class SpreadsheetChart {
             valueType: chart.type === 'Scatter' && !chartRange.isStringSeries && !chart.isSeriesInRows ? 'Double' : 'Category',
             rangePadding: chart.type === 'Scatter' && !chartRange.isStringSeries && !chart.isSeriesInRows ? 'Round' : 'Auto',
             visible: chart.primaryXAxis ? chart.primaryXAxis.visible : true,
-            title: chart.primaryXAxis ? chart.primaryXAxis.title : ''
+            title: chart.primaryXAxis ? chart.primaryXAxis.title : '',
+            edgeLabelPlacement: 'Shift'
         };
         const primaryYAxis: AxisModel = {
             lineStyle: { width: 0 },
@@ -646,7 +650,8 @@ export class SpreadsheetChart {
             minorTicksPerInterval: chart.primaryYAxis && chart.primaryYAxis.minorGridLines && chart.primaryYAxis.minorGridLines.width > 0 ?
                 5 : 0,
             visible: chart.primaryYAxis ? chart.primaryYAxis.visible : true,
-            title: chart.primaryYAxis ? chart.primaryYAxis.title : ''
+            title: chart.primaryYAxis ? chart.primaryYAxis.title : '',
+            edgeLabelPlacement: 'Shift'
         };
         if (argsOpt.isRefresh) {
             if (argsOpt.isSwitchRowColumn && chart.type === 'Scatter' ) {
@@ -723,7 +728,10 @@ export class SpreadsheetChart {
                 axisLabelRender: (args: IAxisLabelRenderEventArgs) => {
                     if (args.axis.name === 'primaryYAxis' && format && !isNullOrUndefined(args.value) && this.parent) {
                         args.text = this.parent.getDisplayText({ format: format, value: args.value.toString()});
-                    } else if (args.axis.name === 'primaryXAxis' && chart.type === 'Scatter' && args.axis.labels.length > 0) {
+                    } else if (args.axis.name === 'primaryXAxis' && args.text.startsWith('spread-chart-empty-label-')) {
+                        args.text = '';
+                    }
+                    if (args.axis.name === 'primaryXAxis' && chart.type === 'Scatter' && args.axis.labels.length > 0) {
                         args.text = !isNumber(args.text) ? (args.axis.labels.indexOf(args.text) + 1).toString() : args.text;
                     }
                 }

@@ -181,6 +181,10 @@
       content: '\e7d6';
     }
 
+    .e-responsivetoolbaritems-btn::before {
+      content: '\e781';
+    }
+
     &.e-rtl {
       .e-icon-rowdragicon::before {
         content: '\e7d6';
@@ -203,16 +207,53 @@
     content: '\e714';
   }
 
-  & .e-search-icon::before {
+  & .e-search-icon::before,
+  & .e-ccdlg span.e-ccsearch-icon::before {
     content: '\e724';
   }
 
-  & .e-chkcancel-icon::before {
+  & .e-chkcancel-icon::before,
+  & .e-ccdlg span.e-cc-cancel::before {
     content: '\e7a7';
   }
 
   & .e-icon-filter-clear::before {
     content: '\e748';
+  }
+
+  & .e-resfilter-icon.e-icons::before {
+    content: '\e714';
+  }
+
+  & .e-resascending-icon.e-icons::before {
+    content: '\e7d1';
+  }
+
+  & .e-resdescending-icon.e-icons::before {
+    content: '\e7b9';
+  }
+
+  & .e-resgroup-icon.e-icons::before {
+    content: '\e7d5';
+  }
+
+  & .e-resungroup-icon.e-icons::before {
+    content: '\e7d5';
+  }
+}
+
+.e-grid-toolbarmenu {
+  .e-responsivetoolbar-menu .e-menu-icon.e-print::before  {
+    content: '\e743';
+  }
+  .e-responsivetoolbar-menu .e-menu-icon.e-pdfexport::before  {
+    content: '\e727';
+  }
+  .e-responsivetoolbar-menu .e-menu-icon.e-excelexport::before  {
+    content: '\e74e';
+  }
+  .e-responsivetoolbar-menu .e-menu-icon.e-csvexport::before  {
+    content: '\e725';
   }
 }
 

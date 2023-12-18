@@ -6,8 +6,6 @@ import { CellModel, SheetModel, getColumn, isLocked as isCellLocked, exportDialo
 import { setCell, getCell, skipHiddenIdx, selectionComplete, refreshRibbonIcons } from '../../workbook/index';
 import { RowModel } from '../../workbook/base/row-model';
 import { isNullOrUndefined, closest, select, getComponent, EventHandler } from '@syncfusion/ej2-base';
-import { ItemModel, Tab } from '@syncfusion/ej2-navigations';
-import { RibbonItem } from '../../ribbon';
 
 /**
  * Represents keyboard shortcut support for Spreadsheet.
@@ -47,7 +45,9 @@ export class KeyboardShortcut {
 
     private ribbonShortCuts(e: KeyboardEvent): void {//switch between ribbon tabs
         if (this.parent.showRibbon && e.altKey && !e.ctrlKey && !e.shiftKey) {
-            const tabObj: Tab = getComponent(this.parent.element.querySelector('.e-ribbon .e-tab') as HTMLElement, 'tab') as Tab;
+            const tabObj: { items: { disabled: boolean, cssClass: string }[], select: Function } = getComponent(
+                this.parent.element.querySelector('.e-ribbon .e-tab') as HTMLElement,
+                'tab') as { items: { disabled: boolean, cssClass: string }[], select: Function };
             let tabIdx: number;
             if (e.keyCode === 72) { /*alt + H =home*/
                 tabIdx = 1;

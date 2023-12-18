@@ -1050,6 +1050,52 @@ describe('Event Base Module', () => {
         });
     });
 
+    describe('ES-856542 - Checking all day event in different timezone', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Subject: '2023-12-02 all-day appointment',
+            StartTime: '2023-12-02',
+            EndTime: '2023-12-02',
+            IsAllDay: true
+        },
+        {
+            Subject: '2023-12-02 appointment',
+            IsAllDay: false,
+            StartTime: '2023-12-02T09:15:00+02:00',
+            EndTime: '2023-12-02T15:15:00+02:00'
+        }
+        ];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2023, 11, 2),
+                height: '550px',
+                timezone: 'Europe/Amsterdam'
+            };
+            schObj = util.createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking all day appointment is properly rendered', () => {
+            const app: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(app.length).toEqual(2);
+            expect(app[0].classList.contains('e-all-day-appointment')).toEqual(true);
+            expect(app[1].classList.contains('e-all-day-appointment')).toEqual(false);
+            const startDate: Date = new Date(schObj.eventsData[0].StartTime);
+            const startYear: number = startDate.getFullYear();
+            const startMonth: string = (startDate.getMonth() + 1) < 10 ? `0${startDate.getMonth() + 1}` : (startDate.getMonth() + 1).toString();
+            const startDay: string = (startDate.getDate()) < 10 ? `0${startDate.getDate()}` : (startDate.getDate()).toString();
+            const formattedStartDate: string = `${startYear}-${startMonth}-${startDay}`;
+            expect(eventData[0].StartTime).toEqual(formattedStartDate);
+            const endDate: Date = new Date(schObj.eventsData[0].EndTime);
+            const endYear: number = endDate.getFullYear();
+            const endMonth: string = (endDate.getMonth() + 1) < 10 ? `0${endDate.getMonth() + 1}` : (endDate.getMonth() + 1).toString();
+            const endDay: string = (endDate.getDate()) < 10 ? `0${endDate.getDate()}` : (endDate.getDate()).toString();
+            const formattedEndDate: string = `${endYear}-${endMonth}-${endDay}`;
+            expect(eventData[0].EndTime).toEqual(formattedEndDate);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

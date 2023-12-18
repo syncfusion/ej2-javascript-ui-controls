@@ -19,7 +19,7 @@ let keyboardEventArgs = {
     code: 22,
     action: 'insert-link'
 };
-describe('insert Link', () => {
+describe('Link Module', () => {
     describe('div content mobile ui', () => {
         let rteObj: RichTextEditor;
         let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
@@ -51,6 +51,7 @@ describe('insert Link', () => {
             (<any>rteObj).linkModule.dialogObj.keyDown(eventArgs);
         });
     });
+
     describe('exe command', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -158,6 +159,7 @@ describe('insert Link', () => {
             expect(document.querySelectorAll('.e-rte-quick-popup')[0].id.indexOf('Link_Quick_Popup') >= 0).toBe(true);
         });
     });
+    
     describe('div content-rte testing', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -412,13 +414,13 @@ describe('insert Link', () => {
             let eventsArgs: any = { target: document, preventDefault: function () { } };
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             let clickEvent: any = document.createEvent("MouseEvents");
-            eventsArgs = { pageX: 50, pageY: 300, target: selectParent[0], preventDefault: function () { } };
+            eventsArgs = { pageX: 50, pageY: 300, ctrlKey: false, target: selectParent[0],  preventDefault: function () { } };
             clickEvent.initEvent("mousedown", false, true);
             trg.dispatchEvent(clickEvent);
             (<any>rteObj).linkModule.editAreaClickHandler({ args: eventsArgs });
-            eventsArgs = { pageX: 50, pageY: 300, target: rteObj.element, preventDefault: function () { } };
+            eventsArgs = { pageX: 50, pageY: 300, ctrlKey: false, target: rteObj.element, preventDefault: function () { } };
             (<any>rteObj).linkModule.editAreaClickHandler({ args: eventsArgs });
-            eventsArgs = { pageX: 50, pageY: 300, target: selectParent[0], preventDefault: function () { } };
+            eventsArgs = { pageX: 50, pageY: 300, ctrlKey: false, target: selectParent[0], preventDefault: function () { } };
             (<any>rteObj).linkModule.editAreaClickHandler({ args: eventsArgs });
             let linkPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
             let linkTBItems: NodeList = linkPop.querySelectorAll('.e-toolbar-item');
@@ -442,60 +444,60 @@ describe('insert Link', () => {
             evnArg.selectParent = new NodeSelection().getParentNodeCollection(range);
             evnArg.selectNode = new NodeSelection().getNodeCollection(range);
             (<any>rteObj).linkModule.linkDialog(evnArg);
-            eventsArgs = { which: 2, pageX: 50, pageY: 300, target: selectParent[0], preventDefault: function () { } };
+            eventsArgs = { which: 2, pageX: 50, pageY: 300, ctrlKey: false, target: selectParent[0], preventDefault: function () { } };
             (<any>rteObj).linkModule.editAreaClickHandler({ args: eventsArgs });
         });
     });
 
-describe('IE 11 insert link', () => {
-    let rteEle: HTMLElement;
-    let rteObj: RichTextEditor;
-    let defaultUA: string = navigator.userAgent;
-    beforeAll(() => {
-        Browser.userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; rv:11.0) like Gecko';
-        rteObj = renderRTE({ value: '<p>test</p>' });
-        rteEle = rteObj.element;
+    describe('IE 11 insert link', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let defaultUA: string = navigator.userAgent;
+        beforeAll(() => {
+            Browser.userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; rv:11.0) like Gecko';
+            rteObj = renderRTE({ value: '<p>test</p>' });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            Browser.userAgent = defaultUA;
+            destroy(rteObj);
+        });
+        it('IE 11 insert link iframe', () => {
+            rteObj.iframeSettings.enable = true;
+            rteObj.dataBind();
+            let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+            let event: any = { preventDefault: function () { } };
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let selectParent: any = new NodeSelection().getParentNodeCollection(range)
+            let selectNode: any = new NodeSelection().getNodeCollection(range);
+            let evnArg = {
+                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
+                selectParent: selectParent, selectNode: selectNode
+            };
+            (<any>rteObj).linkModule.linkDialog(evnArg);
+            expect((<any>rteObj).linkModule.dialogObj.headerEle.innerHTML === 'Insert Link').toBe(true);
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'http://www.google.com';
+            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            range = new NodeSelection().getRange(document);
+            save = new NodeSelection().save(range, document);
+            args = {
+                item: { url: 'https://www.google.com/', selection: save, target: '_blank' },
+                preventDefault: function () { }
+            };
+            (<any>rteObj).formatter.editorManager.linkObj.createLink(args);
+            let trg: any = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            let eventsArgs: any = { target: document, preventDefault: function () { } };
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let clickEvent: any = document.createEvent("MouseEvents");
+            eventsArgs = { pageX: 50, pageY: 300, target: selectParent[0], preventDefault: function () { } };
+            clickEvent.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (<any>rteObj).formatter.editorManager.linkObj.openLink(args);
+        });
     });
-    afterAll(() => {
-        Browser.userAgent = defaultUA;
-        destroy(rteObj);
-    });
-    it('IE 11 insert link iframe', () => {
-        rteObj.iframeSettings.enable = true;
-        rteObj.dataBind();
-        let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
-        let event: any = { preventDefault: function () { } };
-        let range: any = new NodeSelection().getRange(document);
-        let save: any = new NodeSelection().save(range, document);
-        let selectParent: any = new NodeSelection().getParentNodeCollection(range)
-        let selectNode: any = new NodeSelection().getNodeCollection(range);
-        let evnArg = {
-            target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
-            selectParent: selectParent, selectNode: selectNode
-        };
-        (<any>rteObj).linkModule.linkDialog(evnArg);
-        expect((<any>rteObj).linkModule.dialogObj.headerEle.innerHTML === 'Insert Link').toBe(true);
-        (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'http://www.google.com';
-        evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
-        (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
-        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-        range = new NodeSelection().getRange(document);
-        save = new NodeSelection().save(range, document);
-        args = {
-            item: { url: 'https://www.google.com/', selection: save, target: '_blank' },
-            preventDefault: function () { }
-        };
-        (<any>rteObj).formatter.editorManager.linkObj.createLink(args);
-        let trg: any = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
-        let eventsArgs: any = { target: document, preventDefault: function () { } };
-        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-        let clickEvent: any = document.createEvent("MouseEvents");
-        eventsArgs = { pageX: 50, pageY: 300, target: selectParent[0], preventDefault: function () { } };
-        clickEvent.initEvent("mousedown", false, true);
-        trg.dispatchEvent(clickEvent);
-        (<any>rteObj).formatter.editorManager.linkObj.openLink(args);
-    });
-});
 
     describe('link dialog open - Short cut key', () => {
         let rteObj: RichTextEditor;
@@ -631,7 +633,6 @@ describe('IE 11 insert link', () => {
         });
     });
 
-
     describe('EJ2-59865 - css class dependency component - Link Module', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -702,6 +703,7 @@ describe('IE 11 insert link', () => {
             expect(rteObj.contentModule.getEditPanel().querySelector('a').text === 'Customer ').toBe(true);
         });
     });
+
     describe('EJ2-59194 - More space between the text and Inserting a new link removes the space between the words issue', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -777,6 +779,7 @@ describe('IE 11 insert link', () => {
             expect(rteObj.contentModule.getEditPanel().querySelector('a')).toBe(null);
         });
     });
+
     describe('iOS device - insert link with selected text', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -827,6 +830,7 @@ describe('IE 11 insert link', () => {
             expect(rteObj.contentModule.getEditPanel().querySelector('a')).toBe(null);
         });
     });
+
     describe(' toolbarSettings property - Items - ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
@@ -1125,7 +1129,7 @@ describe('IE 11 insert link', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
+            let eventsArg: any = { pageX: 50, pageY: 300,ctrlKey: false, target: target, which: 2 };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
@@ -1147,7 +1151,7 @@ describe('IE 11 insert link', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 3 };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
@@ -1170,7 +1174,7 @@ describe('IE 11 insert link', () => {
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            let eventsArg: any = { pageX: 50, pageY: 300,ctrlKey: false, target: target, which: 1 };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -1193,7 +1197,7 @@ describe('IE 11 insert link', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 2 };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
@@ -1215,7 +1219,7 @@ describe('IE 11 insert link', () => {
             clickEvent.initEvent("mousedown", false, true);
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 1 };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
@@ -1238,7 +1242,7 @@ describe('IE 11 insert link', () => {
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 3 };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -1263,7 +1267,7 @@ describe('IE 11 insert link', () => {
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 1 };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -1289,7 +1293,7 @@ describe('IE 11 insert link', () => {
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 3 };
             rteObj.touchHandler({ originalEvent: eventsArg });
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1320,7 +1324,7 @@ describe('IE 11 insert link', () => {
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            let eventsArg: any = { pageX: 50, pageY: 300,  ctrlKey: false, target: target, which: 1 };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1351,7 +1355,7 @@ describe('IE 11 insert link', () => {
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 3 };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
             rteObj.touchHandler({ originalEvent: eventsArg });
             rteObj.mouseUp(eventsArg);
@@ -1379,7 +1383,7 @@ describe('IE 11 insert link', () => {
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
                 let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
@@ -1405,7 +1409,7 @@ describe('IE 11 insert link', () => {
             cntTarget.dispatchEvent(clickEvent);
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
             rteObj.touchHandler({ originalEvent: eventsArg });
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1436,7 +1440,7 @@ describe('IE 11 insert link', () => {
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
             rteObj.mouseUp(eventsArg);
             setTimeout(() => {
@@ -1467,7 +1471,7 @@ describe('IE 11 insert link', () => {
             rteObj.dataBind();
             let target: HTMLElement = ele.querySelector('#link-container a');
             new NodeSelection().setSelectionText(document, target.childNodes[0].childNodes[0], target.childNodes[0].childNodes[0], 0, 0);
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            let eventsArg: any = { pageX: 50, pageY: 300, ctrlKey: false, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
             expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
             rteObj.touchHandler({ originalEvent: eventsArg });
             rteObj.mouseUp(eventsArg);
@@ -1484,6 +1488,7 @@ describe('IE 11 insert link', () => {
             done();
         });
     });
+
     describe('EJ2-27228 - Remove link not working', () => {
         let rteEle: HTMLElement;
         let rteObj: any;
@@ -1525,6 +1530,7 @@ describe('IE 11 insert link', () => {
             expect(rteEle.querySelectorAll('.e-rte-content .e-content a').length).toBe(0);
         });
     });
+    
     describe('Checking tags while applying link', function() {
         let rteEle: HTMLElement;
         let rteObj: any;
@@ -1569,6 +1575,7 @@ describe('IE 11 insert link', () => {
             expect(rteObj.inputElement.childNodes[0].innerHTML === firstChild).toBe(true);
         });
     });
+
     describe('Checking tags while applying link-Iframe', function() {
         let rteEle: HTMLElement;
         let rteObj: any;
@@ -1616,6 +1623,7 @@ describe('IE 11 insert link', () => {
             expect(rteObj.inputElement.childNodes[0].innerHTML === firstChild).toBe(true);
         });
     });
+
     describe(' quickToolbarSettings property - link quick toolbar - ', function() {
         let rteObj: any;
         let controlId : any;
@@ -1681,6 +1689,7 @@ describe('IE 11 insert link', () => {
             expect(rteObj.contentModule.getEditPanel().querySelector('a').href === 'https://www.syncfusion.com/').toBe(true);
         });
     });
+
     describe('EJ2-44372 - BeforeDialogOpen eventArgs args.cancel is not working properly', () => {
         let rteObj: RichTextEditor;
         let count: number = 0;
@@ -1714,6 +1723,7 @@ describe('IE 11 insert link', () => {
             }, 100);
         });
     });
+
     describe('EJ2-48903 - BeforeDialogOpen event is not called for second time', () => {
         let rteObj: RichTextEditor;
         let count: number = 0;
@@ -1746,6 +1756,7 @@ describe('IE 11 insert link', () => {
             }, 100);
         });
     });
+
     describe('EJ2-49981 - ShowDialog, CloseDialog method testing', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
@@ -1828,6 +1839,75 @@ describe('IE 11 insert link', () => {
             evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
             expect(rteObj.inputElement.textContent == "TestingGoogle");
+        });
+    });
+    
+    describe('849561- Unable to do any formatting action for the link content in the RTE', () => {
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: '<p><a href="https://www.google.com">google</a></p>',
+                toolbarSettings: {
+                    items: ['Bold', 'Italic', 'Underline', 'StrikeThrough', 'CreateLink']
+                }
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Should not disable the toolbar items after the link is clicked', (done: DoneFn) => {
+            const link: HTMLElement = rteObj.inputElement.querySelector('a');
+            const mouseDownEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+            rteObj.inputElement.dispatchEvent(mouseDownEvent);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.firstChild, link.firstChild, 0, 5);
+            const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
+            rteObj.inputElement.dispatchEvent(mouseUpEvent);
+            link.dispatchEvent(mouseUpEvent);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-open-link').length).toBe(1);
+                expect(rteObj.element.querySelectorAll('.e-toolbar-item.e-overlay').length).toBe(0);
+                done();
+            }, 200);
+        });
+    });
+
+    describe('849062 - The link should open in a new tab when the link is clicked with the ctrl key in the Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        let mouseUpEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: true,
+            shiftKey: false,
+            char: '',
+            key: '',
+            target:'',
+        };
+    
+        beforeEach(() => {
+            rteObj = renderRTE({
+                value: '<p><a href="https://www.google.com" target="_blank">google</a></p>',
+                toolbarSettings: {
+                    items: ['Bold', 'Italic', 'Underline', 'StrikeThrough', 'CreateLink']
+                }
+            });
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('check the link open in new tab', () => {
+            let target = <HTMLElement>rteObj.element.querySelectorAll(".e-content")[0];
+            let mousedownEvent: any = document.createEvent("MouseEvents");
+            mousedownEvent.initEvent("mousedown", false, true);
+            target.dispatchEvent(mousedownEvent);
+            let trg = document.querySelector('a');
+            (<any>rteObj).formatter.editorManager.nodeSelection.setCursorPoint(document, trg.firstChild, trg.firstChild,0,0);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mouseup", false, true);
+            trg.dispatchEvent(clickEvent);
+            mouseUpEventArgs.target = clickEvent.target;
+            mouseUpEventArgs.ctrlKey = true;
+            (<any>rteObj).mouseUp(mouseUpEventArgs)
+            expect(rteObj.element.querySelectorAll('.e-rte-quick-popup').length).toBe(0);
         });
     });
 });

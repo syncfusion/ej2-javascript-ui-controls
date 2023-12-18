@@ -21,7 +21,7 @@ import { IPrintEventArgs } from '../chart/model/chart-interface';
 import { ExportType } from '../common/utils/enum';
 import { AccumulationChart } from '../accumulation-chart/accumulation';
 import { Chart } from '../chart/chart';
-import { ChartTheme } from '../chart/utils/enum';
+import { ChartTheme } from '../common/utils/enum';
 import { RangeNavigator } from '../range-navigator/range-navigator';
 import { getTitle, logBase } from '../common/utils/helper';
 import { BulletTooltipSettings, Range, BulletLabelStyle, BulletDataLabel } from './model/bullet-base';
@@ -315,7 +315,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     public targetWidth: number;
 
     /**
-     * Default stroke of comparative measure.
+     * The stroke color for the comparative measure, which can accept values in hex and rgba as valid CSS color strings.
+     * This property can also be mapped from the data source.
      *
      * @default '#191919'
      */
@@ -333,7 +334,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     public valueHeight: number;
 
     /**
-     * Default stroke color of feature measure.
+     * The stroke color for the feature measure, which can accept values in hex and rgba as valid CSS color strings.
+     * This property can also be mapped from the data source.
      *
      * @default null
      */
@@ -415,7 +417,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      *
      * @default 1
      */
-    @Property(1)
+    @Property(0)
     public tabIndex: number;
 
     // Event declaration section starts for bulletcharts
@@ -628,10 +630,12 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     private setTheme(): void {
         this.themeStyle = getBulletThemeColor(this.theme);
         if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && this.theme.indexOf('Fluent') > -1) {
-            this.valueFill = this.targetColor =  this.theme === 'FluentDark' ? '#797775' : '#A19F9D';
+            this.valueFill = !(this.valueFill) ? (this.theme === 'FluentDark' ? '#797775' : '#A19F9D') : this.valueFill;
+            this.targetColor = (!this.targetColor && this.targetColor != '#191919') ? (this.theme === 'FluentDark' ? '#797775' : '#A19F9D') : this.targetColor;
         }
         if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && this.theme.indexOf('Material3') > -1) {
-            this.valueFill = this.targetColor = this.theme === 'Material3Dark' ? '#938F99' : '#79747E';
+            this.valueFill = !(this.valueFill) ? (this.theme === 'Material3Dark' ? '#938F99' : '#79747E') : this.valueFill;
+            this.targetColor = (!this.targetColor && this.targetColor != '#191919') ? (this.theme === 'Material3Dark' ? '#938F99' : '#79747E') : this.targetColor;
         }
     }
 
@@ -738,10 +742,11 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      */
     private renderBulletElements(): void {
         const scaleGroup: Element = this.renderer.createGroup({ 'id': this.svgObject.id + '_scaleGroup' });
-        this.svgObject.appendChild(scaleGroup);
-
+       
         this.renderBulletChartTitle();
 
+        this.svgObject.appendChild(scaleGroup);
+        
         this.rangeCollection = this.scale.drawScaleGroup(scaleGroup);
 
         const size: number = (this.orientation === 'Horizontal') ? this.initialClipRect.width : this.initialClipRect.height;
@@ -1235,7 +1240,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             this.subtitleStyle.color || this.themeStyle.subTitleFont.color, this.svgObject, null, null, null, null, null, null, null, null,null, null, this.themeStyle.subTitleFont
         );
         if (element) {
-            element.setAttribute('aria-label', this.title);
+            element.setAttribute('aria-label', this.subtitle);
             element.setAttribute('tabindex', this.tabIndex.toString());
         }
     }

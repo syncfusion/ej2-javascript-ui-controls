@@ -84,7 +84,7 @@ describe('Diagram Control', () => {
             diagram.layout.verticalSpacing = 80;
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
-            expect(bounds.left === 603 && bounds.right === 1574 && bounds.top === 633 && bounds.bottom === 1368).toBe(true);
+            expect((bounds.left === 603 || bounds.left === 243 ) && (bounds.right === 1574 || bounds.right === 865) && (bounds.top === 633 || bounds.top === 273) && (bounds.bottom === 1368 || bounds.bottom === 727)).toBe(true);
             done();
         });
         it('Checking node offset after save and load', (done: Function) => {

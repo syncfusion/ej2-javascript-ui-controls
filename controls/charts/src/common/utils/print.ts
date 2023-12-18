@@ -7,10 +7,11 @@ import { beforePrint} from '../model/constants';
 import { RangeNavigator } from '../../range-navigator/range-navigator';
 import { StockChart } from '../../stock-chart/stock-chart';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
+import { Chart3D } from '../../chart3d/chart3D';
 
 
 export class PrintUtils {
-    private control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart;
+    private control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart | Chart3D;
     private printWindow: Window;
 
     /**
@@ -19,7 +20,7 @@ export class PrintUtils {
      * @param control
      */
 
-    constructor(control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart) {
+    constructor(control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart | Chart3D) {
         this.control = control;
     }
 

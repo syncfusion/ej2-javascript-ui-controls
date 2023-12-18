@@ -3,7 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { Node } from '../../../src/diagram/objects/node';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { ConnectorModel, PathModel, BasicShapeModel, ShapeStyleModel, TextElement } from '../../../src';
+import { ConnectorModel, PathModel, BasicShapeModel,ShapeStyleModel, TextElement } from '../../../src';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
 /**
@@ -222,10 +222,10 @@ describe('Diagram Control', () => {
             let nodes: NodeModel[] = [
                 {
                     id: 'node1', width: 100, height: 100, offsetX: 400, offsetY: 200,
-                    
+
                 }
             ];
-            
+
             let connectors: ConnectorModel [] = [{
                 id:'con1',type:'Straight',sourcePoint:{x:100,y:100},targetPoint:{x:200,y:200},annotations:[ {
                     id: 'conhidden1',

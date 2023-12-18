@@ -453,6 +453,17 @@ export class FreeTextAnnotation {
                         }
                         // eslint-disable-next-line
                         annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
+                        if (!isNullOrUndefined(annotation) && annotation.MarkupText && annotation.MarkupText.includes('\n')) {
+                            let noOfLines: number = annotation.MarkupText.split("\n").length;
+                            let newHeight: number = noOfLines * annotation.FontSize * this.lineGap;
+                            let pageHeight: number  = this.pdfViewerBase.pageSize[pageNumber].height - annotation.Bounds.Y;
+                            if (height < newHeight) {
+                                height = newHeight;
+                            }
+                            if(height > pageHeight) {
+                                height = pageHeight;
+                            }
+                        }
                         // eslint-disable-next-line
                         annot = {
                             author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, id: 'freetext' + this.inputBoxCount,
@@ -654,15 +665,6 @@ export class FreeTextAnnotation {
             for (let i: number = 0; i < annotationCollection.length; i++) {
                 let newArray: IFreeTextAnnotation[] = [];
                 const pageAnnotationObject: IPageAnnotations = annotationCollection[i];
-                for(let k: number = 0; pageAnnotationObject.annotations.length > k; k++){
-                    if(!isNullOrUndefined(pageAnnotationObject.annotations[k]) && pageAnnotationObject.annotations[k].dynamicText && pageAnnotationObject.annotations[k].dynamicText.includes('\n')){
-                        let noOfLines: number  = pageAnnotationObject.annotations[k].dynamicText.split("\n").length;
-                        let newHeight: number  = noOfLines * pageAnnotationObject.annotations[k].fontSize * this.lineGap;
-                        if (pageAnnotationObject.annotations[k].bounds.height < newHeight) {
-                            pageAnnotationObject.annotations[k].bounds.height = newHeight;
-                        }
-                    }
-                }
                 if (pageAnnotationObject) {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
                         this.pdfViewer.annotationModule.updateModifiedDate(pageAnnotationObject.annotations[z]);
@@ -807,6 +809,7 @@ export class FreeTextAnnotation {
             let pageIndex: number = this.inputBoxElement.id && this.inputBoxElement.id.split("_freeText_")[1] && this.inputBoxElement.id.split("_freeText_")[1].split("_")[0] ? parseFloat(this.inputBoxElement.id.split("_freeText_")[1].split("_")[0]) : this.pdfViewerBase.currentPageNumber - 1;
             const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
             let width: number = parseFloat(this.inputBoxElement.style.width);
+            let padding: number = parseFloat(this.inputBoxElement.style.paddingLeft);
             // Removed the line since when we click on the freetext the size gets changed. Task Id: 847135
             if (this.pdfViewer.freeTextSettings.enableAutoFit && !this.isMaximumWidthReached && this.isNewFreeTextAnnot) {
                 width = parseFloat(this.inputBoxElement.style.width);
@@ -1241,7 +1244,7 @@ export class FreeTextAnnotation {
             this.autoFitFreeText(currentPosition.x, currentPosition.y);
         }
         this.inputBoxElement.style.paddingLeft = (this.freeTextPaddingLeft * zoomFactor) + 'px';
-        this.inputBoxElement.style.paddingTop = ((((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / this.defaultFontSize) / zoomFactor) * this.freeTextPaddingTop) + 'px';
+        this.inputBoxElement.style.paddingTop = ((((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / this.defaultFontSize) / zoomFactor)) * this.freeTextPaddingTop + 'px';
         let lineSpace: any = 0;
         lineSpace = ((parseFloat(this.inputBoxElement.style.fontSize) / zoomFactor) / (this.defaultFontSize / 2));
         this.inputBoxElement.style.paddingTop = ((parseFloat(this.inputBoxElement.style.paddingTop)) - lineSpace) + 'px';

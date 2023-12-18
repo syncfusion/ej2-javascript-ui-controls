@@ -781,43 +781,43 @@ export class HelperMethods {
     }
 
     /* eslint-disable */
-    public static writeCharacterFormat(characterFormat: any, isInline: boolean, format: WCharacterFormat, keywordIndex?: number): void {
+    public static writeCharacterFormat(characterFormat: any, isInline: boolean, format: WCharacterFormat, keywordIndex?: number, isWriteAllValues?: boolean): void {
         keywordIndex = isNullOrUndefined(keywordIndex) ? 0 : keywordIndex;
-        characterFormat[boldProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.bold, keywordIndex) : format.getValue('bold');
-        characterFormat[italicProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.italic, keywordIndex) : format.getValue('italic');
-        characterFormat[fontSizeProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontSize') : format.getValue('fontSize');
-        characterFormat[fontFamilyProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontFamily') : format.getValue('fontFamily');
-        characterFormat[underlineProperty[keywordIndex]] = isInline ? 
+        characterFormat[boldProperty[keywordIndex]] = isWriteAllValues? HelperMethods.getBoolInfo(format.bold, keywordIndex) : isInline ? HelperMethods.getBoolInfo(format.bold, keywordIndex) : format.getValue('bold');
+        characterFormat[italicProperty[keywordIndex]] =  isWriteAllValues? HelperMethods.getBoolInfo(format.italic, keywordIndex) : isInline ? HelperMethods.getBoolInfo(format.italic, keywordIndex) : format.getValue('italic');
+        characterFormat[fontSizeProperty[keywordIndex]] = isWriteAllValues? format.fontSize :isInline ? this.toWriteInline(format, 'fontSize') : format.getValue('fontSize');
+        characterFormat[fontFamilyProperty[keywordIndex]] = isWriteAllValues? format.fontFamily :isInline ? this.toWriteInline(format, 'fontFamily') : format.getValue('fontFamily');
+        characterFormat[underlineProperty[keywordIndex]] = isWriteAllValues? format.underline :isInline ? 
         keywordIndex == 1 ? HelperMethods.getUnderlineEnumValue(format.underline): format.underline : 
         keywordIndex == 1 ? HelperMethods.getUnderlineEnumValue(format.getValue('underline') as Underline): format.getValue('underline') as Underline;
-        characterFormat[strikethroughProperty[keywordIndex]] = isInline ? 
+        characterFormat[strikethroughProperty[keywordIndex]] = isWriteAllValues? format.strikethrough :isInline ? 
         keywordIndex == 1 ? HelperMethods.getStrikeThroughEnumValue(format.strikethrough) :(format.strikethrough) : 
         keywordIndex == 1 ? HelperMethods.getStrikeThroughEnumValue(format.getValue('strikethrough') as Strikethrough):(format.getValue('strikethrough') as Strikethrough);
-        characterFormat[baselineAlignmentProperty[keywordIndex]] = isInline ? 
+        characterFormat[baselineAlignmentProperty[keywordIndex]] = isWriteAllValues? format.baselineAlignment :isInline ? 
         keywordIndex == 1 ? HelperMethods.getBaselineAlignmentEnumValue(format.baselineAlignment) :(format.baselineAlignment) : 
         keywordIndex == 1 ? HelperMethods.getBaselineAlignmentEnumValue(format.getValue('baselineAlignment') as BaselineAlignment):(format.getValue('baselineAlignment') as BaselineAlignment);
-        characterFormat[highlightColorProperty[keywordIndex]] = isInline ? 
+        characterFormat[highlightColorProperty[keywordIndex]] = isWriteAllValues? format.highlightColor :isInline ? 
         keywordIndex == 1 ? HelperMethods.getHighlightColorEnumValue(format.highlightColor) :(format.highlightColor) : 
         keywordIndex == 1 ? HelperMethods.getHighlightColorEnumValue(format.getValue('highlightColor') as HighlightColor):(format.getValue('highlightColor') as HighlightColor);
-        characterFormat[fontColorProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontColor') : format.getValue('fontColor');
+        characterFormat[fontColorProperty[keywordIndex]] = isWriteAllValues? format.fontColor :isInline ? this.toWriteInline(format, 'fontColor') : format.getValue('fontColor');
         characterFormat[styleNameProperty[keywordIndex]] = !isNullOrUndefined(format.baseCharStyle) ? format.baseCharStyle.name : undefined;
-        characterFormat[bidiProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.bidi, keywordIndex) : format.getValue('bidi');
-        characterFormat[bdoProperty[keywordIndex]] = isInline ? 
+        characterFormat[bidiProperty[keywordIndex]] = isWriteAllValues? format.bidi :isInline ? HelperMethods.getBoolInfo(format.bidi, keywordIndex) : format.getValue('bidi');
+        characterFormat[bdoProperty[keywordIndex]] = isWriteAllValues? format.bdo :isInline ? 
         keywordIndex == 1 ? HelperMethods.getBiDirectionalOverride(format.bdo): (format.bdo) : 
         keywordIndex == 1 ? HelperMethods.getBiDirectionalOverride(format.getValue('bdo') as BiDirectionalOverride): (format.getValue('bdo') as BiDirectionalOverride);
-        characterFormat[boldBidiProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.boldBidi, keywordIndex) : format.getValue('boldBidi');
-        characterFormat[italicBidiProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.italicBidi, keywordIndex) : format.getValue('italicBidi');
-        characterFormat[fontSizeBidiProperty[keywordIndex]] = isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
-        characterFormat[fontFamilyBidiProperty[keywordIndex]] = isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
-        characterFormat[allCapsProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.allCaps, keywordIndex) : format.getValue('allCaps');
-        characterFormat[localeIdBidiProperty[keywordIndex]] = isInline ? format.localeIdBidi : format.getValue('localeIdBidi');
-        characterFormat[complexScriptProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.complexScript, keywordIndex) : format.getValue('complexScript');
-        characterFormat[fontFamilyAsciiProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontFamilyAscii') : format.getValue('fontFamilyAscii');
-        characterFormat[fontFamilyNonFarEastProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontFamilyNonFarEast') : format.getValue('fontFamilyNonFarEast');
-        characterFormat[fontFamilyFarEastProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'fontFamilyFarEast') : format.getValue('fontFamilyFarEast');
-        characterFormat[characterSpacingProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'characterSpacing') : format.getValue('characterSpacing');
-        characterFormat[scalingProperty[keywordIndex]] = isInline ? this.toWriteInline(format, 'scaling') : format.getValue('scaling');
-        if (format.hasValue('fontFamily')) {
+        characterFormat[boldBidiProperty[keywordIndex]] = isWriteAllValues? format.boldBidi :isInline ? HelperMethods.getBoolInfo(format.boldBidi, keywordIndex) : format.getValue('boldBidi');
+        characterFormat[italicBidiProperty[keywordIndex]] = isWriteAllValues? format.italicBidi :isInline ? HelperMethods.getBoolInfo(format.italicBidi, keywordIndex) : format.getValue('italicBidi');
+        characterFormat[fontSizeBidiProperty[keywordIndex]] = isWriteAllValues? format.fontSizeBidi :isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
+        characterFormat[fontFamilyBidiProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyBidi :isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
+        characterFormat[allCapsProperty[keywordIndex]] = isWriteAllValues? format.allCaps :isInline ? HelperMethods.getBoolInfo(format.allCaps, keywordIndex) : format.getValue('allCaps');
+        characterFormat[localeIdBidiProperty[keywordIndex]] = isWriteAllValues? format.localeIdBidi :isInline ? format.localeIdBidi : format.getValue('localeIdBidi');
+        characterFormat[complexScriptProperty[keywordIndex]] = isWriteAllValues? format.complexScript :isInline ? HelperMethods.getBoolInfo(format.complexScript, keywordIndex) : format.getValue('complexScript');
+        characterFormat[fontFamilyAsciiProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyAscii :isInline ? this.toWriteInline(format, 'fontFamilyAscii') : format.getValue('fontFamilyAscii');
+        characterFormat[fontFamilyNonFarEastProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyNonFarEast :isInline ? this.toWriteInline(format, 'fontFamilyNonFarEast') : format.getValue('fontFamilyNonFarEast');
+        characterFormat[fontFamilyFarEastProperty[keywordIndex]] = isWriteAllValues? format.fontFamilyFarEast :isInline ? this.toWriteInline(format, 'fontFamilyFarEast') : format.getValue('fontFamilyFarEast');
+        characterFormat[characterSpacingProperty[keywordIndex]] = isWriteAllValues? format.characterSpacing :isInline ? this.toWriteInline(format, 'characterSpacing') : format.getValue('characterSpacing');
+        characterFormat[scalingProperty[keywordIndex]] = isWriteAllValues? format.scaling :isInline ? this.toWriteInline(format, 'scaling') : format.getValue('scaling');
+        if (format.hasValue('fontFamily') || isWriteAllValues) {
             if (isNullOrUndefined(characterFormat[fontFamilyAsciiProperty[keywordIndex]])) {
                 characterFormat[fontFamilyAsciiProperty[keywordIndex]] = format.fontFamily;
             }

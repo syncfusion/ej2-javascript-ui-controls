@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, setValue } from '@syncfusion/ej2-base';
 import { EmitType, Event, EventHandler, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';
 import { CheckBoxModel } from './check-box-model';
@@ -279,6 +279,13 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                     wrapper.removeAttribute(key);
                 });
                 wrapper.innerHTML = '';
+                this.element = wrapper as HTMLInputElement;
+                if (this.refreshing) {
+                    ['e-control', 'e-checkbox', 'e-lib'].forEach((key: string) => {
+                        this.element.classList.add(key);
+                    });
+                    setValue('ej2_instances', [this], this.element);
+                }
             }
         }
     }
@@ -318,6 +325,14 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     private getWrapper(): Element {
         if (this.element && this.element.parentElement) {
             return this.element.parentElement.parentElement;
+        } else {
+            return null;
+        }
+    }
+
+    private getLabel(): Element {
+        if (this.element) {
+            return this.element.parentElement;
         } else {
             return null;
         }
@@ -392,6 +407,17 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         this.isMouseClick = true;
         const rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
+    }
+
+    private labelMouseLeaveHandler(e: MouseEvent): void {
+        const rippleSpan: Element = this.getLabel().getElementsByClassName(RIPPLE)[0];
+        if (rippleSpan) {
+            const rippleElem: NodeListOf<Element> = rippleSpan.querySelectorAll('.e-ripple-element');
+            for (let i: number = rippleElem.length - 1; i > 0; i--) {
+                rippleSpan.removeChild(rippleSpan.childNodes[i as number]);
+            }
+            rippleMouseHandler(e, rippleSpan);
+        }
     }
 
     private labelMouseUpHandler(e: MouseEvent): void {
@@ -571,6 +597,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         const label: Element = wrapper.getElementsByTagName('label')[0];
         EventHandler.remove(label, 'mousedown', this.labelMouseDownHandler);
         EventHandler.remove(label, 'mouseup', this.labelMouseUpHandler);
+        EventHandler.remove(label, 'mouseleave', this.labelMouseLeaveHandler);
         const formElem: HTMLFormElement = <HTMLFormElement>closest(this.element, 'form');
         if (formElem) {
             EventHandler.remove(formElem, 'reset', this.formResetHandler);
@@ -590,6 +617,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         const label: Element = wrapper.getElementsByTagName('label')[0];
         EventHandler.add(label, 'mousedown', this.labelMouseDownHandler, this);
         EventHandler.add(label, 'mouseup', this.labelMouseUpHandler, this);
+        EventHandler.add(label, 'mouseleave', this.labelMouseLeaveHandler, this);
         const formElem: HTMLFormElement = <HTMLFormElement>closest(this.element, 'form');
         if (formElem) {
             EventHandler.add(formElem, 'reset', this.formResetHandler, this);
@@ -649,8 +677,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                     else {
                         this.element.setAttribute(key, this.htmlAttributes[`${key}`]);
                     }
-                }
-                else {
+                } else {
                     wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
                 }
             }

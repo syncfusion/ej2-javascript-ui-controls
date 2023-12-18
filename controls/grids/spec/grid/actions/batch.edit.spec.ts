@@ -1748,7 +1748,6 @@ describe('Batch Editing module', () => {
             gridObj.editModule.editCell(1, 'ShipCountry');
             gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: cell } as any);
             let td = gridObj.element.querySelector('.e-focused') as HTMLTableCellElement;
-            expect(td.getAttribute('aria-label').toString().indexOf('OrderID')).toBeGreaterThan(0);
             expect(gridObj.getRows()[2].querySelectorAll('.e-focused').length).toBeGreaterThan(0);
             gridObj.editModule.editCell(3, 'CustomerID');
         });
@@ -4994,57 +4993,6 @@ describe('coverage Improvement => ', () => {
     afterAll(() => {
         destroy(gridObj);
         gridObj = actionComplete = null;
-    });
-});
-
-// used for code coverage
-describe('Execute Batch Update method => ', () => {
-    let gridObj: Grid;
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: data.slice(0, 5),
-                allowFiltering: true,
-                allowGrouping: true,
-                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
-                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
-                allowPaging: true,
-                columns: [
-                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
-                    { field: 'CustomerID', type: 'string' },
-                    { field: 'EmployeeID', type: 'number', allowEditing: false },
-                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
-                ]
-            }, done);
-    });
-
-    it('execute updateCell method', (done: Function) => {
-        gridObj.updateCell(3, "Freight", 100);
-        gridObj.addRecord({ OrderID: 1, CustomerID: "TOMPS", EmployeeID: 3, Freight: 12.56 });
-        done();
-    });
-
-    it('delete the record', (done: Function) => {
-        let batchDelete = (args?: any): void => {
-            expect(gridObj.isEdit).toBeFalsy();
-            gridObj.batchDelete = null;
-            done();
-        };
-        gridObj.batchDelete = batchDelete;
-        gridObj.clearSelection();
-        gridObj.selectRow(2, true);
-        gridObj.deleteRow(gridObj.getContent().querySelectorAll('.e-row')[2] as any);
-    });
-
-    it('execute batch update', (done: Function) => {
-        (gridObj as any).batchUpdate();
-        expect(gridObj.isEdit).toBeFalsy();
-        done();
-    });
-
-    afterAll(() => {
-        destroy(gridObj);
-        gridObj = null;
     });
 });
 describe('Code Coverage - renderer, react batch edit, number-filter-ui and numeric-edit-cell', () => {

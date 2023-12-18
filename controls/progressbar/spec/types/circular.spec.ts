@@ -125,7 +125,7 @@ describe('ProgressBar Control', () => {
             progress.loaded = loaded;
             progress.refresh();
         });
-    
+
         it('Checking the circular progress with buffer mode with secondary progressvalue above progress maximum ', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Circularbuffer');

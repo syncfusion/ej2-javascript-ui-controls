@@ -1314,7 +1314,7 @@ describe('Resize module', () => {
             gridObj.updateMediaColumns(gridObj.getColumns()[2]);
             expect(1).toBe(1);
         });
-        
+
         it('change resizeSettings', () => {
             gridObj.resizeSettings = { mode: 'Auto'};
             gridObj.enableRtl = true;

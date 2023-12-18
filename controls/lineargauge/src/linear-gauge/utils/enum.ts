@@ -105,7 +105,11 @@ export type MarkerType =
     /**
      * Specifies the marker as image.
      */
-    'Image';
+    'Image' |
+    /**
+     * Specifies the marker as text.
+     */
+    'Text';
 
 
 /**

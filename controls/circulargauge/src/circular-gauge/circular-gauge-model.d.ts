@@ -1,4 +1,4 @@
-import { Property, NotifyPropertyChanges, Component, INotifyPropertyChanged, animationMode } from '@syncfusion/ej2-base';import { Complex, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, Collection, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';import { remove, createElement } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { ILoadedEventArgs, IAnimationCompleteEventArgs, IVisiblePointer } from './model/interface';import { IVisibleRange, IThemeStyle } from './model/interface';import { IAxisLabelRenderEventArgs, IRadiusCalculateEventArgs, IPointerDragEventArgs, IResizeEventArgs } from './model/interface';import { ITooltipRenderEventArgs, ILegendRenderEventArgs, IAnnotationRenderEventArgs }from './model/interface';import { IMouseEventArgs, IPrintEventArgs } from './model/interface';import { removeElement, getElement, stringToNumber, measureText, toPixel, textElement, getAngleFromValue, getAngleFromLocation, getPathArc, getPointer, RectOption, Size, GaugeLocation, Rect, TextOption } from './utils/helper-common';import { setStyles, getValueFromAngle, getRange } from './utils/helper-circular-gauge';import { GaugeTheme } from './utils/enum';import { Border, Margin, Font, TooltipSettings } from './model/base';import { BorderModel, MarginModel, FontModel, TooltipSettingsModel } from './model/base-model';import { Axis, Range, Pointer, Annotation, VisibleRangeModel } from './axes/axis';import { Annotations } from './annotations/annotations';import { GaugeTooltip } from './user-interaction/tooltip';import { AxisModel } from './axes/axis-model';import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, pointerMove } from './model/constants';import {  rangeMove, pointerStart, rangeStart, pointerEnd, rangeEnd } from './model/constants';import { gaugeMouseUp, dragEnd, dragMove, dragStart, resized } from './model/constants';import { AxisLayoutPanel } from './axes/axis-panel';import { getThemeStyle } from './model/theme';import { LegendSettingsModel } from './legend/legend-model';import { LegendSettings, Legend } from './legend/legend';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { ExportType } from '../circular-gauge/utils/enum';import { PdfExport } from  './model/pdf-export';import { ImageExport } from './model/image-export';import { Print } from './model/print';import { Gradient } from './axes/gradient';
+import { Property, NotifyPropertyChanges, Component, INotifyPropertyChanged, animationMode } from '@syncfusion/ej2-base';import { Complex, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, Collection, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';import { remove, createElement } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { ILoadedEventArgs, IAnimationCompleteEventArgs, IVisiblePointer } from './model/interface';import { IVisibleRange, IThemeStyle } from './model/interface';import { IAxisLabelRenderEventArgs, IRadiusCalculateEventArgs, IPointerDragEventArgs, IResizeEventArgs } from './model/interface';import { ITooltipRenderEventArgs, ILegendRenderEventArgs, IAnnotationRenderEventArgs }from './model/interface';import { IMouseEventArgs, IPrintEventArgs } from './model/interface';import { removeElement, getElement, stringToNumber, measureText, toPixel, textElement, getAngleFromValue, getAngleFromLocation, getPathArc, getPointer, RectOption, Size, GaugeLocation, Rect, TextOption } from './utils/helper-common';import { setStyles, getValueFromAngle, getRange } from './utils/helper-circular-gauge';import { GaugeTheme } from './utils/enum';import { Border, Margin, Font, TooltipSettings, LegendSettings } from './model/base';import { BorderModel, MarginModel, FontModel, TooltipSettingsModel } from './model/base-model';import { Axis, Range, Pointer, Annotation, VisibleRangeModel } from './axes/axis';import { Annotations } from './annotations/annotations';import { GaugeTooltip } from './user-interaction/tooltip';import { AxisModel } from './axes/axis-model';import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, pointerMove } from './model/constants';import {  rangeMove, pointerStart, rangeStart, pointerEnd, rangeEnd } from './model/constants';import { gaugeMouseUp, dragEnd, dragMove, dragStart, resized } from './model/constants';import { AxisLayoutPanel } from './axes/axis-panel';import { getThemeStyle } from './model/theme';import { textTrim, titleTooltip } from './utils/helper-legend';import { Legend } from './legend/legend';import { LegendSettingsModel } from './model/base-model';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { ExportType } from '../circular-gauge/utils/enum';import { PdfExport } from  './model/pdf-export';import { ImageExport } from './model/image-export';import { Print } from './model/print';import { Gradient } from './axes/gradient';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -42,6 +42,14 @@ export interface CircularGaugeModel extends ComponentModel{
      * @default ''
      */
     title?: string;
+
+    /**
+     * Sets and gets the duration of animation in milliseconds in circular gauge.
+     *
+     * @default 0
+     */
+
+    animationDuration?: number;
 
     /**
      * Sets and gets the options for customizing the title for circular gauge.
@@ -99,7 +107,7 @@ export interface CircularGaugeModel extends ComponentModel{
     allowPdfExport?: boolean;
 
     /**
-     * Allow the range element to be rendered ahead of the axis element, when this property is set to "true".
+     * Allow the range element to be rendered ahead of the axis element, when this property is set to "true". 
      *
      * @default true
      */
@@ -152,7 +160,7 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Sets and gets the tab index value for the circular gauge.
      *
-     * @default 1
+     * @default 0
      */
     tabIndex?: number;
 

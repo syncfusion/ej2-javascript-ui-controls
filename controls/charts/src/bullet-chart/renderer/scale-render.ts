@@ -206,7 +206,7 @@ export class ScaleGroup {
     private featureBar(pointX: number, pointY: number, width: number, i: number): Element {
         const featureBarOptions: RectOption = new RectOption(
             this.bulletChart.svgObject.id + '_FeatureMeasure_' + i,
-            this.bulletChart.valueFill,
+            this.bulletChart.dataSource[i as number][this.bulletChart.valueFill] || this.bulletChart.valueFill,
             this.bulletChart.valueBorder,
             1,
             new Rect(pointX, pointY, width, this.bulletChart.valueHeight)
@@ -215,6 +215,7 @@ export class ScaleGroup {
         svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');
         svgRect.id = this.bulletChart.svgObject.id + '_FeatureMeasure_' + i;
         svgRect.setAttribute('role', 'img');
+        svgRect.setAttribute('tabindex', '0');
         svgRect.setAttribute('aria-label', (this.bulletChart.title + ', value: ' + this.bulletChart.dataSource[i as number].value + ', target: ' + this.bulletChart.dataSource[i as number].target));
         return svgRect;
     }
@@ -222,7 +223,7 @@ export class ScaleGroup {
     private verticalFeatureBar(pointX: number, pointY: number, width: number, i: number): Element {
         const featureBarOptions: RectOption = new RectOption(
             this.bulletChart.svgObject.id + '_FeatureMeasure_' + i,
-            this.bulletChart.valueFill,
+            this.bulletChart.dataSource[i as number][this.bulletChart.valueFill] || this.bulletChart.valueFill,
             this.bulletChart.valueBorder,
             1,
             new Rect(pointX, pointY, this.bulletChart.valueHeight, width)
@@ -231,6 +232,7 @@ export class ScaleGroup {
         svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');
         svgRect.id = this.bulletChart.svgObject.id + '_FeatureMeasure_' + i;
         svgRect.setAttribute('role', 'img');
+        svgRect.setAttribute('tabindex', '0');
         svgRect.setAttribute('aria-label', (this.bulletChart.title + ', value: ' + this.bulletChart.dataSource[i as number].value + ', target: ' + this.bulletChart.dataSource[i as number].target));
         return svgRect;
     }
@@ -327,18 +329,19 @@ export class ScaleGroup {
         const ly: number = isHorizontal ? y1 + ((y2 - y1) / 2) : x1;
         const id: string = bulletChart.svgObject.id + '_ComparativeMeasure_' + k;
         const className: string = bulletChart.svgObject.id + '_ComparativeMeasure';
+        let targetColor: string = bulletChart.dataSource[k as number][bulletChart.targetColor] || bulletChart.targetColor;
         if (targetType === 'Rect') {
             shapeObject = isHorizontal ? this.compareMeasure(x1, y1, y2, k, value) : this.compareVMeasure(y1, y2, x1, k);
             shapeElement = bulletChart.renderer.drawLine(shapeObject);
         } else if (targetType === 'Circle') {
             shapeObject = new CircleOption(
-                id, bulletChart.targetColor, { width: 1, color: bulletChart.targetColor || 'black' }, 1, lx, ly, size
+                id, targetColor, { width: 1, color: targetColor || 'black' }, 1, lx, ly, size
             );
             shapeElement = bulletChart.renderer.drawCircle(shapeObject);
         } else {
             const crossDirection: string = 'M ' + (lx - size) + ' ' + (ly - size) + ' L ' + (lx + size) + ' ' + (ly + size) + ' M ' +
                 (lx - size) + ' ' + (ly + size) + ' L ' + (lx + size) + ' ' + (ly - size);
-            shapeObject = new PathOption(id, 'transparent', strokeWidth, bulletChart.targetColor, 1, '', crossDirection);
+            shapeObject = new PathOption(id, 'transparent', strokeWidth, targetColor, 1, '', crossDirection);
             shapeElement = bulletChart.renderer.drawPath(shapeObject);
         }
         shapeElement.setAttribute('class', className);
@@ -356,7 +359,7 @@ export class ScaleGroup {
                 (value === bulletChart.minimum) ? x1 + (bulletChart.targetWidth / 2) : x1,
             'y2': y2,
             'stroke-width': bulletChart.targetWidth,
-            'stroke': bulletChart.targetColor || 'black'
+            'stroke': bulletChart.dataSource[i as number][bulletChart.targetColor] || bulletChart.targetColor || 'black'
         };
         return compareMeasureOptions;
     }
@@ -370,7 +373,7 @@ export class ScaleGroup {
             'x2': x2,
             'y2': y1,
             'stroke-width': bulletChart.targetWidth,
-            'stroke': bulletChart.targetColor || 'black'
+            'stroke': bulletChart.dataSource[i as number][bulletChart.targetColor] || bulletChart.targetColor || 'black'
         };
         return compareMeasureOptions;
     }

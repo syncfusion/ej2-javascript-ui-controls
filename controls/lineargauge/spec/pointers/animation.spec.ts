@@ -202,6 +202,27 @@ describe('Linear gauge control', () => {
             gauge.axes[0].pointers[0].markerType = 'Triangle';
             gauge.axes[0].pointers[0].value = 60;
         });
+        it('markerType as Text pointer', (done: Function): void => {
+            gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                expect(svg!= null).toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Text';
+            gauge.axes[0].pointers[0].value = 80;
+        });
+        it('markerType as Text pointer', (done: Function): void => {
+            gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
+                let svg: HTMLElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');
+                expect(svg!= null).toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].type = 'Marker';
+            gauge.axes[0].pointers[0].markerType = 'Text';
+            gauge.axes[0].pointers[0].animationDuration = 2000;
+            gauge.setPointerValue(0, 0, 60);
+        });
         it('orientation changes', (done: Function): void => {
             gauge.animationComplete = (args: IAnimationCompleteEventArgs): void => {
                 let svg: HTMLElement = document.getElementById('container_AxisIndex_0_MarkerPointer_0');

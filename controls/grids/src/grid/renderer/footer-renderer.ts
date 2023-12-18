@@ -74,7 +74,7 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         const fragment: DocumentFragment = <DocumentFragment>document.createDocumentFragment();
 
         const rowrenderer: RowRenderer<AggregateColumnModel> = new RowRenderer<AggregateColumnModel>(this.locator, null, this.parent);
-        rowrenderer.element = this.parent.createElement('TR', { className: 'e-summaryrow' });
+        rowrenderer.element = this.parent.createElement('TR', { className: 'e-summaryrow', attrs: { role: 'row' } });
 
         for (let srow: number = 0, len: number = summaries.length; srow < len; srow ++) {
             const row: Row<AggregateColumnModel> = rows[parseInt(srow.toString(), 10)];
@@ -92,13 +92,25 @@ export class FooterRenderer extends ContentRender implements IRenderer {
             }
             fragment.appendChild(tr);
         }
-
-        table.tFoot.appendChild(fragment);
+        const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+            this.parent.parentDetails.parentInstObj.isReact;
+        if ((this.parent.isReact || isReactChild) && summaries.length && this.parent.isInitialLoad) {
+            this.parent.renderTemplates(function(): void {
+                table.tFoot.innerHTML = '';
+                table.tFoot.appendChild(fragment);
+            });
+        } else {
+            table.tFoot.appendChild(fragment);
+        }
         this.aggregates = !isNullOrUndefined(e) ? e : this.aggregates;
     }
 
     public refresh(e?: { aggregates?: Object }): void {
-        (<HTMLTableElement>this.getTable()).tFoot.innerHTML = '';
+        const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+            this.parent.parentDetails.parentInstObj.isReact;
+        if (!(this.parent.isReact || isReactChild) || !this.parent.isInitialLoad) {
+            (<HTMLTableElement>this.getTable()).tFoot.innerHTML = '';
+        }
         this.renderSummaryContent(e, <HTMLTableElement>this.getTable(), undefined, undefined);
         if (isNullOrUndefined(e) && this.parent.isAutoFitColumns) {
             this.parent.autoFitColumns();

@@ -63,6 +63,7 @@ export class Highlight {
             targetEle.getAttribute('class') !== 'MarkerselectionMapStyle' &&
             targetEle.getAttribute('class') !== 'BubbleselectionMapStyle' &&
             targetEle.getAttribute('class') !== 'navigationlineselectionMapStyle' &&
+            targetEle.getAttribute('class') !== 'PolygonselectionMapStyle' &&
             targetEle.getAttribute('class') !== 'LineselectionMapStyle') {
             layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -89,6 +90,10 @@ export class Highlight {
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex as number].markerSettings[marker as number].dataSource[dataIndex as number];
                 this.highlightSettings = this.maps.layers[layerIndex as number].markerSettings[marker as number].highlightSettings;
+            } else if (targetEle.id.indexOf('_PolygonIndex_') > -1) {
+                dataIndex = parseInt(targetEle.id.split('_PolygonIndex_')[1].split('_')[0], 10);
+                data = this.maps.layers[layerIndex as number].polygonSettings.polygons[dataIndex as number].points;
+                this.highlightSettings = this.maps.layers[layerIndex as number].polygonSettings.highlightSettings;
             } else {
                 const index: number = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                 layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);

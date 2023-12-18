@@ -1803,6 +1803,58 @@ describe('Chart Control', () =>{
             chartObj.zoomSettings.mode = "Y";
             chartObj.refresh();
         });
+        it('Checking with default alignment', (done: Function) => {
+            chartObj.loaded = () => {
+                let titleY: string = document.getElementById('container_AxisTitle_1').getAttribute('y');
+                let titleX: string = document.getElementById('container_AxisTitle_1').getAttribute('x');
+                expect(titleY === "180.375" || titleY === "188.375").toBe(true);
+                expect(titleX === "27.5" || titleX === "26").toBe(true);
+                titleY = document.getElementById('container_AxisTitle_0').getAttribute('y');
+                titleX = document.getElementById('container_AxisTitle_0').getAttribute('x');
+                expect(titleY === "385.25" || titleY === "385.5").toBe(true);
+                expect(titleX === "525.25" || titleX === "532.5").toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.title = 'XAxis';
+            chartObj.primaryYAxis.title = 'YAxis';
+            chartObj.refresh();
+        });
+        it('Checking with alignment Near', (done: Function) => {
+            chartObj.loaded = () => {
+                let titleY: string = document.getElementById('container_AxisTitle_1').getAttribute('y');
+                let titleX: string = document.getElementById('container_AxisTitle_1').getAttribute('x');
+                expect(titleY === "322.5" || titleY === "338.5").toBe(true);
+                expect(titleX === "27.5" || titleX === "26").toBe(true);
+                titleY = document.getElementById('container_AxisTitle_0').getAttribute('y');
+                titleX = document.getElementById('container_AxisTitle_0').getAttribute('x');
+                expect(titleY === "385.25" || titleY === "385.5").toBe(true);
+                expect(titleX === "60.5" || titleX === "75").toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.title = 'XAxis';
+            chartObj.primaryXAxis.title = 'YAxis';
+            chartObj.primaryXAxis.titleStyle.textAlignment = 'Near';
+            chartObj.primaryYAxis.titleStyle.textAlignment = 'Near';
+            chartObj.refresh();
+        });
+        it('Checking with alignment Far', (done: Function) => {
+            chartObj.loaded = () => {
+                let titleY: string = document.getElementById('container_AxisTitle_1').getAttribute('y');
+                let titleX: string = document.getElementById('container_AxisTitle_1').getAttribute('x');
+                expect(titleY === "38.25").toBe(true);
+                expect(titleX === "27.5" || titleX === "26").toBe(true);
+                titleY = document.getElementById('container_AxisTitle_0').getAttribute('y');
+                titleX = document.getElementById('container_AxisTitle_0').getAttribute('x');
+                expect(titleY === "385.25" || titleY === "385.5").toBe(true);
+                expect(titleX === "990").toBe(true);
+                done();
+            };
+            chartObj.primaryXAxis.title = 'XAxis';
+            chartObj.primaryXAxis.title = 'YAxis';
+            chartObj.primaryXAxis.titleStyle.textAlignment = 'Far';
+            chartObj.primaryYAxis.titleStyle.textAlignment = 'Far';
+            chartObj.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

@@ -85,7 +85,7 @@ export class DialogRenderer {
             }
         });
     }
-
+    
     private getDialogPosition(): string {
         let distanceFromVisibleTop: number = this.parent.element.getBoundingClientRect().top;
         if (distanceFromVisibleTop < 0) {

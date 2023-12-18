@@ -1501,6 +1501,15 @@ export class UmlClassAttribute extends MethodArguments {
     public isSeparator: boolean;
 
     /**
+     * Specify the style attributes such as strokeWidth, strokeColor, and fill for the separator.
+     *
+     * @default new ShapeStyle()
+     * @aspType object
+    */
+    @Complex<ShapeStyleModel>({ fill: '#F9F9F9', strokeColor: '#CCCCCC' }, ShapeStyle)
+    public separatorStyle: ShapeStyleModel;
+
+    /**
      * Returns the name of class UmlClassAttribute
      *
      * @private
@@ -1596,6 +1605,15 @@ export class UmlInterface extends UmlClass {
     public isSeparator: boolean;
 
     /**
+     * Specify the style attributes such as strokeWidth, strokeColor, and fill for the separator.
+     *
+     * @default new ShapeStyle()
+     * @aspType object
+    */
+    @Complex<ShapeStyleModel>({ fill: '#F9F9F9', strokeColor: '#CCCCCC' }, ShapeStyle)
+    public separatorStyle: ShapeStyleModel;
+
+    /**
      * Returns the name of class UmlInterface
      *
      * @private
@@ -1633,6 +1651,16 @@ export class UmlEnumerationMember extends ChildProperty<UmlEnumerationMember> {
      */
     @Property(false)
     public isSeparator: boolean;
+
+    /**
+      * Specify the style attributes such as strokeWidth, strokeColor, and fill for the separator.
+      *
+      * @default new ShapeStyle()
+      * @aspType object
+    */
+    @Complex<ShapeStyleModel>({ fill: '#F9F9F9', strokeColor: '#CCCCCC' }, ShapeStyle)
+    public separatorStyle: ShapeStyleModel;
+ 
     /**
      * Sets the shape style of the node
      *
@@ -3207,7 +3235,7 @@ export class Phase extends ChildProperty<Shape> {
      *
      * @default ''
      */
-    @Complex<ShapeStyleModel>({ fill: '#FFFFFF', strokeColor: '#CCCCCC' }, ShapeStyle)
+    @Complex<ShapeStyleModel>({ fill: '#FFFFFF',strokeColor: '#CCCCCC' }, ShapeStyle)
     public style: ShapeStyleModel;
 
     /**

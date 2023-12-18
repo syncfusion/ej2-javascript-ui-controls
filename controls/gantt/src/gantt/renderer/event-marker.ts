@@ -4,6 +4,7 @@
 import { Gantt } from '../base/gantt';
 import { createElement, formatUnit, remove, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
+import { IEventMarkerInfo } from '../base/interface';
 export class EventMarker {
     public parent: Gantt;
     public eventMarkersContainer: HTMLElement;
@@ -51,10 +52,11 @@ export class EventMarker {
         let eventMarkerElement: HTMLElement;
         let spanElement: HTMLElement;
         let rightArrow: HTMLElement;
-
+        let eventMarkerCollection:IEventMarkerInfo[] =[];
         for (let i: number = 0; i < this.parent.eventMarkers.length; i++) {
             left = this.parent.dataOperation.getTaskLeft(
-                this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i as number].day, true), false);
+                this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i as number].day, true), false, true);
+                eventMarkerCollection.push({id:i,left: left,label:this.parent.eventMarkers[i as number].label,date : this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i as number].day, true)})
             let align: string;
             if(this.parent.enableRtl) {
                 align = `right:${left}px;`;
@@ -99,6 +101,7 @@ export class EventMarker {
             }
             container.appendChild(eventMarkerElement);
         }
+        this.parent.eventMarkerColloction = eventMarkerCollection;
     }
     /**
      * @returns {void} .

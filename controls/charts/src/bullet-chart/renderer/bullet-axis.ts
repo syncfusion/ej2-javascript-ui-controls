@@ -2,7 +2,7 @@
 /* eslint-disable valid-jsdoc */
 import { BulletChart } from '../bullet-chart';
 import { measureText, TextOption, Rect, textElement } from '@syncfusion/ej2-svg-base';
-import { Orientation } from '../../chart/utils/enum';
+import { Orientation } from '../../common/utils/enum';
 import { MajorTickLinesModel } from '../../chart/axis/axis-model';
 
 /**

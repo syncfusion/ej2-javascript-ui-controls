@@ -684,10 +684,6 @@
       .e-pivot-toolbar-menu {
         background-color: $pivotgrid-table-background-color;
         border: none;
-        @if ($pivotgrid-skin == 'bootstrap4') {
-          background-color: $gray-100;
-          color: $gray-700;
-        }
 
         ul .e-menu-item {
           @if ($skin-name != 'tailwind') {
@@ -697,19 +693,6 @@
           }
           overflow: hidden;
           padding-left: 10px;
-
-          @if ($pivotgrid-skin == 'bootstrap4') {
-            background-color: $pivotgrid-grp-bg-color;
-            color: $gray-700;
-          }
-
-          @if ($pivotgrid-skin =='FluentUI') {
-            background-color: $pivotgrid-grp-bg-color;
-
-            &:hover {
-              background: $pivotgrid-grp-bg-hover-color;
-            }
-          }
 
           .e-menu-icon {
             margin-left: 0;
@@ -784,6 +767,10 @@
             padding-left: 0 !important;
             padding-right: 0 !important;
           }
+        }
+
+        &.e-menu-wrapper ul.e-menu {
+            background-color: $pivotgrid-table-background-color;
         }
       }
 

@@ -2311,6 +2311,49 @@ describe('Kanban base module', () => {
         });
     });
 
+    describe('EJ2-62999-In kanban unique Id is not generated automatically when we do not set the Id property', () => {
+        let kanbanObj: Kanban;
+        const divElement: HTMLElement = createElement('div', {
+            className: 'defaultKanban' });
+        beforeAll((done: DoneFn) => {
+            document.body.appendChild(divElement);
+            kanbanObj = new Kanban({});
+            const target: HTMLElement = document.querySelector('.defaultKanban');
+            kanbanObj.appendTo(target);
+            done();
+        });
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+        it('check the id genarated or not', () => {
+            expect(kanbanObj.element.hasAttribute('id')).toBe(true);
+        });
+    });
+
+    describe('851469- To resolve the accessibility issues in Kanban Components with Axe Core integration, IBM tool', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            kanbanObj = util.createKanban({ dataSource: kanbanData , swimlaneSettings: {
+                keyField: 'Assignee'
+            }}, kanbanData, done);
+        });
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+        it('Should have proper role attribute for the kanban element', () => {
+            expect(kanbanObj.element.getAttribute('role')).toEqual('application');
+            expect(kanbanObj.element.getAttribute('aria-label')).toEqual('Kanban Board');
+            expect(kanbanObj.element.querySelector('.e-header-table').querySelector('tbody').getAttribute('role')).toEqual('rowgroup');
+            expect(kanbanObj.element.querySelector('.e-content-table').getAttribute('role')).toEqual('presentation');
+            expect(kanbanObj.element.querySelector('.e-content-table').children[2].getAttribute('role')).toEqual('treegrid');
+            expect(kanbanObj.element.querySelector('.e-content-table').children[2].children[1].getAttribute('role')).toEqual('row');
+            expect(kanbanObj.element.querySelector('.e-content-table').children[2].children[1].children[0].getAttribute('role')).toEqual('gridcell');
+            expect(kanbanObj.element.querySelector('.e-content-table').children[2].children[1].children[0].children[0].getAttribute('role')).toEqual('listbox');
+            expect(kanbanObj.element.querySelector('.e-card').getAttribute('role')).toEqual('option');
+            expect(kanbanObj.element.querySelector('.e-card').getAttribute('aria-roledescription')).toEqual('Card');
+        });
+    });
+    
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);
@@ -2319,25 +2362,6 @@ describe('Kanban base module', () => {
         const memory: number = inMB(getMemoryProfile());
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    });
-
-});
-describe('EJ2-62999-In kanban unique Id is not generated automatically when we do not set the Id property', () => {
-    let kanbanObj: Kanban;
-    const divElement: HTMLElement = createElement('div', {
-        className: 'defaultKanban' });
-    beforeAll((done: DoneFn) => {
-        document.body.appendChild(divElement);
-        kanbanObj = new Kanban({});
-        const target: HTMLElement = document.querySelector('.defaultKanban');
-        kanbanObj.appendTo(target);
-        done();
-    });
-    afterAll(() => {
-        util.destroy(kanbanObj);
-    });
-    it('check the id genarated or not', () => {
-        expect(kanbanObj.element.hasAttribute('id')).toBe(true);
     });
 });
 

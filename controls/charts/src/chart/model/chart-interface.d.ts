@@ -1,10 +1,10 @@
 import { Chart, Alignment } from '..';
 import { AxisModel } from '../axis/axis-model';
-import { Axis, VisibleRangeModel } from '../axis/axis';
+import { Axis } from '../axis/axis';
 import { SeriesModel } from '../series/chart-series-model';
 import { BorderModel, FontModel } from '../../common/model/base-model';
 import { Series, Points } from '../series/chart-series';
-import { LegendShape, ChartShape, ChartTheme } from '../utils/enum';
+import { ChartShape } from '../utils/enum';
 import { AccPoints, AccumulationSeries } from '../../accumulation-chart/model/acc-base';
 import { ScrollbarSettingsRangeModel } from './chart-base-model';
 import { ChartLocation, LabelLocation } from '../../common/utils/helper';
@@ -12,6 +12,8 @@ import { ItemModel } from '@syncfusion/ej2-navigations';
 import { Rect, Size } from '@syncfusion/ej2-svg-base';
 import { AccumulationChart } from '../../accumulation-chart';
 import { StockChart } from '../../stock-chart/stock-chart';
+import { VisibleRangeModel } from '../../common/model/interface';
+import { ChartTheme, LegendShape } from '../../common/utils/enum';
 export interface IChartEventArgs {
     /** Defines the name of the event. */
     name: string;
@@ -303,9 +305,6 @@ export interface IPrintEventArgs extends IChartEventArgs {
 export interface IExportEventArgs extends IChartEventArgs {
     width: number;
     height: number;
-}
-export interface IAfterExportEventArgs extends IChartEventArgs {
-    dataUrl: string;
 }
 export interface IZoomingEventArgs extends IChartEventArgs {
     axisCollection: IAxisData[];

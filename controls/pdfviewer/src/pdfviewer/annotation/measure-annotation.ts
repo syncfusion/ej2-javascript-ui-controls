@@ -1684,7 +1684,7 @@ export class MeasureAnnotation {
             allowedInteractions = this.pdfViewer.lineSettings.allowedInteractions ? this.pdfViewer.lineSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             measureAnnotationType = 'LineDimension';
             shapeAnnotationType = 'Line';
-            subject = this.pdfViewer.lineSettings.subject !== "" ? this.pdfViewer.lineSettings.subject : this.pdfViewer.annotationSettings.subject !== "" ? this.pdfViewer.annotationSettings.subject : 'Distance calculation';
+            subject = this.pdfViewer.lineSettings.subject !== "" ? this.pdfViewer.lineSettings.subject : this.pdfViewer.annotationSettings.subject !== "" ? this.pdfViewer.annotationSettings.subject : 'Distance calculation' ;
             isArrow=true;
             if(annotationObject.vertexPoints)
                 vertexPoints = annotationObject.vertexPoints;
@@ -1722,7 +1722,7 @@ export class MeasureAnnotation {
             allowedInteractions = this.pdfViewer.rectangleSettings.allowedInteractions ? this.pdfViewer.rectangleSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             measureAnnotationType = 'PolygonDimension';
             shapeAnnotationType = 'Polygon';
-            subject =  this.pdfViewer.rectangleSettings.subject !== "" ? this.pdfViewer.rectangleSettings.subject : this.pdfViewer.annotationSettings.subject !== "" ? this.pdfViewer.annotationSettings.subject : 'Area calculation';
+            subject = this.pdfViewer.rectangleSettings.subject !== "" ? this.pdfViewer.rectangleSettings.subject : this.pdfViewer.annotationSettings.subject !== "" ? this.pdfViewer.annotationSettings.subject : 'Area calculation';
             if(annotationObject.vertexPoints)
                 vertexPoints = annotationObject.vertexPoints;
             else            
@@ -1756,7 +1756,7 @@ export class MeasureAnnotation {
             allowedInteractions = this.pdfViewer.polygonSettings.allowedInteractions ? this.pdfViewer.polygonSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;               
             measureAnnotationType = 'PolygonVolume';
             shapeAnnotationType = 'Polygon';
-            subject = this.pdfViewer.polygonSettings.subject !== "" ? this.pdfViewer.polygonSettings.subject : this.pdfViewer.annotationSettings.subject !== "" ? this.pdfViewer.annotationSettings.subject : 'Volume calculation';
+            subject =  this.pdfViewer.polygonSettings.subject !== "" ? this.pdfViewer.polygonSettings.subject : this.pdfViewer.annotationSettings.subject !== "" ? this.pdfViewer.annotationSettings.subject : 'Volume calculation';
             if(annotationObject.vertexPoints)
                 vertexPoints = annotationObject.vertexPoints;
             else                   

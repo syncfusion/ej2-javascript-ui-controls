@@ -333,15 +333,26 @@ export class RowDD {
                     if (droppedRecord.ganttProperties.predecessor) {
                         const len: number = droppedRecord.ganttProperties.predecessor.length;
                         for (let count: number = 0; count < len; count++) {
-                            const fromRecord: IGanttData = this.parent.getRecordByID(droppedRecord.ganttProperties.predecessor[count as number].from);
-                            const toRecord: IGanttData = this.parent.getRecordByID(droppedRecord.ganttProperties.predecessor[count as number].to)
-                            const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
-                            if (droppedRecord.ganttProperties.predecessor && !validPredecessor) {
-                                this.parent.editModule.removePredecessorOnDelete(droppedRecord);
-                                droppedRecord.ganttProperties.predecessor = null;
-                                droppedRecord.ganttProperties.predecessorsName = null;
-                                droppedRecord[this.parent.taskFields.dependency] = null;
-                                droppedRecord.taskData[this.parent.taskFields.dependency] = null;
+                            if (droppedRecord.ganttProperties.predecessor && droppedRecord.ganttProperties.predecessor[count as number]) {
+                                const fromRecord: IGanttData = this.parent.getRecordByID(droppedRecord.ganttProperties.predecessor[count as number].from);
+                                const toRecord: IGanttData = this.parent.getRecordByID(droppedRecord.ganttProperties.predecessor[count as number].to)
+                                const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
+                                if (droppedRecord.ganttProperties.predecessor && !validPredecessor) {
+                                    this.parent.editModule.removePredecessorOnDelete(droppedRecord);
+                                    droppedRecord.ganttProperties.predecessor.splice(0, 1);
+                                    if (droppedRecord.ganttProperties.predecessorsName) {
+                                        let splittedName: string[] = (droppedRecord.ganttProperties.predecessorsName as string).split(',');
+                                        for (let i: number = 0; i < splittedName.length; i++) {
+                                            if (splittedName[i as number].indexOf(draggedRecord.ganttProperties.taskId + '') != -1) {
+                                                splittedName.splice(i, 1);
+                                            }
+                                        }
+                                        const validatedPredecessorNames: string = splittedName.join();
+                                        droppedRecord.ganttProperties.predecessorsName = validatedPredecessorNames;
+                                        droppedRecord[this.parent.taskFields.dependency] = validatedPredecessorNames;
+                                        droppedRecord.taskData[this.parent.taskFields.dependency] = validatedPredecessorNames;
+                                    }
+                                }
                             }
                         }
                     }

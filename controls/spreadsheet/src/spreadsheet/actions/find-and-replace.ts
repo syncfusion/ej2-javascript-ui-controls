@@ -385,11 +385,12 @@ export class FindAndReplace {
                 cssClass: 'e-search-within',
                 fields: { value: 'Id', text: 'Within' }, width: '50%', index: 0
             });
+        let label: string = l10n.getConstant('SearchWithin');
         const withIn: HTMLElement = this.parent.createElement('input', {
-            className: 'e-findnreplace-searchwithin', attrs: { type: 'select', label: l10n.getConstant('SearchBy') }
+            className: 'e-findnreplace-searchwithin', attrs: { type: 'select', label: label }
         });
         const withinTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header' });
-        withinTextH.innerText = l10n.getConstant('SearchWithin');
+        withinTextH.innerText = label;
         findElem.appendChild(withinTextH);
         findElem.appendChild(withIn);
         withInDDL.createElement = this.parent.createElement;
@@ -404,11 +405,12 @@ export class FindAndReplace {
                 cssClass: 'e-searchby',
                 fields: { value: 'Id', text: 'Search' }, width: '50%', index: 0
             });
+        label = l10n.getConstant('SearchBy');
         const searchIn: HTMLElement = this.parent.createElement('input', {
-            className: 'e-findnreplace-searchby', attrs: { type: 'select', label: l10n.getConstant('SearchBy') }
+            className: 'e-findnreplace-searchby', attrs: { type: 'select', label: label }
         });
         const searchTextH: HTMLElement = this.parent.createElement('p', { className: 'e-header' });
-        searchTextH.innerText = l10n.getConstant('SearchBy');
+        searchTextH.innerText = label;
         findElem.appendChild(searchTextH);
         findElem.appendChild(searchIn);
         searchDDL.createElement = this.parent.createElement;

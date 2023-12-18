@@ -1,0 +1,5 @@
+@include export-module('stepper-bootstrap4-icons') {
+  .e-step-indicator::before {
+    content: '\e997';
+  }
+}
