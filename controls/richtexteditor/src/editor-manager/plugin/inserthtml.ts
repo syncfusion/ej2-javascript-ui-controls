@@ -291,7 +291,7 @@ export class InsertHtml {
                     (this.inlineNode.indexOf(node.firstChild.nodeName.toLocaleLowerCase()) >= 0 && isFirstTextNode)) {
                         lastSelectionNode = node.firstChild;
                         if (isNOU((node as HTMLElement).previousElementSibling)) {
-                            const firstParaElm: HTMLElement = createElement('p');
+                            const firstParaElm: HTMLElement = enterAction === 'DIV' ? createElement('div') : createElement('p');
                             (node as HTMLElement).parentElement.insertBefore(firstParaElm, node);
                         }
                         if ((node as HTMLElement).previousElementSibling.nodeName === 'BR') {
@@ -304,8 +304,8 @@ export class InsertHtml {
                         if (node.firstChild.nodeName === '#text' ||
                         (this.inlineNode.indexOf(node.firstChild.nodeName.toLocaleLowerCase()) >= 0)) {
                             if (!isPreviousInlineElem) {
-                                paraElm = createElement('p'); paraElm.appendChild(node.firstChild);
-                                fragment.appendChild(paraElm);
+                                paraElm = enterAction === 'DIV' ? createElement('div') : createElement('p');
+                                paraElm.appendChild(node.firstChild); fragment.appendChild(paraElm);
                             } else {
                                 previousParent.appendChild(node.firstChild);
                                 fragment.appendChild(previousParent);
@@ -476,7 +476,7 @@ export class InsertHtml {
     private static findDetachEmptyElem(element: Element): HTMLElement {
         let removableElement: HTMLElement;
         if (!isNOU(element.parentElement)) {
-            const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g) 
+            const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g)
                 && element.parentElement.textContent.match(/\u00a0/g).length > 0;
             if (!hasNbsp && element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true' &&
                 isNOU(element.parentElement.querySelector('img'))) {
@@ -494,7 +494,7 @@ export class InsertHtml {
         const nonSvgEmptyElements: Element[] = Array.from(emptyElements).filter(element => {
             // Check if the element is an SVG element or an ancestor of an SVG element
             return !element.closest('svg') && !element.closest('canvas');
-          });
+        });
         for (let i: number = 0; i < nonSvgEmptyElements.length; i++) {
             let lineWithDiv: boolean = true;
             if (nonSvgEmptyElements[i as number].tagName === 'DIV') {

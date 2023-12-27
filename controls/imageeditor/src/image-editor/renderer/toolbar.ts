@@ -350,7 +350,7 @@ export class ToolbarModule {
             this.frameToolbarClick();
             break;
         case 'performCropTransformClick':
-            this.performCropTransformClick();
+            this.performCropTransformClick(args.value['shape']);
             break;
         case 'duplicateShape':
             this.duplicateShape(args.value['isPreventUndoRedo'], true);
@@ -515,7 +515,7 @@ export class ToolbarModule {
     }
 
     private initMainToolbar(isApplyOption?: boolean, isDevice?: boolean, isOkBtn?: boolean, isResize?: boolean,
-            isFrame?: boolean, isMainToolbar?: boolean): void {
+                            isFrame?: boolean, isMainToolbar?: boolean): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         if (this.isToolbar()) {
             const leftItem: ItemModel[] = this.getLeftToolbarItem(isOkBtn, isResize);
@@ -531,6 +531,9 @@ export class ToolbarModule {
             } else {
                 this.defToolbarItems = [...leftItem, ...mainItem, ...rightItem, ...zoomItem];
             }
+            const args: ToolbarEventArgs = {toolbarType: 'main', toolbarItems: this.defToolbarItems };
+            parent.trigger('toolbarUpdating', args);
+            this.defToolbarItems = args.toolbarItems as ItemModel[];
             const toolbarObj: Toolbar = new Toolbar({
                 width: '100%',
                 items: this.defToolbarItems,
@@ -562,7 +565,10 @@ export class ToolbarModule {
     private initBottomToolbar(): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.length > 0)) {
-            const items: ItemModel[] = this.getMainToolbarItem();
+            let items: ItemModel[] = this.getMainToolbarItem();
+            const args: ToolbarEventArgs = {toolbarType: 'bottom-toolbar', toolbarItems: items };
+            parent.trigger('toolbarUpdating', args);
+            items = args.toolbarItems as ItemModel[];
             const toolbarObj: Toolbar = new Toolbar({ items: items, width: '100%',
                 created: () => {
                     this.renderAnnotationBtn();
@@ -966,6 +972,9 @@ export class ToolbarModule {
         } else {
             this.defToolbarItems = [...leftItem, ...zoomItem, ...mainItem, ...rightItem];
         }
+        const args: ToolbarEventArgs = {toolbarType: 'resize', toolbarItems: this.defToolbarItems };
+        parent.trigger('toolbarUpdating', args);
+        this.defToolbarItems = args.toolbarItems as ItemModel[];
         const toolbar: Toolbar = new Toolbar({
             width: '100%',
             items: this.defToolbarItems,
@@ -1237,7 +1246,7 @@ export class ToolbarModule {
         }
     }
 
-    private renderCropBtn(): void {
+    private renderCropBtn(shapeString?: string): void {
         const parent: ImageEditor = this.parent;
         const items: DropDownButtonItemModel[] = []; let isCustomized: boolean = false;
         const defItems: string[] = ['CustomSelection', 'CircleSelection', 'SquareSelection', 'RatioSelection'];
@@ -1271,7 +1280,10 @@ export class ToolbarModule {
             items.push({ text: '16:9', id: '16:9', iconCss: 'e-icons e-custom-e' });
         }
         let iconCss: string; let shape: string;
-        if (parent.activeObj.shape) {
+        if (shapeString) {
+            iconCss = this.getCurrentShapeIcon(shapeString);
+            shape = shapeString;
+        } else if (parent.activeObj.shape) {
             iconCss = this.getCurrentShapeIcon(parent.activeObj.shape);
             shape = parent.activeObj.shape;
         } else if (parent.currSelectionPoint) {
@@ -1480,7 +1492,7 @@ export class ToolbarModule {
         return toolbarItems;
     }
 
-    private initCropTransformToolbar(): void {
+    private initCropTransformToolbar(shape?: string): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         const leftItem: ItemModel[] = this.getLeftToolbarItem();
         const rightItem: ItemModel[] = this.getRightToolbarItem();
@@ -1491,12 +1503,15 @@ export class ToolbarModule {
         } else {
             this.defToolbarItems = [...leftItem, ...zoomItem, ...mainItem, ...rightItem];
         }
+        const args: ToolbarEventArgs = {toolbarType: 'crop-transform', toolbarItems: this.defToolbarItems };
+        parent.trigger('toolbarUpdating', args);
+        this.defToolbarItems = args.toolbarItems as ItemModel[];
         const toolbar: Toolbar = new Toolbar({
             width: '100%',
             items: this.defToolbarItems,
             clicked: this.defToolbarClicked.bind(this),
             created: () => {
-                this.renderCropBtn();
+                this.renderCropBtn(shape);
                 this.renderStraightenSlider();
                 this.wireZoomBtnEvents();
                 if (!Browser.isDevice) {
@@ -1534,8 +1549,6 @@ export class ToolbarModule {
         && slider && slider.parentElement.scrollHeight > this.toolbarHeight) {
             this.toolbarHeight = parent.toolbarHeight = slider.parentElement.scrollHeight;
         }
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        (toolbar as any).refreshOverflow();
         this.enableDisableTbrBtn();
         parent.notify('transform', { prop: 'disableZoomOutBtn', value: {isZoomOut: true }});
     }
@@ -1595,6 +1608,10 @@ export class ToolbarModule {
         } else {
             this.defToolbarItems = [...leftItem, ...zoomItem, ...mainItem, ...rightItem];
         }
+        const args: ToolbarEventArgs = {toolbarType: parent.activeObj.shape ? parent.activeObj.shape : 'shapes',
+            toolbarItems: this.defToolbarItems };
+        parent.trigger('toolbarUpdating', args);
+        this.defToolbarItems = args.toolbarItems as ItemModel[];
         const toolbar: Toolbar = new Toolbar({
             width: '100%',
             items: this.defToolbarItems,
@@ -1990,6 +2007,9 @@ export class ToolbarModule {
         } else {
             this.defToolbarItems = [...leftItem, ...zoomItem, ...mainItem, ...rightItem];
         }
+        const args: ToolbarEventArgs = {toolbarType: 'text', toolbarItems: this.defToolbarItems };
+        parent.trigger('toolbarUpdating', args);
+        this.defToolbarItems = args.toolbarItems as ItemModel[];
         const toolbar: Toolbar = new Toolbar({
             width: '100%',
             items: this.defToolbarItems,
@@ -2107,8 +2127,10 @@ export class ToolbarModule {
                     } else {
                         fontFamily = parent.activeObj.textSettings.fontFamily;
                     }
-                    args.element.querySelector('[id *= ' + '"' + fontFamily.toLowerCase()
-                        + '"' + ']').classList.add('e-selected-btn');
+                    const elem: HTMLElement = args.element.querySelector('[id *= ' + '"' + fontFamily.toLowerCase() + '"' + ']');
+                    if (elem) {
+                        elem.classList.add('e-selected-btn');
+                    }
                 },
                 select: (args: MenuEventArgs) => {
                     spanElem.textContent = args.item.text;
@@ -2147,13 +2169,13 @@ export class ToolbarModule {
         }
     }
 
-    private refreshToolbar(type: string, isApplyBtn?: boolean, isCropping?: boolean, isZooming?: boolean, cType?: string): void {
+    private refreshToolbar(type: string, isApplyBtn?: boolean, isCropping?: boolean, isZooming?: boolean,
+        cType?: string, shape?: string): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         if (!parent.isImageLoaded || parent.isCropToolbar) {
             return;
         }
-        const item: string = type === 'shapes' && parent.activeObj.shape ? parent.activeObj.shape : type;
-        const args: ToolbarEventArgs = { toolbarType: item };
+        const args: ToolbarEventArgs = {};
         let aspectIcon: HTMLInputElement; let nonAspectIcon: HTMLInputElement;
         if (type !== 'filter' && type !== 'color') {
             const toolbarElement: HTMLElement = document.getElementById(id + '_toolbar');
@@ -2206,7 +2228,6 @@ export class ToolbarModule {
             } else {
                 args.toolbarItems = ['fillColor', 'strokeColor', 'strokeWidth', 'duplicate', 'remove'];
             }
-            parent.trigger('toolbarUpdating', args);
             this.initShapesToolbarItem(args.toolbarItems);
             break;
         case 'text':
@@ -2214,7 +2235,6 @@ export class ToolbarModule {
                 this.initMainToolbar(false, true, true);
             }
             args.toolbarItems = ['fontFamily', 'fontSize', 'fontColor', 'bold', 'italic', 'duplicate', 'remove', 'text'];
-            parent.trigger('toolbarUpdating', args);
             this.initTextToolbarItem(args.toolbarItems);
             break;
         case 'pen':
@@ -2222,7 +2242,6 @@ export class ToolbarModule {
                 this.initMainToolbar(false, true, true);
             }
             args.toolbarItems = ['strokeColor', 'strokeWidth', 'remove', 'transparency'];
-            parent.trigger('toolbarUpdating', args);
             this.initPenToolbarItem(args.toolbarItems);
             break;
         case 'adjustment':
@@ -2263,7 +2282,7 @@ export class ToolbarModule {
                 this.initMainToolbar(false, true, true);
             }
             parent.updateCropTransformItems();
-            this.initCropTransformToolbar();
+            this.initCropTransformToolbar(shape);
             if (Browser.isDevice) {this.updateContextualToolbar('color', 'straighten', true); }
             break;
         case 'frame':
@@ -2289,13 +2308,13 @@ export class ToolbarModule {
         this.refreshDropDownBtn(isCropping);
     }
 
-    private performCropTransformClick(): void {
+    private performCropTransformClick(shape?: string): void {
         const parent: ImageEditor = this.parent;
         parent.notify('draw', {prop: 'setTempStraightenZoomDeg' });
         parent.tempStraighten = parent.transform.straighten;
         if (parent.currObjType.isFiltered) {parent.okBtn(); }
         parent.isStraightening = true;
-        this.refreshToolbar('croptransform');
+        this.refreshToolbar('croptransform', null, null, null, null, shape);
         parent.notify('draw', { prop: 'setDestForStraighten' });
         parent.notify('draw', { prop: 'setTempDestForStraighten' });
     }
@@ -2484,6 +2503,9 @@ export class ToolbarModule {
         } else {
             this.defToolbarItems = [...leftItem, ...zoomItem, ...mainItem, ...rightItem];
         }
+        const args: ToolbarEventArgs = {toolbarType: 'pen', toolbarItems: this.defToolbarItems };
+        parent.trigger('toolbarUpdating', args);
+        this.defToolbarItems = args.toolbarItems as ItemModel[];
         const toolbar: Toolbar = new Toolbar({
             width: '100%',
             items: this.defToolbarItems,
@@ -2644,6 +2666,9 @@ export class ToolbarModule {
         } else {
             this.defToolbarItems = [...leftItem, ...zoomItem, ...mainItem, ...rightItem];
         }
+        const args: ToolbarEventArgs = {toolbarType: 'finetune', toolbarItems: this.defToolbarItems };
+        parent.trigger('toolbarUpdating', args);
+        this.defToolbarItems = args.toolbarItems as ItemModel[];
         const toolbar: Toolbar = new Toolbar({
             width: '100%',
             items: this.defToolbarItems,
@@ -2690,7 +2715,10 @@ export class ToolbarModule {
             id: id + '_customizeWrapper',
             styles: 'position: absolute'
         }));
-        const mainItem: ItemModel[] = this.getFrameToolbarItem();
+        let mainItem: ItemModel[] = this.getFrameToolbarItem();
+        const args: ToolbarEventArgs = {toolbarType: 'frame', toolbarItems: mainItem };
+        parent.trigger('toolbarUpdating', args);
+        mainItem = args.toolbarItems as ItemModel[];
         const toolbar: Toolbar = new Toolbar({
             width: '100%',
             items: mainItem,
@@ -3278,7 +3306,10 @@ export class ToolbarModule {
 
     private initFilterToolbarItem(): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
-        const mainItem: ItemModel[] = this.getFilterToolbarItem();
+        let mainItem: ItemModel[] = this.getFilterToolbarItem();
+        const args: ToolbarEventArgs = {toolbarType: 'filter', toolbarItems: mainItem };
+        parent.trigger('toolbarUpdating', args);
+        mainItem = args.toolbarItems as ItemModel[];
         if (document.querySelector('#' + id + '_contextualToolbar').classList.contains('e-control')) {
             (getComponent(document.getElementById(id + '_contextualToolbar'), 'toolbar') as Toolbar).destroy();
         }

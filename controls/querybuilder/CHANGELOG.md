@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.43 (2023-12-27)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#F510127` - Issue with Query builder rule does not gets changed dynamically has been fixed.
+
 ## 24.1.41 (2023-12-18)
 
 ### QueryBuilder
@@ -10,17 +18,40 @@
 
 - `#F511006` - Issue with Date rule format value not updated properly while using two rule in Query builder has been fixed.
 
+## 23.2.7 (2023-12-05)
+
 ### QueryBuilder
 
 #### Bug Fixes
 
-- `#F510127` - Issue with Query builder rule does not gets changed dynamically has been fixed.
+- `#I510127` - Issue with Query builder rule does not changed dynamically has been fixed.
+
+## 23.1.44 (2023-11-07)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I510127` - Issue with Query builder dynamically adding rule does not gets changed has been fixed.
+
+## 23.1.41 (2023-10-17)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#F184903` - Issue with `setRules` method of the Query builder not working for complex data binding has been fixed.
+
+## 23.1.39 (2023-10-04)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `#I501292` - Issue with Query builder validation tooltip is not shows on second time has been fixed.
+- `#I499489` - Issue with read only property not working in dropdowntree field of QueryBuilder has been fixed.
+
+## 23.1.38 (2023-09-26)
 
 ### QueryBuilder
 
@@ -28,11 +59,47 @@
 
 - `#I504588` - Issue with Query builder column template not render in Vue3 platform has been fixed.
 
+## 23.1.36 (2023-09-15)
+
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `#I493593` - Resolved the Script error thrown in `getRule` method of QueryBuilder while using change event.
+
+## 22.2.9 (2023-08-15)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#F183921` - Resolved the Script error thrown while changing Boolean value in dropdowntree fieldMode of QueryBuilder
+
+## 22.2.8 (2023-08-08)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I469225` - Resolved the Custom operator not working properly in QueryBuilder While dynamically change locale property.
+
+## 22.1.38 (2023-07-11)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I469225` - Resolved the Dropdown tree field selection related issue in the query builder.
+
+## 22.1.37 (2023-07-04)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I44054` - Resolved the issue where importing SQL queries containing special characters.
+
+## 22.1.34 (2023-06-21)
 
 ### QueryBuilder
 
@@ -41,20 +108,33 @@
 - `#I460895` - Issue with Query builder template not render in Vue3 platform has been fixed.
 - `#I448219` - Issue with Query builder validation not shown using `validateFields` method and scroll the page has been fixed.
 
+## 20.4.51 (2023-02-21)
+
 ### QueryBuilder
 
 #### Bug Fixes
 
-- `#I428779` - Issue with Providing the single quotes in SQL string support to query builder has been fixed.
 - `#I430220` - Issue with Value template issue with complex data binding of query builder has been fixed.
+- `#I428779` - Issue with Providing the single quotes in SQL string support to query builder has been fixed.
+
+## 20.4.42 (2023-01-04)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `#F31632` -  Accessibility issue in Query Builder has been resolved.
+
+## 20.4.40 (2022-12-28)
+
+### QueryBuilder
+
+#### Bug Fixes
+
 - `#F178375` - Issue with Browser window get freezes when we set the Invalid SQL rule to query builder has been fixed.
 - `#I423706` - Issue with Field Dropdown list popups get collapses when we use `validateFields` method in query builder has been fixed
+
+## 20.4.38 (2022-12-21)
 
 ### QueryBuilder
 
@@ -62,8 +142,11 @@
 
 - `#F420982` - Issue with `getValidRules` method of query builder returns empty group has been fixed.
 - `#I404520` - Provided Localization support SQL query builder operators.
+- `#F178375` - Issue with Browser window get freezes when we set the Invalid SQL rule to query builder has been fixed.
 - `#I408324` - Issue with Script errors throwing in validating query builder fields while double click has been fixed.
-- `#I408658` - Issue with Value getting removed while closing fields Dropdown without change the value when we set rule property of query builder has been fixed
+- `#I408658` - Issue with Value getting removed while closing fields Dropdown without change the value when we set rule property of query builder has been fixed.
+
+## 20.3.47 (2022-09-29)
 
 ### QueryBuilder
 
@@ -74,12 +157,14 @@
 - `#I375472` - Issue with Change event not trigger for changing field for default column to rule template column in query builder has been fixed.
 - `#I394878` - Issue with Date type Between value not render properly while using `setRulesFromSql` method has been fixed
 
+## 20.2.40 (2022-07-26)
+
 ### QueryBuilder
 
 #### Bug Fixes
 
-- `#I375472` Issue with Rule template default rendered while add condition/group in query builder, if first column as rule template has been fixed.
-- `#I388333` Issue with Value template not destroy properly when we use complex data source in query builder has been fixed.
+- `#I375472` - Issue with Rule template default rendered while add condition/group in query builder, if first column as rule template has been fixed.
+- `#I388333` - Issue with Value template not destroy properly when we use complex data source in query builder has been fixed.
 
 ## 19.3.45 (2021-10-12)
 
@@ -96,7 +181,7 @@
 
 #### New Features
 
-- Provided Dropdown Tree component support in Complex data binding.
+- Provided Dropdown Tree component support in Complex data binding
 
 ## 19.2.59 (2021-08-31)
 

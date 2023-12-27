@@ -499,7 +499,7 @@ export class Edit {
                 const sheet: SheetModel = this.parent.getActiveSheet();
                 let address: string = sheet.selectedRange;
                 let range: number[] = getIndexesFromAddress(address);
-                range = range[0] > range[2] ? getSwapRange(range) : range;
+                range = range[0] > range[2] || range[1] > range[3] ? getSwapRange(range) : range;
                 address = getRangeAddress(range);
                 const cellDeleteArgs: { address: string, cancel: boolean } = { address: sheet.name + '!' + address, cancel: false };
                 this.parent.notify(beginAction, { action: 'cellDelete', eventArgs: cellDeleteArgs });
@@ -806,13 +806,26 @@ export class Edit {
         getData(this.parent, this.editCellData.fullAddr, false, isMergedHiddenCell).then((values: Map<string, CellModel>): void => {
             if (!this.parent) { return; }
             (values as Map<string, CellModel>).forEach((cell: CellModel): void => {
-                const args: { [key: string]: CellModel | string } = { cell: cell, value: cell ? cell.value : '' };
-                this.parent.notify(getFormattedBarText, args);
-                let value: string = cell ? <string>args.value : '';
-                if (cell && cell.formula) {
-                    value = cell.formula;
+                let value: string;
+                const updateEditValue: Function = (): void => {
+                    const args: { [key: string]: CellModel | string | boolean } = { cell: cell, value: cell ? cell.value : '',
+                        showFormattedText: this.editCellData.showFormattedText };
+                    this.parent.notify(getFormattedBarText, args);
+                    value = cell ? (cell.formula || <string>args.value) : '';
+                    this.editCellData.oldValue = value;
+                };
+                updateEditValue();
+                const evtArgs: CellEditEventArgs = this.triggerEvent('cellEdit', null, value);
+                if (evtArgs.cancel) {
+                    this.cancelEdit(true, false);
+                    return;
                 }
-                this.editCellData.oldValue = value;
+                if (evtArgs.showFormattedText) {
+                    // For SF-354174 ticket we have provided 'dd/MM/yyyy' support and diplayed the formatted value in the editor, which is
+                    // not a default behavior. To handle this, we have added this property and it applies only for the 'dd/MM/yyyy' format.
+                    this.editCellData.showFormattedText = true;
+                    updateEditValue();
+                }
                 if (this.editCellData.value) {
                     value = this.editCellData.value;
                 } else {
@@ -825,9 +838,6 @@ export class Edit {
                 }
                 if (!isUndefined(value)) { this.refreshEditor(value, false, true, false, false); }
                 if (refreshCurPos) { this.setCursorPosition(); }
-                if (this.triggerEvent('cellEdit').cancel) {
-                    this.cancelEdit(true, false);
-                }
             });
         });
     }
@@ -1014,7 +1024,7 @@ export class Edit {
             }
             const evtArgs: { [key: string]: string | boolean | number[] | number } = {
                 action: 'updateCellValue',
-                address: this.editCellData.addr, value: this.editCellData.value
+                address: this.editCellData.addr, value: this.editCellData.value, skipCellFormat: this.editCellData.showFormattedText
             };
             this.parent.notify(workbookEditOperation, evtArgs);
             const updatedCell: CellModel = getCell(cellIndex[0], cellIndex[1], sheet, true);
@@ -1284,7 +1294,7 @@ export class Edit {
         } else if (eventName !== 'cellSave' && eventName !== 'beforeCellSave') {
             this.parent.trigger(eventName, eventArgs);
         }
-        return { value: eventArgs.value, oldValue: null, element: null, address: null, cancel: (<CellEditEventArgs>eventArgs).cancel };
+        return <CellEditEventArgs>eventArgs;
     }
 
     private altEnter(): void {
@@ -1615,4 +1625,5 @@ interface IEditCellData {
     fullAddr?: string;
     position?: { top: number, left: number };
     formula?: string;
+    showFormattedText?: boolean;
 }

@@ -134,7 +134,11 @@ export class Filter {
     private isInValidFilterRange(sheet: SheetModel, range?: string): boolean {
         const selectedRange: number[] = range ? getSwapRange(getIndexesFromAddress(range)) :
             getSwapRange(getIndexesFromAddress(sheet.selectedRange));
-        return selectedRange[0] > sheet.usedRange.rowIndex || selectedRange[1] > sheet.usedRange.colIndex;
+        let isEmptySheet: boolean = false;
+        if (sheet.usedRange.colIndex === 0 && sheet.usedRange.rowIndex === 0 && isNullOrUndefined(sheet.rows[sheet.usedRange.rowIndex])) {
+            isEmptySheet = true; // For Filtering Empty sheet's A1 cell.
+        }
+        return selectedRange[0] > sheet.usedRange.rowIndex || selectedRange[1] > sheet.usedRange.colIndex || isEmptySheet;
     }
 
     /**
@@ -1282,7 +1286,7 @@ export class Filter {
             const options: { isFormatted?: boolean } | IFilterArgs = {
                 type: type, field: field, format: (type === 'date' ? this.getDateFormatFromColumn(sheet, colIndex, range) : null),
                 displayName: displayName || 'Column ' + field,
-                dataSource: checkBoxData, height: this.parent.element.classList.contains('e-bigger') ? 800 : 500, columns: [],
+                dataSource: checkBoxData || [], height: this.parent.element.classList.contains('e-bigger') ? 800 : 500, columns: [],
                 hideSearchbox: false, filteredColumns: this.filterCollection.get(sheetIdx), column: { 'field': field, 'filter': {} },
                 handler: this.filterSuccessHandler.bind(this, new DataManager(jsonData)), target: target,
                 position: { X: 0, Y: 0 }, localeObj: this.parent.serviceLocator.getService(locale), actualPredicate: curColPredicates,

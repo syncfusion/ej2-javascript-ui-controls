@@ -1909,7 +1909,8 @@ export class Render {
         return this.pivotColumns;
     }
 
-    private configLastColumnWidth(column: ColumnModel): void {
+    /** @hidden */
+    public configLastColumnWidth(column: ColumnModel): void {
         column.minWidth = column.width;
         column.width = 'auto';
         if (column.columns && column.columns.length > 0) {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.43 (2023-12-27)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I528347` - The pivot table will now be properly refreshed while dynamically changing its container width.
+
 ## 24.1.41 (2023-12-18)
 
 ### PivotTable

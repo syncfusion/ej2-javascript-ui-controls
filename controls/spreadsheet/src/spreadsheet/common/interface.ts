@@ -55,6 +55,7 @@ export interface SheetRenderArgs {
     isRefreshing?: boolean;
     insertDelete?: boolean;
     isOpen?: boolean;
+    openOptions?: JsonData;
 }
 
 /** @hidden */
@@ -177,6 +178,16 @@ export interface OpenOptions {
 export interface OpenArgs extends OpenOptions {
     guid?: string;
     orginalFile?: File;
+    triggerEvent?: boolean;
+    jsonObject?: string;
+}
+
+/** @hidden */
+export interface JsonData {
+    data: string;
+    eventArgs: OpenArgs;
+    isOpenFromJson: boolean;
+    guid?: string;
 }
 
 /**
@@ -311,6 +322,8 @@ export interface CellEditEventArgs {
     address: string;
     /** Defines the cancel option. */
     cancel: boolean;
+    /** Apply the number format and display the formatted value in the editor. */
+    showFormattedText?: boolean;
 }
 
 /**

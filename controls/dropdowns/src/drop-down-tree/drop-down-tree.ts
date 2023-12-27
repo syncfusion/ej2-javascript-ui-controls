@@ -1010,14 +1010,17 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     public render(): void {
         const isTree: Element = select('#' + this.element.id + '_tree', document);
         if (isTree) {
-            const popupDiv: Element = select('#' + this.element.id + '_popup', document);
+            const popupDiv: Element = select('#' + this.element.id + '_options', document);
             detach(popupDiv ? popupDiv : isTree.parentElement);
         }
         this.ensureAutoCheck();
         if (this.element.tagName === 'INPUT') {
             this.inputEle = this.element as HTMLInputElement;
             if (isNOU(this.inputEle.getAttribute('role'))) {
-                this.inputEle.setAttribute('role', 'textbox');
+                this.inputEle.setAttribute('aria-expanded', 'false');
+                this.inputEle.setAttribute('role', 'combobox');
+                this.inputEle.setAttribute('aria-haspopup', 'tree');
+                this.inputEle.setAttribute('aria-controls', this.element.id + "_options");
             }
             if (isNOU(this.inputEle.getAttribute('type'))) {
                 this.inputEle.setAttribute('type', 'text');
@@ -1180,8 +1183,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 if (flag) { return; }
                 this.treeObj.fields = this.getTreeFields(fields);
                 this.treeObj.dataBind();
-                if (this.hasTemplate && (this as any).portals  ) {
-                    (this as any).portals = [].concat((this.treeObj as any).portals) ;
+                if (this.hasTemplate && (this as any).portals && (this.treeObj as any).portals) {
+                    for (let i: number = 0; i < (this.treeObj as any).portals.length; i++) {
+                        if ((this as any).portals.indexOf((this.treeObj as any).portals[i as number]) == -1) {
+                            (this as any).portals.push((this.treeObj as any).portals[i as number]);
+                        }
+                    }
                     if ((this as any).isReact) {
                         this.renderReactTemplates();
                     }
@@ -1657,15 +1664,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected getAriaAttributes(): { [key: string]: string } {
-        const disable: string = this.enabled ? 'false' : 'true';
         return {
-            'aria-disabled': disable,
-            'aria-owns': this.element.id + '_options',
-            'role': 'listbox',
-            'aria-haspopup': 'true',
-            'aria-expanded': 'false',
-            'aria-activedescendant': 'null',
-            'aria-labelledby': this.hiddenElement.id
         };
     }
 
@@ -2000,7 +1999,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                             this.inputEle.setAttribute(htmlAttr, this.htmlAttributes[`${htmlAttr}`]);
                         }
                     } else {
-                        this.inputWrapper.setAttribute(htmlAttr, this.htmlAttributes[`${htmlAttr}`]);
+                        this.inputEle.setAttribute(htmlAttr, this.htmlAttributes[`${htmlAttr}`]);
                     }
                 }
             }
@@ -2238,7 +2237,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (this.isFilteredData) {
             this.filterObj.value = '';
             this.treeObj.fields = this.getTreeFields(this.fields);
-            if((this as any).isReact) this.refresh();
+            if ((this as any).isReact) this.refresh();
             this.isFilterRestore = true;
             this.isFilteredData = false;
             this.hideCheckAll(false);
@@ -2250,8 +2249,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 addClass([this.inputWrapper], [ICONANIMATION]);
                 if (this.isFirstRender) {
                     this.popupEle = this.createElement('div', {
-                        id: this.element.id + '_popup', className: POPUP_CLASS + ' ' + (this.cssClass != null ? this.cssClass : '')
+                        id: this.element.id + '_options', className: POPUP_CLASS + ' ' + (this.cssClass != null ? this.cssClass : '')
                     });
+                    this.popupEle.setAttribute('role', 'region');
+                    this.popupEle.setAttribute('aria-label', this.element.id);
                     document.body.appendChild(this.popupEle);
                     this.createPopup(this.popupEle);
                 } else {
@@ -2279,7 +2280,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 }
             }
             if (!isCancelled) {
-                attributes(this.inputWrapper, { 'aria-expanded': 'true' });
+                attributes(this.inputEle, { 'aria-expanded': 'true' });
                 this.popupObj.show(null, (this.zIndex === 1000) ? this.inputEle : null);
                 removeClass([this.popupEle], DDTHIDEICON);
                 this.updatePopupHeight();
@@ -2708,11 +2709,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             const nodes: NodeList = this.treeObj.element.querySelectorAll('li');
             const checkedNodes: NodeList = this.treeObj.element.querySelectorAll('li .e-checkbox-wrapper[aria-checked=true]');
             const wrap: HTMLElement = closest((this.checkBoxElement as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
-            if (wrap && args.action === 'uncheck' && (args.isInteracted || checkedNodes.length === 0  || (!isNOU(args.data[0]) && args.data[0].isChecked === 'false'))) {
+            if (wrap && args.action === 'uncheck' && (args.isInteracted || checkedNodes.length === 0 || (!isNOU(args.data[0]) && args.data[0].isChecked === 'false'))) {
                 this.isReverseUpdate = true;
                 this.changeState(wrap, 'uncheck');
                 this.isReverseUpdate = false;
-            } else if (wrap && args.action === 'check' && checkedNodes.length === nodes.length && (args.isInteracted || this.isCheckAllCalled  || (!isNOU(args.data[0]) && args.data[0].isChecked === 'true'))) {
+            } else if (wrap && args.action === 'check' && checkedNodes.length === nodes.length && (args.isInteracted || this.isCheckAllCalled || (!isNOU(args.data[0]) && args.data[0].isChecked === 'true'))) {
                 this.isReverseUpdate = true;
                 this.isCheckAllCalled = false;
                 this.changeState(wrap, 'check');
@@ -2728,8 +2729,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private onNodeExpanded(args: NodeExpandEventArgs): void {
-        if (this.hasTemplate && (this as any).portals) {
-            (this as any).portals = [].concat((this.treeObj as any).portals);
+        if (this.hasTemplate && (this as any).portals && (this.treeObj as any).portals) {
+            for (let i: number = 0; i < (this.treeObj as any).portals.length; i++) {
+                if ((this as any).portals.indexOf((this.treeObj as any).portals[i as number]) == -1) {
+                    (this as any).portals.push((this.treeObj as any).portals[i as number]);
+                }
+            }
             /* eslint-enable */
             this.renderReactTemplates();
         }
@@ -3702,7 +3707,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (this.popupEle) {
             addClass([this.popupEle], DDTHIDEICON);
         }
-        attributes(this.inputWrapper, { 'aria-expanded': 'false' });
+        attributes(this.inputEle, { 'aria-expanded': 'false' });
         if (this.popupObj && this.isPopupOpen) {
             this.popupObj.hide();
             if (this.inputFocus) {

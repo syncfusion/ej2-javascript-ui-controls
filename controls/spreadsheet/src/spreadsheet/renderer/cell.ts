@@ -502,10 +502,13 @@ export class CellRenderer implements ICellRenderer {
                 range = getRangeIndexes(ranges[j as number].address.length ? ranges[j as number].address : ranges[j as number].startCell);
                 if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
                     if (cell) {
-                        return this.compileCellTemplate(ranges[j as number].template, cell);
+                        return this.compileCellTemplate(
+                            ranges[j as number].template, Object.assign({ rowIndex: rowIdx, colIndex: colIdx }, cell));
                     } else {
                         if (!getCell(rowIdx, colIdx, sheet, true)) {
-                            return this.compileCellTemplate(ranges[j as number].template, getCell(rowIdx, colIdx, sheet, null, true));
+                            return this.compileCellTemplate(
+                                ranges[j as number].template,
+                                Object.assign({ rowIndex: rowIdx, colIndex: colIdx }, getCell(rowIdx, colIdx, sheet, null, true)));
                         }
                     }
                 }

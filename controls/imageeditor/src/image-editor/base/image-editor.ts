@@ -1778,6 +1778,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      *
      */
     public select(type: string, startX?: number, startY?: number, width?: number, height?: number): void {
+        this.notify('toolbar', { prop: 'performCropTransformClick', value: {shape: 'crop-' + type }});
         this.notify('draw', { prop: 'select', onPropertyChange: false,
             value: {type: type, startX: startX, startY: startY, width: width, height: height}});
         this.notify('draw', { prop: 'select', onPropertyChange: false,
@@ -3946,7 +3947,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     }
 
     private initializeZoomSettings(): void {
-        if (isNullOrUndefined(this.zoomSettings.zoomTrigger)) {
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        if (isNullOrUndefined(this.zoomSettings.zoomTrigger) || (this.zoomSettings as any).zoomTrigger === 0) {
             this.zoomSettings.zoomTrigger = (ZoomTrigger.MouseWheel | ZoomTrigger.Pinch | ZoomTrigger.Toolbar | ZoomTrigger.Commands);
         }
         if (isNullOrUndefined(this.selectionSettings.strokeColor)) {

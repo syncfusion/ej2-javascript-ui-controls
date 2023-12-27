@@ -81,7 +81,7 @@ describe('Autocomplete_Virtualization', () => {
         /**
          * DownKey
          */
-        it('virtualization Down key pressed ', (done) => {
+       it('virtualization Down key pressed ', (done) => {
             dropObj.showPopup();
             expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
             expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
@@ -95,8 +95,8 @@ describe('Autocomplete_Virtualization', () => {
             keyEventArgs.action = 'down';
             dropObj.isPopupOpen = true;
             dropObj.keyActionHandler(keyEventArgs);
-            expect(li[0].classList.contains('e-item-focus')).toBe(false);
-            expect(li[1].classList.contains('e-item-focus')).toBe(true);
+            expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].classList.contains('e-item-focus')).toBe(false);
+            expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[1].classList.contains('e-item-focus')).toBe(true);
             dropObj.isPopupOpen = true;
             setTimeout(function () {
                 for (let i: number = 0; i < 30; i++) {
@@ -254,11 +254,11 @@ describe('Autocomplete_Virtualization', () => {
                 keyEventArgs.type = 'keydown';
                 keyEventArgs.action = 'down';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect(li[0].classList.contains('e-item-focus')).toBe(true);
+                expect(li[1].classList.contains('e-item-focus')).toBe(true);
                 expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 2');
                 keyEventArgs.action = 'down';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect(li[1].classList.contains('e-item-focus')).toBe(true);
+                expect(li[2].classList.contains('e-item-focus')).toBe(true);
                 expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[1].textContent.trim()).toBe('Item 20');
             });
         });

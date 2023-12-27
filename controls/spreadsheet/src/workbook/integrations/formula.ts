@@ -506,7 +506,6 @@ export class WorkbookFormula {
             const cellArgs: ValueChangedArgs = new ValueChangedArgs(rowIdx + 1, colIdx + 1, value);
             const usedRange: number[] = [sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
             this.calculateInstance.valueChanged(sheetId, cellArgs, true, usedRange, isRefreshing, sheetName, isRandomFormula);
-            const referenceCollection: string[] = this.calculateInstance.randCollection;
             if (this.calculateInstance.isRandomVal === true && !isRandomFormula) {
                 this.refreshRandomFormula();
             }
@@ -524,11 +523,18 @@ export class WorkbookFormula {
                     formulaStr = '=ROUNDUP(';
                 } else if (formula.indexOf('=MOD(') === 0) {
                     formulaStr = '=MOD(';
-                } else if (formula.indexOf('=PRODUCT(') === 0) {
-                    formulaStr = '=PRODUCT(';
                 }
                 if (formulaStr) {
-                    formula = formula.replace(formulaStr, '').split(')')[0];
+                    formula = formula.replace(formulaStr, '');
+                    if (formula.includes(')')) {
+                        formula = formula.slice(0, formula.lastIndexOf(')'));
+                        let fStr: string; let idx: number;
+                        while (formula.includes('(') && formula.includes(')')) {
+                            idx = formula.indexOf('(');
+                            fStr = formula.slice(idx + 1);
+                            formula = formula.slice(0, idx) + (fStr.includes(')') ? fStr.slice(fStr.indexOf(')') + 1) : fStr);
+                        }
+                    }
                     const cellRefArr: string[] = formula.split(this.calculateInstance.getParseArgumentSeparator());
                     let cellRef: string; let fCell: CellModel; let model: SheetModel; let sheetIdx: number; let refArr: string[];
                     let sheetName: string; let index: number[];

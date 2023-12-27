@@ -4,7 +4,7 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { OpenOptions, OpenFailureArgs } from '../common/interface';
 import { refreshSheetTabs, completeAction, unProtectSheetPassword } from '../common/event';
-import { dialog, importProtectWorkbook, locale, OpenArgs } from '../common/index';
+import { dialog, importProtectWorkbook, locale, OpenArgs, JsonData } from '../common/index';
 import { Dialog } from '../services/index';
 import { openSuccess, openFailure, clearFormulaDependentCells } from '../../workbook/index';
 import { L10n } from '@syncfusion/ej2-base';
@@ -188,7 +188,7 @@ export class Open {
                 this.parent.element.querySelector('.e-add-sheet-tab').setAttribute('disabled', 'true');
                 this.parent.element.querySelector('.e-add-sheet-tab').classList.add('e-disabled');
             }
-            this.parent.renderModule.refreshSheet(response.isOpenFromJson);
+            this.parent.renderModule.refreshSheet(response.isOpenFromJson, false, false, false, response);
             this.parent.notify(refreshSheetTabs, null);
             this.isImportedFile = true;
             this.preventFormatCheck = response.eventArgs && response.eventArgs.file && (response.eventArgs.file as File).name &&
@@ -228,11 +228,4 @@ export class Open {
     public getModuleName(): string {
         return 'open';
     }
-}
-
-interface JsonData {
-    data: string;
-    eventArgs: OpenOptions;
-    isOpenFromJson: boolean;
-    guid?: string;
 }

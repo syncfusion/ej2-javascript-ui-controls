@@ -16,6 +16,7 @@ export class Data {
     private query: Query;
     private keyField: string;
     private isObservable: boolean;
+    private initload: boolean = false;
     protected dataState: PendingState = { isPending: false, resolver: null, isDataChanged: false };
 
     /**
@@ -226,6 +227,11 @@ export class Data {
                 this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
             });
         }
+        if (this.initload) {
+            this.parent.layoutModule.refresh();
+            this.parent.resetTemplates();
+        }
+        this.initload = true;
     }
 
     /**

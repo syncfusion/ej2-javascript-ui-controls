@@ -1087,7 +1087,7 @@ describe('Editing ->', () => {
                 done();
             });
         });
-        describe('EJ2-71834, EJ2-853079', () => {
+        describe('EJ2-71834, EJ2-853079, EJ2-861718', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{  ranges: [{ dataSource: defaultData }]}] }, done);
             });
@@ -1120,6 +1120,27 @@ describe('Editing ->', () => {
                 helper.edit('H2', 'value3');
                 expect(helper.invoke('getCell', [1, 7]).ariaLabel).toBe('value3 H2');
                 done();
+            });
+            it('Deleting range of value does not work when the range is selected from right to left', (done: Function) => {
+                helper.invoke('selectRange', ['H10:E10']);
+                helper.triggerKeyNativeEvent(46);
+                setTimeout(() => {
+                    expect(helper.invoke('getCell', [9, 7]).textContent).toBe('');
+                    expect(JSON.stringify(helper.getInstance().sheets[0].rows[9].cells[7])).toBe('{}');
+                    helper.invoke('selectRange', ['H8:F7']);
+                    helper.triggerKeyNativeEvent(46);
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [7, 6]).textContent).toBe('');
+                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[7].cells[6])).toBe('{}');
+                        helper.invoke('selectRange', ['H4:G5']);
+                        helper.triggerKeyNativeEvent(46);
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [4, 6]).textContent).toBe('');
+                            expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[6])).toBe('{}');
+                            done();
+                        });
+                    });
+                });
             });
         });
         describe('EJ2-846321', () => {

@@ -472,4 +472,30 @@ describe('Column freeze render module', () => {
             destroy(gridObj as any);
         });
     });
+
+    describe('EJ2-862783 - Column width not working properly in Grid with Frozen Columns', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    width: '100%',
+                    gridLines: 'Both',
+                    allowResizing: true,
+                    columns: [
+                        { field: 'OrderID', width: 100, freeze: 'Left'},
+                        { field: 'CustomerID', minWidth: 60 },
+                        { field: 'Freight', minWidth: 60 },
+                        { field: 'ShipCountry', minWidth: 60 },
+                    ]
+                }, done);
+        });
+        it('Ensure 1st Column Width ', () => {
+            expect(Math.ceil((gridObj.getRows()[0] as any).cells[0].offsetWidth)).toBe(100);
+        });
+        afterAll(() => {
+            gridObj['freezeModule'].destroy();
+            destroy(gridObj as any);
+        });
+    });
 });

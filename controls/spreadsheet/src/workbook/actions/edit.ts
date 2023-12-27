@@ -2,7 +2,7 @@ import { Workbook, SheetModel, CellModel, getCell, getSheet } from '../base/inde
 import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart, checkUniqueRange } from '../common/event';
 import { getRangeIndexes, parseIntValue, setLinkModel, getCellAddress } from '../common/index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { checkIsFormula } from '../../workbook/common/index';
+import { checkIsFormula, DateFormatCheckArgs } from '../../workbook/common/index';
 import { getTypeFromFormat } from '../integrations/index';
 
 /**
@@ -59,14 +59,14 @@ export class WorkbookEdit {
         case 'updateCellValue':
             args.isFormulaDependent = this.updateCellValue(
                 <string>args.address, <string>args.value, <number>args.sheetIndex, <boolean>args.isValueOnly,
-                <boolean>args.skipFormatCheck, <boolean>args.isRandomFormula);
+                <boolean>args.skipFormatCheck, <boolean>args.isRandomFormula, <boolean>args.skipCellFormat);
             break;
         }
     }
 
     private updateCellValue(
         address: string | number[], value: string, sheetIdx?: number, isValueOnly?: boolean, skipFormatCheck?: boolean,
-        isRandomFormula?: boolean): boolean {
+        isRandomFormula?: boolean, skipCellFormat?: boolean): boolean {
         if (sheetIdx === undefined) {
             sheetIdx = this.parent.activeSheetIndex;
         }
@@ -106,12 +106,13 @@ export class WorkbookEdit {
                 isRandomFormula: isRandomFormula
             };
             if (isNotTextFormat && !skipFormatCheck) {
-                const dateEventArgs: { [key: string]: string | number } = {
+                const dateEventArgs: DateFormatCheckArgs = {
                     value: value,
                     rowIndex: range[0],
                     colIndex: range[1],
                     sheetIndex: sheetIdx,
-                    updatedVal: ''
+                    updatedVal: '',
+                    skipCellFormat: skipCellFormat
                 };
                 if (!isFormula) {
                     this.parent.notify(checkDateFormat, dateEventArgs);

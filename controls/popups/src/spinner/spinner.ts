@@ -592,6 +592,7 @@ function create_spinner_container(target: HTMLElement, makeElement: createElemen
     const spinnerInnerContainer: HTMLElement = makeElement('div', {});
     spinnerContainer.classList.add(CLS_SPINWRAP);
     spinnerInnerContainer.classList.add(CLS_SPININWRAP);
+    spinnerInnerContainer.setAttribute('aria-disabled', 'true');
     target.appendChild(spinnerContainer);
     spinnerContainer.appendChild(spinnerInnerContainer);
     // eslint-disable-next-line

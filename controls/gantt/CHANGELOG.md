@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.43 (2023-12-27)
+
+### GanttChart
+
+#### Bug Fixes
+
+- `#I517104` - Gantt component hangs whole page if timezone changed to UK(London) issue has been fixed.
+
 ## 23.2.5 (2023-11-23)
 
 ### GanttChart

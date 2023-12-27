@@ -19,7 +19,7 @@ import { DecoratorModel, ConnectorShapeModel, BpmnFlowModel, VectorModel, Diagra
 import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
 import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';
-import { getAnnotationPosition, alignLabelOnSegments, updateConnector, checkPortRestriction, updatePortEdges, getPortsPosition } from '../utility/diagram-util';
+import { getAnnotationPosition, alignLabelOnSegments, updateConnector, checkPortRestriction, updatePortEdges, getPortsPosition, getPathOffset } from '../utility/diagram-util';
 import { setUMLActivityDefaults, initfixedUserHandlesSymbol } from '../utility/diagram-util';
 import { findDistance, findPath, updatePathElement, setConnectorDefaults } from '../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
@@ -2256,16 +2256,11 @@ export class Connector extends NodeBase implements IElement {
     public updateShapePosition(connector: Connector, element: DiagramElement): void {
         const segmentOffset: number = 0.5; let angle: number; let pt: PointModel; let length: number = 0;
         const anglePoints: PointModel[] = this.intermediatePoints as PointModel[];
-        for (let i: number = 0; i < anglePoints.length - 1; i++) {
-            length = length + this.distance(anglePoints[parseInt(i.toString(), 10)], anglePoints[i + 1]);
-            const offsetLength: number = length * segmentOffset;
-            if (length >= offsetLength) {
-                angle = findAngle(anglePoints[parseInt(i.toString(), 10)], anglePoints[i + 1]);
-                pt = Point.transform(anglePoints[parseInt(i.toString(), 10)], angle, offsetLength);
-            }
-        }
-        element.offsetX = pt.x;
-        element.offsetY = pt.y;
+        //Bug 860251: Bpmn message flow and sequence flow connector child path is not rendered properly.
+        //To get the path offset of message flow.
+        let offset = getPathOffset(anglePoints,element,segmentOffset);
+        element.offsetX = offset.x;
+        element.offsetY = offset.y;
     }
 
     /** @hidden */

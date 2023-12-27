@@ -402,7 +402,7 @@ describe('Tooltip Control', () => {
             });
             document.body.appendChild(ele);
             let ele1: HTMLElement = createElement('div', {
-                id: 'targetContainer', innerHTML: "<button id='btn' aria-describedby='descriptionClose'>X</button><div id='descriptionClose'>Closing this window will discard any information entered and return you back to the main page</div>"
+                id: 'targetContainer', innerHTML: "<button id='btn' >X</button><div id='descriptionClose'>Closing this window will discard any information entered and return you back to the main page</div>"
             });
             document.body.appendChild(ele1);
 
@@ -430,14 +430,19 @@ describe('Tooltip Control', () => {
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },
                 content: 'tooltip from button', height: '40px'
             }, '#btn');
-            let describedby: string = document.getElementById('btn').getAttribute('aria-describedby');
-            tooltip.open(document.getElementById('btn')); // Open the tooltip based on target element specified in optional parameter
-            expect(document.getElementById('btn').getAttribute('aria-describedby').indexOf('descriptionClose')).toEqual(0);
+            tooltip.appendTo('#btn');
+            let target: HTMLElement = document.getElementById('btn');
+            tooltip.open(target);
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(target.getAttribute('aria-describedby')).toEqual(tooltipEle.id);
+            expect(target.getAttribute('data-tooltip-id')).toEqual(tooltipEle.id)
+            expect(tooltipEle.getAttribute('role')).toEqual('tooltip');
             tooltip.close();
-            expect(document.getElementById('btn').getAttribute('aria-describedby')).toEqual(describedby);
+            expect(target.getAttribute('aria-describedby')).toBeNull();
+            expect(target.getAttribute('data-tooltip-id')).toBeNull();
             tooltip.position = 'RightCenter';
             tooltip.dataBind();
-            tooltip.open(document.getElementById('btn')); // Open the tooltip based on target element specified in optional parameter
+            tooltip.open(target);
         });
     });
     describe('Tooltip Mouse hover events', () => {

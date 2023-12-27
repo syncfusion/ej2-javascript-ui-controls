@@ -70,7 +70,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             keyboardEventArgs.action = 'moveDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             expect(document.querySelector('.e-popup')).toBe(null);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toBe('false');
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('false');
         });
         it('for showCheckBox with Delimiter and autocheck enabled', () => {
             ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, showCheckBox: true, mode: 'Delimiter', treeSettings: { autoCheck: true } }, '#ddtree');

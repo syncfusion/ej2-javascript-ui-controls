@@ -4,6 +4,7 @@
 
 let queryString: string = '';
 let prevString: string = '';
+let tempQueryString: string = '';
 let matches: Element[] = [];
 const activeClass: string = 'e-active';
 let prevElementId: string = '';
@@ -20,20 +21,46 @@ export type SearchType = 'StartsWith' | 'Equal' | 'EndsWith' | 'Contains';
  * @returns {Element} Returns list item based on key code matches with list text content.
  */
 export function incrementalSearch(
-    keyCode: number, items: HTMLElement[], selectedIndex: number, ignoreCase: boolean, elementId: string): Element {
-    queryString += String.fromCharCode(keyCode);
-    setTimeout(() => {
-        queryString = '';
-    }, 1000);
+    keyCode: number, items: HTMLElement[], selectedIndex: number, ignoreCase: boolean, elementId: string, queryStringUpdated?: boolean, currentValue?: string, isVirtual?: boolean, refresh?: boolean): Element {
+    if (!queryStringUpdated || queryString === '') {
+        if(tempQueryString != ''){
+            queryString = tempQueryString + String.fromCharCode(keyCode);
+            tempQueryString = '';
+        }else{
+            queryString += String.fromCharCode(keyCode);
+        }
+    }
+    else if(queryString == prevString){
+        tempQueryString = String.fromCharCode(keyCode);
+    }
+    if(isVirtual) {
+        setTimeout(function () {
+            tempQueryString = '';
+        }, 700);
+        setTimeout(function () {
+            queryString = '';
+        }, 3000);
+    }else{
+        setTimeout(function () {
+            queryString = '';
+        }, 1000);
+    }
     let index: number;
     queryString = ignoreCase ? queryString.toLowerCase() : queryString;
-    if (prevElementId === elementId && prevString === queryString) {
+    if (prevElementId === elementId && prevString === queryString && !refresh) {
         for (let i: number = 0; i < matches.length; i++) {
             if (matches[i as number].classList.contains(activeClass)) {
                 index = i; break;
             }
+            if(currentValue && matches[i as number].textContent.toLowerCase() === currentValue.toLowerCase()) {
+                index = i;
+                break;
+            }
         }
         index = index + 1;
+        if(isVirtual){
+            return matches[index as number] && matches.length - 1 != index ? matches[index as number] : matches[matches.length as number];
+        }
         return matches[index as number] ? matches[index as number] : matches[0];
     } else {
         const listItems: Element[] = items;
@@ -61,6 +88,20 @@ export function incrementalSearch(
         } while (i !== selectedIndex);
         prevString = queryString;
         prevElementId = elementId;
+        if(isVirtual) {
+            var indexUpdated:boolean = false;
+            for (let i: number = 0; i < matches.length; i++) {
+                if(currentValue && matches[i as number].textContent.toLowerCase() === currentValue.toLowerCase()) {
+                    index = i;
+                    indexUpdated = true;
+                    break;
+                }
+            }
+            if(currentValue && indexUpdated) {
+                index = index + 1;
+            }
+            return matches[index as number] ? matches[index as number] : matches[0];
+        }
         return matches[0];
     }
 }
@@ -101,7 +142,7 @@ export function Search(
                     });
                 })
             }
-            text = dataSource && filterValue ? (ignoreCase ? filterValue.toLocaleLowerCase() : filterValue).replace(/^\s+|\s+$/g, '') : (ignoreCase ? item.textContent.toLocaleLowerCase() : item.textContent).replace(/^\s+|\s+$/g, '');
+            text = dataSource && filterValue ? (ignoreCase ? filterValue.toString().toLocaleLowerCase() : filterValue).replace(/^\s+|\s+$/g, '') : (ignoreCase ? item.textContent.toLocaleLowerCase() : item.textContent).replace(/^\s+|\s+$/g, '');
             /* eslint-disable security/detect-non-literal-regexp */
             if ((searchType === 'Equal' && text === queryStr) || (searchType === 'StartsWith' && text.substr(0, strLength) === queryStr) || (searchType === 'EndsWith' && text.substr(text.length - queryStr.length) === queryStr) || (searchType === 'Contains' && new RegExp(queryStr, "g").test(text))) {
                 itemData.item = item;

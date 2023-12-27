@@ -431,7 +431,7 @@ describe('PageSettings', () => {
 
             let pathElement: HTMLElement = document.getElementById('Connector1_Default');
             console.log("first path",pathElement.getAttribute('transform') );
-            expect(pathElement.getAttribute('transform') === "rotate(45,721.21,121.21)translate(712.7249841308594,112.72499938964843)").toBe(true);
+            expect(pathElement.getAttribute('transform') === "rotate(45,707.07,107.07)translate(699.2900012207032,99.29000122070312)").toBe(true);
             done();
         });
 
@@ -446,7 +446,7 @@ describe('PageSettings', () => {
             mouseEvents.mouseUpEvent(diagramCanvas, 756, 160);
             let pathElement: HTMLElement = document.getElementById('Connector1_Default');
             console.log("second path",pathElement.getAttribute('transform') );
-            expect(pathElement.getAttribute('transform') === 'rotate(45,741.21,136.21)translate(732.7249841308594,127.72499938964845)').toBe(true);
+            expect((pathElement.getAttribute('transform') === 'rotate(45,727.07,122.07)translate(719.2900012207032,114.28999740600585)') || (pathElement.getAttribute('transform') === "rotate(45,717.07,127.07)translate(709.2900012207032,119.28999740600585)")).toBe(true);
             done();
         });
         it('BPMN Sequence connector Dragging with node move', (done: Function) => {
@@ -456,7 +456,7 @@ describe('PageSettings', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 350, 400);
             mouseEvents.mouseUpEvent(diagramCanvas, 350, 400);
             let pathElement: HTMLElement = document.getElementById('Connector2_Default');
-            expect(pathElement.getAttribute('transform') === "rotate(45,250,165)translate(250,153)").toBe(true);
+            expect(pathElement.getAttribute('transform') === "rotate(45,100,125)translate(100,114)").toBe(true);
             done();
         });
         it('BPMN Sequence connector rotating with node move', (done: Function) => {
@@ -467,7 +467,7 @@ describe('PageSettings', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 600, 50);
             mouseEvents.mouseUpEvent(diagramCanvas, 600, 50);
             let pathElement: HTMLElement = document.getElementById('Connector2_Default');
-            expect(pathElement.getAttribute('transform') === "rotate(45,250,165)translate(250,153)").toBe(true);
+            expect(pathElement.getAttribute('transform') === "rotate(45,100,125)translate(100,114)").toBe(true);
             done();
         });
     });

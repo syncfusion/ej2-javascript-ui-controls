@@ -1349,10 +1349,30 @@ export class DiagramRenderer {
         }
         if (element.isExport) {
             const pathBounds: Rect = element.absoluteBounds;
+            //Bug 857388: Connector with bridging is not properly exported.
+            //Below we save the arc values of bridge and use it in renderPath method.
+            let collection = processPathData((options as PathAttributes).data);
+            // Get r1 and r2 values for 'A' commands
+            let arc = this.findAndStoreArcValues(collection);
+            (options as any).arc = arc;
             (options as PathAttributes).data = updatePath(element, pathBounds, undefined, options);
         }
         this.renderer.drawPath(canvas, options as PathAttributes, this.diagramId, undefined, parentSvg, ariaLabel);
     }
+
+    // Function to filter 'A' commands and extract r1 and r2 values
+    private findAndStoreArcValues(arr:any) {
+        let rValues:any = []; 
+        arr.forEach((obj:any) => {
+          if (obj.command === 'A') {
+            // Store r1 and r2 values in an object
+            let rObj = { r1: obj.r1/2, r2: obj.r2/2 };
+            rValues.push(rObj);
+          }
+        });
+        // Return array of r1 and r2 values
+        return rValues;
+      }
 
     /**
      * Method used to update the grid line for the diagram  \

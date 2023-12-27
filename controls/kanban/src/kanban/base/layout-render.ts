@@ -106,6 +106,7 @@ export class LayoutRender extends MobileLayout {
                 addClass([th], classList);
                 const headerWrapper: HTMLElement = createElement('div', { className: cls.HEADER_WRAP_CLASS });
                 th.appendChild(headerWrapper);
+                this.columnData = this.getColumnCards(this.parent.kanbanData);
                 const noOfCard: number = this.columnData[column.keyField].length;
                 const headerTitle: HTMLElement = createElement('div', { className: cls.HEADER_TITLE_CLASS });
                 headerWrapper.appendChild(headerTitle);

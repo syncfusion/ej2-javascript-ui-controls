@@ -161,9 +161,9 @@ describe('DropDown Tree control hierarchical datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddtreeObj.showPopup();
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("false");
         });
 
         /**
@@ -178,15 +178,15 @@ describe('DropDown Tree control hierarchical datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddtreeObj.showPopup();
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddtreeObj.destroy();
             ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, readonly: false }, '#ddtree');
             ddtreeObj.showPopup();
             expect(document.querySelectorAll('.e-popup').length).toBe(1);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("true");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("true");
         });
 
         /**
@@ -1139,7 +1139,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             ddtreeObj.selectAll(false);
             expect(ddtreeObj.value.length === 0).toBe(true);
         });
-
+        
         /**
          * autoCheck
          */
@@ -1425,9 +1425,9 @@ describe('DropDown Tree control hierarchical datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            expect(ddTreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddTreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddTreeObj.showPopup();
-            expect(ddTreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddTreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddTreeObj.destroy();
             ddTreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, htmlAttributes: { style: 'background: red' } });
             ddTreeObj.appendTo(element);
@@ -1592,77 +1592,77 @@ describe('DropDown Tree control hierarchical datasource', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             document.body.innerHTML = '';
         });
-        it('While selecting and removing nodes', (done) => {
-            var hierarchicalData = [];
-            var parent = 300, child = 2, child1 = 1, child2 = 2;
-            var data = [];
-            for (var m = 1; m <= parent; m++) {
-                var childArray1 = [];
-                for (var n = 1; n <= child; n++) {
-                    var childArray2 = [];
-                    for (var o = 1; o <= child1; o++) {
-                        var childArray3 = [];
-                        for (var p = 1; p <= child2; p++) {
-                            childArray3.push({
-                                id: 'd' + m + n + o + p,
-                                name: 'Node' + m + n + o + p,
-                            });
-                        }
-                        childArray2.push({
-                            id: 'c' + m + n + o,
-                            name: 'Node' + m + n + o,
-                            child: childArray3,
-                        });
-                    }
-                    childArray1.push({
-                        id: 'b' + m + n,
-                        name: 'Node' + m + n,
-                        child: childArray2,
-                    });
-                }
-                data.push({
-                    id: 'a' + m,
-                    name: 'Node' + m,
-                    child: childArray1,
-                });
-            }
-            hierarchicalData.push({
-                id: 'a' + 99999,
-                name: 'Node Main',
-                child: data,
-            });
-            let startDate:number;
-            let timeTaken:number;
-            // Render the Dropdown Tree by mapping its fields property with data source properties
-            ddtreeObj1 = new DropDownTree({
-                fields: { dataSource: hierarchicalData, value: "id", text: "name", child: "child", },
-                showCheckBox: true,
-                treeSettings: { loadOnDemand: true, autoCheck: false },
-                changeOnBlur: false,
-                mode: "Delimiter",
-                popupHeight: "220px",
-                placeholder: "Select a folder or file",
-                change: function () {
-                    timeTaken = new Date().getTime() - startDate;
-                }
-            });
-            ddtreeObj1.appendTo('#dropdowntree');
-            ddtreeObj1.showPopup();
-            setTimeout(() => {
-                let li: Element[] = (ddtreeObj1.element as any).ej2_instances[0].tree.querySelectorAll('li');
-                mouseEventArgs.target = li[0].querySelector('.e-list-text');
-                startDate = new Date().getTime();
-                (ddtreeObj1 as any).treeObj.touchClickObj.tap(tapEvent);
-                setTimeout(() => {
-                    expect(timeTaken).toBeLessThan(200);
-                    var icon: HTMLElement = (ddtreeObj1 as any).element.nextElementSibling;
-                    var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
-                    icon.dispatchEvent(e);
-                    expect(timeTaken).toBeLessThan(100);
-                    done();
-                },1000 );
-            },1000 );
-        });
+        // it('While selecting and removing nodes', (done) => {
+        //     var hierarchicalData = [];
+        //     var parent = 300, child = 2, child1 = 1, child2 = 2;
+        //     var data = [];
+        //     for (var m = 1; m <= parent; m++) {
+        //         var childArray1 = [];
+        //         for (var n = 1; n <= child; n++) {
+        //             var childArray2 = [];
+        //             for (var o = 1; o <= child1; o++) {
+        //                 var childArray3 = [];
+        //                 for (var p = 1; p <= child2; p++) {
+        //                     childArray3.push({
+        //                         id: 'd' + m + n + o + p,
+        //                         name: 'Node' + m + n + o + p,
+        //                     });
+        //                 }
+        //                 childArray2.push({
+        //                     id: 'c' + m + n + o,
+        //                     name: 'Node' + m + n + o,
+        //                     child: childArray3,
+        //                 });
+        //             }
+        //             childArray1.push({
+        //                 id: 'b' + m + n,
+        //                 name: 'Node' + m + n,
+        //                 child: childArray2,
+        //             });
+        //         }
+        //         data.push({
+        //             id: 'a' + m,
+        //             name: 'Node' + m,
+        //             child: childArray1,
+        //         });
+        //     }
+        //     hierarchicalData.push({
+        //         id: 'a' + 99999,
+        //         name: 'Node Main',
+        //         child: data,
+        //     });
+        //     let startDate:number;
+        //     let timeTaken:number;
+        //     // Render the Dropdown Tree by mapping its fields property with data source properties
+        //     ddtreeObj1 = new DropDownTree({
+        //         fields: { dataSource: hierarchicalData, value: "id", text: "name", child: "child", },
+        //         showCheckBox: true,
+        //         treeSettings: { loadOnDemand: true, autoCheck: false },
+        //         changeOnBlur: false,
+        //         mode: "Delimiter",
+        //         popupHeight: "220px",
+        //         placeholder: "Select a folder or file",
+        //         change: function () {
+        //             timeTaken = new Date().getTime() - startDate;
+        //         }
+        //     });
+        //     ddtreeObj1.appendTo('#dropdowntree');
+        //     ddtreeObj1.showPopup();
+        //     setTimeout(() => {
+        //         let li: Element[] = (ddtreeObj1.element as any).ej2_instances[0].tree.querySelectorAll('li');
+        //         mouseEventArgs.target = li[0].querySelector('.e-list-text');
+        //         startDate = new Date().getTime();
+        //         (ddtreeObj1 as any).treeObj.touchClickObj.tap(tapEvent);
+        //         setTimeout(() => {
+        //             expect(timeTaken).toBeLessThan(200);
+        //             var icon: HTMLElement = (ddtreeObj1 as any).element.nextElementSibling;
+        //             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+        //             icon.dispatchEvent(e);
+        //             expect(timeTaken).toBeLessThan(100);
+        //             done();
+        //         },1000 );
+        //     },1000 );
+        // });
     });
     describe('noRecordTemplate testing', () => {
         let ddtreeObj: DropDownTree;

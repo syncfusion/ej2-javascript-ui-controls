@@ -334,6 +334,9 @@ export class SheetRender implements IRenderer {
             setAriaOptions(content, { busy: false });
             this.parent.trigger(dataBound, {});
             if (this.parent.isEdit) { this.parent.notify(initiateEdit, null); }
+            if (args.openOptions && args.openOptions.eventArgs && args.openOptions.eventArgs.triggerEvent) {
+                this.parent.trigger('openComplete', { response: args.openOptions });
+            }
             if (args.initLoad) {
                 let triggerEvent: boolean = true;
                 if (this.parent.scrollSettings.enableVirtualization) {

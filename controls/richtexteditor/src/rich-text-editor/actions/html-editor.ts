@@ -255,7 +255,7 @@ export class HtmlEditor {
             ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 13) {
             this.spaceLink(e.args as KeyboardEvent);
             if (this.parent.editorMode === 'HTML' && !this.parent.readonly) {
-                const currentLength: number = this.parent.getText().trim().length;
+                const currentLength: number = this.parent.getText().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\u200B/g, '').length;
                 const selectionLength: number = this.parent.getSelection().length;
                 const totalLength: number = (currentLength - selectionLength) + 1;
                 if (!(this.parent.maxLength === -1 || totalLength <= this.parent.maxLength) &&
@@ -412,7 +412,7 @@ export class HtmlEditor {
         let liElement: HTMLElement;
         let rootElement: HTMLElement;
         if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Delete' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 46 &&
-            this.parent.contentModule.getText().trim().length !== 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.parentElement.tagName !== 'TD' &&
+            this.parent.contentModule.getText().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\u200B/g, '').length !== 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.parentElement.tagName !== 'TD' &&
             currentRange.startContainer.parentElement.tagName !== 'TH') {
             this.deleteRangeElement = rootElement = (this.getRootBlockNode(currentRange.startContainer) as HTMLElement);
             if (this.deleteRangeElement.tagName === 'OL' || this.deleteRangeElement.tagName === 'UL') {

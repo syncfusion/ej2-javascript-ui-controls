@@ -1702,7 +1702,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.element.setAttribute('class', this.element.getAttribute('class') + ' e-chart-focused');
         }
         if (this.element.id === '') {
-            const collection: number = document.getElementsByClassName('e-chart').length;
+            let collection: number = document.getElementsByClassName('e-chart').length;
+            const elementid: string = 'chart_' + this.chartid + '_' + collection;
+            if (document.getElementById(elementid)) {
+                collection++;
+            }
             this.element.id = 'chart_' + this.chartid + '_' + collection;
         }
         //seperate ID to differentiate chart and stock chart

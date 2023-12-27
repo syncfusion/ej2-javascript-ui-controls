@@ -220,6 +220,11 @@ export interface IFitOptions {
      * Defines the custom region that has to be fit into the viewport
      */
     customBounds?: Rect;
+    /**
+     * Enables/Disables zooming to fit the larger content into current viewport regardless of scrollSettings.minZoom property value.
+     * @default false
+     */
+    canZoomOut?: boolean;
 }
 
 /** @private */

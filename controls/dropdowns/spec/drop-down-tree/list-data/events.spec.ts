@@ -167,8 +167,8 @@ describe('DropDown Tree control List datasource', () => {
             expect(i).toEqual(0);
             ddTreeObj.hidePopup();
             expect(i).toEqual(0);
-            expect(ddTreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
-            expect(ddTreeObj.element.parentElement.getAttribute("aria-haspopup")).toEqual("true");
+            expect(ddTreeObj.element.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddTreeObj.element.getAttribute("aria-haspopup")).toEqual("tree");
             expect(document.querySelector('.e-popup')).toBe(null);
         });
         it('select event testing', () => {

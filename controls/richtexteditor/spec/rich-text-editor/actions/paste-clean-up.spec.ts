@@ -744,7 +744,7 @@ third line`;
       done();
     }, 100);
   });
-  
+
   it("Paste content from Visual Studio with have HTML tags", (done) => {
     keyBoardEvent.clipboardData = {
       getData: (e: any) => {
@@ -793,7 +793,7 @@ third line`;
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p>using System;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using System.Collections.Generic;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using System.Linq;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using System.Threading.Tasks;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using System.Web.Mvc;</p><p><br></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;namespace EJ2MVCSampleBrowser.Controllers</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public partial class RichTextEditorController : Controller</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// GET: /&lt;controller&gt;/</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public ActionResult API()</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ViewBag.value = @"&lt;p&gt;RichTextEditor is a WYSIWYG editing control which will reduce the effort for users while trying to express their formatting word content as HTML or Markdown format.&lt;/p&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;&lt;b&gt;API’s:&lt;/b&gt;&lt;/p&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ul&gt;&lt;li&gt;&lt;p&gt;maxLength - allows to restrict the maximum length to be entered.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;readOnly - allows to change it as non-editable state.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;enabled - enable or disable the RTE component.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;enableHtmlEncode - Get the encoded string value through value property and source code panel&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;getValue - get the value of RTE.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;getSelection - get the selected text of RTE.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;selectAll - select all content in RTE.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/ul&gt;";</p><p><br></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return View();</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</p><p>17</p>`;
+      let expectedElem: string = `<p><span>using System;</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using System.Collections.Generic;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using System.Linq;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using System.Threading.Tasks;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;using System.Web.Mvc;</p><p><br></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;namespace EJ2MVCSampleBrowser.Controllers</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public partial class RichTextEditorController : Controller</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// GET: /&lt;controller&gt;/</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;public ActionResult API()</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ViewBag.value = @"&lt;p&gt;RichTextEditor is a WYSIWYG editing control which will reduce the effort for users while trying to express their formatting word content as HTML or Markdown format.&lt;/p&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;&lt;b&gt;API’s:&lt;/b&gt;&lt;/p&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;ul&gt;&lt;li&gt;&lt;p&gt;maxLength - allows to restrict the maximum length to be entered.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;readOnly - allows to change it as non-editable state.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;enabled - enable or disable the RTE component.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;enableHtmlEncode - Get the encoded string value through value property and source code panel&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;getValue - get the value of RTE.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;getSelection - get the selected text of RTE.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;li&gt;&lt;p&gt;selectAll - select all content in RTE.&lt;/p&gt;&lt;/li&gt;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/ul&gt;";</p><p><br></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return View();</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}</p><p>17</p>`;
       if (pastedElm === expectedElem) {
         expected = true;
       }
@@ -827,7 +827,7 @@ third line`;
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p>first line</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space</p><p><br></p><p><br></p><p>third line</p><p>18</p>`;
+      let expectedElem: string = `<p><span>first line</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space</p><p><br></p><p><br></p><p>third line</p><p>18</p>`;
       if (pastedElm === expectedElem) {
         expected = true;
       }
@@ -2506,7 +2506,7 @@ describe("EJ2-58433 - Pasting content from note pad, outlook, visual studio, VS 
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        expect((rteObj as any).inputElement.innerHTML === `<ol><li class="focusNode"><p>RTE Content</p></li></ol>`).toBe(true)
+        expect((rteObj as any).inputElement.innerHTML === `<ol><li class="focusNode"><span>RTE Content</span>﻿﻿<br></li></ol>`).toBe(true)
         done();
       }, 100);
     });
@@ -2582,7 +2582,7 @@ describe("EJ2-60128 - pasting content which exceeds the max char count", () => {
       setCursorPoint((rteObj as any).inputElement.firstElementChild.childNodes[0], 23);
       rteObj.onPaste(keyBoardEvent);
       setTimeout(() => {
-        expect((rteObj as any).inputElement.innerHTML === `<p>.NEt core application.&nbsp;</p><p>content</p>`).toBe(true)
+        expect((rteObj as any).inputElement.innerHTML === `<p>.NEt core application.&nbsp;<span>content</span></p>`).toBe(true)
         expect((rteObj as any).element.querySelector('.e-rte-character-count').innerHTML === `30 / 30`).toBe(true)
         done();
       }, 100);
@@ -2697,7 +2697,178 @@ describe("EJ2-69216 - pasting as plain text when BR is configured", () => {
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        expect((rteObj as any).inputElement.innerHTML === `This is a test<br><br>\n    Paste below:<br><br><span>This\nis a test</span><p>This is a test</p><br>`).toBe(true)
+        expect((rteObj as any).inputElement.innerHTML === `This is a test<br><br>\n    Paste below:<br><br>This\nis a test<br>\n\n<br>This is a test<br>`).toBe(true);
+        done();
+      }, 100);
+    });
+    afterAll(() => {
+      destroy(rteObj);
+    });
+});
+
+describe("852026 - pasting plain text when BR is configured in enterkey", () => {
+    let rteObj: RichTextEditor;
+    let editorObj: EditorManager;
+    let keyBoardEvent: any = {
+      preventDefault: () => { },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+    };
+    beforeAll((done: Function) => {
+      rteObj = renderRTE({
+        pasteCleanupSettings: {
+          prompt: true
+        },
+        enterKey: 'BR'
+      });
+      editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+      done();
+    });
+    it("Pasting notepad content when enterKey is configured as BR ", (done) => {
+      keyBoardEvent.clipboardData = {
+        getData: (e: any) => {
+          if (e === "text/plain") {
+            return `dsvsdv\r\nsdvsdv\r\nsdvdsv\r\n\r\nsdvsdv\r\nsdvdsv\r\n\r\n\r\n\r\nsdvsdvdsv\r\nsdvdsvdsvdsv\r\nsdvsdvsdvsvv`;
+          } else {
+            return '';
+          }
+        },
+        items: []
+      };
+      rteObj.pasteCleanupSettings.deniedTags = [];
+      rteObj.pasteCleanupSettings.deniedAttrs = [];
+      rteObj.pasteCleanupSettings.allowedStyleProps = [];
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      setCursorPoint((rteObj as any).inputElement, 0);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        if (rteObj.pasteCleanupSettings.prompt) {
+            let plainFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
+            plainFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+        }
+        expect((rteObj as any).inputElement.innerHTML === `dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv<br>`).toBe(true);
+        done();
+      }, 100);
+    });
+    afterAll(() => {
+      destroy(rteObj);
+    });
+});
+
+describe("852026 - pasting plain text when DIV is configured in enterkey", () => {
+    let rteObj: RichTextEditor;
+    let editorObj: EditorManager;
+    let keyBoardEvent: any = {
+      preventDefault: () => { },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+    };
+    beforeAll((done: Function) => {
+      rteObj = renderRTE({
+        pasteCleanupSettings: {
+          prompt: true
+        },
+        enterKey: 'DIV'
+      });
+      editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+      done();
+    });
+    it("Pasting notepad content when enterKey is configured as DIV ", (done) => {
+      keyBoardEvent.clipboardData = {
+        getData: (e: any) => {
+          if (e === "text/plain") {
+            return `dsvsdv\r\nsdvsdv\r\nsdvdsv\r\n\r\nsdvsdv\r\nsdvdsv\r\n\r\n\r\n\r\nsdvsdvdsv\r\nsdvdsvdsvdsv\r\nsdvsdvsdvsvv`;
+          } else {
+            return '';
+          }
+        },
+        items: []
+      };
+      rteObj.pasteCleanupSettings.deniedTags = [];
+      rteObj.pasteCleanupSettings.deniedAttrs = [];
+      rteObj.pasteCleanupSettings.allowedStyleProps = [];
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      setCursorPoint((rteObj as any).inputElement, 0);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        if (rteObj.pasteCleanupSettings.prompt) {
+            let plainFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
+            plainFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+        }
+        expect((rteObj as any).inputElement.innerHTML === `<div><div><span>dsvsdv</span></div><div>sdvsdv</div><div>sdvdsv</div><div><br></div><div>sdvsdv</div><div>sdvdsv</div><div><br></div><div><br></div><div><br></div><div>sdvsdvdsv</div><div>sdvdsvdsvdsv</div><div>sdvsdvsdvsvv</div></div>`).toBe(true);
+        done();
+      }, 100);
+    });
+    afterAll(() => {
+      destroy(rteObj);
+    });
+});
+
+describe("852026 - pasting plain text when P is configured in enterkey", () => {
+    let rteObj: RichTextEditor;
+    let editorObj: EditorManager;
+    let keyBoardEvent: any = {
+      preventDefault: () => { },
+      type: "keydown",
+      stopPropagation: () => { },
+      ctrlKey: false,
+      shiftKey: false,
+      action: null,
+      which: 64,
+      key: ""
+    };
+    beforeAll((done: Function) => {
+      rteObj = renderRTE({
+        pasteCleanupSettings: {
+          prompt: true
+        },
+        enterKey: 'P'
+      });
+      editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+      done();
+    });
+    it("Pasting notepad content when enterKey is configured as P ", (done) => {
+      keyBoardEvent.clipboardData = {
+        getData: (e: any) => {
+          if (e === "text/plain") {
+            return `dsvsdv\r\nsdvsdv\r\nsdvdsv\r\n\r\nsdvsdv\r\nsdvdsv\r\n\r\n\r\n\r\nsdvsdvdsv\r\nsdvdsvdsvdsv\r\nsdvsdvsdvsvv`;
+          } else {
+            return '';
+          }
+        },
+        items: []
+      };
+      rteObj.pasteCleanupSettings.deniedTags = [];
+      rteObj.pasteCleanupSettings.deniedAttrs = [];
+      rteObj.pasteCleanupSettings.allowedStyleProps = [];
+      rteObj.dataBind();
+      (rteObj as any).inputElement.focus();
+      setCursorPoint((rteObj as any).inputElement, 0);
+      rteObj.onPaste(keyBoardEvent);
+      setTimeout(() => {
+        if (rteObj.pasteCleanupSettings.prompt) {
+            let plainFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
+            plainFormat[0].click();
+            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+            pasteOK[0].click();
+        }
+        expect((rteObj as any).inputElement.innerHTML === `<p><span>dsvsdv</span></p><p>sdvsdv</p><p>sdvdsv</p><p><br></p><p>sdvsdv</p><p>sdvdsv</p><p><br></p><p><br></p><p><br></p><p>sdvsdvdsv</p><p>sdvdsvdsvdsv</p><p>sdvsdvsdvsvv</p>`).toBe(true);
         done();
       }, 100);
     });
@@ -3178,7 +3349,7 @@ describe("843341- Indentation is not maintained when the content is copied and p
                 let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
                 pasteOK[0].click();
             }
-            expect((rteObj as any).inputElement.innerHTML === `<p>1. Development</p><p>&nbsp;&nbsp;&nbsp;&nbsp;1. Requirement Document &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hello</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. Specification Document</p><p>RTE</p>`).toBe(true)
+            expect((rteObj as any).inputElement.innerHTML === `<p><span>1. Development</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;1. Requirement Document &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hello</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. Specification Document</p><p>RTE</p>`).toBe(true)
             done();
         }, 50);
     });

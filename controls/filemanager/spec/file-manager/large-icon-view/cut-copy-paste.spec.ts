@@ -1189,6 +1189,34 @@ describe('FileManager control LargeIcons view', () => {
             expect(drag > 1).toBe(true);
             expect((<HTMLElement>document.querySelector('.e-fe-errorcontent')).innerText).toBe("The destination folder is the subfolder of the source folder.");
         });
+        it('auto scroll in drag and drop', () => {
+            feObj.height = '250px';
+            feObj.width = '50%';
+            feObj.dataBind();
+            let li: any = feObj.largeiconsviewModule.element.querySelectorAll('li');
+            let rect: any = li[1].querySelector('.e-text-content').getClientRects();
+            expect(document.querySelector('.e-fe-clone')).toBe(null);
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[1].querySelector('.e-text-content'), li[1].querySelector('.e-text-content'), rect[0].x + 4, rect[0].y + 4);
+            EventHandler.trigger(feObj.largeiconsviewModule.listElements, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-text-content'), li[1].querySelector('.e-text-content'), rect[0].x + 10, rect[0].y + 5);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            expect(document.querySelector('.e-fe-clone') === null).toBe(false);
+            expect(li[1].classList.contains('e-blur')).toBe(true);
+            rect = li[3].querySelector('.e-text-content').getClientRects();
+            mousemove.srcElement = mousemove.target = mousemove.toElement = li[3].querySelector('.e-text-content');
+            mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+            mousemove.screenY = rect[0].y+5;
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            rect = li[4].querySelector('.e-text-content').getClientRects();
+            mousemove.srcElement = mousemove.target = mousemove.toElement = li[4].querySelector('.e-text-content');
+            mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+            mousemove.screenY = rect[0].y+5;
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[4].querySelector('.e-text-content'), li[4].querySelector('.e-text-content'), rect[0].x + 5, rect[0].y + 5);
+            mouseup.type = 'mouseup'; mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            expect(document.querySelector('.e-fe-clone')).toBe(null);
+        });
         it('Quick drag on treeview nodes', () => {
             let treeObj = feObj.navigationpaneModule.treeObj;
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');

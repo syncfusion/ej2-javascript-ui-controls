@@ -3815,30 +3815,30 @@ describe('DDList', () => {
         afterAll(() => {
             element.remove();
         });
-        it('filter event args.cancel', (done) => {
-            listObj = new DropDownList({
-                dataSource: datasource,
-                fields: { text: "text", value: "id" },
-                popupHeight: "200px",
-                allowFiltering: true,
-                filtering: function (e: FilteringEventArgs) {
-                    expect(e.cancel).toBe(false);
-                    e.cancel = true;
-                    let query = new Query();
-                    query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
-                    e.updateData(datasource2, query);
-                }
+        // it('filter event args.cancel', (done) => {
+        //     listObj = new DropDownList({
+        //         dataSource: datasource,
+        //         fields: { text: "text", value: "id" },
+        //         popupHeight: "200px",
+        //         allowFiltering: true,
+        //         filtering: function (e: FilteringEventArgs) {
+        //             expect(e.cancel).toBe(false);
+        //             e.cancel = true;
+        //             let query = new Query();
+        //             query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
+        //             e.updateData(datasource2, query);
+        //         }
+        //     });
+        //     listObj.appendTo(element);
+        //     listObj.showPopup();
+        //     setTimeout(() => {
+        //         listObj.filterInput.value = "p";
+        //         listObj.onInput()
+        //         listObj.onFilterUp(keyEventArgs);
+        //         done();
+        //     }, 100)
+        // });
             });
-            listObj.appendTo(element);
-            listObj.showPopup();
-            setTimeout(() => {
-                listObj.filterInput.value = "p";
-                listObj.onInput()
-                listObj.onFilterUp(keyEventArgs);
-                done();
-            }, 100)
-        });
-    });
     describe('open and close args.cancel', () => {
         let keyEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },

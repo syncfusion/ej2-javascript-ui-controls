@@ -211,7 +211,7 @@ export class LargeIconsView {
                 this.dragObj = new Draggable(this.listElements, {
                     enableTailMode: true,
                     distance: 5,
-                    enableAutoScroll: true,
+                    enableAutoScroll: false,
                     dragTarget: '.' + CLS.LARGE_ICON,
                     helper: this.dragHelper.bind(this),
                     cursorAt: this.parent.dragCursorPosition,

@@ -704,8 +704,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             }
         }
         this.notify(Browser.touchMoveEvent, e);
-        if (this.title && (args.target.id === (this.element.id + '_CircularGaugeTitle') ||
-        (args.target.id.indexOf('_Pointer_') === -1 && document.getElementsByClassName('EJ2-CircularGauge-Tooltip').length > 0))) {
+        if (this.title && ((args.target.id === (this.element.id + '_CircularGaugeTitle') ||
+        args.target.id.indexOf('_gauge_legend_') > -1) && document.getElementsByClassName('EJ2-CircularGauge-Tooltip').length > 0)) {
             titleTooltip(e, e.clientX, e.clientY, this, false);
         }
         return false;

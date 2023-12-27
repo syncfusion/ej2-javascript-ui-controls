@@ -2316,9 +2316,15 @@ export class Editor {
                     }
                 }
                 if ((insertPosition.paragraph.paragraphFormat.textAlignment === 'Center'
-                    || insertPosition.paragraph.paragraphFormat.textAlignment === 'Right') &&
-                    insertPosition.paragraph.paragraphFormat.listFormat.listId === -1) {
-                    insertPosition.paragraph.x = this.owner.viewer.clientActiveArea.x;
+                    || insertPosition.paragraph.paragraphFormat.textAlignment === 'Right'
+                    || (insertPosition.paragraph.paragraphFormat.textAlignment === 'Justify' 
+                    && insertPosition.paragraph.paragraphFormat.bidi)) 
+                    && insertPosition.paragraph.paragraphFormat.listFormat.listId === -1) {
+                    insertPosition.paragraph.x = insertPosition.paragraph.clientX;
+                    insertPosition.paragraph.clientX = undefined;
+                    if (insertPosition.paragraph.hasOwnProperty('absoluteXPosition')) {
+                        delete insertPosition.paragraph['absoluteXPosition'];
+                    }
                 }
                 if (span instanceof TextElementBox && span.text.length > 90) {
                     // Here, the text is split based on the maximum character length of 90.
@@ -5550,6 +5556,7 @@ export class Editor {
         }
         this.pasteImageIndex = undefined;
         this.isInsertField = false;
+        this.isPasteListUpdated = false;
     }
     private pasteContentsInternal(widgets: BodyWidget[], isPaste: boolean, currentFormat?: WParagraphFormat): void {
         this.isPaste = isPaste;
@@ -6075,6 +6082,9 @@ export class Editor {
             layoutWholeDocument = true;
         }
         for (let k: number = 0; k < bodyWidget.length; k++) {
+            if (k !== 0) {
+                this.insertSectionBreak(bodyWidget[k].sectionFormat.breakCode as SectionBreakType);
+            }
             let widgets: BlockWidget[] = bodyWidget[k].childWidgets as BlockWidget[];
             for (let j: number = 0; j < widgets.length; j++) {
                 let widget: BlockWidget = widgets[j];
@@ -17658,31 +17668,29 @@ export class Editor {
         }
     }
     private updateListNumber(currentListLevel: WListLevel, paragraph: ParagraphWidget, isUpdate: boolean): void {
-        if (currentListLevel.listLevelPattern !== 'Bullet') {
-            let element: ListTextElementBox = undefined;
-            if (paragraph.childWidgets.length > 0) {
-                const lineWidget: LineWidget = paragraph.childWidgets[0] as LineWidget;
-                if (lineWidget.children.length > 0) {
-                    element = lineWidget.children[0] as ListTextElementBox;
+        let element: ListTextElementBox = undefined;
+        if (paragraph.childWidgets.length > 0) {
+            const lineWidget: LineWidget = paragraph.childWidgets[0] as LineWidget;
+            if (lineWidget.children.length > 0) {
+                element = lineWidget.children[0] as ListTextElementBox;
+            }
+        }
+        let listWholeWidth: number;
+        if (!isNullOrUndefined(element) && element.nextElement instanceof ListTextElementBox) {
+            listWholeWidth = element.width + element.nextElement.width;
+        }
+        if (!isNullOrUndefined(element) && element instanceof ListTextElementBox) {
+            const text: string = this.documentHelper.layout.getListNumber(paragraph.paragraphFormat.listFormat);
+            if (isUpdate) {
+                const prevWidth: number = element.width;
+                element.text = text;
+                const currentWidth: number = this.documentHelper.textHelper.getTextSize(element, element.characterFormat);
+                if (currentWidth > prevWidth) {
+                    element.width = currentWidth;
                 }
-            }
-            let listWholeWidth: number;
-            if (!isNullOrUndefined(element) && element.nextElement instanceof ListTextElementBox) {
-                listWholeWidth = element.width + element.nextElement.width;
-            }
-            if (!isNullOrUndefined(element) && element instanceof ListTextElementBox) {
-                const text: string = this.documentHelper.layout.getListNumber(paragraph.paragraphFormat.listFormat);
-                if (isUpdate) {
-                    const prevWidth: number = element.width;
-                    element.text = text;
-                    const currentWidth: number = this.documentHelper.textHelper.getTextSize(element, element.characterFormat);
-                    if (currentWidth > prevWidth) {
-                        element.width = currentWidth;
-                    }
-                    this.documentHelper.textHelper.updateTextSize(element, paragraph);
-                    if (!isNullOrUndefined(listWholeWidth) && element.width < listWholeWidth) {
-                        element.nextElement.width = (listWholeWidth - element.width);
-                    }
+                this.documentHelper.textHelper.updateTextSize(element, paragraph);
+                if (!isNullOrUndefined(listWholeWidth) && element.width < listWholeWidth) {
+                    element.nextElement.width = (listWholeWidth - element.width);
                 }
             }
         }

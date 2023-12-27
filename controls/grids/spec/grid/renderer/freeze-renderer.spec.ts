@@ -967,4 +967,37 @@ describe('Freeze render module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-861900 - Removing frozen columns programmatically is not working', () => {
+        let gridObj: Grid;
+        let dBound: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    frozenColumns: 2,
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ]
+                }, done);
+        });
+
+
+        it('check onproperty change in frozenColumns value zero ', () => {
+            dBound = (args?: Object): void => {
+                expect(gridObj.getContent().querySelector('tbody').children[0].querySelectorAll('.e-leftfreeze').length).toBe(0);
+            };
+            gridObj.frozenColumns = 0;
+            gridObj.dataBound = dBound;
+            gridObj.dataBind();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

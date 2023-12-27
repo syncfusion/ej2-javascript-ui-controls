@@ -4332,18 +4332,21 @@ export class DocumentHelper {
     /**
     * @private
     */
-    public getParagraphLeftPosition(paragraphWidet: ParagraphWidget): number {
+    public getParagraphLeftPosition(paragraphWidget: ParagraphWidget): number {
         let hangingIndent: number = 0;
         let startX: number = 0;
-        if (paragraphWidet.paragraphFormat.firstLineIndent < 0) {
-            hangingIndent = HelperMethods.convertPointToPixel(Math.abs(paragraphWidet.paragraphFormat.firstLineIndent));
+
+        if (paragraphWidget.paragraphFormat.firstLineIndent < 0) {
+            hangingIndent = HelperMethods.convertPointToPixel(Math.abs(paragraphWidget.paragraphFormat.firstLineIndent));
             hangingIndent = parseFloat(hangingIndent.toFixed(5));
         }
-        if (paragraphWidet.isEmpty() && paragraphWidet.paragraphFormat.textAlignment !== 'Left' && paragraphWidet.paragraphFormat.textAlignment !== 'Justify') {
-            startX = paragraphWidet.clientX > hangingIndent ? paragraphWidet.clientX - hangingIndent : paragraphWidet.clientX;
+
+        if (paragraphWidget.isEmpty() && ((paragraphWidget.paragraphFormat.textAlignment !== 'Left' && paragraphWidget.paragraphFormat.textAlignment !== 'Justify') 
+            || (paragraphWidget.paragraphFormat.textAlignment === 'Justify' && paragraphWidget.paragraphFormat.bidi))) {
+            startX = paragraphWidget.clientX > hangingIndent ? paragraphWidget.clientX - hangingIndent : paragraphWidget.clientX;
             return startX;
         } else {
-            startX = paragraphWidet.x > hangingIndent ? paragraphWidet.x - hangingIndent : paragraphWidet.x;
+            startX = paragraphWidget.x > hangingIndent ? paragraphWidget.x - hangingIndent : paragraphWidget.x;
             return startX;
         }
     }

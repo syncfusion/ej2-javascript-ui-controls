@@ -43,7 +43,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             }, '#ddtree');
             ddtreeObj.showPopup();
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-            expect(ddtreeObj.inputWrapper.getAttribute("aria-expanded")).toBe('true');
+            expect(ddtreeObj.inputEle.getAttribute("aria-expanded")).toBe('true');
             expect(document.querySelector('.e-popup').querySelector('.e-treeview')).not.toBe(null);
             var li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
             mouseEventArgs.target = li[0].querySelector('.e-list-text');
@@ -52,7 +52,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(false);
             expect(ddtreeObj.element.value).toBe("Australia")
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
-            expect(ddtreeObj.inputWrapper.getAttribute("aria-expanded")).toBe('false');
+            expect(ddtreeObj.inputEle.getAttribute("aria-expanded")).toBe('false');
             ddtreeObj.showPopup();
             expect(document.querySelectorAll('.e-popup').length).toBe(1);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(false);
@@ -60,7 +60,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             expect(li[0].classList.contains('e-active')).toBe(true);
             ddtreeObj.hidePopup();
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
-            expect(ddtreeObj.inputWrapper.getAttribute("aria-expanded")).toBe('false');
+            expect(ddtreeObj.inputEle.getAttribute("aria-expanded")).toBe('false');
         });
         it('for hidePopup', () => {
             ddtreeObj = new DropDownTree({
@@ -70,11 +70,11 @@ describe('DropDown Tree control hierarchical datasource', () => {
             }, '#ddtree');
             ddtreeObj.showPopup();
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-            expect(ddtreeObj.inputWrapper.getAttribute("aria-expanded")).toBe('true');
+            expect(ddtreeObj.inputEle.getAttribute("aria-expanded")).toBe('true');
             expect(document.querySelector('.e-popup').querySelector('.e-treeview')).not.toBe(null);
             ddtreeObj.hidePopup();
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
-            expect(ddtreeObj.inputWrapper.getAttribute("aria-expanded")).toBe('false');
+            expect(ddtreeObj.inputEle.getAttribute("aria-expanded")).toBe('false');
             ddtreeObj.showPopup();
             var li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
             mouseEventArgs.target = li[0].querySelector('.e-list-text');
@@ -83,7 +83,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(false);
             expect(ddtreeObj.element.value).toBe("Australia")
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
-            expect(ddtreeObj.inputWrapper.getAttribute("aria-expanded")).toBe('false');
+            expect(ddtreeObj.inputEle.getAttribute("aria-expanded")).toBe('false');
             ddtreeObj.showPopup();
             expect(document.querySelectorAll('.e-popup').length).toBe(1);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(false);
@@ -91,7 +91,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             expect(li[0].classList.contains('e-active')).toBe(true);
             ddtreeObj.hidePopup();
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
-            expect(ddtreeObj.inputWrapper.getAttribute("aria-expanded")).toBe('false');
+            expect(ddtreeObj.inputEle.getAttribute("aria-expanded")).toBe('false');
         });
         it('for clear', () => {
             ddtreeObj = new DropDownTree({

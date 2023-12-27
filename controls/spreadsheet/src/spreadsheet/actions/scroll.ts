@@ -243,8 +243,11 @@ export class Scroll {
     }
 
     private updateNonVirualScrollWidth(args: { scrollTrack?: HTMLElement }): void {
-        if (!args.scrollTrack) { args.scrollTrack = this.parent.getScrollElement().getElementsByClassName('e-virtualtrack')[0] as HTMLElement; }
-        args.scrollTrack.style.width = Math.abs(this.parent.getContentTable().getBoundingClientRect().width) + 'px';
+        if (!args.scrollTrack) {
+            args.scrollTrack = this.parent.getScrollElement().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
+        }
+        args.scrollTrack.style.width = `${Math.abs(this.parent.getContentTable().getBoundingClientRect().width +
+            (this.parent.scrollSettings.isFinite ? this.parent.sheetModule.getScrollSize() : 0))}px`;
     }
 
     private onHeaderWheel(e: WheelEvent): void {

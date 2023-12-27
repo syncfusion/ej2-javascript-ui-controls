@@ -229,6 +229,11 @@ export class BasicFormulas {
      * @returns {string | number} - Comput sum value
      */
     public ComputeSUM(...args: string[]): string | number {
+        let isSubtotalFormula: boolean = false;
+        if (args.length && args[args.length - 1] === 'isSubtotal') {
+            isSubtotalFormula = true;
+            args.pop();
+        }
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
@@ -248,7 +253,11 @@ export class BasicFormulas {
                 if (argValue.indexOf(':') > -1 && this.parent.isCellReference(argValue)) {
                     const cellCollection: string[] | string = this.parent.getCellCollection(argValue.split(this.parent.tic).join(''));
                     for (let j: number = 0; j < cellCollection.length; j++) {
-                        val = this.parent.getValueFromArg(cellCollection[j as number]);
+                        val = !isSubtotalFormula ? this.parent.getValueFromArg(cellCollection[j as number]) :
+                            this.parent.getValueFromArg(cellCollection[j as number], null, null, true);
+                        if (isSubtotalFormula && val.includes('SUBTOTAL(')) {
+                            continue;
+                        }
                         if (this.parent.getErrorStrings().indexOf(val) > -1) {
                             return val;
                         }
@@ -271,7 +280,11 @@ export class BasicFormulas {
                     if (argArr[i as number].split(this.parent.tic).join('') === this.parent.falseValue) {
                         argArr[i as number] = '0';
                     }
-                    orgValue = this.parent.getValueFromArg(argArr[i as number].split(this.parent.tic).join(''));
+                    orgValue = !isSubtotalFormula ? this.parent.getValueFromArg(argArr[i as number].split(this.parent.tic).join('')) :
+                        this.parent.getValueFromArg(argArr[i as number].split(this.parent.tic).join(''), null, null, true);
+                    if (isSubtotalFormula && orgValue.includes('SUBTOTAL(')) {
+                        continue;
+                    }
                     if (this.parent.getErrorStrings().indexOf(orgValue) > -1) {
                         return orgValue;
                     }
@@ -801,6 +814,11 @@ export class BasicFormulas {
      * @returns {number | string} - Compute the count.
      */
     public ComputeCOUNT(...args: string[]): number | string {
+        let isSubtotalFormula: boolean = false;
+        if (args.length && args[args.length - 1] === 'isSubtotal') {
+            isSubtotalFormula = true;
+            args.pop();
+        }
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
@@ -815,7 +833,11 @@ export class BasicFormulas {
                 if (argVal.indexOf(':') > -1) {
                     cellColl = this.parent.getCellCollection(argVal.split(this.parent.tic).join(''));
                     for (let j: number = 0; j < cellColl.length; j++) {
-                        cellValue = this.parent.getValueFromArg(cellColl[j as number]);
+                        cellValue = !isSubtotalFormula ? this.parent.getValueFromArg(cellColl[j as number]) :
+                            this.parent.getValueFromArg(cellColl[j as number], null, null, true);
+                        if (isSubtotalFormula && cellValue.includes('SUBTOTAL(')) {
+                            continue;
+                        }
                         if (!isNaN(this.parent.parseFloat(cellValue))) {
                             if (argVal.length > 0 && cellValue.trim() !== '') {
                                 result++;
@@ -823,7 +845,11 @@ export class BasicFormulas {
                         }
                     }
                 } else {
-                    cellValue = this.parent.getValueFromArg(argVal);
+                    cellValue = !isSubtotalFormula ? this.parent.getValueFromArg(argVal) :
+                        this.parent.getValueFromArg(argVal, null, null, true);
+                    if (isSubtotalFormula && cellValue.includes('SUBTOTAL(')) {
+                        continue;
+                    }
                     if (!isNaN(this.parent.parseFloat(cellValue))) {
                         if (argVal.length > 0 && cellValue.trim() !== '') {
                             result++;
@@ -1179,6 +1205,11 @@ export class BasicFormulas {
      * @returns {string | number} - Compute the PRODUCT value.
      */
     public ComputePRODUCT(...range: string[]): string | number {
+        let isSubtotalFormula: boolean = false;
+        if (range.length && range[range.length - 1] === 'isSubtotal') {
+            isSubtotalFormula = true;
+            range.pop();
+        }
         if (isNullOrUndefined(range) || (range.length === 1 && range[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
@@ -1194,7 +1225,11 @@ export class BasicFormulas {
                 if (rangevalue.indexOf(':') > -1 && this.parent.isCellReference(rangevalue)) {
                     const cellCollection: string[] | string = this.parent.getCellCollection(rangevalue);
                     for (let j: number = 0; j < cellCollection.length; j++) {
-                        val = this.parent.getValueFromArg(cellCollection[j as number]);
+                        val = !isSubtotalFormula ? this.parent.getValueFromArg(cellCollection[j as number]) :
+                            this.parent.getValueFromArg(cellCollection[j as number], null, null, true);
+                        if (isSubtotalFormula && val.includes('SUBTOTAL(')) {
+                            continue;
+                        }
                         if (!isNumber(val)) {
                             continue;
                         }
@@ -1207,7 +1242,11 @@ export class BasicFormulas {
                         }
                     }
                 } else if (rangevalue.indexOf(':') === -1 && this.parent.isCellReference(rangevalue)) {
-                    orgValue = this.parent.getValueFromArg(argArr[i as number]);
+                    orgValue = !isSubtotalFormula ? this.parent.getValueFromArg(argArr[i as number]) :
+                        this.parent.getValueFromArg(argArr[i as number], null, null, true);
+                    if (isSubtotalFormula && orgValue.includes('SUBTOTAL(')) {
+                        continue;
+                    }
                     if (!isNumber(orgValue)) {
                         continue;
                     }
@@ -2856,6 +2895,11 @@ export class BasicFormulas {
      * @returns {string} - Compute the AVERAGE value.
      */
     public ComputeAVERAGE(...args: string[]): string {
+        let isSubtotalFormula: boolean = false;
+        if (args.length && args[args.length - 1] === 'isSubtotal') {
+            isSubtotalFormula = true;
+            args.pop();
+        }
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.invalid_arguments];
         }
@@ -2867,7 +2911,7 @@ export class BasicFormulas {
                 }
             }
         }
-        return this.parent.calculateAvg(argArr);
+        return this.parent.calculateAvg(argArr, isSubtotalFormula);
     }
 
     /**
@@ -3183,6 +3227,11 @@ export class BasicFormulas {
      * @returns {number | string} - Compute the count.
      */
     public ComputeCOUNTA(...args: string[]): number | string {
+        let isSubtotalFormula: boolean = false;
+        if (args.length && args[args.length - 1] === 'isSubtotal') {
+            isSubtotalFormula = true;
+            args.pop();
+        }
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
@@ -3195,13 +3244,21 @@ export class BasicFormulas {
                 if (argArr[i as number].indexOf(':') > -1) {
                     cellColl = this.parent.getCellCollection(argArr[i as number].split(this.parent.tic).join(''));
                     for (let j: number = 0; j < cellColl.length; j++) {
-                        cellValue = this.parent.getValueFromArg(cellColl[j as number]);
+                        cellValue = !isSubtotalFormula ? this.parent.getValueFromArg(cellColl[j as number]) :
+                            this.parent.getValueFromArg(cellColl[j as number], null, null, true);
+                        if (isSubtotalFormula && cellValue.includes('SUBTOTAL(')) {
+                            continue;
+                        }
                         if (cellValue.length > 0) {
                             result++;
                         }
                     }
                 } else {
-                    cellValue = this.parent.getValueFromArg(argArr[i as number]);
+                    cellValue = !isSubtotalFormula ? this.parent.getValueFromArg(argArr[i as number]) :
+                        this.parent.getValueFromArg(argArr[i as number], null, null, true);
+                    if (isSubtotalFormula && cellValue.includes('SUBTOTAL(')) {
+                        continue;
+                    }
                     if (cellValue.length > 0) {
                         result++;
                     }
@@ -3502,8 +3559,10 @@ export class BasicFormulas {
         const isAsterisk: boolean = condition.includes('*');
         let isAsteriskOnly: boolean = condition === '*' || condition === '<>*';
         let criteriaValue: string = isAsterisk && !isAsteriskOnly ? condition.replace(/\*/g, '').trim() : condition;
+        let isCellReferenceValue: boolean = false;
         if (!isStringVal && this.parent.isCellReference(criteriaValue)) {
             criteriaValue = this.parent.getValueFromArg(criteriaValue);
+            isCellReferenceValue = true;
         }
         if (isAsterisk && !isAsteriskOnly) {
             const asteriskIndex: number = condition.indexOf('*');
@@ -3533,7 +3592,7 @@ export class BasicFormulas {
             op = 'equal';
             condition = condition.substring(1);
         }
-        if ((!isStringVal && this.parent.isCellReference(condition)) || condition.includes(this.parent.arithMarker)) {
+        if ((!isStringVal && this.parent.isCellReference(condition) && !isCellReferenceValue) || condition.includes(this.parent.arithMarker)) {
             condition = this.parent.getValueFromArg(condition);
         }
         if (argArr[0].indexOf(':') > -1 && this.parent.isCellReference(argArr[0])) {
@@ -3850,27 +3909,27 @@ export class BasicFormulas {
         switch (formula) {
         case 1:
         case 101:
-            result = this.ComputeAVERAGE(...cellRef);
+            result = this.ComputeAVERAGE(...cellRef, 'isSubtotal');
             break;
         case 2:
         case 102:
-            result = this.ComputeCOUNT(...cellRef);
+            result = this.ComputeCOUNT(...cellRef, 'isSubtotal');
             break;
         case 3:
         case 103:
-            result = this.ComputeCOUNTA(...cellRef);
+            result = this.ComputeCOUNTA(...cellRef, 'isSubtotal');
             break;
         case 4:
         case 104:
-            result = this.ComputeMAX(...cellRef);
+            result = this.ComputeMAX(...cellRef, 'isSubtotal');
             break;
         case 5:
         case 105:
-            result = this.ComputeMIN(...cellRef);
+            result = this.ComputeMIN(...cellRef, 'isSubtotal');
             break;
         case 6:
         case 106:
-            result = this.ComputePRODUCT(...cellRef);
+            result = this.ComputePRODUCT(...cellRef, 'isSubtotal');
             break;
         case 7:
         case 107:
@@ -3882,7 +3941,7 @@ export class BasicFormulas {
             break;
         case 9:
         case 109:
-            result = this.ComputeSUM(...cellRef);
+            result = this.ComputeSUM(...cellRef, 'isSubtotal');
             break;
         case 10:
         case 110:

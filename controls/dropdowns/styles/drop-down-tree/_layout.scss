@@ -43,6 +43,9 @@
         @if $ddt-skin-name == 'Material3' {
           margin: $ddt-dd-icon-margin;
         }
+        @if $ddt-skin-name == 'FluentUI' {
+          min-height: $ddt-dd-icon-width;
+        }
       }
 
       .e-input-group-icon.e-ddt-icon {
@@ -83,6 +86,9 @@
           }
           @else {
             right: $ddt-dd-icon-width;
+          }
+          @if $ddt-skin-name == 'FluentUI' {
+            bottom: 0;
           }
         }
 

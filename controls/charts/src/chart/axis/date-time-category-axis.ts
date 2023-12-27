@@ -78,7 +78,8 @@ export class DateTimeCategory extends Category {
             skeleton: this.getSkeleton(axis, null, null, this.chart.isBlazor)
         });
         let i: number = (!isRangeNavigator && this.chart.stockChart) ? 1 : 0;
-        for (; i < axis.labels.length; i++) {
+        const interval: number = axis.interval ? axis.interval : 1;
+        for (; i < axis.labels.length; i += interval) {
             labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
             if (this.chart.stockChart || isRangeNavigator) {
                 if (axis.intervalType === 'Auto') {

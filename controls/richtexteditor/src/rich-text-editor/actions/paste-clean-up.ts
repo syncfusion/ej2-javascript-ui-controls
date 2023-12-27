@@ -88,6 +88,7 @@ export class PasteCleanup {
             event: e
         };
         let value: string = null;
+        let isClipboardHTMLDataNull: boolean = false;
         let imageproperties: string | object;
         if (e.args && !isNOU((e.args as ClipboardEvent).clipboardData)) {
             value = (e.args as ClipboardEvent).clipboardData.getData('text/html');
@@ -132,6 +133,7 @@ export class PasteCleanup {
                     const divElement: HTMLElement = this.parent.createElement('div');
                     divElement.innerHTML = this.splitBreakLine(value);
                     value = divElement.innerHTML;
+                    isClipboardHTMLDataNull = true;
                 }
             } else if (value.length > 0) {
                 this.parent.formatter.editorManager.observer.notify(EVENTS.MS_WORD_CLEANUP, {
@@ -152,13 +154,16 @@ export class PasteCleanup {
             tempDivElem.innerHTML = value;
             const isValueNotEmpty: boolean = tempDivElem.textContent !== '' || !isNOU(tempDivElem.querySelector('img')) ||
             !isNOU(tempDivElem.querySelector('table'));
-            this.parent.trigger(events.cleanupResizeElements, {value: value} as CleanupResizeElemArgs, (args: CleanupResizeElemArgs) => {
-                value = args.value;
+            this.parent.notify(events.cleanupResizeElements, {
+                value: value,
+                callBack: (currentValue: string) => {
+                    value = currentValue;
+                }
             });
             if (this.parent.pasteCleanupSettings.prompt) {
                 if (isValueNotEmpty) {
                     (e.args as ClipboardEvent).preventDefault();
-                    this.pasteDialog(value, args);
+                    this.pasteDialog(value, args, isClipboardHTMLDataNull);
                 } else if (Browser.userAgent.indexOf('Firefox') !== -1 && isNOU(file)) {
                     this.fireFoxImageUpload();
                 }
@@ -167,7 +172,7 @@ export class PasteCleanup {
                 this.fireFoxImageUpload();
             } else if (this.parent.pasteCleanupSettings.plainText) {
                 (e.args as ClipboardEvent).preventDefault();
-                this.plainFormatting(value, args);
+                this.plainFormatting(value, args, isClipboardHTMLDataNull);
             } else if (this.parent.pasteCleanupSettings.keepFormat) {
                 (e.args as ClipboardEvent).preventDefault();
                 this.formatting(value, false, args);
@@ -205,12 +210,16 @@ export class PasteCleanup {
     private splitBreakLine(value: string): string {
         const enterSplitText: string[] = value.split('\n');
         let contentInnerElem: string = '';
+        const startNode: string = this.parent.enterKey === 'P' ? '<p>' : (this.parent.enterKey === 'DIV' ? '<div>' : '');
+        const endNode: string = this.parent.enterKey === 'P' ? '</p>' : (this.parent.enterKey === 'DIV' ? '</div>' : '<br>');
         for (let i: number = 0; i < enterSplitText.length; i++) {
             if (enterSplitText[i as number].trim() === '') {
                 contentInnerElem += getDefaultValue(this.parent);
             } else {
                 const contentWithSpace: string = this.makeSpace(enterSplitText[i as number]);
-                contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                contentInnerElem += (i === 0 && this.parent.enterKey !== 'BR' ? '<span>' : startNode) +
+                    (contentWithSpace.trim() === '' ? '<br>' : contentWithSpace.trim()) +
+                    (enterSplitText.length - 1 === i  && this.parent.enterKey === 'BR' ? '' : (i === 0 && this.parent.enterKey !== 'BR' ? '</span>' : endNode));
             }
         }
         return contentInnerElem;
@@ -477,9 +486,9 @@ export class PasteCleanup {
         const range: Range = this.nodeSelectionObj.getRange(currentDocument);
         this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
         if (this.parent.pasteCleanupSettings.prompt) {
-            this.pasteDialog(imageValue, pasteArgs);
+            this.pasteDialog(imageValue, pasteArgs, false);
         } else if (this.parent.pasteCleanupSettings.plainText) {
-            this.plainFormatting(imageValue, pasteArgs);
+            this.plainFormatting(imageValue, pasteArgs, false);
         } else if (this.parent.pasteCleanupSettings.keepFormat) {
             this.formatting(imageValue, false, pasteArgs);
         } else {
@@ -503,16 +512,17 @@ export class PasteCleanup {
         this.plainTextRadioButton.appendTo(plainTextElement);
     }
 
-    private selectFormatting(value: string, args: Object, keepChecked: boolean, cleanChecked: boolean): void {
+    private selectFormatting(
+        value: string, args: Object, keepChecked: boolean, cleanChecked: boolean, isClipboardHTMLDataNull: boolean): void {
         if (keepChecked) {
             this.formatting(value, false, args);
         } else if (cleanChecked) {
             this.formatting(value, true, args);
         } else {
-            this.plainFormatting(value, args);
+            this.plainFormatting(value, args, isClipboardHTMLDataNull);
         }
     }
-    private pasteDialog(value: string, args: Object): void {
+    private pasteDialog(value: string, args: Object, isClipboardHTMLDataNull: boolean): void {
         let isHeight: boolean = false;
         const preRTEHeight: string | number = this.parent.height;
         const dialogModel: DialogModel = {
@@ -528,7 +538,7 @@ export class PasteCleanup {
                             const argument: Dialog = this.dialogObj;
                             this.dialogRenderObj.close(argument);
                             this.dialogObj.destroy();
-                            this.selectFormatting(value, args, keepChecked, cleanChecked);
+                            this.selectFormatting(value, args, keepChecked, cleanChecked, isClipboardHTMLDataNull);
                         }
                     },
                     buttonModel: {
@@ -814,8 +824,8 @@ export class PasteCleanup {
     }
 
     //Plain Formatting
-    private plainFormatting(value: string, args: Object): void {
-        const clipBoardElem: HTMLElement = this.parent.createElement(
+    private plainFormatting(value: string, args: Object, isClipboardHTMLDataNull: boolean): void {
+        let clipBoardElem: HTMLElement = this.parent.createElement(
             'div', { className: 'pasteContent', styles: 'display:inline;' }) as HTMLElement;
         clipBoardElem.innerHTML = value;
         this.detachInlineElements(clipBoardElem);
@@ -850,6 +860,12 @@ export class PasteCleanup {
             this.saveSelection.restore();
             clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
             this.addTempClass(clipBoardElem);
+            this.removingComments(clipBoardElem);
+            if (this.parent.enterKey === 'BR' && !isClipboardHTMLDataNull) {
+                clipBoardElem = this.reframeToBrContent(clipBoardElem);
+            } else if (this.parent.enterKey === 'DIV') {
+                clipBoardElem.innerHTML = clipBoardElem.innerHTML.replace(/<p class="pasteContent_RTE">/g, '<div>').replace(/<\/p>/g, '</div>');
+            }
             this.parent.trigger(
                 events.afterPasteCleanup,
                 { value : clipBoardElem.innerHTML, filesData: null }, (updatedArgs: PasteCleanupArgs) => { value = updatedArgs.value; });
@@ -870,6 +886,40 @@ export class PasteCleanup {
             extend(args, { elements: [] }, true);
             this.parent.formatter.onSuccess(this.parent, args);
         }
+    }
+
+    private removingComments(elm: HTMLElement): void {
+        let innerElement: string = elm.innerHTML;
+        innerElement = innerElement.replace(/<!--[\s\S]*?-->/g, '');
+        elm.innerHTML = innerElement;
+    }
+
+    private reframeToBrContent(clipBoardElem: HTMLElement): HTMLElement {
+        const newClipBoardElem: HTMLElement = this.parent.createElement(
+            'div', { className: 'pasteContent', styles: 'display:inline;' }) as HTMLElement;
+        while (!isNOU(clipBoardElem.firstChild)) {
+            const brElem: HTMLElement = this.parent.createElement('br') as HTMLElement;
+            const currentFirstChild: HTMLElement = clipBoardElem.firstChild as HTMLElement;
+            if (currentFirstChild.nodeName === '#text') {
+                const isNextSibPresent: boolean = !isNOU(currentFirstChild.nextSibling);
+                newClipBoardElem.appendChild(currentFirstChild);
+                if (isNextSibPresent) { newClipBoardElem.appendChild(brElem); }
+            } else {
+                const isCurrentNodeBRElm: boolean = currentFirstChild.nodeName === 'BR';
+                if (isCurrentNodeBRElm) {
+                    newClipBoardElem.appendChild(currentFirstChild);
+                } else {
+                    newClipBoardElem.appendChild(currentFirstChild.childNodes[0]);
+                }
+                if (!isNOU(currentFirstChild) && !isNOU(currentFirstChild.nextSibling)) {
+                    newClipBoardElem.appendChild(brElem);
+                }
+                if (!isCurrentNodeBRElm && !isNOU(currentFirstChild)) {
+                    detach(currentFirstChild);
+                }
+            }
+        }
+        return newClipBoardElem;
     }
 
     private getTextContent(clipBoardElem: HTMLElement): void {
@@ -919,15 +969,17 @@ export class PasteCleanup {
         for (let i: number = 0; i < this.inlineNode.length; i++) {
             const inElem: NodeListOf<Element> = clipBoardElem.querySelectorAll(this.inlineNode[i as number]);
             for (let j: number = 0; j < inElem.length; j++) {
-                let parElem: HTMLElement;
-                for (let k: number = 0; k < inElem[j as number].childNodes.length; k++) {
-                    parElem = inElem[j as number].childNodes[k as number].parentElement;
-                    inElem[j as number].childNodes[k as number].parentElement.parentElement.insertBefore(
-                        inElem[j as number].childNodes[k as number], inElem[j as number].childNodes[k as number].parentElement);
-                    k--;
-                }
-                if (!isNOU(parElem)) {
-                    detach(parElem);
+                if (!(inElem[j as number] === clipBoardElem.firstChild && inElem[j as number].nodeName === 'SPAN')) {
+                    let parElem: HTMLElement;
+                    for (let k: number = 0; k < inElem[j as number].childNodes.length; k++) {
+                        parElem = inElem[j as number].childNodes[k as number].parentElement;
+                        inElem[j as number].childNodes[k as number].parentElement.parentElement.insertBefore(
+                            inElem[j as number].childNodes[k as number], inElem[j as number].childNodes[k as number].parentElement);
+                        k--;
+                    }
+                    if (!isNOU(parElem)) {
+                        detach(parElem);
+                    }
                 }
             }
         }
@@ -936,7 +988,7 @@ export class PasteCleanup {
     private findDetachEmptyElem(element: Element): HTMLElement {
         let removableElement: HTMLElement;
         if (!isNOU(element.parentElement)) {
-            const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g) 
+            const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g)
                 && element.parentElement.textContent.match(/\u00a0/g).length > 0;
             if (!hasNbsp && element.parentElement.textContent.trim() === '' &&
                 element.parentElement.getAttribute('class') !== 'pasteContent') {

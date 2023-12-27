@@ -1013,18 +1013,18 @@ describe('DropDownList', () => {
                 document.body.innerHTML = '';
             }
         });
-        // it('set empty datasource ', (done) => {
-        //     setTimeout(() => {
-        //         listObj.dataSource = [];
-        //         listObj.query = null;
-        //         listObj.dataBind();
-        //         listObj.showPopup();
-        //         setTimeout(() => {
-        //             expect(listObj.list.classList.contains('e-nodata')).toBe(true);
-        //             done();
-        //         }, 1000);
-        //     }, 3000);
-        // });
+        it('set empty datasource ', (done) => {
+            setTimeout(() => {
+                listObj.dataSource = [];
+                listObj.query = null;
+                listObj.dataBind();
+                listObj.showPopup();
+                setTimeout(() => {
+                    expect(listObj.list.classList.contains('e-nodata')).toBe(true);
+                    done();
+                }, 1000);
+            }, 3000);
+        });
     });
     describe('EJ2-39447- Dropdownlist', () => {
         let keyboardEventArgs = {

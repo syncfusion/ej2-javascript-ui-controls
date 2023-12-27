@@ -2153,11 +2153,15 @@ export class Transform {
 
     private straightenImage(degree: number): void {
         const parent: ImageEditor = this.parent;
+        if (parent.toolbar && parent.toolbar.length === 0) {
+            parent.notify('draw', { prop: 'select', onPropertyChange: false,
+                value: { type: 'custom', startX: null, startY: null, width: null, height: null } });
+        }
         if (isBlazor()) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             (parent as any).performCropClick();
         } else {
-            parent.notify('toolbar', { prop: 'performCropTransformClick' });
+            parent.notify('toolbar', { prop: 'performCropTransformClick', value: {shape: null }});
         }
         parent.setStraighten(degree, true);
         if ((isBlazor() && parent.events && parent.events.straightening.hasDelegate === false) || !isBlazor()) {

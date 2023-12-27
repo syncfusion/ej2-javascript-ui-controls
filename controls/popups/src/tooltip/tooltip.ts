@@ -799,11 +799,25 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.tooltipEle.appendChild(tipClose);
         EventHandler.add(tipClose, Browser.touchStartEvent, this.onStickyClose, this);
     }
-    private addDataTooltipId(target: HTMLElement, id: string): void {
-        attributes(target, { 'data-tooltip-id': id });
+    private addDescribedBy(target: HTMLElement, id: string): void {
+        const describedby: string[] = (target.getAttribute('aria-describedby') || '').split(/\s+/);
+        if (describedby.indexOf(id) < 0) { describedby.push(id); }
+        attributes(target, { 'aria-describedby': describedby.join(' ').trim(), 'data-tooltip-id': id });
     }
-    private removeDataTooltipId(target: HTMLElement): void {
+    private removeDescribedBy(target: HTMLElement): void {
+        const id: string = target.getAttribute('data-tooltip-id');
+        const describedby: string[] = (target.getAttribute('aria-describedby') || '').split(/\s+/);
+        const index: number = describedby.indexOf(id);
+        if (index !== -1) {
+            describedby.splice(index, 1);
+        }
         target.removeAttribute('data-tooltip-id');
+        const orgdescribedby: string = describedby.join(' ').trim();
+        if (orgdescribedby) {
+            target.setAttribute('aria-describedby', orgdescribedby);
+        } else {
+            target.removeAttribute('aria-describedby');
+        }
     }
     private tapHoldHandler(evt: TapEventArgs): void {
         clearTimeout(this.autoCloseTimer);
@@ -896,22 +910,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     }, styles: 'width:' +
                         formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
                 });
-                if (Object.keys(this.htmlAttributes).length !== 0) {
-                    for (const attr in this.htmlAttributes) {
-                        if (attr === "class") {
-                            this.tooltipEle.classList.add(this.htmlAttributes[`${attr}`]);
-                        }
-                        else {
-                            this.tooltipEle.setAttribute(attr, this.htmlAttributes[`${attr}`]);
-                        }
-                    }
-                }
                 this.tooltipBeforeRender(target, this);
                 this.tooltipAfterRender(target, e, showAnimation, this);
             } else {
                 if (target) {
                     this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
-                    this.addDataTooltipId(target, this.ctrlId + '_content');
+                    this.addDescribedBy(target, this.ctrlId + '_content');
                     this.renderContent(target);
                     PopupAnimation.stop(this.tooltipEle);
                     this.reposition(target);
@@ -951,7 +955,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             ctrlObj.tooltipEle.appendChild(ctrlObj.createElement('div', { className: CONTENT }));
             this.appendContainer(ctrlObj);
             removeClass([ctrlObj.tooltipEle], HIDE_POPUP);
-            ctrlObj.addDataTooltipId(target, ctrlObj.ctrlId + '_content');
+            ctrlObj.addDescribedBy(target, ctrlObj.ctrlId + '_content');
             ctrlObj.renderContent(target);
             addClass([ctrlObj.tooltipEle], POPUP_OPEN);
             if (ctrlObj.showTipPointer) {
@@ -1183,7 +1187,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             target.setAttribute('title', target.getAttribute('data-content'));
             target.removeAttribute('data-content');
         }
-        this.removeDataTooltipId(target);
+        this.removeDescribedBy(target);
     }
     private clear(): void {
         if (this.tooltipEle) {

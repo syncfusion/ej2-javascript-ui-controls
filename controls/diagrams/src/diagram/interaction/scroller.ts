@@ -634,7 +634,7 @@ export class DiagramScroller {
      *
      * @private
      */
-    public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel, isInteractiveZoomPan?: boolean, isBringIntoView?: boolean,isTrackpadScroll?:boolean): void {
+    public zoom(factor: number, deltaX?: number, deltaY?: number, focusPoint?: PointModel, isInteractiveZoomPan?: boolean, isBringIntoView?: boolean,isTrackpadScroll?:boolean, canZoomOut?: boolean): void {
         if (canZoom(this.diagram) && factor !== 1 || (canPan(this.diagram) && factor === 1)) {
             const matrix: Matrix = identityMatrix();
             scaleMatrix(matrix, this.currentZoom, this.currentZoom);
@@ -646,7 +646,7 @@ export class DiagramScroller {
             focusPoint = transformPointByMatrix(matrix, focusPoint);
             //Bug 853566: Fit to page is not working when zoom value less than minZoom.
             // Removed minZoom calculation to call fitToPage even if currentZoom less than minZoom.
-            if ((this.currentZoom * factor) <= this.diagram.scrollSettings.maxZoom) {
+            if ((this.currentZoom * factor) <= this.diagram.scrollSettings.maxZoom && ( (this.currentZoom * factor) >= this.diagram.scrollSettings.minZoom || canZoomOut)) {
                 this.currentZoom *= factor;
                 const pageBounds: Rect = this.getPageBounds(undefined, undefined, true);
                 pageBounds.x *= this.currentZoom;
@@ -704,6 +704,8 @@ export class DiagramScroller {
         const margin: MarginModel = options.margin || {};
         const canZoomIn: boolean = options.canZoomIn;
         const customBounds: Rect = options.customBounds;
+        // Allows fitToPage when the currentZoom less than minZoom.
+        const canZoomOut: boolean = options.canZoomOut;
         margin.bottom = margin.bottom || 25;
         margin.top = margin.top || 25;
         margin.left = margin.left || 25;
@@ -782,10 +784,10 @@ export class DiagramScroller {
              * EJ2-62912 - fit to page is not working properly when call it multiple times.
              */
 
-            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 }, true);
+            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 }, true,undefined,undefined,canZoomOut);
         } else {
             factor = 1 / this.currentZoom;
-            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 }, true);
+            this.zoom(factor, deltaX, deltaY, { x: 0, y: 0 }, true,undefined,undefined,canZoomOut);
         }
     }
     /**

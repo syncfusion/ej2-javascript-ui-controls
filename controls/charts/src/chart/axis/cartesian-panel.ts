@@ -624,6 +624,11 @@ export class CartesianAxisLayoutPanel {
             appendChildElement(false, chart.scrollElement, axis.zoomingScrollBar.render(true), true);
         } else if (axis.zoomFactor === 1 && axis.zoomPosition === 0 && axis.zoomingScrollBar.svgObject && !axis.scrollbarSettings.enable) {
             axis.zoomingScrollBar.destroy();
+        } else if (axis.zoomingScrollBar.svgObject) {
+            (axis.zoomingScrollBar.svgObject as SVGElement).style.top = (axis.isAxisOpposedPosition && axis.orientation === 'Horizontal' ? -16 : 0)
+                + axis.rect.y + Math.max(0.5, axis.lineStyle.width / 2) + 'px';
+            (axis.zoomingScrollBar.svgObject as SVGElement).style.left = (axis.isAxisOpposedPosition && axis.orientation !== 'Horizontal' ? 16 : 0)
+                + axis.rect.x - (axis.orientation === 'Vertical' ? axis.scrollbarSettings.height : 0) + 'px';
         }
         if (axis.zoomingScrollBar.isScrollUI) {
             axis.zoomingScrollBar.isScrollUI = false;

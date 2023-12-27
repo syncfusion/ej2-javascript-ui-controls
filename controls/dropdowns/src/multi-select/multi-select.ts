@@ -841,7 +841,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if(this.popupObj){
                     this.popupObj.show(eventArgs.animation, (this.zIndex === 1000) ? this.element : null);
                 }
-                attributes(this.inputElement, { 'aria-expanded': 'true' , 'aria-owns': this.inputElement.id + '_options'});
+                attributes(this.inputElement, { 'aria-expanded': 'true' , 'aria-owns': this.element.id + '_popup', 'aria-controls': this.element.id});
                 this.updateAriaActiveDescendant();
                 if (this.isFirstClick) {
                     this.loadTemplate();
@@ -924,7 +924,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private updateListARIA(): void {
         if (!isNullOrUndefined(this.ulElement)) {
-            attributes(this.ulElement, { 'id': this.element.id + '_options', 'role': 'listbox', 'aria-hidden': 'false' });
+            attributes(this.ulElement, { 'id': this.element.id + '_options', 'role': 'listbox', 'aria-hidden': 'false', 'aria-label': 'list' });
         }
         const disableStatus: boolean = !isNullOrUndefined(this.inputElement) && (this.inputElement.disabled) ? true : false;
         if(!this.isPopupOpen() && !isNullOrUndefined(this.inputElement))
@@ -4507,6 +4507,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.setWidth(this.width);
         this.overAllWrapper.appendChild(this.componentWrapper);
         this.popupWrapper = this.createElement('div', { id: this.element.id + '_popup', className: POPUP_WRAPPER }) as HTMLDivElement;
+        this.popupWrapper.setAttribute( 'aria-label', this.element.id );
+        this.popupWrapper.setAttribute( 'role', 'dialog' );
         if (this.mode === 'Delimiter' || this.mode === 'CheckBox') {
             this.delimiterWrapper = this.createElement('span', { className: DELIMITER_WRAPPER, styles: 'display:none' });
             this.componentWrapper.appendChild(this.delimiterWrapper);

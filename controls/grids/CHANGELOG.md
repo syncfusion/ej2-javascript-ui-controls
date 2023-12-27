@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 24.1.43 (2023-12-27)
+
+### Grid
+
+#### Bug fixes
+
+- `F185807` - The programmatic removal of frozen columns is now working properly.
+- `I531641` - The issue where column width was being modified when resizing the grid containing frozen columns has been resolved.
+
 ## 24.1.41 (2023-12-18)
 
 ### Grid

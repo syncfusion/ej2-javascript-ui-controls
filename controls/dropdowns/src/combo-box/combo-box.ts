@@ -438,7 +438,7 @@ export class ComboBox extends DropDownList {
         if (this.isSelectCustom) {
             this.removeSelection();
         }
-        if (!this.preventAutoFill && this.getModuleName() === 'combobox' && this.isTyped) {
+        if (!this.preventAutoFill && this.getModuleName() === 'combobox' && this.isTyped && !this.enableVirtualization) {
             setTimeout(() => {
                 this.inlineSearch();
             });
@@ -448,7 +448,7 @@ export class ComboBox extends DropDownList {
     protected getFocusElement(): Element {
         const dataItem: { [key: string]: string } = this.isSelectCustom ? { text: '' } : this.getItemData();
         const selected: HTMLElement = !isNullOrUndefined(this.list) ? <HTMLElement>this.list.querySelector('.' + dropDownListClasses.selected) : this.list;
-        const isSelected: boolean = dataItem.text === this.inputElement.value && !isNullOrUndefined(selected);
+        const isSelected: boolean = dataItem.text && dataItem.text.toString() === this.inputElement.value && !isNullOrUndefined(selected);
         if (isSelected) {
             return selected;
         }
@@ -457,8 +457,72 @@ export class ComboBox extends DropDownList {
             const inputValue: string = this.inputElement.value;
             const dataSource: { [key: string]: Object }[] = this.sortedData as { [key: string]: Object }[];
             const type: string = this.typeOfData(dataSource).typeof as string;
-            const activeItem: { [key: string]: Element | number } =
+            let activeItem: { [key: string]: Element | number } =
                 Search(inputValue, this.liCollections, this.filterType, true, dataSource, this.fields, type);
+            if (this.enableVirtualization && inputValue !== '' && this.getModuleName() !== 'autocomplete' && this.isTyped && !this.allowFiltering) {
+                var updatingincrementalindex = false;
+                if ((this.viewPortInfo.endIndex >= this.incrementalEndIndex && this.incrementalEndIndex <= this.totalItemCount) || this.incrementalEndIndex == 0) {
+                    updatingincrementalindex = true;
+                    this.incrementalStartIndex = this.incrementalEndIndex;
+                    if (this.incrementalEndIndex == 0) {
+                        this.incrementalEndIndex = 100 > this.totalItemCount ? this.totalItemCount : 100;
+                    }
+                    else {
+                        this.incrementalEndIndex = this.incrementalEndIndex + 100 > this.totalItemCount ? this.totalItemCount : this.incrementalEndIndex + 100;
+                    }
+                    this.updateIncrementalInfo(this.incrementalStartIndex, this.incrementalEndIndex);
+                    updatingincrementalindex = true;
+                }
+                if (this.viewPortInfo.startIndex !== 0 || updatingincrementalindex) {
+                    this.updateIncrementalView(0, this.itemCount);
+                }
+                activeItem = Search(inputValue, this.incrementalLiCollections, this.filterType, true, dataSource, this.fields, type);
+                while (isNullOrUndefined(activeItem) && this.incrementalEndIndex < this.totalItemCount) {
+                    this.incrementalStartIndex = this.incrementalEndIndex;
+                    this.incrementalEndIndex = this.incrementalEndIndex + 100 > this.totalItemCount ? this.totalItemCount : this.incrementalEndIndex + 100;
+                    this.updateIncrementalInfo(this.incrementalStartIndex, this.incrementalEndIndex);
+                    updatingincrementalindex = true;
+                    if (this.viewPortInfo.startIndex !== 0 || updatingincrementalindex) {
+                        this.updateIncrementalView(0, this.itemCount);
+                    }
+                    activeItem = Search(inputValue, this.incrementalLiCollections, this.filterType, true, dataSource, this.fields, type);
+                    if (!isNullOrUndefined(activeItem)) {
+                        break;
+                    }
+                    if (isNullOrUndefined(activeItem) && this.incrementalEndIndex >= this.totalItemCount) {
+                        this.incrementalStartIndex = 0;
+                        this.incrementalEndIndex = 100 > this.totalItemCount ? this.totalItemCount : 100;
+                        break;
+                    }
+                }
+                if (activeItem.index) {
+                    if ((!(this.viewPortInfo.startIndex >= (activeItem.index as number))) || (!((activeItem.index as number) >= this.viewPortInfo.endIndex))) {
+                        var startIndex = (activeItem.index as number) - ((this.itemCount / 2) - 2) > 0 ? (activeItem.index as number) - ((this.itemCount / 2) - 2) : 0;
+                        var endIndex = this.viewPortInfo.startIndex + this.itemCount > this.totalItemCount ? this.totalItemCount : this.viewPortInfo.startIndex + this.itemCount;
+                        if(startIndex != this.viewPortInfo.startIndex) {
+                            this.updateIncrementalView(startIndex, endIndex);
+                        }
+                    }
+                }
+                if (!isNullOrUndefined(activeItem.item)) {
+                    var index_1 = this.getIndexByValue((activeItem.item as Element).getAttribute('data-value')) - this.skeletonCount;
+                    if (index_1 > this.itemCount / 2) {
+                        var startIndex = this.viewPortInfo.startIndex + ((this.itemCount / 2) - 2) < this.totalItemCount ? this.viewPortInfo.startIndex + ((this.itemCount / 2) - 2) : this.totalItemCount;
+                        var endIndex = this.viewPortInfo.startIndex + this.itemCount > this.totalItemCount ? this.totalItemCount : this.viewPortInfo.startIndex + this.itemCount;
+                        this.updateIncrementalView(startIndex, endIndex);
+                    }
+                    activeItem.item = this.getElementByValue((activeItem.item as Element).getAttribute('data-value'));
+                }
+                else {
+                    this.updateIncrementalView(0, this.itemCount);
+                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                     (this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any).style = this.getTransformValues();
+                    this.list.scrollTop = 0;
+                }
+                if(activeItem && activeItem.item){
+                    activeItem.item = this.getElementByValue((activeItem.item as Element).getAttribute('data-value'));
+                }
+            }
             const activeElement: Element = activeItem.item as Element;
             if (!isNullOrUndefined(activeElement)) {
                 const count: number = this.getIndexByValue(activeElement.getAttribute('data-value')) - 1;
@@ -468,6 +532,13 @@ export class ComboBox extends DropDownList {
                     const fixedHead: number = this.fields.groupBy ? this.liCollections[0].offsetHeight : 0;
                     if (!this.enableVirtualization) {
                         this.list.scrollTop = count * height + fixedHead;
+                    } else {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (this.list.getElementsByClassName('e-virtual-ddl-content')[0] as any).style = this.getTransformValues();
+                        if (this.enableVirtualization && !this.fields.groupBy) {
+                            var selectedLiOffsetTop = this.virtualListInfo && this.virtualListInfo.startIndex ? (activeElement as HTMLElement).offsetTop + (this.virtualListInfo.startIndex * (activeElement as HTMLElement).offsetHeight) : (activeElement as HTMLElement).offsetTop;
+                            this.list.scrollTop = selectedLiOffsetTop - (this.list.querySelectorAll('.e-virtual-list').length * (activeElement as HTMLElement).offsetHeight);
+                        }
                     }
                     addClass([activeElement], dropDownListClasses.focus);
                 }

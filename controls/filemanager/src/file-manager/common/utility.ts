@@ -1236,6 +1236,31 @@ export function removeItemClass(parent: IFileManager, value: string): void {
 }
 
 /**
+ * Remove item class handler
+ *
+ * @param {Element} scrollParent - specifies the scrolling target.
+ * @param {IFileManager} parent - specifies the parent.
+ * @param {string} nodeClass - specifies the node class.
+ * @param {number} screenY - specifies the vertical (Y) coordinate of the mouse cursor position relative to the entire screen.
+ * @param {number} clientY - specifies the vertical (Y) coordinate of the mouse cursor position relative to the target element.
+ * @returns {void}
+ * @private
+ */
+export function scrollHandler(scrollParent: Element, parent: IFileManager, nodeClass: string, screenY: number, clientY: number): void {
+    let position: number;
+    let elementData: DOMRect | ClientRect = scrollParent.getBoundingClientRect();
+    const node: HTMLElement = select("." + nodeClass, scrollParent);
+    if((screenY >= (elementData.top + scrollParent.clientHeight - 30)) && !isNullOrUndefined(node)) {
+        position = (parent.targetModule === 'navigationpane' || parent.targetModule === 'detailsview') ? node.offsetHeight/2.5 : node.offsetHeight/4.5;
+        scrollParent.scrollBy(0, position);
+    }
+    if(!isNullOrUndefined(node) && (clientY <= (elementData.top + 30))) {
+        position = (parent.targetModule === 'navigationpane' || parent.targetModule === 'detailsview') ? node.offsetHeight/2.5 : node.offsetHeight/4.5;
+        scrollParent.scrollBy(0, -position);
+    }
+}
+
+/**
  * Dragging handler
  *
  * @param {IFileManager} parent - specifies the parent.
@@ -1255,12 +1280,15 @@ export function draggingHandler(parent: IFileManager, args: DragEventArgs): void
     }
     removeBlur(parent, 'hover');
     let node: Element = null;
+    let scrollParent: Element;
     if (parent.targetModule === 'navigationpane') {
         node = closest(args.target, 'li');
         node.classList.add(CLS.HOVER, CLS.DROP_FOLDER);
         canDrop = true;
         /* istanbul ignore next */
         parent.treeExpandTimer = window.setTimeout(() => { parent.notify(events.dragging, args); }, 800);
+        scrollParent = parent.navigationpaneModule.treeObj.element.parentElement;
+        scrollHandler(scrollParent, parent, 'e-level-2', args.event.screenY, args.event.y);
     } else if (parent.targetModule === 'detailsview') {
         node = closest(args.target, 'tr');
         if (node && node.querySelector('.' + CLS.FOLDER) && !node.classList.contains(CLS.BLUR)) {
@@ -1269,12 +1297,16 @@ export function draggingHandler(parent: IFileManager, args: DragEventArgs): void
             node.classList.add(CLS.DROP_FILE);
         }
         canDrop = true;
+        scrollParent = parent.detailsviewModule.gridObj.element.querySelector('.e-content');
+        scrollHandler(scrollParent, parent, 'e-row', args.event.screenY, args.event.y);
     } else if (parent.targetModule === 'largeiconsview') {
         node = closest(args.target, 'li');
         if (node && node.querySelector('.' + CLS.FOLDER) && !node.classList.contains(CLS.BLUR)) {
             node.classList.add(CLS.HOVER, CLS.DROP_FOLDER);
         }
         canDrop = true;
+        scrollParent = parent.largeiconsviewModule.element.firstElementChild;
+        scrollHandler(scrollParent, parent, 'e-large-icon', args.event.screenY, args.event.y);
         /* istanbul ignore next */
     } else if (parent.targetModule === 'breadcrumbbar') {
         canDrop = true;

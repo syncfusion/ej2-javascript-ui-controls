@@ -2345,12 +2345,15 @@ export class SfdtReader {
     private parseTabStop(keyIndex: number, wTabs: any, tabs: WTabStop[]): void {
         if (wTabs) {
             for (let i: number = 0; i < wTabs.length; i++) {
-                let tabStop: WTabStop = new WTabStop();
-                tabStop.position = wTabs[i][positionProperty[keyIndex]];
-                tabStop.tabLeader = this.getTabLeader(wTabs[i][tabLeaderProperty[keyIndex]]);
-                tabStop.deletePosition = wTabs[i][deletePositionProperty[keyIndex]];
-                tabStop.tabJustification = this.getTabJustification(wTabs[i][tabJustificationProperty[keyIndex]]);
-                tabs.push(tabStop);
+                let tab: any = wTabs[i];
+                if (Object.keys(tab).length > 0) {
+                    let tabStop: WTabStop = new WTabStop();
+                    tabStop.position = tab[positionProperty[keyIndex]];
+                    tabStop.tabLeader = this.getTabLeader(tab[tabLeaderProperty[keyIndex]]);
+                    tabStop.deletePosition = tab[deletePositionProperty[keyIndex]];
+                    tabStop.tabJustification = this.getTabJustification(tab[tabJustificationProperty[keyIndex]]);
+                    tabs.push(tabStop);
+                }
             }
         }
     }

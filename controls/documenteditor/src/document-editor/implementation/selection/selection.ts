@@ -5021,7 +5021,7 @@ export class Selection {
             const topMargin: number = 0;
             const bottomMargin: number = 0;
             const size: SizeInfo = this.getParagraphMarkSize(line.paragraph, topMargin, bottomMargin);
-            if (offset > 0) {
+            if (offset > 0 || (offset === 0 && paragraphWidget.isEmpty() && paragraphWidget.bidi)) {
                 left += size.width;
             }
             return new Point(left, paragraphWidget.y + size.topMargin);
@@ -6834,6 +6834,8 @@ export class Selection {
                     index = inline.length;
                 }
                 index++;
+            } else if (widget.paragraph.isEmpty() && widget.paragraph.bidi) {
+                left += size.width;
             }
             caretPosition = new Point(left, topMargin > 0 ? top + topMargin : top);
         } else {
@@ -7257,7 +7259,7 @@ export class Selection {
         let isRtlText: boolean = false;
         let isParaBidi: boolean = widget.paragraph.bidi;
         if (!isNullOrUndefined(elementBox)) {
-            isRtlText = (elementBox.characterRange & CharacterRangeType.RightToLeft) === CharacterRangeType.RightToLeft ;
+            isRtlText = elementBox.characterRange === CharacterRangeType.RightToLeft;
             isParaBidi = elementBox.line.paragraph.paragraphFormat.bidi;
             left += (elementBox.margin.left + elementBox.padding.left);
             if (elementBox instanceof ShapeBase && !isNullOrUndefined(elementBox.nextElement)) {

@@ -1957,7 +1957,9 @@ export class DateTimePicker extends DatePicker {
                 break;
             case 'enabled':
                 Input.setEnabled(this.enabled, this.inputElement);
-                if (!this.enabled) {
+                if (this.enabled) {
+                    this.inputElement.setAttribute('tabindex', this.tabIndex);
+                } else {
                     this.inputElement.tabIndex = -1;
                 }
                 break;

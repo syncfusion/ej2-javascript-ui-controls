@@ -528,6 +528,7 @@ export interface DateFormatCheckArgs {
     updatedVal?: string;
     isEdit?: boolean;
     intl?: Internationalization;
+    skipCellFormat?: boolean;
 }
 /** @hidden */
 export interface checkCellValid {

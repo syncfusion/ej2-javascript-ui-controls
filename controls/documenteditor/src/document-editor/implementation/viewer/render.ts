@@ -43,6 +43,7 @@ export class Renderer {
     private topPosition: number = 0;
     private height: number = 0;
     private exportPageCanvas: DocumentCanvasElement;
+    private fieldStacks: FieldElementBox[] = [];
     public get pageCanvas(): HTMLCanvasElement | DocumentCanvasElement {
         if (this.isPrinting) {
             if (isNullOrUndefined(this.pageCanvasIn)) {
@@ -622,6 +623,9 @@ export class Renderer {
         }
     }
     private renderParagraphWidget(page: Page, paraWidget: ParagraphWidget): void {
+        if (this.isFieldCode && paraWidget.isFieldCodeBlock) {
+            return;
+        }
         let top: number = paraWidget.y;
         let left: number = paraWidget.x;
         let isClipped: boolean = false;
@@ -1381,8 +1385,8 @@ export class Renderer {
                     }
                 }
             }
-            if(text.length>0) {
-                if (lineWidget.paragraph.bidi) {
+            if (text.length > 0) {
+                if (lineWidget.paragraph.bidi && !lineWidget.paragraph.isEmpty()) {
                     x -= this.documentHelper.textHelper.getWidth(text, currentCharFormat, FontScriptType.English);
                 }
                 this.pageContext.font = characterFont;
@@ -1390,7 +1394,7 @@ export class Renderer {
                 (this.pageContext as any).letterSpacing = currentCharFormat.characterSpacing * this.documentHelper.zoomFactor + 'pt';
                 this.pageContext.save();
                 this.pageContext.scale(scaleFactor, 1);
-                this.pageContext.fillText(text, this.getScaledValue(x, 1)/(scaleFactor), this.getScaledValue(y, 2));
+                this.pageContext.fillText(text, this.getScaledValue(x, 1) / (scaleFactor), this.getScaledValue(y, 2));
                 this.pageContext.restore();
             }
         }  
@@ -1493,11 +1497,15 @@ export class Renderer {
     private toSkipFieldCode(element: ElementBox): void {
         if (element instanceof FieldElementBox) {
             if (element.fieldType === 0) {
-                if ((!isNullOrUndefined(element.fieldEnd) || element.hasFieldEnd)) {
+                if (!this.isFieldCode && (!isNullOrUndefined(element.fieldEnd) || element.hasFieldEnd)) {
+                    this.fieldStacks.push(element);
                     this.isFieldCode = true;
                 }
             } else if (element.fieldType === 2 || element.fieldType === 1) {
-                this.isFieldCode = false;
+                if (this.fieldStacks.length > 0 && element.fieldBegin === this.fieldStacks[this.fieldStacks.length - 1]) {
+                    this.fieldStacks.pop();
+                    this.isFieldCode = false;
+                }
             }
         }
     }

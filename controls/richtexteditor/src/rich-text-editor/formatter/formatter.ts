@@ -65,7 +65,7 @@ export class Formatter {
             if (args.item.command === 'Images' || args.item.command === 'Videos' || args.item.command === 'Table' || args.item.command === 'Files') {
                 currentInsertContentLength = 1;
             }
-            const currentLength: number = self.getText().trim().length;
+            const currentLength: number = self.getText().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\u200B/g, '').length;
             const selectionLength: number = self.getSelection().length;
             const totalLength: number = (currentLength - selectionLength) + currentInsertContentLength;
             if (!(self.maxLength === -1 || totalLength <= self.maxLength)) {

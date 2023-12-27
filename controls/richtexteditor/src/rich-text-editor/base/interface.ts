@@ -1616,5 +1616,6 @@ export interface ToolbarStatusEventArgs {
  */
 export interface CleanupResizeElemArgs {
     name?: string,
-    value: string
+    value: string,
+    callBack (value: string): void
 }

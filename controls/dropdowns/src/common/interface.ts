@@ -54,6 +54,7 @@ export interface IDropdownlist extends Component<HTMLElement> {
     filterInput: HTMLInputElement;
     dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
     listData: { [key: string]: Object }[] | string[] | boolean[] | number[];
+    skeletonCount: number;
     getSkeletonCount(retainSkeleton?: boolean): void;
     getItems(): HTMLElement[];
     getQuery(query: Query): Query;
@@ -68,5 +69,6 @@ export interface IDropdownlist extends Component<HTMLElement> {
         dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
         fields?: FieldSettingsModel, query?: Query, e?: MouseEvent | KeyboardEventArgs | TouchEvent): void
     findListElement(list: HTMLElement, findNode: string, attribute: string, value: string | boolean | number): HTMLElement;
+    scrollStop(e?: Event): void;
 }
 

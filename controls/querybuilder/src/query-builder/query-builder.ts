@@ -603,7 +603,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         bodyElem.appendChild(this.createElement('div', { attrs: { class: 'e-rule-list' } }));
         this.levelColl[this.element.id + '_group0'] = [0];
-        this.rule = { condition: 'and', not: false, rules: [] };
+        this.setProperties({ rule: { condition: 'and', not: false, rules: [] } }, true);
         this.disableRuleCondition(bodyElem.parentElement);
     }
     private getWrapper(): Element {
@@ -3290,7 +3290,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.groupElem.querySelector('.e-qb-toggle').remove();
             }
         }
-        this.rule = this.checkNotGroup(this.rule);
+        this.setProperties({rule: this.checkNotGroup(this.rule)}, true);
         this.initWrapper();
     }
     private notGroupRtl(): void {
@@ -3400,7 +3400,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 if (this.rule.rules.length == 0 && !isNullOrUndefined(this.rule)) {
                     this.reset();
                 }
-                this.rule = newProp.rule;
+                this.setProperties({ rule: newProp.rule }, true);
                 newProp.rule = this.getRuleCollection(this.rule, false);
                 this.setRules(this.rule);
                 break;
@@ -3783,7 +3783,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.groupIdCounter = 1;
         this.ruleIdCounter = 0;
         this.isImportRules = true;
-        this.rule = rule;
+        this.setProperties({ rule:  rule  }, true);
         rule = this.getRuleCollection(this.rule, false);
         this.importRules(this.rule, this.element.querySelector('.e-group-container'), true, this.rule.not, isRoot);
         this.isImportRules = false;
@@ -4665,7 +4665,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     public getRulesFromSql(sqlString: string, sqlLocale?: boolean): RuleModel {
         this.parser = [];
         this.sqlParser(sqlString, sqlLocale);
-        this.rule = { condition: 'and', not: false, rules: [] };
+        this.setProperties({ rule: { condition: 'and', not: false, rules: [] } }, true);
         const rule: RuleModel = this.processParser(this.parser, this.rule, [0], sqlLocale);
         if (this.enableNotCondition) {
             return {condition: rule.condition, not: rule.not, rules: rule.rules};

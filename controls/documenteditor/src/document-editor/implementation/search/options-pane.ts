@@ -632,8 +632,8 @@ export class OptionsPane {
      */
     public onReplaceButtonClick = (): void => {
         let optionsPane: HTMLElement = this.optionsPane;
-        let findText: string = SanitizeHtmlHelper.sanitize(this.searchInput.value);
-        let replaceText: string = SanitizeHtmlHelper.sanitize(this.replaceWith.value);
+        let findText: string = this.searchInput.value;
+        let replaceText: string = this.replaceWith.value;
         let results: TextSearchResults = this.documentHelper.owner.searchModule.textSearchResults;
         if (findText !== '' && !isNullOrUndefined(findText)) {
             if (this.documentHelper.owner.selection != null) {
@@ -698,8 +698,8 @@ export class OptionsPane {
      */
     public replaceAll(): void {
         let optionsPane: HTMLElement = this.optionsPane;
-        let findText: string = SanitizeHtmlHelper.sanitize(this.searchInput.value);
-        let replaceText: string = SanitizeHtmlHelper.sanitize(this.replaceWith.value);
+        let findText: string = this.searchInput.value;
+        let replaceText: string = this.replaceWith.value;
         if (findText !== '' && !isNullOrUndefined(findText)) {
             let pattern: RegExp = this.documentHelper.owner.searchModule.textSearch.stringToRegex(findText, this.findOption);
             let endSelection: TextPosition = this.documentHelper.selection.end;
@@ -729,7 +729,7 @@ export class OptionsPane {
         /* eslint-disable @typescript-eslint/no-explicit-any */
         let inputElement: any = document.getElementById(this.documentHelper.owner.containerId + '_option_search_text_box');
         /* eslint-enable @typescript-eslint/no-explicit-any */
-        let text: string = SanitizeHtmlHelper.sanitize(inputElement.value);
+        let text: string = inputElement.value;
         if (text === '') {
             return;
         }
@@ -1031,7 +1031,7 @@ export class OptionsPane {
                     let index: number = HelperMethods.indexOfAny(selectedText, char);
                     selectedText = index < 0 ? selectedText : selectedText.substring(0, index);
                 }
-                textBox.value = SanitizeHtmlHelper.sanitize(selectedText);
+                textBox.value = selectedText;
                 textBox.select();
                 this.messageDiv.innerHTML = '';
                 if (this.searchIcon.classList.contains('e-de-op-search-close-icon')) {

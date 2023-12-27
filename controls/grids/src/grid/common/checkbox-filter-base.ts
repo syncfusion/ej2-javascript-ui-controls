@@ -1815,7 +1815,8 @@ export class CheckBoxFilterBase {
         }
         for (let p: number = 1; p < len; p++) {
             cols[parseInt(p.toString(), 10)] = CheckBoxFilterBase.updateDateFilter(cols[parseInt(p.toString(), 10)]);
-            if (len > 2 && p > 1 && cols[p as number].predicate === 'or' && cols[p as number - 1].predicate === 'or') {
+            if (len > 2 && p > 1 && ((cols[p as number].predicate === 'or' && cols[p as number - 1].predicate === 'or')
+                || (cols[p as number].predicate === 'and' && cols[p as number - 1].predicate === 'and'))) {
                 if (cols[p as number].type === 'date' || cols[p as number].type === 'datetime' || cols[p as number].type === 'dateonly') {
                     predicate.predicates.push(
                         getDatePredicate(cols[parseInt(p.toString(), 10)], cols[p as number].type, isExecuteLocal));

@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-popups",
-	"version": "23.1.44",
+	"version": "24.1.41",
 	"description": "A package of Essential JS 2 popup components such as Dialog and Tooltip that is used to display information or messages in separate pop-ups.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -16,6 +16,7 @@
 		"@types/jasmine": "2.8.9",
 		"@types/jasmine-ajax": "^3.1.27",
 		"@types/requirejs": "^2.1.26",
+		"@syncfusion/ej2-inputs": "*",
 		"es6-promise": "^3.2.1",
 		"gulp": "^3.9.1",
 		"gulp-sass": "^3.1.0",

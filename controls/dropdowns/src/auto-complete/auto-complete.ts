@@ -259,7 +259,7 @@ export class AutoComplete extends ComboBox {
             const dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object }[]).typeof;
             if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
                 filterQuery.where('', filterType, queryString, this.ignoreCase, this.ignoreAccent);
-            } else {
+            } else if ((!this.enableVirtualization) || (this.enableVirtualization && (!(this.dataSource instanceof DataManager) || (this.dataSource instanceof DataManager && this.virtualGroupDataSource)))) {
                 const mapping: string = !isNullOrUndefined(this.fields.value) ? this.fields.value : '';
                 filterQuery.where(mapping, filterType, queryString, this.ignoreCase, this.ignoreAccent);
             }
@@ -275,8 +275,7 @@ export class AutoComplete extends ComboBox {
             }
             filterQuery.take(this.suggestionCount);
         }
-        if (this.enableVirtualization)
-        {
+        if (this.enableVirtualization && (!(this.dataSource instanceof DataManager) || (this.dataSource instanceof DataManager && this.virtualGroupDataSource))) {
             var takeValue = this.getTakeValue();
             filterQuery.skip(this.virtualItemStartIndex);
             filterQuery.take(takeValue);
@@ -364,7 +363,7 @@ export class AutoComplete extends ComboBox {
                     document.getElementsByClassName('e-popup')[0].querySelector('.e-dropdownbase').appendChild(virualElement);
                 }
             }
-            if (this.enableVirtualization) {
+            if ((this.getModuleName() === 'autocomplete' && !(this.dataSource instanceof DataManager)) ||  (this.getModuleName() === 'autocomplete' && (this.dataSource instanceof DataManager) && this.totalItemCount !=0 )) {
                 this.getFilteringSkeletonCount();
             }
         } else {
@@ -386,7 +385,12 @@ export class AutoComplete extends ComboBox {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected onActionComplete(ulElement: HTMLElement, list: { [key: string]: Object }[], e?: Object, isUpdated?: boolean): void {
-        this.fixedHeaderElement = null;
+        if(!this.enableVirtualization){
+            this.fixedHeaderElement = null;
+        }
+        if ((this.getModuleName() === 'autocomplete' && !(this.dataSource instanceof DataManager)) || (this.getModuleName() === 'autocomplete' && (this.dataSource instanceof DataManager) && this.totalItemCount != 0)) {
+            this.getFilteringSkeletonCount();
+        }
         super.onActionComplete(ulElement, list, e);
         const item: Element = this.list.querySelector('.' + dropDownListClasses.li);
         if (!isNullOrUndefined(item)) {
@@ -473,7 +477,7 @@ export class AutoComplete extends ComboBox {
     }
 
     protected isEditTextBox(): boolean {
-        return true && this.inputElement.value.trim() !== '';
+        return false;
     }
 
     protected isPopupButton(): boolean {

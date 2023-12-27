@@ -130,9 +130,9 @@ describe('DropDownTree control', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddtreeObj.showPopup();
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddtreeObj.enabled = true;
             ddtreeObj.dataBind();
             expect(ddtreeObj.element.parentElement.classList.contains('e-disabled')).toBe(false);
@@ -199,16 +199,16 @@ describe('DropDownTree control', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddtreeObj.showPopup();
             ddtreeObj.dataBind();
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddtreeObj.readonly = false;
             ddtreeObj.showPopup();
             ddtreeObj.dataBind();
             expect(document.querySelectorAll('.e-popup').length).toBe(1);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("true");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("true");
         });
 
         /**

@@ -1412,6 +1412,36 @@ describe('FileManager control Details view', () => {
             expect(drag > 1).toBe(true);
             expect((<HTMLElement>document.querySelector('.e-fe-errorcontent')).innerText).toBe("The destination folder is the subfolder of the source folder.");
         });
+        it('auto scroll in drag and drop', (done) => { 
+            feObj.height = '250px';
+            setTimeout(function () {
+                let gridObj: any = feObj.detailsviewModule.gridObj;
+                let li: Element[] = gridObj.getRows();
+                let rect: any = li[1].querySelector('.e-fe-grid-name').getClientRects();
+                expect(document.querySelector('.e-fe-clone')).toBe(null);
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', li[1].querySelector('.e-fe-grid-name'), li[1].querySelector('.e-fe-grid-name'), rect[0].x + 4, rect[0].y + 4);
+                EventHandler.trigger(gridObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', li[1].querySelector('.e-fe-grid-name'), li[1].querySelector('.e-fe-grid-name'), rect[0].x + 10, rect[0].y + 5);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                expect(document.querySelector('.e-fe-clone') === null).toBe(false);
+                expect(li[1].classList.contains('e-blur')).toBe(true);
+                rect = li[3].querySelector('.e-fe-grid-name').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[3].querySelector('.e-fe-grid-name');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                mousemove.screenY = rect[0].y+5;
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                rect = li[4].querySelector('.e-fe-grid-name').getClientRects();
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[4].querySelector('.e-fe-grid-name');
+                mousemove = setMouseCordinates(mousemove, rect[0].x + 5, rect[0].y + 5);
+                mousemove.screenY = rect[0].y+5
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', li[4].querySelector('.e-fe-grid-name'), li[4].querySelector('.e-fe-grid-name'), rect[0].x + 5, rect[0].y + 5);
+                mouseup.type = 'mouseup'; mouseup.currentTarget = document;
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+                expect(document.querySelector('.e-fe-clone')).toBe(null);
+                done();
+            }, 500);
+        });
         it('drag and drop different folder tree', (done) => {
             let treeObj = feObj.navigationpaneModule.treeObj;
             expect(treeObj.element.querySelector('[title="Documents"]').classList.contains('e-level-2')).toBe(true);

@@ -1527,7 +1527,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (tool.command === 'InsertText') {
                 currentInsertContentLength = value.length;
             }
-            const currentLength: number = this.getText().trim().length;
+            const currentLength: number = this.getText().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\u200B/g, '').length;
             const selectionLength: number = this.getSelection().length;
             const totalLength: number = (currentLength - selectionLength) + currentInsertContentLength;
             if (!(this.maxLength === -1 || totalLength <= this.maxLength)) {
@@ -2063,6 +2063,55 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (target && target.nodeName === 'A' || target.nodeName === 'IMG' || (target.nodeName === 'TD' || target.nodeName === 'TH' ||
                 target.nodeName === 'TABLE' || (closestTable && this.contentModule.getEditPanel().contains(closestTable)))) {
                 return;
+            }
+        }
+        if (e.detail === 3) {
+            const range: Range = this.getRange();
+            const selection: Selection = this.formatter.editorManager.domNode.getSelection();
+            // To handle the triple click node selection improper range due to browser behavior.
+            if (selection.rangeCount > 0 && !isNOU(range.startContainer.parentElement) && (!isNOU(range.startContainer.parentElement.nextSibling) &&
+                (range.startContainer.parentElement.nextSibling.nodeType !== 3 ||
+                /\s+$/.test(range.startContainer.parentElement.nextSibling.textContent)) || range.startOffset === range.endOffset)
+                || range.startContainer.parentElement.tagName.toLocaleLowerCase() === 'li') {
+                const newRange = new Range();
+                let start: HTMLElement= range.startContainer as HTMLElement;
+                let end: HTMLElement = range.endContainer as HTMLElement;
+                let isInvalid: boolean = false;
+                const isInsideList: boolean = range.commonAncestorContainer.nodeName === 'OL' || range.commonAncestorContainer.nodeName === 'UL' 
+                    || range.commonAncestorContainer.nodeName === 'LI';
+                if (!isInsideList && end.nodeType === 1 && end.nodeName === 'LI') {
+                    end = closest(end, 'ol, ul').previousElementSibling.lastElementChild as HTMLElement;
+                } else if (isInsideList && end.nodeType === 1 && range.endOffset === 0) {
+                    if (end.previousElementSibling && end.previousElementSibling.lastElementChild) {
+                        end = end.previousElementSibling.lastElementChild as HTMLElement;
+                    } else {
+                        end = closest(end.parentElement, 'li') as HTMLElement;
+                        if (end && end.nodeName === 'LI') {
+                            end = end.previousElementSibling as HTMLElement;
+                        }
+                    }
+                } else {
+                    if (!closest(end, 'li') && end.previousElementSibling && end.previousElementSibling.lastChild && 
+                        end.previousElementSibling.textContent.trim().length > 0) {
+                        end = end.previousElementSibling.lastChild as HTMLElement;
+                    } else if (closest(end, 'li') && end.previousElementSibling && end.previousElementSibling.lastChild) {
+                        end = closest(end, 'li').parentElement.previousElementSibling.lastChild as HTMLElement;
+                    }
+                }
+                if (!end || end === this.inputElement) {
+                    end = start;
+                    isInvalid = true;
+                }
+                while (end.nodeName !== '#text'  && !isInvalid) {
+                    if (end.lastElementChild) {
+                        end = end.lastElementChild as HTMLElement;
+                    } else {
+                        end = end.lastChild as HTMLElement;
+                    }
+                }
+                newRange.setStart(start, 0);
+                newRange.setEnd(end, end.textContent.length);
+                this.formatter.editorManager.nodeSelection.setRange(this.contentModule.getDocument(), newRange);
             }
         }
         this.notifyMouseUp(e);
@@ -3313,15 +3362,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.idleInterval = setTimeout(this.updateValueOnIdle.bind(this), 0);
     }
 
-    private cleanupResizeElements(args: CleanupResizeElemArgs): string {
+    private cleanupResizeElements(args: CleanupResizeElemArgs): void {
         const value = this.removeResizeElement(args.value);
-        return value;
+        args.callBack(value);
     }
 
     private removeResizeElement(value: string): string {
         let valueElementWrapper: HTMLElement = document.createElement("div");
         valueElementWrapper.innerHTML = value;
-        let item = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize');
+        let item: NodeListOf<Element> = valueElementWrapper.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box, .e-table-rhelper, .e-img-resize');
         if (item.length > 0) {
             for (let i: number = 0; i < item.length; i++) {
                 detach(item[i as number]);

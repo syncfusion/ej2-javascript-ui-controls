@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.43 (2023-12-27)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I531361` - The issue with "Zoom toolbar button not shown in ImageEditor while using ZoomSettings property in MVC platform" has been resolved.
+
 ## 24.1.41 (2023-12-18)
 
 ### ImageEditor

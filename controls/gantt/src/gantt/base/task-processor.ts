@@ -1235,7 +1235,7 @@ export class TaskProcessor extends DateProcessor {
             }
             else {
                 if (isValid) {
-                    return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+                    return ((this.getTimeDifference(sDate, eDate, true) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
                 }
                 else {
                     return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * hour)) * this.parent.perDayWidth);

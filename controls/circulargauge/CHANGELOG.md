@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 24.1.43 (2023-12-27)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#I532350` - When there are more than ten ranges in the Circular Gauge, the range tooltip content for those ranges is now appropriately displayed.
+
 ## 24.1.41 (2023-12-18)
 
 ### CircularGauge

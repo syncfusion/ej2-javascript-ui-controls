@@ -2,7 +2,7 @@ import { Workbook, SheetModel, CellModel, getCell, setCell, getData, getSheet, i
 import { DataManager, Query, ReturnOption, DataUtil, Deferred } from '@syncfusion/ej2-data';
 import { getCellIndexes, getColumnHeaderText, getRangeAddress, workbookLocale, isNumber, getUpdatedFormula, getDataRange } from '../common/index';
 import { SortDescriptor, SortOptions, BeforeSortEventArgs, SortEventArgs, getSwapRange, CellStyleModel } from '../common/index';
-import { parseIntValue, SortCollectionModel } from '../common/index';
+import { parseIntValue, SortCollectionModel, getColIndex } from '../common/index';
 import { initiateSort, updateSortedDataOnCell } from '../common/event';
 import { extend, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 
@@ -95,35 +95,39 @@ export class WorkbookSort {
         }
         range[0] = containsHeader ? range[0] + 1 : range[0];
         const cell: number[] = getCellIndexes(sheet.activeCell);
-        const header: string = getColumnHeaderText(cell[1] + 1);
+        let header: string = getColumnHeaderText(cell[1] + 1);
         delete sortOptions.containsHeader;
         let sortDescriptors: SortDescriptor | SortDescriptor[] = sortOptions.sortDescriptors;
-        const address: string = getRangeAddress(range);
-        getData(this.parent, `${sheet.name}!${address}`, true, null, null, null, null, null, undefined, null, range[1]).then((jsonData: { [key: string]: CellModel }[]) => {
-            const dataManager: DataManager = new DataManager(jsonData);
-            const query: Query = new Query();
-            if (Array.isArray(sortDescriptors)) { //multi-column sorting.
-                if (!sortDescriptors || sortDescriptors.length === 0) {
-                    sortDescriptors = [{ field: header }];
-                }
-                for (let length: number = sortDescriptors.length, i: number = length - 1; i > -1; i--) {
-                    if (!sortDescriptors[length - 1].field) {
-                        sortDescriptors[length - 1].field = header;
-                    }
-                    if (!sortDescriptors[i as number].field) { continue; }
-                    const comparerFn: Function = sortDescriptors[i as number].sortComparer
-                        || this.sortComparer.bind(this, sortDescriptors[i as number], sortOptions.caseSensitive);
-                    query.sortBy(sortDescriptors[i as number].field, comparerFn);
-                }
-            } else { //single column sorting.
-                if (!sortDescriptors) {
-                    sortDescriptors = { field: header };
-                }
-                if (!sortDescriptors.field) { sortDescriptors.field = header; }
-                const comparerFn: Function = sortDescriptors.sortComparer
-                    || this.sortComparer.bind(this, sortDescriptors, sortOptions.caseSensitive);
-                query.sortBy(sortDescriptors.field, comparerFn);
+        const query: Query = new Query();
+        if (Array.isArray(sortDescriptors)) { //multi-column sorting.
+            if (!sortDescriptors || sortDescriptors.length === 0) {
+                sortDescriptors = [{ field: header }];
             }
+            for (let length: number = sortDescriptors.length, i: number = length - 1; i > -1; i--) {
+                if (!sortDescriptors[length - 1].field) {
+                    sortDescriptors[length - 1].field = header;
+                }
+                if (!sortDescriptors[i as number].field) { continue; }
+                const comparerFn: Function = sortDescriptors[i as number].sortComparer
+                    || this.sortComparer.bind(this, sortDescriptors[i as number], sortOptions.caseSensitive);
+                query.sortBy(sortDescriptors[i as number].field, comparerFn);
+                header = sortDescriptors[i as number].field;
+            }
+        } else { //single column sorting.
+            if (!sortDescriptors) {
+                sortDescriptors = { field: header };
+            }
+            if (!sortDescriptors.field) { sortDescriptors.field = header; }
+            const comparerFn: Function = sortDescriptors.sortComparer
+                || this.sortComparer.bind(this, sortDescriptors, sortOptions.caseSensitive);
+            query.sortBy(sortDescriptors.field, comparerFn);
+            header = sortDescriptors.field;
+        }
+        const address: string = getRangeAddress(range);
+        getData(
+            this.parent, `${sheet.name}!${address}`, true, null, null, null, null, null, undefined, null,
+            getColIndex(header)).then((jsonData: { [key: string]: CellModel }[]) => {
+            const dataManager: DataManager = new DataManager(jsonData);
             dataManager.executeQuery(query).then((e: ReturnOption) => {
                 this.parent.notify('setActionData', { args: { action: 'beforeSort', eventArgs: { range: address, cellDetails: jsonData, sortedCellDetails: e.result } } });
                 this.updateSortedDataOnCell({ result: e.result, range: range, sheet: sheet, jsonData: jsonData });

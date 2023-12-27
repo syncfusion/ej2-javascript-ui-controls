@@ -5393,6 +5393,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 column.width = !this.firstColWidth ? column.width : this.firstColWidth;
             }
         }
+        if (columns.length > 1 && !(columns.length > 0 && columns[columns.length - 1].autoFit)) {
+            let lastColumn: ColumnModel = columns[columns.length - 1];
+            lastColumn.minWidth = lastColumn.width;
+            lastColumn.width = 'auto';
+            if (lastColumn.columns && lastColumn.columns.length > 0) {
+                this.renderModule.configLastColumnWidth(lastColumn.columns[lastColumn.columns.length - 1] as ColumnModel);
+            }
+        }
     }
 
     /** @hidden */
@@ -5491,7 +5499,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 const colLength: number = (this.dataType === 'olap' && this.olapEngineModule.pivotValues.length > 0) ?
                     this.olapEngineModule.pivotValues[0].length : (this.dataSourceSettings.values.length > 0 &&
                         this.engineModule.pivotValues.length > 0 ? this.engineModule.pivotValues[0].length : 2);
-                const colWidth: number = this.renderModule.resizeColWidth(colLength);
+                const colWidth: number = this.renderModule.calculateColWidth(colLength);
                 this.grid.width = this.renderModule.calculateGridWidth();
                 this.renderModule.calculateGridHeight(true);
                 if (this.gridSettings.allowAutoResizing) {
@@ -5505,6 +5513,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.setGridColumns(this.grid.columns as ColumnModel[]);
                 }
                 this.grid.refreshColumns();
+                const e: HTMLElement = this.element.querySelector('.' + cls.GRID_CLASS) as HTMLElement;
+                e.querySelector('colGroup').innerHTML = this.grid.getHeaderContent().querySelector('colgroup').innerHTML;
                 if (this.showGroupingBar && this.groupingBarModule && this.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
                     this.groupingBarModule.setGridRowWidth();
                 }

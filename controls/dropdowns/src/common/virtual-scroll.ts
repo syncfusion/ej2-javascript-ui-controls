@@ -2,7 +2,7 @@ import { EventHandler, Browser, ScrollEventArgs, select, isNullOrUndefined } fro
 import { debounce, Touch } from '@syncfusion/ej2-base';
 import { IDropdownlist } from './interface'; 
 import { DropDownList } from '../drop-down-list/'; 
-import { Query } from '@syncfusion/ej2-data';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 export type ScrollDirection = 'up' | 'down';
 type ScrollArg = { direction: string, sentinel: SentinelType, offset: Offsets, focusElement: HTMLElement };
 export type SentinelType = {
@@ -119,11 +119,26 @@ export class VirtualScroll {
                 query = this.getPageQuery(query, virtualItemStartIndex, virtualItemEndIndex);
             }
         }
+        const tempCustomFilter: boolean = this.parent.isCustomFilter;
+        if(this.component === 'combobox'){
+            let totalData: number = 0;
+            if(this.parent.dataSource instanceof DataManager){
+                totalData = this.parent.dataSource.dataSource.json.length;
+            }
+            else if(this.parent.dataSource && (this.parent.dataSource as any).length > 0){
+                totalData = (this.parent.dataSource as any).length;
+            }
+            if(totalData > 0){
+                this.parent.isCustomFilter = (totalData == this.parent.totalItemCount && this.parent.queryString != this.parent.typedString) ? true : this.parent.isCustomFilter;
+            }
+        }
         this.parent.resetList(dataSource, this.parent.fields, query);
+        this.parent.isCustomFilter = tempCustomFilter;
     }
-    
+
     private removeSkipAndTakeEvents (query: Query) : Query {
-        query.queries = query.queries.filter(function (event) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        query.queries = query.queries.filter(function (event:any) {
             return event.fn !== 'onSkip' && event.fn !== 'onTake';
         });
         return query;
@@ -151,6 +166,9 @@ export class VirtualScroll {
         const virtualContentElement = this.parent.list.getElementsByClassName('e-virtual-ddl-content')[0] as any;
         if (virtualContentElement) {
             (virtualContentElement).style = this.parent.getTransformValues();
+        }
+        if(this.parent.fields.groupBy){
+            this.parent.scrollStop();
         }
     }
 
@@ -198,6 +216,9 @@ export class VirtualScroll {
             }
             else {
                 this.parent.getSkeletonCount(true);
+                if(this.component === 'combobox'){
+                    this.parent.skeletonCount = this.parent.totalItemCount != 0 && this.parent.totalItemCount < (this.parent.itemCount * 2) ? 0 : this.parent.skeletonCount;
+                }
             }
         }
         await this.dataProcessAsync();

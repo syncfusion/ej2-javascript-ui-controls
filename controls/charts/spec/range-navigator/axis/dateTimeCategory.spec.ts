@@ -151,7 +151,7 @@ describe('Range navigator', () => {
         it('checked with seconds as label type', (done: Function) => {
             range.loaded = (args: Object): void => {
                 axisLabel = document.getElementById('container_AxisLabels');
-                expect(axisLabel.childNodes[0].lastChild.textContent).toBe('10:12:40 AM');
+                expect(axisLabel.childNodes[0].lastChild.textContent).toBe('10:12:10 AM');
                 done();
             };
             range.series[0].dataSource = [{ x: new Date(2018, 0, 1, 10, 12, 10), y: 23 }, { x: new Date(2018, 0, 1, 10, 12, 20), y: 34 },

@@ -2,39 +2,6 @@
 
 ## [Unreleased]
 
-## 23.1.44 (2023-11-07)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I506296` - Resolved issue where the dialog would disappear or abruptly shift beyond the viewport when dragging and dropping.
-
-## 23.1.43 (2023-10-31)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I490793` - Provided support to open or close the `Tooltip` for the default focusable element through keyboard interaction.
-
-## 23.1.38 (2023-09-26)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I498062` - The console errors with the Tooltip component while dragging a diagram node over another node frequently has been resolved.
-
-## 23.1.36 (2023-09-15)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I498062` - The issue with the disabled arrow tip pointer has been resolved.
-- `#I494771` - Provided support to dynamically update the isSticky property value of the Tooltip component.
-
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

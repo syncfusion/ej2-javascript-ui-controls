@@ -120,7 +120,7 @@ export class NavigationPane {
                     },
                     dragStop: dragStopHandler.bind(this, this.parent),
                     enableTailMode: true,
-                    enableAutoScroll: true,
+                    enableAutoScroll: false,
                     helper: this.dragHelper.bind(this)
                 });
             } else if (!this.parent.allowDragAndDrop && this.dragObj) {
@@ -282,7 +282,7 @@ export class NavigationPane {
         this.parent.itemData = nodeData;
         const previousPath: string = this.parent.path;
         const sNode: Element = select('[data-uid="' + this.treeObj.selectedNodes[0] + '"]', this.treeObj.element);
-        if (!this.isRightClick && this.isSameNodeClicked && sNode.querySelector('.e-list-text').innerHTML !== this.parent.pathNames[this.parent.pathNames.length-1]) {
+        if (!this.isRightClick && this.isSameNodeClicked ) {
             updatePath(args.node, this.parent.itemData[0], this.parent);
         }
         else { 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.43 (2023-12-27)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I518537` - Now, the paste format prompt dialog appears properly when pasting the content into the Rich Text Editor.
+
 ## 24.1.41 (2023-12-18)
 
 ### RichTextEditor
@@ -21,6 +29,8 @@
 - `#I528544` - Now, the image will be deleted properly, along with the caption, when the delete key is pressed.
 
 - `#I519493` - Now, font styles are applied properly to the numbered and bullet format list items in RichTextEditor.
+
+- `#I518537` - Now, font family styles are properly applied to the list content when copied and pasted from MS Word.
 
 #### Breaking Changes
 

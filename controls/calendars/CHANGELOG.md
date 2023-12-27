@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.43 (2023-12-27)
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#I532039` -  Fixed the issue where the focus was not being added when using the tab key to navigate through the dynamically enabled datetimepicker.
+
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

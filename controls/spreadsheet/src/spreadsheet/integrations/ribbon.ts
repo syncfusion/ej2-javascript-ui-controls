@@ -1290,7 +1290,7 @@ export class Ribbon {
                 }
             },
             beforeClose: (args: BeforeOpenCloseMenuEventArgs): void => {
-                if (args.parentItem.id === `${id}_border_bordercolor`) {
+                if (args.event && args.parentItem.id === `${id}_border_bordercolor`) {
                     if (!closest(args.event.target as Element, '.e-border-colorpicker') ||
                         closest(args.event.target as Element, '.e-apply') || closest(args.event.target as Element, '.e-cancel')) {
                         this.colorPicker = <ColorPicker>getComponent(this.cPickerEle, 'colorpicker');

@@ -7372,7 +7372,7 @@ describe('Spreadsheet formula module ->', () => {
             helper.edit('L6', '=LOOKUP(OR(20,"Cas"),I2:I5,H2:H5)');
             expect(helper.invoke('getCell', [5, 11]).textContent).toBe('50');
             helper.edit('L7', '=ROUNDDOWN(LOOKUP(I9,I8:I10,I13:I15),-1)');
-            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('30.00');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('30');
             helper.edit('L8', '=LOOKUP(SUM(2,7)+COUNT(G10:G8),D2:D11,E2:E11)');
             expect(helper.invoke('getCell', [7, 11]).textContent).toBe('20');
             helper.edit('L9', '=LOOKUP(MAX(G6,G5),G2:G7,E2:E7)');
@@ -15960,7 +15960,44 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [2, 8]).textContent).toBe('1');
             done();
         });
-    })
+    });
+
+    describe('EJ2-861114 -> Alphanumeric value in cell references are not properly calculated ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    rows: [
+                        { cells: [{ value: 'FY2022' }] }, { cells: [{ value: 'FY2022' }] },
+                        { cells: [{ value: 'FY2023' }] }, { cells: [{ value: 'FY2023' }] },
+                        { cells: [{ value: 'FY2022' }] }, { cells: [{ value: 'FY2022' }] },
+                        { cells: [{ value: '1' }] }, { cells: [{ value: '2' }] },
+                        { cells: [{ value: '3' }] }, { cells: [{ value: '4' }] },
+                        { cells: [{ value: '5' }] }, { cells: [{ value: '6' }] }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('SUMIF,AVERAGEIF and COUNTIF Formula with Alphanumberic value in cell references as arguments ->', (done: Function) => {
+            helper.edit('B1', '=SUMIF(A1:A6,A1,A7:A12)');
+            expect(helper.invoke('getCell', [0, 1]).textContent).toBe('14');
+            helper.edit('B2', '=AVERAGEIF(A1:A6,A1,A7:A12)');
+            expect(helper.invoke('getCell', [1, 1]).textContent).toBe('3.5');
+            helper.edit('B3', '=COUNTIF(A1:A6,A3)');
+            expect(helper.invoke('getCell', [2, 1]).textContent).toBe('2');
+            done();
+        });
+        it('SUMIFS,AVERAGEIFS and COUNTIFS Formula with Alphanumberic value in cell references as arguments ->', (done: Function) => {
+            helper.edit('B4', '=SUMIFS(A7:A12,A1:A6,A1)');
+            expect(helper.invoke('getCell', [3, 1]).textContent).toBe('14');
+            helper.edit('B5', '=AVERAGEIFS(A7:A12,A1:A6,A3)');
+            expect(helper.invoke('getCell', [4, 1]).textContent).toBe('3.5');
+            helper.edit('B6', '=COUNTIFS(A1:A6,A1)');
+            expect(helper.invoke('getCell', [5, 1]).textContent).toBe('4');
+            done();
+        });
+    });
 
     describe('MOD formula checking', () => {
         beforeAll((done: Function) => {
@@ -16217,6 +16254,21 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [1, 12]).textContent).toBe('1.3068E+18');
             helper.edit('M3', '=PRODUCT(F2:F11,1,"hello")');
             expect(helper.invoke('getCell', [2, 12]).textContent).toBe('#VALUE!');
+            done();
+        });
+        it('applying extra cases like exponential, date, time with PRODUCT formula', function (done) {
+            helper.edit('L1', '4000.00%');
+            helper.edit('L2', '4.05E+09');
+            helper.edit('L3', '11/7/2015');
+            helper.edit('L4', '3:10:00 AM');
+            helper.edit('L5', '=PRODUCT(L1, 2)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('80');
+            helper.edit('L6', '=PRODUCT(L2, 3');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('12150000000');
+            helper.edit('L7', '=PRODUCT(L3,4)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('169260');
+            helper.edit('L8', '=PRODUCT(L3,5)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('211575');
             done();
         });
     });
@@ -16734,6 +16786,100 @@ describe('Spreadsheet formula module ->', () => {
             helper.invoke('selectRange', ['J5']);
             helper.triggerKeyNativeEvent(46);
             expect(helper.invoke('getCell', [7, 9]).textContent).toBe('14');
+            done();
+        });
+    });
+
+    describe('EJ2-861473 -> SUBTOTAL Formula ranges contain an exiting subtotal result in them. ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    rows: [
+                        { cells: [{ value: '5' }] }, { cells: [{ value: '10' }] },
+                        { cells: [{ value: '15' }] }, { cells: [{ value: '20' }] },
+                        { cells: [{ formula: '=SUM(A1:A4)' }] }, { cells: [{ value: '10' }] },
+                        { cells: [{ value: '10' }] }, { cells: [{ formula: '=SUBTOTAL(9,A1:A7)' }] }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('SUBTOTAL Formula with AVERAGE Function as argument  ->', (done: Function) => {
+            helper.edit('B1', '=SUBTOTAL(1,A1:A5)');
+            expect(helper.invoke('getCell', [0, 1]).textContent).toBe('20');
+            helper.edit('B2', '=SUBTOTAL(1,A1:A8)');
+            expect(helper.invoke('getCell', [1, 1]).textContent).toBe('17.14285714');
+            helper.edit('B3', '=SUBTOTAL(1,A5)');
+            expect(helper.invoke('getCell', [2, 1]).textContent).toBe('50');
+            helper.edit('B4', '=SUBTOTAL(1,A8)');
+            expect(helper.invoke('getCell', [3, 1]).textContent).toBe('#DIV/0!');
+            done();
+        });
+        it('SUBTOTAL Formula with COUNT Function as argument  ->', (done: Function) => {
+            helper.edit('B5', '=SUBTOTAL(2,A1:A5)');
+            expect(helper.invoke('getCell', [4, 1]).textContent).toBe('5');
+            helper.edit('B6', '=SUBTOTAL(2,A1:A8)');
+            expect(helper.invoke('getCell', [5, 1]).textContent).toBe('7');
+            helper.edit('B7', '=SUBTOTAL(2,A5)');
+            expect(helper.invoke('getCell', [6, 1]).textContent).toBe('1');
+            helper.edit('B8', '=SUBTOTAL(2,A8)');
+            expect(helper.invoke('getCell', [7, 1]).textContent).toBe('0');
+            done();
+        });
+        it('SUBTOTAL Formula with COUNTA Function as argument  ->', (done: Function) => {
+            helper.edit('B9', '=SUBTOTAL(3,A1:A5)');
+            expect(helper.invoke('getCell', [8, 1]).textContent).toBe('5');
+            helper.edit('B10', '=SUBTOTAL(3,A1:A8)');
+            expect(helper.invoke('getCell', [9, 1]).textContent).toBe('7');
+            helper.edit('B11', '=SUBTOTAL(3,A5)');
+            expect(helper.invoke('getCell', [10, 1]).textContent).toBe('1');
+            helper.edit('B12', '=SUBTOTAL(3,A8)');
+            expect(helper.invoke('getCell', [11, 1]).textContent).toBe('0');
+            done();
+        });
+        it('SUBTOTAL Formula with MAX Function as argument  ->', (done: Function) => {
+            helper.edit('C1', '=SUBTOTAL(4,A1:A5)');
+            expect(helper.invoke('getCell', [0, 2]).textContent).toBe('50');
+            helper.edit('C2', '=SUBTOTAL(4,A1:A8)');
+            expect(helper.invoke('getCell', [1, 2]).textContent).toBe('50');
+            helper.edit('C3', '=SUBTOTAL(4,A5)');
+            expect(helper.invoke('getCell', [2, 2]).textContent).toBe('50');
+            helper.edit('C4', '=SUBTOTAL(4,A8)');
+            expect(helper.invoke('getCell', [3, 2]).textContent).toBe('0');
+            done();
+        });
+        it('SUBTOTAL Formula with MIN Function as argument  ->', (done: Function) => {
+            helper.edit('C5', '=SUBTOTAL(5,A1:A5)');
+            expect(helper.invoke('getCell', [4, 2]).textContent).toBe('5');
+            helper.edit('C6', '=SUBTOTAL(5,A1:A8)');
+            expect(helper.invoke('getCell', [5, 2]).textContent).toBe('5');
+            helper.edit('C7', '=SUBTOTAL(5,A5)');
+            expect(helper.invoke('getCell', [6, 2]).textContent).toBe('50');
+            helper.edit('C8', '=SUBTOTAL(5,A8)');
+            expect(helper.invoke('getCell', [7, 2]).textContent).toBe('0');
+            done();
+        });
+        it('SUBTOTAL Formula with PRODUCT Function as argument  ->', (done: Function) => {
+            helper.edit('C9', '=SUBTOTAL(6,A1:A5)');
+            expect(helper.invoke('getCell', [8, 2]).textContent).toBe('750000');
+            helper.edit('C10', '=SUBTOTAL(6,A1:A8)');
+            expect(helper.invoke('getCell', [9, 2]).textContent).toBe('75000000');
+            helper.edit('C11', '=SUBTOTAL(6,A5)');
+            expect(helper.invoke('getCell', [10, 2]).textContent).toBe('50');
+            helper.edit('C12', '=SUBTOTAL(6,A8)');
+            expect(helper.invoke('getCell', [11, 2]).textContent).toBe('0');
+            done();
+        });
+        it('SUBTOTAL Formula with SUM Function as argument  ->', (done: Function) => {
+            helper.edit('D1', '=SUBTOTAL(9,A1:A5)');
+            expect(helper.invoke('getCell', [0, 3]).textContent).toBe('100');
+            helper.edit('D2', '=SUBTOTAL(9,A1:A8)');
+            expect(helper.invoke('getCell', [1, 3]).textContent).toBe('120');
+            helper.edit('D3', '=SUBTOTAL(9,A5)');
+            expect(helper.invoke('getCell', [2, 3]).textContent).toBe('50');
+            helper.edit('D4', '=SUBTOTAL(9,A8)');
+            expect(helper.invoke('getCell', [3, 3]).textContent).toBe('0');
             done();
         });
     });

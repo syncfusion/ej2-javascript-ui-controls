@@ -478,7 +478,7 @@ export class Trendlines {
         // We have to sort the points in ascending order. Because, the data source of the series may be random order.
         points.sort((a: Points, b: Points) => { return a.xValue - b.xValue; });
         xValues.sort((a: number, b: number) => { return a - b; });
-        while (index <= polynomialSlopes.length) {
+        while (polynomialSlopes !== null && index <= polynomialSlopes.length) {
             if (index === 1) {
                 xValue = xValues[0] - trendline.backwardForecast;
                 yValue = this.getPolynomialYValue(polynomialSlopes, xValue);

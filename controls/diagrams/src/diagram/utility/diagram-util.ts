@@ -2953,13 +2953,49 @@ export let updatePathElement: Function = (anglePoints: PointModel[], connector: 
         pathseqData = findPath(anglePoints[j], anglePoints[j + 1]);
         pathElement.data = pathseqData[0];
         pathElement.id = connector.id + '_' + ((connector.shape as BpmnFlow).sequence);
-        pathElement.offsetX = pathseqData[1].x;
-        pathElement.offsetY = pathseqData[1].y;
+        //Bug 860251: Bpmn message flow and sequence flow connector child path is not rendered properly.
+        //To get the offset of default sequence path.
+        var pathOffset = getPathOffset(anglePoints, connector);
+        pathElement.offsetX = pathOffset.x;
+        pathElement.offsetY = pathOffset.y;
         pathElement.rotateAngle = 45;
         pathElement.transform = Transform.Self;
+        break;
     }
     return pathElement;
 };
+
+/** @private */
+export let getPathOffset: Function = (anglePoints: PointModel[], connector: ConnectorModel, segmentOffset?: number): PointModel => {
+    let offsetDistance = 10; // Distance from the source point
+    let angle;
+    let pt;
+    let totalLength = 0;
+    // Calculate total length of the path
+    for (let i:number = 0; i < anglePoints.length - 1; i++) {
+        totalLength += findDistance(anglePoints[parseInt(i.toString(), 10)], anglePoints[i + 1]);
+    }
+    var targetLength:number;
+    if(segmentOffset){
+        targetLength = totalLength * segmentOffset;
+    }else{
+        targetLength  = (totalLength/2) > 30 ? offsetDistance : (totalLength/2);
+    }
+    // Find the segment where the position lies
+    var accumulatedLength = 0;
+    for (var i:number = 0; i < anglePoints.length - 1; i++) {
+        var segmentLength = findDistance(anglePoints[parseInt(i.toString(), 10)], anglePoints[i + 1]);
+        if (accumulatedLength + segmentLength >= targetLength) {
+            var remainingLength = targetLength - accumulatedLength;
+            angle = findAngle(anglePoints[i], anglePoints[i + 1]);
+            pt = Point.transform(anglePoints[i], angle, remainingLength);
+            break;
+        }
+        accumulatedLength += segmentLength;
+    }
+    return pt;
+};
+
 /** @private */
 export let checkPort: Function = (node: Node | Connector, element: DiagramElement): boolean => {
     if (node instanceof Node || node instanceof Connector) {
@@ -2975,11 +3011,11 @@ export let checkPort: Function = (node: Node | Connector, element: DiagramElemen
 export let findPath: Function = (sourcePoint: PointModel, targetPoint: PointModel): Object => {
     let beginningpoint: PointModel = { x: sourcePoint.x, y: sourcePoint.y };
     let distance: number = findDistance(sourcePoint, targetPoint);
-    distance = Math.min(30, distance / 2);
+    distance = Math.min(10, distance / 2);
     let angle: number = findAngle(sourcePoint, targetPoint);
     let transferpt: PointModel = Point.transform({ x: beginningpoint.x, y: beginningpoint.y }, angle, distance);
-    let startpoint: PointModel = Point.transform({ x: transferpt.x, y: transferpt.y }, angle, -12);
-    let endpoint: PointModel = Point.transform({ x: startpoint.x, y: startpoint.y }, angle, 12 * 2);
+    let startpoint: PointModel = Point.transform({ x: transferpt.x, y: transferpt.y }, angle, -11);
+    let endpoint: PointModel = Point.transform({ x: startpoint.x, y: startpoint.y }, angle, 11 * 2);
     let path: string = 'M' + startpoint.x + ' ' + startpoint.y + ' L' + endpoint.x + ' ' + endpoint.y;
     return [path, transferpt];
 };

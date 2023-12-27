@@ -499,6 +499,7 @@ export class Mention extends DropDownBase {
             }
         }
         this.inputElement.setAttribute('role', 'textbox');
+        this.inputElement.setAttribute('aria-label', 'mention');
         this.queryString = this.elementValue();
         this.wireEvent();
     }
@@ -676,10 +677,15 @@ export class Mention extends DropDownBase {
         }
         let currentRange: string = this.getTextRange();
 	    const lastWordRange: string = this.getLastLetter(currentRange);
+	const lastTwoLetters: string = this.mentionChar.toString() + this.mentionChar.toString();
         // eslint-disable-next-line security/detect-non-literal-regexp
         const Regex: RegExp = new RegExp(this.mentionChar.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
         const charRegex: RegExp = new RegExp('[a-zA-Z]', 'g');
         if (e.key === 'Shift' || e.keyCode === 37 || e.keyCode === 39) { return; }
+	if (this.beforePopupOpen && this.isPopupOpen && lastWordRange == lastTwoLetters ) {
+            this.hidePopup();
+            return;
+        }
         if ((!currentRange || !lastWordRange) || e.code === 'Enter' || e.keyCode === 27 ||
             (lastWordRange.match(Regex) && lastWordRange.match(Regex).length > 1) ||
             (this.isContentEditable(this.inputElement) && this.range.startContainer &&
@@ -817,7 +823,10 @@ export class Mention extends DropDownBase {
                 const value: string | number | boolean = this.getFormattedValue(focusItem.getAttribute('data-value'));
                 this.selectEventCallback(focusItem, this.getDataByValue(value), value, true);
             }
-            if (this.beforePopupOpen) {
+            if (this.beforePopupOpen && this.isPopupOpen) {
+                if (!isNullOrUndefined(this.popupObj.element)) {
+                    this.popupObj.element.remove();
+                }
                 this.renderPopup();
             }
         }

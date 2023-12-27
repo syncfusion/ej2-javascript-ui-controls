@@ -124,9 +124,9 @@ describe('DropDown Tree control List datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddtreeObj.showPopup();
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("false");
         });
 
         /**
@@ -164,15 +164,15 @@ describe('DropDown Tree control List datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddtreeObj.showPopup();
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddtreeObj.destroy();
             ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, readonly: false }, '#ddtree');
             ddtreeObj.showPopup();
             expect(document.querySelectorAll('.e-popup').length).toBe(1);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("true");
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toEqual("true");
         });
 
         /**
@@ -1339,9 +1339,9 @@ describe('DropDown Tree control List datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            expect(ddTreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddTreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddTreeObj.showPopup();
-            expect(ddTreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddTreeObj.element.getAttribute("aria-expanded")).toEqual("false");
             ddTreeObj.destroy();
             ddTreeObj = new DropDownTree({ fields: { dataSource: listData, value: 'id', parentValue: 'pid', hasChildren: 'hasChild', text: 'name' }, htmlAttributes: { style: 'background: red' } });
             ddTreeObj.appendTo(element);

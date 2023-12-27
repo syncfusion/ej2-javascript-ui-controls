@@ -2176,7 +2176,9 @@ export class Draw {
         parent.baseImg.onload = () => {
             parent.notify('filter', { prop: 'update-finetunes', onPropertyChange: false });
             proxy.lowerContext.drawImage(parent.baseImg, 0, 0, proxy.parent.lowerCanvas.width, proxy.parent.lowerCanvas.height);
-            hideSpinner(parent.element); parent.element.style.opacity = '1'; proxy.updateBaseImgCanvas(); proxy.updateCanvas();
+            hideSpinner(parent.element); parent.element.style.opacity = '1'; proxy.updateBaseImgCanvas();
+            const fileOpened: OpenEventArgs = {fileName: this.fileName, fileType: this.fileType, isValidImage: true };
+            proxy.updateCanvas();
             if (parent.currObjType.isUndoZoom) {
                 parent.currObjType.isUndoZoom = false; proxy.parent.lowerCanvas.style.display = 'block';
             }
@@ -2200,6 +2202,13 @@ export class Draw {
                     (parent.element.querySelector('.e-bottom-toolbar-area') as HTMLElement).style.display = 'block';
                     (parent.element.querySelector('.e-canvas-wrapper') as HTMLElement).style.height = (parent.element.offsetHeight
                         - parent.toolbarHeight * 2) - 1 + 'px';
+                }
+            }
+            if (parent.isImageLoaded && parent.element.style.opacity !== '0.5') {
+                if (isBlazor() && parent.events && parent.events.fileOpened.hasDelegate === true) {
+                    parent.dotNetRef.invokeMethodAsync('FileOpenEventAsync', 'FileOpened', fileOpened);
+                } else {
+                    parent.trigger('fileOpened', fileOpened);
                 }
             }
         };
@@ -2228,7 +2237,6 @@ export class Draw {
 
     private updateCanvas(): void {
         const parent: ImageEditor = this.parent;
-        const fileOpened: OpenEventArgs = {fileName: this.fileName, fileType: this.fileType, isValidImage: true };
         parent.img.srcWidth = parent.baseImgCanvas.width; parent.img.srcHeight = parent.baseImgCanvas.height;
         const obj: Object = {width: 0, height: 0 };
         parent.notify('transform', { prop: 'calcMaxDimension', onPropertyChange: false,
@@ -2257,13 +2265,6 @@ export class Draw {
             }
         }
         if (parent.disabled) { parent.element.setAttribute('class', 'e-disabled'); }
-        if (parent.isImageLoaded && parent.element.style.opacity !== '0.5') {
-            if (isBlazor() && parent.events && parent.events.fileOpened.hasDelegate === true) {
-                parent.dotNetRef.invokeMethodAsync('FileOpenEventAsync', 'FileOpened', fileOpened);
-            } else {
-                parent.trigger('fileOpened', fileOpened);
-            }
-        }
         if (parent.zoomSettings.zoomFactor !== 1 || parent.zoomSettings.zoomPoint) {
             parent.zoom(parent.zoomSettings.zoomFactor, parent.zoomSettings.zoomPoint);
         }

@@ -2,131 +2,39 @@
 
 ## [Unreleased]
 
-## 24.1.41 (2023-12-18)
+## 24.1.43 (2023-12-27)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I520132` - Issue with "The listbox value was not updated properly while filtering the data source when we place within form" has been resolved.
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I523994` - Resolved the issue where the NVDA Reader was not reading the list item when filtering is enabled.
 
 ### AutoComplete
 
 #### Bug Fixes
 
-- `#I522040` - Fixed an issue where setting the highlight as true and adding HTML text as a value would result in it being parsed as a DOM element.
+- `#I528524` - Fixed an issue where the Change Event was not triggered when pressing the enter key after preventing the Popup from opening.
+
+## 24.1.41 (2023-12-18)
 
 ### DropDownTree
 
 #### Bug Fixes
 
-- `#I523487` - The issue with `itemTemplate` support while performing filtering operation in the Dropdown Tree component has been resolved.
-
-### MultiSelect
-
-#### Bug Fixes
-
-- `#I518299` - Fixed console error that occurred when adding an item using the addItem method.
-
-## 23.2.6 (2023-11-28)
-
-### DropDownList
-
-#### Bug Fixes
-
-- `#I519795` - Fixed an issue where the `BeforeOpenEvent` was triggered twice when the open event was Cancelled.
-
-- `#I520598` - Resolved issue where the equal to operator on `props.dataSource` in the `updateDataSource` function would always evaluate to false when it was an empty array.
-
-## 23.2.5 (2023-11-23)
-
-### Mention
-
-#### Bug Fixes
-
-- `#I519427` - Fixed a popup positioning issue that occurred when filtering.
-
-## 23.2.4 (2023-11-20)
+- `#I522936` - The issue with the htmlAttributes field class value in the Dropdown Tree component has been resolved.
 
 ### ListBox
 
 #### Bug Fixes
 
 - `#I514409` - Issue with "After clearing the filter Listbox item template was empty" has been resolved.
-
-### ListBox
-
-#### Bug Fixes
-
-- `#I473804` - Provided smooth scrolling to drag and drop support for the ListBox component.
-
-### DropDownList
-
-#### Bug Fixes
-
-- `#I503134` - Fixed the issue where keyboard navigation was not working when null values were included in the datasource.
-
-## 23.1.44 (2023-11-07)
-
-### Mention
-
-#### Bug Fixes
-
-- `#I4756` - Fixed the issue where using the Mention Character as a `[` would throw a console error.
-
-## 23.1.43 (2023-10-31)
-
-### ComboBox
-
-#### Bug Fixes
-
-- `#I509217` - Resolved the issue where an empty space was created after clearing the values from the comboBox.
-
-### Mention
-
-#### Bug Fixes
-
-- `#F182215` - Fixed "In Android, unable to remove a selected value from Mention using backspace key and also keyboard hides".
-
-### DropDownTree
-
-#### Bug Fixes
-
-- `#I508339` - The persistence issue during page navigation has been resolved.
-- `#I498924` - Issue with the locale property in the Dropdown Tree component has been resolved.
-
-## 23.1.42 (2023-10-24)
-
-### Mention
-
-#### Bug Fixes
-
-- `#I506552` - Resolved issue with "Full popup is not visible when we open it at the edge of the screen".
-
-## 23.1.41 (2023-10-17)
-
-### MultiSelect
-
-#### Bug fixes
-
-- `#I503091` - Resolved a null exception that was thrown when dynamically changing the `groupBy` fields to undefined.
-
-### DropdownList
-
-#### Bug Fixes
-
-- `#I498409` - Fixed an issue where the preselected `value` was getting cleared when updating the data source.
-- `#I500431` - Fixed issue where the preselected `value` through `index` property was not updated when updating the data source.
-
-### DropDownTree
-
-#### Bug Fixes
-
-- `#F184672` - Issue with the `checkAll` and `uncheckAll` status not updated properly has been resolved.
-
-## 23.1.38 (2023-09-26)
-
-### ListBox
-
-#### Bug Fixes
-
-- `#I493841` - Issue with "Scrollbar in ListBox while using inside a splitter" has been resolved.
-
-## 23.1.36 (2023-09-15)
 
 ### ListBox
 
@@ -240,7 +148,7 @@
 
 - `#I343860` - Issue with "list items are not read by the NVDA screen reader" has been resolved.
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -256,7 +164,7 @@
 
 ## 19.3.53 (2021-11-12)
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -264,7 +172,7 @@
 
 ## 19.3.48 (2021-11-02)
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -272,7 +180,7 @@
 
 ## 19.3.47 (2021-10-26)
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -280,7 +188,7 @@
 
 ## 19.3.46 (2021-10-19)
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -298,7 +206,7 @@
 
 ## 19.3.44 (2021-10-05)
 
-### Dropdown Tree
+### DropDownTree
 
 #### New Features
 
@@ -338,7 +246,7 @@
 
 - `I335313` - Issue with "select element is displayed while rendering the component with floating label" has been resolved.
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -352,7 +260,7 @@
 
 - `#I336382` - The issue with getDataList not updated properly after removing the items has been fixed.
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -382,7 +290,7 @@
 
 - `#I335674` - Issue with "filtering list item is reset to the popup while scrolling the popup item using mouse" has been resolved.
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -441,7 +349,7 @@
 
 ## 19.1.54 (2021-03-30)
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -465,7 +373,7 @@
 
 ## 18.4.43 (2021-02-16)
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -552,7 +460,7 @@
 
 ## 18.3.42 (2020-10-20)
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -590,7 +498,7 @@
 
 ## 18.2.54 (2020-08-18)
 
-### Dropdown Tree
+### DropDownTree
 
 #### Breaking Changes
 
@@ -610,7 +518,7 @@
 
 - `#285392` - Enable / disable list items based on unique value support provided.
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -662,7 +570,7 @@
 
 -`#273796` - Now, e-outline class is added to the filter input
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -684,7 +592,7 @@
 
 - `#273796` - Now, filtering works properly when paste the value in the input element.
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -724,7 +632,7 @@
 
 ## 18.1.46 (2020-04-28)
 
-### Dropdown Tree
+### DropDownTree
 
 #### Bug Fixes
 
@@ -754,7 +662,7 @@
 The newly added `Dropdown Tree` component in dropdowns package requires `Navigations` dependency, so now it is mandatory to include the `ej2-navigations.umd.min.js` in `system.js` configuration if you are using the system.js module loader.
 Update the system.js configuration while going with this version and above.
 
-### Dropdown Tree
+### DropDownTree
 
 The Dropdown Tree control allows you to select single or multiple values from hierarchical data in a tree-like structure. It has several out-of-the-box features, such as data binding, check boxes, templates, UI customization, accessibility, and preselected values. The available key features are
 

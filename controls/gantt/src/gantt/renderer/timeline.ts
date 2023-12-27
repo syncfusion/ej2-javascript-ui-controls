@@ -347,8 +347,10 @@ export class Timeline {
     }
 
     private calculateNumberOfTimelineCells(newTimeline: ZoomTimelineSettings): number {
-        const numberOfDays: number = Math.abs((this.parent.cloneProjectEndDate.getTime() -
-            this.parent.cloneProjectStartDate.getTime()) / (24 * 60 * 60 * 1000));
+        const sDate: Date = new Date(this.parent.cloneProjectStartDate.getTime());
+        const eDate: Date = new Date(this.parent.cloneProjectEndDate.getTime());
+        this.parent.dateValidationModule['updateDateWithTimeZone'](sDate, eDate);
+        const numberOfDays: number = Math.abs((eDate.getTime() - sDate.getTime()) / (24 * 60 * 60 * 1000));
         const count: number = newTimeline.bottomTier.count;
         const unit: string = newTimeline.bottomTier.unit;
         if (unit === 'Day') {
@@ -1180,26 +1182,46 @@ export class Timeline {
         case 'Day':
             lastDay.setHours(24, 0, 0, 0);
             increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * 24 * (count - 1));
+            increment = this.checkDate(firstDay, lastDay, increment, count, mode);
             break;
         case 'Hour':
             lastDay.setMinutes(60);
             lastDay.setSeconds(0);
             increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * (count - 1));
-            increment = this.checkDate(firstDay, lastDay, increment, count);
+            increment = this.checkDate(firstDay, lastDay, increment, count, mode);
             break;
         case 'Minutes':
             lastDay.setSeconds(60);
             increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * (count - 1));
+            increment = this.checkDate(firstDay, lastDay, increment, count, mode);
             break;
         }
         return increment;
     }
 
-    private checkDate(firstDay: Date, lastDay: Date, increment: number, count: number): number {
+    private checkDate(firstDay: Date, lastDay: Date, increment: number, count: number, mode: string): number {
         var date = new Date(firstDay.getTime());
         date.setTime(date.getTime() + increment);
-        if (count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60 * 60)) != count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
+        if (mode === "Day" && count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60 * 60 * 24)) != count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
+            var diffCount = count - (date.getTime() - lastDay.getTime()) / (1000 * 60 * 60 * 24);
+            if (!this.parent.isInDst(date)) {
+                increment += (1000 * 60 * 60 * diffCount);
+            }
+            else if (this.parent.isInDst(date) && count !== 2) {
+                increment -= (1000 * 60 * 60 * diffCount);
+            }
+        }
+        else if (mode === "Hour" && count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60 * 60)) != count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
             var diffCount = count - (date.getTime() - lastDay.getTime()) / (1000 * 60 * 60);
+            if (!this.parent.isInDst(date)) {
+                increment += (1000 * 60 * 60 * diffCount);
+            }
+            else if (this.parent.isInDst(date) && count !== 2) {
+                increment -= (1000 * 60 * 60 * diffCount);
+            }
+        }
+        else if (mode === "Minutes" && count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60)) != count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
+            var diffCount = count - (date.getTime() - lastDay.getTime()) / (1000 * 60);
             if (!this.parent.isInDst(date)) {
                 increment += (1000 * 60 * 60 * diffCount);
             }
@@ -1273,6 +1295,18 @@ export class Timeline {
             this.parent.globalize.formatDate(scheduleWeeks, { format: this.parent.getDateFormat() }) :
             this.customFormat(scheduleWeeks, format, tier, mode, formatter);
         thWidth = (this.getIncrement(scheduleWeeks, count, mode) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
+        const newDate: Date = new Date(scheduleWeeks.getTime() + this.getIncrement(scheduleWeeks, count, mode))
+        if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks)) ||
+            (this.parent.isInDst(newDate) && !this.parent.isInDst(scheduleWeeks))) {
+            let temp: number;
+            if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks))) {
+                temp = this.getIncrement(scheduleWeeks, count, mode) - (1000 * 60 * 60);
+            }
+            else {
+                temp = this.getIncrement(scheduleWeeks, count, mode) + (1000 * 60 * 60);
+            }
+            thWidth = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
+        }
         const cellWidth: number = thWidth;
         thWidth = isLast || isFirstCell ? isLast ? this.calculateWidthBetweenTwoDate(
             mode, scheduleWeeks, this.timelineRoundOffEndDate) : this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.calculateQuarterEndDate(scheduleWeeks, count))
@@ -1315,7 +1349,10 @@ export class Timeline {
      * @private
      */
     private calculateWidthBetweenTwoDate(mode: string, scheduleWeeks: Date, endDate: Date): number {
-        let timeDifference: number = (endDate.getTime() - scheduleWeeks.getTime());
+        const sDate: Date = new Date(scheduleWeeks.getTime());
+        const eDate: Date = new Date(endDate.getTime());
+        this.parent.dateValidationModule['updateDateWithTimeZone'](sDate, eDate);
+        let timeDifference: number = (eDate.getTime() - sDate.getTime());
         const balanceDay: number = (timeDifference / (1000 * 60 * 60 * 24));
         return balanceDay * this.parent.perDayWidth;
     }

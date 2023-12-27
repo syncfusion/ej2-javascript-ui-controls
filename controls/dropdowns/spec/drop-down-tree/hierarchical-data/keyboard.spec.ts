@@ -61,7 +61,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toBe('true');
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('true');
         });
         it('shiftTab key pressed', () => {
             ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" } }, '#ddtree');
@@ -76,11 +76,11 @@ describe('DropDown Tree control hierarchical datasource', () => {
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toBe('true');
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('true');
             keyboardEventArgs.action = 'altUp';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toBe('false');
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('false');
             ddtreeObj.onFocusOut();
         });
         it('escape key pressed', () => {
@@ -89,11 +89,11 @@ describe('DropDown Tree control hierarchical datasource', () => {
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toBe('true');
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('true');
             keyboardEventArgs.action = 'escape';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toBe('false');
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('false');
             ddtreeObj.onFocusOut();
         });
         it('shiftTab key pressed', () => {
@@ -102,11 +102,11 @@ describe('DropDown Tree control hierarchical datasource', () => {
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toBe('true');
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('true');
             keyboardEventArgs.action = 'shiftTab';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
-            expect(ddtreeObj.element.parentElement.getAttribute("aria-expanded")).toBe('false');
+            expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('false');
             ddtreeObj.onFocusOut();
         });
         it('down arrow key pressed', () => {

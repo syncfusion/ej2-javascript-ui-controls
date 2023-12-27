@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 24.1.43 (2023-12-27)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I514005` - Resolved section break parsing issue while pasting.
+- `#I515062` - Resolved Locale constant missing in Vietnamese.
+- `#I520469` - Resolved Alignment issue in document editor.
+- `#I524057` - Resolved The arabic selection issue.
+- `#I520821` - Resolved Justify Enter issue for Arabic text.
+- `#I523987` - Resolved the hyphen text is not rendered issue.
+- `#I526246` - Resolved Spell Check dialog popup issue.
+- `#I526232` - Resolved the list continuity issue on paste content.
+- `#I527224` - Resolved Open Hyperlink & Copy Hyperlink missing in contextMenu while readOnly mode.
+- `#I529797` - Resolved the Search result return Zero.
+- `#I532949` - Resolved the list numbering issue
+
 ## 24.1.41 (2023-12-18)
 
 ### DocumentEditor

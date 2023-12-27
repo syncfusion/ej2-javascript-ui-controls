@@ -76,7 +76,7 @@ export class FocusStrategy {
 
     protected passiveFocus(e: FocusEvent): void {
         if (this.parent.isDestroyed) { return; }
-        const firstHeaderCell: Element = this.parent.getHeaderContent().querySelector('.e-headercell');
+        const firstHeaderCell: Element = this.parent.getHeaderContent().querySelector('.e-headercell:not(.e-hide)');
         if (e.target === firstHeaderCell && e.relatedTarget && !parentsUntil((e.relatedTarget as Element), 'e-grid')
             && !this.firstHeaderCellClick) {
             this.currentInfo.element = e.target as HTMLElement;
@@ -135,7 +135,7 @@ export class FocusStrategy {
             return;
         }
         if (gObj.getColumns().length) {
-            const firstHeaderCell: HTMLElement = gObj.getHeaderContent().querySelector('.e-headercell');
+            const firstHeaderCell: HTMLElement = gObj.getHeaderContent().querySelector('.e-headercell:not(.e-hide)');
             firstHeaderCell.tabIndex = 0;
             this.setActive(false);
             if (!isNullOrUndefined(this.active) && (isNullOrUndefined(this.active.target) || !this.active.target.classList.contains('e-columnmenu'))) {

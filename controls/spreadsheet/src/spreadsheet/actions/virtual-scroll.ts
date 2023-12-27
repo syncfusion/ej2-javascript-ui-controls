@@ -98,7 +98,11 @@ export class VirtualScroll {
         this.content.style.width = `${size}px`;
         vTrack.style.height = `${height}px`;
         vTrack.style.width = `${width}px`;
-        if (this.parent.allowScrolling) { this.parent.getScrollElement().appendChild(colVTrack.cloneNode(true)); }
+        if (this.parent.allowScrolling) {
+            const scrollVTrack: HTMLElement = colVTrack.cloneNode(true) as HTMLElement;
+            scrollVTrack.style.width = `${width + (this.parent.scrollSettings.isFinite ? this.parent.sheetModule.getScrollSize() : 0)}px`;
+            this.parent.getScrollElement().appendChild(scrollVTrack);
+        }
     }
 
     private initScroll(): void {
@@ -641,13 +645,13 @@ export class VirtualScroll {
         }
         const frozenCol: number = this.parent.frozenColCount(this.parent.getActiveSheet());
         if (args.colIdx >= this.parent.viewport.leftIndex + frozenCol && args.colIdx <= this.parent.viewport.rightIndex) {
-            const hdrVTrack: HTMLElement =
-                    this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
+            const hdrVTrack: HTMLElement = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
             hdrVTrack.style.width = parseFloat(hdrVTrack.style.width) + args.threshold + 'px';
             const cntVTrack: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
             cntVTrack.style.width = parseFloat(cntVTrack.style.width) + args.threshold + 'px';
-            const hdrColumn: HTMLElement =
-                    this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualable')[0] as HTMLElement;
+            const scrollVTrack: HTMLElement = this.parent.getScrollElement().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
+            scrollVTrack.style.width = parseFloat(scrollVTrack.style.width) + args.threshold + 'px';
+            const hdrColumn: HTMLElement = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualable')[0] as HTMLElement;
             hdrColumn.style.width = parseFloat(hdrColumn.style.width) + args.threshold + 'px';
             const cntColumn: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-virtualable')[0] as HTMLElement;
             cntColumn.style.width = parseFloat(cntColumn.style.width) + args.threshold + 'px';

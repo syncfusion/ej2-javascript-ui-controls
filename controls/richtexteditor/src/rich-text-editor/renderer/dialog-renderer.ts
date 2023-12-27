@@ -89,7 +89,16 @@ export class DialogRenderer {
     private getDialogPosition(): string {
         let distanceFromVisibleTop: number = this.parent.element.getBoundingClientRect().top;
         if (distanceFromVisibleTop < 0) {
-            distanceFromVisibleTop = Math.abs(distanceFromVisibleTop);
+            let topHeight: number = 0;
+            let parentElement: HTMLElement = this.parent.element;
+            while(parentElement.nodeName !== 'BODY') {
+                const top: number = parentElement.getBoundingClientRect().top;
+                if(top > 0 ) {
+                    topHeight = top;
+                }
+                parentElement = parentElement.parentElement as HTMLElement;
+            }
+            distanceFromVisibleTop = Math.abs(distanceFromVisibleTop) + topHeight;
             return distanceFromVisibleTop.toString();
         }
         else {

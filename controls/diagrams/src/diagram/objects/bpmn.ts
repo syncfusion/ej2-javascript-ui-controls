@@ -687,6 +687,10 @@ export class BpmnDiagrams {
             subProcess.processes = subProcess.processes || [];
             if (subProcess.processes && subProcess.processes.indexOf(source.id) === -1 && !subProcess.collapsed) {
                 subProcess.processes.push(source.id);
+                // To arrange the process based on zIndex, which cause issue in save and load.
+                if(subProcess.processes.length > 1){
+                    this.sortProcessOrder(subProcess.processes,diagram);
+                }
                 const redoElement: NodeModel = cloneObject(source);
                 const sources: Container = diagram.nameTable[source.id].wrapper;
                 const targetWrapper: Container = diagram.nameTable[target.id].wrapper;
@@ -698,6 +702,8 @@ export class BpmnDiagrams {
                 sources.margin.left = (sources.margin.left < 0) ? 0 : sources.margin.left;
                 diagram.nameTable[source.id].processId = target.id;
                 targetWrapper.children.push(diagram.nameTable[source.id].wrapper);
+                //To identify the processess added at runtime.
+                diagram.nameTable[source.id].wrapper.isDroppedProcess = true;
                 const bound: Rect = this.getChildrenBound(target, source.id, diagram);
                 this.updateSubProcessess(bound, source, diagram);
                 targetWrapper.measure(new Size(undefined, undefined));
@@ -726,6 +732,10 @@ export class BpmnDiagrams {
                 this.updateDocks(source as Node, diagram);
             }
         }
+    }
+    private sortProcessOrder(processes: string[],diagram: Diagram){
+        // Sort the process array based on node zIndex
+        processes.sort((a:string, b:string) => diagram.nameTable[`${a}`].zIndex - diagram.nameTable[`${b}`].zIndex);
     }
     private updateIndex(diagram: Diagram, source: Node): void {
         //let processNode: Node;
@@ -785,22 +795,52 @@ export class BpmnDiagrams {
         if (element) {
             diagram.removeDependentConnector(currentObj);
             const processes: string[] = (element.shape as BpmnShape).activity.subProcess.processes;
-            this.removeChildFromBPMN(element.wrapper, currentObj.id);
+            this.removeChildFromBPMN(element.wrapper, currentObj.id,diagram,true);
             const processIndex: number = processes.indexOf(currentObj.id);
             processes.splice(processIndex, 1);
 
         }
     }
     /** @private */
-    public removeChildFromBPMN(wrapper: Container, name: string): void {
+    public removeChildFromBPMN(wrapper: Container, name: string, diagram?: Diagram, isDelete?: boolean): void {
         for (const i of wrapper.children) {
             if (i.id === name) {
                 wrapper.children.splice(wrapper.children.indexOf(i), 1);
+                if(!(i as any).isDroppedProcess && !isDelete){
+                    // To remove the child node from subprocess to diagram in DOM.
+                    this.removeGElement(i.id, diagram);
+                  }
             } else if ((i as Container).children) {
-                this.removeChildFromBPMN((i as Container), name);
+                this.removeChildFromBPMN((i as Container), name, diagram, isDelete);
             }
         }
     }
+    //Bug 858761: Default Tooltip of sub-process node is not positioned properly after drag and drop the child of subprocess in diagram.
+    // To remove the child node from subprocess to diagram in DOM.
+    private removeGElement(id: string, diagram: Diagram){
+        let element = document.getElementById(id+'_groupElement');
+        let diagramLayer = document.getElementById(diagram.element.id + '_diagramLayer');
+        let parent = element.parentElement;
+        parent.removeChild(element);
+        diagramLayer.appendChild(element);
+        let node = diagram.nameTable[`${id}`];
+        const beforeIndex = node.zIndex+1;
+        let getNode = this.getNode(beforeIndex,diagram);
+        if(getNode.length > 0){
+            let neighborElement = document.getElementById(getNode[0].id+'_groupElement');
+            let index = Array.from(diagramLayer.children).findIndex(child => child === neighborElement);
+            const domIndex = index !== -1 ? index : 1;
+            diagramLayer.children[parseInt(domIndex.toString(), 10)].insertAdjacentElement('beforebegin',element);
+        }
+    };
+    private getNode(index: number, diagram: Diagram):any {
+        let getNode = diagram.nodes.filter((x: any) => x.zIndex === index);
+        if (getNode.length === 0 && index > 0) {
+            return this.getNode(index - 1, diagram);
+        }
+        return getNode;
+    };
+
     /** @private */
     public removeProcess(id: string, diagram: Diagram): void {
         const node: Node = diagram.nameTable[`${id}`];
@@ -809,7 +849,7 @@ export class BpmnDiagrams {
             if (parent && parent.shape.type === 'Bpmn') {
                 const processes: string[] = (parent.shape as BpmnShape).activity.subProcess.processes;
                 diagram.removeDependentConnector(node as Node);
-                this.removeChildFromBPMN(parent.wrapper, id);
+                this.removeChildFromBPMN(parent.wrapper, id,diagram,true);
                 const processIndex: number = processes.indexOf(id);
                 processes.splice(processIndex, 1);
                 node.processId = '';

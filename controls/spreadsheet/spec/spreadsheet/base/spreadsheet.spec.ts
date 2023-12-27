@@ -18,7 +18,7 @@ describe('Spreadsheet base module ->', () => {
         helper = new SpreadsheetHelper('spreadsheet');
     });
 
-    fdescribe('Render checking ->', () => {
+    describe('Render checking ->', () => {
 
         afterEach(() => {
             helper.invoke('destroy');

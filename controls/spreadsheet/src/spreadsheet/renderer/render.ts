@@ -1,10 +1,10 @@
-﻿import { ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions } from '../common/index';
+﻿import { ribbon, formulaBar, IRenderer, beforeVirtualContentLoaded, setAriaOptions, JsonData } from '../common/index';
 import { SheetRender, RowRenderer, CellRenderer } from './index';
 import { Spreadsheet } from '../base/index';
 import { extend, remove } from '@syncfusion/ej2-base';
 import { CellModel, SheetModel, getSheetName, getRowsHeight, getColumnsWidth, getData, Workbook } from '../../workbook/index';
 import { getCellAddress, getCellIndexes, workbookFormulaOperation, moveOrDuplicateSheet, skipHiddenIdx } from '../../workbook/index';
-import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, updateTranslate } from '../common/index';
+import { RefreshArgs, sheetTabs, onContentScroll, deInitProperties, beforeDataBound, updateTranslate, OpenArgs } from '../common/index';
 import { spreadsheetDestroyed, isFormulaBarEdit, editOperation, FormulaBarEdit } from '../common/index';
 import { getSiblingsHeight, refreshSheetTabs, ScrollEventArgs, focus, getUpdatedScrollPosition } from '../common/index';
 
@@ -59,7 +59,9 @@ export class Render {
         this.checkTopLeftCell(!(this.parent as any).refreshing);
     }
 
-    private checkTopLeftCell(initLoad?: boolean, isRefreshing?: boolean, scrollTop?: number, scrollLeft?: number, preventModelCheck?: boolean): void {
+    private checkTopLeftCell(
+        initLoad?: boolean, isRefreshing?: boolean, scrollTop?: number, scrollLeft?: number, preventModelCheck?: boolean,
+        openOptions?: JsonData): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         this.parent.showSpinner();
         let isTopLeftCell: boolean = sheet.topLeftCell === 'A1';
@@ -86,7 +88,9 @@ export class Render {
         const frozenRow: number = this.parent.frozenRowCount(sheet);
         const frozenCol: number = this.parent.frozenColCount(sheet);
         if (!this.parent.scrollSettings.enableVirtualization || isTopLeftCell) {
-            this.refreshUI({ rowIndex: indexes[0], colIndex: indexes[1], refresh: 'All' }, null, initLoad, isRefreshing, preventModelCheck);
+            this.refreshUI(
+                { rowIndex: indexes[0], colIndex: indexes[1], refresh: 'All' }, null, initLoad, isRefreshing, preventModelCheck,
+                openOptions);
             if (isFreezeScrolled) {
                 this.parent.viewport.topIndex = skipHiddenIdx(sheet, frozenRow, true) - frozenRow;
                 this.parent.viewport.leftIndex = skipHiddenIdx(sheet, frozenCol, true, 'columns') - frozenCol;
@@ -117,7 +121,7 @@ export class Render {
             }
             this.refreshUI(
                 { rowIndex: rowIndex, colIndex: colIndex, refresh: 'All', top: eventArgs.scrollTop, left: eventArgs.scrollLeft,
-                    frozenIndexes: frozenIndexes }, null, initLoad, isRefreshing, preventModelCheck);
+                    frozenIndexes: frozenIndexes }, null, initLoad, isRefreshing, preventModelCheck, openOptions);
             if (isFreezeScrolled) {
                 if (frozenRow && frozenIndexes[0] >= frozenRow) {
                     this.parent.viewport.topIndex = skipHiddenIdx(sheet, frozenIndexes[0], true) - frozenRow;
@@ -141,10 +145,14 @@ export class Render {
      * @param {string} address - Specifies the address.
      * @param {boolean} initLoad - Specifies the initLoad.
      * @param {boolean} isRefreshing - Specifies the isRefreshing.
+     * @param {boolean} preventModelCheck - Specifies the preventModelCheck.
+     * @param {boolean} openOptions - Specifies the open response options.
      * @returns {void}
      */
     // tslint:disable-next-line:max-func-body-length
-    public refreshUI(args: RefreshArgs, address?: string, initLoad?: boolean, isRefreshing?: boolean, preventModelCheck?: boolean): void {
+    public refreshUI(
+        args: RefreshArgs, address?: string, initLoad?: boolean, isRefreshing?: boolean, preventModelCheck?: boolean,
+        openOptions?: JsonData): void {
         if (args.refresh !== 'All') { this.parent.showSpinner(); }
         const sheetModule: IRenderer = <IRenderer>this.parent.serviceLocator.getService('sheet');
         const sheet: SheetModel = this.parent.getActiveSheet(); const sheetName: string = getSheetName(this.parent as Workbook);
@@ -286,7 +294,7 @@ export class Render {
             case 'All':
                 sheetModule.renderTable(
                     { cells: values, indexes: indexes, top: args.top, left: args.left, initLoad: initLoad, isRefreshing:
-                        isRefreshing, isOpen: isOpen });
+                        isRefreshing, isOpen: isOpen, openOptions: openOptions });
                 break;
             case 'Row':
                 sheetModule.refreshRowContent(
@@ -354,9 +362,11 @@ export class Render {
      * @param {boolean} isOpen - Specifies the isOpen.
      * @param {boolean} resize - Set `true` to refresh the sheet with exiting scroll top and left.
      * @param {boolean} focusEle - Specify the focusEle.
+     * @param {boolean} preventModelCheck - Specifies the preventModelCheck.
+     * @param {boolean} openOptions - Specifies the open response options.
      * @returns {void}
      */
-    public refreshSheet(isOpen?: boolean, resize?: boolean, focusEle?: boolean, preventModelCheck?: boolean): void {
+    public refreshSheet(isOpen?: boolean, resize?: boolean, focusEle?: boolean, preventModelCheck?: boolean, openOptions?: JsonData): void {
         let scrollTop: number = 0; let scrollLeft: number = 0;
         if (resize) {
             const mainPanel: Element = this.parent.element.getElementsByClassName('e-main-panel')[0];
@@ -371,7 +381,7 @@ export class Render {
         this.removeSheet();
         this.renderSheet();
         this.parent.notify(deInitProperties, {});
-        this.checkTopLeftCell(false, isOpen, scrollTop, scrollLeft, preventModelCheck);
+        this.checkTopLeftCell(false, isOpen, scrollTop, scrollLeft, preventModelCheck, openOptions);
         if (focusEle) {
             focus(this.parent.element);
         }

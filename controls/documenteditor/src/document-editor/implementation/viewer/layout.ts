@@ -1252,21 +1252,10 @@ export class Layout {
     private addParagraphWidget(area: Rect, paragraphWidget: ParagraphWidget): ParagraphWidget {
         // const ownerParaWidget: ParagraphWidget = undefined;
         if (paragraphWidget.isEmpty() && !isNullOrUndefined(paragraphWidget.paragraphFormat) &&
-            (paragraphWidget.paragraphFormat.textAlignment === 'Center' || paragraphWidget.paragraphFormat.textAlignment === 'Right') &&
-            paragraphWidget.paragraphFormat.listFormat.listId === -1) {
-            // const top: number = 0;
-            // const bottom: number = 0;
-            const width: number = this.documentHelper.textHelper.getParagraphMarkWidth(paragraphWidget.characterFormat);
-            paragraphWidget.clientX = area.x;
-            let left: number = area.x;
-            paragraphWidget['absoluteXPosition'] = { 'width': area.width, 'x': area.x };
-            if (paragraphWidget.paragraphFormat.textAlignment === 'Center') {
-                left += (area.width - width) / 2;
-            } else {
-                left += area.width - width;
-            }
-            paragraphWidget.width = width;
-            paragraphWidget.x = left;
+            (paragraphWidget.paragraphFormat.textAlignment === 'Center' || paragraphWidget.paragraphFormat.textAlignment === 'Right' 
+            || (paragraphWidget.paragraphFormat.textAlignment === 'Justify' && paragraphWidget.paragraphFormat.bidi)) 
+            && paragraphWidget.paragraphFormat.listFormat.listId === -1) {
+            this.updateXPositionForEmptyParagraph(area, paragraphWidget);
             paragraphWidget.y = area.y;
         } else {
             if (this.viewer.clientActiveArea.width <= 0 && this.viewer instanceof WebLayoutViewer) {
@@ -1284,6 +1273,25 @@ export class Layout {
             }
         }
         return paragraphWidget;
+    }
+
+    // update the x position for bidi empty paragraph.
+    private updateXPositionForEmptyParagraph(area: Rect, paragraph: ParagraphWidget): void {
+        if (paragraph.isEmpty() && !isNullOrUndefined(paragraph.paragraphFormat)) {
+            // const top: number = 0;
+            // const bottom: number = 0;
+            const width: number = this.documentHelper.textHelper.getParagraphMarkWidth(paragraph.characterFormat);
+            paragraph.clientX = area.x;
+            let left: number = area.x;
+            paragraph['absoluteXPosition'] = { 'width': area.width, 'x': area.x };
+            if (paragraph.paragraphFormat.textAlignment === 'Center') {
+                left += (area.width - width) / 2;
+            } else {
+                left += area.width - width;
+            }
+            paragraph.width = width;
+            paragraph.x = left;
+        }
     }
 
     private addLineWidget(paragraphWidget: ParagraphWidget): LineWidget {
@@ -3430,7 +3438,8 @@ export class Layout {
 
     private layoutList(paragraph: ParagraphWidget, documentHelper: DocumentHelper): void {
         const list: WList = documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId);
-        const currentListLevel: WListLevel = this.getListLevel(list, paragraph.paragraphFormat.listFormat.listLevelNumber);
+        const listLevelNumber: number = paragraph.paragraphFormat.listFormat.listLevelNumber;
+        const currentListLevel: WListLevel = this.getListLevel(list, listLevelNumber);
         if (isNullOrUndefined(currentListLevel) || isNullOrUndefined(currentListLevel.numberFormat)) {
             return;
         }
@@ -3443,6 +3452,7 @@ export class Layout {
         element.line = lineWidget;
         if (currentListLevel.listLevelPattern === 'Bullet') {
             element.text = currentListLevel.numberFormat;
+            this.updateListValues(list, listLevelNumber);
         } else {
             element.text = this.getListNumber(paragraph.paragraphFormat.listFormat);
         }
@@ -4002,6 +4012,7 @@ export class Layout {
         let maxElementHeight = 0;
         let maxElementBottomMargin = 0;
         let maxElementTopMargin = 0;
+        let elementLeft: number = this.viewer.clientArea.x;
         for (let i: number = 0; i < children.length; i++) {
             let topMargin: number = 0;
             let bottomMargin: number = 0;
@@ -4025,6 +4036,17 @@ export class Layout {
             }
             isStarted = true;
             let alignElements: LineElementInfo = this.alignLineElements(elementBox, topMargin, bottomMargin, maxDescent, addSubWidth, subWidth, textAlignment, whiteSpaceCount, i === children.length - 1);
+            if (textAlignment === "Justify" && elementBox instanceof ShapeBase && elementBox.textWrappingStyle === 'Inline' && subWidth !== 0) {
+                elementBox.x = elementLeft;
+                if (elementBox instanceof ShapeElementBox) {
+                    for (let i = 0; i < elementBox.textFrame.childWidgets.length; i++) {
+                        const widget: BlockWidget = elementBox.textFrame.childWidgets[i] as BlockWidget;
+                        let indent: number = widget.bidi ? widget.rightIndent : widget.leftIndent;
+                        widget.x = elementLeft + HelperMethods.convertPointToPixel(indent + elementBox.textFrame.marginLeft);
+                    }
+                }
+            }
+            elementLeft += elementBox.width;
             line.maxBaseLine = this.maxBaseline;
             topMargin = alignElements.topMargin;
             bottomMargin = alignElements.bottomMargin;
@@ -5048,6 +5070,7 @@ export class Layout {
 
     private updateListValues(list: WList, listLevelNumber: number): void {
         let abstractList: WAbstractList = this.documentHelper.getAbstractListById(list.abstractListId);
+        let currentListLevel: WListLevel = this.getListLevel(list, listLevelNumber);
         if (!this.documentHelper.renderedLists.containsKey(abstractList)) {
             let startVal: Dictionary<number, number> = new Dictionary<number, number>();
             this.documentHelper.renderedLists.add(abstractList, startVal);
@@ -5064,7 +5087,7 @@ export class Layout {
                 while (levelNumber < this.documentHelper.getAbstractListById(list.abstractListId).levels.length) {
                     let listLevel: WListLevel = this.getListLevel(list, levelNumber);
                     // if (!isNullOrUndefined(listLevel)) {
-                    if (levels.containsKey(levelNumber) && listLevel.restartLevel > listLevelNumber) {
+                    if (levels.containsKey(levelNumber) && (listLevel.restartLevel > listLevelNumber || currentListLevel.listLevelPattern === "Bullet")) {
                         levels.remove(levelNumber);
                         // if (document.renderedListLevels.indexOf(listLevel) > -1) {
                         //     document.renderedListLevels.pop();
@@ -7865,7 +7888,8 @@ export class Layout {
                     this.documentHelper.blockToShift = block;
                 } else if ((nextWidget as BlockWidget).bodyWidget) {
                     const floatingElementLength = (nextWidget as BlockWidget).bodyWidget.floatingElements.length;
-                    if (floatingElementLength > 0) {
+                    if (floatingElementLength > 0 || (floatingElementLength === 0 && isNullOrUndefined(this.documentHelper.blockToShift)
+                        && nextWidget instanceof ParagraphWidget && nextWidget.isEmpty() && currentWidget instanceof TableWidget)) {
                         this.documentHelper.blockToShift = block;
                     }
                 }
@@ -9237,7 +9261,14 @@ export class Layout {
                 //Check whether this widget is moved to previous container widget.
                 prevWidget = widget;
                 viewer.updateClientAreaForBlock(widget, true);
-                widget.x = viewer.clientActiveArea.x;
+                if (widget.isEmpty() && !isNullOrUndefined(widget.paragraphFormat) &&
+                    (widget.paragraphFormat.textAlignment === 'Center' || widget.paragraphFormat.textAlignment === 'Right'
+                        || (widget.paragraphFormat.textAlignment === 'Justify' && widget.paragraphFormat.bidi))
+                    && widget.paragraphFormat.listFormat.listId === -1) {
+                    this.updateXPositionForEmptyParagraph(viewer.clientActiveArea, widget);
+                } else {
+                    widget.x = viewer.clientActiveArea.x;
+                }
                 viewer.updateClientAreaForBlock(widget, false);
                 widget.y = viewer.clientActiveArea.y;
                 if (widget.floatingElements.length > 0) {

@@ -877,6 +877,10 @@ export class ContextMenu {
         (addComment.previousSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
         (addComment.nextSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
         if (owner.isReadOnlyMode) {
+            if (!isNullOrUndefined(field) && field instanceof FieldElementBox) {
+                openHyperlink.style.display = 'block';
+                copyHyperlink.style.display = 'block';
+            }
             return true;
         }
         if (this.viewer && this.documentHelper.owner && this.documentHelper.owner.commentReviewPane &&

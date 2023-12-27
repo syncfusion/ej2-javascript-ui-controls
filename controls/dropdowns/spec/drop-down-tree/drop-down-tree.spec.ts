@@ -49,12 +49,10 @@ describe('DropDownTree control', () => {
 
         it('aria attributes', () => {
             ddTreeObj = new DropDownTree({}, '#default');
-            expect(ddTreeObj.element.getAttribute("role")).toEqual("textbox");
+            expect(ddTreeObj.element.getAttribute("role")).toEqual("combobox");
             expect(ddTreeObj.element.getAttribute("type")).toEqual("text");
-            expect(ddTreeObj.element.parentElement.getAttribute("aria-disabled")).toEqual("false");
-            expect(ddTreeObj.element.parentElement.getAttribute("aria-expanded")).toEqual("false");
-            expect(ddTreeObj.element.parentElement.getAttribute("aria-haspopup")).toEqual("true");
-            expect(ddTreeObj.element.parentElement.getAttribute("role")).toEqual("listbox");
+            expect(ddTreeObj.element.getAttribute("aria-expanded")).toEqual("false");
+            expect(ddTreeObj.element.getAttribute("aria-haspopup")).toEqual("tree");
         });
     });
 
@@ -228,7 +226,7 @@ describe('DropDownTree control', () => {
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-            expect((ddtreeObj as any).inputWrapper.getAttribute("aria-expanded")).toBe('true');
+            expect((ddtreeObj as any).inputEle.getAttribute("aria-expanded")).toBe('true');
             expect(document.querySelector('.e-popup').querySelector('.e-treeview')).not.toBe(null);
             expect((ddtreeObj as any).element.nextElementSibling.classList.contains('e-clear-icon')).toBe(true);
             expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(true);
@@ -239,7 +237,7 @@ describe('DropDownTree control', () => {
             expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(false);
             expect((ddtreeObj as any).element.value).toBe("Australia")
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
-            expect((ddtreeObj as any).inputWrapper.getAttribute("aria-expanded")).toBe('false');
+            expect((ddtreeObj as any).inputEle.getAttribute("aria-expanded")).toBe('false');
             (ddtreeObj as any).onFocusOut();
             expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(true);
             (ddtreeObj as any).mouseIn(mouseEventArgs);
@@ -655,7 +653,7 @@ describe('Dropdown Tree With Id starts with number', () => {
         var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
         ele.dispatchEvent(e);
         expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-        expect((ddtreeObj as any).inputWrapper.getAttribute("aria-expanded")).toBe('true');
+        expect((ddtreeObj as any).inputEle.getAttribute("aria-expanded")).toBe('true');
         expect(document.querySelector('.e-popup').querySelector('.e-treeview')).not.toBe(null);
         var li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
         mouseEventArgs.target = li[0].querySelector('.e-list-text');
@@ -664,7 +662,7 @@ describe('Dropdown Tree With Id starts with number', () => {
         expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(false);
         expect((ddtreeObj as any).element.value).toBe("Australia")
         expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
-        expect((ddtreeObj as any).inputWrapper.getAttribute("aria-expanded")).toBe('false');
+        expect((ddtreeObj as any).inputEle.getAttribute("aria-expanded")).toBe('false');
         (ddtreeObj as any).onFocusOut();
     });
 });

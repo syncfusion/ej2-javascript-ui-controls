@@ -295,7 +295,10 @@ export class CheckBoxSelection {
                 'role': 'combobox',
                 'autocomplete': 'off',
                 'autocapitalize': 'off',
-                'spellcheck': 'false'
+                'spellcheck': 'false',
+                'aria-label': 'multiselect',
+                'aria-expanded': 'true',
+                'aria-controls': args.popupElement.id
             });
             this.clearIconElement = this.filterInput.parentElement.querySelector('.' + clearIcon);
             if (!Browser.isDevice && this.clearIconElement) {

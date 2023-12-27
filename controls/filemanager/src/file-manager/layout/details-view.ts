@@ -1066,7 +1066,7 @@ export class DetailsView {
                         dragStartHandler(this.parent, args, this.dragObj);
                     },
                     dragStop: dragStopHandler.bind(this, this.parent),
-                    enableAutoScroll: true,
+                    enableAutoScroll: false,
                     helper: this.dragHelper.bind(this)
                 });
             } else if (!this.parent.allowDragAndDrop && this.dragObj) {

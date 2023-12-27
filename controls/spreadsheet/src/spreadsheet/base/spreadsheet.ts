@@ -2029,8 +2029,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public getValueRowCol(
         sheetId: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean,
-        isUnique?: boolean): string | number {
-        return super.getValueRowCol(sheetId, rowIndex, colIndex, formulaCellReference, refresh, isUnique);
+        isUnique?: boolean, isSubtotal?: boolean): string | number {
+        return super.getValueRowCol(sheetId, rowIndex, colIndex, formulaCellReference, refresh, isUnique, isSubtotal);
     }
 
     /**

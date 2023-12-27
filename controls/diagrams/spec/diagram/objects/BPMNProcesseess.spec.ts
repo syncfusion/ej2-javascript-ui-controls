@@ -1501,9 +1501,5 @@ describe('Diagram Control', () => {
             expect((diagram.nodes[3].shape as BpmnShape).activity.subProcess.collapsed).toBe(true);
             done()
         });
-
-
-
     });
-
 });

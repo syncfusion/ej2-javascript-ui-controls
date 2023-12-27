@@ -721,9 +721,13 @@ export function stringToNumber(value: string, containerSize: number): number {
  */
 export function getPointer(targetId: string, gauge: CircularGauge): IVisiblePointer {
     const tempString: string = targetId.replace(gauge.element.id, '').split('_Axis_')[1];
+    const tempStringArray: string[] = tempString.indexOf('_Range_') > -1 ? tempString.split('_Range_') : tempString.indexOf('_Pointer_NeedleCap_') > -1 ? tempString.split('_Pointer_NeedleCap_') :
+        tempString.indexOf('_Pointer_NeedleTail_') > -1 ? tempString.split('_Pointer_NeedleTail_') : tempString.indexOf('_Pointer_NeedleRect_') > -1 ? tempString.split('_Pointer_NeedleRect_') :
+        tempString.indexOf('_Pointer_Needle_') > -1 ? tempString.split('_Pointer_Needle_') :  tempString.indexOf('_Pointer_RangeBar_') > -1 ? tempString.split('_Pointer_RangeBar_') : tempString.indexOf('_Pointer_Marker_') > -1 ?
+        tempString.split('_Pointer_Marker_') : tempString.indexOf('_Pointer_') > -1 ? tempString.split('_Pointer_') : tempString.split('_Annotation_') ;
     return {
-        axisIndex: +tempString[0],
-        pointerIndex: +tempString[tempString.length - 1]
+        axisIndex: +tempStringArray[0],
+        pointerIndex: +tempStringArray[tempStringArray.length - 1]
     };
 }
 

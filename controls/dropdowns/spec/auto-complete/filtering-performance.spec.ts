@@ -117,29 +117,29 @@ describe('Filtering performance', () => {
     //         autoEle.remove();
     //     });
 
-    //     // it('check Text selection', (done) => {
-    //     //     autoObj.open = () => {
-    //     //         isOpen = true;
-    //     //         expect(isBind).toBeFalsy();
-    //     //     }
-    //     //     autoObj.dataBound = () => {
-    //     //         isBind = true;
-    //     //         expect(autoObj.value).toBe('Test1987');
-    //     //         expect(isOpen).toBeTruthy();
-    //     //         done();
-    //     //     }
-    //     //     autoObj.actionComplete = () => {
-    //     //         autoObj.text = 'Test1987';
-    //     //     }
-    //     //     autoObj.focusIn();
-    //     //     (<any>autoObj).inputElement.value = "t";
-    //     //     let event: any = new Event('keyup');
-    //     //     event.keyCode = 65;
-    //     //     event.key = "a";
-    //     //     (<any>autoObj).onInput();
-    //     //     (<any>autoObj).isValidKey = true;
-    //     //     (<any>autoObj).onFilterUp(event);
-    //     // });
+    //     it('check Text selection', (done) => {
+    //         autoObj.open = () => {
+    //             isOpen = true;
+    //             expect(isBind).toBeFalsy();
+    //         }
+    //         autoObj.dataBound = () => {
+    //             isBind = true;
+    //             expect(autoObj.value).toBe('Test1987');
+    //             expect(isOpen).toBeTruthy();
+    //             done();
+    //         }
+    //         autoObj.actionComplete = () => {
+    //             autoObj.text = 'Test1987';
+    //         }
+    //         autoObj.focusIn();
+    //         (<any>autoObj).inputElement.value = "t";
+    //         let event: any = new Event('keyup');
+    //         event.keyCode = 65;
+    //         event.key = "a";
+    //         (<any>autoObj).onInput();
+    //         (<any>autoObj).isValidKey = true;
+    //         (<any>autoObj).onFilterUp(event);
+    //     });
     // });
     // describe('Number performance', () => {
     //     let list: number[] = [];

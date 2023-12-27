@@ -484,6 +484,9 @@ export class MsWordPaste {
                     resultElem = elm.querySelectorAll(keys[i as number]);
                 }
                 for (let j: number = 0; j < resultElem.length; j++) {
+                    if (resultElem[j as number].closest('li') && keys[i as number] === 'p') {
+                        continue;
+                    }
                     const styleProperty: string = resultElem[j as number].getAttribute('style');
                     if (!isNOU(styleProperty) && styleProperty.trim() !== '') {
                         const valueSplit: string[] = values[i as number].split(';');
@@ -786,7 +789,7 @@ export class MsWordPaste {
                 !isNormalList) {
                 prevList = null;
             }
-            const pElement: Element = createElement('p');
+            const pElement: Element = createElement('p', { className: 'MsoNormal'});
             pElement.innerHTML = collection[index as number].content.join(' ');
             if ((collection[index as number].nestedLevel === 1) && listCount === 0 && collection[index as number].content) {
                 root.appendChild(

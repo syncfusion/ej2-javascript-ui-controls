@@ -6,7 +6,7 @@ import { ShadowModel, RadialGradientModel, StopModel } from '../../../src/diagra
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
-import { BpmnShape, Container } from '../../../src';
+import { BpmnShape, ConnectorModel, Container } from '../../../src';
 Diagram.Inject(BpmnDiagrams);
 
 /**
@@ -377,4 +377,73 @@ describe('BPMN shapes', () => {
                 done();
         });
     });
+});
+
+describe('860251-Bpmn message flow and sequence flow connector child path is not rendered properly.', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+        ele = createElement('div', { id: 'diagramFlow' });
+        document.body.appendChild(ele);
+
+        let node1: NodeModel = {
+            id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
+            shape: { type: 'Bpmn', shape: 'Gateway', gateway: { type: 'Complex' } as BpmnGatewayModel },
+        };
+        let node3: NodeModel = {
+            id: 'node3', width: 100, height: 100, offsetX: 700, offsetY: 100,
+            shape: { type: 'Bpmn', shape: 'Gateway', gateway: { type: 'ExclusiveEventBased' } as BpmnGatewayModel },
+        };
+        let node4: NodeModel = {
+            id: 'node4', width: 100, height: 100, offsetX: 900, offsetY: 100,
+            shape: { type: 'Bpmn', shape: 'Gateway', gateway: { type: 'Inclusive' } as BpmnGatewayModel },
+        };
+        let node6: NodeModel = {
+            id: 'node6', width: 100, height: 100, offsetX: 500, offsetY: 300,
+            shape: { type: 'Bpmn', shape: 'Gateway', gateway: { type: 'ParallelEventBased' } as BpmnGatewayModel },
+        };
+        
+        let connectors:ConnectorModel[] = [
+            {id:'message',sourceID:'node1',type:'Orthogonal',targetID:'node3',shape:{type:'Bpmn',flow:'Message',message:'InitiatingMessage'}},
+            {id:'sequence',sourceID:'node4',type:'Orthogonal',targetID:'node6',shape:{type:'Bpmn',flow:'Sequence',sequence:'Default'}},
+        
+            
+            { id: 'message2', sourcePoint:{x:300,y:300}, type: 'Orthogonal', targetPoint:{x:400,y:400}, shape: { type: 'Bpmn', flow: 'Message', message: 'InitiatingMessage' } },
+            { id: 'sequence2', sourcePoint:{x:400,y:400}, type: 'Orthogonal', targetPoint:{x:300,y:300}, shape: { type: 'Bpmn', flow: 'Sequence', sequence: 'Default' } },
+        
+            { id: 'message3', sourcePoint:{x:600,y:300}, type: 'Straight', targetPoint:{x:700,y:400}, shape: { type: 'Bpmn', flow: 'Message', message: 'InitiatingMessage' } },
+            { id: 'sequence3', sourcePoint:{x:700,y:300}, type: 'Straight', targetPoint:{x:600,y:400}, shape: { type: 'Bpmn', flow: 'Sequence', sequence: 'Default' } },
+        
+        ]
+        diagram = new Diagram({
+
+            width: 1000, height: 1000, nodes: [ node1, node3, node4, node6],
+            connectors:connectors
+        });
+        diagram.appendTo('#diagramFlow');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Checking bpmn flow connector message and sequence path', (done: Function) => { 
+        let node:NodeModel = diagram.nodes[0];
+        diagram.drag(node,50,100);
+        let messageChild = diagram.nameTable['message'].wrapper.children[3];
+        let node2: NodeModel = diagram.nodes[2];
+        diagram.drag(node2,0,100);
+        let seqChild = diagram.nameTable['sequence'].wrapper.children[3];
+        expect(Math.round(messageChild.offsetX) === 476 && Math.round(messageChild.offsetY) === 100 && (Math.round(seqChild.offsetX) === 842 || Math.round(seqChild.offsetX) === 841) && Math.round(seqChild.offsetY) === 200).toBe(true);
+        done();
+    });
+
 });

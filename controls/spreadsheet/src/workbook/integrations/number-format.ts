@@ -1034,17 +1034,18 @@ export class WorkbookNumberFormat {
     }
 
     private shortDateFormat(args: NumberFormatArgs, intl: Internationalization): string {
-        let format: string = (args.format === '' || args.format === 'General') ? getFormatFromType('ShortDate') : <string>args.format;
         let dateObj: Object;
-        if (format === getFormatFromType('ShortDate')) {
+        let format: string;
+        if (args.format === '' || args.format === 'General' || args.format === getFormatFromType('ShortDate')) {
             format = 'MM-dd-yyyy';
             dateObj = { type: 'date', skeleton: 'yMd' };
         } else {
+            format = args.format;
             dateObj = { type: 'date', format: format };
         }
         if (args.value) {
             args.value = args.value.toString();
-            if ((args.value.includes(this.localeObj.dateSeparator) || args.value.indexOf('-') > 0) && !isNumber(args.value)) {
+            if (!isNumber(args.value) && (args.value.includes(this.localeObj.dateSeparator) || args.value.indexOf('-') > 0)) {
                 if (format === 'dd-MM-yyyy' || format === 'dd/MM/yyyy') {
                     format = '';
                 }
@@ -1223,7 +1224,8 @@ export class WorkbookNumberFormat {
             getSheet(this.parent, isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex), false, true);
         const props: { val: string, format: string } = this.checkCustomDateFormat(args.value.toString(), cell, args.isEdit);
         if (props.val !== 'Invalid') {
-            const dateObj: ToDateArgs = toDate(props.val, args.intl || new Internationalization(), this.parent.locale, props.format, cell);
+            const dateObj: ToDateArgs = toDate(
+                props.val, args.intl || new Internationalization(), this.parent.locale, props.format, args.skipCellFormat && cell);
             if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date' &&
                 dateObj.dateObj.getFullYear() >= 1900) {
                 props.val = dateToInt(dateObj.dateObj, props.val.indexOf(':') > -1, dateObj.type && dateObj.type === 'time').toString();
@@ -1445,7 +1447,7 @@ export class WorkbookNumberFormat {
         return { val: val, format: format };
     }
 
-    private formattedBarText(args: { cell: CellModel, value: string, type?: string }): void {
+    private formattedBarText(args: { cell: CellModel, value: string, type?: string, showFormattedText?: boolean }): void {
         if (args.value === '' || isNullOrUndefined(args.value)) {
             return;
         }
@@ -1454,7 +1456,8 @@ export class WorkbookNumberFormat {
         let type: string = args.type || (format && isCustomDateTime(format, true, option, true) ? option.type : '');
         const intl: Internationalization = new Internationalization();
         const beforeText: string = args.value;
-        const date: string = getFormatFromType('ShortDate');
+        const date: string = args.showFormattedText && (format === 'dd-MM-yyyy' || format === 'dd/MM/yyyy') ? format :
+            getFormatFromType('ShortDate');
         const time: string = getFormatFromType('Time');
         const timeFormat: string = format.toLowerCase();
         const parseOtherCultureNumber: Function = (): void => {

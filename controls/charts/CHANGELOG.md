@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 24.1.43 (2023-12-27)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I527182` - Now, the chart element ID is generated properly.
+- `#I527898` - Now, the `interval` for the DateTimeCategory is working properly.
+- `#I528674` - Now, scroll bar positioned properly.
+- `#I528865` - Resolved the console error related to trendlines when using two sets of data with a polynomial type.
+
 ## 24.1.41 (2023-12-18)
 
 ### Chart

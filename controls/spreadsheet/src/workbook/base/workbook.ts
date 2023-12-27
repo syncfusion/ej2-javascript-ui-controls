@@ -1025,7 +1025,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {string | number} - To set the value for row and col.
      */
     public getValueRowCol(
-        sheetId: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean, isUnique?: boolean): string | number {
+        sheetId: number, rowIndex: number, colIndex: number, formulaCellReference?: string, refresh?: boolean, isUnique?: boolean, isSubtotal?: boolean): string | number {
         const args: { action: string, sheetInfo: { visibleName: string, sheet: string, index: number }[] } = {
             action: 'getSheetInfo', sheetInfo: []
         };
@@ -1066,6 +1066,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             this.notify(events.getFormattedCellObject, eventArgs);
             cell = eventArgs.cell;
         }
+        if (isSubtotal && cell && cell.formula && cell.formula.includes('SUBTOTAL(')) {
+            return cell.formula; // To ignore subtotal result in the subtotal formula.
+        }
         return cell && cell.value;
     }
 
@@ -1104,15 +1107,17 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * The available arguments in options are:
      * * file: Specifies the spreadsheet model as object or string. And the object contains the jsonObject,
      * which is saved from spreadsheet using saveAsJson method.
+     * * triggerEvent: Specifies whether to trigger the `openComplete` event or not.
      *
      * @param {Object} options - Options for opening the JSON object.
      * @param {string | object} options.file - Options for opening the JSON object.
+     * @param {boolean} options.triggerEvent - Specifies whether to trigger the `openComplete` event or not.
      * @returns {void} - Opens the specified JSON object.
      */
-    public openFromJson(options: { file: string | object }): void {
+    public openFromJson(options: { file: string | object, triggerEvent?: boolean }): void {
         this.isOpen = true;
         const jsonObject: string = typeof options.file === 'object' ? JSON.stringify(options.file) : options.file;
-        this.notify(events.workbookOpen, { jsonObject: jsonObject });
+        this.notify(events.workbookOpen, { jsonObject: jsonObject, triggerEvent: options.triggerEvent });
     }
 
     /**

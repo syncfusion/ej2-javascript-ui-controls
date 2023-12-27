@@ -5904,7 +5904,7 @@ Remove terinal segment in initial
                 //let nodeCollection: string[];
                 const nodeCollection: string[] = ((this.diagram.nameTable[obj.processId].shape as BpmnShape).activity.subProcess.processes) || [];
                 nodeCollection.splice(nodeCollection.indexOf((obj).id), 1);
-                this.diagram.bpmnModule.removeChildFromBPMN(this.diagram.nameTable[obj.processId].wrapper, (obj).id);
+                this.diagram.bpmnModule.removeChildFromBPMN(this.diagram.nameTable[obj.processId].wrapper, (obj).id, this.diagram);
                 this.diagram.nameTable[(obj).id].processId = '';
                 obj.offsetX = obj.wrapper.offsetX;
                 obj.offsetY = obj.wrapper.offsetY;

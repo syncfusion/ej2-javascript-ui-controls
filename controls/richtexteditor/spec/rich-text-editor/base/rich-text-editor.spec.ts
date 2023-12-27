@@ -5379,7 +5379,7 @@ describe('EJ2-52870-Pasting the text content for the second time after clearing 
         (rteObj.element.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).click();
         setCursorPoint(curDocument, (rteObj as any).inputElement.lastElementChild.lastElementChild.lastElementChild.lastElementChild.firstChild, 1);
         rteObj.onPaste(keyBoardEvent);
-        expect((rteObj as any).inputElement.childElementCount).toBe(2);
+        expect((rteObj as any).inputElement.childElementCount).toBe(1);
         done();
     });
     afterAll(() => {

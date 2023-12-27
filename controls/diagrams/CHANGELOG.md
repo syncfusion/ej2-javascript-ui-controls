@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 24.1.43 (2023-12-27)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I521324` - Now, connector with bridging exports properly.
+- `#I526690` - The default tooltip for the subprocess is now correctly updated after dragging a child from the subprocess onto the diagram.
+- `#I527228` - Now, the bpmn message flow and sequence flow child path is rendered properly.
+
 ## 24.1.41 (2023-12-18)
 
 ### Diagram

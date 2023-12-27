@@ -154,6 +154,7 @@ export class ListBox extends DropDownBase {
     private dragValue: string;
     private customDraggedItem: Object[];
     private timer: number;
+    private inputFormName: string;
     /**
      * Sets the CSS classes to root element of this component, which helps to customize the
      * complete styles.
@@ -422,6 +423,7 @@ export class ListBox extends DropDownBase {
         this.initLoad = true;
         this.isCustomFiltering = false;
         this.initialSelectedOptions = this.value;
+        this.inputFormName = this.element.getAttribute('name');
         super.render();
         this.setEnabled();
         this.renderComplete();
@@ -431,6 +433,12 @@ export class ListBox extends DropDownBase {
         const hiddenSelect: HTMLElement = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
         hiddenSelect.style.visibility = 'hidden';
         this.list.classList.add('e-listbox-wrapper');
+        (this.list.querySelector('.e-list-parent') as any).setAttribute('role', 'presentation');
+        const groupHdrs: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.e-list-group-item');
+        for (let i: number = 0; i < groupHdrs.length; i++) {
+            groupHdrs[i as number].removeAttribute('tabindex');
+            groupHdrs[i as number].setAttribute('role', 'option');
+        }
         if (this.itemTemplate) {
             this.list.classList.add('e-list-template');
         }
@@ -570,6 +578,7 @@ export class ListBox extends DropDownBase {
     }
 
     protected validationAttribute(input: HTMLInputElement, hiddenSelect: HTMLSelectElement): void {
+        if (this.inputFormName) { input.setAttribute('name', this.inputFormName); }
         super.validationAttribute(input, hiddenSelect);
         hiddenSelect.required = input.required;
         input.required = false;
@@ -1467,7 +1476,8 @@ export class ListBox extends DropDownBase {
                 'autocomplete': 'off',
                 'autocorrect': 'off',
                 'autocapitalize': 'off',
-                'spellcheck': 'false'
+                'spellcheck': 'false',
+                'role': 'textbox'
             });
             if (this.height.toString().indexOf('%') < 0) {
                 addClass([this.list], 'e-filter-list');

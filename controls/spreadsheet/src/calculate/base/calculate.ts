@@ -1047,8 +1047,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         const isAsterisk: boolean = criteria.includes('*');
         const isQuestionMark: boolean = criteria.includes('?');
         let criteriaValue: string = isAsterisk ? criteria.replace(/\*/g, '').trim() : criteria;
+        let isCellReferenceValue: boolean = false;
         if (!isStringVal && this.isCellReference(criteriaValue)) {
             criteriaValue = this.getValueFromArg(criteriaValue);
+            isCellReferenceValue = true;
         }
         if (isAsterisk) {
             const asteriskIndex: number = criteria.indexOf('*');
@@ -1079,7 +1081,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             opt = this.parser.tokenEqual;
             criteria = criteria.substring(1);
         }
-        if ((!isStringVal && this.isCellReference(criteria)) || criteria.includes(this.arithMarker)) {
+        if ((!isStringVal && this.isCellReference(criteria) && !isCellReferenceValue) || criteria.includes(this.arithMarker)) {
             criteria = this.getValueFromArg(criteria);
         }
         const checkCriteria: number = this.parseFloat(criteria);
@@ -2265,8 +2267,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             const isAsterisk: boolean = criteria.includes('*');
             const isAsteriskOnly: boolean = criteria === '*' || criteria === '<>*';
             let criteriaValue: string = isAsterisk && !isAsteriskOnly ? criteria.replace(/\*/g, '').trim() : criteria;
+            let isCellReferenceValue: boolean = false;
             if (!isStringVal && this.isCellReference(criteriaValue)) {
                 criteriaValue = this.getValueFromArg(criteriaValue);
+                isCellReferenceValue = true;
             }
             if (isAsterisk && !isAsteriskOnly) {
                 const asteriskIndex: number = criteria.indexOf('*');
@@ -2366,7 +2370,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 op = 'equal';
                 criteria = criteria.substring(1);
             }
-            if ((!isStringVal && this.isCellReference(criteria)) || criteria.includes(this.arithMarker)) {
+            if ((!isStringVal && this.isCellReference(criteria) && (!isCellReferenceValue || (newCell !== '' && !isCountIfs))) || criteria.includes(this.arithMarker)) {
                 criteria = this.getValueFromArg(criteria);
             }
             if (criteria.indexOf('*') > -1 || criteria.indexOf('?') > -1) {
@@ -2703,9 +2707,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      *
      * @param {string} arg - Formula argument for getting a exact value.
      * @param {boolean} isUnique - It specifies unique formula or not.
+     * @param {boolean} isSubtotal - It specifies subtotal formula.
      * @returns {string} - To get the exact value from argument.
      */
-    public getValueFromArg(arg: string, isUnique?: boolean, isIfError?: boolean): string {
+    public getValueFromArg(arg: string, isUnique?: boolean, isIfError?: boolean, isSubtotal?: boolean): string {
         arg = arg.trim();
         let s: string | number = arg;
         let dateTime: Date = this.dateTime1900;
@@ -2751,7 +2756,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 // eslint-disable-next-line no-throw-literal
                 if (!isUnique) { throw this.formulaErrorStrings[FormulasErrorsStrings.circular_reference] + s; }
             }
-            pObjCVal = this.getParentObjectCellValue(s, false, isUnique);
+            pObjCVal = this.getParentObjectCellValue(s, false, isUnique, isSubtotal);
             this.updateDependentCell(s);
             return pObjCVal.toString();
         }
@@ -2917,7 +2922,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return text;
     }
 
-    private getParentObjectCellValue(val: string, refresh: boolean, isUnique?: boolean): string | number {
+    private getParentObjectCellValue(val: string, refresh: boolean, isUnique?: boolean, isSubtotal?: boolean): string | number {
         if (val === this.trueValue || val === this.falseValue) {
             return val;
         }
@@ -2951,7 +2956,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (saveCell === this.cell && !isUnique) {
             throw this.formulaErrorStrings[FormulasErrorsStrings.circular_reference];
         }
-        const cValue: string | number = this.getParentCellValue(row, col, this.grid, saveCell, grid, refresh, isUnique);
+        const cValue: string | number = this.getParentCellValue(row, col, this.grid, saveCell, grid, refresh, isUnique, isSubtotal);
         this.grid = grid;
         this.cell = saveCell;
         return cValue;
@@ -2959,7 +2964,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     private getParentCellValue(
         row: number, col: number, grd: Object, fromCell: string, fromCellGrd: Object, refresh: boolean,
-        isUnique?: boolean): number | string {
+        isUnique?: boolean, isSubtotal?: boolean): number | string {
         // formulainfotable
         let cValue: number | string;
         const gridId: number = this.getSheetId(grd);
@@ -2970,7 +2975,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 fromCell = fromCellGrd === grd ? '' : fromCell + ',' +
                     (fromCellGrd && typeof fromCellGrd === 'string' && Number(fromCellGrd) > -1 ? fromCellGrd : this.getSheetID(fromCellGrd));
             }
-            cValue = (this.parentObject as any).getValueRowCol(gridId, row, col, fromCell, refresh, isUnique);
+            cValue = (this.parentObject as any).getValueRowCol(gridId, row, col, fromCell, refresh, isUnique, isSubtotal);
             return isNullOrUndefined(cValue) ? this.emptyString : cValue.toString();
         }
         if (cValue === '' || cValue === undefined) {
@@ -3220,6 +3225,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public computeMinMax(args: string[], operation: string): string {
         let result: number;
         let argVal: string;
+        let isSubtotalFormula: boolean = false;
+        if (args.length && args[args.length - 1] === 'isSubtotal') {
+            isSubtotalFormula = true;
+            args.pop();
+        }
         if (isNullOrUndefined(args) || args.length === 0) {
             return this.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
         }
@@ -3237,7 +3247,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             if (argArr[i as number].indexOf(':') > -1 && this.isCellReference(argArr[i as number])) {
                 const cellValue: string[] | string = this.getCellCollection(argArr[i as number]);
                 for (let j: number = 0; j < cellValue.length; j++) {
-                    argVal = this.getValueFromArg(cellValue[j as number]);
+                    argVal = !isSubtotalFormula ? this.getValueFromArg(cellValue[j as number]) :
+                        this.getValueFromArg(cellValue[j as number], null, null, true);
+                    if (isSubtotalFormula && argVal.includes('SUBTOTAL(')) {
+                        continue;
+                    }
                     const cellVal: number = this.parseFloat(argVal);
                     if (argVal === '' || this.isNaN(this.parseFloat(cellVal)) || this.getErrorStrings().indexOf(argVal) > -1) {
                         continue;
@@ -3246,7 +3260,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     }
                 }
             } else {
-                let val: string = this.getValueFromArg(argArr[i as number]);
+                let val: string = !isSubtotalFormula ? this.getValueFromArg(argArr[i as number]) :
+                    this.getValueFromArg(argArr[i as number], null, null, true);
+                if (isSubtotalFormula && val.includes('SUBTOTAL(')) {
+                    continue;
+                }
                 let cellVal: number = 0;
                 const isCellRef: boolean = this.isCellReference(argArr[i as number]);
                 const isEmptyCell: boolean = val === '' && isCellRef;
@@ -3282,7 +3300,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {string[]} args - Specify the args.
      * @returns {string} - to calculate average.
      */
-    public calculateAvg(args: string[]): string {
+    public calculateAvg(args: string[], isSubtotalFormula?: boolean): string {
         const argArr: string[] = args;
         let cellColl: string[] | string = [];
         let cellVal: string; let value: string;
@@ -3293,7 +3311,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 if (argArr[k as number].indexOf(':') > -1) {
                     cellColl = this.getCellCollection(argArr[k as number]);
                     for (let i: number = 0; i < cellColl.length; i++) {
-                        cellVal = this.getValueFromArg(cellColl[i as number]);
+                        cellVal = !isSubtotalFormula ? this.getValueFromArg(cellColl[i as number]) :
+                            this.getValueFromArg(cellColl[i as number], null, null, true);
+                        if (isSubtotalFormula && cellVal.includes('SUBTOTAL(')) {
+                            continue;
+                        }
                         if (this.getErrorStrings().indexOf(cellVal) > -1) {
                             return cellVal;
                         } else if (isNullOrUndefined(cellVal) || isNaN(this.parseFloat(cellVal)) || cellVal === '') {
@@ -3303,7 +3325,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         countNum = countNum + 1;
                     }
                 } else {
-                    cellVal = this.getValueFromArg(argArr[k as number]);
+                    cellVal = !isSubtotalFormula ? this.getValueFromArg(argArr[k as number]) :
+                        this.getValueFromArg(argArr[k as number], null, null, true);
+                    if (isSubtotalFormula && cellVal.includes('SUBTOTAL(')) {
+                        continue;
+                    }
                     if (this.getErrorStrings().indexOf(cellVal) > -1) {
                         return cellVal;
                     } else if (isNullOrUndefined(cellVal) || isNaN(this.parseFloat(cellVal)) || cellVal === '') {

@@ -495,7 +495,7 @@ export class Clipboard {
                                     if (cancel) {
                                         continue;
                                     }
-                                    if (cell.formula && this.copiedInfo.isCut) {
+                                    if (cell.formula && this.copiedInfo && this.copiedInfo.isCut) {
                                         this.parent.notify(clearFormulaDependentCells, { cellRef: getRangeAddress([i, j, i, j]) });
                                     }
                                 }

@@ -5381,19 +5381,21 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             let autoWidth: number = 0;
             for (let i: number = 0; i < gcol.length; i++) {
                 const col: Column = gcol[parseInt(i.toString(), 10)];
-                if (isNullOrUndefined(col.width)) {
-                        col.width = Math.max(200, col.minWidth ? parseFloat(col.minWidth.toString()) : 0);
+                if (isNullOrUndefined(col.width) && (col.freeze === 'Left' || col.freeze === 'Right' || col.freeze === 'Fixed' || col.isFrozen)) {
+                    col.width = Math.max(200, col.minWidth ? parseFloat(col.minWidth.toString()) : 0);
                 }
                 if (col.width === 'auto') {
                     let tWidth: number = 0;
                     if (isAutoWidth) {
-                        gcol.filter((col: Column) => {
-                            if (col.visible) {
-                                if (col.width === 'auto') {
+                        gcol.filter((cols: Column) => {
+                            if (cols.visible) {
+                                if (cols.width === 'auto') {
                                     autoCol++;
                                 }
-                                if (col.width !== 'auto') {
-                                    tWidth += parseFloat(col.width.toString());
+                                if (cols.width !== 'auto') {
+                                    const width: number = !isNullOrUndefined(cols.width) ? parseFloat(cols.width.toString()) :
+                                        Math.max(200, cols.minWidth ? parseFloat(cols.minWidth.toString()) : 0);
+                                    tWidth += width;
                                 }
                             }
                         });
@@ -5624,7 +5626,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
 
     private splitFrozenCount(columns: Column[]): void {
-        if (this.frozenColumns) {
+        if (this.frozenColumns || (this.changedProperties && this.changedProperties.frozenColumns === 0)) {
             const cols: Column[] = !this.enableColumnVirtualization || (this.enableColumnVirtualization && this.isPreparedFrozenColumns) ?
                 this.enableColumnVirtualization && this.columnModel && this.columnModel.length ? this.columnModel :
                     this.getColumns() : this.columns as Column[];

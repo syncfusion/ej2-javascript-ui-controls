@@ -2394,7 +2394,7 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
             e.type = 'keydown';
             e.action = 'down';
             dropDowns.keyActionHandler(e);
-            expect(isNullOrUndefined(dropDowns.liCollections)).toBe(true);
+            expect(dropDowns.liCollections.length === 0).toBe(true);
         });
     });
     describe('EJ2-59078', () => {
@@ -2782,7 +2782,7 @@ describe("EJ2-842578 - Check that the aria-owns attribute does indeed contain th
         ariaObj.showPopup();
         setTimeout(() => {
             const element = document.querySelector('.e-control.e-autocomplete.e-input');
-            expect((element as any).getAttribute('aria-owns') === "ariaInput_options").toBe(true);
+            expect((element as any).getAttribute('aria-owns') === "ariaInput_popup").toBe(true);
         done();
         }, 100);
     });
