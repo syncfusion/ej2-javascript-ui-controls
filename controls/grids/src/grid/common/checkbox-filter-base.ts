@@ -1762,6 +1762,10 @@ export class CheckBoxFilterBase {
 
         while (len--) {
             value = json[parseInt(len.toString(), 10)] as string;
+            if (column && column.type === 'dateonly' && typeof value[`${field}`] === 'string' && value[`${field}`]) {
+                const arr: string[] = value[`${field}`].split(/[^0-9.]/);
+                value[`${field}`] = new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10));
+            }
             value = getObject(field, value); //local remote diff, check with mdu
             const currentFilterValue: string = (typeof value === 'string') && !(isNullOrUndefined(checkboxFilter)) &&
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

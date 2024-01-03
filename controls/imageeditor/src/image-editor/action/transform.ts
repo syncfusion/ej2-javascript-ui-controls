@@ -1107,11 +1107,11 @@ export class Transform {
         } else if (value < 0 && isNullOrUndefined(selectionObj)) {
             if (parent.img.destLeft > 0) {parent.img.destLeft = 0; }
             if (parent.img.destTop > 0) {parent.img.destTop = 0; }
-            if (parent.img.destLeft +  maxDimension.width < parent.lowerCanvas.width) {
-                parent.img.destLeft = parent.lowerCanvas.width - parent.img.destWidth;
+            if (parent.img.destLeft +  maxDimension.width < parent.lowerCanvas.clientWidth) {
+                parent.img.destLeft = parent.lowerCanvas.clientWidth - parent.img.destWidth;
             }
-            if (parent.img.destTop +  maxDimension.height < parent.lowerCanvas.height) {
-                parent.img.destTop = parent.lowerCanvas.height - parent.img.destHeight;
+            if (parent.img.destTop +  maxDimension.height < parent.lowerCanvas.clientHeight) {
+                parent.img.destTop = parent.lowerCanvas.clientHeight - parent.img.destHeight;
             }
         }
         return maxDimension;

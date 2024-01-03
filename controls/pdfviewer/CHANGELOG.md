@@ -2,7 +2,28 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I529607` - Now, the formatting is not applying to extraneous line spacing in freetext annotation for PDF Viewer and downloaded document.
+
 ## 24.1.43 (2023-12-27)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I499403` - Now, the import functionality is working for the given custom stamp annotation.
+- `#I525379` - Now, the PDF pages are rendered properly when zooming in the provided PDF document on the client-side rendering.
+- `#I529609` - Now, the annotation time does not change in the comment panel without making any changes.
+- `#F185745` - Now, the calibrate distance annotations is not flip when downloading the document and opening it in the other viewers.
+- `#I529723` - Now, the radio button size does not enlarge when copied, pasted, or dragged.
+- `#I529705` - Now, the annotations are displayed after importing XFDF file.
+
+## 24.1.41 (2023-12-18)
 
 ### PDF Viewer
 

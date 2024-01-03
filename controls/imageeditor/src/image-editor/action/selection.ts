@@ -3969,7 +3969,13 @@ export class Selection {
                     this.lowerContext.filter = temp;
                     this.getCurrentFlipState();
                 } else {
+                    const totalPannedInternalPoint: Point = extend({}, parent.panPoint.totalPannedInternalPoint, {}, true) as Point;
+                    const destPoints: ActivePoint = {startX: parent.img.destLeft, startY: parent.img.destTop, width: parent.img.destWidth,
+                        height: parent.img.destHeight };
                     parent.notify('draw', { prop: 'callUpdateCurrTransState', onPropertyChange: false});
+                    parent.panPoint.totalPannedInternalPoint = totalPannedInternalPoint;
+                    parent.img.destLeft = destPoints.startX; parent.img.destTop = destPoints.startY;
+                    parent.img.destWidth = destPoints.width; parent.img.destHeight = destPoints.height;
                     parent.notify('freehand-draw', { prop: 'freehandRedraw', onPropertyChange: false,
                         value: {context: this.lowerContext, points: null} });
                 }

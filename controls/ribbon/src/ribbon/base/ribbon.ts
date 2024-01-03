@@ -253,6 +253,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     private keyboardModuleRibbon: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
     private initialPropsData: {[key: string]: object};
+    private hiddenElements: {[key: string]: object};
+    private hiddenGroups: string[];
     /** @hidden */
     public overflowDDB: DropDownButton;
     /** @hidden */
@@ -287,6 +289,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         this.idIndex = 0;
         this.tooltipData = [];
         this.initialPropsData = {};
+        this.hiddenElements = {};
+        this.hiddenGroups = [];
         this.isAddRemove = false;
         this.keyConfigs = {
             leftarrow: 'leftarrow',
@@ -647,6 +651,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         selectedIndex = selectedIndex === -1 ? this.selectedTab : selectedIndex;
         const eventArgs: TabSelectedEventArgs = { previousIndex: this.selectedTab, selectedIndex: selectedIndex };
         this.setProperties({ selectedTab: selectedIndex }, true);
+        this.calculateHiddenElementsWidth(selectedIndex);
         this.checkOverflow(selectedIndex, e.selectedContent.firstChild as HTMLElement);
         if (this.activeLayout === 'Simplified' && this.overflowDDB) {
             const overflowTarget: HTMLElement = this.overflowDDB.target as HTMLElement;
@@ -769,6 +774,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         const orderedGroups: RibbonGroupModel[] = this.getGroupResizeOrder(true, tabIndex);
         let isEmptyCollection: boolean;
         for (let i: number = 0; ((i < orderedGroups.length) && (tabContent.offsetWidth < activeContent.offsetWidth)); i++) {
+            let isGroupUpdated: boolean = false;
             const group: RibbonGroupModel = orderedGroups[parseInt(i.toString(), 10)];
             const groupEle: HTMLElement = tabContent.querySelector('#' + group.id);
             const groupContainer: HTMLElement = groupEle.querySelector('#' + group.id + constants.CONTAINER_ID);
@@ -780,7 +786,66 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     const itemContainer: HTMLElement = collectionEle.querySelector('#' + item.id + constants.CONTAINER_ID);
                     if (((item.displayOptions === DisplayMode.Auto) ||
                         (item.displayOptions === (DisplayMode.Simplified | DisplayMode.Overflow))) && !isNullOrUndefined(itemContainer)) {
-                        itemContainer.setAttribute('data-simplified-width', activeContent.offsetWidth.toString());
+                        let groupHidden: boolean = false;
+                        let itemHidden: boolean = false;
+                        let isAllItemHidden: boolean = false;
+                        let isEmptyCollection: boolean = false;
+                        let groupItems: NodeListOf<Element>;
+                        if (groupEle.classList.contains('e-hidden') || groupEle.classList.contains('e-hide-group')) {
+                            groupItems = groupEle.querySelectorAll('.e-ribbon-item.e-hidden');
+                            if (groupItems.length) {
+                                for (let i: number = 0; i < groupItems.length; i++) {
+                                    groupItems[parseInt(i.toString(), 10)].classList.remove('e-hidden');
+                                }
+                            }
+                            if (groupEle.classList.contains('e-hide-group')) {
+                                isAllItemHidden = true;
+                                groupEle.classList.remove('e-hide-group');
+                                groupEle.classList.remove('e-ribbon-emptyCollection');
+                                if (this.hiddenGroups.indexOf(groupEle.id) !== -1) {
+                                    this.hiddenGroups.splice(this.hiddenGroups.indexOf(groupEle.id), 1);
+                                }
+                            } else {
+                                groupHidden = true;
+                                groupEle.classList.remove('e-hidden');
+                            }
+                            if (!isGroupUpdated) {
+                                this.calculateOverflowItemsWidth(groupEle.offsetWidth, false, tabIndex);
+                                this.calculateMediumDataWidth(groupEle.offsetWidth, tabIndex, false);
+                                isGroupUpdated = true;
+                            }
+                        }
+                        else {
+                            if (itemContainer.classList.contains('e-hidden')) {
+                                itemHidden = true;
+                                itemContainer.classList.remove('e-hidden');
+                                if (groupEle.classList.contains('e-ribbon-emptyCollection')) {
+                                    isEmptyCollection = true;
+                                    groupEle.classList.remove('e-ribbon-emptyCollection');
+                                }
+                                this.calculateOverflowItemsWidth(itemContainer.offsetWidth, false, tabIndex);
+                                this.calculateMediumDataWidth(itemContainer.offsetWidth, tabIndex, false);
+                            }
+                        }
+                        itemContainer.setAttribute('data-simplified-width', (activeContent.offsetWidth).toString());
+                        if (itemHidden) {
+                            itemContainer.classList.add('e-hidden');
+                        }
+                        if (groupItems && groupItems.length) {
+                            for (let i: number = 0; i < groupItems.length; i++) {
+                                groupItems[parseInt(i.toString(), 10)].classList.add('e-hidden');
+                            }
+                        }
+                        if (groupHidden) {
+                            groupEle.classList.add('e-hidden');
+                        }
+                        if (isAllItemHidden) {
+                            groupEle.classList.add('e-hide-group');
+                            groupEle.classList.add('e-ribbon-emptyCollection');
+                        }
+                        if (isEmptyCollection) {
+                            groupEle.classList.add('e-ribbon-emptyCollection');
+                        }
                         this.createOverflowPopup(item, tabIndex, group.enableGroupOverflow, group.id
                             , group.header, itemContainer, groupContainer, true);
                         if (item.activeSize === RibbonItemSize.Small) {
@@ -875,29 +940,53 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     }
                     if (((item.displayOptions === DisplayMode.Auto) ||
                         (item.displayOptions === (DisplayMode.Simplified | DisplayMode.Overflow))) && !isNullOrUndefined(itemContainer)) {
-                        const width: number = parseInt(itemContainer.getAttribute('data-simplified-width'), 10);
+                        let width: number = parseInt(itemContainer.getAttribute('data-simplified-width'), 10);
+                        const groupItemEle: HTMLElement = tabContent.querySelector('#' + group.id);
+                        if (itemContainer.classList.contains('e-hidden') || groupItemEle.classList.contains('e-hidden')) {
+                            width = Math.abs(width - activeContent.offsetWidth);
+                        }
                         if (!isClear && (tabContent.offsetWidth < width)) { flag = false; break; }
                         const groupEle: HTMLElement = tabContent.querySelector('#' + collection.id);
                         if ((item.type === RibbonItemType.DropDown) || (item.type === RibbonItemType.SplitButton) || (item.type === RibbonItemType.GroupButton)) {
                             this.updatePopupItems(item, itemContainer, group.enableGroupOverflow, false);
                         }
                         groupEle.append(itemContainer);
+                        if (itemContainer.classList.contains('e-hidden') || groupItemEle.classList.contains('e-hidden')) {
+                            itemContainer.setAttribute('data-simplified-width', width.toString());
+                            let isGroupHidden: boolean = false;
+                            let widthDifference: number = 0;
+                            if (itemContainer.classList.contains('e-hidden')) {
+                                itemContainer.classList.remove('e-hidden');
+                                if (groupItemEle.classList.contains('e-hide-group')) {
+                                    isGroupHidden = true;
+                                    widthDifference = this.checkWidthDifference(itemContainer, groupItemEle);
+                                }
+                                width = itemContainer.offsetWidth + widthDifference;
+                                itemContainer.classList.add('e-hidden');
+                            }
+                            this.calculateOverflowItemsWidth(width, true, tabIndex);
+                            this.calculateMediumDataWidth(width, tabIndex, true);
+                            if (isGroupHidden) {
+                                groupItemEle.classList.add('e-hide-group');
+                                groupItemEle.classList.add('e-ribbon-emptyCollection');
+                            }
+                        }
                         this.removeOverflowEvent(item, itemContainer);
                         if (item.allowedSizes & RibbonItemSize.Small) {
                             (item as RibbonItem).setProperties({ activeSize: RibbonItemSize.Small }, true);
                             this.setItemSize(itemContainer.querySelector('#' + item.id), item);
                         }
-                    }
-                }
-            }
-            const groupEle: HTMLElement = tabContent.querySelector('#' + group.id);
-            const itemEle: HTMLElement = groupEle.querySelector('.' + constants.RIBBON_ITEM);
-            if (groupEle.classList.contains('e-ribbon-emptyCollection') && itemEle !== null) {
-                let itemsLength: NodeListOf<Element> = groupEle.querySelectorAll('.' + constants.RIBBON_ITEM)
-                if (itemsLength) {
-                    isEmptyCollection = this.checkEmptyCollection(itemsLength);
-                    if (!isEmptyCollection) {
-                        groupEle.classList.remove('e-ribbon-emptyCollection');
+                        const groupElement: HTMLElement = tabContent.querySelector('#' + group.id);
+                        const itemEle: HTMLElement = groupElement.querySelector('.' + constants.RIBBON_ITEM);
+                        if (groupElement.classList.contains('e-ribbon-emptyCollection') && itemEle !== null) {
+                            let itemsLength: NodeListOf<Element> = groupElement.querySelectorAll('.' + constants.RIBBON_ITEM)
+                            if (itemsLength) {
+                                isEmptyCollection = this.checkEmptyCollection(itemsLength);
+                                if (!isEmptyCollection) {
+                                    groupElement.classList.remove('e-ribbon-emptyCollection');
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -914,7 +1003,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     }
                 }
             }
-            this.checkOverflowHiddenItems(group.enableGroupOverflow, tabIndex, group.id);
+        }
+        for (let i: number = 0; i < orderedGroups.length; i++) {
+            this.checkOverflowHiddenItems(orderedGroups[parseInt(i.toString(), 10)].enableGroupOverflow, tabIndex, orderedGroups[parseInt(i.toString(), 10)].id);
         }
         if (this.overflowDDB) {
             const overflowEle: HTMLElement = this.overflowDDB.target as HTMLElement;
@@ -3039,7 +3130,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         const contentEle: HTMLElement = this.tabObj.items[itemProp.tabIndex].content as HTMLElement;
         const groupEle: HTMLElement = contentEle.querySelector('#' + groupID);
         if (groupEle) {
-            isHidden ? groupEle.classList.add('e-hidden') : groupEle.classList.remove('e-hidden');
+            this.updateHiddenElements(itemProp.tabIndex, isHidden ? 'hideGroup' : 'showGroup', groupID, isHidden, groupEle);
         }
         else {
             this.updateInitialProps(itemProp.tabIndex, groupID, 'hiddenGroups', isHidden);
@@ -3064,7 +3155,242 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 }
             }
         }
-        this.refreshLayout();
+        if (this.selectedTab === itemProp.tabIndex) {
+            this.refreshLayout();
+        }
+    }
+
+    private updateHiddenElements(tabIndex: number, key: string, id: string, isHidden: boolean, element: HTMLElement, group?: RibbonGroupModel): void {
+        if (isHidden) {
+            if (!(element.classList.contains('e-hidden'))) {
+                this.checkHiddenElements(key, id, tabIndex);
+                element.classList.add('e-hidden');
+                if (key === 'hideItem') {
+                    this.checkHiddenItems(group, isHidden, tabIndex);
+                }
+                this.calculateHiddenElementsWidth(tabIndex);
+            }
+        } else {
+            if (element.classList.contains('e-hidden')) {
+                this.checkHiddenElements(key, id, tabIndex);
+                element.classList.remove('e-hidden');
+                this.calculateHiddenElementsWidth(tabIndex);
+                if (key === 'showItem') {
+                    this.checkHiddenItems(group, isHidden, tabIndex);
+                }
+            }
+        }
+    }
+
+    private checkHiddenElements(key: string, id: string, tabIndex: number): void {
+        if (this.activeLayout === 'Simplified') {
+            let hiddenProps = this.hiddenElements[parseInt(tabIndex.toString(), 10)] as {[key: string]: object};
+            if (!hiddenProps) {
+                this.hiddenElements[parseInt(tabIndex.toString(), 10)] = {};
+                hiddenProps = this.hiddenElements[parseInt(tabIndex.toString(), 10)] as {[key: string]: object};
+            }
+            if (hiddenProps) {
+                /* eslint-disable */
+                if (!hiddenProps[key]) {
+                    hiddenProps[key] = [];
+                }
+                if ((hiddenProps[key] as string[]).length) {
+                    let index: number = (hiddenProps[key] as string[]).indexOf(id);
+                    if (index === -1) {
+                        (hiddenProps[key] as string[]).push(id);
+                    }
+                }
+                else {
+                    (hiddenProps[key] as string[]).push(id);
+                }
+                /* eslint-enable */
+            }
+        }
+    }
+
+    private updateItemsSimplifiedWidth(tabIndex: number, key: string): void {
+        let hiddenProps = this.hiddenElements[parseInt(tabIndex.toString(), 10)] as {[key: string]: object};
+        /* eslint-disable */
+        if (hiddenProps && hiddenProps[key] && (hiddenProps[key] as string[]).length) {
+            for (let i: number = 0; i < (hiddenProps[key] as string[]).length; i++) {
+                const contentEle: HTMLElement = this.tabObj.items[tabIndex].content as HTMLElement;
+                let hiddenEle: HTMLElement;
+                let groupEle: HTMLElement;
+                let isGroupHidden: boolean = false;
+                let widthDifference: number = 0;
+                if (key === 'hideGroup' || key === 'showGroup') {
+                    hiddenEle = contentEle.querySelector('#' + (hiddenProps[key] as string[])[i]);
+                } else {
+                    hiddenEle = contentEle.querySelector('#' + (hiddenProps[key] as string[])[i] + constants.CONTAINER_ID);
+                }
+                if (hiddenEle) {
+                    if (key === 'hideGroup' || key === 'hideItem') {
+                        let isHidden: boolean = false;
+                        if (hiddenEle.classList.contains('e-hidden')) {
+                            isHidden = true;
+                            hiddenEle.classList.remove('e-hidden');
+                        }
+                        if (key === 'hideItem') {
+                            groupEle = hiddenEle.closest('.e-ribbon-group') as HTMLElement;
+                            if (groupEle.classList.contains('e-hide-group')) {
+                                isGroupHidden = true;
+                                widthDifference = this.checkWidthDifference(hiddenEle, groupEle);
+                            }
+                        }
+                        this.calculateOverflowItemsWidth(hiddenEle.offsetWidth + widthDifference, true, tabIndex);
+                        this.calculateMediumDataWidth(hiddenEle.offsetWidth + widthDifference, tabIndex, true);
+                        if (isHidden) {
+                            hiddenEle.classList.add('e-hidden');
+                        }
+                    } else {
+                        if (key === 'showItem') {
+                            groupEle = hiddenEle.closest('.e-ribbon-group') as HTMLElement;
+                            if (groupEle.classList.contains('e-hide-group')) {
+                                isGroupHidden = true;
+                                groupEle.classList.remove('e-hide-group');
+                                groupEle.classList.remove('e-ribbon-emptyCollection');
+                                widthDifference = Math.abs(hiddenEle.offsetWidth - groupEle.offsetWidth);
+                                if (this.hiddenGroups.indexOf(groupEle.id) !== -1) {
+                                    this.hiddenGroups.splice(this.hiddenGroups.indexOf(groupEle.id), 1);
+                                }
+                            }
+                            else {
+                                if (this.hiddenGroups.indexOf(groupEle.id) !== -1) {
+                                    let hiddenItems: NodeListOf<Element> = groupEle.querySelectorAll('.e-ribbon-item:not(.e-hidden)');
+                                    hiddenItems.forEach((item: HTMLElement) => {
+                                        if (item.id !== hiddenEle.id) {
+                                            item.classList.add('e-hidden');
+                                        }
+                                    });
+                                    widthDifference = Math.abs(hiddenEle.offsetWidth - groupEle.offsetWidth);
+                                    hiddenItems.forEach((item: HTMLElement) => {
+                                        if (item.id !== hiddenEle.id) {
+                                            item.classList.remove('e-hidden');
+                                        }
+                                    });
+                                    this.hiddenGroups.splice(this.hiddenGroups.indexOf(groupEle.id), 1);
+                                }
+                            }
+                        }
+                        this.calculateOverflowItemsWidth(hiddenEle.offsetWidth + widthDifference, false, tabIndex);
+                        this.calculateMediumDataWidth(hiddenEle.offsetWidth + widthDifference, tabIndex, false);
+                    }
+                    if (isGroupHidden) {
+                        groupEle.classList.add('e-hide-group');
+                        groupEle.classList.add('e-ribbon-emptyCollection');
+                    }
+                }
+                let index: number = (hiddenProps[key] as string[]).indexOf((hiddenProps[key] as string[])[i]);
+                if (index !== -1) {
+                    (hiddenProps[key] as string[]).splice(index, 1);
+                    i--;
+                }
+                /* eslint-enable */
+            }
+        }
+    }
+
+    private checkWidthDifference(hiddenEle: HTMLElement, groupEle: HTMLElement): number {
+        let widthDifference: number = 0;
+        groupEle.classList.remove('e-hide-group');
+        groupEle.classList.remove('e-ribbon-emptyCollection');
+        if (this.hiddenGroups.length) {
+            if (this.hiddenGroups.indexOf(groupEle.id) === -1) {
+                this.hiddenGroups.push(groupEle.id);
+                widthDifference = Math.abs(hiddenEle.offsetWidth - groupEle.offsetWidth);
+            }
+        } else {
+            this.hiddenGroups.push(groupEle.id);
+            widthDifference = Math.abs(hiddenEle.offsetWidth - groupEle.offsetWidth);
+        }
+        return widthDifference;
+    }
+
+    private calculateHiddenElementsWidth(tabIndex: number): void {
+        if (tabIndex === this.selectedTab && this.activeLayout === 'Simplified') {
+            let hiddenProps = this.hiddenElements[parseInt(tabIndex.toString(), 10)] as {[key: string]: object};
+            if (hiddenProps) {
+                for (let i: number = 0; i < Object.keys(hiddenProps).length; i++) {
+                    this.updateItemsSimplifiedWidth(tabIndex, Object.keys(hiddenProps)[parseInt(i.toString(), 10)]);
+                }
+            }
+        }
+    }
+
+    private calculateMediumDataWidth(hiddenWidth: number, tabIndex: number, isHidden: boolean): void {
+        if (this.selectedTab === tabIndex && this.activeLayout === 'Simplified') {
+            const activeContent: HTMLElement = this.tabObj.element.querySelector('#' + this.tabs[parseInt(tabIndex.toString(), 10)].id + constants.CONTENT_ID);
+            let mediumDataItems: Array<Element> = Array.prototype.slice.call(activeContent.querySelectorAll('.e-ribbon-item'));
+            if (this.overflowDDB) {
+                const overflowEle: HTMLElement = this.overflowDDB.target as HTMLElement;
+                let overflowItems: NodeListOf<Element> = overflowEle.querySelectorAll('.e-ribbon-item');
+                let selectedOFTab: HTMLElement = document.querySelector('#' + this.tabs[parseInt(tabIndex.toString(), 10)].id + constants.OVERFLOW_ID) as HTMLElement;
+                for (let i: number = 0; i < overflowItems.length; i++) {
+                    let ofTab: HTMLElement = overflowItems[parseInt(i.toString(), 10)].closest('#' + this.tabs[parseInt(tabIndex.toString(), 10)].id + constants.OVERFLOW_ID) as HTMLElement;
+                    if (selectedOFTab && ofTab && selectedOFTab.id === ofTab.id && overflowItems[parseInt(i.toString(), 10)].hasAttribute('data-medium-width')) {
+                        mediumDataItems.push(overflowItems[parseInt(i.toString(), 10)]);
+                    }
+                }
+            }
+            let groupOFButton: NodeListOf<Element> = activeContent.querySelectorAll('.e-ribbon-group-of-btn');
+            for (let i: number = 0; i < groupOFButton.length; i++) {
+                let overflowButton: DropDownButton = getInstance(groupOFButton[parseInt(i.toString(), 10)] as HTMLElement, DropDownButton) as DropDownButton;
+                const overflowBtnTarget: HTMLElement = overflowButton.target as HTMLElement;
+                let overflowItems: NodeListOf<Element> = overflowBtnTarget.querySelectorAll('.e-ribbon-item');
+                for (let i: number = 0; i < overflowItems.length; i++) {
+                    if (overflowItems[parseInt(i.toString(), 10)].hasAttribute('data-medium-width')) {
+                        mediumDataItems.push(overflowItems[parseInt(i.toString(), 10)]);
+                    }
+                }
+            }
+            for (let i: number = 0; i < mediumDataItems.length; i++) {
+                if (mediumDataItems[parseInt(i.toString(), 10)].hasAttribute('data-medium-width')) {
+                    let previousWidth = parseInt(mediumDataItems[parseInt(i.toString(), 10)].getAttribute('data-medium-width'),10);
+                    mediumDataItems[parseInt(i.toString(), 10)].setAttribute('data-medium-width', isHidden ? (previousWidth - hiddenWidth).toString() : (previousWidth + hiddenWidth).toString());
+                }
+            }
+        }
+    }
+
+    private calculateOverflowItemsWidth(hiddenItem: number, isHidden: boolean, tabIndex: number): void {
+        if (this.selectedTab === tabIndex && this.activeLayout === 'Simplified') {
+            const groupList: RibbonGroupModel[] = this.tabs[parseInt(tabIndex.toString(), 10)].groups;
+            for (let i: number = 0; i < groupList.length; i++) {
+                const group: RibbonGroupModel = groupList[parseInt(i.toString(), 10)];
+                if (group.enableGroupOverflow) {
+                    let groupContainer: HTMLElement = document.querySelector('#' + group.id) as HTMLElement;
+                    let overflowButton: DropDownButton;
+                    const overflowDDB: HTMLElement = groupContainer.querySelector('#' + group.id + constants.GROUPOF_BUTTON_ID);
+                    if (overflowDDB) {
+                        overflowButton = getInstance(overflowDDB, DropDownButton) as DropDownButton;
+                    }
+                    if (overflowButton) {
+                        const overflowEle: HTMLElement = overflowButton.target as HTMLElement;
+                        let overflowItems: NodeListOf<Element> = overflowEle.querySelectorAll('.e-ribbon-item');
+                        for (let i: number = 0; i < overflowItems.length; i++) {
+                            let previousWidth = parseInt(overflowItems[parseInt(i.toString(), 10)].getAttribute('data-simplified-width'),10);
+                            if (previousWidth) {
+                                overflowItems[parseInt(i.toString(), 10)].setAttribute('data-simplified-width', isHidden ? (previousWidth - hiddenItem).toString() : (previousWidth + hiddenItem).toString());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (this.overflowDDB) {
+            let selectedOFTab: HTMLElement = document.querySelector('#' + this.tabs[parseInt(tabIndex.toString(), 10)].id + constants.OVERFLOW_ID) as HTMLElement;
+            const overflowEle: HTMLElement = this.overflowDDB.target as HTMLElement;
+            let overflowItems: NodeListOf<Element> = overflowEle.querySelectorAll('.e-ribbon-item');
+            for (let i: number = 0; i < overflowItems.length; i++) {
+                let ofTab: HTMLElement = overflowItems[parseInt(i.toString(), 10)].closest('#' + this.tabs[parseInt(tabIndex.toString(), 10)].id + constants.OVERFLOW_ID) as HTMLElement;
+                if (selectedOFTab && ofTab && selectedOFTab.id === ofTab.id) {
+                    let previousWidth = parseInt(overflowItems[parseInt(i.toString(), 10)].getAttribute('data-simplified-width'),10);
+                    if (previousWidth) {
+                        overflowItems[parseInt(i.toString(), 10)].setAttribute('data-simplified-width', isHidden ? (previousWidth - hiddenItem).toString() : (previousWidth + hiddenItem).toString());
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -3298,9 +3624,10 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (ele) {
             const itemEle: HTMLElement = closest(ele, '.e-ribbon-item') as HTMLElement;
-            isHidden ? itemEle.classList.add('e-hidden') : itemEle.classList.remove('e-hidden');
-            this.checkHiddenItems(itemProp.group, isHidden, itemProp.tabIndex);
-            this.refreshLayout();
+            this.updateHiddenElements(itemProp.tabIndex, isHidden ? 'hideItem' : 'showItem', itemId, isHidden, itemEle, itemProp.group);
+            if (this.selectedTab === itemProp.tabIndex) {
+                this.refreshLayout();
+            }
         }
         else {
             this.updateInitialProps(itemProp.tabIndex, itemId, 'hiddenItems', isHidden);
@@ -3820,10 +4147,14 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         this.keyboardModuleRibbon.destroy();
         this.keyboardModuleRibbon = null;
         destroyTooltip(this.element);
+        if (this.refreshing) { this.clearOverflowDropDown(this.selectedTab); }
         this.destroyTabItems(this.tabs);
         if (!this.hideLayoutSwitcher) { this.removeExpandCollapse(); }
         this.collapseButton = undefined;
-        if (this.scrollModule) { this.scrollModule.destroy(); }
+        if (this.scrollModule) {
+            this.scrollModule.destroy();
+            this.scrollModule = null;
+        }
         if (this.ribbonTempEle) {
             remove(this.ribbonTempEle);
             this.ribbonTempEle = null;
@@ -3832,6 +4163,8 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         this.tabObj.destroy();
         this.tabObj = undefined;
         this.initialPropsData = {};
+        this.hiddenGroups = [];
+        this.hiddenElements = {};
         remove(this.element.querySelector('#' + this.element.id + constants.TAB_ID));
         this.element.style.removeProperty(constants.RIBBON_FILE_MENU_WIDTH);
         this.element.style.removeProperty(constants.RIBBON_HELP_PANE_TEMPLATE_WIDTH);

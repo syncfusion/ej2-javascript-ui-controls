@@ -689,7 +689,7 @@ export class Mention extends DropDownBase {
         if ((!currentRange || !lastWordRange) || e.code === 'Enter' || e.keyCode === 27 ||
             (lastWordRange.match(Regex) && lastWordRange.match(Regex).length > 1) ||
             (this.isContentEditable(this.inputElement) && this.range.startContainer &&
-            (this.range.startContainer as HTMLElement).previousElementSibling && this.range.startContainer.textContent.split('').length > 0 &&
+            (this.range.startContainer as HTMLElement).previousElementSibling && (this.range.startContainer as HTMLElement).previousElementSibling.tagName !== 'BR' && this.range.startContainer.textContent.split('').length > 0 &&
             (rangetextContent.length === 1 || rangetextContent[rangetextContent.length - 2].indexOf('') === -1 ||
             this.range.startContainer.nodeType === 1))) {
             if (this.allowSpaces && currentRange && currentRange.trim() !== '' && charRegex.test(currentRange) && currentRange.indexOf(this.mentionChar) !== -1
@@ -724,7 +724,7 @@ export class Mention extends DropDownBase {
             if (isNullOrUndefined(this.list)) {
                 this.initValue();
             }
-            if (!this.isPopupOpen && e.keyCode !== 38 && e.keyCode !== 40) {
+            if (!this.isPopupOpen && e.keyCode !== 38 && e.keyCode !== 40 && this.queryString.length >= this.minLength) {
                 this.didPopupOpenByTypingInitialChar = true;
                 this.showPopup();
                 if (this.initRemoteRender && this.list.querySelectorAll('li').length === 0) { this.showWaitingSpinner(); }

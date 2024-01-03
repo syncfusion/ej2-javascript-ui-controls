@@ -54,6 +54,10 @@ export class CellRenderer implements ICellRenderer<Column> {
             if (column.type === 'number' && isNaN(parseInt(value as string, 10))) {
                 value = null;
             }
+            if (column.type === 'dateonly' && typeof value === 'string' && value) {
+                const arr: string[] = value.split(/[^0-9.]/);
+                value = new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10));
+            }
             value = this.formatter.toView(value as number | Date, column.getFormatter());
         }
 
@@ -189,8 +193,12 @@ export class CellRenderer implements ICellRenderer<Column> {
         let value: Object = cell.isForeignKey ? this.getValue(column.foreignKeyValue, fData, column) :
             this.getValue(column.field, data, column);
 
-        if ((column.type === 'date' || column.type === 'datetime' || column.type === 'dateonly') && !isNullOrUndefined(value)) {
+        if ((column.type === 'date' || column.type === 'datetime') && !isNullOrUndefined(value)) {
             value = new Date(value as string);
+        }
+        if (column.type === 'dateonly' && !isNullOrUndefined(value) && typeof value === 'string') {
+            const arr: string[] = value.split(/[^0-9.]/);
+            value = new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10));
         }
         value = this.format(column, value, data);
 

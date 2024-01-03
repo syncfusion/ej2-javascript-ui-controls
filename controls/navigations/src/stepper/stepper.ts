@@ -2,7 +2,7 @@
 ///<reference path='../stepper-base/stepper-base-model.d.ts'/>
 import { INotifyPropertyChanged, attributes, NotifyPropertyChanges, L10n, append, isNullOrUndefined, getUniqueID, Complex, KeyboardEvents, KeyboardEventArgs, ChildProperty, Property, EventHandler, Event, EmitType, BaseEventArgs, addClass, remove, removeClass, initializeCSPTemplate, select, compile } from '@syncfusion/ej2-base';
 import { StepperBase, StepStatus } from '../stepper-base/stepper-base';
-import { StepperModel, AnimationModel } from '../stepper';
+import { StepperModel, StepperAnimationSettingsModel } from '../stepper';
 import { StepModel } from '../stepper-base/stepper-base-model';
 import { Tooltip } from '@syncfusion/ej2-popups';
 
@@ -40,7 +40,7 @@ const STEPPERIPROGRESSTIP: string = 'e-step-inprogress-tip';
 /**
  * Defines the step progress animation of the Stepper.
  */
-export class Animation extends ChildProperty<Animation>  {
+export class StepperAnimationSettings extends ChildProperty<StepperAnimationSettings>  {
 
     /**
      * Defines whether a animation is enabled or disabled.
@@ -222,8 +222,8 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
      * {% codeBlock src='stepper/animation/index.md' %}{% endcodeBlock %}
      *
      */
-    @Complex<AnimationModel>({}, Animation)
-    public animation: AnimationModel;
+    @Complex<StepperAnimationSettingsModel>({}, StepperAnimationSettings)
+    public animation: StepperAnimationSettingsModel;
 
     /**
      * Defines whether allows to complete one step in order to move to the next or not.

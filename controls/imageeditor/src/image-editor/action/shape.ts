@@ -1781,12 +1781,14 @@ export class Shape {
                 this.stopPathDrawing(e, null);
                 return;
             } else if (e.type === 'dblclick') {
+                const activeObj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
                 const objColl: SelectionPoint[] = extend([], parent.objColl, [], true) as SelectionPoint[];
                 const obj: Object = {bool: null };
                 parent.notify('selection', { prop: 'findTargetObj', onPropertyChange: false,
                     value: {x: e.clientX, y: e.clientY, isCrop: false, obj: obj }});
                 parent.objColl = objColl;
                 if (!obj['bool'] || parent.activeObj.shape !== 'text') {
+                    parent.activeObj = extend({}, activeObj, {}, true) as SelectionPoint;
                     return;
                 }
             } else {

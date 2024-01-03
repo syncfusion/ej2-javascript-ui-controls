@@ -115,7 +115,7 @@ export class Draw {
             this.updateCanvas();
             break;
         case 'performCancel':
-            this.performCancel(args.value['isContextualToolbar']);
+            this.performCancel(args.value['isContextualToolbar'], args.value['isUndoRedo']);
             break;
         case 'updateFlipPan':
             this.updateFlipPan(args.value['tempSelectionObj']);
@@ -531,7 +531,7 @@ export class Draw {
     private drawCropRatio(): void {
         const parent: ImageEditor = this.parent; let actPoint: ActivePoint = parent.activeObj.activePoint;
         let x: number; let y: number; let width: number; let height: number;
-        const canvasWidth: number = parent.lowerCanvas.clientWidth; const canvasHeight: number = parent.lowerCanvas.clientHeight;
+        const canvasWidth: number = parent.lowerCanvas.clientWidth; const canvasHeight: number = parent.lowerCanvas.clientHeight + 1;
         const { destLeft, destTop, destWidth, destHeight } = parent.img;
         if (parent.transform.zoomFactor > 0 && this.currSelPoint) {
             const activeObj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
@@ -562,12 +562,10 @@ export class Draw {
             width = destWidth; height = destHeight;
             if (destLeft < 0) {width += destLeft; }
             if (destTop < 0) {height += destTop; }
-            if (parent.currObjType.shape.toLowerCase() !== 'crop-square' && parent.currObjType.shape.toLowerCase() !== 'crop-circle') {
-                if (destLeft + destWidth > parent.lowerCanvas.width) {
-                    width -= (destLeft + destWidth - parent.lowerCanvas.width); }
-                if (destTop + destHeight > parent.lowerCanvas.height) {
-                    height -= (destTop + destHeight - parent.lowerCanvas.height); }
-            }
+            if (destLeft + destWidth > parent.lowerCanvas.width) {
+                width -= (destLeft + destWidth - parent.lowerCanvas.width); }
+            if (destTop + destHeight > parent.lowerCanvas.height) {
+                height -= (destTop + destHeight - parent.lowerCanvas.height); }
         }
         switch (parent.currObjType.shape.toLowerCase()) {
         case 'crop-square':
@@ -1996,7 +1994,7 @@ export class Draw {
                 parent.img.destWidth = maxDimension.height; parent.img.destHeight = maxDimension.width;
             }
             parent.img.destLeft = (parent.lowerCanvas.clientWidth - maxDimension.height) / 2;
-            parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.width + 1) / 2;
+            parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.width) / 2;
             parent.img.destWidth = maxDimension.height; parent.img.destHeight = maxDimension.width;
         } else {
             const obj: Object = {width: 0, height: 0 };
@@ -2009,7 +2007,11 @@ export class Draw {
                 parent.img.destWidth = maxDimension.width; parent.img.destHeight = maxDimension.height;
             }
             parent.img.destLeft = (parent.lowerCanvas.clientWidth - maxDimension.width) / 2;
-            parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height + 1) / 2;
+            if (degree === 0) {
+                parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height + 1) / 2;
+            } else {
+                parent.img.destTop = (parent.lowerCanvas.clientHeight - maxDimension.height) / 2;
+            }
             parent.img.destWidth = maxDimension.width; parent.img.destHeight = maxDimension.height;
         }
     }
@@ -2291,14 +2293,14 @@ export class Draw {
         }
     }
 
-    private performCancel(isContextualToolbar?: boolean): void {
+    private performCancel(isContextualToolbar?: boolean, isUndoRedo?: boolean): void {
         const parent: ImageEditor = this.parent;
         const straightenObj: Object = {bool: parent.isStraightening };
         isContextualToolbar = isContextualToolbar ? isContextualToolbar : false;
         const obj: Object = {bool: false };
         parent.allowDownScale = true;
         parent.notify('selection', { prop: 'getFreehandDrawEditing', onPropertyChange: false, value: {obj: obj }});
-        if (JSON.stringify(parent.frameObj) !== JSON.stringify(parent.tempFrameObj)) {
+        if (isNullOrUndefined(isUndoRedo) && JSON.stringify(parent.frameObj) !== JSON.stringify(parent.tempFrameObj)) {
             extend(parent.frameObj, parent.tempFrameObj);
             this.renderImage(null, null, true);
         }
@@ -2974,14 +2976,14 @@ export class Draw {
     private setClientTransDim(isPreventDimension?: boolean): void {
         const parent: ImageEditor = this.parent;
         if (parent.transform.degree % 90 === 0 && parent.transform.degree % 180 !== 0) {
-            parent.img.destLeft = (parent.lowerCanvas.width - parent.img.destHeight) / 2;
-            parent.img.destTop = (parent.lowerCanvas.height - parent.img.destWidth) / 2;
+            parent.img.destLeft = (parent.lowerCanvas.clientWidth - parent.img.destHeight) / 2;
+            parent.img.destTop = (parent.lowerCanvas.clientHeight - parent.img.destWidth + 1) / 2;
             const temp: number = parent.img.destWidth; parent.img.destWidth = parent.img.destHeight;
             parent.img.destHeight = temp;
         } else {
             if (isNullOrUndefined(isPreventDimension)) {
-                parent.img.destLeft = (parent.lowerCanvas.width - parent.img.destWidth) / 2;
-                parent.img.destTop = (parent.lowerCanvas.height - parent.img.destHeight) / 2;
+                parent.img.destLeft = (parent.lowerCanvas.clientWidth - parent.img.destWidth) / 2;
+                parent.img.destTop = (parent.lowerCanvas.clientHeight - parent.img.destHeight + 1) / 2;
             }
         }
     }

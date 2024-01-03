@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "Image alignment issue in rotated state" has been resolved.
+
 ## 24.1.43 (2023-12-27)
 
 ### Image Editor

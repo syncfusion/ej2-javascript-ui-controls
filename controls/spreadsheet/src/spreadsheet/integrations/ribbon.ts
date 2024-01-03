@@ -3,7 +3,7 @@ import { Spreadsheet } from '../base/index';
 import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, renderCFDlg, focus, freeze, toggleProtect } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat, protectWorkbook } from '../common/index';
-import { findHandler, DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
+import { DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
 import { IRenderer, destroyComponent, performUndoRedo, completeAction, applySort, hideRibbonTabs } from '../common/index';
 import { enableToolbarItems, ribbonClick, paste, locale, initiateCustomSort, getFilteredColumn } from '../common/index';
 import { tabSwitch, getUpdateUsingRaf, updateToggleItem, initiateHyperlink, editHyperlink, clearFilter } from '../common/index';
@@ -19,17 +19,17 @@ import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFo
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ClickEventArgs as BtnClickEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
-import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, ribbonFind, setMerge, unMerge } from '../../workbook/common/index';
+import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, setMerge, unMerge } from '../../workbook/common/index';
 import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber, MergeArgs, exportDialog } from '../../workbook/common/index';
 import { SortOrder, NumberFormatType, SetCellFormatArgs, CFArgs, clearCFRule, NumberFormatArgs } from '../../workbook/common/index';
 import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat, selectionComplete } from '../../workbook/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker as RibbonColorPicker } from './color-picker';
 import { Dialog } from '../services';
-import { Dialog as FindDialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { findDlg, insertDesignChart, removeDesignChart, isImported } from '../common/index';
+import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
+import { insertDesignChart, removeDesignChart, isImported } from '../common/index';
 import { refreshRibbonIcons, ChartTheme, beginAction, count, setCFRule, addFormatToCustomFormatDlg } from '../../workbook/common/index';
-import { currencyFormat } from '../../workbook/common/index';
+import { currencyFormat, findToolDlg } from '../../workbook/common/index';
 
 /**
  * Represents Ribbon for Spreadsheet.
@@ -48,14 +48,12 @@ export class Ribbon {
     private cfDdb: DropDownButton;
     private clearDdb: DropDownButton;
     private findDdb: Button;
-    private findDialog: FindDialog;
     private border: string = '1px solid #000000';
     private fontNameIndex: number = 5;
     private numPopupWidth: number = 0;
     private pasteSplitBtn: SplitButton;
     private colorPicker: ColorPicker;
     private mergeSplitBtn: SplitButton;
-    private findValue: string = '';
     private preTabIdx: number = 1;
     private addChartDdb: DropDownButton;
     private cPickerEle: HTMLElement;
@@ -1750,185 +1748,10 @@ export class Ribbon {
         this.findDdb = new Button({ cssClass: 'e-spreadsheet-find-ddb e-flat', iconCss: 'e-icons e-search-icon' });
         this.findDdb.createElement = this.parent.createElement;
         this.findDdb.appendTo(findToolbtn);
-        findToolbtn.onclick = this.findToolDlg.bind(this);
+        findToolbtn.onclick = (e: MouseEvent): void => {
+            this.parent.notify(findToolDlg, { event: e });
+        };
         return this.findDdb.element;
-    }
-    private findToolDlg(e?: MouseEvent): void {
-        const updateDisableState: (disable: boolean) => void = (disable: boolean): void => {
-            const findBtn: HTMLButtonElement = (e && e.target ? closest(e.target as Element,  `#${this.parent.element.id}_findbtn`) :
-                select(`#${this.parent.element.id}_findbtn`, this.ribbon.element)) as HTMLButtonElement;
-            if (findBtn) {
-                if (disable) {
-                    findBtn.classList.add('e-disabled');
-                } else {
-                    findBtn.classList.remove('e-disabled');
-                }
-                findBtn.disabled = disable;
-            }
-        }
-        updateDisableState(true);
-        let dialogDiv: HTMLElement = this.parent.element.getElementsByClassName('e-findtool-dlg')[0] as HTMLElement;
-        if (dialogDiv) {
-            this.findDialog.hide();
-        } else {
-            // eslint-disable-next-line prefer-const
-            let toolbarObj: Toolbar; const findTextElement: HTMLElement = this.parent.createElement('div', { className: 'e-input-group'});
-            const findTextInput: HTMLInputElement = this.parent.createElement('input', {
-                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text'  }
-            }) as HTMLInputElement;
-            if (this.findValue) { findTextInput.value = this.findValue; }
-            const l10n: L10n = this.parent.serviceLocator.getService(locale);
-            findTextInput.setAttribute('placeholder', l10n.getConstant('FindValue'));
-            const findSpan: HTMLElement = this.parent.createElement('span', { className: 'e-input-group-icon'});
-            let timeoutHandler: number;
-            const sheet: SheetModel = this.parent.getActiveSheet();
-            const largeData: boolean = (sheet.usedRange.rowIndex * sheet.usedRange.colIndex) > 100;
-            findTextInput.onkeyup = (e: KeyboardEvent): void => {
-                const mainHandlerFn: Function = (): void => {
-                    if (!findTextInput || (sheet.isProtected && !sheet.protectSettings.selectCells &&
-                        !sheet.protectSettings.selectUnLockedCells)) {
-                        return;
-                    }
-                    const inputValue: string = findTextInput.value;
-                    if (e.keyCode === 13) {
-                        if (findTextInput.value && findSpan.textContent !== '0 of 0') {
-                            this.parent.notify(findHandler, { findOption: e.shiftKey ? 'prev' : 'next' });
-                            this.updateCount(findSpan, e.shiftKey);
-                        }
-                    } else {
-                        let enable: boolean;
-                        if (inputValue === '') {
-                            findSpan.textContent = '0 of 0';
-                            enable = false;
-                        } else {
-                            const countArgs: { [key: string]: string | number | boolean } = { value: inputValue, mode: 'Sheet',
-                                isCSen: false, sheetIndex: this.parent.activeSheetIndex, isEMatch: false, searchBy: 'By Row' };
-                            this.parent.notify(count, countArgs);
-                            findSpan.textContent = <string>countArgs.findCount;
-                            enable = countArgs.findCount !== '0 of 0';
-                        }
-                        toolbarObj.enableItems(1, enable);
-                        toolbarObj.enableItems(2, enable);
-                    }
-                };
-                if (largeData) {
-                    if (timeoutHandler) {
-                        clearTimeout(timeoutHandler);
-                    }
-                    timeoutHandler = setTimeout(mainHandlerFn, 500);
-                } else {
-                    mainHandlerFn();
-                }
-            };
-            findTextElement.appendChild(findTextInput);
-            findTextElement.appendChild(findSpan);
-            const toolItemModel: TlbItemModel[] = [
-                { type: 'Input', template: findTextElement },
-                {
-                    prefixIcon: 'e-icons e-prev-icon', tooltipText: l10n.getConstant('FindPreviousBtn'), type: 'Button', cssClass: 'e-findRib-prev',
-                    disabled: true
-                },
-                { prefixIcon: 'e-icons e-next-icon', tooltipText: l10n.getConstant('FindNextBtn'), type: 'Button', cssClass: 'e-findRib-next', disabled: true },
-                { type: 'Separator' },
-                { prefixIcon: 'e-icons e-option-icon', tooltipText: l10n.getConstant('MoreOptions'), type: 'Button', cssClass: 'e-findRib-more' },
-                { prefixIcon: 'e-icons e-close', tooltipText: l10n.getConstant('Close'), type: 'Button', cssClass: 'e-findRib-close' }
-            ];
-            toolbarObj = new Toolbar({
-                clicked: (args: ClickEventArgs): void => {
-                    if (args.item.cssClass === 'e-findRib-next') {
-                        this.parent.notify(findHandler, { findOption: 'next' });
-                        this.updateCount(findSpan);
-                    } else if (args.item.cssClass === 'e-findRib-prev') {
-                        this.parent.notify(findHandler, { findOption: 'prev' });
-                        this.updateCount(findSpan, true);
-                    } else if (args.item.cssClass === 'e-findRib-more') {
-                        this.findDialog.animationSettings.effect = 'None';
-                        this.findDialog.setProperties({ animationSettings: this.findDialog.animationSettings }, true);
-                        this.parent.notify(findDlg, null);
-                        this.findDialog.hide();
-                    }
-                }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj',
-                created: (): void => {
-                    const tbarBtns: NodeList = toolbarObj.element.querySelectorAll('.e-toolbar-item .e-tbar-btn');
-                    tbarBtns.forEach((tbarBtn: HTMLElement): void => tbarBtn.removeAttribute('tabindex'));
-                }
-            });
-            const tbarEle: HTMLElement = this.parent.createElement('div', { className: 'e-find-toolbar' });
-            toolbarObj.createElement = this.parent.createElement;
-            toolbarObj.appendTo(tbarEle);
-            dialogDiv = this.parent.createElement(
-                'div', { className: 'e-dlg-div', attrs: { 'aria-label': l10n.getConstant('FindValue') } });
-            this.findDialog = new FindDialog({
-                cssClass: 'e-findtool-dlg', content: tbarEle, visible: false, enableRtl: this.parent.enableRtl,
-                target: <HTMLElement>this.parent.element.getElementsByClassName('e-sheet')[0],
-                open: (): void => {
-                    EventHandler.add(document, 'click', this.closeDialog, this);
-                    if (this.findValue && (!sheet.isProtected || sheet.protectSettings.selectCells ||
-                        sheet.protectSettings.selectUnLockedCells)) {
-                        const countArgs: { [key: string]: string | number | boolean } = { value: this.findValue, mode: 'Sheet',
-                            isCSen: false, sheetIndex: this.parent.activeSheetIndex, isEMatch: false, searchBy: 'By Row' };
-                        this.parent.notify(count, countArgs);
-                        findSpan.textContent = <string>countArgs.findCount;
-                    } else {
-                        findSpan.textContent = '0 of 0';
-                    }
-                    updateDisableState(false);
-                    toolbarObj.element.addEventListener('focus', (): void => {
-                        const textInput: HTMLInputElement = document.querySelector('.e-text-findNext-short');
-                        textInput.focus();
-                        textInput.classList.add('e-input-focus');
-                        (textInput).setSelectionRange(0, textInput.value.length);
-                    });
-                },
-                beforeOpen: (): void => focus(this.parent.element),
-                beforeClose: (): void => {
-                    this.findValue = findTextInput.value || null;
-                    toolbarObj.destroy();
-                    EventHandler.remove(document, 'click', this.closeDialog);
-                },
-                close: (): void => {
-                    this.findDialog.destroy();
-                    this.findDialog = null;
-                    detach(dialogDiv);
-                    focus(this.parent.element);
-                    updateDisableState(false);
-                },
-                created: (): void => {
-                    dialogDiv.style.width = this.parent.getMainContent().offsetWidth + 'px';
-                    dialogDiv.style.visibility = 'hidden';
-                    dialogDiv.style.display = 'block';
-                    this.findDialog.width = (parseInt(getComputedStyle(dialogDiv).borderLeftWidth, 10) * 2) +
-                        dialogDiv.querySelector('.e-toolbar-items').getBoundingClientRect().width + 'px';
-                    dialogDiv.style.display = '';
-                    dialogDiv.style.width = '';
-                    dialogDiv.style.visibility = '';
-                    dialogDiv.style.top = `${this.parent.getColumnHeaderContent().parentElement.offsetHeight + 1}px`;
-                    dialogDiv.style.left = '';
-                    dialogDiv.style[this.parent.enableRtl ? 'left' : 'right'] = `${this.parent.sheetModule.getScrollSize()}px`;
-                    this.findDialog.show();
-                }
-            });
-            this.findDialog.createElement = this.parent.createElement;
-            this.findDialog.appendTo(dialogDiv);
-        }
-    }
-    private updateCount(countEle: HTMLElement, isPrev?: boolean): void {
-        const values: string[] = countEle.textContent.split(' ');
-        let newStart: number;
-        if (isPrev) {
-            newStart = Number(values[0]) - 1;
-            if (newStart < 1) { newStart = Number(values[2]); }
-        } else {
-            newStart = Number(values[0]) + 1;
-            if (newStart > Number(values[2])) { newStart = 1; }
-        }
-        values[0] = newStart.toString();
-        countEle.textContent = values.join(' ');
-    }
-    private closeDialog(e: MouseEvent & TouchEvent): void {
-        if ((closest(e.target as Element, '.e-findRib-close') || !closest(e.target as Element, '.e-spreadsheet')) && this.findDialog) {
-            this.findToolDlg();
-        }
     }
     private getClearDDB(id: string): Element {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
@@ -2610,9 +2433,15 @@ export class Ribbon {
                 ele.textContent = text;
             }
         });
-        if (item === 'headers' && this.findDialog) {
-            this.findDialog.position.Y = this.parent.getActiveSheet().showHeaders ? 31 : 0;
-            this.findDialog.dataBind();
+        if (item === 'headers') {
+            const findDlgEle: HTMLElement = this.parent.element.getElementsByClassName('e-findtool-dlg')[0] as HTMLElement;
+            if (findDlgEle && findDlgEle.classList.contains('e-popup-open')) {
+                const findDlg: { position: { Y: number }, dataBind: Function } = getComponent(findDlgEle, 'dialog');
+                if (findDlg) {
+                    findDlg.position.Y = this.parent.getActiveSheet().showHeaders ? 31 : 0;
+                    findDlg.dataBind();
+                }
+            }
         }
     }
 
@@ -3028,7 +2857,6 @@ export class Ribbon {
         this.parent.on(refreshRibbonIcons, this.refreshRibbonContent, this);
         this.parent.on(insertDesignChart, this.insertDesignChart, this);
         this.parent.on(removeDesignChart, this.removeDesignChart, this);
-        this.parent.on(ribbonFind, this.findToolDlg, this);
         this.parent.on(unMerge, this.unMerge, this);
     }
     public destroy(): void {
@@ -3067,9 +2895,6 @@ export class Ribbon {
             detach(cPickerEle);
         }
         this.cPickerEle = null;
-        if (this.findDialog) {
-            this.findDialog.hide();
-        }
         if (this.datavalidationDdb) { this.datavalidationDdb.destroy(); } this.datavalidationDdb = null;
         this.removeEventListener();
     }
@@ -3114,7 +2939,6 @@ export class Ribbon {
             this.parent.off(refreshRibbonIcons, this.refreshRibbonContent);
             this.parent.off(insertDesignChart, this.insertDesignChart);
             this.parent.off(removeDesignChart, this.removeDesignChart);
-            this.parent.on(ribbonFind, this.findToolDlg, this);
             this.parent.off(unMerge, this.unMerge);
             this.parent.off(addFormatToCustomFormatDlg);
         }

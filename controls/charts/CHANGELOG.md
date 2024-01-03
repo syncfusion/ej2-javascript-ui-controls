@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### Chart
+
+#### Bug Fixes
+
+- #I521819 - Improved the accuracy of the normal distribution in the histogram series.
+- #I528067 - Removed the multilevel label if all series are not visible.
+- #I185777 - Fixed the marker size issue in the scatter chart during initial loading.
+- #I185904 - Resolved the issue with the shared tooltip when disabling `showNearestPoint`.
+- #I532475 - Fixed the console error in Mozilla Firefox when zooming the bubble chart.
+
 ## 24.1.43 (2023-12-27)
 
 ### Chart

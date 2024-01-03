@@ -594,10 +594,14 @@ export class ExcelExport {
                 const column: Column = gCell.column;
                 const field: string = column.field;
                 const cellValue: string = !isNullOrUndefined(field) ? (column.valueAccessor as Function)(field, row.data, column) : '';
-                let value: string = !isNullOrUndefined(cellValue) ? cellValue : '';
+                let value: string | number | Date = !isNullOrUndefined(cellValue) ? cellValue : '';
+                if (column.type === 'dateonly' && typeof value === 'string' && value) {
+                    const arr: string[] = value.split(/[^0-9.]/);
+                    value = new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10));
+                }
                 let fkData: Object;
                 if (column.isForeignColumn && column.isForeignColumn()) {
-                    fkData = helper.getFData(value, column);
+                    fkData = helper.getFData(value as string, column);
                     value = getValue(column.foreignKeyValue, fkData);
                 }
                 if (!isNullOrUndefined(value)) {
@@ -1285,11 +1289,11 @@ export class ExcelExport {
                 const format: DateFormatOptions = col.format;
                 style.numberFormat = !isNullOrUndefined(format.format) ? format.format : format.skeleton;
                 if (!isNullOrUndefined(format.type)) {
-                    style.type = format.type.toLowerCase();
+                    style.type = format.type === 'dateonly' ? 'date' : format.type.toLowerCase();
                 }
             } else {
                 style.numberFormat = col.format;
-                style.type = col.type;
+                style.type = col.type === 'dateonly' ? 'date' : col.type;
             }
         }
         if (!isNullOrUndefined(col.textAlign)) {

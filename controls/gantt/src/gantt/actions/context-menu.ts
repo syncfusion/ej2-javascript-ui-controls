@@ -582,7 +582,7 @@ export class ContextMenu {
     }
     private contextMenuOpen(args: CMenuOpenEventArgs): void {
         this.isOpen = true;
-        const firstMenuItem: Element = args.element.querySelectorAll('li:not(.e-menu-hide):not(.e-disabled)')[0];
+        const firstMenuItem: Element =  this.parent['args']  = args.element.querySelectorAll('li:not(.e-menu-hide):not(.e-disabled)')[0];
         if (!isNullOrUndefined(firstMenuItem)) {
             addClass([firstMenuItem], 'e-focused');
         }

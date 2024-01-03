@@ -4350,3 +4350,65 @@ describe('Change task start date less than timeline start date using dialog edit
         triggerMouseEvent(saveRecord, 'click');
     });
 });
+describe('CR-861733-Action begin event arguments not working properly', () => {
+    let ganttObj: Gantt;
+    let editingData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project Initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+        }
+    ];
+    beforeAll(function (done) {
+        ganttObj = createGantt({
+            dataSource: editingData,
+            allowSorting: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+
+        },
+        editSettings: {
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+        allowSelection: true,
+        showColumnMenu: false,
+        highlightWeekends: true,
+        height: '550px',
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 1000);
+        ganttObj.openEditDialog(1);
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+    });
+    it('Checking args cancel value after actionbegin action', () => {
+        ganttObj.actionBegin = (args) => {
+            if (args.requestType === 'beforeOpenEditDialog' && args.rowData.TaskID == 1) {
+                args.cancel = true;
+            }
+        }
+        ganttObj.actionComplete = (args) => {
+            expect(args.cancel).toBe(false); 
+        }
+    });
+});

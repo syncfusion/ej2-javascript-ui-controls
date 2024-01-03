@@ -721,13 +721,11 @@
                   height: $modal-range-prev-next-icon-size;
                   width: $modal-range-prev-next-icon-size;
                   @if ($skin-name == 'Material3') {
-                    margin-right: 60vw;
                     vertical-align: inherit;
                     font-size: $modal-range-tablet-font-size
                   }
                   @media screen and (orientation: landscape) {
                     @if ($skin-name == 'Material3') {
-                      margin-right: 78vw;
                       vertical-align: inherit;
                     }
                   }
@@ -742,9 +740,6 @@
                 #{if(&, '&', '*')} .e-next {
                   height: $modal-range-prev-next-icon-size;
                   width: $modal-range-prev-next-icon-size;
-                  @if ($skin-name == 'Material3') {
-                    margin-right: 42px;
-                  }
 
                   #{if(&, '&', '*')} span {
                     padding: $modal-range-prev-next-icon-padding;
@@ -757,16 +752,17 @@
 
                 #{if(&, '&', '*')} .e-title {
                   @media (max-height: 600px) {
-                    @if ($skin-name == 'Material3') {
-                      margin-left: $modal-header-month-name-left-width;
-                      position: absolute;
-                      text-align: center;
-                      vertical-align: middle;
-                      width: $modal-header-month-name-width;
-                      line-height: $modal-month-name-line-height;
-                  }
-                    line-height: $modal-range-month-landscape-title-line-height;
-                  }
+                      @if ($skin-name =='Material3') {
+                        margin-left: $modal-header-month-name-left-landscape-width;
+                        position: absolute;
+                        text-align: center;
+                        vertical-align: middle;
+                        width: $modal-header-month-name-width;
+                        line-height: $modal-month-name-line-height;
+                      }
+                  
+                      line-height: $modal-range-month-landscape-title-line-height;
+                    }
           
                   @media (min-height: 600px) {
                     @if ($skin-name == 'Material3') {

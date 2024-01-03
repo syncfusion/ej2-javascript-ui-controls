@@ -1457,6 +1457,21 @@ export class _JsonDocument extends _ExportHelper {
             }
             const stream: _PdfContentStream = new _PdfContentStream(bytes);
             const dictionary: _PdfDictionary = this._parseDictionary(element);
+            let isImage: boolean = false;
+            if (dictionary && dictionary.has('Subtype')) {
+                const type: _PdfName = dictionary.get('Subtype');
+                isImage = type && type.name === 'Image';
+            }
+            if (isImage) {
+                stream._isCompress = false;
+            } else {
+                if (dictionary.has('Length')) {
+                    delete dictionary._map.Length;
+                }
+                if (dictionary.has('Filter')) {
+                    delete dictionary._map.Filter;
+                }
+            }
             stream.dictionary = dictionary;
             result = stream;
         }

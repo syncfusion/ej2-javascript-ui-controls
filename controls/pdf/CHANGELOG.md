@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 24.1.43 (2023-12-27)
+## 24.1.44 (2024-01-03)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Appearance preservation issues in custom stamp annotation import and export have been resolved.
+- Resolved the exception encountered during the negative number value set to leader extension property of line annotations.
+
+## 24.1.41 (2023-12-18)
 
 ### PDF Parser
 

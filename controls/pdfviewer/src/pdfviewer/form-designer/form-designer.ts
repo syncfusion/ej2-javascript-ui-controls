@@ -346,13 +346,15 @@ export class FormDesigner {
                 if (document.getElementsByClassName("e-pv-radiobtn-span").length > 0) {
                     let spanElement = document.getElementsByClassName("e-pv-radiobtn-span");
                     for (let i: number = 0; i < spanElement.length; i++) {
-                        let bounds: any = this.getCheckboxRadioButtonBounds(drawingObject);
-                        (spanElement as any)[i].style.width = (bounds.width / 2) + "px";
-                        (spanElement as any)[i].style.height = (bounds.height / 2) + "px";
-                        if (parseInt((spanElement as any)[i].style.width, 10) <= 1 || parseInt((spanElement as any)[i].style.height, 10) <= 1) {
-                            (spanElement as any)[i].style.width = "1px";
-                            (spanElement as any)[i].style.height = "1px";
-                            (spanElement as any)[i].style.margin = "1px";
+                        if((spanElement as any)[i].id.split("_")[0] === drawingObject.id) {
+                            let bounds: any = this.getCheckboxRadioButtonBounds(drawingObject);
+                            (spanElement as any)[i].style.width = (bounds.width / 2) + "px";
+                            (spanElement as any)[i].style.height = (bounds.height / 2) + "px";
+                            if (parseInt((spanElement as any)[i].style.width, 10) <= 1 || parseInt((spanElement as any)[i].style.height, 10) <= 1) {
+                                (spanElement as any)[i].style.width = "1px";
+                                (spanElement as any)[i].style.height = "1px";
+                                (spanElement as any)[i].style.margin = "1px";
+                            }
                         }
                     }
                 }
@@ -1103,11 +1105,17 @@ export class FormDesigner {
                     if (element.actualSize.width > element.actualSize.height) {
                         (htmlElement.firstElementChild as any).style.display = "inherit";
                         (labelContainer as any).style.width = (labelContainer as any).style.height = (element.actualSize.height * zoomValue) + "px";
-                        (spanElement as any).style.width = (spanElement as any).style.height = (element.actualSize.height - 10) + "px";
+                        (spanElement as any).style.width = (spanElement as any).style.height = (element.actualSize.height / 2) + "px";
                     } else {
                         (htmlElement.firstElementChild as any).style.display = "flex";
                         (labelContainer as any).style.width = (labelContainer as any).style.height = (element.actualSize.width * zoomValue) + "px";
-                        (spanElement as any).style.width = (spanElement as any).style.height = (element.actualSize.width - 10) + "px";
+                        (spanElement as any).style.width = (spanElement as any).style.height = (element.actualSize.width / 2) + "px";
+                    }
+                    if (zoomValue < 1 && (labelContainer as any).style.width <= 20 && (labelContainer as any).style.height <= 20) {
+                        (spanElement as any).style.margin = Math.round(parseInt((labelContainer as any).style.width) / 3.5) + "px";
+                    }
+                    else {
+                        (spanElement as any).style.margin = Math.round(parseInt((labelContainer as any).style.width) / 4) + "px";
                     }
                 }
                 if (actualObject.formFieldAnnotationType === "Checkbox") {
@@ -1450,7 +1458,7 @@ export class FormDesigner {
                     spanElement.style.backgroundColor = indicatorSettings.backgroundColor;
                     objIndicatorSettings.backgroundColor = this.nameToHash(indicatorSettings.backgroundColor);
                 }
-                if(indicatorSettings.opacity){
+                if (!isNullOrUndefined(indicatorSettings.opacity)) {
                     spanElement.style.opacity = indicatorSettings.opacity;
                     objIndicatorSettings.opacity = indicatorSettings.opacity;
                 }

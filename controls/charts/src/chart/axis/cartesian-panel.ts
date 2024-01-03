@@ -1041,8 +1041,11 @@ export class CartesianAxisLayoutPanel {
                 (rect.x + scrollBarHeight) + ' ' + (rect.y + rect.height) + ' ') : '';
             if (labelBorder !== '') { this.createAxisBorderElement(axis, index, labelBorder, parent); }
         }
-        if (axis.multiLevelLabels.length > 0 && this.chart.multiLevelLabelModule) {
-            this.chart.multiLevelLabelModule.renderYAxisMultiLevelLabels(axis, index, parent, rect);
+        for (let i: number = 0; i < this.chart.visibleSeries.length; i++) {
+            if (axis.multiLevelLabels.length > 0 && this.chart.multiLevelLabelModule && this.chart.visibleSeries[i as number].visible) {
+                this.chart.multiLevelLabelModule.renderYAxisMultiLevelLabels(axis, index, parent, rect);
+                break;
+            }
         }
     }
 
@@ -1712,8 +1715,11 @@ export class CartesianAxisLayoutPanel {
                 (axisRect.x + axisRect.width) + ' ' + startY) : '');
             if (labelBorder !== '') { this.createAxisBorderElement(axis, index, labelBorder, parent); }
         }
-        if (this.chart.multiLevelLabelModule && axis.multiLevelLabels.length > 0) {
-            this.chart.multiLevelLabelModule.renderXAxisMultiLevelLabels(axis, index, parent, axisRect);
+        for (let i: number = 0; i < this.chart.visibleSeries.length; i++) {
+            if (this.chart.multiLevelLabelModule && axis.multiLevelLabels.length > 0 && this.chart.visibleSeries[i as number].visible) {
+                this.chart.multiLevelLabelModule.renderXAxisMultiLevelLabels(axis, index, parent, axisRect);
+                break;
+            }
         }
     }
 

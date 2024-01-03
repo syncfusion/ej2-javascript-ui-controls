@@ -789,8 +789,8 @@ export class DialogEdit {
             } else {
                 this.parent.showSpinner();
             }
-            this.renderTabItems();
             if (!arg.cancel) {
+                this.renderTabItems();
                 tabModel.selected = this.tabSelectedEvent.bind(this);
                 tabModel.height = this.parent.isAdaptive ? '100%' : 'auto';
                 tabModel.overflowMode = 'Scrollable';
@@ -825,6 +825,15 @@ export class DialogEdit {
                         this.resetValues();
                     }
                 });
+            }
+            else {
+                arg.cancel = false;
+                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer") {
+                    this.parent.hideMaskRow();
+                }
+                else {
+                    this.parent.hideSpinner();
+                }
             }
         });
     }

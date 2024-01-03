@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### Grid
+
+#### Bug fixes
+
+- `#I527253` - The issue of displaying data in date format when it's provided as a string for the string column in the grid has been resolved.
+- `#I525816` - The problem of losing focus in the Grid when scrolling down using the down arrow key while focusing on the template has been resolved.
+- `#I525124` - The issue where Datamanager arguments were null when unchecking 15 or more items in the filter dialog has been resolved.
+- `#I528688` - Fixed an issue with keyboard navigation when the grid contains hidden columns.
+
 ## 24.1.43 (2023-12-27)
 
 ### Grid

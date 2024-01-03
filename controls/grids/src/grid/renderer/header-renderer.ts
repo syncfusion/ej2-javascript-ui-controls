@@ -618,6 +618,10 @@ export class HeaderRender implements IRenderer {
                 wrap(rows, true);
             }
         }
+        const firstHeaderCell: HTMLElement = this.parent.getHeaderContent().querySelector('.e-headercell:not(.e-hide)');
+        if (!isNullOrUndefined(firstHeaderCell)) {
+            firstHeaderCell.tabIndex = 0;
+        }
     }
 
     public toggleStackClass(div: Element): void {

@@ -163,11 +163,11 @@ export class Crop {
             this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
             this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
             parent.img = { srcLeft: (actPoint.startX * ratio.width) - (img.destLeft * ratio.width),
-            srcTop: (actPoint.startY * ratio.height) - (img.destTop * ratio.height),
-            srcWidth: (actPoint.width * ratio.width), srcHeight: (actPoint.height * ratio.height),
-            destLeft: (parent.lowerCanvas.clientWidth - maxDimension.width) / 2,
-            destTop: (parent.lowerCanvas.clientHeight - maxDimension.height + 1) / 2,
-            destWidth: maxDimension.width, destHeight: maxDimension.height };
+                srcTop: (actPoint.startY * ratio.height) - (img.destTop * ratio.height),
+                srcWidth: (actPoint.width * ratio.width), srcHeight: (actPoint.height * ratio.height),
+                destLeft: (parent.lowerCanvas.clientWidth - maxDimension.width) / 2,
+                destTop: (parent.lowerCanvas.clientHeight - maxDimension.height + 1) / 2,
+                destWidth: maxDimension.width, destHeight: maxDimension.height };
             const temp: string = this.lowerContext.filter;
             parent.notify('draw', { prop: 'drawImage', onPropertyChange: false});
             this.lowerContext.filter = 'none';

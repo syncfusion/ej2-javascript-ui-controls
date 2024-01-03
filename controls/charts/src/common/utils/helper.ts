@@ -802,6 +802,7 @@ export function markerAnimate(
     const centerY: number = point.y;
     let height: number = 0;
     (<HTMLElement>element).style.visibility = 'hidden';
+    const transform: string = element.getAttribute('transform');
     new Animation({}).animate(<HTMLElement>element, {
         duration: duration,
         delay: delay,
@@ -815,6 +816,7 @@ export function markerAnimate(
         },
         end: () => {
             (<HTMLElement>element).style.visibility = '';
+            element.setAttribute('transform', transform ? transform : '');
             if ((series.type === 'Scatter' || series.type === 'Bubble') && !isLabel && (pointIndex === series.points.length - 1)) {
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }

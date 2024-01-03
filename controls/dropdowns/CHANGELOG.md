@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I536388` - The issue with the `selectAll` method in the Dropdown Tree component has been resolved.
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#F49252` - Fixed the issue where the dropdown list width was not the same as the dropdown control.
+
+- `#I531994` - Fixed the issue where pressing the space key after focusing on a dropdown list would cause an unexpected page scroll.
+
+### Mention
+
+#### Bug Fixes
+
+- `#I530713` - Fixed issue where users were unable to access the popup after pressing Shift + Enter.
+
+- `#I8411` - Fixed an issue where list values were displayed immediately after typing instead of waiting the minimum length was reached.
+
 ## 24.1.43 (2023-12-27)
 
 ### ListBox
@@ -9,6 +33,7 @@
 #### Bug Fixes
 
 - `#I520132` - Issue with "The listbox value was not updated properly while filtering the data source when we place within form" has been resolved.
+- `#I522090` - Issue with "Keyboard action is not working properly in the ListBox filter" has been resolved.
 
 ### DropdownList
 

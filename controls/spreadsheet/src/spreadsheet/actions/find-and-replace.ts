@@ -1,15 +1,16 @@
 import { Spreadsheet } from '../base/index';
 import { findDlg, locale, dialog, gotoDlg, findHandler, focus, getUpdateUsingRaf } from '../common/index';
 import { DialogBeforeOpenEventArgs } from '../common/index';
-import { L10n, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { L10n, getComponent, isNullOrUndefined, closest, select, EventHandler, detach } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { ToolbarFind, goto, FindOptions, showDialog, replaceAllDialog, findKeyUp, replace, replaceAll, SheetModel } from '../../workbook/index';
-import { getRangeIndexes, getSwapRange } from '../../workbook/common/index';
+import { getRangeIndexes, getSwapRange, findToolDlg, count } from '../../workbook/common/index';
 import { CheckBox, Button } from '@syncfusion/ej2-buttons';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { TextBox } from '@syncfusion/ej2-inputs';
-import { DialogModel } from '@syncfusion/ej2-popups';
+import { Toolbar, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { DialogModel, Dialog as FindDialog, AnimationSettingsModel } from '@syncfusion/ej2-popups';
 
 /**
  * `FindAndReplace` module is used to handle the search action in Spreadsheet.
@@ -18,6 +19,8 @@ import { DialogModel } from '@syncfusion/ej2-popups';
 export class FindAndReplace {
     private parent: Spreadsheet;
     private shortValue: string = '';
+    private findDialog: FindDialog;
+    private findValue: string;
     /**
      * Constructor for FindAndReplace module.
      *
@@ -36,6 +39,7 @@ export class FindAndReplace {
         this.parent.on(showDialog, this.showDialog, this);
         this.parent.on(replaceAllDialog, this.replaceAllDialog, this);
         this.parent.on(findKeyUp, this.findKeyUp, this);
+        this.parent.on(findToolDlg, this.findToolDlg, this);
     }
 
     private removeEventListener(): void {
@@ -47,8 +51,221 @@ export class FindAndReplace {
             this.parent.off(showDialog, this.showDialog);
             this.parent.off(replaceAllDialog, this.replaceAllDialog);
             this.parent.off(findKeyUp, this.findKeyUp);
+            this.parent.off(findToolDlg, this.findToolDlg);
         }
     }
+
+    private findToolDlg(args?: { event?: MouseEvent, findValue?: string, isPublic?: boolean }): void {
+        const updateDisableState: (disable: boolean) => void = (disable: boolean): void => {
+            const ribbon: HTMLElement = this.parent.showRibbon && this.parent.element.querySelector('.e-ribbon') as HTMLElement;
+            if (ribbon) {
+                const findBtn: HTMLButtonElement = (args && args.event && args.event.target ?
+                    closest(args.event.target as Element, `#${this.parent.element.id}_findbtn`) :
+                    select(`#${this.parent.element.id}_findbtn`, ribbon)) as HTMLButtonElement;
+                if (findBtn) {
+                    if (disable) {
+                        findBtn.classList.add('e-disabled');
+                    } else {
+                        findBtn.classList.remove('e-disabled');
+                    }
+                    findBtn.disabled = disable;
+                }
+            }
+        }
+        updateDisableState(true);
+        let dialogDiv: HTMLElement = this.parent.element.getElementsByClassName('e-findtool-dlg')[0] as HTMLElement;
+        if (args && !isNullOrUndefined(args.findValue)) {
+            this.findValue = args.findValue;
+        }
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        let toolbarObj: Toolbar; let findTextInput: HTMLInputElement; let findSpan: HTMLElement;
+        const findHandlerFn: Function = (e?: KeyboardEvent): void => {
+            if (!findTextInput || (sheet.isProtected && !sheet.protectSettings.selectCells &&
+                !sheet.protectSettings.selectUnLockedCells)) {
+                return;
+            }
+            const inputValue: string = findTextInput.value;
+            if (e && e.keyCode === 13) {
+                if (findTextInput.value && findSpan.textContent !== '0 of 0') {
+                    this.parent.notify(findHandler, { findOption: e.shiftKey ? 'prev' : 'next' });
+                    this.updateCount(findSpan, e.shiftKey);
+                }
+            } else {
+                let enable: boolean;
+                if (inputValue === '') {
+                    findSpan.textContent = '0 of 0';
+                    enable = false;
+                } else {
+                    const countArgs: { [key: string]: string | number | boolean } = { value: inputValue, mode: 'Sheet',
+                        isCSen: false, sheetIndex: this.parent.activeSheetIndex, isEMatch: false, searchBy: 'By Row' };
+                    this.parent.notify(count, countArgs);
+                    findSpan.textContent = <string>countArgs.findCount;
+                    enable = countArgs.findCount !== '0 of 0';
+                }
+                toolbarObj.enableItems(1, enable);
+                toolbarObj.enableItems(2, enable);
+            }
+        };
+        if (dialogDiv) {
+            if (args && args.isPublic) {
+                findTextInput = dialogDiv.querySelector('.e-text-findNext-short') as HTMLInputElement;
+                if (this.findValue) {
+                    findTextInput.value = this.findValue;
+                }
+                findSpan = dialogDiv.querySelector('.e-input-group-icon') as HTMLElement;
+                toolbarObj = getComponent(dialogDiv.querySelector('.e-find-toolbar') as HTMLElement, 'toolbar') as Toolbar;
+                findHandlerFn();
+            } else {
+                this.findDialog.hide();
+            }
+        } else {
+            const findTextElement: HTMLElement = this.parent.createElement('div', { className: 'e-input-group'});
+            findTextInput = this.parent.createElement(
+                'input', { className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text'  } }) as HTMLInputElement;
+            if (this.findValue) {
+                findTextInput.value = this.findValue;
+            }
+            const l10n: L10n = this.parent.serviceLocator.getService(locale);
+            findTextInput.setAttribute('placeholder', l10n.getConstant('FindValue'));
+            findSpan = this.parent.createElement('span', { className: 'e-input-group-icon'});
+            let timeoutHandler: number;
+            const largeData: boolean = (sheet.usedRange.rowIndex * sheet.usedRange.colIndex) > 100;
+            findTextInput.onkeyup = (e: KeyboardEvent): void => {
+                if (largeData) {
+                    if (timeoutHandler) {
+                        clearTimeout(timeoutHandler);
+                    }
+                    timeoutHandler = setTimeout(findHandlerFn.bind(e), 500);
+                } else {
+                    findHandlerFn(e);
+                }
+            };
+            findTextElement.appendChild(findTextInput);
+            findTextElement.appendChild(findSpan);
+            const toolItemModel: ItemModel[] = [
+                { type: 'Input', template: findTextElement },
+                {
+                    prefixIcon: 'e-icons e-prev-icon', tooltipText: l10n.getConstant('FindPreviousBtn'), type: 'Button', cssClass: 'e-findRib-prev',
+                    disabled: true
+                },
+                { prefixIcon: 'e-icons e-next-icon', tooltipText: l10n.getConstant('FindNextBtn'), type: 'Button', cssClass: 'e-findRib-next', disabled: true },
+                { type: 'Separator' },
+                { prefixIcon: 'e-icons e-option-icon', tooltipText: l10n.getConstant('MoreOptions'), type: 'Button', cssClass: 'e-findRib-more' },
+                { prefixIcon: 'e-icons e-close', tooltipText: l10n.getConstant('Close'), type: 'Button', cssClass: 'e-findRib-close' }
+            ];
+            toolbarObj = new Toolbar({
+                clicked: (args: ClickEventArgs): void => {
+                    if (args.item.cssClass === 'e-findRib-next') {
+                        this.parent.notify(findHandler, { findOption: 'next' });
+                        this.updateCount(findSpan);
+                    } else if (args.item.cssClass === 'e-findRib-prev') {
+                        this.parent.notify(findHandler, { findOption: 'prev' });
+                        this.updateCount(findSpan, true);
+                    } else if (args.item.cssClass === 'e-findRib-more') {
+                        this.findDialog.animationSettings.effect = 'None';
+                        this.findDialog.setProperties({ animationSettings: this.findDialog.animationSettings }, true);
+                        this.renderFindDlg();
+                        this.findDialog.hide();
+                    }
+                }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj',
+                created: (): void => {
+                    const tbarBtns: NodeList = toolbarObj.element.querySelectorAll('.e-toolbar-item .e-tbar-btn');
+                    tbarBtns.forEach((tbarBtn: HTMLElement): void => tbarBtn.removeAttribute('tabindex'));
+                }
+            });
+            const tbarEle: HTMLElement = this.parent.createElement('div', { className: 'e-find-toolbar', attrs: { 'tabindex': '-1' } });
+            toolbarObj.createElement = this.parent.createElement;
+            toolbarObj.appendTo(tbarEle);
+            dialogDiv = this.parent.createElement(
+                'div', { className: 'e-dlg-div', attrs: { 'aria-label': l10n.getConstant('FindValue') } });
+            this.findDialog = new FindDialog({
+                cssClass: 'e-findtool-dlg', content: tbarEle, visible: false, enableRtl: this.parent.enableRtl,
+                target: <HTMLElement>this.parent.element.getElementsByClassName('e-sheet')[0],
+                open: (): void => {
+                    EventHandler.add(document, 'click', this.closeDialog, this);
+                    if (this.findValue && (!sheet.isProtected || sheet.protectSettings.selectCells ||
+                        sheet.protectSettings.selectUnLockedCells)) {
+                        const countArgs: { [key: string]: string | number | boolean } = { value: this.findValue, mode: 'Sheet',
+                            isCSen: false, sheetIndex: this.parent.activeSheetIndex, isEMatch: false, searchBy: 'By Row' };
+                        this.parent.notify(count, countArgs);
+                        findSpan.textContent = <string>countArgs.findCount;
+                        const enable: boolean = countArgs.findCount !== '0 of 0';
+                        toolbarObj.enableItems(1, enable);
+                        toolbarObj.enableItems(2, enable);
+                    } else {
+                        findSpan.textContent = '0 of 0';
+                    }
+                    updateDisableState(false);
+                    const inputContainer: HTMLElement = toolbarObj.element.querySelector('.e-input-group') as HTMLElement;
+                    if (inputContainer) {
+                        inputContainer.addEventListener('focus', (): void => {
+                            const textInput: HTMLInputElement = document.querySelector('.e-text-findNext-short');
+                            textInput.focus();
+                            textInput.classList.add('e-input-focus');
+                            (textInput).setSelectionRange(0, textInput.value.length);
+                        });
+                    }
+                    if (animationSettings) {
+                        this.findDialog.setProperties({ animationSettings: animationSettings }, true);
+                    }
+                },
+                beforeOpen: (): void => focus(this.parent.element),
+                beforeClose: (): void => {
+                    this.findValue = findTextInput.value || null;
+                    toolbarObj.destroy();
+                    EventHandler.remove(document, 'click', this.closeDialog);
+                },
+                close: (): void => {
+                    this.findDialog.destroy();
+                    this.findDialog = null;
+                    detach(dialogDiv);
+                    focus(this.parent.element);
+                    updateDisableState(false);
+                },
+                created: (): void => {
+                    dialogDiv.style.width = this.parent.getMainContent().offsetWidth + 'px';
+                    dialogDiv.style.visibility = 'hidden';
+                    dialogDiv.style.display = 'block';
+                    this.findDialog.width = (parseInt(getComputedStyle(dialogDiv).borderLeftWidth, 10) * 2) +
+                        dialogDiv.querySelector('.e-toolbar-items').getBoundingClientRect().width + 'px';
+                    dialogDiv.style.display = '';
+                    dialogDiv.style.width = '';
+                    dialogDiv.style.visibility = '';
+                    dialogDiv.style.top = `${this.parent.getColumnHeaderContent().parentElement.offsetHeight + 1}px`;
+                    dialogDiv.style.left = '';
+                    dialogDiv.style[this.parent.enableRtl ? 'left' : 'right'] = `${this.parent.sheetModule.getScrollSize()}px`;
+                    this.findDialog.show();
+                }
+            });
+            this.findDialog.createElement = this.parent.createElement;
+            let animationSettings: AnimationSettingsModel;
+            if (args && args.isPublic) {
+                animationSettings = { effect: this.findDialog.animationSettings.effect };
+                this.findDialog.setProperties({ animationSettings: { effect: 'None' } }, true);
+            }
+            this.findDialog.appendTo(dialogDiv);
+        }
+    }
+
+    private updateCount(countEle: HTMLElement, isPrev?: boolean): void {
+        const values: string[] = countEle.textContent.split(' ');
+        let newStart: number;
+        if (isPrev) {
+            newStart = Number(values[0]) - 1;
+            if (newStart < 1) { newStart = Number(values[2]); }
+        } else {
+            newStart = Number(values[0]) + 1;
+            if (newStart > Number(values[2])) { newStart = 1; }
+        }
+        values[0] = newStart.toString();
+        countEle.textContent = values.join(' ');
+    }
+    private closeDialog(e: MouseEvent & TouchEvent): void {
+        if ((closest(e.target as Element, '.e-findRib-close') || !closest(e.target as Element, '.e-spreadsheet')) && this.findDialog) {
+            this.findToolDlg();
+        }
+    }
+
     private renderFindDlg(): void {
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         if (!this.parent.element.querySelector('.e-find-dlg')) {
@@ -466,6 +683,9 @@ export class FindAndReplace {
      */
     protected destroy(): void {
         this.removeEventListener();
+        if (this.findDialog) {
+            this.findDialog.hide();
+        }
         this.parent = null;
     }
     /**

@@ -1909,7 +1909,13 @@ export class Render {
         return this.pivotColumns;
     }
 
-    /** @hidden */
+    /**
+     * It is used to configure the last column width.
+     *
+     * @param {ColumnModel} column -  It contains the column model.
+     * @returns {void}
+     * @hidden
+     */
     public configLastColumnWidth(column: ColumnModel): void {
         column.minWidth = column.width;
         column.width = 'auto';

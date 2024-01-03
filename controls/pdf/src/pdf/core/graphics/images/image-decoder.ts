@@ -193,7 +193,6 @@ export class _ImageDecoder {
             default:
                 this._skipStream();
                 break;
-            
             }
         }
     }
@@ -204,15 +203,15 @@ export class _ImageDecoder {
     _getMarker() : number {
         let skippedByte: number = 0;
         let marker: number = this._readByte();
-        while (marker != 255) {
-          skippedByte++;
-          marker = this._readByte();
+        while (marker !== 255) {
+            skippedByte++;
+            marker = this._readByte();
         }
         do {
-          marker = this._readByte();
-        } while (marker == 255);
-        if (skippedByte != 0) {
-          throw new Error('Error decoding JPEG image');
+            marker = this._readByte();
+        } while (marker === 255);
+        if (skippedByte !== 0) {
+            throw new Error('Error decoding JPEG image');
         }
         return this._toUnsigned16(marker);
     }

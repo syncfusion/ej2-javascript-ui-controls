@@ -458,7 +458,9 @@ export class Selection implements IAction {
                 this.disableInteracted();
                 return;
             }
-            this.clearRow();
+            if (!(gObj.allowRowDragAndDrop && this.isDragged && this.selectionSettings.persistSelection)) {
+                this.clearRow();
+            }
             this.selectRowIndex(selectableRowIndex.slice(-1)[0]);
             const selectRowFn: Function = (index: number, preventFocus?: boolean) => {
                 this.updateRowSelection(gObj.getRowByIndex(index), index, preventFocus);
@@ -684,8 +686,10 @@ export class Selection implements IAction {
         if (!selectedRow) {
             return;
         }
-        this.selectedRowIndexes.push(startIndex);
-        this.selectedRecords.push(selectedRow);
+        if (this.selectedRowIndexes.indexOf(startIndex) === -1) {
+            this.selectedRowIndexes.push(startIndex);
+            this.selectedRecords.push(selectedRow);
+        }
         selectedRow.setAttribute('aria-selected', 'true');
         this.updatePersistCollection(selectedRow, true);
         this.updateCheckBoxes(selectedRow, true);
@@ -3189,6 +3193,10 @@ export class Selection implements IAction {
         target = parentsUntil(target, literals.rowCell) as HTMLElement;
         if (this.parent.isReact && (target && !target.parentElement && target.classList.contains('e-rowcell'))) {
             target = this.parent.getCellFromIndex(parseInt(target.getAttribute('index'), 10), parseInt(target.getAttribute('data-colindex'), 10)) as HTMLElement;
+        }
+        if (this.isRowDragSelected && isNullOrUndefined(target) && this.parent.allowRowDragAndDrop &&
+            this.selectionSettings.persistSelection && this.checkSelectAllClicked) {
+            this.isRowDragSelected = false;
         }
         if (((target && target.parentElement.classList.contains(literals.row) && !this.parent.selectionSettings.checkboxOnly) || chkSelect)
             && !this.isRowDragSelected) {

@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink, HideShowEventArgs, renderInsertDlg, getRightIdx, getBottomOffset, keyUp } from '../common/index';
 import { findDlg, gotoDlg, initiateFilterUI, getFilterRange, FilterInfoArgs, FillRangeInfo, performAutoFill, focus } from '../common/index';
-import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle, ribbonFind, getRangeIndexes, InsertDeleteModelArgs, hideShow, applyNumberFormatting, insertModel, getSwapRange, getRangeAddress } from '../../workbook/common/index';
+import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle, findToolDlg, getRangeIndexes, InsertDeleteModelArgs, hideShow, applyNumberFormatting, insertModel, getSwapRange, getRangeAddress } from '../../workbook/common/index';
 import { CellModel, SheetModel, getColumn, isLocked as isCellLocked, exportDialog, getFormatFromType } from '../../workbook/index';
 import { setCell, getCell, skipHiddenIdx, selectionComplete, refreshRibbonIcons } from '../../workbook/index';
 import { RowModel } from '../../workbook/base/row-model';
@@ -209,7 +209,7 @@ export class KeyboardShortcut {
                 getCell(indexes[0], indexes[1], sheet), getColumn(sheet, indexes[1]));
             if (e.keyCode === 70 && !isSelectionNone && this.parent.allowFindAndReplace) { /* Ctrl + F */
                 e.preventDefault();
-                this.parent.notify(ribbonFind, null);
+                this.parent.notify(findToolDlg, null);
             }
             if ((!isLocked || !sheet.isProtected || e.keyCode === 86) && e.keyCode !== 70 && !isSelectionNone) {
                 if (e.keyCode === 71) { /* Ctrl + G */
@@ -284,7 +284,7 @@ export class KeyboardShortcut {
                 this.parent.notify(renderInsertDlg, null);
             } else if (e.keyCode === 116 && this.parent.allowFindAndReplace) { /* shift + F5 */
                 e.preventDefault();
-                this.parent.notify(ribbonFind, null);
+                this.parent.notify(findToolDlg, null);
             } else if (e.keyCode === 121) { /* Context menu open Shift+F10 */
                 const className: string = document.activeElement.className;
                 if (['e-spreadsheet', 'e-cell', 'e-header-cell', 'e-clipboard'].some((cls: string) => className.includes(cls))) {

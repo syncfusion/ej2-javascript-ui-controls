@@ -133,10 +133,7 @@ export class RibbonGroupButton {
                 this.addGroupButtonHeader(item.id, groupBtnSettings, dropDownPopup.element);
             }
             buttonEle.onclick = buttonEle.onkeydown = () => {
-                if (itemElement.querySelector('#' + item.id).classList.contains('e-active')) {
-                    (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + 0) as HTMLElement).focus();
-                    this.grpBtnIndex = 0;
-                }
+                this.handleFocusState(item, itemElement);
             };
             btnContainerEle.onkeydown = (e: KeyboardEventArgs) => {
                 if (this.parent.activeLayout === 'Simplified') {
@@ -308,10 +305,7 @@ export class RibbonGroupButton {
                 this.addGroupButtonHeader(item.id, groupBtnSettings, dropDownPopup.element);
             }
             buttonEle.onclick = buttonEle.onkeydown = () => {
-                if (itemElement.querySelector('#' + item.id).classList.contains('e-active')) {
-                    (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + 0) as HTMLElement).focus();
-                    this.grpBtnIndex = 0;
-                }
+                this.handleFocusState(item, itemElement);
             };
             containerEle.onkeydown = (e: KeyboardEventArgs) => {
                 if (this.parent.activeLayout === 'Simplified') {
@@ -328,6 +322,19 @@ export class RibbonGroupButton {
                 dropdown.destroy();
                 remove(groupButtonEle);
             }
+        }
+    }
+
+    private handleFocusState(item: RibbonItemModel, itemElement: HTMLElement): void {
+        if (itemElement.querySelector('#' + item.id).classList.contains('e-active')) {
+            const defaultSelectedBtn: HTMLElement = document.querySelector('#' + item.id + '_grpbtn').querySelector('.' + constants.RIBBON_GROUP_BUTTON +'.e-active');
+            if (defaultSelectedBtn) {
+                defaultSelectedBtn.focus();
+            }
+            else {
+                (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + 0) as HTMLElement).focus();
+            }
+            this.grpBtnIndex = 0;
         }
     }
 

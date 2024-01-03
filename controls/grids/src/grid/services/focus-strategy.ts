@@ -79,6 +79,11 @@ export class FocusStrategy {
         const firstHeaderCell: Element = this.parent.getHeaderContent().querySelector('.e-headercell:not(.e-hide)');
         if (e.target === firstHeaderCell && e.relatedTarget && !parentsUntil((e.relatedTarget as Element), 'e-grid')
             && !this.firstHeaderCellClick) {
+            let firstHeaderCellIndex: number[] = [0, 0];
+            if (this.active.matrix.matrix[firstHeaderCellIndex[0]][firstHeaderCellIndex[1]] === 0) {
+                firstHeaderCellIndex = findCellIndex(this.active.matrix.matrix, firstHeaderCellIndex, true);
+            }
+            this.active.matrix.current = firstHeaderCellIndex;
             this.currentInfo.element = e.target as HTMLElement;
             this.currentInfo.elementToFocus = e.target as HTMLElement;
             addClass([this.currentInfo.element], ['e-focused', 'e-focus']);

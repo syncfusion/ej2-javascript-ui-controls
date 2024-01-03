@@ -35,7 +35,7 @@ describe('Chips', () => {
                 expect(element.classList.contains('e-chip-set')).toBe(false);
                 //attribute
                 expect(element.getAttribute('tabindex')).toBe('0');
-                expect(element.getAttribute('role')).toBe('option');
+                expect(element.getAttribute('role')).toBe('button');
                 expect(element.getAttribute('aria-label')).toBe('chip content');
                 //text content
                 expect(element.innerText).toBe('chip content');
@@ -51,7 +51,7 @@ describe('Chips', () => {
                 expect(element.innerText).toBe('chip innertext');
                 //attribute
                 expect(element.getAttribute('tabindex')).toBe('0');
-                expect(element.getAttribute('role')).toBe('option');
+                expect(element.getAttribute('role')).toBe('button');
                 expect(element.getAttribute('aria-label')).toBe('chip innertext');
                 //text content
                 expect(element.innerText).toBe('chip innertext');

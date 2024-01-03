@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#F185815` - Issue with dynamically changing readonly property has been fixed.
+
 ## 24.1.43 (2023-12-27)
 
 ### QueryBuilder

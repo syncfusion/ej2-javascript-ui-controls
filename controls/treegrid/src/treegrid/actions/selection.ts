@@ -379,8 +379,8 @@ export class Selection {
             if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
                 movableTr = this.parent.getDataRows()[parseInt(recordIndex.toString(), 10)];
             }
-            checkbox = <HTMLElement>tr.querySelectorAll('.e-frame')[0] ? <HTMLElement>tr.querySelectorAll('.e-frame')[0]
-                : <HTMLElement>movableTr.querySelectorAll('.e-frame')[0];
+            checkbox = <HTMLElement>tr.querySelectorAll('.e-hierarchycheckbox .e-frame')[0] ? <HTMLElement>tr.querySelectorAll('.e-hierarchycheckbox .e-frame')[0]
+                : <HTMLElement>movableTr.querySelectorAll('.e-hierarchycheckbox .e-frame')[0];
             if (!isNullOrUndefined(checkbox)) {
                 removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
             }

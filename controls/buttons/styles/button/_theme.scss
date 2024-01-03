@@ -1045,12 +1045,22 @@
           @if $skin-name == 'FluentUI' {
             outline: none !important; /* stylelint-disable-line declaration-no-important */
           }
+
+          @if $skin-name == 'bootstrap5' {
+            background: $btn-outline-active-bgcolor;
+            color: $btn-outline-active-color;
+          }
         }
 
         &:focus-visible { // only for keybord
           @if $skin-name == 'FluentUI' {
             background: $btn-outline-bgcolor;
           }
+
+          @if $skin-name == 'bootstrap5' {
+            box-shadow: $btn-focus-box-shadow;
+          }
+
           @if $skin-name == 'Material3' {
             background: $btn-active-bgcolor;
             box-shadow: $btn-keyboard-focus-box-shadow;
@@ -1101,12 +1111,22 @@
             @if $skin-name == 'FluentUI' {
               outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
+
+            @if $skin-name == 'bootstrap5' {
+              background: $btn-outline-primary-focus-bgcolor;
+              color: $btn-outline-active-color;
+            }
           }
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
               background: $btn-outline-bgcolor;
             }
+
+            @if $skin-name == 'bootstrap5' {
+              box-shadow: $btn-primary-focus-box-shadow;
+            }
+
             @if $skin-name == 'Material3' {
               background: $btn-primary-active-bgcolor;
               box-shadow: $btn-keyboard-focus-box-shadow;
@@ -1164,11 +1184,19 @@
             @if $skin-name == 'FluentUI' {
               outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
+
+            @if $skin-name == 'bootstrap5' {
+              background: $btn-success-bgcolor;
+              color: $btn-success-color;
+            }
           }
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
               background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'bootstrap5' {
+              box-shadow: $btn-success-focus-box-shadow;
             }
             @if $skin-name == 'Material3' {
               background: $btn-success-active-bgcolor;
@@ -1227,11 +1255,19 @@
             @if $skin-name == 'FluentUI' {
               outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
+
+            @if $skin-name == 'bootstrap5' {
+              background: $btn-info-bgcolor;
+              color: $btn-info-color;
+            }
           }
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
               background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'bootstrap5' {
+              box-shadow: $btn-info-focus-box-shadow;
             }
             @if $skin-name == 'Material3' {
               background: $btn-info-active-bgcolor;
@@ -1290,11 +1326,19 @@
             @if $skin-name == 'FluentUI' {
               outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
+
+            @if $skin-name == 'bootstrap5' {
+              background: $btn-warning-bgcolor;
+              color: $btn-warning-color;
+            }
           }
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
               background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'bootstrap5' {
+              box-shadow: $btn-warning-focus-box-shadow;
             }
             @if $skin-name == 'Material3' {
               background: $btn-warning-active-bgcolor;
@@ -1353,11 +1397,19 @@
             @if $skin-name == 'FluentUI' {
               outline: none !important; /* stylelint-disable-line declaration-no-important */
             }
+
+            @if $skin-name == 'bootstrap5' {
+              background: $btn-danger-bgcolor;
+              color: $btn-danger-color;
+            }
           }
 
           &:focus-visible { // only for keybord
             @if $skin-name == 'FluentUI' {
               background: $btn-outline-bgcolor;
+            }
+            @if $skin-name == 'bootstrap5' {
+              box-shadow: $btn-danger-focus-box-shadow;
             }
             @if $skin-name == 'Material3' {
               background: $btn-danger-active-bgcolor;

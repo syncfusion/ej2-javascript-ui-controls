@@ -5112,8 +5112,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                                 this.lastSelectedElement = parentElement;
                             } else {
                                 this.lastSelectedElement = parentElement;
-                                parentElement.classList.add(cls.CELL_ACTIVE_BGCOLOR);
-                                parentElement.classList.add(cls.SELECTED_BGCOLOR);
+                                if (!(parentElement.classList.contains(cls.HEADERCELL) &&
+                                    parentElement.classList.contains(cls.FREEZED_CELL))) {
+                                    parentElement.classList.add(cls.CELL_ACTIVE_BGCOLOR);
+                                    parentElement.classList.add(cls.SELECTED_BGCOLOR);
+                                }
                             }
                             this.renderModule.selected();
                         }
@@ -5394,7 +5397,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
         }
         if (columns.length > 1 && !(columns.length > 0 && columns[columns.length - 1].autoFit)) {
-            let lastColumn: ColumnModel = columns[columns.length - 1];
+            const lastColumn: ColumnModel = columns[columns.length - 1];
             lastColumn.minWidth = lastColumn.width;
             lastColumn.width = 'auto';
             if (lastColumn.columns && lastColumn.columns.length > 0) {

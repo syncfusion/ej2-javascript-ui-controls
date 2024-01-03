@@ -636,3 +636,17 @@
     }
   }
 }
+
+.e-progress-btn.e-outline .e-spinner-pane .e-spinner-inner svg {
+  fill: $btn-outline-color;
+  stroke: $btn-outline-color;
+}
+
+.e-progress-btn.e-outline:focus .e-spinner-pane .e-spinner-inner svg {
+  fill: $btn-color;
+  stroke: $btn-color;
+}
+
+.e-progress-btn.e-outline.e-success .e-spinner-pane .e-spinner-inner svg .e-path-arc {
+  stroke: $btn-outline-color;
+}

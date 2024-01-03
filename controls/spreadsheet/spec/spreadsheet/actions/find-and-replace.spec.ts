@@ -43,6 +43,55 @@ describe('Find & Replace ->', () => {
             expect(helper.getInstance().sheets[1].selectedRange).toBe('K30');
             done();
         });
+
+        it('Trigger openComplete event for openFromJson method', (done: Function) => {
+            const json: any = { "Workbook": { "sheets": [{ "name": "Car Sales Report", "rows": [{ "cells": [{ "value": "Color" }, { "value": "Payment Mode" }] },
+                { "cells": [{ "value": "Aquamarine" }, { "value": "Debit Card" }] }, { "cells": [{ "value": "Blue" }, { "value": "Net Banking" }] },
+                { "cells": [{ "value": "Aquamarine" }, { "value": "Credit Card" }] }, { "cells": [{ "value": "Aquamarine" }, { "value": "Credit Card" }] }] }] } };
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.openComplete = (args: any): void => {
+                expect(args.response.isOpenFromJson).toBeTruthy();
+                expect(args.response.eventArgs.jsonObject).toBe(JSON.stringify(json));
+                spreadsheet.openComplete = null;
+                done();
+            };
+            helper.invoke('openFromJson', [{ file: json, triggerEvent: true }]);
+        });
+
+        it('Open find tool dialog using find method', (done: Function) => {
+            const findOption: any = { value: 'Aquamarine', sheetIndex: 0, findOpt: 'next', mode: 'Sheet', isCSen: false, isEMatch: false,
+                searchBy: 'By Row', showDialog: true };
+            helper.invoke('find', [findOption]);
+            const spreadsheet: any = helper.getInstance();
+            expect(spreadsheet.sheets[0].selectedRange).toBe('A2:A2');
+            const findToolDlg: HTMLElement = helper.getElementFromSpreadsheet('.e-findtool-dlg');
+            expect(findToolDlg.classList.contains('e-popup-open')).toBeTruthy();
+            expect((<HTMLInputElement>findToolDlg.querySelector('.e-text-findNext-short')).value).toBe('Aquamarine');
+            expect(findToolDlg.querySelector('.e-find-toolbar .e-input-group-icon').textContent).toBe('1 of 3');
+            expect(findToolDlg.querySelector('.e-findRib-prev').classList.contains('e-overlay')).toBeFalsy();
+            expect(findToolDlg.querySelector('.e-findRib-next').classList.contains('e-overlay')).toBeFalsy();
+            findOption.value = 'Credit Card';
+            helper.invoke('find', [findOption]);
+            expect(spreadsheet.sheets[0].selectedRange).toBe('B4:B4');
+            expect(findToolDlg.classList.contains('e-popup-open')).toBeTruthy();
+            expect((<HTMLInputElement>findToolDlg.querySelector('.e-text-findNext-short')).value).toBe('Credit Card');
+            expect(findToolDlg.querySelector('.e-find-toolbar .e-input-group-icon').textContent).toBe('1 of 2');
+            expect(findToolDlg.querySelector('.e-findRib-prev').classList.contains('e-overlay')).toBeFalsy();
+            expect(findToolDlg.querySelector('.e-findRib-next').classList.contains('e-overlay')).toBeFalsy();
+            findOption.value = 'Test';
+            helper.invoke('find', [findOption]);
+            expect(spreadsheet.sheets[0].selectedRange).toBe('B4:B4');
+            expect(findToolDlg.classList.contains('e-popup-open')).toBeTruthy();
+            expect((<HTMLInputElement>findToolDlg.querySelector('.e-text-findNext-short')).value).toBe('Test');
+            expect(findToolDlg.querySelector('.e-find-toolbar .e-input-group-icon').textContent).toBe('0 of 0');
+            expect(findToolDlg.querySelector('.e-findRib-prev').classList.contains('e-overlay')).toBeTruthy();
+            expect(findToolDlg.querySelector('.e-findRib-next').classList.contains('e-overlay')).toBeTruthy();
+            expect(spreadsheet.findAndReplaceModule.findDialog.animationSettings.effect).not.toBe('None');
+            helper.setAnimationToNone('.e-findtool-dlg');
+            helper.triggerKeyNativeEvent(70, true);
+            expect(helper.getElementFromSpreadsheet('.e-findtool-dlg')).toBeNull();
+            done();
+        });
     });
 
     describe('UI - Interaction for find Next->', () => {

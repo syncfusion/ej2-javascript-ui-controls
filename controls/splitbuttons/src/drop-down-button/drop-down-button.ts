@@ -367,6 +367,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             if (item.disabled) { li.classList.add('e-disabled'); }
             eventArgs = { item: item, element: li as HTMLElement };
             this.trigger('beforeItemRender', eventArgs);
+            if (eventArgs.item.disabled && !li.classList.contains('e-disabled')) { 
+                li.classList.add('e-disabled'); 
+            };
             ul.appendChild(li);
         }
         if (appendItems) {

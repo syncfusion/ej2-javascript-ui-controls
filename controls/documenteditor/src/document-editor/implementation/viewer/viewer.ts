@@ -3754,8 +3754,9 @@ export class DocumentHelper {
             if(fieldPattern == '') {
                 fieldPattern = page.bodyWidgets[0].sectionFormat.pageNumberStyle;
             }
-            fieldCategory = (!fieldCategory.match('numpages') && !fieldCategory.match('sectionpages') &&
-                fieldCategory.match('page')) ? 'page' : fieldCategory;
+            if (fieldCategory.indexOf(' ') !== -1) {
+                fieldCategory = fieldCategory.split(' ')[0];
+            }
             switch (fieldCategory) {
                 case 'page':
                     if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex !== 0) {

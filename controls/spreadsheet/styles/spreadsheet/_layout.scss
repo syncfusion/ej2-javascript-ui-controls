@@ -2927,6 +2927,14 @@
     }
   }
 
+  .e-spreadsheet.e-device {
+    & .e-sheet-tab {
+      & .e-hscroll-bar {
+        margin-left: 0;
+      }
+    }
+  }
+
   .e-bigger .e-spreadsheet,
   .e-bigger.e-spreadsheet {
     @if $skin-name == 'FluentUI' {

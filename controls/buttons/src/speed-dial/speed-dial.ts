@@ -922,7 +922,12 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     private setRTL(): void {
         this.popupEle.classList[this.enableRtl ? 'add' : 'remove'](RTLCLASS);
         this.clearHorizontalPosition();
-        if (!(this.popupTemplate || (this.mode === 'Radial'))) { this.setLinearHorizontalPosition(); } else { this.setHorizontalPosition(); }
+        if (!(this.popupTemplate || (this.mode === 'Radial'))) {
+            this.setLinearHorizontalPosition();
+        } else {
+            if (!this.popupTemplate && this.mode === 'Radial') { this.setRadialPosition(); }
+            this.setHorizontalPosition();
+        }
     }
 
     private checkTarget(): void {

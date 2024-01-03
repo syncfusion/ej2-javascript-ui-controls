@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### TimePicker
+
+#### Bug Fixes
+
+- `#I529252` - Fixed issue where changing the time in `EEE hh:mm a` format was affecting the day.
+
 ## 24.1.43 (2023-12-27)
 
 ### DateTimePicker

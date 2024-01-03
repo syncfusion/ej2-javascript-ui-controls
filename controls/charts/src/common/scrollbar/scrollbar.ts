@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { EventHandler, Browser, remove } from '@syncfusion/ej2-base';
+import { EventHandler, Browser, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DateFormatOptions  } from '@syncfusion/ej2-base';
 import { ScrollElements, createScrollSvg } from './scrollbar-elements';
 import { getElement, minMax, logBase  } from '../utils/helper';
@@ -291,8 +291,10 @@ export class ScrollBar {
             return null;
         }
         this.getMouseXY(e);
-        this.setCursor(target);
-        this.setTheme(target);
+        if (!isNullOrUndefined(target.id)) {
+            this.setCursor(target);
+            this.setTheme(target);
+        }
         //let mouseXY: number = this.isVertical ? this.mouseY : this.mouseX;
         let mouseXY: number = (this.isVertical && isInverse) ? this.width - this.mouseY : this.isVertical ?
             this.mouseY : this.mouseX ;

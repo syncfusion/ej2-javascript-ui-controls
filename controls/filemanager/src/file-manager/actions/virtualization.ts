@@ -59,6 +59,9 @@ export class Virtualization {
         this.itemList = Array.prototype.slice.call(selectAll('.' + CLS.LIST_ITEM, listElements));
         // Append the list element to the large icon element
         this.largeIconInstance.element.appendChild(listElements);
+        if (this.itemList.length !== 0 && this.largeIconInstance.element.querySelector('.' + CLS.EMPTY)) {
+            this.largeIconInstance.element.removeChild(this.largeIconInstance.element.querySelector('.' + CLS.EMPTY));
+        }
         // Get the total number of items
         this.itemCount = this.getItemCount(Object.keys(this.largeIconInstance.allItems).length);
         // Remove the first child element from the large icon element

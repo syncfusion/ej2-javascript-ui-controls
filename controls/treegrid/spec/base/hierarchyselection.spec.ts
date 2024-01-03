@@ -906,3 +906,38 @@ describe('TreeGrid Hierarchy Selection', () => {
     });
   });
 });
+
+describe('Bug 861737: Checkbox column behavior is not working when using displayAsCheckbox column as first column', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 2,
+        height: '410',
+        autoCheckHierarchy: true,
+        columns: [
+          { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+          { field: 'approved', headerText: 'Task ID', width: 150, textAlign: 'Right', displayAsCheckBox: true},
+          { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left', showCheckbox: true },
+          { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd'}
+        ]
+      },
+      done
+    );
+  });
+  it('Check checkbox column behavior ', () => {
+    let event: MouseEvent = new MouseEvent('click', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true
+    });
+    gridObj.getHeaderTable().querySelector('.e-frame').dispatchEvent(event);
+    expect(gridObj.getRows()[0].cells[1].querySelector('.e-frame').classList.contains('e-check')).toBeFalsy();
+    expect(gridObj.getRows()[0].cells[2].querySelector('.e-frame').classList.contains('e-check')).toBeTruthy();
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

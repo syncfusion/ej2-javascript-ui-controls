@@ -1095,7 +1095,7 @@ export class StickyNotesAnnotation {
         // eslint-disable-next-line
         this.getButtonState(commentObj, newCommentDiv);
         if (args.valueEle) {
-            if (args.value != null && args.value !== ' ') {
+            if (args.value != null && args.value !== "") {
                 // eslint-disable-next-line max-len
                 if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
                     this.modifyTextProperty(args.value, args.prevValue, args.valueEle.parentNode.parentNode.parentNode.parentNode.id);
@@ -1106,10 +1106,12 @@ export class StickyNotesAnnotation {
                         this.modifyTextProperty(args.value, args.prevValue);
                     }
                 }
-                this.updateModifiedDate(titleContainer);
+                if (args.prevValue != args.value) {
+                    this.updateModifiedDate(titleContainer);
+                }
             }
             if (args.valueEle.parentElement.parentElement.parentElement.parentElement.childElementCount === 1) {
-                if (args.value != null && args.value !== '' && args.value !== ' ') {
+                if (args.value != null && args.value !== "") {
                     commentsContainer.appendChild(newCommentDiv);
                     setTimeout(
                         () => {

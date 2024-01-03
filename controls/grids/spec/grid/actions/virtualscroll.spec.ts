@@ -1467,3 +1467,59 @@ describe('Column virtualization', () => {
         });
     });
 });
+
+describe('EJ2-859411-Scroll using the down arrow key by focusing the template, the Grid lose focus', () => {
+    let grid: Grid;
+    let dataBound: () => void;
+    let row: HTMLTableRowElement;
+    const columns = [
+        {
+            field: 'Field0', headerText: 'Field0',
+            width: 120,
+            textAlign: 'Right'
+        },
+        {
+            field: 'Template',
+            headerText: 'Template Link',
+            width: 150,
+            template: `<div>
+            <a href="https://google.com/">
+                Template link
+            </a>
+        </div>`
+        },
+    ];
+    beforeAll((done: Function) => {
+        grid = createGrid(
+            {
+                dataSource: largeDataset,
+                columns: columns,
+                enableVirtualization: true,
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple' },
+                height: 300
+            },done);
+    });
+    it('check selection by click in last viewable row', (done: Function) => {
+        grid.rowSelected = <EmitType<{}>>done;
+        row = <HTMLTableRowElement>(<HTMLTableElement>grid.getContentTable()).rows[7];
+        let index: number = parseInt(row.getAttribute('data-rowindex'), 10);
+        (<HTMLElement>row.cells[1]).click();
+        expect(grid.getSelectedRowIndexes()[0]).toEqual(index);
+    });
+    it('down key action and check scrolltop set properly for 1 row height', (done: Function) => {
+        expect((<HTMLElement>grid.getContent().firstChild).scrollTop).toBe(0);
+        dataBound = (args?: any): void => {
+            dataBound = null;
+            expect((<HTMLElement>grid.getContent().firstChild).scrollTop).toBeLessThan(40);
+            expect((<HTMLElement>grid.getContent().firstChild).scrollTop).not.toBe(0);
+            done();
+        };
+        grid.dataBound = dataBound;
+        grid.keyboardModule.keyAction({ action: 'downArrow', target: document.activeElement, preventDefault: () => {} } as any);
+    });
+    afterAll(() => {
+        destroy(grid);
+        grid = dataBound = null;
+    });
+})

@@ -429,7 +429,7 @@ export class Tooltip extends BaseTooltip {
             argument.series = []; argument.data = [];
             argument.text = [];
             for (const data of dataCollection) {
-                if (data.point.symbolLocations[0].x === lastData.point.symbolLocations[0].x) {
+                if (data.point.symbolLocations[0].x === lastData.point.symbolLocations[0].x || ((data.series.type.indexOf('Column') !== -1 || lastData.series.type.indexOf('Column') !== -1) && (data.point.xValue === lastData.point.xValue))) {
                     argument.point.push(data.point);
                     argument.series.push(data.series);
                     argument.text.push(this.getTooltipText(data));

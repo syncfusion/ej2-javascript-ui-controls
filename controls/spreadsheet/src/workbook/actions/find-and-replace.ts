@@ -3,7 +3,7 @@ import { getCellIndexes, FindOptions, getCellAddress, find, count, getRangeIndex
 import { goto, replace, replaceAll, showDialog, replaceAllDialog, ReplaceAllEventArgs, ExtendedRowModel, FindArgs } from '../common/index';
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs, updateCell, beginAction } from '../common/index';
-import { isLocked } from '../common/index';
+import { isLocked, findToolDlg } from '../common/index';
 /**
  * `WorkbookFindAndReplace` module is used to handle the search action in Spreadsheet.
  */
@@ -105,6 +105,9 @@ export class WorkbookFindAndReplace {
             this.findNext(args, findArgs);
         } else {
             this.findPrevious(args, findArgs);
+        }
+        if (args.showDialog) {
+            this.parent.notify(findToolDlg, { findValue: args.value, isPublic: true });
         }
     }
     private findNext(args: FindOptions, findArgs: FindArgs): void {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I536115` - The issue of adding an unnecessary `<ul>` element under the large icons view while using `enableVirtualization` property in the FileManager component has been resolved.
+
 ## 24.1.43 (2023-12-27)
 
 ### FileManager
@@ -10,7 +18,7 @@
 
 - `#I527570` - The issue with auto scroll during drag and drop operation in the FileManager component has been resolved.
 
-- `#I531559`, `#I529731` - The file selection issue for the duplicate folders with different parents in the navigation pane of File Manager has been resolved.
+- `#I531559`, `#I529731` - The file selection issue for the duplicate folders with different parents in the navigation pane of FileManager has been resolved.
 
 ## 24.1.41 (2023-12-18)
 

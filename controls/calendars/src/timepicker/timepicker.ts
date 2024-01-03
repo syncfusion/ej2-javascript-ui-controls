@@ -2034,7 +2034,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     protected validateValue(date: Date, value: string | Date): string {
         let time: string;
         const val: string | Date = this.validateMinMax(value, this.min, this.max);
-        const newval: Date = this.createDateObj(val);
+        const newval: Date = this.getDateObject(val);
         if (this.getFormattedValue(newval) !== this.getFormattedValue(this.value)) {
             this.valueWithMinutes = isNullOrUndefined(newval) ? null : newval;
             time = this.objToString(this.valueWithMinutes);

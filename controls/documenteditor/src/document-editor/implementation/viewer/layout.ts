@@ -3849,7 +3849,8 @@ export class Layout {
             if (index > 0) {
                 textWidth = this.documentHelper.textHelper.measureTextExcludingSpaceAtEnd(text.slice(0, index), characterFormat, element.scriptType);
             }
-            if (this.viewer.clientActiveArea.width < textWidth && !this.documentHelper.textHelper.isUnicodeText(text, element.scriptType)) {
+            if (this.viewer.clientActiveArea.width < textWidth && !this.documentHelper.textHelper.isUnicodeText(text, element.scriptType)
+                && !this.isWordFittedByJustification(element, textWidth)) {
                 //Check and split the previous text elements to next line.
                 isSplitByWord = this.checkPreviousElement(lineWidget, lineWidget.children.indexOf(element));
                 if (isSplitByWord) {
@@ -5812,13 +5813,62 @@ export class Layout {
         }
         return subWidths;
     }
+    /* eslint-disable  */
+    private isWordFittedByJustification(element: TextElementBox, nextWordWidth: number): boolean {
+        let line: LineWidget = element.line;
+        let paragraph: ParagraphWidget = line.paragraph;
+        let paraFormat: WParagraphFormat = paragraph.paragraphFormat;
+        let textAlignment: TextAlignment = paraFormat.textAlignment;
+        let isParagraphEnd: boolean = line.isLastLine();
+        let firstLineIndent: number = 0;
+        if (line.isFirstLine()) {
+            firstLineIndent = HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
+        }
+        let availableLineWidth: number = this.viewer.clientActiveArea.width;
+        if (nextWordWidth != 0 && availableLineWidth >= nextWordWidth / 2) {
+            let whiteSpaceCount: number = 0;
+            let widthInfo: SubWidthInfo[];
+            let totalSpaceCount: number = 0;
+            if (textAlignment !== 'Left' && this.viewer.textWrap && (!(textAlignment === 'Justify' && isParagraphEnd)
+                || (textAlignment === 'Justify' && paraFormat.bidi) || (this.is2013Justification && isParagraphEnd))) {
+                widthInfo = this.getSubWidth(line, textAlignment === 'Justify', whiteSpaceCount, firstLineIndent, isParagraphEnd);
+                whiteSpaceCount = widthInfo[0].spaceCount;
+                totalSpaceCount = widthInfo[0].totalSpaceCount;
+            }
+            if (!isNullOrUndefined(widthInfo) && widthInfo.length == 1 && availableLineWidth > 0
+                && textAlignment === 'Justify' && this.documentHelper.compatibilityMode === 'Word2013' && !this.is2013Justification 
+                && paraFormat.rightIndent === 0 && paraFormat.leftIndent === 0) {
+                let effectiveWidth: number = 0;
+                let totalSpaceWidth: number = this.getTotalSpaceWidth(line, totalSpaceCount);
+                let normalWidth: number = totalSpaceWidth / totalSpaceCount;
+                let justifyWidth: number = (availableLineWidth + totalSpaceWidth) / totalSpaceCount;
+                let diffFactor: number = ((justifyWidth - normalWidth) / normalWidth) * 100;
+
+                if (diffFactor <= 33) {
+                    effectiveWidth = totalSpaceWidth / 8;
+                } else {
+                    effectiveWidth = totalSpaceWidth / 4;
+                }
+
+                if (availableLineWidth + effectiveWidth >= nextWordWidth) {
+                    this.viewer.clientActiveArea.x -= effectiveWidth;
+                    this.viewer.clientActiveArea.width += effectiveWidth;
+                    this.is2013Justification = true;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     /**
      * Returns the total space width in line widget.
      * @param {LineWidget} lineWidget - the line widget 
+     * @param {number} count - the space count to be considered.
      * @returns {number} the total space width.
      */
-     private getTotalSpaceWidth(lineWidget: LineWidget): number {
+     private getTotalSpaceWidth(lineWidget: LineWidget, count?: number): number {
         let totalSpaceWidth: number = 0;
+        let totalSpaceCount: number = 0;
         if (lineWidget) {
             for (let i = 0; i < lineWidget.children.length; i++) {
                 let currentWidget: ElementBox = lineWidget.children[i];
@@ -5827,7 +5877,11 @@ export class Layout {
                     if (spaceCount > 0) {
                         let spaceWidth: number = this.documentHelper.textHelper.getWidth(' ', currentWidget.characterFormat, currentWidget.scriptType);
                         totalSpaceWidth += spaceCount * spaceWidth;
+                        totalSpaceCount += spaceCount;
                     }
+                }
+                if (!isNullOrUndefined(count) && totalSpaceCount >= count) {
+                    break;
                 }
             }
         }
@@ -6540,7 +6594,7 @@ export class Layout {
                             splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow, footnoteElements, lineIndexInCell, cellIndex, isMultiColumnSplit);
                             if (isNullOrUndefined(splittedWidget) && tableRowWidget.y === viewer.clientArea.y) {
                                 this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements);
-                            } else if (isNullOrUndefined(splittedWidget) && heightType === 'AtLeast') {
+                            } else if (isNullOrUndefined(splittedWidget) && heightType === 'AtLeast' && tableRowWidget.containerWidget.lastChild !== tableRowWidget) {
                                 splittedWidget = tableRowWidget;
                             }
                         }
@@ -9142,7 +9196,11 @@ export class Layout {
                                 && prevPageNum !== textElement.text) {
                                 const lineIndex: number = paragraph.childWidgets.indexOf(fieldBegin.line);
                                 const elementIndex: number = fieldBegin.line.children.indexOf(textElement);
-                                this.reLayoutParagraph(paragraph, lineIndex, elementIndex);
+                                if (paragraph.isInsideTable) {
+                                    this.reLayoutParagraph(paragraph, lineIndex, elementIndex);
+                                } else {
+                                    this.reLayoutLine(paragraph, lineIndex, false, false, true);
+                                }
                             }
                         }
                     }
@@ -10334,11 +10392,11 @@ export class Layout {
     //#region Relayout Parargaph
 
     /* eslint-disable  */
-    public reLayoutLine(paragraph: ParagraphWidget, lineIndex: number, isBidi: boolean, isSkip?: boolean): void {
+    public reLayoutLine(paragraph: ParagraphWidget, lineIndex: number, isBidi: boolean, isSkip?: boolean, isSkipList?: boolean): void {
         if (!this.documentHelper.owner.editor.isFootnoteElementRemoved) {
             this.isFootnoteContentChanged = false;
         }
-        if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule) {
+        if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule && !isSkipList) {
             this.viewer.owner.editorModule.updateWholeListItems(paragraph);
         }
         let lineWidget: LineWidget;

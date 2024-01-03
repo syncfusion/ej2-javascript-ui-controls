@@ -774,6 +774,8 @@ describe('Ribbon', () => {
             expect((document.querySelector('#item1_grpbtn').querySelectorAll('.e-ribbon-group-button')[2]).classList.contains('e-active')).toBe(false);
             expect((ribbon.element.querySelector('#item1')as any).ej2_instances[0].iconCss).toBe('e-icons e-paste');
             (ribbon.element.querySelector('#item1') as HTMLElement).click();
+            (ribbon.element.querySelector('#item1') as HTMLElement).click();
+            expect((document.activeElement as any).ej2_instances[0].iconCss).toBe('e-icons e-paste');
         });
         it('when active layout is simplified mode', () => {
             ribbon = new Ribbon({
@@ -1064,8 +1066,8 @@ describe('Ribbon', () => {
             keyboardEventArgs.target = document.activeElement;
             keyboardEventArgs.key = 'ArrowUp';
             (ribbon.ribbonGroupButtonModule as any).handleGroupButtonNavigation(keyboardEventArgs, collectionItems);
-            expect(document.querySelector('#item3-popup').querySelectorAll('.e-ribbon-group-button')[0].classList.contains('e-active')).toBe(true);
-            expect(document.querySelector('#item3-popup').querySelectorAll('.e-ribbon-group-button')[1].classList.contains('e-active')).toBe(false);
+            expect(document.querySelector('#item3-popup').querySelectorAll('.e-ribbon-group-button')[0].classList.contains('e-active')).toBe(false);
+            expect(document.querySelector('#item3-popup').querySelectorAll('.e-ribbon-group-button')[1].classList.contains('e-active')).toBe(true);
             expect(document.querySelector('#item3-popup').querySelectorAll('.e-ribbon-group-button')[2].classList.contains('e-active')).toBe(false);
         });
         it('header in overflow popup ', () => {

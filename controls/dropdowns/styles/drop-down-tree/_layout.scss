@@ -108,6 +108,11 @@
       }
     }
 
+    &.e-input-group.e-control-wrapper.e-valid-input:hover:not(.e-disabled) .e-clear-icon,
+    &.e-float-input.e-control-wrapper.e-valid-input:hover:not(.e-disabled) .e-clear-icon {
+      display: flex;
+    }
+
     .e-chips-wrapper {
       width: 100%;
     }

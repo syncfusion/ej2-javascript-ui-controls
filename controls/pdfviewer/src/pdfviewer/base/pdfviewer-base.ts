@@ -3497,7 +3497,8 @@ export class PdfViewerBase {
                     clearTimeout(this.scrollHoldTimer);
                     this.scrollHoldTimer = null;
                 }
-                if ((this.scrollPosition * this.getZoomFactor()) !== this.viewerContainer.scrollTop) {
+                // eslint-disable-next-line max-len
+                if ((this.scrollPosition === 0 && this.viewerContainer.scrollTop === 0) || ((this.scrollPosition * this.getZoomFactor()) !== this.viewerContainer.scrollTop)) {
                     this.pageViewScrollChanged(this.currentPageNumber);
                 }
             }
@@ -7424,7 +7425,7 @@ export class PdfViewerBase {
                                                             const blobUrl: string = Url.createObjectURL(blobObj);
                                                             let storeObject: any = {
                                                                 // eslint-disable-next-line
-                                                                image: blobUrl, width: tileData.pageWidth, uniqueId: tileData.uniqueId, tileX: tileData.tileX, tileY: tileData.tileY,
+                                                                image: blobUrl, width: tileData.width, uniqueId: tileData.uniqueId, tileX: tileData.tileX, tileY: tileData.tileY,
                                                                 zoomFactor: tileData.zoomFactor, transformationMatrix: tileData.transformationMatrix
                                                             };
                                                             if (isTextNeed) {
@@ -7448,7 +7449,7 @@ export class PdfViewerBase {
                                                             const blobUrl: string = Url.createObjectURL(blobObj);
                                                             let storeObject: any = {
                                                                 // eslint-disable-next-line
-                                                                image: blobUrl, width: tileData.pageWidth, uniqueId: tileData.uniqueId, tileX: tileData.tileX, tileY: tileData.tileY, zoomFactor: tileData.zoomFactor, transformationMatrix: tileData.transformationMatrix
+                                                                image: blobUrl, width: tileData.width, uniqueId: tileData.uniqueId, tileX: tileData.tileX, tileY: tileData.tileY, zoomFactor: tileData.zoomFactor, transformationMatrix: tileData.transformationMatrix
                                                             };
                                                             proxy.storeImageData(pageNumber, storeObject, tileData.tileX, tileData.tileY);
                                                         }
@@ -10331,6 +10332,7 @@ export class PdfViewerBase {
                 }
             }
         }
+        this.isImportAction = false;
     }
 
     /**

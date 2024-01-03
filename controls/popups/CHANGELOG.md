@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I531367` - The issue with the Tooltip's incorrect positioning when template content is rendered has been resolved.
+
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

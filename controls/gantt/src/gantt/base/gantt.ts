@@ -2294,6 +2294,12 @@ export class Gantt extends Component<HTMLElement>
         }
     }
     public keyActionHandler(e: KeyboardEventArgs): void {
+        if (this.enableContextMenu && this.contextMenuModule && (e.action === 'downArrow' || e.action === 'upArrow') && document.getElementById(this.element.id +'_contextmenu') && this['args']) {
+            const firstMenuItem: HTMLElement = this['args'];
+            if (!isNullOrUndefined(firstMenuItem)) {
+                (firstMenuItem).focus();
+            }
+        }
         if (e.target && (e.action === 'downArrow' || e.action === 'upArrow') && e.target === this.element.querySelector('.e-rowcell')) {
             this.treeGrid.grid.notify('key-pressed', e);
         }

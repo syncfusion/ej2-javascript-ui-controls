@@ -1270,6 +1270,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     if (this.getModuleName() === 'dropdownlist') {
                         if (!this.beforePopupOpen) {
                             this.showPopup();
+                            e.preventDefault();
                         }
                     }
                     break;
@@ -2734,6 +2735,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.setFooterTemplate(popupEle);
                 }
                 document.body.appendChild(popupEle);
+                popupEle.style.top = '0px';
                 if(this.enableVirtualization && this.itemTemplate) {
                     var listitems = popupEle.querySelectorAll('li.e-list-item:not(.e-virtual-list)');
                     this.listItemHeight = listitems.length > 0 ? Math.ceil(listitems[0].getBoundingClientRect().height) : 0;

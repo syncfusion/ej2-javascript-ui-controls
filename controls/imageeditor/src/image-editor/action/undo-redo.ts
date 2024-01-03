@@ -379,7 +379,7 @@ export class UndoRedo {
                         this.tempCurrSelPoint = extend({}, parent.currSelectionPoint, {}, true) as SelectionPoint;
                         parent.currSelectionPoint = null;
                     }
-                    parent.notify('draw', {prop: 'performCancel', value: {isContextualToolbar: null }});
+                    parent.notify('draw', {prop: 'performCancel', value: {isContextualToolbar: null, isUndoRedo: true }});
                     parent.currObjType.isActiveObj = false;
                     if (parent.transform.straighten !== 0) {
                         parent.notify('draw', { prop: 'setStraightenActObj', value: {activeObj: null }});
@@ -915,6 +915,15 @@ export class UndoRedo {
         this.parent.notify('draw', { prop: 'getArrowDimension', onPropertyChange: false, value: {obj: arrowObj }});
         const tempArrowObj: Object = extend({}, arrowObj['arrowDimension'], {}, true) as Object;
         if (parent.transform.zoomFactor > 0 && (obj.length > 0 || point.length > 0)) {
+            if (obj.length > 0) {
+                for (let i: number = 0; i < obj.length; i++) {
+                    if (obj[i as number].currIndex) {
+                        continue;
+                    } else {
+                        obj[i as number].currIndex = 'shape_' + (i + 1);
+                    }
+                }
+            }
             parent.objColl = obj; parent.pointColl = point;
             const isUndoRedo: boolean = parent.isUndoRedo;
             const isCropTab: boolean = parent.isCropTab;

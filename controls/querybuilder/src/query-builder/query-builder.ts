@@ -4443,7 +4443,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 const dropDownObj: DropDownList = getInstance(elem[i as number] as HTMLElement, DropDownList) as DropDownList;
                 dropDownObj.readonly = this.isReadonly;
             } else if (elem[i as number].classList.contains('e-dropdowntree')) {
-                const dropDownTreeObj: DropDownTree = getInstance(elem[i as number] as HTMLElement, DropDownTree) as DropDownTree;
+                const dropDownTreeObj: DropDownTree = getComponent(elem[i as number] as HTMLElement, 'dropdowntree') as DropDownTree;
                 dropDownTreeObj.readonly = this.isReadonly;
             } else if (elem[i as number].classList.contains('e-numerictextbox')) {
                 const numericTextBoxObj: NumericTextBox = getInstance(elem[i as number] as HTMLElement, NumericTextBox) as NumericTextBox;

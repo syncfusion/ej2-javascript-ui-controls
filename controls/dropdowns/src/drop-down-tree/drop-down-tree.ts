@@ -3233,7 +3233,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             else {
                 this.treeObj.uncheckAll();
             }
-            this.checkSelectAll = true;
+            this.checkSelectAll = state ;
         } else if (this.allowMultiSelection) {
             if (!state) {
                 this.treeObj.selectedNodes = [];

@@ -7,7 +7,7 @@ import { PdfAnnotationCollection } from './../annotations/annotation-collection'
 import { _PdfAnnotationType, PdfAnnotationFlag } from './../enumerator';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { _PdfBaseStream, _PdfContentStream } from './../base-stream';
-import { _hexStringToByteArray, _stringToAnnotationFlags, _convertToColor, _bytesToString, _hexStringToString, _getSpecialCharacter, _getLatinCharacter, _getInheritableProperty, _getNewGuidString, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _encode, _decode } from './../utils';
+import { _hexStringToByteArray, _stringToAnnotationFlags, _convertToColor, _bytesToString, _hexStringToString, _getSpecialCharacter, _getLatinCharacter, _getInheritableProperty, _getNewGuidString, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _encode } from './../utils';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfCheckBoxField, PdfComboBoxField, PdfField, PdfListBoxField, PdfRadioButtonListField, PdfTextBoxField, PdfListField } from './../form/field';
 export abstract class _ExportHelper {
@@ -1270,24 +1270,32 @@ export class _XfdfDocument extends _ExportHelper {
                 const streamDictionary: _PdfDictionary = primitive.dictionary;
                 this._writePrefix(writer, 'STREAM', key);
                 writer._writeAttributeString('DEFINE', '');
-                const data: string = primitive.getString();
-                if (!streamDictionary.has('Length') && data && data !== '') {
-                    streamDictionary.update('Length', primitive.length);
-                }
-                this._writeAppearanceDictionary(writer, streamDictionary);
-                writer._writeStartElement('DATA');
                 if ((streamDictionary.has('Subtype') &&
                     this._getValue(streamDictionary.get('Subtype')) === 'Image') ||
                     (!streamDictionary.has('Type') && !streamDictionary.has('Subtype'))) {
+                    const data: string = primitive.getString(true);
+                    if (!streamDictionary.has('Length') && data && data !== '') {
+                        streamDictionary.update('Length', primitive.length);
+                    }
+                    this._writeAppearanceDictionary(writer, streamDictionary);
+                    writer._writeStartElement('DATA');
                     writer._writeAttributeString('MODE', 'RAW');
                     writer._writeAttributeString('ENCODING', 'HEX');
-                    
+                    if (data && data !== '') {
+                        writer._writeRaw(data);
+                    }
                 } else {
+                    const data: string = primitive.getString();
+                    if (!streamDictionary.has('Length') && data && data !== '') {
+                        streamDictionary.update('Length', primitive.length);
+                    }
+                    this._writeAppearanceDictionary(writer, streamDictionary);
+                    writer._writeStartElement('DATA');
                     writer._writeAttributeString('MODE', 'FILTERED');
                     writer._writeAttributeString('ENCODING', 'ASCII');
-                }
-                if (data && data !== '') {
-                    writer._writeRaw(data);
+                    if (data && data !== '') {
+                        writer._writeRaw(data);
+                    }
                 }
                 writer._writeEndElement();
                 writer._writeEndElement();
@@ -2337,6 +2345,21 @@ export class _XfdfDocument extends _ExportHelper {
                     data = this._getData(element);
                     if (data && data.length > 0 && source instanceof _PdfContentStream) {
                         source._bytes = data;
+                        let isImage: boolean = false;
+                        if (appearance && appearance.has('Subtype')) {
+                            const type: _PdfName = appearance.get('Subtype');
+                            isImage = type && type.name === 'Image';
+                        }
+                        if (isImage) {
+                            source._isCompress = false;
+                        } else {
+                            if (source.dictionary.has('Length')) {
+                                delete source.dictionary._map.Length;
+                            }
+                            if (source.dictionary.has('Filter')) {
+                                delete source.dictionary._map.Filter;
+                            }
+                        }
                     }
                     break;
                 }

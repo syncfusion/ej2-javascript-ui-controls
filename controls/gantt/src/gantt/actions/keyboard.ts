@@ -280,7 +280,10 @@ export class FocusModule {
                 const selectingRowIndex: number = expandedRecords.indexOf(selectedItem);
                 const currentSelectingRecord: IGanttData = e.action === 'downArrow' ? expandedRecords[selectingRowIndex + 1] :
                     expandedRecords[selectingRowIndex - 1];
-                ganttObj.selectionModule.selectRow( ganttObj.currentViewData.indexOf(currentSelectingRecord), false, true);
+                const activeElement: Element = this.parent['args']
+                if (document.activeElement != activeElement) {
+                    ganttObj.selectionModule.selectRow(ganttObj.currentViewData.indexOf(currentSelectingRecord), false, true);
+                }
             } else if (ganttObj.selectionSettings.mode === 'Cell' && ganttObj.selectionModule.getSelectedRowCellIndexes().length > 0) {
                 const selectCellIndex: ISelectedCell[] = ganttObj.selectionModule.getSelectedRowCellIndexes();
                 const selectedCellItem: ISelectedCell = selectCellIndex[selectCellIndex.length - 1];

@@ -2,12 +2,21 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### GanttChart
+
+#### Bug Fixes
+
+`#I531670` - When adding record by method before saving, if the task ID is changed after taskbar hover exception thrown issue has been fixed.
+
 ## 24.1.43 (2023-12-27)
 
 ### GanttChart
 
 #### Bug Fixes
 
+- `#I527509` - Action begin event arguments not working properly issue has been fixed.
 - `#I517104` - Gantt component hangs whole page if timezone changed to UK(London) issue has been fixed.
 
 ## 23.2.5 (2023-11-23)

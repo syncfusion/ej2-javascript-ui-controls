@@ -4,7 +4,7 @@ import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue
 import { Column, ColumnModel } from '../models/column';
 import { BeforeBatchSaveArgs, BeforeBatchAddArgs, BatchDeleteArgs, BeforeBatchDeleteArgs, Row, getNumberFormat } from '@syncfusion/ej2-grids';
 import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel } from '@syncfusion/ej2-grids';
-import { RowDragEventArgs, RowDropEventArgs, RowDropSettingsModel, RowDropSettings, getUid } from '@syncfusion/ej2-grids';
+import { RowDragEventArgs, RowDropEventArgs, RowDropSettingsModel, RowDropSettings, getUid, parentsUntil } from '@syncfusion/ej2-grids';
 import { LoadingIndicator } from '../models/loading-indicator';
 import { LoadingIndicatorModel } from '../models/loading-indicator-model';
 import { ActionEventArgs, TextAlign } from'@syncfusion/ej2-grids';
@@ -79,7 +79,7 @@ import { InfiniteScrollSettings } from '../models/infinite-scroll-settings';
 import { InfiniteScrollSettingsModel } from '../models/infinite-scroll-settings-model';
 import { TreeActionEventArgs } from '..';
 import * as literals from '../base/constant';
-
+import { Tooltip } from '@syncfusion/ej2-popups';
 
 
 
@@ -1769,6 +1769,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public wireEvents(): void {
         EventHandler.add(this.grid.element, 'click', this.mouseClickHandler, this);
         EventHandler.add(this.element, 'touchend', this.mouseClickHandler, this);
+        EventHandler.add(this.element, 'mousemove', this.mouseMoveHandler, this);
         this.keyboardModule = new KeyboardEvents(
             this.element,
             {
@@ -3211,6 +3212,21 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     addClass([spanEle], ['e-check']);
                 }
             }
+        }
+    }
+
+    private mouseMoveHandler(e: MouseEvent): void {
+        let showTooltip : boolean = false;
+        const cols: Column[] = this.getColumns();
+        if (this.clipMode === 'EllipsisWithTooltip') {
+            showTooltip = true;
+        }
+        const element: HTMLElement = parentsUntil((e.target as Element), 'e-ellipsistooltip') as HTMLElement;
+        if ((showTooltip || (this.treeColumnIndex != -1 && cols[this.treeColumnIndex].clipMode === 'EllipsisWithTooltip')) && element != null && parseInt(element.getAttribute("data-colindex"), 10) == this.treeColumnIndex && element.children[0].scrollWidth > element.children[0].clientWidth){
+            const tooltip : Tooltip = new Tooltip({
+                content: element.textContent
+            });
+            tooltip.appendTo(element);
         }
     }
 

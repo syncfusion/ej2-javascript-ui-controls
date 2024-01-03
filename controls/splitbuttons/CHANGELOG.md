@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 24.1.43 (2023-12-27)
+## 24.1.44 (2024-01-03)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- `#I863317` - `Dropdownitems` not disabled initially when updating the property dynamically has been resolved.
+
+## 24.1.41 (2023-12-18)
 
 ### DropDownButton
 

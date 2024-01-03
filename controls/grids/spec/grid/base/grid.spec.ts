@@ -4,7 +4,7 @@
 import { L10n,EventHandler, select } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { Query } from '@syncfusion/ej2-data';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
 import { Column, ColumnModel } from '../../../src/grid/models/column';
 import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
@@ -13,7 +13,7 @@ import { Edit } from '../../../src/grid/actions/edit';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { data, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { createGrid, destroy } from '../base/specutil.spec';
+import { createGrid, destroy, getClickObj } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
 import { KeyboardEventArgs } from '../../../src';
 import { Selection } from '../../../src/grid/actions/selection';
@@ -24,7 +24,9 @@ import { ColumnChooser } from '../../../src/grid/actions/column-chooser';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { Filter } from '../../../src/grid/actions/filter';
-Grid.Inject(Aggregate, Page, Edit, Toolbar, Group, ColumnChooser, DetailRow);
+import { ExcelExport } from '../../../src/grid/actions/excel-export';
+import { PdfExport } from '../../../src/grid/actions/pdf-export';
+Grid.Inject(Aggregate, Page, Edit, Toolbar, Group, ColumnChooser, DetailRow, PdfExport, ExcelExport, Filter);
 
 describe('Grid base module', () => {
     describe('Grid properties', () => {
@@ -2203,5 +2205,55 @@ describe('get edit template =>', () => {
     afterAll(() => {
         destroy(gridObj);
         gridObj = userAgent = null;
+    });
+});
+
+// used for code coverage
+describe('dateonly =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: new DataManager([{OrderID: 10248, OrderDate: '2023-04-04'}]),
+                    allowPaging: true,
+                    allowGrouping: true,
+                    allowFiltering: true,
+                    filterSettings: { type: 'Excel' },
+                    allowSorting: true,
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    columns: [
+                        {
+                            field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120
+                        },
+                        {
+                            field: 'OrderDate', headerText: 'Order Date', type: 'dateonly', width: 120
+                        },
+                    ],
+                }, done);
+    });
+    it('execute methods 1', (done: Function) => {
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderDate').querySelector('.e-filtermenudiv')));
+        done();
+    });
+
+
+    it('execute methods 2', (done: Function) => {
+        gridObj.excelExport();
+        done();
+    });
+
+    it('execute methods 3', (done: Function) => {
+        gridObj.pdfExport();
+        done();
+    });
+
+    it('execute methods 4', function (done: Function) {
+        gridObj.groupColumn('OrderDate');
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

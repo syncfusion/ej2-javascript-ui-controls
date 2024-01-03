@@ -1004,7 +1004,7 @@ describe('Combinations Of Display Options', () => {
         let overflowEle: HTMLElement = document.body.querySelector('.e-ribbon-overflow-target');
         expect(overflowEle.querySelectorAll('.e-ribbon-item').length).toBe(1);
         (ribbon.element.querySelector('.e-ribbon-group-overflow-ddb') as HTMLElement).click();
-        containerEle.style.width = '230px';
+        containerEle.style.width = '220px';
         ribbon.refreshLayout();
         expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(2);
         expect(collection1.querySelectorAll('.e-ribbon-item').length).toBe(2);

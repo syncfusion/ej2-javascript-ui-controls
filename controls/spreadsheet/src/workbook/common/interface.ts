@@ -50,6 +50,7 @@ export interface FindOptions {
     replaceBy?: string;
     findCount?: string;
     isAction?: boolean;
+    showDialog?: boolean;
 }
 /**@hidden */
 export interface  ReplaceAllEventArgs {

@@ -477,7 +477,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     private setAttributes(): void {
         if (this.type === 'chip') {
             if(this.enabled) this.element.tabIndex = 0;
-            this.element.setAttribute('role', 'option');
+            this.element.setAttribute('role', 'button');
         } else {
             this.element.classList.add(classNames.chipSet);
             this.element.setAttribute('role', 'listbox');
@@ -508,7 +508,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             const className: string[] = (classNames.chip + ' ' + (fieldsData.enabled ? ' ' : classNames.disabled) + ' ' +
                 (fieldsData.avatarIconCss || fieldsData.avatarText ? classNames.chipWrapper : (fieldsData.leadingIconCss ?
                     classNames.iconWrapper : ' ')) + ' ' + fieldsData.cssClass).split(' ').filter((css: string) => css);
-            if (!this.chipType()) {
+            if (!this.chipType() || this.type === 'chip') {
                 chipListArray = chipArray;
                 addClass([this.element], className);
                 this.element.setAttribute('aria-label', fieldsData.text);
@@ -807,7 +807,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             if (e.type === 'keydown') {
                 if (e.keyCode === 13 || e.keyCode === 32) {
                     this.clickHandler(e);
-                } else if (e.keyCode === 46 && this.enableDelete) {
+                } else if ((e.keyCode === 46 || e.keyCode === 8) && this.enableDelete) {
                     this.clickHandler(e, true);
                 }
             } else if (e.keyCode === 9) {

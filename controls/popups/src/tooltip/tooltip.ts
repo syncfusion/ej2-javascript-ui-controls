@@ -1031,7 +1031,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         // eslint-disable-next-line
         const tooltip: any = this;
         return !isNullOrUndefined(tooltip.viewContainerRef)
-            && typeof tooltip.viewContainerRef !== 'string';
+            && typeof tooltip.viewContainerRef !== 'string' || (this as any).isReact;
     }
 
     private checkCollision(target: HTMLElement, x: number, y: number): ElementPosition {

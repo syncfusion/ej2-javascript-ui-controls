@@ -20,7 +20,7 @@ export const beginAction: string = 'actionBegin';
 /** @hidden */
 export const sortImport: string = 'sortImport';
 /** @hidden */
-export const ribbonFind: string = 'ribbonFind';
+export const findToolDlg: string = 'findToolDlg';
 /** @hidden */
 export const exportDialog: string = 'exportDialog';
 /** @hidden */

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### PivotTable
+
+#### Bug fixes
+
+- The script error caused by multiple cell selection mode when clicking specific cells has been resolved.
+
 ## 24.1.43 (2023-12-27)
 
 ### PivotTable

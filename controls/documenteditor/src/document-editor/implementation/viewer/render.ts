@@ -460,7 +460,7 @@ export class Renderer {
                     (wrappingType !== "Behind" && shape.textWrappingStyle === "Behind")) {
                     continue;
                 }
-                if (!this.isOverLappedShapeWidget(shape) || (!isNullOrUndefined(floatingElements[i + 1]) && shape.paragraph !== (floatingElements[i + 1] as ShapeBase).paragraph)) {
+                if (!this.isOverLappedShapeWidget(shape) || overLappedShapeWidgets.containsKey(shape.zOrderPosition)) {
                     if (shape instanceof ImageElementBox) {
                         this.renderImageElementBox(shape, shape.x, shape.y, 0);
                     } else if (shape instanceof ShapeElementBox) {

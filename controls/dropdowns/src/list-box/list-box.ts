@@ -662,7 +662,7 @@ export class ListBox extends DropDownBase {
         ulElement: HTMLElement,
         list: obj[] | boolean[] | string[] | number[],
         e?: Object): void {
-        let searchEle: Element;
+        let searchEle: Element; let filterElem: HTMLInputElement; let txtLength: number;
         if (this.allowFiltering && this.list.getElementsByClassName('e-filter-parent')[0]) {
             searchEle = this.list.getElementsByClassName('e-filter-parent')[0].cloneNode(true) as Element;
         }
@@ -670,6 +670,12 @@ export class ListBox extends DropDownBase {
             const noRecElem: Element = ulElement.childNodes[0] as Element;
             if (noRecElem) {
                 ulElement.removeChild(noRecElem);
+            }
+        }
+        if (this.allowFiltering) {
+            filterElem = (this.list.getElementsByClassName('e-input-filter')[0] as HTMLInputElement);
+            if (filterElem) {
+                txtLength = filterElem.selectionStart;
             }
         }
         super.onActionComplete(ulElement, list, e);
@@ -698,8 +704,7 @@ export class ListBox extends DropDownBase {
                 this.isDataSourceUpdate = false;
             }
             if (this.allowFiltering) {
-                const filterElem: HTMLInputElement = (this.list.getElementsByClassName('e-input-filter')[0] as HTMLInputElement);
-                const txtLength: number = this.filterInput.value.length;
+                filterElem = (this.list.getElementsByClassName('e-input-filter')[0] as HTMLInputElement);
                 filterElem.selectionStart = txtLength;
                 filterElem.selectionEnd = txtLength;
                 filterElem.focus();
@@ -2035,7 +2040,8 @@ export class ListBox extends DropDownBase {
     private keyDownStatus: boolean = false;
 
     private keyDownHandler(e: KeyboardEvent): void {
-        if ([32, 35, 36, 37, 38, 39, 40, 65].indexOf(e.keyCode) > -1 && !this.allowFiltering) {
+        if ([32, 35, 36, 37, 38, 39, 40, 65].indexOf(e.keyCode) > -1 && (!this.allowFiltering ||
+            (this.allowFiltering && e.target !== this.filterInput))) {
             if (e.target && (e.target as Element).className.indexOf('e-edit-template') > -1) {
                 return;
             }
@@ -2121,6 +2127,9 @@ export class ListBox extends DropDownBase {
     }
 
     private KeyUp(e: KeyboardEvent): void {
+        if (this.allowFiltering && e.ctrlKey && e.keyCode === 65) {
+            e.preventDefault(); return;
+        }
         const char: string = String.fromCharCode(e.keyCode);
         const isWordCharacter: Object = char.match(/\w/);
         if (!isNullOrUndefined(isWordCharacter)) {

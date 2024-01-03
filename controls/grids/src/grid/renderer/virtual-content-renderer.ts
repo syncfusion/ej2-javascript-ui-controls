@@ -970,7 +970,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private virtualCellFocus(e: KeyboardEventArgs): void {
         // To decide the action (select or scroll), when using arrow keys for cell focus
         let ele: Element = document.activeElement;
-        if (!ele.classList.contains(literals.rowCell) && ele instanceof HTMLInputElement) {
+        if (!ele.classList.contains(literals.rowCell) && (ele instanceof HTMLInputElement
+            || !isNullOrUndefined(ele.closest('.e-templatecell')))) {
             ele = ele.closest('.e-rowcell');
         }
         if (ele && ele.classList.contains(literals.rowCell)

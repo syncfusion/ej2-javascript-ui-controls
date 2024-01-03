@@ -3285,7 +3285,9 @@ export class Editor {
                 if (!isNullOrUndefined(nextElement) && nextElement.revisions.length > 0) {
                     let revision: Revision = currentElement.revisions[currentElement.revisions.length - 1];
                     let range: object[] = nextElement.revisions[nextElement.revisions.length - 1].range;
-                    this.clearAndUpdateRevisons(range, revision, revision.range.indexOf(currentElement) + 1);
+                    if (revision !== nextElement.revisions[nextElement.revisions.length - 1]) {
+                        this.clearAndUpdateRevisons(range, revision, revision.range.indexOf(currentElement) + 1);
+                    }
                 }
             }
         }

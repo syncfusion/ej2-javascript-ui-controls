@@ -2773,7 +2773,7 @@ export class PdfLineAnnotation extends PdfComment {
     get leaderExt(): number {
         if (typeof this._leaderExt === 'undefined' && this._dictionary.has('LLE')) {
             const leaderExt: number = this._dictionary.get('LLE');
-            if (typeof leaderExt !== 'undefined' && leaderExt >= 0) {
+            if (typeof leaderExt !== 'undefined') {
                 this._leaderExt = leaderExt;
             }
         }
@@ -2798,12 +2798,8 @@ export class PdfLineAnnotation extends PdfComment {
      */
     set leaderExt(value: number) {
         if (!Number.isNaN(value)) {
-            if (value >= 0) {
-                this._dictionary.update('LLE', value);
-                this._leaderExt = value;
-            } else {
-                throw new Error('LeaderExt should be non negative number');
-            }
+            this._dictionary.update('LLE', value);
+            this._leaderExt = value;
         }
     }
     /**

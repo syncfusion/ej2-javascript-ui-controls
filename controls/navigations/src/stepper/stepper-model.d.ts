@@ -3,9 +3,9 @@ import {StepLabelPosition,StepType,StepperChangedEventArgs,StepperChangingEventA
 import {StepperBaseModel} from "../stepper-base/stepper-base-model";
 
 /**
- * Interface for a class Animation
+ * Interface for a class StepperAnimationSettings
  */
-export interface AnimationModel {
+export interface StepperAnimationSettingsModel {
 
     /**
      * Defines whether a animation is enabled or disabled.
@@ -53,7 +53,7 @@ export interface StepperModel extends StepperBaseModel{
      * {% codeBlock src='stepper/animation/index.md' %}{% endcodeBlock %}
      *
      */
-    animation?: AnimationModel;
+    animation?: StepperAnimationSettingsModel;
 
     /**
      * Defines whether allows to complete one step in order to move to the next or not.

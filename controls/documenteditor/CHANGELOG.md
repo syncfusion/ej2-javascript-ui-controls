@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I523857` - Resolved the performance issue while updating the field in document.
+- `#I526974` - Resolved control freeze issue while pasting content inside table.
+- `#I526633` - Resolved the issue in rendering of shape element.
+
 ## 24.1.43 (2023-12-27)
 
 ### DocumentEditor

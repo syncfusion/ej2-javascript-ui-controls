@@ -924,6 +924,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (this.isMobileView() && this.cssClass.indexOf('e-mobile-view') === -1) {
             this.element.classList.add('e-mobile-view');
         }
+        if (Browser.isDevice) {
+            this.element.classList.add('e-device');
+        }
         this.sheetModule = this.serviceLocator.getService<IRenderer>('sheet');
         if (this.allowScrolling) {
             this.scrollModule = new Scroll(this);

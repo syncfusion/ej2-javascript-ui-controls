@@ -3079,6 +3079,8 @@ export class Edit {
                     if(args.data[tempTaskID as string] != args.data['ganttProperties']['taskId']) {
                         args.data['ganttProperties']['taskId'] = args.data[tempTaskID as string];
                         args.newTaskData[tempTaskID as string] = args.data[tempTaskID as string];
+                        args.data['ganttProperties']['rowUniqueID'] = args.data[tempTaskID as string].toString();
+                        this.parent.ids.push(args.data[tempTaskID as string].toString());
                     }
                 }
                 if (!args.cancel) {
