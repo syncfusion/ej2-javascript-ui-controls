@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 24.1.45 (2024-01-09)
+
+### Grid
+
+#### Bug fixes
+
+- `#FB49340` - Fixed an issue that occurred when resizing columns in the grid with stacked headers.
+- `#I520335` - Resolved an issue regarding incorrect `filterBeforeOpen requestType` naming and updated the `options` property scope as public within the `actionBegin` event argument when opening the filter menu.
+- `#I533690` - Script error thrown when clicking the cancel button in batch edit has been fixed.
+- `#FB49544` - The problem with `persistSelection` in custom data binding has been successfully resolved.
+
 ## 24.1.44 (2024-01-03)
 
 ### Grid

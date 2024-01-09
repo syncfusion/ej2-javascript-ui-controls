@@ -5020,10 +5020,10 @@ export class Layout {
             }
         }
 
-    public getListNumber(listFormat: WListFormat, isAutoList?: boolean): string {
+    public getListNumber(listFormat: WListFormat, isAutoList?: boolean, listLevelNumber?: number): string {
         let list: WList = this.documentHelper.getListById(listFormat.listId);
-        let levelNumber: number = listFormat.listLevelNumber;
-        let listLevel: WListLevel = this.getListLevel(list, listFormat.listLevelNumber);
+        let levelNumber: number = isNullOrUndefined(listLevelNumber) ? listFormat.listLevelNumber : listLevelNumber;
+        let listLevel: WListLevel = this.getListLevel(list, levelNumber);
         let levelOverride: WLevelOverride = !isNullOrUndefined(list.levelOverrides) ? list.levelOverrides[levelNumber] as WLevelOverride : undefined;
         // If LevelOverride exists and have either override list level or StartAtOverride, then only list numbering will be restarted.
         if (!isNullOrUndefined(levelOverride) && this.documentHelper.renderedLevelOverrides.indexOf(levelOverride) === -1 && isNullOrUndefined(levelOverride.overrideListLevel)) {
@@ -9292,6 +9292,7 @@ export class Layout {
                 const isPageBreak: boolean = prevWidget.lastChild ? (prevWidget.lastChild as LineWidget).isEndsWithPageBreak : false;
                 const isColumnBreak: boolean = prevWidget.lastChild ? (prevWidget.lastChild as LineWidget).isEndsWithColumnBreak : false;
                 this.shiftToPreviousWidget(widget, viewer, prevWidget, isPageBreak, isColumnBreak);
+                this.updateFloatingElementPosition(prevWidget);
                 if ((isNullOrUndefined(widget.childWidgets) || widget.childWidgets.length === 0) && !isPageBreak && !isColumnBreak) {
                     i--;
                     continue;
@@ -9329,29 +9330,7 @@ export class Layout {
                 }
                 viewer.updateClientAreaForBlock(widget, false);
                 widget.y = viewer.clientActiveArea.y;
-                if (widget.floatingElements.length > 0) {
-                    for (let k: number = 0; k < widget.floatingElements.length; k++) {
-                        let shape: ShapeBase = widget.floatingElements[k];
-                        let topMargin: number = 0;
-                        if (shape instanceof ShapeElementBox && shape.textWrappingStyle === 'Inline') {
-                            let lineIndex: number = shape.line.indexInOwner;
-                            let lineHeight: number = 0;
-                            topMargin = HelperMethods.convertPointToPixel(shape.textFrame.marginTop as number);
-                            for (let k: number = 0; k < lineIndex; k++) {
-                                lineHeight += (widget.childWidgets[k] as LineWidget).height as number;
-                            }
-                            shape.y = widget.y + lineHeight;
-                        }
-                        else {
-                            let position: Point = this.getFloatingItemPoints(shape);
-                            shape.y = position.y;
-                            shape.x = position.x;
-                        }
-                        if (shape instanceof ShapeElementBox) {
-                            this.updateChildLocationForCellOrShape(shape.y + topMargin, shape as ShapeElementBox);
-                        }
-                    }
-                }
+                this.updateFloatingElementPosition(widget);
                 viewer.cutFromTop(viewer.clientActiveArea.y + widget.height);
                 //Moves the paragraph widget to previous body widget.
                 if (!isNullOrUndefined(prevBodyWidget) && prevBodyWidget !== widget.containerWidget && !this.isMultiColumnSplit) {
@@ -9414,6 +9393,7 @@ export class Layout {
                     isColumnBreak = true;
                 }
                 const isSplittedToNewPage: boolean = this.splitWidget(widget, viewer, prevBodyWidget, index + 1, isPageBreak, footWidget, isColumnBreak);
+                this.updateFloatingElementPosition(widget);
                 prevWidget = undefined;
                 if (prevBodyWidget !== widget.containerWidget) {
                     prevBodyWidget = widget.containerWidget as BodyWidget;
@@ -9431,6 +9411,34 @@ export class Layout {
             }
         }
         this.skipUpdateContainerWidget = false;
+    }
+
+    private updateFloatingElementPosition(widget: ParagraphWidget): void {
+        if (widget.floatingElements.length > 0) {
+            for (let k: number = 0; k < widget.floatingElements.length; k++) {
+                let shape: ShapeBase = widget.floatingElements[k];
+                let topMargin: number = 0;
+                if (shape instanceof ShapeElementBox && shape.textWrappingStyle === 'Inline') {
+                    let lineIndex: number = shape.line.indexInOwner;
+                    let lineHeight: number = 0;
+                    topMargin = HelperMethods.convertPointToPixel(shape.textFrame.marginTop as number);
+                    for (let k: number = 0; k < lineIndex; k++) {
+                        if (!isNullOrUndefined(widget.childWidgets[k])) {
+                            lineHeight += (widget.childWidgets[k] as LineWidget).height as number;
+                        }
+                    }
+                    shape.y = widget.y + lineHeight;
+                }
+                else {
+                    let position: Point = this.getFloatingItemPoints(shape);
+                    shape.y = position.y;
+                    shape.x = position.x;
+                }
+                if (shape instanceof ShapeElementBox) {
+                    this.updateChildLocationForCellOrShape(shape.y + topMargin, shape as ShapeElementBox);
+                }
+            }
+        }
     }
 
     private isPageBreakInsideField(widget: ParagraphWidget): boolean {
@@ -10158,11 +10166,25 @@ export class Layout {
                 lineWidget.paragraph.destroyInternal(this.viewer);
             }
         }
+        if (!isNullOrUndefined(lineWidget.paragraph) && lineWidget.paragraph.floatingElements.length > 0) {
+            this.shiftFloatingElements(lineWidget, newParagraphWidget);
+        }
         newParagraphWidget.childWidgets.splice(index, 0, lineWidget);
         lineWidget.paragraph = newParagraphWidget;
         newParagraphWidget.height += lineWidget.height;
         if (!isNullOrUndefined(newParagraphWidget.containerWidget)) {
             newParagraphWidget.containerWidget.height += lineWidget.height;
+        }
+    }
+    private shiftFloatingElements(lineWidget: LineWidget, newParagraphWidget: ParagraphWidget): void {
+        for (let i = 0; i < lineWidget.children.length; i++) {
+            if (lineWidget.children[i] instanceof ShapeElementBox && (lineWidget.children[i] as ShapeElementBox).textWrappingStyle === 'Inline') {
+                let index: number = lineWidget.paragraph.floatingElements.indexOf(lineWidget.children[i] as ShapeBase);
+                if (index >= 0) {
+                    lineWidget.paragraph.floatingElements.splice(index, 1);
+                    newParagraphWidget.floatingElements.splice(index, 0, lineWidget.children[i] as ShapeBase);
+                }
+            }
         }
     }
     private shiftNextWidgets(blockAdv: BlockWidget): void {

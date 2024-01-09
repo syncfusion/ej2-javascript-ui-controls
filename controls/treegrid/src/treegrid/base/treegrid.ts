@@ -3222,7 +3222,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             showTooltip = true;
         }
         const element: HTMLElement = parentsUntil((e.target as Element), 'e-ellipsistooltip') as HTMLElement;
-        if ((showTooltip || (this.treeColumnIndex != -1 && cols[this.treeColumnIndex].clipMode === 'EllipsisWithTooltip')) && element != null && parseInt(element.getAttribute("data-colindex"), 10) == this.treeColumnIndex && element.children[0].scrollWidth > element.children[0].clientWidth){
+        if ((showTooltip || (this.treeColumnIndex !== -1 && cols[this.treeColumnIndex].clipMode === 'EllipsisWithTooltip')) && element !== null && parseInt(element.getAttribute('data-colindex'), 10) === this.treeColumnIndex && element.children[0].scrollWidth > element.children[0].clientWidth){
             const tooltip : Tooltip = new Tooltip({
                 content: element.textContent
             });

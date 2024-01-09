@@ -566,7 +566,7 @@ describe('Excel Filter =>', () => {
 
         it('open the filter dialog', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     expect(1).toBe(1);
                     gridObj.actionComplete = null;
                     done();
@@ -639,7 +639,7 @@ describe('Excel Filter =>', () => {
 
         it('Filter OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     excelFilter = gridObj.element.querySelector('.e-excelfilter');
                 gridObj.actionComplete =null;
                 done();
@@ -666,7 +666,7 @@ describe('Excel Filter =>', () => {
 
         it('Filter CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     excelFilter = gridObj.element.querySelector('.e-excelfilter');
                 gridObj.actionComplete =null;
                 done();
@@ -694,7 +694,7 @@ describe('Excel Filter =>', () => {
 
         it('Filter Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     excelFilter = gridObj.element.querySelector('.e-excelfilter');
                 gridObj.actionComplete =null;
                 done();
@@ -882,7 +882,7 @@ describe('Excel Filter =>', () => {
 
                 it('Filter OrderID dialog open testing', (done: Function) => {
                     actionComplete = (args?: any): void => {
-                        if(args.requestType === 'filterafteropen'){
+                        if(args.requestType === 'filterAfterOpen'){
                             excelFilter = gridObj.element.querySelector('.e-excelfilter');
                         gridObj.actionComplete =null;
                         done();
@@ -1019,7 +1019,7 @@ describe('Sorting feature testing in excel filter ', () => {
 
     it('testing the list of sort in excel popup', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelectorAll('.e-excel-ascending').length).toBe(1);
                 expect(gridObj.element.querySelectorAll('.e-excel-descending').length).toBe(1);
                 (gridObj.filterModule as any).filterModule.closeDialog();
@@ -1033,7 +1033,7 @@ describe('Sorting feature testing in excel filter ', () => {
 
     it('open excel filter popup', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 gridObj.actionComplete = null;
                 done();
             }
@@ -1262,7 +1262,7 @@ describe('Excel Filter on demand load and selection maintain for filter', () => 
 
     it('OrderID filter dialog open testing', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
@@ -1287,7 +1287,7 @@ describe('Excel Filter on demand load and selection maintain for filter', () => 
 
     it('OrderID filter dialog open testing - 1', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(0);
                 expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-uncheck').length).toBe(1);
@@ -1305,7 +1305,7 @@ describe('Excel Filter on demand load and selection maintain for filter', () => 
 
     it('OrderID filter dialog open testing and down scroll', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(0);
                 expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-uncheck').length).toBe(1);
@@ -1337,7 +1337,7 @@ describe('Excel Filter on demand load and selection maintain for filter', () => 
 
     it('OrderID filter dialog open testing - 2', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(0);
                 expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
@@ -1356,7 +1356,7 @@ describe('Excel Filter on demand load and selection maintain for filter', () => 
 
     it('OrderID filter dialog open testing and down scroll - 1', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(3);
                 expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
@@ -1401,7 +1401,7 @@ describe('Excel Filter on demand load and selection maintain for filter', () => 
 
     it('OrderID filter dialog open testing - 3', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-check').length).toBe(1);
@@ -1431,7 +1431,7 @@ describe('Excel Filter on demand load and selection maintain for filter', () => 
 
     it('OrderID filter dialog open testing - 4', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(0);
                 expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
@@ -1463,7 +1463,7 @@ describe('Excel Filter on demand load and selection maintain for filter', () => 
 
     it('OrderID filter dialog open testing and down scroll - 2', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(gridObj.filterSettings.itemsCount * 3);
                 // expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
@@ -1496,7 +1496,7 @@ describe('Excel Filter on demand load and selection maintain for filter', () => 
 
     it('OrderID filter dialog open testing - 5', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-check').length).toBe(1);
@@ -1526,7 +1526,7 @@ describe('Excel Filter on demand load and selection maintain for filter', () => 
 
     it('OrderID filter dialog open testing - 6', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);

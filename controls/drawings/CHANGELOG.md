@@ -2,13 +2,14 @@
 
 ## [Unreleased]
 
-## 24.1.44 (2024-01-03)
+## 24.1.45 (2024-01-09)
 
 ### Drawings
 
 #### Bug Fixes
 
 - `#I464511` – Now, the content of the free text annotation does not changes when we click outside of it.
+- `#I529607` - Now, the formatting is not applying to extraneous line spacing in freetext annotation for PDF Viewer and downloaded document.
 
 ## 20.1.47 (2022-04-04)
 

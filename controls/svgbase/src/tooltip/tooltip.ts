@@ -726,110 +726,111 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         let rect: Rect;
         let isTop: boolean = false; let isLeft: boolean = false;
         let isBottom: boolean = false; let x: number = 0; let y: number = 0;
-
-        if (this.header !== '') {
-            this.elementSize.height += this.marginY;
-        }
-        if (this.isFixed) {
-            const width: number = this.elementSize.width + (2 * this.marginX);
-            const height: number = this.elementSize.height + (2 * this.marginY);
-            rect = new Rect(location.x, location.y, width, height)
-        }
-        else if (this.content.length > 1) {
-            rect = this.sharedTooltipLocation(areaBounds, this.location.x, this.location.y);
-            isTop = true;
-        } else {
-            rect = this.tooltipLocation(areaBounds, location, arrowLocation, tipLocation);
-            if (!this.inverted) {
-                isTop = (rect.y < (location.y + this.clipBounds.y));
-                isBottom = !isTop;
-                y = (isTop ? 0 : this.arrowPadding);
+        if (!isNullOrUndefined(groupElement)) {
+            if (this.header !== '') {
+                this.elementSize.height += this.marginY;
+            }
+            if (this.isFixed) {
+                const width: number = this.elementSize.width + (2 * this.marginX);
+                const height: number = this.elementSize.height + (2 * this.marginY);
+                rect = new Rect(location.x, location.y, width, height)
+            }
+            else if (this.content.length > 1) {
+                rect = this.sharedTooltipLocation(areaBounds, this.location.x, this.location.y);
+                isTop = true;
             } else {
-                isLeft = (rect.x < (location.x + this.clipBounds.x));
-                x = (isLeft ? 0 : this.arrowPadding);
-                if (this.allowHighlight) {
-                    rect.x += isLeft ? this.highlightPadding : -(2 * this.highlightPadding);
+                rect = this.tooltipLocation(areaBounds, location, arrowLocation, tipLocation);
+                if (!this.inverted) {
+                    isTop = (rect.y < (location.y + this.clipBounds.y));
+                    isBottom = !isTop;
+                    y = (isTop ? 0 : this.arrowPadding);
+                } else {
+                    isLeft = (rect.x < (location.x + this.clipBounds.x));
+                    x = (isLeft ? 0 : this.arrowPadding);
+                    if (this.allowHighlight) {
+                        rect.x += isLeft ? this.highlightPadding : -(2 * this.highlightPadding);
+                    }
                 }
             }
-        }
-        if (this.header !== '') {
-            let wrapPadding: number = 2;
-            let padding: number = 0;
-            const wrapHeader: string = this.isWrap ? this.wrappedText : this.header;
-            if (this.isWrap && typeof (wrapHeader) === 'string' && (wrapHeader.indexOf('<') > -1 || wrapHeader.indexOf('>') > -1)) {
-                const textArray: string[] = wrapHeader.split('<br>');
-                wrapPadding = textArray.length;
+            if (this.header !== '') {
+                let wrapPadding: number = 2;
+                let padding: number = 0;
+                const wrapHeader: string = this.isWrap ? this.wrappedText : this.header;
+                if (this.isWrap && typeof (wrapHeader) === 'string' && (wrapHeader.indexOf('<') > -1 || wrapHeader.indexOf('>') > -1)) {
+                    const textArray: string[] = wrapHeader.split('<br>');
+                    wrapPadding = textArray.length;
+                }
+                if (this.header.indexOf('<br') > -1) {
+                    padding = 5 * (this.header.split(/<br.*?>/g).length - 1);
+                }
+                const key: string = 'properties';
+                const font: TextStyle = <TextStyle>extend({}, this.textStyle, null, true)[key as string];
+                const headerSize: number = measureText(this.isWrap ? this.wrappedText : this.header, font, this.themeStyle.textStyle).height +
+                    (this.marginY * wrapPadding) + (isBottom ? this.arrowPadding : 0) + (this.isWrap ? 5 : padding); //header padding;
+                const xLength: number = (this.marginX * 3) + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0);
+                const direction: string = 'M ' + xLength + ' ' + headerSize +
+                    'L ' + (rect.width + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0) - (this.marginX * 2)) +
+                    ' ' + headerSize;
+                const pathElement: Element = this.renderer.drawPath({
+                    'id': this.element.id + '_header_path', 'stroke-width': 1,
+                    'fill': null, 'opacity': this.theme === ('Material3' || 'Material3Dark') ? 0.2 : 0.8, 'stroke': this.themeStyle.tooltipHeaderLine, 'd': direction
+                });
+                groupElement.appendChild(pathElement);
             }
-            if (this.header.indexOf('<br') > -1) {
-                padding = 5 * (this.header.split(/<br.*?>/g).length - 1);
-            }
-            const key: string = 'properties';
-            const font: TextStyle = <TextStyle>extend({}, this.textStyle, null, true)[key as string];
-            const headerSize: number = measureText(this.isWrap ? this.wrappedText : this.header, font, this.themeStyle.textStyle).height +
-                (this.marginY * wrapPadding) + (isBottom ? this.arrowPadding : 0) + (this.isWrap ? 5 : padding); //header padding;
-            const xLength: number = (this.marginX * 3) + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0);
-            const direction: string = 'M ' + xLength + ' ' + headerSize +
-                'L ' + (rect.width + (!isLeft && !isTop && !isBottom ? this.arrowPadding : 0) - (this.marginX * 2)) +
-                ' ' + headerSize;
-            const pathElement: Element = this.renderer.drawPath({
-                'id': this.element.id + '_header_path', 'stroke-width': 1,
-                'fill': null, 'opacity': this.theme === ('Material3' || 'Material3Dark') ? 0.2 : 0.8, 'stroke': this.themeStyle.tooltipHeaderLine, 'd': direction
-            });
-            groupElement.appendChild(pathElement);
-        }
 
-        const start: number = this.border.width / 2;
-        const pointRect: Rect = new Rect(start + x, start + y, rect.width - start, rect.height - start);
-        groupElement.setAttribute('opacity', '1');
-        if (this.enableAnimation && !this.isFirst && !this.crosshair) {
-            this.animateTooltipDiv(tooltipDiv, rect);
-        } else {
-            this.updateDiv(tooltipDiv, rect.x, rect.y);
-        }
-        // eslint-disable-next-line no-extra-boolean-cast
-        svgObject.setAttribute('height', (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
-        svgObject.setAttribute('width', (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
-        svgObject.setAttribute('opacity', '1');
-        if (!isNullOrUndefined(this.tooltipPlacement)) {
-            isTop = this.tooltipPlacement.indexOf('Top') > -1;
-            isBottom = this.tooltipPlacement.indexOf('Bottom') > -1;
-            isLeft = this.tooltipPlacement.indexOf('Left') > -1;
-        }
-        pathElement.setAttribute('d', findDirection(
-            this.rx, this.ry, pointRect, arrowLocation,
-            this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y, this.controlName
-        ));
-        if (this.enableShadow && this.theme !== 'Bootstrap4') {
-            // To fix next chart initial tooltip opacity issue in tab control
-            const shadowId: string = this.element.id + '_shadow';
-            if (this.theme === 'Tailwind' || this.theme === 'TailwindDark'
-                || this.theme === 'Bootstrap5' || this.theme === 'Bootstrap5Dark') {
-                pathElement.setAttribute('box-shadow', '0px 1px 2px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1)');
+            const start: number = this.border.width / 2;
+            const pointRect: Rect = new Rect(start + x, start + y, rect.width - start, rect.height - start);
+            groupElement.setAttribute('opacity', '1');
+            if (this.enableAnimation && !this.isFirst && !this.crosshair) {
+                this.animateTooltipDiv(tooltipDiv, rect);
             } else {
-                pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
+                this.updateDiv(tooltipDiv, rect.x, rect.y);
             }
-            let shadow: string = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
-            shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
-            shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+            // eslint-disable-next-line no-extra-boolean-cast
+            svgObject.setAttribute('height', (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
+            svgObject.setAttribute('width', (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
+            svgObject.setAttribute('opacity', '1');
+            if (!isNullOrUndefined(this.tooltipPlacement)) {
+                isTop = this.tooltipPlacement.indexOf('Top') > -1;
+                isBottom = this.tooltipPlacement.indexOf('Bottom') > -1;
+                isLeft = this.tooltipPlacement.indexOf('Left') > -1;
+            }
+            pathElement.setAttribute('d', findDirection(
+                this.rx, this.ry, pointRect, arrowLocation,
+                this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y, this.controlName
+            ));
+            if (this.enableShadow && this.theme !== 'Bootstrap4') {
+                // To fix next chart initial tooltip opacity issue in tab control
+                const shadowId: string = this.element.id + '_shadow';
+                if (this.theme === 'Tailwind' || this.theme === 'TailwindDark'
+                    || this.theme === 'Bootstrap5' || this.theme === 'Bootstrap5Dark') {
+                    pathElement.setAttribute('box-shadow', '0px 1px 2px rgba(0, 0, 0, 0.06), 0px 1px 3px rgba(0, 0, 0, 0.1)');
+                } else {
+                    pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
+                }
+                let shadow: string = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
+                shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
+                shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
 
-            const defElement: Element = this.renderer.createDefs();
-            defElement.setAttribute('id', this.element.id + 'SVG_tooltip_definition');
-            groupElement.appendChild(defElement);
+                const defElement: Element = this.renderer.createDefs();
+                defElement.setAttribute('id', this.element.id + 'SVG_tooltip_definition');
+                groupElement.appendChild(defElement);
 
-            defElement.innerHTML = shadow;
-        }
+                defElement.innerHTML = shadow;
+            }
 
-        const borderColor: string = ((this.theme === 'Fabric' || this.theme === 'Fluent') && ! this.border.color ) ? '#D2D0CE' : this.border.color ;
-        pathElement.setAttribute('stroke', borderColor);
-        if (!isNullOrUndefined(this.border.dashArray)) {
-            pathElement.setAttribute('stroke-dasharray', this.border.dashArray);
-        }
+            const borderColor: string = ((this.theme === 'Fabric' || this.theme === 'Fluent') && ! this.border.color ) ? '#D2D0CE' : this.border.color ;
+            pathElement.setAttribute('stroke', borderColor);
+            if (!isNullOrUndefined(this.border.dashArray)) {
+                pathElement.setAttribute('stroke-dasharray', this.border.dashArray);
+            }
 
-        this.changeText(new TooltipLocation(x, y), isBottom, !isLeft && !isTop && !isBottom);
+            this.changeText(new TooltipLocation(x, y), isBottom, !isLeft && !isTop && !isBottom);
 
-        if (this.revert) {
-            this.inverted = !this.inverted;
-            this.revert = false;
+            if (this.revert) {
+                this.inverted = !this.inverted;
+                this.revert = false;
+            }
         }
 
         return new Side(isBottom, !isLeft && !isTop && !isBottom);
@@ -1375,9 +1376,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 if ((this.controlName === 'Chart' && this.shared) && !this.enableRTL) {
                     tooltipDiv.style.transition = isBlazor() ? 'transform 0.3s' : 'transform 0.1s';
                     tooltipDiv.style.transform = 'translate(' + (x + currenDiff * (rect.x - x)) + 'px,' + (y + currenDiff * (rect.y - y)) + 'px)';
+                    tooltipDiv.style.left = '';
+                    tooltipDiv.style.top = '';
                 } else {
                     tooltipDiv.style.left = (x + currenDiff * (rect.x - x)) + 'px';
                     tooltipDiv.style.top = (y + currenDiff * (rect.y - y)) + 'px';
+                    tooltipDiv.style.transform = '';
                 }
             },
             end: (model: AnimationOptions): void => {
@@ -1391,9 +1395,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private updateDiv(tooltipDiv: HTMLDivElement, x: number, y: number): void {
         if ((this.controlName === 'Chart' && this.shared && !this.crosshair) && !this.enableRTL) {
             tooltipDiv.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+            tooltipDiv.style.left = '';
+            tooltipDiv.style.top = '';
         } else {
             tooltipDiv.style.left = x + 'px';
             tooltipDiv.style.top = y + 'px';
+            tooltipDiv.style.transform = '';
         }
     }
 

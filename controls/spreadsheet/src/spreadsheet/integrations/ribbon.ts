@@ -2436,11 +2436,7 @@ export class Ribbon {
         if (item === 'headers') {
             const findDlgEle: HTMLElement = this.parent.element.getElementsByClassName('e-findtool-dlg')[0] as HTMLElement;
             if (findDlgEle && findDlgEle.classList.contains('e-popup-open')) {
-                const findDlg: { position: { Y: number }, dataBind: Function } = getComponent(findDlgEle, 'dialog');
-                if (findDlg) {
-                    findDlg.position.Y = this.parent.getActiveSheet().showHeaders ? 31 : 0;
-                    findDlg.dataBind();
-                }
+                this.parent.notify(findToolDlg, { refreshPosition: true, dialogEle: findDlgEle });
             }
         }
     }

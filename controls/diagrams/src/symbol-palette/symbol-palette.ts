@@ -766,7 +766,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             if (content) {
                 content.parentNode.removeChild(content);
             }
-            this.element.classList.remove('e-symbolpalette');
         }
     }
 

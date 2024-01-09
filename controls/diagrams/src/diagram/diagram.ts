@@ -9615,11 +9615,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      *
      * @returns { void }     removeNode method .\
      * @param {NodeModel} node - provide the node value.
-     * @param {NodeModel} childernCollection - provide the childernCollection value.
+     * @param {NodeModel} childrenCollection - provide the childernCollection value.
      *
      * @private
      */
-    public removeNode(node: NodeModel, childernCollection: string[]): void {
+    public removeNode(node: NodeModel, childrenCollection: string[]): void {
         this.removeObjectsFromLayer(node);
         this.removeFromAQuad(this.nameTable[node.id]);
         const groupElement: HTMLElement = document.getElementById(node.id + '_groupElement');
@@ -9639,7 +9639,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             let beforeElement: Element = undefined;
             for (let j: number = groupElement.children.length - 1; j >= 0; j--) {
                 const childElement: Element = groupElement.children[parseInt(j.toString(), 10)];
-                if (childernCollection.length > 0 && childernCollection.indexOf(childElement.id.split('_')[0]) !== -1) {
+                //EJ2-863636 - Nodes Removed from Diagram upon Ungrouping
+                if (childrenCollection.length > 0 && childrenCollection.indexOf(childElement.id.split('_groupElement')[0]) !== -1) {
                     if (!beforeElement) {
                         groupElement.parentNode.insertBefore(childElement, groupElement);
                     } else {

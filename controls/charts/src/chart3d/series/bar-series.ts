@@ -48,8 +48,8 @@ export class BarSeries3D {
         const seriesIndex: number = chart.visibleSeries.indexOf(series);
         const left: number = point.left;
         const right: number = point.right;
-        const bottom: number = series.yAxis.visibleRange.min;
-        const top: number = series.yAxis.visibleRange.max;
+        const bottom: number = series.yAxis.valueType === 'Logarithmic' ? Math.pow(series.yAxis.logBase, series.yAxis.visibleRange.min) : series.yAxis.visibleRange.min;
+        const top: number = series.yAxis.valueType === 'Logarithmic' ? Math.pow(series.yAxis.logBase, series.yAxis.visibleRange.max) : series.yAxis.visibleRange.max;
         const xStart: number = series.xAxis.visibleRange.min;
         const xEnd: number = series.xAxis.visibleRange.max;
 

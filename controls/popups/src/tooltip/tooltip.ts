@@ -592,7 +592,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.tooltipEventArgs = null;
     }
     private closePopupHandler(): void {
-        if ((this as any).isReact && !(this.opensOn === 'Click' && typeof (this.content) === 'function')) {
+        if ((this as any).isReact && !(this.opensOn === 'Click' || typeof (this.content) === 'function')) {
             this.clearTemplate(['content']);
         }
         this.clear();

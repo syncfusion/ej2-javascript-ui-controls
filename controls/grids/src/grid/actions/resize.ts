@@ -933,7 +933,7 @@ export class Resize implements IAction {
         for (const col of column.columns as Column[]) {
             if (col.visible !== false) {
                 if (col.columns) {
-                    this.getStackedWidth(col, width);
+                    return this.getStackedWidth(col, width);
                 } else {
                     width += col.width as number;
                 }

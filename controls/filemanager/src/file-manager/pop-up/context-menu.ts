@@ -79,10 +79,18 @@ export class ContextMenu {
 
     public onBeforeClose(): void {
         this.menuTarget = null;
-        if(!this.isMenuItemClicked && this.parent.pathId.length > 1){
+        if (!this.isMenuItemClicked && this.parent.pathId.length > 1 && this.parent.activeModule == 'navigationpane') {
             this.parent.pathId.pop();
-            this.parent.pathId.push(Object.keys(this.parent.feParent)[Object.keys.length]);
-            this.parent.navigationpaneModule.treeObj.selectedNodes = [this.parent.pathId[this.parent.pathId.length-1]];
+            const parentKey = [];
+            const itemKeys = Object.keys(this.parent.feParent);
+            for (const item of itemKeys) {
+                var itemData = getValue(item, this.parent.feParent);
+                if (this.parent.pathNames.indexOf(itemData.name) !== -1) {
+                    parentKey.push(itemData._fm_id);
+                }
+            }
+            this.parent.pathId.push(parentKey[parentKey.length - 1]);
+            this.parent.navigationpaneModule.treeObj.selectedNodes = [this.parent.pathId[this.parent.pathId.length - 1]];
         }
         this.isMenuItemClicked = false;
     }

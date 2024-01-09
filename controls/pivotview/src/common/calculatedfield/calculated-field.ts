@@ -1752,7 +1752,7 @@ export class CalculatedField implements IAction {
                     liTextElement.insertBefore(liIconElement, args.node.querySelector('.e-list-text'));
                 }
                 if (args.node && args.node.querySelector('.e-calcMemberGroupCDB,.e-measureGroupCDB-icon,.e-folderCDB-icon')) {
-                    (args.node.querySelector('.e-checkbox-wrapper') as HTMLElement).style.display = 'none';
+                    (args.node.querySelector('.' + cls.CHECKBOX_CONTAINER) as HTMLElement).style.display = 'none';
                 }
                 if (args.node && args.node.querySelector('.e-level-members')) {
                     (args.node.querySelector('.e-list-icon') as HTMLElement).style.display = 'none';

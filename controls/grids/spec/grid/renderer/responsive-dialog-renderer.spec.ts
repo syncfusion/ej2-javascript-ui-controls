@@ -270,7 +270,7 @@ describe('Adaptive renderer', () => {
             gridObj.filterModule.responsiveDialogRenderer.showResponsiveDialog(gridObj.getColumns()[1]);
             gridObj.filterModule.responsiveDialogRenderer.isRowResponsive = true;
             let actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     let filterContent: HTMLElement = document.querySelector('.e-resfilterdiv > .e-dlg-content');
                     expect(filterContent.querySelector('.e-flmenu')).not.toBeNull();
                     gridObj.filterModule.responsiveDialogRenderer.closeCustomDialog();

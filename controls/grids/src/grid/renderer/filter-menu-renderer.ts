@@ -40,7 +40,7 @@ export class FilterMenuRenderer {
     private isDialogOpen: boolean = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public menuFilterBase: any;
-    protected options: IFilterArgs;
+    public options: IFilterArgs;
     private maxHeight: string = '350px';
     private isMenuCheck: boolean = false;
     private currentDialogCreatedColumn: Column;

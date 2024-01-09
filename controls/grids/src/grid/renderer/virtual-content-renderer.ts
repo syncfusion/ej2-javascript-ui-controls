@@ -409,6 +409,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 this.observer.setPageHeight(this.getOffset(blocks[blocks.length - 1]) - this.getOffset(blocks[0] - 1));
             }
         }
+        if (e.requestType === 'ungrouping' && !this.parent.groupSettings.enableLazyLoading &&
+            this.parent.groupSettings.columns.length === 0) {
+            this.observer.setPageHeight(this.getBlockHeight() * 2);
+        }
         this.prevInfo = info;
         if (this.isFocused  && this.activeKey !== 'downArrow' && this.activeKey !== 'upArrow') {
             this.content.focus();
@@ -1066,7 +1070,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 this.parent.editModule.editModule.previousData = undefined;
             }
         }
-        if (this.parent.enableColumnVirtualization && args.requestType as string === 'filterafteropen'
+        if (this.parent.enableColumnVirtualization && args.requestType as string === 'filterAfterOpen'
             && this.currentInfo.columnIndexes && this.currentInfo.columnIndexes[0] > 0) {
             (this.parent as Grid).resetFilterDlgPosition((<{ columnName?: string }>args).columnName);
         }

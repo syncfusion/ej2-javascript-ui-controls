@@ -940,7 +940,6 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
     });
     describe('Hierarchy Filter Mode Testing - Parent with Search Settings Mode as Both', () => {
       let gridObj: TreeGrid;
-      let rows: Element[];
       let actionComplete: (args: CellSaveEventArgs) => void;
       beforeAll((done: Function) => {
         gridObj = createGrid(
@@ -958,30 +957,26 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
         );
       });
   
-      it('Hierarchy Filter Mode Testing - Parent with Search Settings Mode as Both', (done: Function) => {
+      it('Hierarchy Filter Mode Testing - Parent with Search Settings Mode as Both', () => {
         actionComplete = (args: CellSaveEventArgs): void => {
           if (args.requestType == "filterafteropen") {
             (<HTMLElement>document.querySelectorAll('.e-excelfilter .e-check')[0]).click();
             (<HTMLElement>document.querySelectorAll('.e-excelfilter .e-uncheck')[1]).click();
             expect(document.querySelectorAll('.e-excelfilter .e-check')[0].textContent == "").toBe(true);
-            done();
           }
         }
-        gridObj.grid.actionComplete = actionComplete;
         (<HTMLElement>document.querySelectorAll('.e-filtermenudiv')[1]).click();
-  
+        gridObj.grid.actionComplete = actionComplete;
       });
-      it('Hierarchy Filter Mode Testing - Parent with Search Settings Mode as Both - result', (done: Function) => {
+      it('Hierarchy Filter Mode Testing - Parent with Search Settings Mode as Both - result', () => {
         actionComplete = (args: CellSaveEventArgs): void => {
           if (args.requestType == "filtering") {
             expect(gridObj.getRows().length == 3).toBe(true);
             expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "").toBe(true);
-            done();
           }
         }
-        gridObj.grid.actionComplete = actionComplete;
         (<HTMLElement>document.querySelector('.e-excelfilter .e-footer-content').getElementsByClassName('e-primary')[0]).click();
-  
+        gridObj.grid.actionComplete = actionComplete;
       });
       afterAll(() => {
         destroy(gridObj);

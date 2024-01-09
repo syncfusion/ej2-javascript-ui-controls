@@ -237,6 +237,7 @@ export class Search {
             this.owner.editorModule.updateComplexWithoutHistory(2);
         }
         this.searchResults.clear();
+        this.documentHelper.layout.isReplacingAll = false;
         return count;
     }
     /**

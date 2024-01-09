@@ -1529,7 +1529,7 @@ describe('Filtering module => ', () => {
         });
         it('Menu filter check with foreignkey', (done: Function) => {
             actionComplete = (args: any) => {
-                if(args.requestType == 'filterafteropen') {
+                if(args.requestType == 'filterAfterOpen') {
                     (args.filterModel.dlgDiv.querySelector('.e-flmenu-input') as any).ej2_instances[0].value = 'F';        
                     (args.filterModel.dlgDiv.querySelector('.e-flmenu-okbtn') as HTMLElement).click();
                 }
@@ -3197,7 +3197,7 @@ describe('EJ2-849870 - Checkbox filtering is not working properly while cancelin
     });
     it('lick the checkbox filter after filtering', function (done) {
         var actionComplete = function (args:any) {
-            if (args.requestType == 'filterafteropen') {
+            if (args.requestType == 'filterAfterOpen') {
                 expect(gridObj.element.getElementsByClassName('e-frame e-icons e-check').length).toBe(6);
                 done();
             }

@@ -1277,14 +1277,20 @@ export class BpmnDiagrams {
                 diagram.removeElements(annotationNode);
                 diagram.removeElements(annotationConnector);
                 const nodeContent: DiagramElement = parentNode.wrapper.children[0];
-                index = (nodeContent as Container).children.indexOf(annotationNode.wrapper);
-                (nodeContent as Container).children.splice(index, 1);
-                index = (nodeContent as Container).children.indexOf(annotationConnector.wrapper);
-                (nodeContent as Container).children.splice(index, 1);
+                const nodeIndex = (nodeContent as Container).children.indexOf(annotationNode.wrapper);
+                (nodeContent as Container).children.splice(nodeIndex, 1);
+                const conIndex = (nodeContent as Container).children.indexOf(annotationConnector.wrapper);
+                (nodeContent as Container).children.splice(conIndex, 1);
                 diagram.removeFromAQuad(annotationNode as IElement);
                 diagram.removeFromAQuad(annotationConnector as IElement);
                 delete diagram.nameTable[annotationNode.id];
                 delete diagram.nameTable[annotationConnector.id];
+                //Bug 861852: Removing bpmn text annotation dynamically is not working properly.
+                //To get textAnnotation connector from parent outEdges and remove it.
+                const edgeIndex = (parentNode as Node).outEdges.indexOf(annotationConnector.id);
+                    if (edgeIndex !== -1) {
+                        (parentNode as Node).outEdges.splice(edgeIndex, 1);
+                    }
                 delete entry[annotation.id];
             }
         }

@@ -3025,7 +3025,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.searchModule = new Search(this);
         this.scrollModule = new Scroll(this);
         this.notify(events.initialLoad, {});
-        if (this.getDataModule().dataManager.dataSource.offline === true || this.getDataModule().dataManager.dataSource.url === undefined) {
+        if ((this.getDataModule().dataManager.dataSource.offline === true || this.getDataModule().dataManager.dataSource.url === undefined) &&
+            !(!isNullOrUndefined(this.dataSource) && (<DataResult>this.dataSource).result)) {
             this.isVirtualAdaptive = true;
         }
         if ((<{ isReact?: boolean }>this).isReact) {
@@ -3949,6 +3950,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             const pending: PendingState = this.getDataModule().getState();
             if (this.allowSelection && this.isPersistSelection && !(pending && pending.isPending)) {
                 this.clearSelection();
+            }
+            if (!isNullOrUndefined(this.dataSource) && (<DataResult>this.dataSource).result) {
+                this.isVirtualAdaptive = false;
             }
             if (Object.getPrototypeOf(newProp).deepWatch) {
                 const pKeyField: string = this.getPrimaryKeyFieldNames()[0];

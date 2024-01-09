@@ -168,9 +168,9 @@ export class Render {
     }
 
     private refreshHeader(): void {
-        if (this.parent.enableVirtualization) {
+        const mCont: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) as HTMLElement;
+        if (this.parent.enableVirtualization && !isNullOrUndefined(mCont)) {
             const mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
-            const mCont: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) as HTMLElement;
             const vtr: HTMLElement = mCont.querySelector('.' + cls.VIRTUALTRACK_DIV) as HTMLElement;
             this.parent.virtualHeaderDiv = mHdr.querySelector('.' + cls.VIRTUALTRACK_DIV) as HTMLElement;
             if (mHdr.querySelector('.' + cls.VIRTUALTRACK_DIV)) {

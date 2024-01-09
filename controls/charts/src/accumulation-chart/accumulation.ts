@@ -1866,15 +1866,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         );
         const space: number = (this.series[0].type === 'Pie' && this.visibleSeries[0].dataLabel.position === 'Outside' && this.visibleSeries[0].dataLabel.connectorStyle.length) ? stringToNumber(this.visibleSeries[0].dataLabel.connectorStyle.length , this.accBaseModule.radius) : 0;
         if (!this.subTitle && (this.series[0].type !== 'Funnel' && this.series[0].type !== 'Pyramid')) {
-            options.x = parseInt(this.series[0].radius) >= 80 ? options.x : this.accBaseModule.center.x;
             options.y = parseInt(this.series[0].radius) >= 80 ? options.y :
                 (this.accBaseModule.center.y - this.accBaseModule.radius - padding
                     - titleHeight - legendHeight - expodeValue - space);
             if (this.series[0].type === 'Pie' && (parseInt(this.series[0].radius) < 80 || isNaN(parseInt(this.series[0].radius)))) {
-                options.x = (this.accBaseModule.center.x - (titleSize.width / 2)) < this.initialClipRect.x ?
-                    (titleSize.width / 2) + this.initialClipRect.x :
-                    (this.accBaseModule.center.x + (titleSize.width / 2)) > (this.initialClipRect.x + this.initialClipRect.width) ?
-                        (this.initialClipRect.x + this.initialClipRect.width) - (titleSize.width / 2) - this.initialClipRect.x : options.x;
                 options.y = options.y < (this.initialClipRect.y - legendHeight) ? (this.initialClipRect.y - legendHeight) : options.y;
             }
         }

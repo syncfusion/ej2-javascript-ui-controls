@@ -631,7 +631,13 @@ export class Parser {
                                     left = this.parent.substring(text, j, i - j);
                                     left = this.parent.getCellFrom(left);
                                 } else {
-                                    j = j + 1;
+                                    let uFound: boolean = false;
+                                    if (j > 0 && !this.parent.isUpperChar(text[j as number])) {
+                                        uFound = text[j as number] === 'u' && text[j - 1] === this.parent.getParseArgumentSeparator();
+                                    }
+                                    if (!uFound) {
+                                        j = j + 1;
+                                    }
                                     left = this.parent.substring(text, j, i - j);
                                 }
                                 this.parent.updateDependentCell(left);

@@ -368,6 +368,29 @@ describe('EJ2-69534 - Font-Size dynamic update using custom class name style tag
     });
 });
 
+describe('863471 - Font Family with dynamic font family with similar name doesnt update the correct font family in toobar ', () => {
+    var innervalue = `<div id="div3"><p><span id="currentNode" style="font-family: Arial;">RTE Content with Arial only</span></p><p>RTE Content with Verdana only</p><p><span style="font-family: &quot;Arial Black&quot;;">RTE Content with Arial Black only</span></p></div>`;
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let parentDiv: HTMLDivElement;
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+        parentDiv = document.getElementById('div3') as HTMLDivElement;
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Check Font-family value property ', () => {
+        let node: Node = document.getElementById('currentNode');
+        domSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 5, 5);
+        let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p'], null, ['Verdana', 'Arial', 'Arial Black', 'Consolas']);
+        expect(format.fontname).toEqual('Arial');
+    });
+});
+
 describe('829581 -  Underline and strikethrough toolbars are not highlighted properly in RichTextEditor toolbar', () => {
     var innervalue = '<div id="div1"><p><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;" class="focusNode">Testing</span></span></em></strong></p></div>';
     let domSelection: NodeSelection = new NodeSelection();

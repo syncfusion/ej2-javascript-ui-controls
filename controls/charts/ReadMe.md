@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-charts/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-charts)
+
 # JavaScript Chart Control
 
 The [JavaScript Chart](https://www.syncfusion.com/javascript-ui-controls/js-charts?utm_source=npm&utm_medium=listing&utm_campaign=javascript-chart-npm) control is a well-crafted charting component for visualizing data with 50+ charts and graphs, ranging from line to financial types. It can bind data from  datasource such as array of JSON objects, `OData web services` or [DataManager](https://ej2.syncfusion.com/documentation/data/data-binding/). All chart elements are rendered using Scalable Vector Graphics (SVG).

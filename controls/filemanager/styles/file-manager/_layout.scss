@@ -761,7 +761,8 @@
         }
 
         &.e-active,
-        &.e-hover {
+        &.e-hover,
+        &:hover {
           @include visibility(visible);
         }
       }
@@ -1409,7 +1410,8 @@
           margin: $fe-mobile-lg-item-margin;
           width: $fe-mobile-lg-item-width;
 
-          &.e-hover {
+          &.e-hover,
+          &:hover {
             @include visibility(hidden);
           }
 

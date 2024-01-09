@@ -63,7 +63,7 @@ describe('filter menu module =>', () => {
         });
         it('number filter ui render testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     let flm: FilterMenuRenderer = new FilterMenuRenderer(
                         gridObj, gridObj.filterSettings as FilterSettings, gridObj.serviceLocator);
                     expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
@@ -87,7 +87,7 @@ describe('filter menu module =>', () => {
         it('number filter functionalites testing', (done: Function) => {
             let instances: string = 'ej2_instances';
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     let numberuiObj1: NumericTextBox = document.querySelector('#numberui-' + gridObj.getColumns()[0].uid)[instances][0];
                     expect(gridObj.filterSettings.columns[0].value).toEqual(numberuiObj1.value);
                     (<HTMLInputElement>document.querySelector('.e-flmenu-cancelbtn')).click();
@@ -103,7 +103,7 @@ describe('filter menu module =>', () => {
 
         it('string filter ui render testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
                     let instances: string = 'ej2_instances';
                     let struiObj: AutoComplete = document.querySelector('#strui-' + gridObj.getColumns()[1].uid)[instances][0];
@@ -123,7 +123,7 @@ describe('filter menu module =>', () => {
         it('string filter functionalites testing', (done: Function) => {
             let instances: string = 'ej2_instances';
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     let struiObj1: AutoComplete = document.querySelector('#strui-' + gridObj.getColumns()[1].uid)[instances][0];
                     expect(gridObj.filterSettings.columns[0].value).toEqual(struiObj1.value);
                     (<HTMLInputElement>document.querySelector('.e-flmenu-cancelbtn')).click();
@@ -140,7 +140,7 @@ describe('filter menu module =>', () => {
 
         it('string filter with null values', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     (<HTMLInputElement>document.querySelector('.e-flmenu-okbtn')).click();
                     expect(gridObj.filterSettings.columns.length).toBe(1);
                     gridObj.clearFiltering();
@@ -156,7 +156,7 @@ describe('filter menu module =>', () => {
 
         it('string filter with model value retain', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     let args: any = { column: gridObj.getColumns()[1], filteredValue: '' };
                     let strUI: StringFilterUI = new StringFilterUI(
                         gridObj, gridObj.serviceLocator, gridObj.filterSettings as FilterSettings);
@@ -175,7 +175,7 @@ describe('filter menu module =>', () => {
 
         it('date filter ui render testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
                     let instances: string = 'ej2_instances';
                     let element: Element;
@@ -198,7 +198,7 @@ describe('filter menu module =>', () => {
             let instances: string = 'ej2_instances';
             let element: Element;
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     let dateObj1: DatePicker = document.querySelector('#dateui-' + gridObj.getColumns()[3].uid)[instances][0];
                     expect(gridObj.filterSettings.columns[0].value.toString()).toEqual(dateObj1.value.toString());
                     (<HTMLInputElement>document.querySelector('.e-flmenu-cancelbtn')).click();
@@ -216,7 +216,7 @@ describe('filter menu module =>', () => {
         it('date filter with null values', (done: Function) => {
             gridObj.cssClass = 'coverage';
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     (<HTMLInputElement>document.querySelector('.e-flmenu-okbtn')).click();
                     expect(gridObj.filterSettings.columns.length).toBe(2);
                     gridObj.clearFiltering();
@@ -233,7 +233,7 @@ describe('filter menu module =>', () => {
 
         it('boolean filter ui render testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
                     let instances: string = 'ej2_instances';
                     let boolObj: DropDownList = document.querySelector('#bool-ui-' + gridObj.getColumns()[4].uid)[instances][0];
@@ -255,7 +255,7 @@ describe('filter menu module =>', () => {
         it('boolean filter functionalites testing', (done: Function) => {
             let instances: string = 'ej2_instances';
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     expect(gridObj.filterSettings.columns[0].value).toEqual(gridObj.filterSettings.columns[0].value);
                     (<HTMLInputElement>document.querySelector('.e-flmenu-cancelbtn')).click();
                     expect(gridObj.filterSettings.columns.length).toBe(0);
@@ -271,7 +271,7 @@ describe('filter menu module =>', () => {
 
         it('number filter ui change render testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
                     let instances: string = 'ej2_instances';
                     const dd: DropDownList = document.querySelector('.e-dropdownlist')[instances][0];
@@ -321,7 +321,7 @@ describe('filter menu module =>', () => {
 
         it('datetime filter ui render testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
                     let instances: string = 'ej2_instances';
                     let element: Element;
@@ -371,7 +371,7 @@ describe('filter menu module =>', () => {
         });
         it('mutipe filter testing string column', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     let instances: string = 'ej2_instances';
                     let struiObj: AutoComplete = document.querySelector('#strui-' + gridObj.getColumns()[1].uid)[instances][0];
                     struiObj.value = 'Vinet';
@@ -388,7 +388,7 @@ describe('filter menu module =>', () => {
 
         it('mutipe filter testing number column', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     let instances: string = 'ej2_instances';
                     let numberuiObj: NumericTextBox = document.querySelector('#numberui-' + gridObj.getColumns()[0].uid)[instances][0];
                     numberuiObj.value = 10248;
@@ -470,7 +470,7 @@ describe('filter menu module =>', () => {
         });
         it('DataManager with string column filtering menu=>', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
                     gridObj.actionComplete = null;
                     done();
@@ -484,7 +484,7 @@ describe('filter menu module =>', () => {
         it('DataManager with boolean column filtering menu', (done: Function) => {
             let instances: string = 'ej2_instances';
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
                     let instances: string = 'ej2_instances';
                     gridObj.actionComplete = null;
@@ -529,7 +529,7 @@ describe('filter menu module =>', () => {
         });
         it('filtering menu open based on its column type =>', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
                     gridObj.actionComplete = null;
                     done();
@@ -609,7 +609,7 @@ describe('filter menu module =>', () => {
         });
         it('custom control with filtering menu =>', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
                     gridObj.actionComplete = null;
                     done();
@@ -654,7 +654,7 @@ describe('filter menu module =>', () => {
         });
         it('filtering menu open based on its column type =>', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     expect((gridObj.filterModule as any).filterModule.dlgDiv.querySelector('.e-numerictextbox').ej2_instances[0].format).
                     toBe((gridObj.columns[1] as any).format.format);
                     gridObj.actionComplete = null;
@@ -712,7 +712,7 @@ describe('filter menu module =>', () => {
         let gridObj: Grid;
         let actionComplete: () => void;
         let actionBegin: any = (args?: any) => {
-            if (args.requestType == "filterbeforeopen") {
+            if (args.requestType == "filterBeforeOpen") {
                 gridObj.filterModule.menuOperator = [{ value: 'equal', text: 'Equal' },
                 { value: 'notequal', text: 'Not Equal' }];
             }
@@ -737,7 +737,7 @@ describe('filter menu module =>', () => {
         });
         it('filtering menu checkbox ui testing =>', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     let menuCheckBoxFilter: HTMLElement = gridObj.element.querySelector('.e-menucheckbox');
                     let flm: FilterMenuRenderer = new FilterMenuRenderer(
                         gridObj, gridObj.filterSettings as FilterSettings, gridObj.serviceLocator);

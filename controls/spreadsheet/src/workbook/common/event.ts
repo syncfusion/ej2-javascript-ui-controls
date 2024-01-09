@@ -142,7 +142,7 @@ export const replace: string = 'replace';
 /** @hidden */
 export const replaceAll: string = 'replaceAll';
 /** @hidden */
-export const showDialog: string = 'ShowDialog';
+export const showFindAlert: string = 'showFindAlert';
 /** @hidden */
 export const findKeyUp: string = 'findKeyUp';
 /** @hidden */

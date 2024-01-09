@@ -162,7 +162,20 @@ describe('Template', () => {
         let result: Element[] = [];
         result.push(createElement('div', { innerHTML: 'one   two' }));
         result.push(createElement('div', { innerHTML: 'two three   ' }));
-        expect(outDOM(template.compile(templateStr), spaceDS)).toEqual(result);
+        let templateResult: Element[] = outDOM(template.compile(templateStr), spaceDS)
+        expect(templateResult).toEqual(result);
+        expect(templateResult[0].innerHTML).toEqual('one   two');
+        expect(templateResult[1].innerHTML).toEqual('two three   ');
+    });
+
+    it('Multiple space between inner tags template string', () => {
+        let templateStr: string = "<div>${name}</div>   <div>${name}</div>";
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'one   two' }));
+        result.push(createElement('div', { innerHTML: 'two three   ' }));
+        let templateResult: Element[] = outDOM(template.compile(templateStr), spaceDS)
+        expect(templateResult.length).toEqual(2);
+        expect(templateResult).toEqual(result);
     });
     
     it('JSON array input with href value with apostrophe', () => {
@@ -203,8 +216,8 @@ describe('Template', () => {
             </div>`;
         /* tslint:enable */
         let result: Element[] = [];
-        result.push(createElement('div', { innerHTML: ' <span>one</span>01 ' }));
-        result.push(createElement('div', { innerHTML: ' <span>two</span>02 ' }));
+        result.push(createElement('div', { innerHTML: '<span>one</span>01' }));
+        result.push(createElement('div', { innerHTML: '<span>two</span>02' }));
         expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
         template.expression(new RegExp('\\${([^}]*)}', 'g'));
     });

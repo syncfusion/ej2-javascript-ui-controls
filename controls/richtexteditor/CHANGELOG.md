@@ -2,7 +2,19 @@
 
 ## [Unreleased]
 
-## 24.1.44 (2024-01-03)
+## 24.1.45 (2024-01-09)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I534488` - Now, applying different style formats without focusing inside the Rich Text Editor works properly.
+
+- `#I530749` - Now, the `change` event is triggered properly when inserting the mention list items in the Rich Text Editor.
+
+- `#I534481` - Now, when applying the font family `Arial` to the text content in the Rich Text Editor, the toolbar status is updated properly.
+
+## 24.1.43 (2023-12-27)
 
 ### RichTextEditor
 

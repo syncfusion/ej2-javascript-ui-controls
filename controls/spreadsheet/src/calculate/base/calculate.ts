@@ -1886,7 +1886,11 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         return textName;
                     }
                     if (uFound) {
-                        textName = '-' + textName;
+                        if (!this.isNaN(this.parseFloat(textName))) {
+                            textName = (-(this.parseFloat(textName))).toString();
+                        } else {
+                            textName = '-' + textName;
+                        }
                     }
                     stack.push(textName);
                 } else if (pFormula[i as number] === 'q') {

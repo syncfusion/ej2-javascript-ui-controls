@@ -503,7 +503,23 @@
   }
 
   .e-ie-finetune-value-span {
-    top: 26% !important; /* stylelint-disable-line declaration-no-important */
+    top: $image-editor-finetune-value-span !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-ie-finetune-slider-label {
+    top: $image-editor-finetune-span !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-ie-finetune-slider-wrap {
+    top: calc(50% - 15px) !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-transparency-slider-wrap {
+    top: calc(50% - 15px) !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-ie-slider-wrap {
+    top: calc(50% - 14px) !important; /* stylelint-disable-line declaration-no-important */
   }
 
   .e-bigger .e-straighten .e-control-wrapper.e-slider-container .e-slider .e-handle {
@@ -521,5 +537,17 @@
 
   .e-dropdown-popup.e-ie-ddb-popup {
     background: none !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-device.e-image-editor .e-ie-device-transparency-slider {
+    margin-left: calc(50% - 80px) !important; /* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-device.e-image-editor {
+    .e-straighten .e-control-wrapper.e-slider-container .e-slider .e-handle {
+      @if $skin-name == 'Material' {
+        top: calc(50% - 6px) !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
   }
 }

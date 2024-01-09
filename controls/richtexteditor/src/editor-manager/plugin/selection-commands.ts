@@ -211,8 +211,7 @@ export class SelectionCommands {
                 (cursorNodes[0] as HTMLElement).firstElementChild.tagName.toLowerCase() === 'br')) {
                 (cursorNodes[0] as HTMLElement).innerHTML = '';
             }
-            if (cursorNodes.length === 1 && range.startOffset === 0 && (cursorNodes[0].nodeName === 'BR' ||
-                cursorNodes[0].nextSibling.nodeName === 'BR')) {
+            if (cursorNodes.length === 1 && range.startOffset === 0 && (cursorNodes[0].nodeName === 'BR' || (isNOU(cursorNodes[0].nextSibling) ? false : cursorNodes[0].nextSibling.nodeName === 'BR'))) {
                 detach(cursorNodes[0].nodeName === '#text' ? cursorNodes[0].nextSibling : cursorNodes[0]);
             }
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;

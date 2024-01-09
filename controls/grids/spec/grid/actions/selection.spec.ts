@@ -6793,7 +6793,7 @@ describe('EJ2-855396 - SelectionSettings mode as Both shows wrong selected items
         (gridObj.element.querySelectorAll('.e-rowcell')[1] as any).click();
         (gridObj.element.querySelectorAll('.e-gridchkbox')[0] as any).click();
         done();
-        expect(gridObj.selectionModule.selectedRowCellIndexes.length).toBe(0);
+        expect(gridObj.selectionModule.selectedRowCellIndexes[0].cellIndexes[0]).toBe(1);
     });
 
     afterAll(() => {

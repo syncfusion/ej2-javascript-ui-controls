@@ -1,6 +1,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { NodeModel } from '../../../src/diagram/objects/node-model';
+import { BpmnShapeModel, NodeModel } from '../../../src/diagram/objects/node-model';
+import { Node } from '../../../src/diagram/objects/node';
 import { ShadowModel, RadialGradientModel, StopModel,LinearGradientModel } from '../../../src/diagram/core/appearance-model';
 import { Canvas } from '../../../src/diagram/core/containers/canvas';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
@@ -434,6 +435,50 @@ describe('Diagram Control', () => {
             let memory: any = inMB(getMemoryProfile())
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
+    });
+
+    describe('861852-Removing bpmn text annotation dynamically is not working properly.', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagramTextRemove' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'start', width: 70, height: 70, offsetX: 100, offsetY: 100, shape: {
+                    type: 'Bpmn', shape: 'Event',
+                    event: { event: 'Start' },annotations:[
+                        {
+                            id:'text1',
+                            text:'text Annotation',
+                            angle:0,
+                            length:100
+                        }
+                    ]
+                }
+            };
+            diagram = new Diagram({
+                width: 1000, height: 1000, nodes: [node]
+            });
+            diagram.appendTo('#diagramTextRemove');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Removing text annotation dynamically',(done: Function) => {
+            let node = diagram.nodes[0];
+            diagram.bpmnModule.checkAndRemoveAnnotations(node,diagram);
+            expect((node as Node).outEdges.length === 0).toBe(true);
+            done();
         })
     });
 });

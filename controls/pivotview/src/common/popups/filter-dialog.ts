@@ -1077,6 +1077,9 @@ export class FilterDialog {
                 if (uncheckedNodes > 0) {
                     removeClass([firstNode], cls.NODE_CHECK_CLASS);
                     addClass([firstNode], cls.NODE_STOP_CLASS);
+                    const checkBoxNodes: Element = this.allMemberSelect.element.querySelector('li')
+                        .querySelector('div.' + cls.CHECKBOX_CONTAINER);
+                    checkBoxNodes.setAttribute('aria-checked', 'false');
                 } else if (uncheckedNodes === 0) {
                     removeClass([firstNode], cls.NODE_STOP_CLASS);
                     addClass([firstNode], cls.NODE_CHECK_CLASS);

@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 24.1.45 (2024-01-09)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#F185974` - When using the pivot table and the pivot field list with virtualization, the loading indicator is now properly hidden.
+- `#F185974` - The all node check box status will now work properly when you click the "All" text in the member filter dialog.
+- `#F185974` - When adding a field via drag and drop in the static field list, the "fieldDrop" event is now properly triggered.
+- `#I538805` - The OLAP Pivot table will now work properly while binding calculated fields via code-behind.
+
 ## 24.1.44 (2024-01-03)
 
 ### PivotTable

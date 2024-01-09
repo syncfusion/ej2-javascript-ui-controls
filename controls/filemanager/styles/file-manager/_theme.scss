@@ -313,11 +313,13 @@
           @include active-item;
         }
 
-        &.e-hover {
+        &.e-hover,
+        &:hover {
           @include hover-item($fe-hover-bg-color, $fe-hover-border-color);
         }
 
-        &.e-active.e-hover {
+        &.e-active.e-hover,
+        &.e-active:hover {
           @include hover-item($fe-ah-bg-color, $fe-ah-border-color);
         }
 
@@ -325,7 +327,8 @@
           border-color: $fe-focus-border-color;
         }
 
-        &.e-hover.e-fe-drop-folder {
+        &.e-hover.e-fe-drop-folder,
+        &:hover.e-fe-drop-folder {
           border-color: $fe-drop-folder-bg-color;
         }
       }
@@ -365,7 +368,8 @@
 
         .e-large-icon {
 
-          &.e-hover {
+          &.e-hover,
+          &:hover {
             @include hover-item(transparent, transparent);
           }
 

@@ -2,7 +2,18 @@
 
 ## [Unreleased]
 
-## 24.1.44 (2024-01-03)
+## 24.1.45 (2024-01-09)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#F185764` - Now, removing bpmn text annotation dynamically is working properly.
+- `#I526870` - Resolved snap to lines issue when dragging shapes from palette to swimlane.
+- `#I526172` - The node now remains in the diagram when the ungroup action is performed.
+- `#FB48313` - The background color is now visible on symbol hover after rapid expand and collapse in the palette
+
+## 24.1.43 (2023-12-27)
 
 ### Diagram
 

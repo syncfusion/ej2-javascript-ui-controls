@@ -669,7 +669,8 @@ export class FocusStrategy {
     protected removeFocus(e?: FocusEvent): void {
         if (!this.currentInfo.element) { return; }
         if (this.parent.isReact && !this.parent.isEdit && this.currentInfo.element.classList.contains('e-rowcell')
-            && !this.currentInfo.element.parentElement && !(this.parent.allowGrouping && this.parent.groupSettings.columns.length)) {
+            && !this.currentInfo.element.parentElement && !(this.parent.allowGrouping && this.parent.groupSettings.columns.length) &&
+            this.parent.getRowByIndex(this.prevIndexes.rowIndex)) {
             const cellElem: HTMLElement = this.parent.getCellFromIndex(this.prevIndexes.rowIndex, this.prevIndexes.cellIndex) as HTMLElement;
             this.currentInfo.element = cellElem ? cellElem : this.currentInfo.element;
         }

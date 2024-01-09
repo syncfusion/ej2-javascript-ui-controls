@@ -575,6 +575,10 @@
     border-top: $qrybldr-val-error-border;
   }
 
+  .e-qb-ddt.e-ddt .e-prevent .e-fullrow {
+    cursor: default !important; /* stylelint-disable-line declaration-no-important */
+  }
+
   .e-dropdown-popup {
 
     & .e-addgroup {

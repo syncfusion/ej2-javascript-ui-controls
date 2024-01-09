@@ -338,7 +338,14 @@ export namespace ListBase {
                 anchorElement = li.querySelector('.' + cssClass.anchorWrap);
                 // eslint-disable-next-line no-prototype-builtins
                 if (fieldData.hasOwnProperty(fields.tooltip)) {
-                    const tooltipText = SanitizeHtmlHelper.sanitize(<string>fieldData[fields.tooltip]);
+                    let tooltipText: string = <string>fieldData[fields.tooltip];
+                    if (options && options.enableHtmlSanitizer) {
+                        tooltipText = SanitizeHtmlHelper.sanitize(tooltipText);
+                    } else {
+                        let tooltipTextElement = createElement('span', { innerHTML: tooltipText });
+                        tooltipText = tooltipTextElement.innerText;
+                        tooltipTextElement = null;
+                    }
                     li.setAttribute('title', tooltipText);
                 }
                 // eslint-disable-next-line no-prototype-builtins

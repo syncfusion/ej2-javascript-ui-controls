@@ -1327,8 +1327,8 @@ export class AnnotationRenderer {
             }
             lineAnnotation.caption.type = this.getCaptionType(measureShapeAnnotation.captionPosition);
             lineAnnotation.caption.cap = measureShapeAnnotation.caption;
-            lineAnnotation.leaderExt = measureShapeAnnotation.leaderLineExtension;
-            lineAnnotation.leaderLine = measureShapeAnnotation.leaderLength;
+            lineAnnotation.leaderExt = measureShapeAnnotation.leaderLength;
+            lineAnnotation.leaderLine = measureShapeAnnotation.leaderLineExtension;
             const commentsDetails: any = measureShapeAnnotation.comments;
             const bounds: any = JSON.parse(measureShapeAnnotation.bounds);
             lineAnnotation.bounds = bounds;
@@ -2889,8 +2889,8 @@ export class AnnotationRenderer {
     }
             measureShapeAnnotation.Indent = lineAnnot.lineIntent.toString();
             measureShapeAnnotation.Caption = lineAnnot.caption.cap;
-            measureShapeAnnotation.LeaderLength = lineAnnot.leaderLine;
-            measureShapeAnnotation.LeaderLineExtension = lineAnnot.leaderExt;
+            measureShapeAnnotation.LeaderLength = lineAnnot.leaderExt;
+            measureShapeAnnotation.LeaderLineExtension = lineAnnot.leaderLine;
             measureShapeAnnotation.ExistingCustomData = shapeAnnotation.ExistingCustomData;
             if (lineAnnot._dictionary.has('LLO')) {
                 measureShapeAnnotation.LeaderLineOffset = lineAnnot._dictionary.get('LLO');

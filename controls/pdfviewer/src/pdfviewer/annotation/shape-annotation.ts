@@ -288,7 +288,8 @@ export class ShapeAnnotation {
                                 fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                                 labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
                                 annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode,
-                                isPrint: annotation.IsPrint, isCommentLock: annotationObject.isCommentLock
+                                isPrint: annotation.IsPrint, isCommentLock: annotationObject.isCommentLock,
+                                customData: annotationObject.customData
                             };
                             const addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');

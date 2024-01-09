@@ -73,7 +73,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-searchinput').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-selectall').length).toBe(1);    
@@ -284,7 +284,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(69);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -299,7 +299,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(69);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -314,7 +314,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(43);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -346,7 +346,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(66);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -361,7 +361,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(40);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -376,7 +376,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(66);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -408,7 +408,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(64);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -423,7 +423,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(40);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -438,7 +438,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(63);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -467,7 +467,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(66);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -483,7 +483,7 @@ describe('Checkbox Filter module => ', () => {
         
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen') {    
+                if(args.requestType === 'filterAfterOpen') {    
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');          
                 done();
                 }
@@ -508,7 +508,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(43);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -523,7 +523,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen') {    
+                if(args.requestType === 'filterAfterOpen') {    
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');          
                 done();
                 }
@@ -548,7 +548,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(72);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -582,7 +582,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(69);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -597,7 +597,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(69);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -612,7 +612,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(43);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -644,7 +644,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(66);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -659,7 +659,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(40);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -674,7 +674,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(66);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -706,7 +706,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(64);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -721,7 +721,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(40);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -736,7 +736,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(63);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -751,7 +751,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen') {    
+                if(args.requestType === 'filterAfterOpen') {    
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');          
                 done();
                 }
@@ -776,7 +776,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(67);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -791,7 +791,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(65);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -807,7 +807,7 @@ describe('Checkbox Filter module => ', () => {
         
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen') {    
+                if(args.requestType === 'filterAfterOpen') {    
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter'); 
                     expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(41);
                     expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -835,7 +835,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(44);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -850,7 +850,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen') {    
+                if(args.requestType === 'filterAfterOpen') {    
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');   
                     expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(70);
                     expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -864,7 +864,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(68);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -893,7 +893,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(72);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -930,7 +930,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(4);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(67);   
@@ -945,7 +945,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(5);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -960,7 +960,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(5);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -992,7 +992,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(1);   
@@ -1007,7 +1007,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -1022,7 +1022,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(3);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);
@@ -1054,7 +1054,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1069,7 +1069,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1084,7 +1084,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(1);   
@@ -1113,7 +1113,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(3);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1129,7 +1129,7 @@ describe('Checkbox Filter module => ', () => {
         
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen') {    
+                if(args.requestType === 'filterAfterOpen') {    
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');          
                 done();
                 }
@@ -1154,7 +1154,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(5);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1169,7 +1169,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen') {    
+                if(args.requestType === 'filterAfterOpen') {    
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');          
                 done();
                 }
@@ -1194,7 +1194,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(72);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1231,7 +1231,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(4);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(67);   
@@ -1246,7 +1246,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(5);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1261,7 +1261,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(5);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1293,7 +1293,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(1);   
@@ -1308,7 +1308,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -1323,7 +1323,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(3);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);
@@ -1355,7 +1355,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1370,7 +1370,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1385,7 +1385,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(1);   
@@ -1400,7 +1400,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen') {    
+                if(args.requestType === 'filterAfterOpen') {    
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');          
                 done();
                 }
@@ -1425,7 +1425,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1440,7 +1440,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(2);   
@@ -1456,7 +1456,7 @@ describe('Checkbox Filter module => ', () => {
         
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen') {    
+                if(args.requestType === 'filterAfterOpen') {    
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter'); 
                     expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                     expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1484,7 +1484,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1499,7 +1499,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen') {    
+                if(args.requestType === 'filterAfterOpen') {    
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');   
                     expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                     expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1513,7 +1513,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(1);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(69);   
@@ -1542,7 +1542,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(72);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1576,7 +1576,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                 checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(68);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(3);   
@@ -1608,7 +1608,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('orderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(69);   
@@ -1637,7 +1637,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(72);
                 expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);   
@@ -1652,7 +1652,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('EJ2-6971-Date filter search checking ', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     expect(gridObj.getColumnByField('OrderDate').type).toBe('datetime');
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                     (<any>gridObj.filterModule).filterModule.checkBoxBase.sInput.value = '7/9/1996';
@@ -1668,7 +1668,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('EJ2-7690-Search In Filtering Dialog Box Get Closed While Press "Enter Key" ', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     (<any>gridObj.filterModule).filterModule.checkBoxBase.sInput.value = 'Vinet';
                     (<any>gridObj.filterModule).filterModule.checkBoxBase.btnClick({target: (<any>gridObj.filterModule).filterModule.checkBoxBase.sInput});
                 }
@@ -1685,7 +1685,7 @@ describe('Checkbox Filter module => ', () => {
         // time - delayed issue
     //     it('EJ2-7257-Need to hide the filter button in check box filter when no matches found like EJ1 ', (done: Function) => {            
     //         actionComplete = (args?: any): void => {
-    //             if(args.requestType === 'filterafteropen'){
+    //             if(args.requestType === 'filterAfterOpen'){
     //                 checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
     //                 (<any>gridObj.filterModule).filterModule.sInput.value = 'edybh';
     //                 (<any>gridObj.filterModule).filterModule.refreshCheckboxes();
@@ -1734,7 +1734,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){          
+                if(args.requestType === 'filterAfterOpen'){          
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');         
                 gridObj.actionComplete =null;
                 done();
@@ -1799,7 +1799,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if (args.requestType === 'filterafteropen') {
+                if (args.requestType === 'filterAfterOpen') {
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                     gridObj.actionComplete = null;
                     done();
@@ -1875,7 +1875,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Filter after search toolbar action', function (done) {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                 expect(gridObj.element.querySelectorAll('.e-check').length).toBe(2);
                 expect(gridObj.element.querySelectorAll('.e-selectall').length).toBe(1);                          
                 gridObj.actionComplete =null;
@@ -1932,7 +1932,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Filter OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 gridObj.actionComplete =null;
                 done();
@@ -1959,7 +1959,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Filter CustomerID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 gridObj.actionComplete =null;
                 done();
@@ -1987,7 +1987,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Filter Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 gridObj.actionComplete =null;
                 done();
@@ -2016,7 +2016,7 @@ describe('Checkbox Filter module => ', () => {
 
         it('Filter Freight dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                     gridObj.actionComplete =null;
                     done();
@@ -2081,7 +2081,7 @@ describe('Checkbox Filter module => ', () => {
         });        
         it('Filter OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 gridObj.actionComplete =null;
                 done();
@@ -2147,7 +2147,7 @@ describe('Checkbox Filter module => ', () => {
         });        
         it('Filter OrderID dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 gridObj.actionComplete =null;
                 done();
@@ -2197,7 +2197,7 @@ describe('Checkbox Filter module => ', () => {
         });
         it('Filter OrderDate dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                 expect(gridObj.currentViewData.length).toBe(4);
                 gridObj.actionComplete =null;
                 done();
@@ -2248,7 +2248,7 @@ describe('Checkbox Filter module => ', () => {
         
         it('OrderID filter dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){          
+                if(args.requestType === 'filterAfterOpen'){          
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');      
                     done();
                 }   
@@ -2266,7 +2266,7 @@ describe('Checkbox Filter module => ', () => {
         });
         it('CustomerID filter dialog open testing', (done: Function) => {
             actionComplete = (args?: any): void => {
-                if(args.requestType === 'filterafteropen'){          
+                if(args.requestType === 'filterAfterOpen'){          
                     checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter'); 
                     done();     
                 }
@@ -2542,7 +2542,7 @@ describe('EJ2-50998 - Searching blank in filter text box', () => {
 
     it('open filter popup', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
                 gridObj.actionComplete = null;
                 done();
@@ -2646,7 +2646,7 @@ describe('EJ2-56656 - Wrong operator while filtering with Excel filter search bo
     
     it('CustomerID filter dialog open testing', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if(args.requestType === 'filterafteropen'){          
+            if(args.requestType === 'filterAfterOpen'){          
                 checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');      
                 done();
             }   
@@ -2704,7 +2704,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open testing', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
@@ -2718,7 +2718,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open testing and down scroll', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
@@ -2734,7 +2734,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open testing and down scroll - 1', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3) - 2);
                 actionComplete = null;
                 done();
@@ -2751,7 +2751,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open testing and up scroll', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
@@ -2767,7 +2767,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open testing and down scroll - 2', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
@@ -2784,7 +2784,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open testing and down scroll - 3', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3) - 2);
                 actionComplete = null;
                 done();
@@ -2800,7 +2800,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open testing and up scroll - 1', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3) - 2);
                 actionComplete = null;
                 done();
@@ -2817,7 +2817,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open testing and up scroll - 2', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3));
                 actionComplete = null;
                 done();
@@ -2833,7 +2833,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open testing and up scroll - 3', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe((gridObj.filterSettings.itemsCount * 3));
                 actionComplete = null;
                 done();
@@ -2903,7 +2903,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open after filter testing', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
@@ -2937,7 +2937,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open after filter testing - 1', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
@@ -2982,7 +2982,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open after filter testing - 2', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
@@ -3078,7 +3078,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('down scroll', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
@@ -3107,7 +3107,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('up scroll', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 actionComplete = null;
                 done();
@@ -3144,7 +3144,7 @@ describe('Checkbox Filter on demand load and selection maintain for filter', () 
 
     it('OrderID filter dialog open after filter testing - 3', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect(gridObj.element.querySelector('.e-checkboxlist').children.length).toBe(gridObj.filterSettings.itemsCount * 3);
                 expect(gridObj.element.querySelector('.e-checkboxlist').querySelectorAll('.e-check').length).toBe(0);
                 expect((<any>gridObj.element.querySelector('.e-checkboxlist').parentElement.previousSibling).querySelectorAll('.e-stop').length).toBe(1);
@@ -3197,7 +3197,7 @@ describe('Checkbox Filter on demand load and selection maintain for foreign key 
 
     it('local data foreign key for coverage', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 done();
             }
         };
@@ -3236,7 +3236,7 @@ describe('EJ2-58687 - template support for checkbox rendering in checkbox filter
             done();
         });
         actionComplete = (args?: any): void => {
-            if(args.requestType === 'filterafteropen'){  
+            if(args.requestType === 'filterAfterOpen'){  
                 expect(gridObj.element.querySelector('.e-excelfilter').querySelector('.e-checkboxlist').innerHTML).toBe('');      
                 done();
             }   
@@ -3255,7 +3255,7 @@ describe('EJ2-58687 - template support for checkbox rendering in checkbox filter
             done();
         });
         actionComplete = (args?: any): void => {
-            if(args.requestType === 'filterafteropen'){  
+            if(args.requestType === 'filterAfterOpen'){  
                 expect(gridObj.element.querySelector('.e-excelfilter').querySelector('.e-checkboxlist').innerHTML).toBe('<input>');      
                 done();
             }   
@@ -3291,7 +3291,7 @@ describe('EJ2-61734 - disableHtmlEncode property is not working with Excel Filte
     it('EmployeeID filter dialog open testing', (done: Function) => {
 
         actionComplete = (args?: any): void => {
-            if(args.requestType === 'filterafteropen'){  
+            if(args.requestType === 'filterAfterOpen'){  
                 expect(gridObj.element.querySelector('.e-excelfilter').querySelector('.e-checkboxlist').querySelectorAll('button').length).toBe(0);      
                 done();
             }   
@@ -3331,7 +3331,7 @@ describe('coverage improvemnet.', () => {
 
     it('filter dialog open/close testing - 1', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if(args.requestType === 'filterafteropen') {
+            if(args.requestType === 'filterAfterOpen') {
                 // expect((gridObj.filterModule.filterModule as any).getModuleName()).toBe('CheckBoxFilter');
                 gridObj.filterModule.filterModule.applyCustomFilter();    
                 done();
@@ -3343,7 +3343,7 @@ describe('coverage improvemnet.', () => {
 
     it('filter dialog open/close testing - 2', (done: Function) => {
         actionComplete = (args?: any): void => {
-            if(args.requestType === 'filterafteropen') {
+            if(args.requestType === 'filterAfterOpen') {
                 gridObj.filterModule.filterModule.closeResponsiveDialog();    
                 done();
             }   
@@ -3398,7 +3398,7 @@ describe('coverage improvemnet.', () => {
 
         it('prevent filter dialog opening', (done: Function) => {
             actionBegin = (args?: any): void => {
-                if (args.requestType === 'filterbeforeopen') {
+                if (args.requestType === 'filterBeforeOpen') {
                     args.cancel = true;
                     expect(args.cancel).toBeTruthy();
                     gridObj.actionBegin = null;

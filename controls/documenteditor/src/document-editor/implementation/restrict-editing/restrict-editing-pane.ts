@@ -318,6 +318,7 @@ export class RestrictEditing {
                 this.contentDiv2.innerHTML = this.localObj.getConstant('FormFieldsOnly');
                 //this.contentDiv2.style.display = 'block';
                 this.previousProtectionType = args.previousItemData.Value;
+                this.showRemovedIgnoreDialog();
                 break;
             case 'Comments':
                 this.protectionType = 'CommentsOnly';
@@ -334,32 +335,35 @@ export class RestrictEditing {
                 this.contentDiv1.innerHTML = this.localObj.getConstant('Protected Document');
                 this.contentDiv2.innerHTML = this.localObj.getConstant('TrackChangesOnly');
                 this.previousProtectionType = args.previousItemData.Value;
-                if (this.documentHelper.selection && this.documentHelper.editRanges.length > 0) {
-                    this.documentHelper.dialog.height = ' Auto';
-                    this.documentHelper.dialog.width = ' 600px';
-                    this.documentHelper.dialog.header = this.localObj.getConstant('Information');
-                    this.documentHelper.dialog.content = this.localObj.getConstant('RemovedIgnoreExceptions') + '<br>' + '<br>' + this.localObj.getConstant('RemovedIgnore');
-                    this.documentHelper.dialog.buttons = [{
-                        click: this.onYesButtonClick,
-                        buttonModel: { content: this.localObj.getConstant('Yes') }
-                    },
-                    {
-                        click: this.onCancelButtonClick,
-                        buttonModel: { content: this.localObj.getConstant('Cancel') }
-                    },
-                    {
-                        click: this.onNoButtonClick,
-                        buttonModel: { content: this.localObj.getConstant('No') }
-                    }];
-                    this.documentHelper.dialog.dataBind();
-                    this.documentHelper.dialog.show();
-                }
+                this.showRemovedIgnoreDialog();
                 break;
             default:
                 this.protectionType = 'NoProtection';
                 this.addedUser.uncheckAllItems();
                 this.viewer.owner.editor.removeAllEditRestrictions();
                 break;
+        }
+    }
+    private showRemovedIgnoreDialog(): void {
+        if (this.documentHelper.selection && this.documentHelper.editRanges.length > 0) {
+            this.documentHelper.dialog.height = ' Auto';
+            this.documentHelper.dialog.width = ' 600px';
+            this.documentHelper.dialog.header = this.localObj.getConstant('Information');
+            this.documentHelper.dialog.content = this.localObj.getConstant('RemovedIgnoreExceptions') + '<br>' + '<br>' + this.localObj.getConstant('RemovedIgnore');
+            this.documentHelper.dialog.buttons = [{
+                click: this.onYesButtonClick,
+                buttonModel: { content: this.localObj.getConstant('Yes') }
+            },
+            {
+                click: this.onCancelButtonClick,
+                buttonModel: { content: this.localObj.getConstant('Cancel') }
+            },
+            {
+                click: this.onNoButtonClick,
+                buttonModel: { content: this.localObj.getConstant('No') }
+            }];
+            this.documentHelper.dialog.dataBind();
+            this.documentHelper.dialog.show();
         }
     }
     private onYesButtonClick = (): void => {

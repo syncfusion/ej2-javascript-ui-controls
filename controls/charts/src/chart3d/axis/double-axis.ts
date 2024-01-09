@@ -437,4 +437,16 @@ export class Double3D {
         return isCustom ? format.replace('{value}', axis.format(labelValue))
             : format ? axis.format(tempInterval) : axis.format(labelValue);
     }
+
+    /**
+     * Gets the module name.
+     *
+     * @returns {string} - the module name.
+     */
+    protected getModuleName(): string {
+        /**
+         * Returns the module name.
+         */
+        return 'Double3D';
+    }
 }

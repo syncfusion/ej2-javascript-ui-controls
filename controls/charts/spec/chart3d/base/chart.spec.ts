@@ -13,8 +13,9 @@ import { getMemoryProfile, inMB, profile } from '../../common.spec';
 import { Selection3D } from '../../../src/chart3d/user-interaction/selection';
 import { Highlight3D } from '../../../src/chart3d/user-interaction/high-light';
 import { DateTime3D } from '../../../src/chart3d/axis/date-time-axis';
+import { Double3D } from '../../../src/chart3d/axis/double-axis';
 
-Chart3D.Inject(ColumnSeries3D, DataLabel3D, DateTime3D, Legend3D, Selection3D, Highlight3D, Category3D, Tooltip3D);
+Chart3D.Inject(ColumnSeries3D, Double3D, DataLabel3D, DateTime3D, Legend3D, Selection3D, Highlight3D, Category3D, Tooltip3D);
 export const categoryData: object[] = [{ x: 'USA', y: 50 }, { x: 'China', y: 40 },
     { x: 'Japan', y: 70 }, { x: 'Australia', y: 60 },
     { x: 'France', y: 50 }, { x: 'Germany', y: null },
@@ -936,6 +937,7 @@ describe('Chart Control', () => {
                     primaryYAxis: {
                         minimum: 20, maximum: 40, interval: 5,
                         title: 'Efficiency',
+                        valueType: 'Double',
                         labelFormat: '{value}%'
                     },
                     axes: [{

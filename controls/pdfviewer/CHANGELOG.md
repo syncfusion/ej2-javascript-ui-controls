@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 24.1.45 (2024-01-09)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I529642` - Now, the `strikethrough` is properly preserved in the provided document when downloading it and opening it in other viewers.
+- `#I527440` - Now, the thumbnail PDF is retaining the position for larger pages after rotating a single page in PDF document.
+- `#I529806` - Now, the DOM elements related to the PDF Viewer control are properly destroyed after destroying the PDF Viewer control.
+- `#I533430`, `#I533962` - Now, the provided documents are loading in the Stand-alone PDF Viewer.
+- `#I532281` - Now, the landscape documents are properly re-rendered in the Stand-alone PDF Viewer.
+- `#I524631` - Now, the custom stamp options are not being removed in the custom stamp menu when updating after control initialization.
+- `#I531042` - Now, the custom data of the annotation is properly preserved after undoing the deletion of the imported annotation.
+- `#I533144` - Now, the documents load properly in the Stand-alone PDF Viewer when using the document path and open option alternatively.
+
 ## 24.1.44 (2024-01-03)
 
 ### PDF Viewer

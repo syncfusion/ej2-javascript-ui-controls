@@ -549,7 +549,7 @@ describe('Chart Control', () => {
                 let secondLabel: HTMLElement = document.getElementById('chartContainer2-0-axis-label-1');
                 expect(secondLabel).toEqual(null);
                 let thirdLabel: HTMLElement = document.getElementById('chartContainer2-0-axis-label-2');
-                expect(thirdLabel.textContent).toEqual('3 custom Labels');
+                expect(thirdLabel).toEqual(null);
                 done();
             };
             axisLabelRender = (args: Chart3DAxisLabelRenderEventArgs) => {

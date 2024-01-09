@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 24.1.44 (2024-01-03)
+## 24.1.45 (2024-01-09)
+
+### Svg Base
+
+- `#I528640` - Now, the tooltip renders properly even when dynamically toggling the `shared` property in the tooltip.
+
+## 24.1.41 (2023-12-18)
 
 ### Svg Base
 

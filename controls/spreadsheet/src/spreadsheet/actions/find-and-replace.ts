@@ -1,9 +1,9 @@
 import { Spreadsheet } from '../base/index';
-import { findDlg, locale, dialog, gotoDlg, findHandler, focus, getUpdateUsingRaf } from '../common/index';
+import { findDlg, locale, dialog, gotoDlg, findHandler, focus, getUpdateUsingRaf, activeSheetChanged } from '../common/index';
 import { DialogBeforeOpenEventArgs } from '../common/index';
 import { L10n, getComponent, isNullOrUndefined, closest, select, EventHandler, detach } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
-import { ToolbarFind, goto, FindOptions, showDialog, replaceAllDialog, findKeyUp, replace, replaceAll, SheetModel } from '../../workbook/index';
+import { ToolbarFind, goto, FindOptions, showFindAlert, replaceAllDialog, findKeyUp, replace, replaceAll, SheetModel } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, findToolDlg, count } from '../../workbook/common/index';
 import { CheckBox, Button } from '@syncfusion/ej2-buttons';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
@@ -36,10 +36,11 @@ export class FindAndReplace {
         this.parent.on(gotoDlg, this.renderGotoDlg, this);
         this.parent.on(goto, this.gotoHandler, this);
         this.parent.on(findHandler, this.findHandler, this);
-        this.parent.on(showDialog, this.showDialog, this);
+        this.parent.on(showFindAlert, this.showFindAlert, this);
         this.parent.on(replaceAllDialog, this.replaceAllDialog, this);
         this.parent.on(findKeyUp, this.findKeyUp, this);
         this.parent.on(findToolDlg, this.findToolDlg, this);
+        this.parent.on(activeSheetChanged, this.refreshFindDlg, this);
     }
 
     private removeEventListener(): void {
@@ -48,18 +49,21 @@ export class FindAndReplace {
             this.parent.off(gotoDlg, this.renderGotoDlg);
             this.parent.off(goto, this.gotoHandler);
             this.parent.off(findHandler, this.findHandler);
-            this.parent.off(showDialog, this.showDialog);
+            this.parent.off(showFindAlert, this.showFindAlert);
             this.parent.off(replaceAllDialog, this.replaceAllDialog);
             this.parent.off(findKeyUp, this.findKeyUp);
             this.parent.off(findToolDlg, this.findToolDlg);
+            this.parent.off(activeSheetChanged, this.refreshFindDlg);
         }
     }
 
-    private findToolDlg(args?: { event?: MouseEvent, findValue?: string, isPublic?: boolean }): void {
+    private findToolDlg(
+        args: { event?: MouseEvent, findValue?: string, isPublic?: boolean, headerHgt?: number, refreshPosition?: boolean,
+            dialogEle?: HTMLElement }): void {
         const updateDisableState: (disable: boolean) => void = (disable: boolean): void => {
             const ribbon: HTMLElement = this.parent.showRibbon && this.parent.element.querySelector('.e-ribbon') as HTMLElement;
             if (ribbon) {
-                const findBtn: HTMLButtonElement = (args && args.event && args.event.target ?
+                const findBtn: HTMLButtonElement = (args.event && args.event.target ?
                     closest(args.event.target as Element, `#${this.parent.element.id}_findbtn`) :
                     select(`#${this.parent.element.id}_findbtn`, ribbon)) as HTMLButtonElement;
                 if (findBtn) {
@@ -72,9 +76,8 @@ export class FindAndReplace {
                 }
             }
         }
-        updateDisableState(true);
-        let dialogDiv: HTMLElement = this.parent.element.getElementsByClassName('e-findtool-dlg')[0] as HTMLElement;
-        if (args && !isNullOrUndefined(args.findValue)) {
+        let dialogDiv: HTMLElement = args.dialogEle || this.parent.element.getElementsByClassName('e-findtool-dlg')[0] as HTMLElement;
+        if (args.isPublic) {
             this.findValue = args.findValue;
         }
         const sheet: SheetModel = this.parent.getActiveSheet();
@@ -107,15 +110,26 @@ export class FindAndReplace {
             }
         };
         if (dialogDiv) {
-            if (args && args.isPublic) {
-                findTextInput = dialogDiv.querySelector('.e-text-findNext-short') as HTMLInputElement;
-                if (this.findValue) {
+            if (args.isPublic || args.refreshPosition) {
+                if (args.isPublic) {
+                    findTextInput = dialogDiv.querySelector('.e-text-findNext-short') as HTMLInputElement;
                     findTextInput.value = this.findValue;
+                    findSpan = dialogDiv.querySelector('.e-input-group-icon') as HTMLElement;
+                    toolbarObj = getComponent(dialogDiv.querySelector('.e-find-toolbar') as HTMLElement, 'toolbar') as Toolbar;
+                    findHandlerFn();
                 }
-                findSpan = dialogDiv.querySelector('.e-input-group-icon') as HTMLElement;
-                toolbarObj = getComponent(dialogDiv.querySelector('.e-find-toolbar') as HTMLElement, 'toolbar') as Toolbar;
-                findHandlerFn();
+                if (args.refreshPosition) {
+                    let headerHgt: number;
+                    if (this.parent.getActiveSheet().showHeaders) {
+                        const hdrPanel: HTMLElement = this.parent.getColumnHeaderContent().parentElement;
+                        headerHgt = ((hdrPanel && hdrPanel.offsetHeight) || 30) + 1;
+                    } else {
+                        headerHgt = 1;
+                    }
+                    dialogDiv.style.top = `${headerHgt}px`;
+                }
             } else {
+                updateDisableState(true);
                 this.findDialog.hide();
             }
         } else {
@@ -135,7 +149,7 @@ export class FindAndReplace {
                     if (timeoutHandler) {
                         clearTimeout(timeoutHandler);
                     }
-                    timeoutHandler = setTimeout(findHandlerFn.bind(e), 500);
+                    timeoutHandler = setTimeout(findHandlerFn.bind(this, e), 500);
                 } else {
                     findHandlerFn(e);
                 }
@@ -178,9 +192,9 @@ export class FindAndReplace {
             toolbarObj.appendTo(tbarEle);
             dialogDiv = this.parent.createElement(
                 'div', { className: 'e-dlg-div', attrs: { 'aria-label': l10n.getConstant('FindValue') } });
+            const sheetPanel: HTMLElement = this.parent.element.getElementsByClassName('e-sheet-panel')[0] as HTMLElement;
             this.findDialog = new FindDialog({
-                cssClass: 'e-findtool-dlg', content: tbarEle, visible: false, enableRtl: this.parent.enableRtl,
-                target: <HTMLElement>this.parent.element.getElementsByClassName('e-sheet')[0],
+                cssClass: 'e-findtool-dlg', content: tbarEle, visible: false, enableRtl: this.parent.enableRtl, target: sheetPanel,
                 open: (): void => {
                     EventHandler.add(document, 'click', this.closeDialog, this);
                     if (this.findValue && (!sheet.isProtected || sheet.protectSettings.selectCells ||
@@ -200,7 +214,7 @@ export class FindAndReplace {
                     if (inputContainer) {
                         inputContainer.addEventListener('focus', (): void => {
                             const textInput: HTMLInputElement = document.querySelector('.e-text-findNext-short');
-                            textInput.focus();
+                            focus(textInput);
                             textInput.classList.add('e-input-focus');
                             (textInput).setSelectionRange(0, textInput.value.length);
                         });
@@ -219,10 +233,12 @@ export class FindAndReplace {
                     this.findDialog.destroy();
                     this.findDialog = null;
                     detach(dialogDiv);
+                    sheetPanel.style.position = '';
                     focus(this.parent.element);
                     updateDisableState(false);
                 },
                 created: (): void => {
+                    sheetPanel.style.position = 'relative';
                     dialogDiv.style.width = this.parent.getMainContent().offsetWidth + 'px';
                     dialogDiv.style.visibility = 'hidden';
                     dialogDiv.style.display = 'block';
@@ -231,7 +247,8 @@ export class FindAndReplace {
                     dialogDiv.style.display = '';
                     dialogDiv.style.width = '';
                     dialogDiv.style.visibility = '';
-                    dialogDiv.style.top = `${this.parent.getColumnHeaderContent().parentElement.offsetHeight + 1}px`;
+                    dialogDiv.style.top =
+                        `${(args && args.headerHgt) || (this.parent.getColumnHeaderContent().parentElement.offsetHeight + 1)}px`;
                     dialogDiv.style.left = '';
                     dialogDiv.style[this.parent.enableRtl ? 'left' : 'right'] = `${this.parent.sheetModule.getScrollSize()}px`;
                     this.findDialog.show();
@@ -244,6 +261,14 @@ export class FindAndReplace {
                 this.findDialog.setProperties({ animationSettings: { effect: 'None' } }, true);
             }
             this.findDialog.appendTo(dialogDiv);
+        }
+    }
+
+    private refreshFindDlg(args: { refreshFindDlg?: boolean }): void {
+        const findDialog: HTMLElement = this.findDialog && this.parent.element.getElementsByClassName('e-findtool-dlg')[0] as HTMLElement;
+        if (findDialog) {
+            const findToolInput: HTMLInputElement = findDialog.querySelector('.e-text-findNext-short') as HTMLInputElement;
+            this.findToolDlg({ findValue: findToolInput.value, isPublic: true, refreshPosition: true, dialogEle: findDialog });
         }
     }
 
@@ -262,7 +287,7 @@ export class FindAndReplace {
     }
     private closeDialog(e: MouseEvent & TouchEvent): void {
         if ((closest(e.target as Element, '.e-findRib-close') || !closest(e.target as Element, '.e-spreadsheet')) && this.findDialog) {
-            this.findToolDlg();
+            this.findToolDlg({});
         }
     }
 
@@ -506,15 +531,15 @@ export class FindAndReplace {
         (this.parent.element.querySelector('.e-goto-dlg').querySelector('.e-dlg-content')).appendChild(gotoSpan);
     }
 
-    private showDialog(): void {
+    private showFindAlert(): void {
         if (this.parent.element.querySelector('.e-replace-alert-span')) {
             this.parent.element.querySelector('.e-replace-alert-span').remove();
         }
-        const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const findSpan: HTMLElement = this.parent.createElement('span', { className: 'e-find-alert-span' });
-        findSpan.innerText = l10n.getConstant('NoElements');
-        if (this.parent.element.querySelector('.e-find-dlg')) {
-            (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(findSpan);
+        const replaceDlgCont: HTMLElement = this.parent.element.querySelector('.e-find-dlg .e-dlg-content');
+        if (replaceDlgCont) {
+            const findSpan: HTMLElement = this.parent.createElement('span', { className: 'e-find-alert-span' });
+            findSpan.innerText = this.parent.serviceLocator.getService<L10n>(locale).getConstant('NoElements');
+            replaceDlgCont.appendChild(findSpan);
         }
     }
     private replaceAllDialog(options: { [key: string]: number | string }): void {

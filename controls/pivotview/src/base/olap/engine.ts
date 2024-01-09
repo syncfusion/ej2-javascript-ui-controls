@@ -218,12 +218,7 @@ export class OlapEngine {
             this.emptyCellTextContent = dataSourceSettings.emptyCellsTextContent ? dataSourceSettings.emptyCellsTextContent : '';
             this.pageSettings = customProperties ? (customProperties.pageSettings ?
                 customProperties.pageSettings : this.pageSettings) : undefined;
-            const measuresInfo: IMeasureInfo = this.getMeasureInfo();
             this.isPaging = this.pageSettings && (customProperties.enablePaging || customProperties.enableVirtualization) ? true : false;
-            this.olapVirtualization = this.isPaging && dataSourceSettings.showSubTotals && (measuresInfo.measureIndex === (
-                measuresInfo.measureAxis === 'column' ? dataSourceSettings.columns.length - 1 : dataSourceSettings.rows.length - 1
-            )) && !isNullOrUndefined(this.pageSettings) && dataSourceSettings.showGrandTotals;
-            this.isPaging = this.isPaging ? !this.olapVirtualization : this.isPaging;
             this.frameSortObject();
             this.getFormattedFields(this.formats);
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
@@ -237,6 +232,11 @@ export class OlapEngine {
                 this.updateFieldlist(true);
             }
             this.loadCalculatedMemberElements(this.calculatedFieldSettings);
+            const measuresInfo: IMeasureInfo = this.getMeasureInfo();
+            this.olapVirtualization = this.isPaging && dataSourceSettings.showSubTotals && (measuresInfo.measureIndex === (
+                measuresInfo.measureAxis === 'column' ? dataSourceSettings.columns.length - 1 : dataSourceSettings.rows.length - 1
+            )) && !isNullOrUndefined(this.pageSettings) && dataSourceSettings.showGrandTotals;
+            this.isPaging = this.isPaging ? !this.olapVirtualization : this.isPaging;
             this.measureReportItems = [];
             // this.updateAllMembers(dataSourceSettings, this.filters);
             this.updateFilterItems(this.filterSettings);

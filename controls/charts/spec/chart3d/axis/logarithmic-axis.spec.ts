@@ -191,7 +191,7 @@ describe('Chart Control', () => {
         it('Checking Xaxis label rotation', (done: Function) => {
             loaded = (args: Object): void => {
                 let label = document.getElementById('chartContainer-0-axis-label-0');
-                expect(label.getAttribute('transform')).toBe('rotate(45,60.385239567233384,379.7413170621421)');
+                expect(label.getAttribute('transform')).toBe('rotate(45,60.385239567233384,380.7814883375094)');
                 done();
             };
             chartObj.loaded = loaded;
@@ -201,7 +201,7 @@ describe('Chart Control', () => {
         it('Checking Yaxis label rotation', (done: Function) => {
             loaded = (args: Object): void => {
                 let label = document.getElementById('chartContainer-1-axis-label-0');
-                expect(label.getAttribute('transform')).toBe('rotate(45,60.52462913595727,359.3531684698609)');
+                expect(label.getAttribute('transform')).toBe('rotate(45,60.52462913595727,357.3918083462133)');
                 done();
             };
             chartObj.loaded = loaded;
@@ -212,7 +212,7 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let label = document.getElementById('chartContainer-2-axis-label-0');
                 expect(parseInt(label.getAttribute('x'))).toBe(754);
-                expect(parseInt(label.getAttribute('y'))).toBe(359);
+                expect(parseInt(label.getAttribute('y'))).toBe(357);
                 done();
             };
             chartObj.loaded = loaded;
@@ -227,7 +227,7 @@ describe('Chart Control', () => {
         it('checking minor gridlines', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 let tick: Element = document.getElementById('chartContainer-1-grid-lines-3');
-                expect(tick.getBoundingClientRect().top == 304.3954162597656 || tick.getBoundingClientRect().top == 194.7030487060547).toBe(true);
+                expect(tick.getBoundingClientRect().top == 304.3954162597656 || tick.getBoundingClientRect().top == 193.7574462890625).toBe(true);
                 done();
             };
             chartObj.primaryXAxis.minorTicksPerInterval = 1;

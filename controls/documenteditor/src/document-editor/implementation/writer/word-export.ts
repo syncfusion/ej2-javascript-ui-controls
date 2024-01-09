@@ -5034,7 +5034,7 @@ export class WordExport {
             writer.writeAttributeString('w', 'val', this.wNamespace, 'nil');
             writer.writeEndElement();
             return;
-        } else if (((borderStyle === (this.keywordIndex == 1 ? 1 : 'None') || isNullOrUndefined(borderStyle)) && !HelperMethods.parseBoolValue(border[hasNoneStyleProperty[this.keywordIndex]])) || (sz <= 0 && !HelperMethods.parseBoolValue(border[hasNoneStyleProperty[this.keywordIndex]]))) {
+        } else if (((borderStyle === (this.keywordIndex == 1 ? 1 : 'None') || isNullOrUndefined(borderStyle)) && !HelperMethods.parseBoolValue(border[hasNoneStyleProperty[this.keywordIndex]])) || (sz < 0 && !HelperMethods.parseBoolValue(border[hasNoneStyleProperty[this.keywordIndex]]))) {
             return;
         }
         writer.writeStartElement(undefined, tagName, this.wNamespace);

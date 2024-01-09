@@ -2135,6 +2135,9 @@ export class PdfViewerBase {
         proxy.focusField = [];
         proxy.updateDocumentEditedProperty(false);
         pdfViewer.clipboardData.clipObject = {};
+        if (pdfViewer.toolbar) {
+            pdfViewer.toolbar.uploadedFile = null;
+        }
         proxy.isTaggedPdf = false;
         if (pdfViewer.formDesignerModule) {
             pdfViewer.formDesignerModule.formFieldIndex = 0;
@@ -7139,7 +7142,7 @@ export class PdfViewerBase {
                         viewPortWidth = 1200;
                     }
                     if ((viewPortWidth >= pageWidth) || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
-                        if (this.renderThumbnailImages) {
+                        if (this.renderThumbnailImages && tileCount === 1) {
                             proxy.renderPage(data, pageIndex, imageSource)
                         } else {
                             proxy.renderPage(data, pageIndex);
@@ -7147,7 +7150,7 @@ export class PdfViewerBase {
                     } else {
                         proxy.isTileImageRendered = true;
                         proxy.tileRenderCount = 0;
-                        if (this.renderThumbnailImages) {
+                        if (this.renderThumbnailImages && tileCount === 1) {
                             proxy.renderPage(data, pageIndex, imageSource)
                         } else {
                             proxy.tileRenderPage(data, pageIndex);

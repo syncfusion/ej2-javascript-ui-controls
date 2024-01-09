@@ -595,7 +595,7 @@ export class Edit implements IAction {
     }
 
     private actionComplete(e: NotifyArgs): void {
-        const actions: string[] = ['add', 'beginEdit', 'save', 'delete', 'cancel', 'filterafteropen', 'filterchoicerequest'];
+        const actions: string[] = ['add', 'beginEdit', 'save', 'delete', 'cancel', 'filterAfterOpen', 'filterchoicerequest'];
         if (actions.indexOf(e.requestType) < 0) {
             this.parent.isEdit = false;
         }
@@ -730,7 +730,7 @@ export class Edit implements IAction {
                 && parseInt(parentsUntil(editRow, literals.row).getAttribute(literals.dataRowIndex), 10) < this.parent.frozenRows) {
                 return;
             }
-            const restrictedRequestTypes: string[] = ['filterafteropen', 'filterbeforeopen', 'filterchoicerequest', 'filtersearchbegin', 'save', 'infiniteScroll', 'virtualscroll'];
+            const restrictedRequestTypes: string[] = ['filterAfterOpen', 'filterBeforeOpen', 'filterchoicerequest', 'filterSearchBegin', 'save', 'infiniteScroll', 'virtualscroll'];
             const isRestrict: boolean = restrictedRequestTypes.indexOf(e.requestType) === -1;
             const isDestroyVirtualForm: boolean = this.parent.enableVirtualization && this.formObj
                 && !this.formObj.isDestroyed && (editRow || addRow || e.requestType === 'cancel') && isRestrict;

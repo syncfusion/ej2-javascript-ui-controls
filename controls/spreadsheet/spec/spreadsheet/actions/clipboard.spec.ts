@@ -1311,7 +1311,7 @@ describe('Clipboard ->', () => {
             });
         });
 
-        describe('EJ2-69857', () => {
+        describe('EJ2-69857, EJ-863473', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{
@@ -1332,7 +1332,24 @@ describe('Clipboard ->', () => {
                     helper.invoke('paste');
                     helper.invoke('addInvalidHighlight');
                     done()
-                })
-            })
-        })
+                });
+            });
+            it('When copying the reference cell of particular columns to the next column throws #REF error', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('goTo', ['AD1']);
+                setTimeout(() => {
+                    helper.edit('AF2', '0');
+                    helper.edit('AF3', '=AF2');
+                    helper.invoke('selectRange', ['AF3']);
+                    helper.invoke('copy').then(() => {
+                        helper.invoke('selectRange', ['AG3'])
+                        helper.invoke('paste');
+                        expect(spreadsheet.getCell(2, 32).textContent).toBe('0');
+                        expect(spreadsheet.sheets[0].rows[2].cells[32].formula).toBe('=AG2');
+                        expect(spreadsheet.sheets[0].rows[2].cells[32].value).toBe('0');
+                        done()
+                    });
+                });
+            });
+        });
 });

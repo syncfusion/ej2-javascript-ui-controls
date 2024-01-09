@@ -208,9 +208,6 @@ export function isValidCellReference(value: string): boolean {
     const text: string = value;
     const startNum: number = 0;
     let endNum: number = 0;
-    let j: number = 0;
-    const numArr: number[] = [89, 71, 69];
-    // XFD is the last column, for that we are using ascii values of Z, G, E (89, 71, 69) to restrict the flow.
     let cellText: string = '';
     const textLength: number = text.length;
     for (let i: number = 0; i < textLength; i++) {
@@ -223,15 +220,10 @@ export function isValidCellReference(value: string): boolean {
     if (cellTextLength !== textLength) {
         if (cellTextLength < 4) {
             if (textLength !== 1 && (isNaN(parseInt(text, 10)))) {
-                while (j < cellTextLength) {
-                    if ((cellText[j as number]) && cellText[j as number].charCodeAt(0) < numArr[j as number]) {
-                        j++;
-                        continue;
-                    } else if (!cellText[j as number] && j > 0) {
-                        break;
-                    } else {
-                        return false;
-                    }
+                const cellColIndex: number = columnIndex(cellText);
+                // XFD is the last column, 16384 - Maximum number of columns in excel.
+                if (cellColIndex > 16384) {
+                    return false;
                 }
                 const cellNumber: number = parseFloat(text.substring(endNum, textLength));
                 if (cellNumber > 0 && cellNumber < 1048577) { // 1048576 - Maximum number of rows in excel.
@@ -241,6 +233,35 @@ export function isValidCellReference(value: string): boolean {
         }
     }
     return false;
+}
+
+/**
+ * To get the column index of the given cell.
+ *
+ * @param {string} cell - Cell address for getting column index.
+ * @returns {number} - To get the column index of the given cell.
+ * @hidden
+ */
+export function columnIndex(cell: string): number {
+    let j: number = 0;
+    let k: number = 0;
+    cell = cell.toUpperCase();
+    if (j < cell.length && cell[j as number] === '!') {
+        j++;
+        while (j < cell.length && cell[j as number] !== '!') {
+            j++;
+        }
+        j++;
+    }
+    while (j < cell.length && isChar(cell[j as number])) {
+        const charCode: number = cell[j as number].charCodeAt(0);
+        k = k * 26 + charCode - 64;
+        j++;
+    }
+    if (k === 0) {
+        return -1;
+    }
+    return k;
 }
 
 /**

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.45 (2024-01-09)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "Image alignment while cancelling contextual toolbar" has been resolved.
+
 ## 24.1.44 (2024-01-03)
 
 ### Image Editor

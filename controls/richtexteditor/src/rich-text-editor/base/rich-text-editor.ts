@@ -3630,6 +3630,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         EventHandler.add(this.inputElement, 'keyup', this.keyUp, this);
         EventHandler.add(this.inputElement, 'paste', this.onPaste, this);
+        EventHandler.add(this.inputElement, 'content-changed', this.contentChanged, this);
         EventHandler.add(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30), this);
         EventHandler.add(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler, this);
         this.wireContextEvent();
@@ -3696,6 +3697,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         EventHandler.remove(this.inputElement, 'keyup', this.keyUp);
         EventHandler.remove(this.inputElement, 'paste', this.onPaste);
+        EventHandler.remove(this.inputElement, 'content-changed', this.contentChanged);
         EventHandler.remove(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30));
         EventHandler.remove(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler);
         this.unWireContextEvent();

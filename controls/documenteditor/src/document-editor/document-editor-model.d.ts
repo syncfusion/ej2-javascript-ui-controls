@@ -11,7 +11,7 @@ export interface DocumentEditorSettingsModel {
      *
      * @returns {HTMLElement}
      * @aspType HTMLElement
-     * @default document.body
+     * @default null
      */
     popupTarget?: HTMLElement;
 

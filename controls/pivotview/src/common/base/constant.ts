@@ -384,7 +384,7 @@ export const grandTotalsShown: string = 'Grand totals shown';
 /** @hidden */
 export const valueSorted: string = 'Value sorted';
 /** @hidden */
-export const calculatedFieldEdited: string = 'Calculated field edited';
+export const calculatedFieldEdited: string = 'Calculated field edited';
 /** @hidden */
 export const fieldSorted: string = 'Field sorted';
 /** @hidden */

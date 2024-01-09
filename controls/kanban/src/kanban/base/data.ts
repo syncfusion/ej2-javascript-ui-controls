@@ -228,8 +228,9 @@ export class Data {
             });
         }
         if (this.initload) {
-            this.parent.layoutModule.refresh();
             this.parent.resetTemplates();
+            this.parent.layoutModule.refreshHeaders();
+            this.parent.renderTemplates();
         }
         this.initload = true;
     }

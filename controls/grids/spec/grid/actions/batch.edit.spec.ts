@@ -5043,7 +5043,7 @@ describe('Code Coverage - renderer, react batch edit, number-filter-ui and numer
 
     it('for coverage - 2', (done: Function) => {
         let actionComplete = (args?: any): void => {
-            if (args.requestType === 'filterafteropen') {
+            if (args.requestType === 'filterAfterOpen') {
                 expect((gObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
                 let instances: string = 'ej2_instances';
                 let numberuiObj: any = document.querySelector('#numberui-' + gObj.getColumns()[4].uid)[instances][0];

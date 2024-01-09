@@ -4724,10 +4724,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 }
                 const ele: HTMLElement = this.isAdaptive ? mCnt : (gridContentDiv.querySelector('.' + cls.VIRTUALTABLE_DIV) ?
                     gridContentDiv.querySelector('.' + cls.VIRTUALTABLE_DIV) : mCnt);
-                const verOffset: string = (mCnt.parentElement.scrollTop > this.scrollerBrowserLimit) ?
+                let verOffset: string = (mCnt.parentElement.scrollTop > this.scrollerBrowserLimit) ?
                     (mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[1].trim() :
                     -(((mCnt.parentElement.scrollTop * this.verticalScrollScale) -
                         this.scrollPosObject.verticalSection - mCnt.parentElement.scrollTop)) + 'px)';
+                if (Number(verOffset.split('px')[0]) > this.virtualDiv.clientHeight) {
+                    verOffset = this.virtualDiv.clientHeight + 'px)';
+                }
                 const eleScrollLeft: number = Math.abs(ele.scrollLeft);
                 let horiOffset: string = (eleScrollLeft > this.scrollerBrowserLimit) ?
                     ((mCnt.querySelector('.' + cls.TABLE) as HTMLElement).style.transform.split(',')[0].trim() + ',') :
@@ -4763,11 +4766,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         newScrollWidth = (vWidth + (gridContentDiv.offsetWidth - gridContentDiv.clientWidth));
                     }
                     if (this.grid.height !== 'auto') {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (this.grid.element.querySelector('.' + cls.VIRTUALSCROLL_DIV) as any).style.width = newScrollWidth + horiScrollHeight + 'px';
+                        (this.grid.element.querySelector('.' + cls.VIRTUALSCROLL_DIV) as HTMLElement).style.width = newScrollWidth + horiScrollHeight + 'px';
+                        if (this.grid.element.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV)) {
+                            if (mCnt.parentElement.scrollHeight !== mCnt.scrollHeight) {
+                                mCnt.style.overflowY = 'hidden';
+                            } else {
+                                mCnt.style.overflowY = '';
+                            }
+                        }
                     } else {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        (this.grid.element.querySelector('.' + cls.VIRTUALSCROLL_DIV) as any).style.width = newScrollWidth + 'px';
+                        (this.grid.element.querySelector('.' + cls.VIRTUALSCROLL_DIV) as HTMLElement).style.width = newScrollWidth + 'px';
                     }
                 }
                 const colValues: number = this.dataType === 'pivot' ? (this.dataSourceSettings.valueAxis === 'column' ? this.dataSourceSettings.values.length : 1) : 1;
@@ -5521,7 +5529,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 if (this.showGroupingBar && this.groupingBarModule && this.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
                     this.groupingBarModule.setGridRowWidth();
                 }
-                if (this.chart || this.pivotChartModule) {
+                if (this.chart && this.pivotChartModule) {
                     this.chart.height = this.pivotChartModule.getResizedChartHeight();
                 }
             }

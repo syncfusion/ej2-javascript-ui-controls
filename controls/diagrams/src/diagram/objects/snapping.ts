@@ -75,11 +75,11 @@ export class Snapping {
      */
     public snapPoint(
         diagram: Diagram, selectedObject: SelectorModel, towardsLeft: boolean, towardsTop: boolean, delta: PointModel,
-        startPoint: PointModel, endPoint: PointModel): PointModel {
+        startPoint: PointModel, endPoint: PointModel,dragWrapper?:Container): PointModel {
         const snapSettings: SnapSettingsModel = this.diagram.snapSettings;
         const zoomFactor: number = this.diagram.scroller.currentZoom;
         const offset: PointModel = { x: 0, y: 0 };
-        const wrapper: Container = this.getWrapperObject(selectedObject, diagram.nameTable);
+        const wrapper: Container = dragWrapper ? dragWrapper : this.getWrapperObject(selectedObject, diagram.nameTable);
         const bounds: Rect = getBounds(wrapper);
         const horizontallysnapped: Snap = { snapped: false, offset: 0 };
         const verticallysnapped: Snap = { snapped: false, offset: 0 };

@@ -21,6 +21,7 @@ import { cloneObject } from '../drawing/drawing-util';
  * The `FormDesigner` module is used to handle form designer actions of PDF viewer.
  */
 export class FormDesigner {
+    private formFieldTooltips: any = [];
     // eslint-disable-next-line
     private data: any;
     // eslint-disable-next-line
@@ -5797,6 +5798,7 @@ export class FormDesigner {
         // render initialized tooltip
         tooltip.appendTo(targetElement);
         tooltip.beforeOpen = this.tooltipBeforeOpen.bind(this);
+        this.formFieldTooltips.push(tooltip);
     }
     private tooltipBeforeOpen(args: any) {
          // eslint-disable-next-line max-len
@@ -6596,6 +6598,53 @@ export class FormDesigner {
         this.formFieldPrinting = null;
         this.formFieldMultiline = null;
         this.formFieldVisibility = null;
+        if (this.strokeColorPicker) {
+            this.strokeColorPicker.destroy();
+            this.strokeColorPicker = null;
+        }
+        if (this.strokeDropDown) {
+            this.strokeDropDown.destroy();
+            this.strokeDropDown = null;
+        }
+        if (this.strokeDropDownElement) {
+            this.strokeDropDownElement = null;
+        }
+        if (this.colorDropDownElement) {
+            this.colorDropDownElement = null;
+        }
+        if (this.colorPalette) {
+            this.colorPalette.destroy();
+            this.colorPalette = null;
+        }
+        if (this.colorDropDown) {
+            this.colorDropDown.destroy();
+            this.colorDropDown = null;
+        }
+        if (this.thicknessElement) {
+            this.thicknessElement = null;
+        }
+        if (this.thicknessDropDown) {
+            this.thicknessDropDown.destroy();
+            this.thicknessDropDown = null;
+        }
+        if (this.fontColorDropDown) {
+            this.fontColorDropDown.destroy();
+            this.fontColorDropDown = null;
+        }
+        if (this.fontColorPalette) {
+            this.fontColorPalette.destroy();
+            this.fontColorPalette = null;
+        }
+        if (this.maxLengthItem) {
+            this.maxLengthItem.destroy();
+            this.maxLengthItem = null;
+        }
+        if (this.formFieldTooltips != null) {
+            for (let i: number = 0; i < this.formFieldTooltips.length; i++) {
+                this.formFieldTooltips[i].destroy();
+            }
+            this.formFieldTooltips = [];
+        }
         const dialogElement: HTMLElement = this.pdfViewerBase.getElement('_properties_window');
         if (dialogElement) {
             dialogElement.parentElement.removeChild(dialogElement);

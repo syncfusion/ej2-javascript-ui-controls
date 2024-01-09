@@ -3231,4 +3231,39 @@ describe('RTE CR issues', () => {
             expect((document.querySelectorAll('.e-content li')[2] as HTMLElement).style.fontFamily === 'Impact, Charcoal, sans-serif').toBe(true);
         });
     });
+    describe("863459 - Applying different text styles format out of focus Leads to Issues in RichTextEditor.", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let toolbarEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    enable: true,
+                    enableFloating: false,
+                    items: [
+                        "Bold",
+                        "Italic",
+                        "Underline",
+                    ]
+                },
+                value: "<p>Rich Text Editor</p>"
+            });
+            rteEle = rteObj.element;
+            toolbarEle = document.createElement('div');
+            toolbarEle.className = 'e-rte-test-elements';
+            toolbarEle.innerHTML = '<div>Rich Text Editor</div>';
+            document.body.appendChild(toolbarEle);
+        });
+        afterEach(() => {
+            destroy(rteObj);
+            detach(toolbarEle);
+        });
+        it("Focus leads to a console error in the Rich Text Editor.", () => {
+            (document.querySelector(".e-rte-test-elements div") as any).click();
+            (rteObj.element.querySelectorAll(".e-rte-toolbar .e-toolbar-item button")[0] as any).click();
+            (document.querySelector(".e-rte-test-elements div") as any).click();
+            (rteObj.element.querySelectorAll(".e-rte-toolbar .e-toolbar-item button")[1] as any).click();
+            expect(rteObj.inputElement.innerHTML == '<p><strong>​<em>​</em></strong>Rich Text Editor</p>').toBe(true);
+        });
+    });
 });

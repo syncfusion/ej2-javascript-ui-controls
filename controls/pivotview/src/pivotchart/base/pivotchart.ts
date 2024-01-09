@@ -169,6 +169,10 @@ export class PivotChart {
                     }
                 }
             }
+            if (this.parent.enableVirtualization && this.parent.isInitial) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (this.parent as any).onContentReady();
+            }
             this.parent.notify(events.contentReady, {});
             return;
         }

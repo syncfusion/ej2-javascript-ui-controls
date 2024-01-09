@@ -2164,8 +2164,6 @@ export class Transform {
             parent.notify('toolbar', { prop: 'performCropTransformClick', value: {shape: null }});
         }
         parent.setStraighten(degree, true);
-        if ((isBlazor() && parent.events && parent.events.straightening.hasDelegate === false) || !isBlazor()) {
-            parent.okBtn();
-        }
+        parent.okBtn();
     }
 }

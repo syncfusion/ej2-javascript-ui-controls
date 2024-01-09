@@ -5982,7 +5982,7 @@ Remove terinal segment in initial
     /**
      * @private
      */
-    public snapPoint(startPoint: PointModel, endPoint: PointModel, tx: number, ty: number): PointModel {
+    public snapPoint(startPoint: PointModel, endPoint: PointModel, tx: number, ty: number, dragWrapper?:Container): PointModel {
         const obj: SelectorModel = this.diagram.selectedItems;
         let point: PointModel;
         const towardsLeft: boolean = endPoint.x < startPoint.x;
@@ -5991,7 +5991,7 @@ Remove terinal segment in initial
         let snappedPoint: PointModel = point;
         if (this.snappingModule) {
             snappedPoint = this.diagram.snappingModule.snapPoint(
-                this.diagram, obj, towardsLeft, towardsTop, point, startPoint, endPoint);
+                this.diagram, obj, towardsLeft, towardsTop, point, startPoint, endPoint,dragWrapper);
         }
         return snappedPoint;
     }

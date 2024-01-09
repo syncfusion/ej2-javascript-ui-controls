@@ -2362,10 +2362,18 @@ export class Draw {
             if (!isBlazor()) {
                 parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
                 parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: eventargs});
+                if (parent.activeObj.shape && parent.activeObj.shape === 'image') {
+                    parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
+                }
             } else {
                 parent.updateToolbar(parent.element, 'imageLoaded');
+                if (parent.activeObj.shape && parent.activeObj.shape === 'image') {
+                    parent.updateToolbar(parent.element, 'destroyQuickAccessToolbar');
+                }
             }
             parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'cancel' }});
+            parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
+            this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
         } else {
             if (isContextualToolbar && (!Browser.isDevice || (Browser.isDevice && !straightenObj['bool']))) {
                 const eventargs: object = { type: 'main', isApplyBtn: null, isCropping: null, isZooming: null};
@@ -3609,9 +3617,9 @@ export class Draw {
                         }
                     }
                 }
-                const panX: number = (parent.lowerCanvas.clientWidth / 2) - Math.floor(currObj.activePoint.startX +
+                const panX: number = (parent.lowerCanvas.clientWidth / 2) - (currObj.activePoint.startX +
                     (currObj.activePoint.width / 2));
-                const panY: number = (parent.lowerCanvas.clientHeight / 2) - Math.floor(currObj.activePoint.startY +
+                const panY: number = ((parent.lowerCanvas.clientHeight + 1) / 2) - (currObj.activePoint.startY +
                     (currObj.activePoint.height / 2));
                 if (isNullOrUndefined(parent.activeObj.shape)) {
                     parent.activeObj = extend({}, activeObj, {}, true) as SelectionPoint;

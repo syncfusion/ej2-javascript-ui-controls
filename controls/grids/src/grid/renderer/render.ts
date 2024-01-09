@@ -127,8 +127,8 @@ export class Render {
                 }
                 return;
             }
-            if (gObj.allowSelection && (args.action === 'clearFilter' || (args.requestType === 'searching' && args.searchString === '') ||
-                args.action === 'add')) {
+            if (gObj.allowSelection && (args.action === 'clearFilter' || args.action === 'clear-filter' ||
+                (args.requestType === 'searching' && args.searchString === '') || args.action === 'add')) {
                 gObj.selectionModule['rmtHdrChkbxClicked'] = false;
             }
             if (gObj.allowPaging && gObj.pageSettings.pageSizes && gObj.pagerModule.pagerObj.isAllPage &&

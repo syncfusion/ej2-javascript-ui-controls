@@ -3806,7 +3806,8 @@ export class Editor {
             prevParagraph = selection.getPreviousParagraphBlock(prevParagraph) as ParagraphWidget;
         }
         if (isList) {
-            let listNumber: string = this.documentHelper.layout.getListNumber(prevParagraph.paragraphFormat.listFormat, true);
+            // TODO: Only first list level handled here, we need to handle for all listlevels
+            let listNumber: string = this.documentHelper.layout.getListNumber(prevParagraph.paragraphFormat.listFormat, true, 0);
             let prevListText: string = listNumber.substring(0, listNumber.length - 1);
             let currentListText: string = text.substring(0, text.length - 1);
             //check if numberFormat equal
@@ -15847,7 +15848,7 @@ export class Editor {
        
         if (offset === selection.getStartOffset(paragraph) && selection.start.currentWidget.isFirstLine()) {
             if (paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listId !== -1) {
-                this.onApplyList(undefined);
+                this.onApplyListInternal(this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId), paragraph.paragraphFormat.listFormat.listLevelNumber - 1);
                 return;
             }
             if (paragraph.paragraphFormat.firstLineIndent !== 0) {

@@ -61,7 +61,7 @@ export class Logarithmic3D extends Double3D {
             return (item.type.indexOf('Column') !== -1 || item.type.indexOf('Bar') !== -1);
         });
         if (isRectSeries) {
-            this.min = (this.min < 0) ? (+this.min - 1) : this.min;
+            this.min = (this.min <= 0) ? (+this.min - 1) : this.min;
         }
         this.max = Math.ceil(logEnd / 1);
         this.max = this.max === this.min ? <number>this.max + 1 : this.max;

@@ -456,7 +456,7 @@ export class ToolbarModule {
             this.createLeftToolbarControls();
             const mToolbar: HTMLElement = document.getElementById(id + '_toolbar');
             if (toolbar) {
-                this.toolbarHeight = mToolbar.scrollHeight;
+                this.toolbarHeight = mToolbar.clientHeight;
             }
         } else {
             this.toolbarHeight = 0;
@@ -749,9 +749,9 @@ export class ToolbarModule {
         }
         if (!isBlazor()) {
             if (parent.toolbarTemplate) {
-                this.toolbarHeight = (parent.element.querySelector('#' + parent.element.id + '_toolbarArea') as HTMLElement).offsetHeight;
+                this.toolbarHeight = (parent.element.querySelector('#' + parent.element.id + '_toolbarArea') as HTMLElement).clientHeight;
             } else if (parent.element.querySelector('#' + parent.element.id + '_toolbar')) {
-                this.toolbarHeight = (parent.element.querySelector('#' + parent.element.id + '_toolbar') as HTMLElement).offsetHeight;
+                this.toolbarHeight = (parent.element.querySelector('#' + parent.element.id + '_toolbar') as HTMLElement).clientHeight;
             }
             parent.toolbarHeight = this.toolbarHeight;
         }
@@ -762,7 +762,7 @@ export class ToolbarModule {
                 cHt = cusWrapper.offsetHeight + 2;
             }
             const ht: number = (parent.element.querySelector('#' + id + '_canvasWrapper') as HTMLElement).offsetHeight;
-            (contextualToolbarArea as HTMLElement).style.top = this.toolbarHeight + ht - cHt + 'px';
+            (contextualToolbarArea as HTMLElement).style.top = this.toolbarHeight + 1 + ht - cHt + 'px';
             if (cType === 'straighten') {
                 parent.isStraightening = true;
                 const ctxToolbar: HTMLElement = parent.element.querySelector('#' + id + '_contextualToolbarArea') as HTMLElement;
@@ -778,7 +778,7 @@ export class ToolbarModule {
                 }
             }
         } else {
-            (contextualToolbarArea as HTMLElement).style.top = this.toolbarHeight + 'px';
+            (contextualToolbarArea as HTMLElement).style.top = this.toolbarHeight + 1 + 'px';
         }
     }
 
@@ -1546,8 +1546,8 @@ export class ToolbarModule {
         }
         const slider: HTMLElement = parent.element.querySelector('#' + id + '_straightenSlider');
         if ((isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Straightening') > -1))
-        && slider && slider.parentElement.scrollHeight > this.toolbarHeight) {
-            this.toolbarHeight = parent.toolbarHeight = slider.parentElement.scrollHeight;
+        && slider && slider.parentElement.clientHeight > this.toolbarHeight) {
+            this.toolbarHeight = parent.toolbarHeight = slider.parentElement.clientHeight;
         }
         this.enableDisableTbrBtn();
         parent.notify('transform', { prop: 'disableZoomOutBtn', value: {isZoomOut: true }});
@@ -3487,6 +3487,9 @@ export class ToolbarModule {
                     qtArea.style.top = point.startY - (height + (height / 1.5)) + 'px';
                 }
             }
+            if (parseFloat(qtArea.style.top) < 0) {
+                qtArea.style.top = '0px';
+            }
         }
     }
 
@@ -4278,19 +4281,22 @@ export class ToolbarModule {
         if (type === 'transparency') {
             labelWrapper = hdrWrapper.appendChild(parent.createElement('label', {
                 id: id + '_labelWrapper',
-                styles: Browser.isDevice ? 'position: absolute; top: 25%; left: calc(50% - 150px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
-                    : 'position: absolute; top: 25%; left: calc(50% - 250px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+                className: 'e-ie-finetune-slider-label',
+                styles: Browser.isDevice ? 'position: absolute; top: 31%; left: calc(50% - 150px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
+                    : 'position: absolute; top: 31%; left: calc(50% - 220px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
             }));
         } else {
             labelWrapper = hdrWrapper.appendChild(parent.createElement('label', {
                 id: id + '_labelWrapper',
-                styles: Browser.isDevice ? ('position: absolute; top: 25%; left: calc(50% - 150px); font-size: 15px; text-transform: capitalize; font-weight: 400;')
+                className: 'e-ie-finetune-slider-label',
+                styles: Browser.isDevice ? ('position: absolute; top: 31%; left: calc(50% - 160px); font-size: 15px; text-transform: capitalize; font-weight: 400;')
                     : 'position: absolute; top: 25%; left: calc(50% - 226px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
             }));
         }
         labelWrapper.textContent = this.l10n.getConstant(parent.toPascalCase(type === 'transparency' ? 'opacity' : type));
         const sliderWrapper: HTMLElement = hdrWrapper.appendChild(parent.createElement('div', {
             id: id + '_sliderWrapper',
+            className: 'e-ie-finetune-slider-wrap',
             styles: 'position: absolute'
         }));
         let value: number = parent.getCurrAdjustmentValue(type);
@@ -4344,8 +4350,8 @@ export class ToolbarModule {
         if (type === 'straighten' && Browser.isDevice) {
             const sLabelWrapper: HTMLElement = hdrWrapper.appendChild(parent.createElement('label', {
                 id: id + '_sLabelWrapper',
-                className: 'e-ie-straighten-value-span',
-                styles: 'position: absolute; top: 25%; margin-left: 20px; font-size: 15px; text-transform: capitalize; font-weight: 400;'
+                className: 'e-ie-straighten-value-span e-ie-finetune-value-span',
+                styles: 'position: absolute; top: 31%; margin-left: 20px; font-size: 15px; text-transform: capitalize; font-weight: 400;'
             }));
             sLabelWrapper.innerHTML = parent.transform.straighten.toString() + '&#176';
             sliderWrapper.parentElement.classList.add('e-straighten-slider');
@@ -4358,6 +4364,9 @@ export class ToolbarModule {
                     'position: absolute; top: 25%; left: calc(50% + 190px); font-size: 15px; text-transform: capitalize; font-weight: 400;'
             }));
             sliderWrapper.parentElement.classList.add('e-finetune-slider');
+            if (type === 'transparency' && Browser.isDevice) {
+                sliderWrapper.parentElement.classList.add('e-ie-device-transparency-slider');
+            }
             this.updateFinetuneSpan(type);
         }
     }

@@ -244,40 +244,42 @@ export class CanvasRenderer {
                 let position: PointModel = this.labelAlign(options, wrapBounds, childNodes);
                 for (i = 0; i < childNodes.length; i++) {
                     let child: SubTextElement = childNodes[parseInt(i.toString(), 10)];
-                    let offsetX: number = position.x + child.x - wrapBounds.x;
-                    let offsetY: number = position.y + child.dy * i + ((options.fontSize) * 0.8);
-                    // if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
-                    //     child.text = overFlow(child.text, options);
-                    // }
-                    ctx.fillText(child.text, offsetX, offsetY);
-                    if (options.textDecoration === 'Underline'
-                        || options.textDecoration === 'Overline'
-                        || options.textDecoration === 'LineThrough') {
-                        let startPointX: number = offsetX;
-                        let startPointY: number;
-                        let textlength: number = ctx.measureText(child.text).width;
-                        let endPointX: number = offsetX + textlength;
-                        let endPointY: number;
-                        switch (options.textDecoration) {
-                            case 'Underline':
-                                startPointY = offsetY + 2;
-                                endPointY = offsetY + 2;
-                                break;
-                            case 'Overline':
-                                startPointY = (position.y + child.dy * i);
-                                endPointY = (position.y + child.dy * i);
-                                break;
-                            case 'LineThrough':
-                                startPointY = ((offsetY + position.y + child.dy * i) / 2) + 2;
-                                endPointY = ((offsetY + position.y + child.dy * i) / 2) + 2;
+                    if(child.text !== '\n') {
+                        let offsetX: number = position.x + child.x - wrapBounds.x;
+                        let offsetY: number = position.y + child.dy * i + ((options.fontSize) * 0.8);
+                        // if (wrapBounds.width > options.width && options.textOverflow !== 'Wrap') {
+                        //     child.text = overFlow(child.text, options);
+                        // }
+                        ctx.fillText(child.text, offsetX, offsetY);
+                        if (options.textDecoration === 'Underline'
+                            || options.textDecoration === 'Overline'
+                            || options.textDecoration === 'LineThrough') {
+                            let startPointX: number = offsetX;
+                            let startPointY: number;
+                            let textlength: number = ctx.measureText(child.text).width;
+                            let endPointX: number = offsetX + textlength;
+                            let endPointY: number;
+                            switch (options.textDecoration) {
+                                case 'Underline':
+                                    startPointY = offsetY + 2;
+                                    endPointY = offsetY + 2;
+                                    break;
+                                case 'Overline':
+                                    startPointY = (position.y + child.dy * i);
+                                    endPointY = (position.y + child.dy * i);
+                                    break;
+                                case 'LineThrough':
+                                    startPointY = ((offsetY + position.y + child.dy * i) / 2) + 2;
+                                    endPointY = ((offsetY + position.y + child.dy * i) / 2) + 2;
+                            }
+                            ctx.beginPath();
+                            ctx.moveTo(startPointX, startPointY);
+                            ctx.lineTo(endPointX, endPointY);
+                            ctx.strokeStyle = options.color;
+                            ctx.lineWidth = options.fontSize * .08;
+                            ctx.globalAlpha = options.opacity;
+                            ctx.stroke();
                         }
-                        ctx.beginPath();
-                        ctx.moveTo(startPointX, startPointY);
-                        ctx.lineTo(endPointX, endPointY);
-                        ctx.strokeStyle = options.color;
-                        ctx.lineWidth = options.fontSize * .08;
-                        ctx.globalAlpha = options.opacity;
-                        ctx.stroke();
                     }
                 }
             }

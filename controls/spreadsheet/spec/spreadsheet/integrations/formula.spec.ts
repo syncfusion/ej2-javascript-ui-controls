@@ -11650,6 +11650,26 @@ describe('Spreadsheet formula module ->', () => {
                 });
             });
         });
+        describe('EJ2-863643 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{
+                        ranges: [{ dataSource: defaultData }],
+                        rows: [
+                            { cells: [{ index: 8, value: 'Loafers' }] }, { cells: [{ index: 8, value: '250' }] },
+                            { cells: [{ index: 8, value: '255' }] }, { cells: [{ index: 8, value: '-1000' }] }]
+                    }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Formula return wrong result for negative sign referred with negative cell address value without using brackets', (done: Function) => {
+                helper.edit('J1', '=IF(A9=I1,-I4*(I3-I2),0)');
+                expect(helper.invoke('getCell', [0, 9]).textContent).toBe('5000');
+                done();
+            });
+        });
     });
     describe('Stability ->', () => {
         describe('SUM Formula', () => {

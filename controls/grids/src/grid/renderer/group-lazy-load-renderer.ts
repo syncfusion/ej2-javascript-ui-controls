@@ -58,7 +58,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
     private objIdxByUid: { [x: number]: Row<Column>[] } = {};
     private initialGroupCaptions: { [x: number]: Row<Column>[] } = {};
     private requestType: string[] = ['paging', 'columnstate', 'reorder', 'cancel', 'save', 'beginEdit', 'add', 'delete',
-        'filterbeforeopen', 'filterchoicerequest', 'infiniteScroll', 'virtualscroll'];
+        'filterBeforeOpen', 'filterchoicerequest', 'infiniteScroll', 'virtualscroll'];
     private scrollTopCache: number|undefined = undefined;
 
     /** @hidden */

@@ -124,16 +124,18 @@ export class CellRenderer implements ICellRenderer {
 
     private update(args: CellRenderArgs): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const compiledTemplate: string | Element[] = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
         // In SF-425413 ticket, we suggested to add the template property in the cell model to render the template using updateCell method.
-        if (compiledTemplate && (!args.isRefresh || (args.cell && (args.cell as ExtendedCellModel).template))) {
-            if (typeof compiledTemplate === 'string') {
-                args.td.innerHTML = compiledTemplate;
-            } else {
-                removeAllChildren(args.td);
-                append(compiledTemplate, args.td);
+        if (!args.isRefresh || (args.cell && (args.cell as ExtendedCellModel).template)) {
+            const compiledTemplate: string | Element[] = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
+            if (compiledTemplate) {
+                if (typeof compiledTemplate === 'string') {
+                    args.td.innerHTML = compiledTemplate;
+                } else {
+                    removeAllChildren(args.td);
+                    append(compiledTemplate, args.td);
+                }
+                args.td.classList.add('e-cell-template');
             }
-            args.td.classList.add('e-cell-template');
         }
         if (args.isRefresh) {
             if (args.td.rowSpan) {

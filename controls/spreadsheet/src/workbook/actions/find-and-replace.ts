@@ -1,6 +1,6 @@
 import { Workbook, SheetModel, RowModel, CellModel, getCell, getSheet, isHiddenRow, isHiddenCol, getColumn } from '../base/index';
 import { getCellIndexes, FindOptions, getCellAddress, find, count, getRangeIndexes, getSheetIndexFromAddress } from '../common/index';
-import { goto, replace, replaceAll, showDialog, replaceAllDialog, ReplaceAllEventArgs, ExtendedRowModel, FindArgs } from '../common/index';
+import { goto, replace, replaceAll, showFindAlert, replaceAllDialog, ReplaceAllEventArgs, ExtendedRowModel, FindArgs } from '../common/index';
 import { isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { findAllValues, FindAllArgs, workBookeditAlert, BeforeReplaceEventArgs, updateCell, beginAction } from '../common/index';
 import { isLocked, findToolDlg } from '../common/index';
@@ -101,13 +101,18 @@ export class WorkbookFindAndReplace {
             findArgs.sheets = [sheet];
             findArgs.sheetIdx = 0;
         }
+        let headerHgt: number;
+        const hdrPanel: HTMLElement = args.showDialog && this.parent.element && this.parent.element.querySelector('.e-header-panel');
+        if (hdrPanel) {
+            headerHgt = (hdrPanel.offsetHeight || (sheet.showHeaders ? 30 : 0)) + 1;
+        }
         if (args.findOpt === 'next') {
             this.findNext(args, findArgs);
         } else {
             this.findPrevious(args, findArgs);
         }
         if (args.showDialog) {
-            this.parent.notify(findToolDlg, { findValue: args.value, isPublic: true });
+            this.parent.notify(findToolDlg, { findValue: args.value, isPublic: true, headerHgt: headerHgt });
         }
     }
     private findNext(args: FindOptions, findArgs: FindArgs): void {
@@ -132,15 +137,14 @@ export class WorkbookFindAndReplace {
             }
             return cellAddr;
         };
-        let cellAddr: string;
-        cellAddr = findOnSheet(findArgs.sheetIdx, findArgs.sheets.length - 1, true);
+        let cellAddr: string = findOnSheet(findArgs.sheetIdx, findArgs.sheets.length - 1, true);
         if (!cellAddr) {
             cellAddr = findOnSheet(0, findArgs.sheetIdx);
         }
         if (cellAddr) {
             this.parent.notify(goto, { address: cellAddr });
         } else {
-            this.parent.notify(showDialog, null);
+            this.parent.notify(showFindAlert, null);
         }
     }
     private findNextOnSheet(
@@ -225,7 +229,7 @@ export class WorkbookFindAndReplace {
         if (cellAddr) {
             this.parent.notify(goto, { address: cellAddr });
         } else {
-            this.parent.notify(showDialog, null);
+            this.parent.notify(showFindAlert, null);
         }
     }
     private findPrevOnSheet(

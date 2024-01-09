@@ -325,7 +325,6 @@ export class AxisRenderer {
                 let x1: number = 0;
                 let y1: number = 0;
                 let pointX: number;
-                let previousVisibleLabel: number;
                 axis.visibleLabels[i as number].originalText = axis.visibleLabels[i as number].text as string;
                 let textAnchor: string;
 
@@ -394,24 +393,26 @@ export class AxisRenderer {
                             y1 = axis.visibleLabels[i as number].index ?
                                 y1 + axis.visibleLabels[i as number].index * (textSize.height + 5) : y1;
                         } else if (axis.labelIntersectAction === 'Hide') {
-                            previousVisibleLabel = previousVisibleLabel ? previousVisibleLabel : 0;
-                            if (i !== 0) {
-                                if (labels[previousVisibleLabel as number].x + labels[previousVisibleLabel as number].size.width / 2 >=
-                                    labels[i as number].x - labels[i as number].size.width / 2) {
-                                    continue;
+                            let isAxisLabelHidden: boolean = false;
+                            for (let j: number = 0; j < i; j++) {
+                                if (labels[j as number].x + (labels[j as number].size.width / 2) >= labels[i as number].x - (labels[i as number].size.width / 2)) {
+                                    isAxisLabelHidden = true;
+                                    break;
                                 }
                             }
-                            previousVisibleLabel = i;
+                            if (isAxisLabelHidden) {
+                                continue;
+                            }
                         }
                     }
                 }
                 let font: Chart3DFontModel = {
-                    size: axis.labelStyle.size,
-                    fontWeight: axis.labelStyle.fontWeight,
-                    fontStyle: axis.labelStyle.fontStyle,
-                    fontFamily: axis.labelStyle.fontFamily,
-                    color: axis.labelStyle.color,
-                    opacity: axis.labelStyle.opacity
+                    size: axis.visibleLabels[i as number].labelStyle.size,
+                    fontWeight: axis.visibleLabels[i as number].labelStyle.fontWeight,
+                    fontStyle: axis.visibleLabels[i as number].labelStyle.fontStyle,
+                    fontFamily: axis.visibleLabels[i as number].labelStyle.fontFamily,
+                    color: axis.visibleLabels[i as number].labelStyle.color,
+                    opacity: axis.visibleLabels[i as number].labelStyle.opacity
                 };
                 const element: Chart3DLabelElement = {
                     width: textSize.width, height: textSize.height, label: axis.visibleLabels[i as number], textAnchor: textAnchor,

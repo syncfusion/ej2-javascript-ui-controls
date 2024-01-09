@@ -194,7 +194,7 @@ export class TreeViewRenderer implements IAction {
         } else {
             if (args.nodeData.hasChildren) {
                 allowDrag = false;
-                (args.node.querySelector('.e-checkbox-wrapper') as HTMLElement).style.display = 'none';
+                (args.node.querySelector('.' + cls.CHECKBOX_CONTAINER) as HTMLElement).style.display = 'none';
                 addClass([args.node], cls.FIELD_TREE_PARENT);
             }
             else {
@@ -223,9 +223,9 @@ export class TreeViewRenderer implements IAction {
                 className: cls.ICON + ' ' + cls.DRAG_CLASS + ' ' +
                     (field.fieldItem ? field.fieldItem.allowDragAndDrop ? '' : cls.DRAG_DISABLE_CLASS : '')
             });
-            if (args.node.querySelector('.e-checkbox-wrapper') &&
+            if (args.node.querySelector('.' + cls.CHECKBOX_CONTAINER) &&
                 !args.node.querySelector('.cls.DRAG_CLASS') && liTextElement) {
-                liTextElement.insertBefore(dragElement, args.node.querySelector('.e-checkbox-wrapper'));
+                liTextElement.insertBefore(dragElement, args.node.querySelector('.' + cls.CHECKBOX_CONTAINER));
             }
         }
         if (args.node.querySelector('.' + cls.NODE_CHECK_CLASS)) {
@@ -269,14 +269,14 @@ export class TreeViewRenderer implements IAction {
         let allowDrag: boolean = false;
         if (this.parent.dataType === 'olap') {
             if (args.node && args.node.querySelector('.e-calcMemberGroupCDB,.e-measureGroupCDB-icon,.e-folderCDB-icon,.e-folderCDB-open-icon,.e-dimensionCDB-icon,.e-kpiCDB-icon')) {
-                (args.node.querySelector('.e-checkbox-wrapper') as HTMLElement).style.display = 'none';
+                (args.node.querySelector('.' + cls.CHECKBOX_CONTAINER) as HTMLElement).style.display = 'none';
             }
             if (args.node && args.node.querySelector('.e-list-icon') &&
                 (args.node.querySelector('.e-list-icon').className.indexOf('e-level-members') > -1)) {
                 if (this.parent.isAdaptive) {
-                    (args.node.querySelector('.e-checkbox-wrapper') as HTMLElement).style.display = 'none';
+                    (args.node.querySelector('.' + cls.CHECKBOX_CONTAINER) as HTMLElement).style.display = 'none';
                 } else {
-                    (args.node.querySelector('.e-checkbox-wrapper') as HTMLElement).style.visibility = 'hidden';
+                    (args.node.querySelector('.' + cls.CHECKBOX_CONTAINER) as HTMLElement).style.visibility = 'hidden';
                 }
             }
             if (args.node && (args.node.querySelector('.e-hierarchyCDB-icon,.e-attributeCDB-icon,.e-namedSetCDB-icon') ||
@@ -516,7 +516,7 @@ export class TreeViewRenderer implements IAction {
         const list: { [key: string]: Object } = this.parent.pivotFieldList;
         const selectedNode: { [key: string]: Object } = list[fieldName as string] as { [key: string]: Object };
         this.parent.pivotCommon.dataSourceUpdate.control = this.parent.getModuleName() === 'pivotview' ? this.parent :
-            ((this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule : this.parent);
+            (this.parent.isPopupView && (this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule : this.parent);
         if (this.parent.pivotCommon.nodeStateModified.onStateModified(args, fieldName)) {
             if (this.parent.allowDeferLayoutUpdate) {
                 selectedNode.isSelected = true;
@@ -704,7 +704,7 @@ export class TreeViewRenderer implements IAction {
     }
 
     private updateCheckState(selectedNode: { [key: string]: Object }, action: string): void {
-        const chkState: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-checkbox-wrapper');
+        const chkState: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.' + cls.CHECKBOX_CONTAINER);
         const innerText: NodeListOf<Element> = this.fieldTable.element.querySelectorAll('.e-list-text');
         for (let i: number = 0; i < chkState.length; i++) {
             if (selectedNode.caption === innerText[i as number].textContent) {

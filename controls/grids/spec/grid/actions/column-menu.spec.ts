@@ -335,7 +335,7 @@ describe('column menu module', () => {
             expect(colMenu.isFilterPopupOpen()).toBe(true);
             expect(colMenu.getFilterPop().classList.contains('e-col-menu'));
             gridObj.actionComplete = function(args){
-                if(args.requestType === 'filterafteropen'){
+                if(args.requestType === 'filterAfterOpen'){
                     done();
                 }
             }

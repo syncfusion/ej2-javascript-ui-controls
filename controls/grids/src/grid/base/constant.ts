@@ -117,11 +117,11 @@ export const beforeAutoFill: string = 'beforeAutoFill';
 /** @hidden */
 export const filterChoiceRequest: string = 'filterchoicerequest';
 /** @hidden */
-export const filterAfterOpen: string = 'filterafteropen';
+export const filterAfterOpen: string = 'filterAfterOpen';
 /** @hidden */
-export const filterBeforeOpen: string = 'filterbeforeopen';
+export const filterBeforeOpen: string = 'filterBeforeOpen';
 /** @hidden */
-export const filterSearchBegin: string = 'filtersearchbegin';
+export const filterSearchBegin: string = 'filterSearchBegin';
 /** @hidden */
 export const commandClick: string = 'commandClick';
 /** @hidden */

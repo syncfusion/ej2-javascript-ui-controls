@@ -696,3 +696,97 @@ describe('ContextMenu module', () => {
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
 });
 });
+
+describe('Bug 863191: Indent/Outdent not shown in context menu of cell edit mode.', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSorting: true,
+        childMapping: 'subtasks',
+        allowPaging: true,
+        pageSettings: { pageSize: 10 },
+        treeColumnIndex: 1,
+        editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Cell' },
+        toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+        contextMenuItems: ['SortAscending', 'SortDescending',
+        'Edit', 'Delete', 'Save', 'Cancel',
+       'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
+       'LastPage', 'NextPage','Indent','Outdent'],
+       columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', headerText: 'Task Name' },
+            { field: 'progress', headerText: 'Progress' },
+            { field: 'startDate', headerText: 'Start Date' }
+            ]
+      },
+      done
+    );
+  });
+  
+  it('ensure the Indent action in context menu', () => {
+    gridObj.selectRow(2);
+    (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+    let e: Object = {
+    event: (gridObj.grid.contextMenuModule as any).eventArgs,
+    items: gridObj.grid.contextMenuModule.contextMenu.items,
+    parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+    };
+    (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+    (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+    document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Indent').click();
+    expect(gridObj.getCurrentViewRecords()[2]['level'] === 2).toBe(true);
+  });
+  afterAll(() => {
+     destroy(gridObj);
+  });
+});
+
+describe('Bug 863191: Indent/Outdent not shown in context menu of cell edit mode.', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSorting: true,
+        childMapping: 'subtasks',
+        allowPaging: true,
+        pageSettings: { pageSize: 10 },
+        treeColumnIndex: 1,
+        editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Cell' },
+        toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+        contextMenuItems: ['SortAscending', 'SortDescending',
+        'Edit', 'Delete', 'Save', 'Cancel',
+       'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
+       'LastPage', 'NextPage','Indent','Outdent'],
+       columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', headerText: 'Task Name' },
+            { field: 'progress', headerText: 'Progress' },
+            { field: 'startDate', headerText: 'Start Date' }
+            ]
+      },
+      done
+    );
+  });
+  
+  it('ensure the oudent action in context menu', () => {
+    gridObj.selectRow(2);
+    (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+    let e: Object = {
+    event: (gridObj.grid.contextMenuModule as any).eventArgs,
+    items: gridObj.grid.contextMenuModule.contextMenu.items,
+    parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+    };
+    (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+    (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+    document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Outdent').click();
+    expect(gridObj.getCurrentViewRecords()[2]['level'] === 0).toBe(true);
+  });
+  afterAll(() => {
+     destroy(gridObj);
+  });
+});

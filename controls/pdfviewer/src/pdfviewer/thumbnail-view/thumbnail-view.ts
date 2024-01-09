@@ -266,7 +266,7 @@ export class ThumbnailView {
                         if (parseInt(thumbPageNumber) !== pageNumber) {
                             return false;
                         }
-                        shouldScroll = view.percent < 100;
+                        shouldScroll = view.percent < 100 && (view.view.offsetWidth > view.view.offsetHeight && view.percent < 97);
                         return true;
                     });
                 }
@@ -341,10 +341,11 @@ export class ThumbnailView {
             this.thumbnailImage.style.width = '126px';
             thumbnail.style.height = '100px';
             thumbnail.style.width = '140px';
-            pageLink.style.left = '-25px';
-            pageLink.style.position = 'relative';
+            pageLink.style.left = '-25px';           
             thumbnailPageNumber.style.left = '18px';
-            thumbnailPageNumber.style.position = 'relative';
+            pageLink.style.marginRight = '41px';
+            thumbnail.style.marginLeft = '-5px';
+            thumbnail.style.marginRight = '0px';            
         }
         this.thumbnailSelectionRing.appendChild(this.thumbnailImage);
         pageLink.appendChild(thumbnail);

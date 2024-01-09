@@ -1173,7 +1173,7 @@ export class Toolbar {
                 args.element.classList.remove(cls.MENU_DISABLE);
                 checkbox.disabled = false;
             }
-            const checkboxObj: HTMLElement = this.parent.element.querySelector('.e-checkbox-wrapper.e-multipleAxes');
+            const checkboxObj: HTMLElement = this.parent.element.querySelector('.' + cls.CHECKBOX_CONTAINER + '.e-multipleAxes');
             args.element.appendChild(checkboxObj);
         } else if (this.parent.element.id + '_' + 'showLegend' === args.element.id) {
             const inputCheckbox: HTMLElement = createElement('input', {
@@ -1194,7 +1194,7 @@ export class Toolbar {
             });
             args.element.innerText = '';
             checkbox.appendTo('#' + this.parent.element.id + '_' + 'showLegendCheckBox');
-            const checkboxObj: HTMLElement = this.parent.element.querySelector('.e-checkbox-wrapper.e-showLegend');
+            const checkboxObj: HTMLElement = this.parent.element.querySelector('.' + cls.CHECKBOX_CONTAINER + '.e-showLegend');
             args.element.appendChild(checkboxObj);
         }
     }

@@ -1387,7 +1387,6 @@ export class Annotation {
     public initializeCollection(): void {
         this.actionCollection = [];
         this.redoCollection = [];
-        this.pdfViewerBase.customStampCollection = [];
         if (!this.popupNote) {
             this.createNote();
         }

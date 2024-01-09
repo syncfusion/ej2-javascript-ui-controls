@@ -863,6 +863,8 @@ export class MoveTool extends ToolBase {
 
     private isStartAction:boolean = false;
 
+    private dragWrapper:Container;
+
     private canCancel: boolean = false;
     private tempArgs: IDraggingEventArgs | IBlazorDraggingEventArgs;
     private canTrigger: boolean = false;
@@ -1027,7 +1029,7 @@ export class MoveTool extends ToolBase {
                     }
                 }
             }
-            const snappedPoint: PointModel = this.commandHandler.snapPoint(this.prevPosition, this.currentPosition, 0, 0);
+            const snappedPoint: PointModel = this.commandHandler.snapPoint(this.prevPosition, this.currentPosition, 0, 0,this.dragWrapper);
             this.commandHandler.removeSnap(); this.commandHandler.removeHighlighter();
             if (args.source && this.currentTarget && canAllowDrop(this.currentTarget) &&
                 this.commandHandler.isDroppable(args.source, this.currentTarget)) {
@@ -1203,8 +1205,17 @@ export class MoveTool extends ToolBase {
             this.commandHandler.disConnect(args.source);
             this.commandHandler.removeSnap();
             let oldValues: SelectorModel; let newValues: SelectorModel;
+            //Bug 860595: Snap to lines is experiencing issues when dragging shapes from the palette to a swimlane.
+            // Added below condition to get the dragging node wrapper and pass it to snapPoint method to calculate the snapPoint, 
+            // because while dragging node over swimlane the lane wrapper is used for calculating snapPoint
+            if(this.currentTarget === null &&  this.commandHandler.diagram.selectedItems.nodes.length > 0 && !(this.commandHandler.diagram.selectedItems.nodes[0] as Node).parentId.includes('swimlane')){
+                if(this.commandHandler.diagram.selectedItems.nodes[0].shape.type !== 'SwimLane'){
+                let dragNode = this.commandHandler.diagram.selectedItems.nodes[0];
+                this.dragWrapper = dragNode.wrapper;
+                }
+             }
             const snappedPoint: PointModel = this.commandHandler.snapPoint(
-                this.prevPosition, this.currentPosition, diffX, diffY);
+                this.prevPosition, this.currentPosition, diffX, diffY,this.dragWrapper);
             this.initialOffset.x = diffX - snappedPoint.x;
             this.initialOffset.y = diffY - snappedPoint.y;
             if (object) {

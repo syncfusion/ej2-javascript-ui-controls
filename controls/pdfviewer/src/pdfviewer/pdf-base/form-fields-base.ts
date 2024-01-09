@@ -1274,7 +1274,9 @@ export class FormFieldsBase {
         formFields.Rotation = textBox.rotationAngle;
         formFields.IsReadonly = textBox.readOnly;
         formFields.IsRequired = textBox.required;
-        formFields.FontColor = { R: textBox.color[0], G: textBox.color[1], B: textBox.color[2] };;
+        if (!isNullOrUndefined(textBox.color)) {
+            formFields.FontColor = { R: textBox.color[0], G: textBox.color[1], B: textBox.color[2] };;
+        }
         formFields.BorderColor = { R: textBox.borderColor[0], G: textBox.borderColor[1], B: textBox.borderColor[2] };
         formFields.Text = textBox.text ? textBox.text.replace("\"", "") : '';
         formFields.Multiline = textBox.multiLine;

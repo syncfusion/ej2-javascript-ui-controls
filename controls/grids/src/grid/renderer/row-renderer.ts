@@ -114,7 +114,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             row.isSelected = selIndex.indexOf(row.index) > -1 || value;
         }
         if (row.isDataRow && this.parent.isCheckBoxSelection
-            && this.parent.checkAllRows === 'Check' && this.parent.enableVirtualization) {
+            && this.parent.checkAllRows === 'Check' && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
             row.isSelected = true;
             if (selIndex.indexOf(row.index) === -1) {
                 selIndex.push(row.index);
@@ -241,6 +241,10 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 const thisRef: RowRenderer<T> = this;
                 thisRef.parent.renderTemplates(function(): void {
                     thisRef.parent.trigger(rowDataBound, eventArg);
+                    if (!eventArg.isSelectable) {
+                        row.isSelectable = eventArg.isSelectable;
+                        this.disableRowSelection(thisRef, row, args, eventArg);
+                    }
                 });
             }
             else {
@@ -258,25 +262,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                 }
             }
             if (!eventArg.isSelectable) {
-                this.parent.selectionModule.isPartialSelection = true; row.isSelected = false;
-                const chkBox: NodeList = args.row.querySelectorAll('.e-rowcell.e-gridchkbox');
-                const isDrag: Element = eventArg.row.querySelector('.e-rowdragdrop');
-                const cellIdx: number = this.parent.groupSettings.columns.length + (isDrag || this.parent.isDetail() ? 1 : 0);
-                for (let i: number = 0; i < chkBox.length; i++) {
-                    (chkBox[parseInt(i.toString(), 10)] as HTMLElement).firstElementChild.classList.add('e-checkbox-disabled');
-                    (chkBox[parseInt(i.toString(), 10)] as HTMLElement).querySelector('.e-frame').classList.remove('e-check');
-                }
-                if (row.cells.length) {
-                    for (let i: number = cellIdx; i < row.cells.length; i++) {
-                        const cell: Element = eventArg.row.querySelector('.e-rowcell[data-colindex="' + row.cells[parseInt(i.toString(), 10)].index + '"]');
-                        if (cell) {
-                            removeClass([cell], ['e-selectionbackground', 'e-active']);
-                        }
-                    }
-                }
-                if (isDrag) {
-                    removeClass([isDrag], ['e-selectionbackground', 'e-active']);
-                }
+                this.disableRowSelection(this, row, args, eventArg);
             }
             if (this.parent.childGrid || isDraggable || this.parent.detailTemplate) {
                 const td: Element = tr.querySelectorAll('.e-rowcell:not(.e-hide)')[0];
@@ -321,6 +307,32 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         }
         return tr;
     }
+    private disableRowSelection (thisRef: RowRenderer<T>, row: Row<T>, args: RowDataBoundEventArgs, eventArg: RowDataBoundEventArgs): void {
+        const selIndex: number[] = this.parent.getSelectedRowIndexes();
+        this.parent.selectionModule.isPartialSelection = true; row.isSelected = false;
+        let selRowIndex: number = selIndex.indexOf(row.index);
+        if (selRowIndex > -1) {
+            selIndex.splice(selRowIndex, 1);
+        }
+        const chkBox: NodeList = args.row.querySelectorAll('.e-rowcell.e-gridchkbox');
+        const isDrag: Element = eventArg.row.querySelector('.e-rowdragdrop');
+        const cellIdx: number = thisRef.parent.groupSettings.columns.length + (isDrag || thisRef.parent.isDetail() ? 1 : 0);
+        for (let i: number = 0; i < chkBox.length; i++) {
+            (chkBox[parseInt(i.toString(), 10)] as HTMLElement).firstElementChild.classList.add('e-checkbox-disabled');
+            (chkBox[parseInt(i.toString(), 10)] as HTMLElement).querySelector('.e-frame').classList.remove('e-check');
+        }
+        if (row.cells.length) {
+            for (let i: number = cellIdx; i < row.cells.length; i++) {
+                const cell: Element = eventArg.row.querySelector('.e-rowcell[data-colindex="' + row.cells[parseInt(i.toString(), 10)].index + '"]');
+                if (cell) {
+                    removeClass([cell], ['e-selectionbackground', 'e-active']);
+                }
+            }
+        }
+        if (isDrag) {
+            removeClass([isDrag], ['e-selectionbackground', 'e-active']);
+        }
+    };
     private refreshMergeCells(row: Row<T>): Row<T> {
         for (const cell of row.cells) {
             cell.isSpanned = false;

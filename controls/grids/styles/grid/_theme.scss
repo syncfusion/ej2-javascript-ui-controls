@@ -586,6 +586,15 @@
       color: $grid-cell-selection-color;
     }
 
+    td.e-cellselectionbackground.e-leftfreeze:not(.e-updatedtd),
+    td.e-cellselectionbackground.e-unfreeze:not(.e-updatedtd),
+    td.e-cellselectionbackground.e-rightfreeze:not(.e-updatedtd),
+    td.e-cellselectionbackground.e-fixedfreeze:not(.e-updatedtd) {
+      @if $grid-skin == 'material3' {
+        background-color: rgba($primary-container, 1);
+      }
+    }
+
     .e-filterbarcell,
     .e-filterbarcelldisabled {
       background-color: $grid-header-bg-color;

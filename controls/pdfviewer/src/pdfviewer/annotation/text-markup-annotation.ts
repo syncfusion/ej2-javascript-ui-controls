@@ -158,6 +158,9 @@ export class TextMarkupAnnotation {
      */
     public isSelectedAnnotation: boolean = false;
     private dropletHeight: number = 20;
+    // To update the height value of strikethrough and underline annotations for Chinese language (Task ID: 861029).
+    private strikeoutDifference: number = -3;
+    private underlineDifference: number = 2;
     /**
      * @private
      */
@@ -620,7 +623,7 @@ export class TextMarkupAnnotation {
                         this.renderHighlightAnnotation(annotBounds, opacity, color, context, factor, isPrint, pageNumber);
                         break;
                     case 'Strikethrough':
-                        this.renderStrikeoutAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint, annotationRotation);
+                        this.renderStrikeoutAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint, annotationRotation, annotation.textMarkupContent);
                         break;
                     case 'Underline':
                         this.renderUnderlineAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint, annotationRotation);
@@ -1163,7 +1166,7 @@ export class TextMarkupAnnotation {
                 annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, author, subject, modifiedDate, '', false, rect, pageNumber, textContent, startIndex, endIndex, isMultiSelect, allowedInteractions, annotationRotate);
                 if (annotation) {
                     // eslint-disable-next-line max-len
-                    this.renderStrikeoutAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber, annotation.isPrint, annotation.annotationRotation);
+                    this.renderStrikeoutAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor, pageNumber, annotation.isPrint, annotation.annotationRotation, annotation.textMarkupContent);
                 }
                 break;
             case 'Underline':
@@ -1308,7 +1311,7 @@ export class TextMarkupAnnotation {
     }
 
     // eslint-disable-next-line
-    private renderStrikeoutAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, pageNumber: number, isPrint: boolean, annotationRotation: number): void {
+    private renderStrikeoutAnnotation(bounds: any[], opacity: number, color: string, context: CanvasRenderingContext2D, factor: number, pageNumber: number, isPrint: boolean, annotationRotation: number, textContent: any): void {
         for (let i: number = 0; i < bounds.length; i++) {
             // eslint-disable-next-line
             let bound: any = this.getProperBounds(bounds[i]);
@@ -1323,27 +1326,27 @@ export class TextMarkupAnnotation {
                 if (isPrint) {
                     if (rotation === 1) {
                         // eslint-disable-next-line max-len
-                        this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
+                        this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation, textContent);
                     } else if (rotation === 2) {
                         // eslint-disable-next-line max-len
-                        this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
+                        this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation, textContent);
                     } else if (rotation === 3) {
-                        this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
+                        this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation, textContent);
                     } else {
-                        this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
+                        this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation, textContent);
                     }
                 }
             } else {
                 if (rotation === 1) {
                     // eslint-disable-next-line max-len
-                    this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
+                    this.drawLine(opacity, (bound.x + (bound.width / 2)), bound.y, bound.width, bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation, textContent);
                 } else if (rotation === 2) {
                     // eslint-disable-next-line max-len
-                    this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
+                    this.drawLine(opacity, bound.x, (bound.y + (bound.height / 2)), bound.width, bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation, textContent);
                 } else if (rotation === 3) {
-                    this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
+                    this.drawLine(opacity, bound.x, bound.y, (bound.width / 2), bound.height, color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation, textContent);
                 } else {
-                    this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation);
+                    this.drawLine(opacity, bound.x, bound.y, bound.width, (bound.height / 2), color, factorRatio, context, pageNumber, this.pdfViewerBase.clientSideRendering? bounds[i].rotation : annotationRotation, textContent);
                 }
             }
         }
@@ -1378,13 +1381,28 @@ export class TextMarkupAnnotation {
         return { x: x, y: y, width: width, height: height };
     }
 
+    private isChineseLanguage(textContent: any): any {
+        let chineseRegex: any = /[\u4e00-\u9fff]/;
+        // Check if the text contains Chinese characters
+        let isChinese = chineseRegex.test(textContent);
+        if(isChinese) {
+            return true
+        }
+        else {
+            return false
+        }
+    }
+
     // eslint-disable-next-line max-len
-    private drawLine(opacity: number, x: number, y: number, width: number, height: number, color: string, factor: number, context: any, pageNumber: number, annotationRotation?: number): void {
+    private drawLine(opacity: number, x: number, y: number, width: number, height: number, color: string, factor: number, context: any, pageNumber: number, annotationRotation?: number, textContent?: any): void {
         context.globalAlpha = opacity;
         if (isBlazor()) {
             y = y - 1;
         }
-        if (!this.pdfViewerBase.clientSideRendering) {
+        if(this.isChineseLanguage(textContent)) {
+            height = height - 1.5;
+        }
+        if (!this.pdfViewerBase.clientSideRendering && !this.isChineseLanguage(textContent)) {
             height = height - 1;
         }
         context.beginPath();
@@ -1504,6 +1522,18 @@ export class TextMarkupAnnotation {
                                 if (pageDetails) {
                                     pageAnnotationObject.annotations[z].annotationRotation = pageDetails.rotation;
                                 }
+                            }
+                        }
+                        if (this.isChineseLanguage(pageAnnotationObject.annotations[z].textMarkupContent)) {
+                            if (pageAnnotationObject.annotations[z].bounds.length > 0) {
+                                let height_difference: number = pageAnnotationObject.annotations[z].textMarkupAnnotationType === 'Strikethrough' ? this.strikeoutDifference : pageAnnotationObject.annotations[z].textMarkupAnnotationType === 'Underline' ? this.underlineDifference : 0;
+                                pageAnnotationObject.annotations[z].bounds.forEach((bound: any) => {
+                                    bound.height = bound.height ? bound.height : bound.Height;
+                                    if (bound.height > 0) {
+                                        // Update height value
+                                        bound.height += height_difference;
+                                    }
+                                });
                             }
                         }
                         // eslint-disable-next-line max-len

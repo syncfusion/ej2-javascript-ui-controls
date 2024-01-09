@@ -523,6 +523,8 @@ export const BUTTON_LAYOUT: string = 'e-button-layout';
 /** @hidden */
 export const CHECKBOX_LAYOUT: string = 'e-checkbox-layout';
 /** @hidden */
+export const CHECKBOX_CONTAINER: string = 'e-checkbox-wrapper';
+/** @hidden */
 export const DEFER_UPDATE_BUTTON: string = 'e-defer-update-btn';
 /** @hidden */
 export const HEADERCONTENT: string = 'e-headercontent';

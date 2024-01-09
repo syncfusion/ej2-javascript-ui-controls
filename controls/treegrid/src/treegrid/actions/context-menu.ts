@@ -53,7 +53,7 @@ export class ContextMenu {
         const selectedrow: HTMLTableRowElement = tObj.getSelectedRows()[0] as HTMLTableRowElement;
         if ((indent || outdent) && !isNullOrUndefined(selectedrow)) {
             const targetElement: Element = (args.event.target as Element).closest('td');
-            if (isNullOrUndefined(targetElement) || (!isNullOrUndefined(targetElement) && !targetElement.classList.contains('e-rowcell'))) {
+            if (isNullOrUndefined(targetElement) || (!isNullOrUndefined(targetElement) && (!targetElement.classList.contains('e-rowcell') || targetElement.querySelectorAll('.e-gridform').length !== 0))) {
                 indent.style.display = outdent.style.display = 'none';
             }
             else {
@@ -63,18 +63,15 @@ export class ContextMenu {
                 else if (args['name'] !== 'rowDeselected' || (!isNullOrUndefined(selectedrow) && tObj.grid.isCheckBoxSelection)) {
                     const selectedItem: ITreeData = tObj.getCurrentViewRecords()[selectedrow.rowIndex];
                     if (!isNullOrUndefined(selectedItem)) {
-                        if ((selectedItem.level > (tObj.getCurrentViewRecords()[selectedrow.rowIndex - 1] as ITreeData).level) || this.parent.editSettings.mode === 'Batch'
-                        || this.parent.editSettings.mode === 'Cell') {
+                        if ((selectedItem.level > (tObj.getCurrentViewRecords()[selectedrow.rowIndex - 1] as ITreeData).level)) {
                             indent.style.display = 'none';
                         } else {
                             indent.style.display = 'block';
                         }
-                        if ((selectedItem.level === (tObj.getCurrentViewRecords()[selectedrow.rowIndex - 1] as ITreeData).level) && this.parent.editSettings.mode !== 'Batch'
-                        && this.parent.editSettings.mode !== 'Cell') {
+                        if ((selectedItem.level === (tObj.getCurrentViewRecords()[selectedrow.rowIndex - 1] as ITreeData).level)) {
                             indent.style.display = 'block';
                         }
-                        if ((selectedItem.level === 0) || this.parent.editSettings.mode === 'Batch'
-                        || this.parent.editSettings.mode === 'Cell') {
+                        if ((selectedItem.level === 0)) {
                             outdent.style.display = 'none';
                         }
                         else {

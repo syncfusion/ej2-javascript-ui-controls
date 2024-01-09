@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 24.1.45 (2024-01-09)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I528964` - Resolved the table border issue when exporting as docx.
+- `#I531058` - Resolved the reply comment sorted issue.
+- `#I453495` - Resolved the shape element shifting issue when pressing enter.
+- `#I528503` - Resolved the script error issue in server side rendering.
+
 ## 24.1.44 (2024-01-03)
 
 ### DocumentEditor

@@ -54,9 +54,9 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
      *
      * @returns {HTMLElement}
      * @aspType HTMLElement
-     * @default document.body
+     * @default null
      */
-    @Property(document.body)
+    @Property(null)
     public popupTarget: HTMLElement;
     /**
      * Specifies the user preferred Search Highlight Color of Document Editor.
@@ -1309,6 +1309,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         //pre render section
         this.findResultsList = [];
+        if (isNullOrUndefined(this.documentEditorSettings.popupTarget)) {
+            this.documentEditorSettings.popupTarget = document.body;
+        }
         if (!isNullOrUndefined(this.element) && this.element.id === '') {
             //Set unique id, if id is empty
             this.element.id = HelperMethods.getUniqueElementId();

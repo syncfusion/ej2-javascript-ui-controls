@@ -3,6 +3,7 @@ import * as CONSTANT from './../base/constant';
 import { NodeSelection } from './../../selection/index';
 import { IToolbarStatus } from './../../common/interface';
 import { getDefaultHtmlTbStatus } from './../../common/util';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Update Toolbar Status
  *
@@ -271,7 +272,8 @@ export class ToolbarStatus {
                 // eslint-disable-next-line
                 const pattern: RegExp = new RegExp(name, 'i');
                 if ((value.replace(/"/g, '').replace(/ /g, '').toLowerCase() === name.replace(/"/g, '').replace(/ /g, '').toLowerCase()) ||
-                    (value.split(',')[0] && value.split(',')[0].search(pattern) > -1)) {
+                    (value.split(',')[0] && !isNullOrUndefined(value.split(',')[0].trim().match(pattern)) &&
+                    value.split(',')[0].trim() === value.split(',')[0].trim().match(pattern)[0])) {
                     index = pos;
                 }
             }) && (index !== null)))) {

@@ -348,6 +348,57 @@ describe('Symbol Palette - Group', () => {
         });
     
     });
+    describe('Testing symbol palette after getting refreshed', () => {
+        let diagram: Diagram;
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        let basicShapes: NodeModel[] = [
+            { id: 'Rectangle', shape: { type: 'Basic', shape: 'Rectangle' }, style: { strokeWidth: 2 },width:50,height:30,offsetX:50,offsetY:50 },
+            { id: 'Ellipse', shape: { type: 'Basic', shape: 'Ellipse' }, style: { strokeWidth: 2 },width:50,height:30,offsetX:70,offsetY:80 },
+            { id: 'group', children: ['Rectangle', 'Ellipse', 'id'] },
+        ];
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:250px;height:550px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:500px;height:550px;float:right;' }));
+            document.body.appendChild(ele);
+
+            diagram = new Diagram({
+                width: '74%', height: '600px'
+            });
+            diagram.appendTo('#diagram');
+
+            palette = new SymbolPalette({
+                width: '250px', height: '100%',
+                palettes: [
+                    { id: 'basic', expanded: true, symbols: basicShapes, title: 'Basic Shapes' },
+                ], symbolHeight: 50, symbolWidth: 50,
+                symbolMargin: { top: 12, bottom: 12, left: 12, right: 12 }
+            });
+            palette.appendTo('#symbolPalette');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            palette.destroy();
+            ele.remove();
+        });
+        it('Checking highlights', (done: Function) => {
+                palette.refresh();
+                setTimeout(() => {
+                    let events: MouseEvents = new MouseEvents();
+                    events.mouseDownEvent(palette.element, 70, 125, false, false);
+                    events.mouseMoveEvent(palette.element, 150, 150, false, false);
+                    events.mouseUpEvent(palette.element, 150, 150, false, false);
+                    palette.getPersistData();
+                    let start: HTMLElement = document.getElementById('group');
+                    expect(start.offsetWidth == 55 && start.offsetHeight == 55).toBe(true);
+                    done();
+                }, 10);
+        });
+    });
 
 
 });

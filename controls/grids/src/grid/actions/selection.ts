@@ -68,6 +68,7 @@ export class Selection implements IAction {
     private prevECIdxs: IIndex;
     private isMultiShiftRequest: boolean = false;
     private isMultiCtrlRequest: boolean = false;
+    private isMultiCtrlRequestCell: boolean = false;
     private enableSelectMultiTouch: boolean = false;
     private clearRowCheck: boolean = false;
     private selectRowCheck: boolean = false;
@@ -2423,21 +2424,27 @@ export class Selection implements IAction {
             return;
         }
         const gObj: IGrid = this.parent;
-        if (!isNullOrUndefined(e.properties.type) && this.selectionSettings.type === 'Single') {
-            if (this.selectedRowCellIndexes.length > 1) {
-                this.clearCellSelection();
-                this.prevCIdxs = undefined;
+        if (!isNullOrUndefined(e.properties.type)) {
+            if (this.selectionSettings.type === 'Single') {
+                gObj.element.removeAttribute('aria-multiselectable');
+                if (this.selectedRowCellIndexes.length > 1) {
+                    this.clearCellSelection();
+                    this.prevCIdxs = undefined;
+                }
+                if (this.selectedRowIndexes.length > 1) {
+                    this.clearRowSelection();
+                    this.prevRowIndex = undefined;
+                }
+                if (this.selectedColumnsIndexes.length > 1) {
+                    this.clearColumnSelection();
+                    this.prevColIndex = undefined;
+                }
+                this.enableSelectMultiTouch = false;
+                this.hidePopUp();
             }
-            if (this.selectedRowIndexes.length > 1) {
-                this.clearRowSelection();
-                this.prevRowIndex = undefined;
+            else if (this.selectionSettings.type === 'Multiple') {
+                gObj.element.setAttribute('aria-multiselectable', 'true');
             }
-            if (this.selectedColumnsIndexes.length > 1) {
-                this.clearColumnSelection();
-                this.prevColIndex = undefined;
-            }
-            this.enableSelectMultiTouch = false;
-            this.hidePopUp();
         }
 
         if (!isNullOrUndefined(e.properties.mode) ||
@@ -2579,8 +2586,8 @@ export class Selection implements IAction {
                 const selectedStateKeys: string[] = Object.keys(this.selectedRowState);
                 const unSelectedRowStateKeys: string[] = Object.keys(this.unSelectedRowState);
                 if (!this.isCheckboxReset) {
-                    var rowData = (this.parent.getDataModule().isRemote() && this.parent.groupSettings.columns.length &&
-                        this.parent.isPersistSelection) ? this.parent.currentViewData['records'] : this.parent.currentViewData;
+                    var rowData = (this.parent.groupSettings.columns.length && this.parent.isPersistSelection) ?
+                        this.parent.currentViewData['records'] : this.parent.currentViewData;
                     for (const data of rowData) {
                         if(!isNullOrUndefined(data[this.primaryKey])) {
                             const key: string = data[this.primaryKey].toString();
@@ -2818,8 +2825,8 @@ export class Selection implements IAction {
         let state: boolean = stateStr === 'Check';
         this.isHeaderCheckboxClicked = true;
         if ((this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
-            && (<{result: object[]}>this.parent.dataSource).result)) && ((stateStr === 'Uncheck' || this.isCheckboxReset) ||
-                (this.parent.getDataModule().isRemote() && stateStr === 'Intermediate' && this.parent.isPersistSelection))) {
+            && (<{ result: object[] }>this.parent.dataSource).result)) && ((stateStr === 'Uncheck' || this.isCheckboxReset) ||
+                (stateStr === 'Intermediate' && this.parent.isPersistSelection))) {
             this.rmtHdrChkbxClicked = true;
         }
         else {
@@ -2834,7 +2841,8 @@ export class Selection implements IAction {
                 state = this.getCurrentBatchRecordChanges().some((data: Object) =>
                     this.getPkValue(this.primaryKey, data) in this.selectedRowState);
             }
-            if (this.parent.getDataModule().isRemote() && this.parent.isPersistSelection) {
+            if ((this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
+                && (<{ result: object[] }>this.parent.dataSource).result)) && this.parent.isPersistSelection) {
                 for (let i: number = 0; i < this.getCurrentBatchRecordChanges().length; i++) {
                     if (!isNullOrUndefined(this.getPkValue(this.primaryKey, this.getCurrentBatchRecordChanges()[`${i}`]))) {
                         if ((Object.keys(this.selectedRowState) as any).includes((this.getPkValue(this.primaryKey, this.getCurrentBatchRecordChanges()[`${i}`])).toString())) {
@@ -2934,6 +2942,19 @@ export class Selection implements IAction {
                 const rowObj: Row<Column>[] = this.parent.getRowsObject().filter((e: Row<Column>) => e.isSelectable);
                 for (const row of rowObj) {
                     this.selectedRowIndexes.push(row.index);
+                }
+            }
+        }
+        if (this.parent.isCheckBoxSelection && this.parent.enableVirtualization && !this.isPartialSelection &&
+            (this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
+                && (<{ result: object[] }>this.parent.dataSource).result))
+            && !this.parent.isPersistSelection && this.parent.checkAllRows === 'Check') {
+            const rowObj: Row<Column>[] = this.parent.getRowsObject().filter((e: Row<Column>) => e.isSelectable);
+            if (rowObj.length !== this.selectedRowIndexes.length) {
+                for (const row of rowObj) {
+                    if (this.selectedRowIndexes.indexOf(row.index) <= -1) {
+                        this.selectedRowIndexes.push(row.index);
+                    }
                 }
             }
         }
@@ -3056,8 +3077,8 @@ export class Selection implements IAction {
                         || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result)) &&
                         getRecord.length && checkedLen === getRecord.length) || ((this.parent.getDataModule().isRemote()
                         || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result)) &&
-                        !this.isPartialSelection && ((checkedLen === this.parent.totalDataRecordsCount) || this.isSelectAllRowCount(checkedLen)
-                        || (checkedLen === this.totalRecordsCount && !this.parent.isPersistSelection))) ||
+                        !this.isPartialSelection && ((checkedLen === this.parent.totalDataRecordsCount) || ((this.isSelectAllRowCount(checkedLen)
+                        || checkedLen === this.totalRecordsCount) && !this.parent.isPersistSelection))) ||
                         (this.isPartialSelection && (this.isHdrSelectAllClicked || this.isSelectAllRowCount(checkedLen)))))
                         || (checkedLen === this.totalRecordsCount && this.totalRecordsCount && !this.isPartialSelection &&
                             !this.parent.allowPaging && !this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling)))) {
@@ -3173,6 +3194,7 @@ export class Selection implements IAction {
         } else {
             this.isMultiShiftRequest = e.shiftKey;
         }
+        this.isMultiCtrlRequestCell = this.isMultiCtrlRequest;
         this.popUpClickHandler(e);
         let chkSelect: boolean = false;
         this.preventFocus = true;
@@ -3239,6 +3261,7 @@ export class Selection implements IAction {
             this.headerSelectionHandler(this.parent.getColumnIndexByUid(uid));
         }
         this.isMultiCtrlRequest = false;
+        this.isMultiCtrlRequestCell = this.isMultiCtrlRequest;
         this.isMultiShiftRequest = false;
         if (isNullOrUndefined(closest(<HTMLElement>e.target, '.e-unboundcell'))) {
             this.preventFocus = false;
@@ -3298,7 +3321,17 @@ export class Selection implements IAction {
             this.drawBorders();
         } else {
             this.addRowsToSelection([rowIndex]);
-            this.addCellsToSelection([{ rowIndex: rowIndex, cellIndex: cellIndex }]);
+            if (this.selectionSettings.mode === 'Both') {
+                const checkboxColumn: Column = this.parent.getColumns().find((col: Column) => col.type === 'checkbox');
+                const checkboxColumnIndexCheck: boolean = checkboxColumn && checkboxColumn.index !== cellIndex;
+                if (checkboxColumnIndexCheck && !this.isMultiCtrlRequestCell) {
+                    this.selectCell({ rowIndex: rowIndex, cellIndex: cellIndex }, this.selectionSettings.enableToggle);
+                } else if (!checkboxColumn || checkboxColumnIndexCheck)  {
+                    this.addCellsToSelection([{ rowIndex: rowIndex, cellIndex: cellIndex }]);
+                }
+            } else {
+                this.addCellsToSelection([{ rowIndex: rowIndex, cellIndex: cellIndex }]);
+            }
             this.showHideBorders('none');
         }
         this.isDragged = false;

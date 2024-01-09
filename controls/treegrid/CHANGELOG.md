@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.44 (2024-01-03)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I531278` - Fixed an issue where the checkbox column behaviour was not working correctly when the `displayascheckbox` column was placed as the first column.
+
 ## 24.1.41 (2023-12-18)
 
 ### Tree Grid
