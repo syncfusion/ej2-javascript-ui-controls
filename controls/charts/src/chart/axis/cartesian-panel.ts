@@ -1570,7 +1570,7 @@ export class CartesianAxisLayoutPanel {
                         const rectPoint1: number = rotateAngle ? this.chart.availableSize.width - pointX : pointX;
                         const rectPoint2: number = interSectPoint.y - axis.rect.y;
                         const trimValue: number = Math.sqrt((rectPoint1 * rectPoint1) + (rectPoint2 * rectPoint2));
-                        options.text = textTrim(trimValue, label.text as string, label.labelStyle, chart.themeStyle.axisLabelFont);
+                        options.text = textTrim(trimValue, label.text as string, label.labelStyle, chart.enableRtl, chart.themeStyle.axisLabelFont);
                     }
                 }
             }
@@ -1753,7 +1753,7 @@ export class CartesianAxisLayoutPanel {
      */
     private findAxisLabel(axis: Axis, label: string, width: number): string {
         return(axis.labelIntersectAction === 'Trim' ?
-            ((axis.angle % 360 === 0 && !axis.enableTrim) ? textTrim(width, label, axis.labelStyle, this.chart.themeStyle.axisLabelFont) : label) : label);
+            ((axis.angle % 360 === 0 && !axis.enableTrim) ? textTrim(width, label, axis.labelStyle, this.chart.enableRtl, this.chart.themeStyle.axisLabelFont) : label) : label);
     }
 
     /**

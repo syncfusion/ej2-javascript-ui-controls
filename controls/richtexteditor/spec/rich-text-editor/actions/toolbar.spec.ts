@@ -2596,3 +2596,32 @@ describe('849075 - Checking the tab index on navigating the toolbar items using 
         }, 800);
     });
 });
+describe('864182-Texts got hidden under the toolbar, when we maximize the RichTextEditor when enableFloating is false.', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                enableFloating: false,
+                items: ['fullscreen','Bold','SourceCode']
+            },
+        });
+        rteEle = rteObj.element;
+    });
+
+    it('Test - toolbar height testing when maximize/minimize and check toolbar wrapper is not null.', () => {
+        const toolbarElement = rteEle.querySelector('.e-toolbar-wrapper') as HTMLElement | null;
+        expect(toolbarElement != null).toBe(true);
+        const toolbarHeight: string | null = toolbarElement.style.height;
+        const trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+        trgEle.click();
+        trgEle.click();
+        const newElement = rteEle.querySelector('.e-toolbar-wrapper') as HTMLElement | null;
+        const newHeight: string | null = newElement.style.height;      
+        expect(newHeight).toBe(toolbarHeight);
+        
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

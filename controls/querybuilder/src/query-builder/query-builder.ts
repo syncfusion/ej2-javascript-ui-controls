@@ -7,7 +7,7 @@ import { getInstance, addClass, removeClass, rippleEffect, detach, classList } f
 import { Internationalization, DateFormatOptions, KeyboardEventArgs, getUniqueID, select } from '@syncfusion/ej2-base';
 import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RuleModel, ValueModel } from './query-builder-model';
 import { Button, CheckBox, RadioButton, ChangeEventArgs as ButtonChangeEventArgs, RadioButtonModel } from '@syncfusion/ej2-buttons';
-import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection, DropDownTreeModel, DropDownTree, DdtSelectEventArgs } from '@syncfusion/ej2-dropdowns';
+import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection, DropDownTreeModel, DropDownTree } from '@syncfusion/ej2-dropdowns';
 import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs, MultiSelectModel, DropDownListModel } from '@syncfusion/ej2-dropdowns';
 import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';
 import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';
@@ -15,7 +15,7 @@ import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChange
 import { TextBoxModel, NumericTextBoxModel } from '@syncfusion/ej2-inputs';
 import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs, DatePickerModel } from '@syncfusion/ej2-calendars';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { Tooltip, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { compile as templateCompiler } from '@syncfusion/ej2-base';
 
  type ReturnType = { result: Object[], count: number, aggregates?: Object };
@@ -343,6 +343,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private isDestroy: boolean = false;
     private isGetNestedData: boolean = false;
     private isCustomOprCols: string[] = [];
+    private dummyDropdownTreeDs: Object;
     /**
      * Triggers when the component is created.
      *
@@ -653,7 +654,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     if (categories.indexOf(columns[i as number].category) < 0) {
                         categories.push(columns[i as number].category);
                     }
-                    if (!columns[i as number].operators || (this.isLocale && this.isCustomOprCols.indexOf(columns[i as number].field) !== 0)) {
+                    if (!columns[i as number].operators ||
+                        (this.isLocale && this.isCustomOprCols.indexOf(columns[i as number].field) !== 0)) {
                         columns[i as number].operators = this.customOperators[columns[i as number].type + 'Operator'];
                     }
                 }
@@ -1038,13 +1040,16 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 } else {
                     let ddlField: DropDownTreeModel;
                     const ddlValue: string = this.isImportRules ? (rule.field as string) : rule.field;
+                    this.dummyDropdownTreeDs = extend([], this.columns, [], true) as { [key: string]: Object }[];
+                    this.updateDropdowntreeDS(this.dummyDropdownTreeDs as { [key: string]: Object }[]);
                     ddlField = {
-                        fields: {dataSource: this.columns as { [key: string]: Object }[],
-                            value: 'field', text: 'label', child: 'columns', expanded: 'expanded'},
+                        fields: {dataSource: this.dummyDropdownTreeDs as { [key: string]: Object }[],
+                            value: 'field', text: 'label', child: 'columns', expanded: 'expanded', selectable: 'selectable'},
                         placeholder: this.l10n.getConstant('SelectField'), showClearButton: false,
                         popupHeight: ((this.columns.length > 5) ? height : 'auto'), changeOnBlur: false,
                         change: this.changeField.bind(this), value: !isNullOrUndefined(ddlValue) ? [ddlValue] : null,
-                        open: this.popupOpen.bind(this, false), treeSettings: {expandOn: 'Click'}, select: this.onSelectField
+                        open: this.popupOpen.bind(this, false), treeSettings: { expandOn: 'Click' },
+                        cssClass: 'e-qb-ddt'
                     };
                     if (this.fieldModel) {
                         ddlField = {...ddlField, ...this.fieldModel as DropDownTreeModel};
@@ -1068,6 +1073,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             ruleID = ruleElem.id.replace(this.element.id + '_', '');
             if (!this.isImportRules) {
                 this.trigger('change', { groupID: trgt.id.replace(this.element.id + '_', ''), ruleID: ruleID, type: 'insertRule' });
+            }
+        }
+    }
+
+    private updateDropdowntreeDS(columns: { [key: string]: Object }[]): void {
+        for (let i: number = 0; i < columns.length; i++) {
+            if (columns[parseInt(i.toString(), 10)].type === 'object') {
+                columns[parseInt(i.toString(), 10)].selectable = false;
+                this.updateDropdowntreeDS(columns[parseInt(i.toString(), 10)].columns as { [key: string]: Object }[]);
             }
         }
     }
@@ -1128,7 +1142,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
 
     private renderToolTip(element: HTMLElement): void {
         const tooltip: Tooltip = new Tooltip({ content: this.l10n.getConstant('ValidationMessage'),
-            position: 'BottomCenter', cssClass: 'e-querybuilder-error', afterClose: (args: TooltipEventArgs): void => {
+            position: 'BottomCenter', cssClass: 'e-querybuilder-error', afterClose: (): void => {
                 tooltip.destroy();
             }});
         tooltip.appendTo(element);
@@ -1426,7 +1440,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const groupHdr: HTMLElement = groupElem.querySelector('.e-group-header');
         if (this.headerTemplate) {
             args = { requestType: 'header-template-initialize', ruleID: groupElem.id,
-                notCondition: this.enableNotCondition ? not : undefined, condition: condition, rule: this.getRuleCollection(rule, true), groupID: groupID };
+                notCondition: this.enableNotCondition ? not : undefined,
+                condition: condition, rule: this.getRuleCollection(rule, true), groupID: groupID };
             this.trigger('actionBegin', args);
             this.headerFn = this.templateParser(this.headerTemplate);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1678,13 +1693,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.changeField(customArgs);
         }
         this.isFieldChange = false;
-    }
-
-    private onSelectField(args: DdtSelectEventArgs): void {
-        if (args.itemData.hasChildren) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this as any).showPopup();
-        }
     }
 
     private changeField(args: DropDownChangeEventArgs): void {
@@ -2759,7 +2767,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 const valElemColl: Element[] = this.columnTemplateFn(args, this, ruleID, templateID);
                 valElem = (valElemColl[0].nodeType === 3) ? valElemColl[1] : valElemColl[0];
                 target.nextElementSibling.appendChild(valElem as Element);
-            } else if ((this as any).isVue3) {
+            } // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            else if ((this as any).isVue3) {
                 valElem = this.columnTemplateFn(args, this, 'Template', templateID);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 append(valElem as any, target.nextElementSibling);
@@ -3397,7 +3406,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.element.style.height = this.height;
                 break;
             case 'rule':
-                if (this.rule.rules.length == 0 && !isNullOrUndefined(this.rule)) {
+                if (this.rule.rules.length === 0 && !isNullOrUndefined(this.rule)) {
                     this.reset();
                 }
                 this.setProperties({ rule: newProp.rule }, true);
@@ -3887,6 +3896,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 if (customObj) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (rule as any).custom = customObj;
+                }
+                if ((rule.operator === 'in' || rule.operator === 'notin') && rule.value && (rule.value as any).length === 0) {
+                    rule = {};
                 }
             } else {
                 rule = {};

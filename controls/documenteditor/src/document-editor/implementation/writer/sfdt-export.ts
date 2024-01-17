@@ -994,11 +994,15 @@ export class SfdtExport {
         } else if (element instanceof BreakElementBox) {
             inline[breakClearTypeProperty[this.keywordIndex]] = this.keywordIndex == 1? HelperMethods.getBreakClearType(element.breakClearType): element.breakClearType;
         } else if (element instanceof TextElementBox) {
+            let elementText: string = element.text;
+            if (isNullOrUndefined(this.owner.editorModule) || !this.owner.editorModule.isPaste) {
+                elementText = HelperMethods.removeInvalidXmlChars(elementText);
+            }
             // replacing the no break hyphen character by '-'
-            if (element.text.indexOf(String.fromCharCode(30)) !== -1) {
-                inline[textProperty[this.keywordIndex]] = element.text.replace(/\u001e/g, '-');
-            } else if (element.text.indexOf(String.fromCharCode(31)) !== -1) {
-                inline[textProperty[this.keywordIndex]] = element.text.replace(/\u001f/g, '');
+            if (elementText.indexOf(String.fromCharCode(30)) !== -1) {
+                inline[textProperty[this.keywordIndex]] = elementText.replace(/\u001e/g, '-');
+            } else if (elementText.indexOf(String.fromCharCode(31)) !== -1) {
+                inline[textProperty[this.keywordIndex]] = elementText.replace(/\u001f/g, '');
             } else if (element.revisions.length !== 0) {
                 if (!this.isExport && this.owner.enableTrackChanges && !this.isPartialExport) {
                     this.copyWithTrackChange = true;
@@ -1008,14 +1012,14 @@ export class SfdtExport {
                             this.selectedRevisionId.push(revision.revisionID);
                         }
                         if (element.revisions[x].revisionType !== 'Deletion') {
-                            inline[textProperty[this.keywordIndex]] = element.text;
+                            inline[textProperty[this.keywordIndex]] = elementText;
                         }
                     }
                 } else {
-                    inline[textProperty[this.keywordIndex]] = element.text;
+                    inline[textProperty[this.keywordIndex]] = elementText;
                 }
             } else {
-                inline[textProperty[this.keywordIndex]] = element.text;
+                inline[textProperty[this.keywordIndex]] = elementText;
             }
         } else if (element instanceof EditRangeStartElementBox) {
             if(element.user !== ''){

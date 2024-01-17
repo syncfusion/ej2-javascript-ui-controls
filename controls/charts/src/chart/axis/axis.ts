@@ -1079,7 +1079,7 @@ export class Axis extends ChildProperty<Axis> {
             }
             if (this.rect.width || this.rect.height) {
                 const length: number = isHorizontal ? this.rect.width : this.rect.height;
-                this.titleCollection = getTitle(this.title, this.titleStyle, length, chart.themeStyle.legendLabelFont);
+                this.titleCollection = getTitle(this.title, this.titleStyle, length, chart.enableRtl, chart.themeStyle.legendLabelFont);
                 titleSize = (titleSize * this.titleCollection.length);
             }
         }
@@ -1304,7 +1304,7 @@ export class Axis extends ChildProperty<Axis> {
                         for (let index: number = 0; index < label.text.length; index++) {
                             result = textWrap(
                                 label.text[index as number],
-                                this.rect.width / this.visibleLabels.length, this.labelStyle, null, null, chart.themeStyle.axisLabelFont);
+                                this.rect.width / this.visibleLabels.length, this.labelStyle, chart.enableRtl, null, null, chart.themeStyle.axisLabelFont);
                             if (result.length > 1) {
                                 for (let j: number = 0; j < result.length; j++) {
                                     str = result[j as number]; result1.push(str);
@@ -1317,7 +1317,7 @@ export class Axis extends ChildProperty<Axis> {
                     } else {
                         label.text = textWrap(
                                 <string>label.text,
-                                this.rect.width / this.visibleLabels.length, this.labelStyle, null, null, chart.themeStyle.axisLabelFont
+                                this.rect.width / this.visibleLabels.length, this.labelStyle, chart.enableRtl, null, null, chart.themeStyle.axisLabelFont
                         );
                     }
                     // eslint-disable-next-line no-case-declarations

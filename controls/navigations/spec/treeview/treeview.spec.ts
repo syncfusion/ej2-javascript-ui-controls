@@ -2147,6 +2147,11 @@ describe('TreeView control', () => {
                 treeObj.dataBind();
                 expect(treeObj.element.querySelectorAll('li').length).toBe(0);
             });
+            it('dragArea property testing', () => {
+                treeObj.allowDragAndDrop = true;
+                treeObj.dragArea = '#tree1';
+                treeObj.dataBind();
+            })
         });
         describe('mouse events testing', () => {
             let mouseEventArgs: any;
@@ -2983,7 +2988,17 @@ describe('TreeView control', () => {
                 treeObj.touchClickObj.tap(tapEvent);
                 expect(i).toEqual(1);
             });
-
+            it('nodeExpanding allowTextWrap check', () => {
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child:"nodeChild" },
+                    nodeExpanding: clickFn,
+                    allowTextWrap: true
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                mouseEventArgs.target = li[0].querySelector('.e-icons');
+                treeObj.touchClickObj.tap(tapEvent);
+                expect(i).toEqual(1);
+            });
             it('Ripple Effect testing', () => {
                 enableRipple(true);
                 treeObj = new TreeView({
@@ -9575,6 +9590,23 @@ describe('TreeView control', () => {
                     expect(document.getElementById('tree1').classList.contains('customTree')).toEqual(true);
                     expect(document.getElementById('tree1').classList.contains('productTree')).toEqual(true);
                 });
+                it('checking the type of the child node in remote data', () => {
+                    let data: DataManager = new DataManager({
+                        url: 'https://services.odata.org/V4/Northwind/Northwind.svc',
+                        adaptor: new ODataV4Adaptor,
+                        crossDomain: true,
+                    });
+                    let query: Query = new Query().from('Employees').select('EmployeeID,FirstName,Title').take(5);
+                    let query1: Query = new Query().from('Orders').select('OrderID,EmployeeID,ShipName').take(5);
+
+                    let treeObj1: TreeView = new TreeView({
+                        fields: { dataSource: data, query: query, id: 'EmployeeID', text: 'FirstName', hasChildren: 'EmployeeID',
+                            child: { dataSource: data, query: query1, id: 'OrderID', parentID: 'EmployeeID', text: 'ShipName' }
+                        }
+                    });
+                    expect((treeObj1 as any).isChildObject()).toBe(true);
+                    expect((treeObj as any).isChildObject()).toBe(false);
+                });
             });
             describe('Add nodes method', () => {
                 let mouseEventArgs: any = {
@@ -9590,6 +9622,7 @@ describe('TreeView control', () => {
                     tapCount: 1
                 };
                 let treeObj: any;
+                let i = 0;
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager 
                 let originalTimeout: any;
@@ -9632,6 +9665,84 @@ describe('TreeView control', () => {
                         expect(element[0].querySelector('.e-list-parent').lastElementChild.getAttribute('data-uid')).toBe('a12');
                         done();
                     }, 450);
+                });
+                it('update node testing for remote data', (done: Function) => {
+                    let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    treeObj.allowEditing = true;
+                    treeObj.updateNode(li[0], 'John');
+                    expect(treeObj.getTreeData('01')[0].nodeText).toBe('John');
+                    done();
+                });
+                it('remove node testing for remote data', (done: Function) => {
+                    expect(treeObj.getTreeData().length).toBe(26);
+                    treeObj.removeNodes(['01']);
+                    expect(treeObj.getTreeData().length).toBe(24);
+                    done();
+                });
+                it('field property change', function (done) {
+                    treeObj.isReact = true;
+                    treeObj.fields.tooltip = 'John';
+                    treeObj.dataBind();
+                    expect(i).toBe(0);
+                    done();
+                });
+                it('refresh node testing', (done: Function) => {
+                    var data = [{ nodeText: 'RefreshedNode', nodeIcon: 'folder'}];
+                    treeObj.refreshNode('01', data);
+                    treeObj.dataBind();
+                    done();
+                });
+                it('Add nodes testing', (done: Function) => {
+                    let data = [{nodeId: 1, nodeText: 'John'}];
+                    treeObj.addNodes(data, '03', 2, true);
+                    treeObj.dataBind();
+                    done();
+                });
+                it('Checking null in refresh node method', (done: Function) => {
+                    treeObj.refreshNode(null, null);
+                    treeObj.dataBind();
+                    done();
+                });
+                it('Checking fullRowSelect field property', (done: Function) => {
+                    treeObj.fullRowSelect = true;
+                    treeObj.allowTextWrap = true;
+                    treeObj.dataBind();
+                    done();
+                });
+                it('checking child nodes', (done: Function) => {
+                    let customDataSource = [{ EmployeeID: 1, FirstName: 'John', Title: 'Manager',
+                            Shipments: [
+                                { OrderID: 1, ShipName: 'Ship1' },
+                                { OrderID: 2, ShipName: 'Ship2' },
+                            ]
+                        },
+                        { EmployeeID: 2, FirstName: 'Jane', Title: 'Supervisor',
+                            Shipments: [
+                                { OrderID: 3, ShipName: 'Ship3' },
+                                { OrderID: 4, ShipName: 'Ship4' },
+                            ]
+                        },
+                    ];
+
+                    let newTreeObj: TreeView = new TreeView({
+                        fields: {
+                            dataSource: customDataSource,
+                            id: 'EmployeeID',
+                            text: 'FirstName',
+                            hasChildren: 'Shipments', // Use 'Shipments' as the property indicating child nodes
+                            child: {
+                                dataSource: customDataSource.reduce((acc, employee) => acc.concat(employee.Shipments), []),
+                                // query: query1,
+                                id: 'OrderID',
+                                text: 'ShipName'
+                            }
+                        }
+                    });
+                    treeObj.fields.child = newTreeObj.fields.child;
+                    treeObj.dataType = 2
+                    treeObj.getChildNodes(customDataSource, '03', null, 2)
+                    treeObj.dataBind();
+                    done();
                 });
             });
             xdescribe('with id as number', () => {

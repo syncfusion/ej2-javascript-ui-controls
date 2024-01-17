@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.46 (2024-01-17)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I527482` - Now, overview updated properly while zoom out and move nodes outside viewport.
+
 ## 24.1.45 (2024-01-09)
 
 ### Diagram
@@ -11,7 +19,8 @@
 - `#F185764` - Now, removing bpmn text annotation dynamically is working properly.
 - `#I526870` - Resolved snap to lines issue when dragging shapes from palette to swimlane.
 - `#I526172` - The node now remains in the diagram when the ungroup action is performed.
-- `#FB48313` - The background color is now visible on symbol hover after rapid expand and collapse in the palette
+- `#FB48313` - The background color is now visible on symbol hover after rapid expand and collapse in the palette.
+- `#I531978` - Now, connectors rendered properly with line routing and line distribution enabled during doLayout process.
 
 ## 24.1.43 (2023-12-27)
 

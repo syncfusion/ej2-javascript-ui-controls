@@ -132,10 +132,10 @@ export class AccumulationDataLabel extends AccumulationBase {
             point.labelCollection = point.label.split('<br>');
         }
         else if (dataLabel.textWrap === 'Normal' && dataLabel.textOverflow === 'Ellipsis') {
-            point.labelCollection[0] = textTrim(maxWidth, point.label, point.argsData.font, this.accumulation.themeStyle.datalabelFont);
+            point.labelCollection[0] = textTrim(maxWidth, point.label, point.argsData.font, this.accumulation.enableRtl, this.accumulation.themeStyle.datalabelFont);
         }
         else if (dataLabel.textWrap === 'Wrap' || dataLabel.textWrap === 'AnyWhere') {
-            point.labelCollection = textWrap(point.label, maxWidth, point.argsData.font, dataLabel.textWrap === 'AnyWhere', dataLabel.textOverflow === 'Clip', this.accumulation.themeStyle.datalabelFont);
+            point.labelCollection = textWrap(point.label, maxWidth, point.argsData.font, this.accumulation.enableRtl, dataLabel.textWrap === 'AnyWhere', dataLabel.textOverflow === 'Clip', this.accumulation.themeStyle.datalabelFont);
         }
         else {
             point.labelCollection[0] = point.label;
@@ -318,10 +318,10 @@ export class AccumulationDataLabel extends AccumulationBase {
                 }
                 else if (size < point.labelRegion.width) {
                     if (dataLabel.textWrap === 'Normal' && dataLabel.textOverflow === 'Ellipsis') {
-                        point.labelCollection[0] = textTrim(size - (this.marginValue * 2), point.label, font, this.accumulation.themeStyle.datalabelFont);
+                        point.labelCollection[0] = textTrim(size - (this.marginValue * 2), point.label, font, this.accumulation.enableRtl, this.accumulation.themeStyle.datalabelFont);
                     }
                     else if (dataLabel.textWrap === 'Wrap' || dataLabel.textWrap === 'AnyWhere') {
-                        point.labelCollection = textWrap(point.label, size - (this.marginValue * 2), font, dataLabel.textWrap === 'AnyWhere', dataLabel.textOverflow === 'Clip', this.accumulation.themeStyle.datalabelFont);
+                        point.labelCollection = textWrap(point.label, size - (this.marginValue * 2), font, this.accumulation.enableRtl, dataLabel.textWrap === 'AnyWhere', dataLabel.textOverflow === 'Clip', this.accumulation.themeStyle.datalabelFont);
                     }
                     point.labelRegion.width = size;
                 }

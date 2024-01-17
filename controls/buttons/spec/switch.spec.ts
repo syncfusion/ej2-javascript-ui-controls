@@ -122,14 +122,44 @@ describe('Switch', () => {
         });
         it('Wrapper touch', () => {
             specSwitch = new Switch({}, '#specSwitch');
-            const start: MouseEvent = document.createEvent('MouseEvent');
-            start.initEvent('touchstart', true, true);
+            const start: TouchEvent = new TouchEvent('touchstart', {
+                touches: [
+                  new Touch({ identifier: 1, target: document.documentElement }),
+                ],
+                targetTouches: [
+                  new Touch({ identifier: 1, target: document.documentElement }),
+                ],
+                changedTouches: [
+                  new Touch({ identifier: 1, target: document.documentElement }),
+                ],
+                bubbles: true, cancelable: true, composed: true,
+            });
             element.parentElement.dispatchEvent(start);
-            const move: MouseEvent = document.createEvent('MouseEvent');
-            move.initEvent('touchmove', true, true);
+            const move: TouchEvent = new TouchEvent('touchmove', {
+                touches: [
+                  new Touch({ identifier: 1, target: document.documentElement }),
+                ],
+                targetTouches: [
+                  new Touch({ identifier: 1, target: document.documentElement }),
+                ],
+                changedTouches: [
+                  new Touch({ identifier: 1, target: document.documentElement }),
+                ],
+                bubbles: true, cancelable: true, composed: true,
+            });
             element.parentElement.dispatchEvent(move);
-            const end: MouseEvent = document.createEvent('MouseEvent');
-            end.initEvent('touchend', true, true);
+            const end: TouchEvent = new TouchEvent('touchend', {
+                touches: [
+                  new Touch({ identifier: 1, target: document.documentElement }),
+                ],
+                targetTouches: [
+                  new Touch({ identifier: 1, target: document.documentElement }),
+                ],
+                changedTouches: [
+                  new Touch({ identifier: 1, target: document.documentElement }),
+                ],
+                bubbles: true, cancelable: true, composed: true,
+            });
             element.parentElement.dispatchEvent(end);
             expect(element.parentElement.children[1].classList.contains('e-switch-active')).toEqual(true);
             const up: MouseEvent = document.createEvent('MouseEvent');

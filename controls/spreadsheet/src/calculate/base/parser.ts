@@ -571,7 +571,7 @@ export class Parser {
                             let period: boolean = false;
                             while (j > -1 && (this.parent.isDigit(text[j as number]) ||
                                 (!period && (text[j as number] === this.parent.getParseDecimalSeparator() || text[j as number] === '%')))) {
-                                if (!this.parent.isDigit(text[j as number])) {
+                                if (!this.parent.isDigit(text[j as number]) && text[j as number] !== '%') {
                                     period = true;
                                 }
                                 j = j - 1;

@@ -135,6 +135,7 @@ export class CheckBoxFilterBase {
         const elem: Element = this.dialogObj.element.querySelector('.e-searchinput');
         if (elem) {
             EventHandler.add(elem, 'keyup', this.searchHandler, this);
+            EventHandler.add(elem, 'input', this.searchHandler, this);
         }
     }
 
@@ -144,6 +145,7 @@ export class CheckBoxFilterBase {
         const elem: Element = this.dialogObj.element.querySelector('.e-searchinput');
         if (elem) {
             EventHandler.remove(elem, 'keyup', this.searchHandler);
+            EventHandler.remove(elem, 'input', this.searchHandler);
         }
     }
 

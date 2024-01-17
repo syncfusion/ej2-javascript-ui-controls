@@ -449,7 +449,7 @@ export class SelectTool extends ToolBase {
                         this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
                     }
                     if (object) {
-                        if (!isNullOrUndefined(this.pdfViewerBase.isFreeTextSelected) && !this.pdfViewerBase.isFreeTextSelected) {
+                        if ((isNullOrUndefined(formField) || (formField && formField.id !== (object as PdfAnnotationBaseModel).id)) && !isNullOrUndefined(this.pdfViewerBase.isFreeTextSelected) && !this.pdfViewerBase.isFreeTextSelected) {
                             this.commandHandler.select([(object as PdfAnnotationBaseModel).id], currentSelctor);
                             this.commandHandler.viewerBase.isAnnotationMouseDown = true;
                         }
@@ -653,7 +653,8 @@ export class MoveTool extends ToolBase {
                 const previousPosition: IFormFieldBound = { X: this.offset.x, Y: this.offset.y, Width: args.source.wrapper.actualSize.width, Height: args.source.wrapper.actualSize.height };
                 this.commandHandler.fireFormFieldMoveEvent('formFieldMove', field, node.pageIndex, previousPosition, currentPosition);
             }
-            if(this.redoElement.bounds.height !== newShapeObject.bounds.height || this.redoElement.bounds.width !== newShapeObject.bounds.width || this.redoElement.bounds.x !== newShapeObject.bounds.x || this.redoElement.bounds.y !== newShapeObject.bounds.y){
+            // eslint-disable-next-line max-len
+            if(!isNullOrUndefined(this.redoElement) && (this.redoElement.bounds.height !== newShapeObject.bounds.height || this.redoElement.bounds.width !== newShapeObject.bounds.width || this.redoElement.bounds.x !== newShapeObject.bounds.x || this.redoElement.bounds.y !== newShapeObject.bounds.y)){
                 isDragged = true;
             }
             if (this.commandHandler.annotation && isDragged) {

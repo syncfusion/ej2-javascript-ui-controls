@@ -285,6 +285,10 @@ export class Fab extends Button implements INotifyPropertyChanged {
                 this.checkTarget();
                 this.setPosition();
                 break;
+            /* REF - 861739 */
+            case 'currencyCode':
+                this.refresh();
+                break;
             }
         }
     }

@@ -38,7 +38,7 @@ $tbar-separator-border: $border-dark !default;
 $tbar-default-border: $border-light !default;
 $tbar-hover-border-color: $icon-color !default;
 $tbar-focus-border-color: $tbar-hover-border-color !default;
-$tbar-focus-bg: $content-bg-color-alt4 !default;
+$tbar-focus-bg: none !default;
 $tbar-press-font: $content-text-color !default;
 
 $tbar-default-font-overlay: $content-text-color !default;
@@ -159,7 +159,7 @@ $tbar-flat-btn-active-box-shadow: none !default;
 $tbar-ext-btn-focus-padding: 0 4px !default;
 $tbar-ext-btn-icon-padding: 0 !default;
 $tbar-ext-btn-icon-font-size: $text-sm !default;
-$tbar-ext-btn-focus-box-shadow: none !default;
+$tbar-ext-btn-focus-box-shadow: inset 0 0 0 1px !default;
 $tbar-ext-btn-hover-border-color: $tbar-hover-border-color !default;
 $tbar-ext-btn-border: none !default;
 

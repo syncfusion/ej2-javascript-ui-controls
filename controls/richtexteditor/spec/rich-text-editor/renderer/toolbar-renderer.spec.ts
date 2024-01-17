@@ -1,7 +1,7 @@
 /**
  * Toolbar renderer spec
  */
-import { Browser } from "@syncfusion/ej2-base";
+import { Browser, isNullOrUndefined } from "@syncfusion/ej2-base";
 import { renderRTE,dispatchEvent, destroy } from './../render.spec';
 
 describe('Toolbar - Renderer', () => {
@@ -145,6 +145,35 @@ describe('Toolbar - Renderer', () => {
         afterAll(function () {
             destroy(rteObj);
             Browser.userAgent = defaultUA;
+        });
+    });
+    describe('863259: dropdown active state not working when drop down is opened', function () {
+        let rteObj : any;
+        let rteEle : any;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',]
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        it('Check the fontColor dropdown active element', function () {
+            let trgEle : HTMLElement = rteEle.querySelectorAll(".e-toolbar-item")[0];
+            (trgEle.firstElementChild as HTMLElement).click();
+            dispatchEvent(trgEle.firstElementChild, 'mousedown');
+            let activeEle = (document.querySelector('.e-dropdown-popup .e-segoe-ui.e-active') as HTMLElement);
+            expect(!isNullOrUndefined(activeEle)).toBe(true);
+        });
+        it('Check the fontSize dropdown active element', function () {
+            let trgEle : HTMLElement = rteEle.querySelectorAll(".e-toolbar-item")[1];
+            (trgEle.firstElementChild as HTMLElement).click();
+            dispatchEvent(trgEle.firstElementChild, 'mousedown');
+            let activeEle = (document.querySelector('.e-font-size-tbar-btn .e-item.e-active') as HTMLElement);
+            expect(!isNullOrUndefined(activeEle)).toBe(true);
+        });
+        afterAll(function () {
+            destroy(rteObj);
         });
     });
 });

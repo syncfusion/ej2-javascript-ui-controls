@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.46 (2024-01-17)
+
+### Common
+
+#### Bug Fixes
+
+- `#I531468` - The issue with "rendering the html template string" has been resolved.
+
 ## 23.2.6 (2023-11-28)
 
 ### Common

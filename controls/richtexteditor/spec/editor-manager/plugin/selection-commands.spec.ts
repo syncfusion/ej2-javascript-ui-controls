@@ -1359,7 +1359,7 @@ describe('EJ2-70136 - Font Size value not updating while on selected text', () =
     let domSelection: NodeSelection = new NodeSelection();
     it('EJ2-70136 - Font Size value not updating while on selected text', () => {
         rteObj = renderRTE({
-            value: `<p class="focusNode">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href='https://ej2.syncfusion.com/home/' target='_blank'>HTML markup</a> or <a href='https://ej2.syncfusion.com/home/' target='_blank'>markdown</a> of the content</p>`,
+            value: `<p class="focusNode">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href='https://ej2.syncfusion.com/home/'>HTML markup</a> or <a href='https://ej2.syncfusion.com/home/'>markdown</a> of the content</p>`,
             toolbarSettings: {
                 items: ['FontSize']
             }
@@ -1374,7 +1374,7 @@ describe('EJ2-70136 - Font Size value not updating while on selected text', () =
         fontSizePicker.click();
         var fontSizeChooser : HTMLElement = <HTMLElement>document.querySelectorAll(".e-item")[5];
         fontSizeChooser.click();
-        expect(rteEle.childNodes[2].childNodes[0].innerHTML).toBe('<p class="focusNode"><span style="font-size: 24pt;">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid </span><span style="font-size: 24pt;"><a href="https://ej2.syncfusion.com/home/" target="_blank">HTML markup</a></span><span style="font-size: 24pt;"> or </span><span style="font-size: 24pt;"><a href="https://ej2.syncfusion.com/home/" target="_blank">markdown</a></span><span style="font-size: 24pt;"> of the content</span></p>');
+        expect(rteEle.childNodes[2].childNodes[0].innerHTML).toBe('<p class="focusNode"><span style="font-size: 24pt;">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid </span><span style="font-size: 24pt;"><a href="https://ej2.syncfusion.com/home/">HTML markup</a></span><span style="font-size: 24pt;"> or </span><span style="font-size: 24pt;"><a href="https://ej2.syncfusion.com/home/">markdown</a></span><span style="font-size: 24pt;"> of the content</span></p>');
         expect(fontSizePicker.childNodes[0].textContent).toEqual('24 pt');
     });
     afterEach(() => {

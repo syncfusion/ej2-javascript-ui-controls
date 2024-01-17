@@ -516,7 +516,8 @@ export class TreeViewRenderer implements IAction {
         const list: { [key: string]: Object } = this.parent.pivotFieldList;
         const selectedNode: { [key: string]: Object } = list[fieldName as string] as { [key: string]: Object };
         this.parent.pivotCommon.dataSourceUpdate.control = this.parent.getModuleName() === 'pivotview' ? this.parent :
-            (this.parent.isPopupView && (this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule : this.parent);
+            (this.parent.isPopupView && (this.parent as PivotFieldList).pivotGridModule ?
+                (this.parent as PivotFieldList).pivotGridModule : this.parent);
         if (this.parent.pivotCommon.nodeStateModified.onStateModified(args, fieldName)) {
             if (this.parent.allowDeferLayoutUpdate) {
                 selectedNode.isSelected = true;

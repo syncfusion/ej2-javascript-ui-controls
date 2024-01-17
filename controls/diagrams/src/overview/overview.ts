@@ -664,8 +664,20 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             const x: number = bounds.x = (hoffset / currentZoom) / scale;
             const y: number = bounds.y = (voffset / currentZoom) / scale;
             //const viewPort: Rect;
-            const width: number = bounds.width = (this.parent.scroller.viewPortWidth / currentZoom) / scale;
-            const height: number = bounds.height = (this.parent.scroller.viewPortHeight / currentZoom) / scale;
+            //Bug 863516: Overview is not synced with diagram content while zoom-out the diagram.
+            //Added below code to consider ruler size and scrollbar size while calculating the width and height for the overview rectangle.
+            let rulerSize = 0;
+            if(this.parent.rulerSettings.showRulers){
+                rulerSize = 25
+            }
+            const container =  document.getElementById(this.parent.element.id + 'content');
+            let wScrollBar = 0; let hScrollBar = 0;
+            if(container){
+                wScrollBar = container.offsetWidth - container.clientWidth;
+                hScrollBar = container.offsetHeight - container.clientHeight;
+            }
+            const width = bounds.width = ((this.parent.scroller.viewPortWidth-rulerSize-wScrollBar )/ currentZoom) / scale;
+            const height = bounds.height = ((this.parent.scroller.viewPortHeight-rulerSize-hScrollBar )/ currentZoom) / scale;
             //const ratio: number = this.parent.scroller.viewPortWidth / this.parent.scroller.viewPortHeight;
             if (scaled) {
                 const rect: Rect = new Rect();

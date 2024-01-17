@@ -73,7 +73,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
 
     public isRequiredUpdate: boolean = true;
     /** @hidden */
-    public clonedDataSet: IDataSet[];
+    public clonedDataSet: IDataSet[] | string[][];
     /** @hidden */
     public clonedReport: IDataOptions;
     /** @hidden */
@@ -1218,8 +1218,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             PivotUtil.updateDataSourceSettings(this, observedArgs.dataSourceSettings);
             if (this.dataType === 'pivot') {
                 if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
-                    const pivotDataSet: IDataSet[] = this.dataSourceSettings.dataSource as IDataSet[];
-                    this.clonedDataSet = (this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(pivotDataSet)) as IDataSet[];
+                    const pivotDataSet: IDataSet[] | string[][] = this.dataSourceSettings.dataSource as IDataSet[] | string[][];
+                    this.clonedDataSet = (this.clonedDataSet ? this.clonedDataSet : this.dataSourceSettings.type === 'CSV' ? PivotUtil.getClonedCSVData(pivotDataSet as string[][]) as string[][]
+                        : PivotUtil.getClonedData(pivotDataSet as IDataSet[])) as IDataSet[];
                     const dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
                     dataSourceSettings.dataSource = [];
                     this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;

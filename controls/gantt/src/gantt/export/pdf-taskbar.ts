@@ -191,13 +191,32 @@ export class PdfGanttTaskbarCollection {
             progressFormat.alignment = PdfTextAlignment.Left;
         }
         let pageIndex: number = -1;
+        let renderBaselineWidth: number = 0;
+        if (this.baselineWidth > detail.totalWidth) {
+            if (this.parent.timelineModule.isZoomedToFit || this.isAutoFit()) {
+                renderBaselineWidth = detail.totalWidth - this.baselineLeft;
+            }
+            else {
+                renderBaselineWidth = detail.totalWidth;
+            }
+            this.baselineWidth = this.baselineWidth - detail.totalWidth;
+        }
+        else {
+            if ((this.parent.timelineModule.isZoomedToFit || this.isAutoFit()) && this.baselineWidth + this.baselineLeft > detail.totalWidth) {
+                renderBaselineWidth = detail.totalWidth - this.baselineLeft;
+            }
+            else {
+                renderBaselineWidth = this.baselineWidth;
+            }
+        }
+        const baselinePen: PdfPen = new PdfPen(taskbar.baselineBorderColor);
+        const baselineBrush: PdfBrush = new PdfSolidBrush(taskbar.baselineColor);
+        let renderedBaseline: boolean = false;
         if (!taskbar.isMilestone) {
             const taskbarPen: PdfPen = new PdfPen(taskbar.taskBorderColor);
             const taskBrush: PdfBrush = new PdfSolidBrush(taskbar.taskColor);
-            const baselinePen: PdfPen = new PdfPen(taskbar.baselineBorderColor);
             const manualParentBorderPen = new PdfPen(taskbar.manualParentBorder);
             const manualChildBorderPen = new PdfPen(taskbar.manualChildBorder)
-            const baselineBrush: PdfBrush = new PdfSolidBrush(taskbar.baselineColor);
             const manualTaskbarPen: PdfPen = new PdfPen(taskbar.manuallineColor);
             const manualParentPen: PdfPen = new PdfPen(taskbar.manualParentProgress);
             const manualline:PdfPen =new PdfPen(taskbar.manuallineColor)  
@@ -289,11 +308,12 @@ export class PdfGanttTaskbarCollection {
                 } else {
                     if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
                         if(this.isAutoFit()) {
-                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (this.baselineWidth), pixelToPoint(this.baselineHeight));
+                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
                         }
                         else {
-                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(this.baselineWidth), pixelToPoint(this.baselineHeight));
+                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderBaselineWidth), pixelToPoint(this.baselineHeight));
                         }
+                        renderedBaseline = true;
                     }
                     if (taskbar.isSpliterTask) {
                         splitline.dashStyle = PdfDashStyle.Dot;
@@ -526,11 +546,12 @@ export class PdfGanttTaskbarCollection {
                  else {
                     if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
                         if (this.isAutoFit()) {
-                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (this.baselineWidth), pixelToPoint(this.baselineHeight));
+                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
                         }
                         else {
-                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(this.baselineWidth), pixelToPoint(this.baselineHeight));
+                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderBaselineWidth), pixelToPoint(this.baselineHeight));
                         }
+                        renderedBaseline = true;
                     }
                     if (taskbar.isSpliterTask) {
                         let pervwidth = 0;
@@ -689,11 +710,12 @@ export class PdfGanttTaskbarCollection {
                 }
                 if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
                     if (this.isAutoFit()) {
-                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (this.baselineWidth), pixelToPoint(this.baselineHeight));
+                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
                     }
                     else {
-                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(this.baselineWidth), pixelToPoint(this.baselineHeight));
+                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderBaselineWidth), pixelToPoint(this.baselineHeight));
                     }
+                    renderedBaseline = true;
                 }
                 if (!this.isScheduledTask && this.unscheduledTaskBy === 'duration') {
                     let brush1: PdfLinearGradientBrush;
@@ -866,11 +888,12 @@ export class PdfGanttTaskbarCollection {
                 }
                 if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
                     if (this.isAutoFit()) {
-                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (this.baselineWidth), pixelToPoint(this.baselineHeight));
+                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
                     }
                     else {
-                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(this.baselineWidth), pixelToPoint(this.baselineHeight));
+                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderBaselineWidth), pixelToPoint(this.baselineHeight));
                     }
+                    renderedBaseline = true;
                 }
                 if (!this.isScheduledTask && this.unscheduledTaskBy === 'duration') {
                     let brush1: PdfLinearGradientBrush;
@@ -1114,6 +1137,15 @@ export class PdfGanttTaskbarCollection {
             this.drawMilestone(page, startPoint, detail, cumulativeWidth);
             if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
                 this.drawMilestone(page, startPoint, detail, cumulativeWidth);
+            }
+        }
+        if (this.baselineEndDate >= detail.startDate && !renderedBaseline && detail.startIndex != 1 && this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
+            const adjustHeight: number = pixelToPoint((this.parent.rowHeight - this.height) / 4.5);
+            if (this.isAutoFit()) {
+                taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
+            }
+            else {
+                taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderBaselineWidth), pixelToPoint(this.baselineHeight));
             }
         }
         this.drawRightLabel(page, startPoint, detail, cumulativeWidth);

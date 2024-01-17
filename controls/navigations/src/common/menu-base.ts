@@ -804,7 +804,24 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     fli.classList.add(SELECTED);
                     eventArgs = { element: fli as HTMLElement, item: item, event: e };
                     this.trigger('select', eventArgs);
+                    const aEle: HTMLElement = fli.querySelector('.e-menu-url');
+                    if (item.url && aEle) {
+                        switch(aEle.getAttribute('target')) {
+                           case '_blank':
+                                window.open(item.url, '_blank');
+                                break;
+                            case '_parent':
+                                window.parent.location.href = item.url;
+                                break;
+                            default:
+                                window.location.href = item.url;
+                        }
+                    }
                     this.closeMenu(null, e);
+                    const sli: Element = this.getLIByClass(this.getUlByNavIdx(), SELECTED);
+                    if (sli) {
+                        sli.classList.add(FOCUSED); (sli as HTMLElement).focus();
+                    }
                 }
             }
         }
@@ -889,6 +906,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         }
                         closeArgs = { element: ul, parentItem: item, items: items };
                         this.trigger('onClose', closeArgs); this.navIdx.pop();
+                        if (this.navIdx.length === 0) { this.showSubMenu = false; }
                         if (!this.isMenu) {
                             EventHandler.remove(ul, 'keydown', this.keyHandler);
                             if (this.keyType === 'right') {

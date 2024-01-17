@@ -2,7 +2,7 @@ import * as events from '../base/constant';
 import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer } from '../base/interface';
 import { NotifyArgs, IToolbarOptions, ActionBeginEventArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
-import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach, MouseEventArgs, EventHandler } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach, MouseEventArgs, EventHandler, L10n } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { HTMLFormatter } from '../formatter/html-formatter';
 import { RendererFactory } from '../services/renderer-factory';
@@ -573,7 +573,7 @@ export class HtmlEditor {
                 for (let j: number = 0 ; j < splitTextContent.length; j++) {
                     if (splitTextContent[j as number].match(httpRegex) || splitTextContent[j as number].match(wwwRegex)) {
                         resultSplitContent += '<a class="e-rte-anchor" href="' + splitTextContent[j as number] +
-                        '" title="' + splitTextContent[j as number] + '"target="_blank">' + splitTextContent[j as number] + ' </a>';
+                        '" title="' + splitTextContent[j as number] + '" target="_blank"' + ' aria-label="' + this.parent.serviceLocator.getService<L10n>('rteLocale').getConstant("linkAriaLabel") + '">' + splitTextContent[j as number] + ' </a>';
                     } else {
                         resultSplitContent += splitTextContent[j as number] + ' ';
                     }

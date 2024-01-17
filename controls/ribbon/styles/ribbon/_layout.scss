@@ -648,6 +648,10 @@
           .e-icon-top {
             height: 50%;
           }
+
+          &.e-top-icon-btn {
+            gap: $ribbon-large-items-btn-gap;
+          }
         }
 
         & > .e-split-btn-wrapper.e-vertical .e-btn {
@@ -1272,6 +1276,10 @@
           .e-btn-icon:not(.e-caret) {
             font-size: $ribbon-bigger-large-items-icon-size;
             padding: $ribbon-bigger-large-items-icon-padding;
+          }
+
+          &.e-top-icon-btn {
+            gap: $ribbon-bigger-large-items-btn-gap;
           }
         }
 

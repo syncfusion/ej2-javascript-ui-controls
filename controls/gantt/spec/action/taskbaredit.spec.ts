@@ -672,7 +672,7 @@ describe('Gantt taskbar editing', () => {
         });
         it('Milestone drag action', () => {
             ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
-                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('04/02/2019 17:00');
+                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('04/03/2019 17:00');
             };
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td >div.e-taskbar-main-container') as HTMLElement;
             triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);

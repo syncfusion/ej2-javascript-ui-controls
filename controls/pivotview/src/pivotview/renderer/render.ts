@@ -1266,7 +1266,10 @@ export class Render {
         if (this.parent.enableVirtualization) {
             if (cell.ordinal > -1 && this.parent.olapEngineModule.tupRowInfo.length > 0) {
                 const tupInfo: ITupInfo = this.parent.olapEngineModule.tupRowInfo[cell.ordinal];
-                const memberPosition: number = tupInfo.uNameCollection.indexOf(cell.actualText.toString());
+                const cellActualText: string = cell.memberType === 3 ?
+                    (this.engine.fieldList[cell.actualText.toString()] as IOlapFieldListOptions).tag.toString() :
+                    cell.actualText.toString();
+                const memberPosition: number = tupInfo.uNameCollection.indexOf(cellActualText);
                 const cropUName: string = tupInfo.uNameCollection.substring(0, memberPosition) +
                     (cell.memberType === 3 ? '' : cell.actualText.toString());
                 const fieldSep: string[] = cropUName.split('::[').map((item: string) => {

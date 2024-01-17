@@ -2975,9 +2975,16 @@ export class DropDownList extends DropDownBase implements IInput {
     private scrollHandler(): void {
         if (Browser.isDevice && ((this.getModuleName() === 'dropdownlist' &&
             !this.isFilterLayout()) || (this.getModuleName() === 'combobox' && !this.allowFiltering && this.isDropDownClick))) {
-            this.hidePopup();
+                if (this.element && !(this.isElementInViewport(this.element))) {
+                    this.hidePopup();
+                }
         }
     }
+
+    private isElementInViewport(element : HTMLElement): boolean {
+        var elementRect = element.getBoundingClientRect();
+        return (elementRect.top >= 0 && elementRect.left >= 0 && elementRect.bottom <= window.innerHeight && elementRect.right <= window.innerWidth);
+    };
 
     private setSearchBoxPosition(): void {
         const searchBoxHeight: number = this.filterInput.parentElement.getBoundingClientRect().height;
@@ -4104,7 +4111,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!this.enabled) {
             return;
         }
-        if (!this.enableVirtualization && this.getModuleName() === 'combobox') {
+        if (!this.enableVirtualization && (this.getModuleName() === 'combobox' || this.getModuleName() === 'autocomplete')) {
             this.isTyped = true;
         }
         this.hidePopup(e);

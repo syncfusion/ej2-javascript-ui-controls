@@ -1,9 +1,8 @@
 import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncfusion/ej2-data';
-import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, getSheetIndexFromId, isFilterHidden } from '../base/index';
-import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFormat, dataSourceChanged } from '../common/index';
-import { ExtendedSheet, ExtendedRange, AutoDetectInfo, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
-import { triggerDataChange, UsedRangeModel } from '../index';
-import { getFormatFromType } from './number-format';
+import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, isFilterHidden } from '../base/index';
+import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFormat, dataSourceChanged, isNumber } from '../common/index';
+import { ExtendedSheet, ExtendedRange, DateFormatCheckArgs, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
+import { triggerDataChange, UsedRangeModel, getFormattedCellObject, NumberFormatArgs, getAutoDetectFormatParser } from '../index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -52,18 +51,25 @@ export class DataBind {
 
     private updateSheetFromDataSourceHandler(
         args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[], formulaCellRef?: string,
-            sheetIndex?: number, dataSourceChange?: boolean, isFinite?: boolean, resolveAfterFullDataLoaded?: boolean }): void {
+            sheetIndex?: number, dataSourceChange?: boolean, isFinite?: boolean, resolveAfterFullDataLoaded?: boolean,
+            loadComplete?: Function, isSaveAction?: boolean, autoDetectFormat?: boolean }): void {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
         let result: Object[]; let remoteUrl: string; let isLocal: boolean; let dataManager: DataManager;
-        const requestedRange: boolean[] = []; const sRanges: number[] = []; let rowIdx: number;
+        const requestedRange: boolean[] = []; const sRanges: number[] = []; let rowIdx: number; let colIdx: number;
         const deferred: Deferred = new Deferred(); let sRowIdx: number; let sColIdx: number;
         let loadedInfo: { isNotLoaded: boolean, unloadedRange: number[] };
-        args.promise = deferred.promise;
+        args.promise = deferred.promise; let startCellIndexes: number[];
+        const autoDetectFormat: boolean = args.autoDetectFormat;
+        const autoDetectFormatFn: (cell: CellModel) => void = autoDetectFormat && getAutoDetectFormatParser(this.parent);
         if (args.sheet && args.sheet.ranges.length) {
             for (let k: number = args.sheet.ranges.length - 1; k >= 0; k--) {
-                let sRange: number = args.indexes[0]; let eRange: number = args.indexes[2];
                 const range: ExtendedRange = args.sheet.ranges[k as number];
-                sRowIdx = getRangeIndexes(range.startCell)[0];
+                startCellIndexes = getRangeIndexes(range.startCell);
+                if (args.isSaveAction) {
+                    args.indexes = startCellIndexes;
+                }
+                let sRange: number = args.indexes[0]; let eRange: number = args.indexes[2];
+                sRowIdx = startCellIndexes[0];
                 dataManager = range.dataSource instanceof DataManager ? range.dataSource as DataManager
                     : range.dataSource ? new DataManager(range.dataSource) : new DataManager();
                 remoteUrl = remoteUrl || dataManager.dataSource.url; args.sheet.isLocalData = isLocal || !dataManager.dataSource.url;
@@ -93,7 +99,9 @@ export class DataBind {
                 } else if (eRange > count) {
                     eRange = count;
                 }
-                this.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded });
+                if (!args.loadComplete) {
+                    this.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded });
+                }
                 if (sRange >= 0 && loadedInfo.isNotLoaded && !isEndReached) {
                     sRanges[k as number] = sRange; requestedRange[k as number] = false;
                     const query: Query = (range.query ? range.query : new Query()).clone();
@@ -133,24 +141,23 @@ export class DataBind {
                                     }
                                 });
                             }
-                            const curSheetIdx: number = args.formulaCellRef ? getSheetIndexFromId(this.parent, args.sheet.id) : undefined;
                             result.forEach((item: { [key: string]: string }, i: number) => {
                                 rowIdx = sRowIdx + sRanges[k as number] + i + (range.showFieldAsHeader ? 1 : 0) + insertRowCount;
                                 for (let j: number = 0; j < flds.length; j++) {
-                                    cell = getCell(rowIdx, sColIdx + j, args.sheet, true);
+                                    colIdx = sColIdx + j;
+                                    cell = getCell(rowIdx, colIdx, args.sheet, true);
                                     if (cell) {
                                         if (!flds[j as number].includes('emptyCell')) {
                                             setCell(
-                                                rowIdx, sColIdx + j, args.sheet, this.getCellDataFromProp(item[flds[j as number]]), true);
+                                                rowIdx, colIdx, args.sheet, this.getCellDataFromProp(item[flds[j as number]]), true);
                                         }
                                     } else {
-                                        args.sheet.rows[rowIdx as number].cells[sColIdx + j] =
+                                        cell = args.sheet.rows[rowIdx as number].cells[colIdx as number] =
                                             flds[j as number].includes('emptyCell') ? {} : this.getCellDataFromProp(item[flds[j as number]]);
                                     }
-                                    // this.checkDataForFormat({
-                                    //     args: args, cell: cell, colIndex: sColIdx + j, rowIndex: rowIdx, i: i, j: j, k: k, range: range,
-                                    //     sRanges: sRanges, value: item[flds[j]], sheetIndex: curSheetIdx
-                                    // });
+                                    if (autoDetectFormat) {
+                                        autoDetectFormatFn(cell);
+                                    }
                                 }
                             });
                         } else {
@@ -196,12 +203,13 @@ export class DataBind {
                                 dataLoading = true;
                                 //if (remoteUrl) {
                                 const unloadedArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>,
-                                    rangeSettingCount?: number[], isFinite?: boolean, resolveAfterFullDataLoaded?: boolean } = {
+                                    rangeSettingCount?: number[], isFinite?: boolean, resolveAfterFullDataLoaded?: boolean,
+                                    loadComplete?: Function, autoDetectFormat?: boolean } = {
                                     sheet: args.sheet, indexes: [0, 0, totalRows, totalCols],
                                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                                     promise: new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); }),
-                                    rangeSettingCount: args.rangeSettingCount, isFinite: args.isFinite,
-                                    resolveAfterFullDataLoaded: args.resolveAfterFullDataLoaded
+                                    rangeSettingCount: args.rangeSettingCount, isFinite: args.isFinite, loadComplete: args.loadComplete,
+                                    autoDetectFormat: args.autoDetectFormat, resolveAfterFullDataLoaded: args.resolveAfterFullDataLoaded
                                 };
                                 this.updateSheetFromDataSourceHandler(unloadedArgs);
                                 unloadedArgs.promise.then((): void => {
@@ -210,11 +218,15 @@ export class DataBind {
                                     if (!args.rangeSettingCount.length) { this.parent.notify('created', null); }
                                     if (args.formulaCellRef) {
                                         this.notfyFormulaCellRefresh(args.formulaCellRef, args.sheetIndex);
+                                    } else if (args.loadComplete) {
+                                        args.loadComplete();
                                     }
                                 });
                                 //}
                             } else if (args.formulaCellRef) {
                                 this.notfyFormulaCellRefresh(args.formulaCellRef, args.sheetIndex);
+                            } else if (args.loadComplete) {
+                                args.loadComplete();
                             }
                             if (!(dataLoading && args.resolveAfterFullDataLoaded)) {
                                 this.checkResolve(args.indexes);
@@ -301,42 +313,6 @@ export class DataBind {
             }
         }
         return data;
-    }
-
-    private checkDataForFormat(args: AutoDetectInfo): void {
-        if (args.value !== '') {
-            const dateEventArgs: { [key: string]: string | number | boolean } = {
-                value: args.value,
-                rowIndex: args.rowIndex,
-                colIndex: args.colIndex,
-                isDate: false,
-                updatedVal: args.value,
-                isTime: false,
-                sheetIndex: args.sheetIndex
-            };
-            this.parent.notify(checkDateFormat, dateEventArgs);
-            if (dateEventArgs.isDate) {
-                if (args.cell) {
-                    if (!args.cell.format) { args.cell.format = getFormatFromType('ShortDate'); }
-                    args.cell.value = <string>dateEventArgs.updatedVal;
-                } else {
-                    args.args.sheet.rows[args.rowIndex]
-                        .cells[args.colIndex].format = getFormatFromType('ShortDate');
-                    args.args.sheet.rows[args.rowIndex]
-                        .cells[args.colIndex].value = <string>dateEventArgs.updatedVal;
-                }
-            } else if (dateEventArgs.isTime) {
-                if (args.cell) {
-                    if (!args.cell.format) { args.cell.format = getFormatFromType('Time'); }
-                    args.cell.value = <string>dateEventArgs.updatedVal;
-                } else {
-                    args.args.sheet.rows[args.rowIndex]
-                        .cells[args.colIndex].format = getFormatFromType('Time');
-                    args.args.sheet.rows[args.rowIndex]
-                        .cells[args.colIndex].value = <string>dateEventArgs.updatedVal;
-                }
-            }
-        }
     }
 
     private getLoadedInfo(sRange: number, eRange: number, range: ExtendedRange): { isNotLoaded: boolean, unloadedRange: number[] } {

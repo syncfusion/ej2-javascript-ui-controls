@@ -1554,9 +1554,9 @@ describe('Link Module', () => {
             rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
             let target : HTMLElement= rteObj.linkModule.dialogObj.primaryButtonEle;
             rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
-            let firstChild : string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank">sync<strong>fusion</strong></a>';
+            let firstChild : string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">sync<strong>fusion</strong></a>';
             expect((pEle.childNodes[0] as HTMLElement).innerHTML === firstChild).toBe(true);
-            let secondChild : string = '<strong><a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank">Chennai</a></strong>';
+            let secondChild : string = '<strong><a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">Chennai</a></strong>';
             expect((pEle.childNodes[1] as HTMLElement).innerHTML === secondChild).toBe(true);
         });
         it('For single element with bold and image', function() {
@@ -1570,7 +1570,7 @@ describe('Link Module', () => {
             let target : string = rteObj.linkModule.dialogObj.primaryButtonEle;
             rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
             (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            let firstChild : string= '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank">Sync<strong>fusion</strong>' +
+            let firstChild : string= '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">Sync<strong>fusion</strong>' +
                 '<img class="e-rte-image e-imginline e-resize" width="109" height="42" alt="undefined" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="min-width: 0px; min-height: 0px;"></a> RichTextEditor';
             expect(rteObj.inputElement.childNodes[0].innerHTML === firstChild).toBe(true);
         });
@@ -1602,9 +1602,9 @@ describe('Link Module', () => {
             rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
             let target : HTMLElement= rteObj.linkModule.dialogObj.primaryButtonEle;
             rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
-            let firstChild : string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank">sync<strong>fusion</strong></a>';
+            let firstChild : string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">sync<strong>fusion</strong></a>';
             expect((pEle.childNodes[0] as HTMLElement).innerHTML === firstChild).toBe(true);
-            let secondChild : string = '<strong><a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank">Chennai</a></strong>';
+            let secondChild : string = '<strong><a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">Chennai</a></strong>';
             expect((pEle.childNodes[1] as HTMLElement).innerHTML === secondChild).toBe(true);
         });
         it('For single element with bold and image-Iframe', function() {
@@ -1618,7 +1618,7 @@ describe('Link Module', () => {
             let target : string = rteObj.linkModule.dialogObj.primaryButtonEle;
             rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
             (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            let firstChild : string= '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank">Sync<strong>fusion</strong>' +
+            let firstChild : string= '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank" aria-label="Open in new window">Sync<strong>fusion</strong>' +
                 '<img class="e-rte-image e-imginline e-resize" width="109" height="42" alt="undefined" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="min-width: 0px; min-height: 0px;"></a> RichTextEditor';
             expect(rteObj.inputElement.childNodes[0].innerHTML === firstChild).toBe(true);
         });

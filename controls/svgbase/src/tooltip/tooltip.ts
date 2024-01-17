@@ -1070,7 +1070,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     if (i === 0) {
                         templateElement = sharedTemplateElement;
                     } else {
-                        templateElement[templateElement.length - 1].outerHTML += '<br>' + sharedTemplateElement[0].outerHTML;
+                        templateElement[templateElement.length - 1].outerHTML += sharedTemplateElement[0].outerHTML;
                     }
                 }
             }
@@ -1257,7 +1257,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     tipLocation.x = arrowLocation.x = 0;
                     tipLocation.y = arrowLocation.y = height / 2;
                     if ((location.x + this.arrowPadding + width > boundsX + bounds.width) || (this.isNegative)) {
-                        location.x = (symbolLocation.x > bounds.width ? bounds.width : symbolLocation.x)
+                        location.x = (symbolLocation.x > boundsX + bounds.width ? bounds.width : symbolLocation.x)
                             + clipX - markerHeight - (this.arrowPadding + width);
                     }
                     if (location.x < boundsX) {
@@ -1381,7 +1381,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 } else {
                     tooltipDiv.style.left = (x + currenDiff * (rect.x - x)) + 'px';
                     tooltipDiv.style.top = (y + currenDiff * (rect.y - y)) + 'px';
-                    tooltipDiv.style.transform = '';
+                    tooltipDiv.style.transform = this.controlName === 'RangeNavigator' ? tooltipDiv.style.transform : '';
                 }
             },
             end: (model: AnimationOptions): void => {
@@ -1400,7 +1400,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             tooltipDiv.style.left = x + 'px';
             tooltipDiv.style.top = y + 'px';
-            tooltipDiv.style.transform = '';
+            tooltipDiv.style.transform = this.controlName === 'RangeNavigator' ? tooltipDiv.style.transform : '';
         }
     }
 

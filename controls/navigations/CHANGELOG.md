@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 24.1.46 (2024-01-17)
+
+### Menu
+
+#### Bug Fixes
+
+- `#F519984` - The issue with "Keyboard action is not working properly in the Menu Component" has been resolved.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I531520` - TreeView component's title not decoded properly same as in tree node text has been resolved.
+
+### Toolbar
+
+#### Bug fixes
+
+- `#I508465` - The issue with the differentiate toolbar active and focus states has been resolved.
+
 ## 24.1.41 (2023-12-18)
 
 ### TreeView

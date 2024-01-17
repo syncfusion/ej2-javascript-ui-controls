@@ -2253,10 +2253,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.titleCollection = [];
         this.subTitleCollection = [];
         if (this.title) {
-            this.titleCollection = getTitle(this.title, this.titleStyle, width, this.themeStyle.chartTitleFont);
+            this.titleCollection = getTitle(this.title, this.titleStyle, width, this.enableRtl, this.themeStyle.chartTitleFont);
             titleHeight = (measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont).height * this.titleCollection.length) + padding;
             if (this.subTitle) {
-                this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, width, this.themeStyle.chartSubTitleFont);
+                this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, width, this.enableRtl, this.themeStyle.chartSubTitleFont);
                 subTitleHeight = (measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont).height * this.subTitleCollection.length) +
                     padding;
             }

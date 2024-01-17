@@ -1012,9 +1012,9 @@ export class BaseLegend {
             this.isTop = legend.titlePosition === 'Top';
             const padding: number = legend.titleStyle.textOverflow === 'Trim' ? 2 * legend.padding : 0;
             if (this.isTop || this.isVertical) {
-                this.legendTitleCollections = getTitle(legend.title, legend.titleStyle, (legendBounds.width - padding), this.chart.themeStyle.legendTitleFont);
+                this.legendTitleCollections = getTitle(legend.title, legend.titleStyle, (legendBounds.width - padding), this.chart.enableRtl, this.chart.themeStyle.legendTitleFont);
             } else {
-                this.legendTitleCollections[0] = textTrim(legend.maximumTitleWidth, legend.title, legend.titleStyle, this.chart.themeStyle.legendTitleFont);
+                this.legendTitleCollections[0] = textTrim(legend.maximumTitleWidth, legend.title, legend.titleStyle, this.chart.enableRtl, this.chart.themeStyle.legendTitleFont);
             }
             const text: string = this.isTop ? legend.title : this.legendTitleCollections[0];
             this.legendTitleSize = measureText(text, legend.titleStyle, this.chart.themeStyle.legendTitleFont);
@@ -1225,7 +1225,8 @@ export class BaseLegend {
             textOptions.x = legendOption.location.x - (legend.shapeWidth / 2);
         }
         else if (this.isRtlEnable) {
-            textOptions.x = legendOption.location.x - (measureText(legendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont).width + legend.shapeWidth / 2 + legend.shapePadding);
+            const textWidth: number = measureText(legendOption.text, legend.textStyle, this.chart.themeStyle.legendLabelFont).width;
+            textOptions.x = legendOption.location.x - ((legendOption.textCollection.length > 1 ? textWidth / legendOption.textCollection.length : textWidth) + legend.shapeWidth / 2 + legend.shapePadding);
         }
         else {
             textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
@@ -1452,7 +1453,7 @@ export class BaseLegend {
             this.legendTranslateGroup.setAttribute('transform', translate);
         }
         if (!(this.chart as Chart).enableCanvas && (legend.enablePages || this.isBulletChartControl)) {
-            pagingText.textContent = !this.isRtlEnable ? (pageNumber) + '/' + this.totalPages : this.totalPages + '/' + pageNumber;
+            pagingText.textContent = (pageNumber) + '/' + this.totalPages;
         }
         this.currentPage = pageNumber;
         return size;
@@ -1473,7 +1474,7 @@ export class BaseLegend {
         const isCanvas: boolean = this.isStockChartControl ? false : (this.chart as Chart).enableCanvas;
         const pageText: Element = (legend.enablePages || this.isBulletChartControl) ?
             document.getElementById(this.legendID + '_pagenumber') : null;
-        const page: number = (legend.enablePages || this.isBulletChartControl) ? parseInt(pageText.textContent.split('/')[!this.isRtlEnable ? 0 : 1], 10) :
+        const page: number = (legend.enablePages || this.isBulletChartControl) ? parseInt(pageText.textContent.split('/')[0], 10) :
             this.currentPage;
         if (pageUp && page > 1) {
             this.translatePage(isCanvas, pageText, (page - 2), (page - 1), legend);

@@ -1309,9 +1309,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         //pre render section
         this.findResultsList = [];
-        if (isNullOrUndefined(this.documentEditorSettings.popupTarget)) {
-            this.documentEditorSettings.popupTarget = document.body;
-        }
+        setTimeout(() => {
+            if (isNullOrUndefined(this.documentEditorSettings.popupTarget)) {
+                this.documentEditorSettings.popupTarget = document.body;
+            }
+        }, 0);
         if (!isNullOrUndefined(this.element) && this.element.id === '') {
             //Set unique id, if id is empty
             this.element.id = HelperMethods.getUniqueElementId();

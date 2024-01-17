@@ -136,7 +136,7 @@ $tbar-pressed-bg: $secondary-bg-color-focus !default;
 $tbar-pressed-font: $content-text-color-alt2 !default;
 $tbar-select-font: $content-text-color-alt2 !default;
 $tbar-default-icon-overlay: $content-text-color-alt2 !default;
-$tbar-focus-bg: $tbar-hover-bg !default;
+$tbar-focus-bg: none !default;
 $tbar-press-font: $content-text-color-alt2 !default;
 $tbar-default-font-overlay: $content-text-color-alt2 !default;
 $tbar-active-font-color: $primary-text-color !default;
@@ -150,7 +150,7 @@ $tbar-nrml-btn-border-radius: 4px !default;
 $tbar-nrml-btn-focus-padding: 0 4px !default;
 $tbar-nrml-btn-focus-outline: 0 !default;
 
-$tbar-btn-icons-focus-color: $primary-text-color !default;
+$tbar-btn-icons-focus-color: $icon-color !default;
 $tbar-btn-text-focus-color: $primary-text-color !default;
 $tbar-btn-focus-border-color: $tbar-focus-border-color !default;
 $tbar-btn-hover-border-size: $tbar-border-size !default;
@@ -169,7 +169,7 @@ $tbar-flat-btn-active-box-shadow: none !default;
 $tbar-ext-btn-focus-padding: 0 4px !default;
 $tbar-ext-btn-icon-padding: 5px 6px !default;
 $tbar-ext-btn-icon-font-size: $text-base !default;
-$tbar-ext-btn-focus-box-shadow: none !default;
+$tbar-ext-btn-focus-box-shadow: $secondary-shadow-focus !default;
 $tbar-ext-btn-hover-border-color: $tbar-hover-border-color !default;
 $tbar-ext-btn-border: none !default;
 

@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## 24.1.46 (2024-01-17)
+
+### Svg Base
+
+- `#I538387` - Now, the Accumulation chart tooltip renders properly even when it does not fit in the container.
+- `#I528508` - Now, the shared tooltip template is working properly when used with multiple series.
+
 ## 24.1.45 (2024-01-09)
 
 ### Svg Base

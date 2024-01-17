@@ -1496,6 +1496,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    private isChildObject(): boolean {
+        if (typeof this.fields.child === 'object') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private renderItems(isSorted: boolean): void {
         /* eslint-disable */
         this.listBaseOption.ariaAttributes.level = 1;
@@ -1811,6 +1819,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         for (let i: number = 0, len: number = ds.length; i < len; i++) {
             if ((typeof mapper.child === 'string') && !isNOU(getValue(mapper.child, ds[i]))) {
+                return 2;
+            }
+            if (this.isChildObject()) {
                 return 2;
             }
             if (!isNOU(getValue(mapper.parentID, ds[i])) || !isNOU(getValue(mapper.hasChildren, ds[i]))) {
@@ -2730,7 +2741,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 });
             }
         } else {
-            childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
+            childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'), false, parseFloat(parentLi.getAttribute('aria-level')) + 1);
             this.currentLoadData = this.getSortedData(childItems);
             if (isNOU(childItems) || childItems.length === 0) {
                 detach(eicon);
@@ -2838,7 +2849,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         return (typeof mapper.child === 'string' || isNOU(mapper.child)) ? mapper : mapper.child;
     }
 
-    private getChildNodes(obj: { [key: string]: Object }[], parentId: string, isRoot: boolean = false): { [key: string]: Object }[] {
+    private getChildNodes(obj: { [key: string]: Object }[], parentId: string, isRoot: boolean = false, level?:number): { [key: string]: Object }[] {
         let childNodes: { [key: string]: Object }[];
         if (isNOU(obj)) {
             return childNodes;
@@ -2862,6 +2873,37 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         }
                     }
                 }
+                }
+            } else if (this.isChildObject()) {
+                let tempField: any = !isNOU(level) ? this.fields : this.fields.child;
+                let i =1;
+                while(i < level) {
+                    if (!isNOU(tempField.child)) {
+                        tempField = tempField.child;
+                    } else {
+                        break;
+                    }
+                    i++; 
+                }
+                this.updateListProp(tempField);
+                let index: number = obj.findIndex((data) => getValue(this.fields.id, data) && getValue(this.fields.id, data).toString() === parentId);
+                if (index !== -1) {
+                    return <{ [key: string]: Object }[]>getValue(('child' as string), obj[index]);
+                }
+                if(index === -1){
+                    for (let i: number = 0, objlen: number = obj.length; i < objlen; i++) {
+                        let tempArray: { [key: string]: Object }[] = getValue('child',  obj[i]);
+                        let childIndex: number= !isNOU(tempArray)?tempArray.findIndex((data) => getValue((this.fields.child as any).id, data) && getValue((this.fields.child as any).id, data).toString() === parentId) : -1;
+                        if(childIndex!==-1){
+                            return <{ [key: string]: Object }[]>getValue('child', tempArray[childIndex]);
+                        }
+                        else if (!isNOU(tempArray)) {
+                            childNodes = this.getChildNodes(tempArray, parentId, false, level);
+                            if (childNodes !== undefined) {
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -3913,6 +3955,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             } else if (this.fields.dataSource instanceof DataManager && !isNOU(getValue('child', obj[i]))) {
                 let child: string = 'child';
                 newList = this.getChildNodeObject(<{ [key: string]: Object }[]>getValue(child, obj[i]), this.getChildMapper(mapper), id);
+                if (newList !== undefined) {
+                    break;
+                }
+            } else if (this.isChildObject()) {
+                let children = 'child';
+                let childData: Object = getValue(children, obj[i]);
+                newList = this.getChildNodeObject(<{ [key: string]: Object }[]>childData, this.getChildMapper(mapper), id);
                 if (newList !== undefined) {
                     break;
                 }

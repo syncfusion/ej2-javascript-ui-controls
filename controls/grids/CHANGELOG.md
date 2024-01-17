@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.46 (2024-01-17)
+
+### Grid
+
+#### Bug fixes
+
+- `#FB49473` - Resolved the issue where preventing checkbox selection by setting `isSelectable` property to false was not effective when using a column template in the grid.
+
 ## 24.1.45 (2024-01-09)
 
 ### Grid
@@ -12,6 +20,7 @@
 - `#I520335` - Resolved an issue regarding incorrect `filterBeforeOpen requestType` naming and updated the `options` property scope as public within the `actionBegin` event argument when opening the filter menu.
 - `#I533690` - Script error thrown when clicking the cancel button in batch edit has been fixed.
 - `#FB49544` - The problem with `persistSelection` in custom data binding has been successfully resolved.
+- `#FB49437` - Auto suggestion not working when using the right click paste issue has been fixed.
 
 ## 24.1.44 (2024-01-03)
 

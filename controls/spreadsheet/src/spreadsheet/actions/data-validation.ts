@@ -52,7 +52,11 @@ export class DataValidation {
     }
 
     private addEventListener(): void {
-        EventHandler.add(this.parent.element, 'dblclick', this.listOpen, this);
+        if (Browser.isDevice && Browser.info.name === 'safari' && (Browser.isIos || Browser.isIos7)) {
+            EventHandler.add(this.parent.element, 'touchend', this.listOpen, this);
+        } else {
+            EventHandler.add(this.parent.element, 'dblclick', this.listOpen, this);
+        }
         this.parent.on(initiateDataValidation, this.initiateDataValidationHandler, this);
         this.parent.on(invalidData, this.invalidDataHandler, this);
         this.parent.on(isValidation, this.checkDataValidation, this);
@@ -63,7 +67,11 @@ export class DataValidation {
     }
 
     private removeEventListener(): void {
-        EventHandler.remove(this.parent.element, 'dblclick', this.listOpen);
+        if (Browser.isDevice && Browser.info.name === 'safari' && (Browser.isIos || Browser.isIos7)) {
+            EventHandler.remove(this.parent.element, 'touchend', this.listOpen);
+        } else {
+            EventHandler.remove(this.parent.element, 'dblclick', this.listOpen);
+        }
         if (!this.parent.isDestroyed) {
             this.parent.off(initiateDataValidation, this.initiateDataValidationHandler);
             this.parent.off(invalidData, this.invalidDataHandler);
@@ -147,7 +155,7 @@ export class DataValidation {
 
     private listOpen(e: MouseEvent): void {
         const target: HTMLElement = e.target as HTMLElement;
-        if (this.listObj && target.classList.contains('e-cell') && target.querySelector('.e-validation-list')) {
+        if (this.listObj && target.classList.contains('e-cell') && target.querySelector('.e-validation-list') && this.parent.isEdit) {
             this.listObj.showPopup();
         }
     }
@@ -181,6 +189,7 @@ export class DataValidation {
             const indexes: number[] = getCellIndexes(sheet.activeCell);
             const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
             const tdEle: HTMLElement = this.parent.getCell(indexes[0], indexes[1]);
+            let isDevice: boolean;
             if (!tdEle) { return; }
             if (document.getElementsByClassName('e-validation-list')[0]) {
                 if (this.listObj) {
@@ -215,20 +224,20 @@ export class DataValidation {
                         width: '0px',
                         popupHeight: '200px',
                         change: () => this.listValueChange(this.listObj.text),
+                        beforeOpen: (args: PopupEventArgs) => {
+                            isDevice = (window as any).browserDetails.isDevice;
+                            if (isDevice) { (window as any).browserDetails.isDevice = false; }
+                        },
                         open: (args: PopupEventArgs) => {
                             args.popup.offsetX = - (tdEle.offsetWidth - 20) + 4;
                             args.popup.offsetY = -13;
                             args.popup.element.style.width = tdEle.offsetWidth - 1 + 'px';
-                            // Positioning popup in mobile device based on transform css applied on virtual element as suggested by dropdown team
-                            if (Browser.isDevice && this.parent.scrollModule) {
-                                const offset: { left: IOffset, top: IOffset } = this.parent.scrollModule.offset;
-                                const viewport: IViewport = this.parent.viewport;
-                                args.popup.offsetY += viewport.topIndex ? offset.top.size -
-                                    getRowsHeight(sheet, viewport.topIndex + 1, offset.top.idx, true) : 0;
-                                args.popup.offsetX += viewport.leftIndex ? offset.left.size -
-                                    getColumnsWidth(sheet, viewport.leftIndex + 1, offset.left.idx, true) : 0;
-                                args.popup.refresh();
-                                args.popup.element.style.width = tdEle.offsetWidth - 1 + 'px';
+                            if (isDevice) {
+                                const listButton: HTMLElement = tdEle.querySelector('.e-validation-list') as HTMLElement;
+                                const listElem: HTMLElement = tdEle.querySelector('.e-control-wrapper.e-ddl') as HTMLElement;
+                                args.popup.offsetX = - (tdEle.offsetWidth - (listButton ? listButton.offsetWidth : 20)) + 4;
+                                args.popup.offsetY = - ((listElem ? listElem.offsetHeight : 37) - (listButton ? listButton.offsetHeight : 18));
+                                (window as any).browserDetails.isDevice = true;
                             }
                         },
                         close: (args: PopupEventArgs): void => {

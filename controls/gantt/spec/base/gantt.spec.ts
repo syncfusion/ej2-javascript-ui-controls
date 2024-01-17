@@ -1350,4 +1350,121 @@ describe('Milestone Baseline render', () => {
             expect(ganttObj.columns.length).toBe(1);
         });
     });
+        describe('Split tasks progress value', () => {
+         let ganttObj: Gantt;
+         var splitTasksData = [
+             {
+                 TaskID: 1,
+                 TaskName: 'Defining the product and its usage',
+                 StartDate: new Date('2019-02-04T21:28:41'),
+                 EndDate: new Date('2019-02-05T21:28:41'),
+                 Duration: 180,
+                 Progress: 47,
+                 Segments: [
+                     {
+                         StartDate: new Date('2019-02-04'),
+                         Duration: 90,
+                     },
+                     {
+                         StartDate: new Date('2019-02-05'),
+                         Duration: 90,
+                     },
+                 ],
+             },
+         ];
+         beforeAll((done: Function) => {
+             ganttObj = createGantt({
+                 dataSource: splitTasksData,
+                 taskFields: {
+                     id: 'TaskID',
+                     name: 'TaskName',
+                     startDate: 'StartDate',
+                     endDate: 'EndDate',
+                     duration: 'Duration',
+                     progress: 'Progress',
+                     dependency: 'Predecessor',
+                     child: 'subtasks',
+                     segments: 'Segments',
+                     durationUnit: 'durationUnit',
+                 },
+                 editSettings: {
+                     allowAdding: true,
+                     allowEditing: true,
+                     allowDeleting: true,
+                     allowTaskbarEditing: true,
+                     showDeleteConfirmDialog: true,
+                 },
+                 columns: [
+                     { field: 'TaskID', width: 80 },
+                     {
+                         field: 'TaskName',
+                         headerText: 'Job Name',
+                         width: '250',
+                         clipMode: 'EllipsisWithTooltip',
+                     },
+                     { field: 'StartDate' },
+                     { field: 'EndDate' },
+                     { field: 'Duration' },
+                     { field: 'Progress' },
+                     { field: 'Predecessor' },
+                 ],
+                 durationUnit: 'Minute',
+                 dayWorkingTime: [
+                     {
+                         from: 0,
+                         to: 24,
+                     },
+                 ],
+                 toolbar: [
+                     'Add',
+                     'Edit',
+                     'Update',
+                     'Delete',
+                     'Cancel',
+                     'ExpandAll',
+                     'CollapseAll',
+                 ],
+                 enableContextMenu: true,
+                 allowSelection: true,
+                 height: '450px',
+                 treeColumnIndex: 1,
+                 highlightWeekends: true,
+                 splitterSettings: {
+                     position: '35%',
+                 },
+                 projectEndDate: new Date('2019-02-14'),
+                 projectStartDate: new Date('2019-02-04'),
+                 labelSettings: {
+                     leftLabel: 'TaskName',
+                     taskLabel: '${Progress}%',
+                 },
+                 timezone: 'Europe/Rome',
+                 timelineSettings: {
+                     timelineUnitSize: 40,
+                     showTooltip: true,
+                     timelineViewMode: 'Day',
+                     topTier: {
+                         unit: 'Day',
+                         format: 'E, d MMMM',
+                         count: 1,
+                     },
+                     bottomTier: {
+                         unit: 'Hour',
+                         count: 1,
+                     },
+                     weekStartDay: 1,
+                     weekendBackground: 'rgba(0,0,0,0.1)',
+                     updateTimescaleView: false,
+                 },
+             }, done);
+
+         });
+         afterAll(() => {
+             destroyGantt(ganttObj);
+         });
+         it('check progress value', () => {
+             expect(ganttObj.currentViewData[0].ganttProperties.segments[0].progressWidth).toBe(56.4);
+             expect(ganttObj.currentViewData[0].ganttProperties.segments[1].progressWidth).toBe(-1);
+         });
+     });
 });

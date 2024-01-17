@@ -705,9 +705,11 @@ export class ExportHelper {
             compositeField.draw(footer.graphics, new PointF(0, 0));
             pdfDoc.template.bottom = footer;
         }
+        const PdfPage  = this.parent.pdfExportModule.pdfPage;
+        const pageSize = PdfPage.size;
+        const clientSize: SizeF = !isNullOrUndefined(pageSize)?  pageSize : this.pdfDoc.pageSettings.size;
         // code for draw header content
         if (!isNullOrUndefined(this.exportProps.header)) {
-            const clientSize: SizeF = this.pdfDoc.pageSettings.size;
             const headerProp: PdfHeader = this.exportProps.header;
             const position: PointF = new PointF(0, headerProp.fromTop);
             const size: SizeF = new SizeF((clientSize.width * 1.1), ((headerProp && headerProp.height) ? headerProp.height * 0.75 : 50));
@@ -717,7 +719,6 @@ export class ExportHelper {
         }
         // code for customization of footer
         if (!this.exportProps.enableFooter && !isNullOrUndefined(this.exportProps.footer)) {
-            const clientSize: any = this.pdfDoc.pageSettings.size;
             const footer: any = this.exportProps.footer;
             const position: PointF = new PointF(0, ((clientSize.width - 80) - ((footer && footer.fromBottom) ?
                 footer.fromBottom * 0.75 : 0)));

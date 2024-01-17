@@ -1,6 +1,6 @@
 import { IDataSet } from '../../src/base/engine';
 import { PivotView } from '../../src/pivotview/base/pivotview';
-import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
+import { createElement, remove, EmitType, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 import {
     BeginDrillThroughEventArgs
@@ -320,6 +320,108 @@ describe('Group By Date feature', () => {
                 document.querySelectorAll('.e-drillthrough-grid .e-tbar-btn')[3].dispatchEvent(click);
                 (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
             }
+        });
+    });
+    describe('CSV - GROUPING', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        let csvdata: string = "Region,Country,Item Type,Sales Channel,Order Priority,Order Date,Order ID,Ship Date,Units Sold,Unit Price,Unit Cost,Total Revenue,Total Cost,Total Profit\r\n" +
+            "Middle East and North Africa,Libya,Cereal,Offline,M,10/18/2014,686800706,10/31/2014,8446,437.20,263.33,3692591.20,2224085.18,1468506.02\r\n" +
+            "North America,Canada,Cosmetics,Online,M,11/7/2011,185941302,12/8/2011,3018,154.06,90.93,464953.08,274426.74,190526.34\r\n" +
+            "Asia,Japan,Cereal,Offline,C,4/10/2010,161442649,5/12/2010,3322,205.70,117.11,683335.40,389039.42,294295.98\r\n" +
+            "Sub-Saharan Africa,Chad,Cosmetics,Offline,H,8/16/2011,645713555,8/31/2011,9845,9.33,6.92,91853.85,68127.40,23726.45\r\n" +
+            "Europe,Armenia,Cosmetics,Online,H,11/24/2014,683458888,12/28/2014,9528,205.70,117.11,1959909.60,1115824.08,844085.52\r\n" +
+            "Sub-Saharan Africa,Eritrea,Cereal,Online,H,3/4/2015,679414975,4/17/2015,2844,205.70,117.11,585010.80,333060.84,251949.96\r\n";
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: getCSVData(),
+                    type: 'CSV',
+                    expandAll: true,
+                    enableSorting: true,
+                    allowLabelFilter: true,
+                    allowValueFilter: true,
+                    rows: [
+                        { name: 'Region' },
+                        { name: 'Country' }
+                    ], columns: [
+                        { name: 'Item Type' },
+                        { name: 'Sales Channel' }
+                    ], values: [
+                        { name: 'Total Cost' },
+                        { name: 'Total Revenue' },
+                        { name: 'Total', type: 'CalculatedField' }
+                    ],
+                    filters: [],
+                    calculatedFieldSettings: [{ name: 'Total', formula: '"Sum(Total Cost)"' }]
+                },
+                showFieldList: true,
+                allowGrouping: true,
+                width: 600,
+                height: 300
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+            function getCSVData(): string[][] {
+                let dataSource: string[][] = [];
+                let jsonObject: string[] = csvdata.split(/\r?\n|\r/);
+                for (let i: number = 0; i < jsonObject.length; i++) {
+                    if (!isNullOrUndefined(jsonObject[i]) && jsonObject[i] !== '') {
+                        dataSource.push(jsonObject[i].split(','));
+                    }
+                }
+                return dataSource;
+            }
+        });
+        it('For sample render', (done: Function) => {
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 200);
+        });
+        it('Check groups initially', (done: Function) => {
+            setTimeout(() => {
+                expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[0].textContent).toBe('Asia');
+                done();
+            }, 100);
+        });        
+        it('Check group settings updated using an proptery', (done: Function) => {
+            pivotGridObj.dataSourceSettings.groupSettings = [{
+                name: 'Region', type: 'Custom', customGroups: [{
+                    groupName: 'Asian Countries', items: [
+                        'Asia', 'Europe'
+                    ]
+                }]
+            }];
+            setTimeout(() => {
+                expect(1).toBe(1);
+                done();
+            }, 400);
+        });
+        it('Check custom grouping', (done: Function) => {
+            setTimeout(() => {
+                expect(pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[0].textContent).toBe('Asian Countries');
+                done();
+            }, 100);
         });
     });
 });

@@ -284,7 +284,7 @@ export class Crosshair {
                                 null);
                         }
                         axisGroup.appendChild(pathElement);
-                        options = new TextOption(this.elementID + '_axis_tooltip_text_' + k, 0, 0, 'start', text);
+                        options = new TextOption(this.elementID + '_axis_tooltip_text_' + k, 0, 0, (chart.stockChart && chart.enableRtl) ? 'end' : 'start', text);
                         const render: SvgRenderer | CanvasRenderer = chart.enableCanvas ? this.svgRenderer : chart.renderer;
                         textElem = textElement(
                             render, options, axis.crosshairTooltip.textStyle,

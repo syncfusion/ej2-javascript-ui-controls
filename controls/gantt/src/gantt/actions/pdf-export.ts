@@ -24,6 +24,7 @@ export class PdfExport {
     private isBlob: boolean;
     private blobPromise: Promise<{ blobData: Blob }>;
     public pdfPageDimensions: SizeF;
+    public pdfPage: PdfPage;
     /**
      * @param {Gantt} parent .
      * @hidden
@@ -134,8 +135,8 @@ export class PdfExport {
     private processExport(data: IGanttData[], pdfExportProperties: PdfExportProperties, isMultipleExport: boolean): Promise<Object> {
         const section: PdfSection = this.pdfDocument.sections.add() as PdfSection;
         this.processSectionExportProperties(section, pdfExportProperties);
-        const pdfPage: PdfPage = section.pages.add();
-        this.pdfPageDimensions = pdfPage.getClientSize();
+        this.pdfPage = section.pages.add();
+        this.pdfPageDimensions = this.pdfPage.getClientSize();
         /* eslint-disable-next-line */
         return new Promise((resolve: Function, reject: Function) => {
             this.helper.processGridExport(data, this.gantt, pdfExportProperties);
@@ -144,7 +145,7 @@ export class PdfExport {
         }).then(() => {
             const format: PdfTreeGridLayoutFormat = new PdfTreeGridLayoutFormat();
             format.break = PdfLayoutBreakType.FitElement;
-            const layouter: PdfTreeGridLayoutResult = this.gantt.drawGrid(pdfPage, 0, 0, format);
+            const layouter: PdfTreeGridLayoutResult = this.gantt.drawGrid(this.pdfPage, 0, 0, format);
             this.gantt.drawChart(layouter);
             if (this.helper.exportProps && this.helper.exportProps.fitToWidthSettings && this.helper.exportProps.fitToWidthSettings.isFitToWidth) {
                 this.parent.zoomingProjectStartDate = this.helper.beforeSinglePageExport['zoomingProjectStartDate'];

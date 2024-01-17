@@ -339,7 +339,7 @@ export class Selection {
                         (isTouchStart(e) && activeIdx[0] === rowIdx && activeIdx[1] === colIdx)) || isColSelected || isRowSelected)) {
                         document.addEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
                         if (!Browser.isPointer) {
-                            if (Browser.isIos && isTouchStart(e)) {
+                            if (Browser.isIos && isTouchStart(e) && e.target && (e.target as HTMLElement).classList.contains('e-cell')) {
                                 e.preventDefault();
                             }
                             document.addEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt, { passive: false });

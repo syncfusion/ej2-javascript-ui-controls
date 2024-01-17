@@ -4413,10 +4413,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (!args.cancel) {
                 if (!this.ulElement) {
                     this.beforePopupOpen = true;
-                    super.render(e);
                     if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {
                         this.notify('popupFullScreen', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox' });
                     }
+                    super.render(e);
                     return;
                 }
                 if (this.mode === 'CheckBox' && Browser.isDevice && this.allowFiltering) {

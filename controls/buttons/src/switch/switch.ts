@@ -33,6 +33,8 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
     private delegateKeyUpHandler: Function;
     private formElement: HTMLFormElement;
     private initialSwitchCheckedValue: boolean;
+    private bTouchY: number;
+    private bTouchX: number;
 
     /**
      * Triggers when Switch state has been changed by user interaction.
@@ -427,19 +429,37 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         }
     }
     private switchMouseUp(e: MouseEventArgs): void {
+        let aTouchY: number = 0; let yDiff: number = 0;
+        let aTouchX: number = 0; let xDiff: number = 0;
         const target: Element = e.target as Element;
         if (e.type === 'touchmove') {
             e.preventDefault();
+            aTouchX = e.changedTouches[0].clientX;
+            aTouchY = e.changedTouches[0].clientY;
+            xDiff = this.bTouchX - aTouchX;
+            yDiff = this.bTouchY - aTouchY;
+            if (Math.abs(xDiff) < Math.abs(yDiff)) {
+                this.isDrag = false;
+                this.rippleTouchHandler('mouseup');
+            } else {
+                this.isDrag = true;
+            }
         }
         if (e.type === 'touchstart') {
+            this.bTouchX = e.changedTouches[0].clientX;
+            this.bTouchY = e.changedTouches[0].clientY;
             this.isDrag = true;
             this.rippleTouchHandler('mousedown');
         }
         if (this.isDrag) {
             if ((e.type === 'mouseup' && target.className.indexOf('e-switch') < 0) || e.type === 'touchend') {
-                this.clickHandler(e);
-                this.rippleTouchHandler('mouseup');
-                e.preventDefault();
+                xDiff = this.bTouchX - e.changedTouches[0].clientX;
+                yDiff = this.bTouchY - e.changedTouches[0].clientY;
+                if (Math.abs(xDiff) >= Math.abs(yDiff)) {
+                    this.clickHandler(e);
+                    this.rippleTouchHandler('mouseup');
+                    e.preventDefault();
+                }
             }
         }
     }

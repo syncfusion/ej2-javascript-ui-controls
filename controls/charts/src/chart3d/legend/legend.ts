@@ -588,7 +588,7 @@ export class Legend3D extends BaseLegend {
                 legendOption.textCollection = textWrap(
                     legendOption.text,
                     (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (legendBounds.width - textPadding)) :
-                        (legendBounds.width - textPadding)), legend.textStyle, null, null, this.chart.themeStyle.legendLabelFont
+                        (legendBounds.width - textPadding)), legend.textStyle, this.chart.enableRtl, null, null, this.chart.themeStyle.legendLabelFont
                 );
             } else {
                 legendOption.textCollection.push(legendOption.text);
@@ -640,7 +640,7 @@ export class Legend3D extends BaseLegend {
         availwidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availwidth) : availwidth;
         if (this.legend.textOverflow === 'Ellipsis' && this.legend.textWrap === 'Normal') {
             legendOption.text = textTrim(+availwidth.toFixed(4), legendOption.text,
-                                         this.legend.textStyle, this.chart.themeStyle.legendLabelFont);
+                                         this.legend.textStyle, this.chart.enableRtl, this.chart.themeStyle.legendLabelFont);
         }
 
     }

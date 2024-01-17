@@ -1694,6 +1694,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     protected render(): void {
+        this.value = (!(this.editorMode === 'Markdown') && !isNOU(this.value)) ? this.addAnchorAriaLabel(this.value) : this.value;
         if (this.value && !this.valueTemplate) {
             this.setProperties({ value: this.serializeValue(this.value) }, true);
         }
@@ -3365,6 +3366,18 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private cleanupResizeElements(args: CleanupResizeElemArgs): void {
         const value = this.removeResizeElement(args.value);
         args.callBack(value);
+    }
+
+    public addAnchorAriaLabel(value: string): string {
+        let valueElementWrapper: HTMLElement = document.createElement("div");
+        valueElementWrapper.innerHTML = value;
+        let item: NodeListOf<Element> = valueElementWrapper.querySelectorAll("a");
+        if (item.length > 0) {
+            for (let i: number = 0; i < item.length; i++) {
+                (item[i as number].hasAttribute("target") && item[i as number].getAttribute("target") === '_blank') ? item[i as number].setAttribute("aria-label", (this.serviceLocator.getService<L10n>('rteLocale') as any).getConstant("linkAriaLabel")) : item[i as number];
+            }
+        }
+        return valueElementWrapper.innerHTML;
     }
 
     private removeResizeElement(value: string): string {

@@ -6,6 +6,7 @@ import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs, DateFor
 import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, checkDateFormat, getFormattedBarText } from '../common/index';
 import { getTextSpace, NumberFormatArgs, isCustomDateTime, VisibleMergeIndexArgs, setVisibleMergeIndex } from './../index';
 import { checkIsNumberAndGetNumber, parseThousandSeparator } from '../common/internalization';
+import { AutoDetectGeneralFormatArgs, checkNumberFormat } from './../common/index';
 /**
  * Specifies number format.
  */
@@ -801,40 +802,52 @@ export class WorkbookNumberFormat {
             options.isRightAlign = true;
         }
         if (options.fResult) {
-            let res: string = options.fResult.toString();
-            if (this.isPercentageValue(res, options.args, options.cell)) {
-                options.cell.format = options.args.format = res.includes(this.decimalSep) ? getFormatFromType('Percentage') : '0%';
-                options.fResult = this.percentageFormat(options.args, options.intl);
-                options.isRightAlign = true;
-            } else {
-                let format: string = '';
-                if (res.includes(options.currencySymbol)) { // Auto detect 1000 separator format with currency symbol
-                    format = res.includes(this.decimalSep) ? '$#,##0.00' : '$#,##0';
-                    res = res.replace(options.currencySymbol, '');
-                }
-                const isEdit: boolean = this.decimalSep === '.' || options.args.isEdit;
-                if (isEdit && res.includes(this.groupSep) && parseThousandSeparator(res, this.parent.locale, this.groupSep, this.decimalSep)) {
-                    res = res.split(this.groupSep).join('');
-                    if (!format) { // Auto detect 1000 separator format
-                        format = (res.includes(this.decimalSep) ? '#,##0.00' : '#,##0');
-                    }
-                }
-                if (format) {
-                    res = res.replace(this.decimalSep, '.');
-                    if (isNumber(res)) {
-                        options.args.value = Number(res).toString();
-                        setCell(options.rowIdx, options.colIdx, options.sheet, { value: options.args.value, format: format }, true);
-                        options.fResult = this.getFormattedNumber(format, Number(options.args.value));
-                        options.isRightAlign = true;
-                    }
-                } else if (this.decimalSep !== '.' && options.args.format === 'General' && isNumber(res) && res.includes('.')) {
-                    options.fResult = Number(res).toString().replace('.', this.decimalSep);
-                }
-            }
+            this.updateAutoDetectNumberFormat(options);
         }
         if (addressFormula) {
             options.isRightAlign = false;
             options.fResult = val;
+        }
+    }
+    private updateAutoDetectNumberFormat(options: AutoDetectGeneralFormatArgs): void {
+        let res: string = options.fResult.toString();
+        const cell: CellModel = options.args.cell || options.cell;
+        if (this.isPercentageValue(res, options.args, cell)) {
+            cell.format = res.includes(this.decimalSep) ? getFormatFromType('Percentage') : '0%';
+            if (!options.args.updateValue) {
+                options.args.format = cell.format;
+                options.fResult = this.percentageFormat(options.args, options.intl);
+                options.isRightAlign = true;
+            }
+        } else {
+            let format: string = '';
+            if (res.includes(options.currencySymbol)) { // Auto detect 1000 separator format with currency symbol
+                format = res.includes(this.decimalSep) ? '$#,##0.00' : '$#,##0';
+                res = res.replace(options.currencySymbol, '');
+            }
+            const isEdit: boolean = this.decimalSep === '.' || options.args.isEdit;
+            if (isEdit && res.includes(this.groupSep) && parseThousandSeparator(res, this.parent.locale, this.groupSep, this.decimalSep)) {
+                res = res.split(this.groupSep).join('');
+                if (!format) { // Auto detect 1000 separator format
+                    format = (res.includes(this.decimalSep) ? '#,##0.00' : '#,##0');
+                }
+            }
+            if (format) {
+                res = res.replace(this.decimalSep, '.');
+                if (isNumber(res)) {
+                    options.args.value = Number(res).toString();
+                    if (options.args.updateValue) {
+                        options.args.cell.value = options.args.value;
+                        options.args.cell.format = format;
+                    } else {
+                        setCell(options.rowIdx, options.colIdx, options.sheet, { value: options.args.value, format: format }, true);
+                        options.fResult = this.getFormattedNumber(format, Number(options.args.value));
+                        options.isRightAlign = true;
+                    }
+                }
+            } else if (this.decimalSep !== '.' && options.args.format === 'General' && isNumber(res) && res.includes('.')) {
+                options.fResult = Number(res).toString().replace('.', this.decimalSep);
+            }
         }
     }
 
@@ -1235,6 +1248,10 @@ export class WorkbookNumberFormat {
                     } else {
                         cell.format = getFormatFromType('ShortDate');
                     }
+                    if (args.updateValue) {
+                        cell.value = props.val;
+                        return;
+                    }
                 }
                 args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
                 args.isTime = dateObj.type === 'time';
@@ -1513,6 +1530,7 @@ export class WorkbookNumberFormat {
         this.parent.on(getFormattedCellObject, this.getFormattedCell, this);
         this.parent.on(checkDateFormat, this.checkDateFormat, this);
         this.parent.on(getFormattedBarText, this.formattedBarText, this);
+        this.parent.on(checkNumberFormat, this.updateAutoDetectNumberFormat, this);
     }
 
     /**
@@ -1526,6 +1544,7 @@ export class WorkbookNumberFormat {
             this.parent.off(getFormattedCellObject, this.getFormattedCell);
             this.parent.off(checkDateFormat, this.checkDateFormat);
             this.parent.off(getFormattedBarText, this.formattedBarText);
+            this.parent.off(checkNumberFormat, this.updateAutoDetectNumberFormat);
         }
     }
 
@@ -1670,17 +1689,4 @@ export function getTypeFromFormat(format: string, isRibbonUpdate?: boolean): str
         code = 'General';
     }
     return code;
-}
-
-interface AutoDetectGeneralFormatArgs {
-    args: NumberFormatArgs;
-    fResult: string;
-    intl: Internationalization;
-    currencySymbol: string;
-    isRightAlign: boolean;
-    curCode: string;
-    cell: CellModel;
-    rowIdx: number;
-    colIdx: number;
-    sheet: SheetModel;
 }

@@ -5695,14 +5695,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const canEnableRouting: boolean = this.layout.enableRouting && this.layout.type === 'ComplexHierarchicalTree';
         const viewPort: PointModel = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
         if (this.layout.type !== 'None') {
-            if ((canEnableRouting && this.lineDistributionModule) || ((this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) || (this.layout.arrangement === 'Linear' && this.lineDistributionModule)) {
-                this.lineDistributionModule.initLineDistribution((this.layout as Layout), this);
-            }
+            //Bug 862601: Connectors are not rendered properly with lineRouting and lineDistribution enables during doLayout process.
+            //Removed initLineDistribution method call here and added it below after the complex hierarchical tree doLayout process.
             if (this.organizationalChartModule) {
                 layout = this.organizationalChartModule.updateLayout(
                     nodes, this.nameTable, this.layout as Layout,
                     viewPort, this.dataSourceSettings.id, this.diagramActions);
                 update = true;
+                if (this.canDistribute(canEnableRouting, canDoOverlap)) {
+                    this.lineDistributionModule.initLineDistribution(this.layout as Layout, this);
+                }
                 if (this.layoutAnimateModule && layout.rootNode && !this.diagramActions) {
                     this.updateNodeExpand(layout.rootNode as Node, layout.rootNode.isExpanded);
                 }
@@ -5732,12 +5734,26 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.symmetricalLayoutModule, this.nameTable, this.layout as Layout, viewPort);
                 update = true;
             } else if (this.complexHierarchicalTreeModule) {
+                //Bug 862601: Connectors are not rendered properly with lineRouting and lineDistribution enables during doLayout process.
+                //As the initLineDistribution method call removed from above and added below doLayout, we need to set diagram value and clear obstacle collection
+                // of connectors.
+                if(this.canDistribute(canEnableRouting,canDoOverlap)){
+                    (this.lineDistributionModule as any).diagram = this;
+                    const obstacleCollection: string = 'obstaclePointCollection';
+                    this.connectors.forEach((connector) => {
+                        connector[`${obstacleCollection}`] = [];
+                    });
+                }
                 const nodes: INode[] = this.complexHierarchicalTreeModule.getLayoutNodesCollection(this.nodes as INode[]);
                 if (nodes.length > 0) {
                     // eslint-disable-next-line max-len
                     this.complexHierarchicalTreeModule.doLayout(nodes, this.nameTable, this.layout as Layout, viewPort, this.lineDistributionModule);
                 }
                 update = true;
+                //initLineDistribution method call after doLayout.
+                if(this.canDistribute(canEnableRouting,canDoOverlap)){
+                    this.lineDistributionModule.initLineDistribution((this.layout as Layout), this);
+                }
             }
             if (update) {
                 this.preventDiagramUpdate = true;
@@ -5809,6 +5825,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         return ((this.blazorActions & BlazorAction.expandNode) ? layout : isBlazor() ? null : true);
     }
+    //Checks if line distribution is enabled.
+    private canDistribute(canEnableRouting: boolean,canDoOverlap: boolean){
+        if ((canEnableRouting && this.lineDistributionModule) || ((this.layout as Layout).connectionPointOrigin === 'DifferentPoint' && this.lineDistributionModule && canDoOverlap) || (this.layout.arrangement === 'Linear' && this.lineDistributionModule)) {
+            return true;
+        }else{
+            return false;
+        }
+    };
     /* tslint:enable */
     /**
      * Serializes the diagram control as a string. 
@@ -10516,7 +10540,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 (this.constraints & DiagramConstraints.LineRouting) && !(this.diagramActions & DiagramAction.ToolAction)) {
                 this.lineRoutingModule.renderVirtualRegion(this, true);
                 // EJ2-65876 - Exception occurs on line routing injection module
-                if (actualObject.sourceID !== actualObject.targetID && actualObject.segments.length>1){
+                if (actualObject.sourceID !== actualObject.targetID && actualObject.segments.length>1 && this.layout.type !== 'ComplexHierarchicalTree'){
                     //EJ2-69573 - Excecption occurs when calling doLayout method with the lineRouting module
                     this.lineRoutingModule.refreshConnectorSegments(this, actualObject, false);
                 }

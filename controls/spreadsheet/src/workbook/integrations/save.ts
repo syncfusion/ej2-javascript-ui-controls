@@ -1,9 +1,9 @@
 import { Workbook, CellModel, getCell, setCell, SheetModel, getSheet } from '../base/index';
-import { executeTaskAsync } from '../common/worker';
-import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation, removeUniquecol } from '../common/index';
+import { executeTaskAsync, getAutoDetectFormatParser } from '../common/index';
+import { pdfLayoutSettings, SaveOptions, checkIsFormula, workbookFormulaOperation, removeUniquecol, ExtendedRange } from '../common/index';
 import * as events from '../common/event';
 import { SaveWorker } from '../workers/save-worker';
-import { SaveCompleteEventArgs, ChartModel } from '../common/index';
+import { SaveCompleteEventArgs, ChartModel, updateSheetFromDataSource, BeforeSaveEventArgs } from '../common/index';
 import { detach } from '@syncfusion/ej2-base';
 
 /**
@@ -17,7 +17,7 @@ export class WorkbookSave extends SaveWorker {
     private isFullPost: boolean = false;
     private needBlobData: boolean = false;
     private customParams: Object = null;
-    private pdfLayoutSettings: pdfLayoutSettings = {fitSheetOnOnePage: false};
+    private pdfLayoutSettings: pdfLayoutSettings = { fitSheetOnOnePage: false };
 
     /**
      * Constructor for WorkbookSave module in Workbook library.
@@ -77,7 +77,7 @@ export class WorkbookSave extends SaveWorker {
      * @returns {void} - Initiate save process.
      */
     private initiateSave(args: { [key: string]: Object }): void {
-        const saveSettings: SaveOptions = args.saveSettings;
+        const saveSettings: BeforeSaveEventArgs = <BeforeSaveEventArgs>args.saveSettings;
         this.parent.notify(events.getFilteredCollection, null);
         this.saveSettings = {
             saveType: saveSettings.saveType,
@@ -91,7 +91,7 @@ export class WorkbookSave extends SaveWorker {
         this.customParams = args.customParams;
         this.pdfLayoutSettings = args.pdfLayoutSettings;
         this.updateBasicSettings();
-        this.processSheets();
+        this.processSheets(saveSettings.autoDetectFormat);
     }
 
     /**
@@ -119,18 +119,45 @@ export class WorkbookSave extends SaveWorker {
     /**
      * Process sheets properties.
      *
+     * @param {boolean} autoDetectFormat - Auto detect the format based on the cell value.
      * @hidden
      * @returns {void} - Process sheets properties.
      */
-    private processSheets(): void {
+    private processSheets(autoDetectFormat?: boolean): void {
         const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader', 'result'];
-        // eslint-disable-next-line
-        if ((this.parent as any).isAngular) {
+        if ((this.parent as { isAngular?: boolean }).isAngular) {
             skipProps.push('template');
         }
-        for (let i: number = 0, sheetCount: number = this.parent.sheets.length; i < sheetCount; i++) {
-            executeTaskAsync(
-                this, this.processSheet, this.updateSheet, [this.getStringifyObject(this.parent.sheets[i as number], skipProps, i), i]);
+        let isNotLoaded: boolean; let isDataBinding: boolean; let sheet: SheetModel; let range: ExtendedRange;
+        for (let sheetIdx: number = 0, sheetCount: number = this.parent.sheets.length; sheetIdx < sheetCount; sheetIdx++) {
+            sheet = this.parent.sheets[sheetIdx as number];
+            isNotLoaded = false; isDataBinding = false;
+            for (let rangeIdx: number = 0, rangeCount: number = sheet.ranges.length; rangeIdx < rangeCount; rangeIdx++) {
+                range = sheet.ranges[rangeIdx as number];
+                if (range.dataSource) {
+                    isDataBinding = true;
+                    if (!range.info || !range.info.loadedRange || !range.info.loadedRange.length) {
+                        isNotLoaded = true;
+                        break;
+                    }
+                }
+            }
+            if (isNotLoaded) {
+                const loadCompleteHandler: Function = (idx: number): void => {
+                    executeTaskAsync(
+                        this, this.processSheet, this.updateSheet,
+                        [this.getStringifyObject(this.parent.sheets[idx as number], skipProps, idx), idx]);
+                };
+                const context: { scrollSettings?: { isFinite: boolean } } = <{ scrollSettings?: { isFinite: boolean } }>this.parent;
+                this.parent.notify(
+                    updateSheetFromDataSource, { sheet: sheet, sheetIndex: sheetIdx, loadComplete: loadCompleteHandler.bind(this, sheetIdx),
+                        isFinite: context.scrollSettings && context.scrollSettings.isFinite, isSaveAction: true,
+                        autoDetectFormat: autoDetectFormat });
+            } else {
+                executeTaskAsync(
+                    this, this.processSheet, this.updateSheet,
+                    [this.getStringifyObject(sheet, skipProps, sheetIdx, autoDetectFormat && isDataBinding), sheetIdx]);
+            }
         }
     }
 
@@ -271,14 +298,16 @@ export class WorkbookSave extends SaveWorker {
      * @hidden
      * @param {object} model - Specifies the workbook or sheet model.
      * @param {string[]} skipProp - specifies the skipprop.
-     * @param {string[]} sheetIdx - Specifies the sheet index.
+     * @param {number} sheetIdx - Specifies the sheet index.
+     * @param {boolean} autoDetectFormat - Auto detect the format based on the cell value.
      * @returns {string} - Get stringified workbook object.
      */
-    private getStringifyObject(model: object, skipProp: string[] = [], sheetIdx?: number): string {
+    private getStringifyObject(model: object, skipProp: string[] = [], sheetIdx?: number, autoDetectFormat?: boolean): string {
         if (sheetIdx === 0) {
             this.parent.notify(removeUniquecol, { clearAll: true });
         }
         const chartColl: { index: number[], chart: ChartModel[] }[] = []; let chartModel: ChartModel[];
+        const autoDetectFormatFn: (cell: CellModel) => void = autoDetectFormat && getAutoDetectFormatParser(this.parent);
         const json: string = JSON.stringify(model, (key: string, value: { [key: string]: object }) => {
             if (skipProp.indexOf(key) > -1) {
                 return undefined;
@@ -288,12 +317,14 @@ export class WorkbookSave extends SaveWorker {
                         const cell: CellModel = value.cells[i as number];
                         const cellIdx: number[] = [Number(key), i];
                         if (cell) {
-                            if (!cell.value && cell.formula && cell.formula.indexOf('=UNIQUE(') < 0) {
+                            if (cell.value) {
+                                if (autoDetectFormat && !cell.formula) {
+                                    autoDetectFormatFn(cell);
+                                }
+                            } else if (cell.formula && cell.formula.indexOf('=UNIQUE(') < 0) {
                                 this.parent.notify(
-                                    workbookFormulaOperation, {
-                                    action: 'refreshCalculate', value: cell.formula, rowIndex: cellIdx[0],
-                                    colIndex: i, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIdx, isRefreshing: true
-                                });
+                                    workbookFormulaOperation, { action: 'refreshCalculate', value: cell.formula, rowIndex: cellIdx[0],
+                                        colIndex: i, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIdx, isRefreshing: true });
                                 cell.value = getCell(cellIdx[0], i, model).value;
                             }
                             if (cell.chart) {

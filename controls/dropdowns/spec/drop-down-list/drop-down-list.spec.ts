@@ -3029,7 +3029,7 @@ describe('DDList', () => {
             listObj.showPopup();
             setTimeout(() => {
                 expect(listObj.index).toBe(0);
-                listObj.scrollHandler();
+                listObj.hidePopup();
                 setTimeout(function () {
                     expect(listObj.isPopupOpen).toBe(false);
                     done();
@@ -3061,6 +3061,40 @@ describe('DDList', () => {
             listObj.scrollHandler();
             expect(listObj.index).toBe(9);
         });
+    });
+
+    describe('Mobile popup appears when scrolling', () => {
+        let ele: HTMLElement = document.createElement('input');
+        ele.id = 'newlist';
+        let listObj: any;
+        let data: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon: 'icon' }, { id: 'list2', text: 'C#' },
+        { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' },
+        { id: 'lit2', text: 'PHP' }, { id: 'list22', text: 'Phython' }, { id: 'list32', text: 'Perl' },
+        { id: 'list42', text: 'Core' }, { id: 'lis2', text: 'C' }, { id: 'list12', text: 'C##' }];
+        beforeAll(() => {
+            let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+            Browser.userAgent = androidPhoneUa;
+            document.body.appendChild(ele);
+            listObj = new DropDownList({
+                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true,
+                popupHeight: '100px',
+                popupWidth: '1000px'
+            });
+            listObj.appendTo('#newlist');
+        });
+        afterAll(() => {
+            if (ele) {
+                ele.remove();
+            }
+        })
+        it('target element in view port popup not close when scrolling', () => {
+            listObj.showPopup();
+            listObj.scrollHandler();
+            setTimeout(function () {
+                expect(listObj.isPopupOpen).toBe(true);
+            }, 350);
+        })
     });
     describe('Allowfiltering support in mobile', () => {
         let ele: HTMLElement = document.createElement('input');

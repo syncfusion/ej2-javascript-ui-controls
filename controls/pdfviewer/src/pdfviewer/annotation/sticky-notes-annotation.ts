@@ -2584,12 +2584,14 @@ export class StickyNotesAnnotation {
                         currentAnnotation.comments[j].modifiedDate = this.getDateAndTime();
                     }
                 }
-                // eslint-disable-next-line max-len
-                const newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: currentAnnotation.subject, comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
-                if (!isComment) {
-                    currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
+                if (currentAnnotation.annotName === parentElement) {
+                    // eslint-disable-next-line max-len
+                    const newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: currentAnnotation.subject, comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
+                    if (!isComment) {
+                        currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
+                    }
                 }
-            } else {
+            } else if (currentAnnotation.annotName === parentElement) {
                 // eslint-disable-next-line max-len
                 const newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: currentAnnotation.subject, comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
                 currentAnnotation.comments[currentAnnotation.comments.length] = newArray;

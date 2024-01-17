@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 24.1.46 (2024-01-17)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "Zoom events not triggered while using Zoom method" has been resolved.
+
+- The issue with "Ratio Selection dimension not proper" has been resolved.
+
+- The issue with "Get Shape Settings method returns duplicate shape id" has been resolved.
+
 ## 24.1.45 (2024-01-09)
 
 ### Image Editor

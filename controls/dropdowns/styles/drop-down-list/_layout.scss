@@ -53,6 +53,11 @@
     }
   }
 
+  .e-popup.e-ddl-device.e-popup-close {
+    display: block;
+    visibility: hidden;
+  }
+
   .e-popup-full-page {
     bottom: 0;
     left: 0;

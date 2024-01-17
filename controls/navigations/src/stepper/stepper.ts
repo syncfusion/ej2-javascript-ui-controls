@@ -375,6 +375,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             home: 'home',
             end: 'end',
             tab: 'tab',
+            shiftTab: 'shift+tab',
             escape: 'escape'
         };
         this.tooltipOpen = false;
@@ -936,7 +937,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             const itemElement: HTMLElement = this.stepperItemElements[parseInt(i.toString(), 10)];
             const item: StepModel = this.steps[parseInt(i.toString(), 10)];
             itemElement.classList.remove(SELECTED, INPROGRESS, COMPLETED, NOTSTARTED);
-            if (i === this.activeStep || this.activeStep === this.steps.length - 1) { itemElement.classList.add(SELECTED); }
+            if (i === this.activeStep) { itemElement.classList.add(SELECTED); }
             if (this.activeStep >= 0 && this.progressbar) {
                 if (this.element.classList.contains(HORIZSTEP)) {
                     if ((this.element.classList.contains(LABELBEFORE) || this.element.classList.contains(LABELAFTER)) && !this.element.classList.contains(STEPINDICATOR) &&
@@ -975,7 +976,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             else { attributes(itemElement, { 'tabindex': '-1', 'aria-current': 'false' }); }
             const prevOnChange: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = true;
-            if (isUpdated != false) {
+            if (isUpdated !== false) {
                 if (i < this.activeStep || (this.steps.length - 1 === this.activeStep && item.status.toLowerCase() === "completed")) { item.status = StepStatus.Completed; }
                 else if (i === this.activeStep) { item.status = StepStatus.InProgress; }
                 else if (i > this.activeStep) { item.status = StepStatus.NotStarted; }
@@ -1070,13 +1071,12 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
         switch (e.action) {
         case 'uparrow':
         case 'downarrow':
-            if (this.element.classList.contains(VERTICALSTEP)) { this.handleNavigation(e.action === 'uparrow' ? false : true, e); }
-            break;
         case 'leftarrow':
         case 'rightarrow':
-            if (this.element.classList.contains(HORIZSTEP)) { this.handleNavigation(this.enableRtl ? e.action === 'leftarrow' : e.action === 'rightarrow', e); }
-            break;
         case 'tab':
+        case 'shiftTab':
+            this.handleNavigation(this.enableRtl && this.element.classList.contains(HORIZSTEP) ? (e.action === 'leftarrow' || e.action === 'shiftTab' || e.action === 'uparrow') : (e.action === 'rightarrow' || e.action === 'tab' || e.action === 'downarrow'), e);
+            break;
         case 'space':
         case 'enter':
         case 'escape':
@@ -1096,8 +1096,15 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
         if (!focusedEle) { focusedEle = this.element.querySelector('.' + SELECTED); }
         const stepItems: HTMLElement[] = Array.prototype.slice.call(this.stepperItemList.children);
         let index: number = stepItems.indexOf(focusedEle);
-        if (e.action === 'tab' || e.action === 'escape') { stepItems[parseInt(index.toString(), 10)].classList.remove(FOCUS); this.element.classList.remove('e-steps-focus'); }
-        if (!(e.action === 'space' || e.action === 'enter' || e.action === 'tab')) {
+        if (e.action === 'tab' || e.action === 'shiftTab' || e.action === 'downarrow' || e.action === 'uparrow' || e.action === 'space' || e.action === 'home' || e.action === 'end') {
+            if ((e.action === 'tab' && index === stepItems.length - 1) || (e.action === 'shiftTab' && index === 0)) {
+                if (focusedEle.classList.contains(FOCUS)) { this.updateStepFocus(); return; }
+            } else {
+                e.preventDefault();
+            }
+        }
+        if (e.action === 'escape') { stepItems[parseInt(index.toString(), 10)].classList.remove(FOCUS); this.element.classList.remove('e-steps-focus'); }
+        if (!(e.action === 'space' || e.action === 'enter')) {
             const prevIndex: number = index;
             index = isNextStep ? index + 1 : index - 1;
             while ((index >= 0 && index < stepItems.length) && stepItems[parseInt(index.toString(), 10)].classList.contains(DISABLED)) {
@@ -1113,12 +1120,16 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             }
             if (index >= 0 && index < stepItems.length) { stepItems[parseInt(index.toString(), 10)].classList.add(FOCUS); }
         } else if ((e.action === 'space' || e.action === 'enter')) {
+            let isupdateFocus: boolean = false;
             if (this.linear) {
                 const linearModeValue: number = this.activeStep - index;
-                if (Math.abs(linearModeValue) === 1) { this.navigateToStep(index, null, null, true); }
+                if (Math.abs(linearModeValue) === 1) { this.navigateToStep(index, null, null, true); isupdateFocus = true; }
             }
-            else { this.navigateToStep(index, null, null, true); }
-
+            else { this.navigateToStep(index, null, null, true); isupdateFocus = true; }
+            if (isupdateFocus) {
+                this.updateStepFocus();
+                (this.stepperItemElements[index as number] as HTMLElement).focus();
+            }
         }
     }
 

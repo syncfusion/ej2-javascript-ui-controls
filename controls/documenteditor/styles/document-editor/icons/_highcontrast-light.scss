@@ -655,6 +655,11 @@
     content: '\e68a';
   }
 
+  .e-de-share::before {
+    content: '\e8f2';
+    font-family: 'e-icons';
+  }
+
   .e-de-preset-container {
     width: 95px;
   }

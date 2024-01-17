@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 24.1.46 (2024-01-17)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I537067` - Now, the content at the top is displayed properly when maximizing the Rich Text Editor with `enableFloating` set to `false`.
+
+- `#I534484` - Now, applying the bold repeatedly to the content in the Rich Text Editor works properly, and the content doesn't get deleted.
+
 ## 24.1.45 (2024-01-09)
 
 ### RichTextEditor

@@ -528,7 +528,7 @@ export class StockLegend extends BaseLegend {
         }
         const availwidth: number = (this.legendBounds.width + this.legendBounds.x) - (legendOptions.location.x +
             textPadding - this.itemPadding - this.legend.shapeWidth / 2);
-        legendOptions.text = textTrim(+availwidth.toFixed(4), legendOptions.text, this.legend.textStyle, this.chart.themeStyle.legendLabelFont);
+        legendOptions.text = textTrim(+availwidth.toFixed(4), legendOptions.text, this.legend.textStyle, this.chart.enableRtl, this.chart.themeStyle.legendLabelFont);
     }
     /**
      * @param index

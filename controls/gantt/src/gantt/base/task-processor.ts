@@ -77,19 +77,24 @@ export class TaskProcessor extends DateProcessor {
         const queryManager: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
         queryManager.requiresCount();
         const dataManager: DataManager = this.parent.dataSource as DataManager;
-        dataManager.executeQuery(queryManager).then((e: ReturnOption) => {
-            this.dataArray = <Object[]>e.result;
+        if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
             this.processTimeline();
-            if (this.parent.loadChildOnDemand || (!this.parent.loadChildOnDemand && !(this.parent.taskFields.hasChildMapping))) {
-                this.cloneDataSource();
-            }
-            this.parent.renderGantt(isChange);
-        }).catch((e: ReturnType) => {
-            // Trigger action failure event
-            this.parent.processTimeline();
-            this.parent.renderGantt(isChange);
-            this.parent.trigger('actionFailure', { error: e });
-        });
+            this.parent.renderGantt(isChange)
+        } else {
+            dataManager.executeQuery(queryManager).then((e: ReturnOption) => {
+                this.dataArray = <Object[]>e.result;
+                this.processTimeline();
+                if (this.parent.loadChildOnDemand || (!this.parent.loadChildOnDemand && !(this.parent.taskFields.hasChildMapping))) {
+                    this.cloneDataSource();
+                }
+                this.parent.renderGantt(isChange);
+            }).catch((e: ReturnType) => {
+                // Trigger action failure event
+                this.parent.processTimeline();
+                this.parent.renderGantt(isChange);
+                this.parent.trigger('actionFailure', { error: e });
+            });
+        }
     }
     private constructDataSource(dataSource: Object[]): void {
         const mappingData: Object[] = new DataManager(dataSource).executeLocal(new Query()
@@ -2223,13 +2228,11 @@ export class TaskProcessor extends DateProcessor {
      */
     public updateWidthLeft(data: IGanttData): void {
         const ganttRecord: ITaskData = data.ganttProperties;
+        let totalSegmentsProgressWidth: number = 0;
         // task endDate may be changed in segment calculation so this must be calculated first.
         // task width calculating was based on endDate
         if (!isNullOrUndefined(ganttRecord.segments) && ganttRecord.segments.length > 0) {
             const segments: ITaskSegment[] = ganttRecord.segments;
-            let fixedWidth: boolean = true;
-            const totalTaskWidth: number = this.splitTasksDuration(segments) * ((this.parent.timelineModule.bottomTier === "Hour" || this.parent.timelineModule.bottomTier === "Minutes") ? this.parent.timelineSettings.timelineUnitSize : this.parent.perDayWidth);;
-            let totalProgressWidth: number = this.parent.dataOperation.getProgressWidth(totalTaskWidth, ganttRecord.progress);
             for (let i: number = 0; i < segments.length; i++) {
                 const segment: ITaskSegment = segments[i as number];
                 if (i === 0 && !isNullOrUndefined(ganttRecord.startDate) &&
@@ -2242,21 +2245,27 @@ export class TaskProcessor extends DateProcessor {
                     this.parent.chartRowsModule.incrementSegments(segments, 0, data);
                 }
                 segment.width = this.getSplitTaskWidth(segment.startDate, segment.duration, data);
+                totalSegmentsProgressWidth = totalSegmentsProgressWidth + segment.width;
                 segment.showProgress = false;
                 segment.progressWidth = -1;
                 if (i !== 0) {
                     const pStartDate: Date = new Date(ganttRecord.startDate.getTime());
                     segment.left = this.getSplitTaskLeft(segment.startDate, pStartDate);
                 }
-                if (totalProgressWidth > 0 && totalProgressWidth > segment.width) {
-                    totalProgressWidth = totalProgressWidth - segment.width;
-                    segment.progressWidth = segment.width;
-                    segment.showProgress = false;
-                } else if (fixedWidth) {
-                    segment.progressWidth = totalProgressWidth;
-                    segment.showProgress = true;
-                    totalProgressWidth = totalProgressWidth - segment.width;
-                    fixedWidth = false;
+            }
+            let setProgress: number = this.parent.dataOperation.getProgressWidth(totalSegmentsProgressWidth, ganttRecord.progress);
+            let isValid: boolean = true;
+            for (let i: number = 0; i < segments.length; i++) {
+                if (isValid) {
+                    if (setProgress <= segments[i as number].width) {
+                        segments[i as number].progressWidth = setProgress;
+                        segments[i as number].showProgress = true;
+                        isValid = false;
+                    }
+                    else {
+                        segments[i as number].progressWidth = segments[i as number].width;
+                        setProgress = setProgress - segments[i as number].progressWidth;
+                    }
                 }
             }
             this.parent.setRecordValue('segments', ganttRecord.segments, ganttRecord, true);
@@ -2264,14 +2273,12 @@ export class TaskProcessor extends DateProcessor {
         }
         this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(data), ganttRecord, true);
         this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(ganttRecord), ganttRecord, true);
-        this.parent.setRecordValue(
-            'progressWidth',
-            this.parent.dataOperation.getProgressWidth(
-                (ganttRecord.isAutoSchedule || !data.hasChildRecords ? ganttRecord.width : ganttRecord.autoWidth),
-                ganttRecord.progress),
-            ganttRecord,
-            true
-        );
+        if (!isNullOrUndefined(ganttRecord.segments) && ganttRecord.segments.length > 0) {
+            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(totalSegmentsProgressWidth, ganttRecord.progress), ganttRecord, true);
+        }
+        else {
+            this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth((ganttRecord.isAutoSchedule || !data.hasChildRecords ? ganttRecord.width : ganttRecord.autoWidth), ganttRecord.progress), ganttRecord, true);
+        }
     }
     /**
      * method to update left, width, progress width in record

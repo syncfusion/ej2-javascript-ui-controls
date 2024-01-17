@@ -52,6 +52,8 @@ export const workbookEditOperation: string = 'workbookEditOperation';
 /** @hidden */
 export const checkDateFormat: string = 'checkDateFormat';
 /** @hidden */
+export const checkNumberFormat: string = 'checkNumberFormat';
+/** @hidden */
 export const getFormattedBarText: string = 'getFormattedBarText';
 /** @hidden */
 export const activeCellChanged: string = 'activeCellChanged';

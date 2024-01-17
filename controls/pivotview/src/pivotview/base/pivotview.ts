@@ -586,7 +586,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public isSummaryCellHyperlink: boolean;
     /** @hidden */
-    public clonedDataSet: IDataSet[];
+    public clonedDataSet: IDataSet[] | string[][];
     /** @hidden */
     public clonedReport: DataSourceSettingsModel;
     /** @hidden */
@@ -3654,7 +3654,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.tooltip.destroy();
                 }
                 if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0 && this.clonedDataSet) {
-                    const dataSet: IDataSet[] = PivotUtil.getClonedData(this.clonedDataSet) as IDataSet[];
+                    const dataSet: IDataSet[] | string[][] = this.dataSourceSettings.type === 'CSV' ? PivotUtil.getClonedCSVData(this.clonedDataSet as string[][]) as string[][]
+						: PivotUtil.getClonedData(this.clonedDataSet as IDataSet[]) as IDataSet[];
                     this.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);
                 }
                 super.refresh();
@@ -5898,8 +5899,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             };
             if (this.dataType === 'pivot') {
                 if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
-                    const dataSet: IDataSet[] = this.engineModule.data as IDataSet[];
-                    this.clonedDataSet = (this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(dataSet)) as IDataSet[];
+                    const dataSet: IDataSet[] | string[][] = this.engineModule.data as IDataSet[] | string[][];
+                    this.clonedDataSet = (this.clonedDataSet ? this.clonedDataSet : this.dataSourceSettings.type === 'CSV' ? PivotUtil.getClonedCSVData(dataSet as string[][]) as string[][]
+                        : PivotUtil.getClonedData(dataSet as IDataSet[])) as IDataSet[];
                     const dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
                     dataSourceSettings.dataSource = [];
                     this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
@@ -6266,14 +6268,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     public updateGroupingReport(newGroupSettings: IGroupSettings[], updateGroupType: GroupType): void {
         if (!this.clonedDataSet && !this.clonedReport) {
-            const dataSet: IDataSet[] = this.engineModule.data as IDataSet[];
-            this.clonedDataSet = PivotUtil.getClonedData(dataSet) as IDataSet[];
+            const dataSet: IDataSet[] | string[][] = this.engineModule.data as IDataSet[] | string[][];
+            this.clonedDataSet = this.dataSourceSettings.type === 'CSV' ? PivotUtil.getClonedCSVData(dataSet as string[][]) as string[][] :PivotUtil.getClonedData(dataSet as IDataSet[]) as IDataSet[];
             const dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
             dataSourceSettings.dataSource = [];
             this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;
         }
         const dateGroup: RegExp = /_date_group_years|_date_group_quarters|_date_group_quarterYear|_date_group_months|_date_group_days|_date_group_hours|_date_group_minutes|_date_group_seconds/g;
-        const data: IDataSet[] = PivotUtil.getClonedData(this.clonedDataSet) as IDataSet[];
+        const data: IDataSet[] | string[][] = this.dataSourceSettings.type === 'CSV' ? PivotUtil.getClonedCSVData(this.clonedDataSet as string[][]) as string[][] : PivotUtil.getClonedData(this.clonedDataSet as IDataSet[]) as IDataSet[];
         const dataSource: IDataOptions = this.dataSourceSettings;
         const clonedReport: IDataOptions = (<{ [key: string]: Object }>this.clonedReport).properties ?
             (<{ [key: string]: Object }>this.clonedReport).properties : this.clonedReport;

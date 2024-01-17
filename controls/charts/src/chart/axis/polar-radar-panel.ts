@@ -580,7 +580,7 @@ export class PolarRadarPanel extends LineBase {
                 if (isIntersect) {
                     const width: number = this.getAvailableSpaceToTrim(legendRect, labelRegions[i as number]);
                     if (width > 0) {
-                        labelText = textTrim(width, axis.visibleLabels[i as number].originalText, axis.labelStyle, this.chart.themeStyle.axisLabelFont);
+                        labelText = textTrim(width, axis.visibleLabels[i as number].originalText, axis.labelStyle, this.chart.enableRtl, this.chart.themeStyle.axisLabelFont);
                         isIntersect = false;
                     }
                 }

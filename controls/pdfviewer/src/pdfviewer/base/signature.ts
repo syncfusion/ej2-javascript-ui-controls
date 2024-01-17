@@ -2652,6 +2652,7 @@ export class Signature {
      */
     public setAnnotationMode(): void {
         this.pdfViewerBase.isToolbarSignClicked = true;
+        this.pdfViewerBase.isInitialField = false;
         this.showSignatureDialog(true);
     }
 

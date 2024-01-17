@@ -654,6 +654,8 @@ describe('Infinite scroll cache mode with frozen columns => ', () => {
         expect(gridObj.getRows().length).toBe(visibleRowsCount);
         expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
         expect(gridObj.getRows()[0].getAttribute('data-rowindex')).toBe(gridObj.pageSettings.pageSize.toString());
+        // EJ2-850288 - Performance Improvement -  Dynamically changing grid height with infinite scrolling
+        expect((gridObj as any).infiniteScrollModule.infiniteCache[2].length).toBeTruthy();
     });
 
     afterAll(() => {

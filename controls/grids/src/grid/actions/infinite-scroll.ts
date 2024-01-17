@@ -28,7 +28,6 @@ export class InfiniteScroll implements IAction {
     private dataBoundFunction: Function;
     private infiniteCache: { [x: number]: Row<Column>[] } = {};
     private infiniteCurrentViewData: { [x: number]: Object[] } = {};
-    private infiniteFrozenCache: { [x: number]: Row<Column>[][] } = {};
     private isDownScroll: boolean = false;
     private isUpScroll: boolean = false;
     private isScroll: boolean = true;
@@ -45,7 +44,6 @@ export class InfiniteScroll implements IAction {
     protected cellIndex: number;
     private rowTop: number = 0;
     private empty: number | string;
-    private isInitialMovableRender: boolean = true;
     private editRowIndex: number;
     private virtualInfiniteData: Object = {};
     private isAdd: boolean;
@@ -831,7 +829,6 @@ export class InfiniteScroll implements IAction {
         const isCache: boolean = this.parent.infiniteScrollSettings.enableCache;
         if (isCache) {
             this.infiniteCache = {};
-            this.infiniteFrozenCache = {};
             this.infiniteCurrentViewData = {};
             query.skip(this.firstIndex);
             query.take(initialBlocks * this.parent.pageSettings.pageSize);
@@ -1181,9 +1178,6 @@ export class InfiniteScroll implements IAction {
         if (this.infiniteCache[args.prevPage].length < pageSize) {
             cnt = this.parent.pageSettings.pageSize - this.infiniteCache[args.prevPage].length;
         }
-        if (this.parent.isFrozenGrid() && this.infiniteFrozenCache[args.prevPage][1].length < pageSize) {
-            cnt = this.parent.pageSettings.pageSize - this.infiniteFrozenCache[args.prevPage][1].length;
-        }
         for (let i: number = maxIndx; cnt < pageSize; i--) {
             cnt++;
             remove(rows[parseInt(i.toString(), 10)]);
@@ -1227,12 +1221,11 @@ export class InfiniteScroll implements IAction {
                 this.initialRender = true;
                 scrollEle.scrollTop = 0;
                 this.parent.pageSettings.currentPage = 1;
-                this.infiniteCache = this.infiniteFrozenCache = {};
+                this.infiniteCache = {};
                 this.infiniteCurrentViewData = {};
                 this.resetContentModuleCache({});
                 this.isRemove = false;
                 this.top = 0;
-                this.isInitialMovableRender = true;
                 this.isInitialCollapse = false;
                 (<{ isRemove?: boolean }>(this.parent as Grid).contentModule).isRemove = this.isRemove;
                 (<{ isAddRows?: boolean }>(this.parent as Grid).contentModule).isAddRows = this.isRemove;
@@ -1247,9 +1240,7 @@ export class InfiniteScroll implements IAction {
             const isEdit: boolean = e.args.requestType !== 'infiniteScroll'
                 && (this.requestType === 'delete' || this.requestType === 'add');
             const currentPage: number = this.parent.pageSettings.currentPage;
-            if ((this.parent.isFrozenGrid() && this.isInitialMovableRender) ||
-                (!this.parent.isFrozenGrid() && !Object.keys(this.infiniteCache).length) || isEdit) {
-                this.isInitialMovableRender = !e.args.isFrozen;
+            if (!Object.keys(this.infiniteCache).length || isEdit) {
                 this.setInitialCache(e.modelData, e.args, isEdit);
             }
             if (isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage])) {

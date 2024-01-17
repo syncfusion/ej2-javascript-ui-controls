@@ -3782,8 +3782,8 @@ export class Selection {
         actPoint.height = height;
         actPoint.startX = (this.dragPoint.startX = (originalWidth - width) / 2) + arcRadius;
         actPoint.startY = (this.dragPoint.startY = (originalHeight - height) / 2) + arcRadius;
-        actPoint.endX = ((originalWidth - width) / 2 + width) - arcRadius;
-        actPoint.endY = ((originalHeight - height) / 2 + height) - arcRadius;
+        actPoint.endX = actPoint.startX + actPoint.width;
+        actPoint.endY = actPoint.startY + actPoint.height;
         if (actPoint.startX < destLeft && destLeft + destWidth > parent.lowerCanvas.clientWidth) {
             actPoint.startX = destLeft;
             actPoint.endX = actPoint.startX + width - arcRadius;
@@ -4229,7 +4229,9 @@ export class Selection {
         }
         if (!isInside) {
             if (isNullOrUndefined(parent.activeObj.currIndex)) {
-                parent.activeObj.currIndex = 'shape_' + (parent.objColl.length + 1);
+                const shapeIDObj: Object = {id: 'shape_' + (parent.objColl.length + 1) };
+                parent.notify('shape', { prop: 'getNewShapeId', onPropertyChange: false, value: {obj: shapeIDObj }});
+                parent.activeObj.currIndex = shapeIDObj['id'];
             }
             parent.notify('shape', { prop: 'updImgRatioForActObj', onPropertyChange: false});
             if (parent.activeObj.horTopLine !== undefined && parent.activeObj.horTopLine.startX !== 0 && parent.activeObj.horTopLine.endX

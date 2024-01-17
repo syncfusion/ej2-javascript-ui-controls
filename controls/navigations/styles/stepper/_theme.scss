@@ -132,12 +132,18 @@
       }
     }
 
-    &:not(.e-steps-focus) .e-stepper-steps .e-step-container.e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-step,
+    &:not(.e-steps-focus) .e-stepper-steps .e-step-container.e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-step {
+      box-shadow: $step-selected-li-shadow;
+    }
+
     .e-stepper-steps .e-step-container.e-step-focus .e-step,
     .e-stepper-steps .e-step-container.e-step-label-only.e-step-focus .e-label,
     .e-stepper-steps .e-step-container.e-step-text-only.e-step-focus .e-text,
-    .e-stepper-steps .e-step-container.e-step-template.e-step-focus {
-      box-shadow: $step-selected-li-shadow;
+    .e-stepper-steps .e-step-container.e-step-template.e-step-focus,
+    &:not(.e-steps-focus) .e-stepper-steps .e-step-container:focus-visible .e-step,
+    &:not(.e-steps-focus) .e-stepper-steps .e-step-container.e-step-text-only:focus-visible .e-text,
+    &:not(.e-steps-focus) .e-stepper-steps .e-step-container.e-step-label-only:focus-visible .e-label {
+      box-shadow: $step-keyboard-selected-li-shadow !important; /* stylelint-disable-line declaration-no-important */
     }
 
     &:not(.e-steps-focus) .e-stepper-steps .e-step-container.e-step-valid.e-step-selected:not(.e-step-text-only):not(.e-step-label-only) .e-step,

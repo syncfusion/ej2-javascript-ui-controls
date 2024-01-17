@@ -966,7 +966,7 @@ export function triggerLabelRender(
         const isLineBreakLabels: boolean = argsData.text.indexOf('<br>') !== -1;
         const text: string | string[] = (axis.enableTrim) ? (isLineBreakLabels ?
             lineBreakLabelTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle, chart.themeStyle.axisLabelFont) :
-            textTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle, chart.themeStyle.axisLabelFont)) : argsData.text;
+            textTrim(axis.maximumLabelWidth, argsData.text, axis.labelStyle, chart.enableRtl, chart.themeStyle.axisLabelFont)) : argsData.text;
         axis.visibleLabels.push(new VisibleLabels(text, argsData.value, argsData.labelStyle, argsData.text));
     }
 }
@@ -1727,13 +1727,13 @@ export function calculateLegendShapes(location: ChartLocation, size: Size, shape
     return { renderOption: options };
 }
 /** @private */
-export function textTrim(maxWidth: number, text: string, font: FontModel, themeFontStyle?: FontModel): string {
+export function textTrim(maxWidth: number, text: string, font: FontModel, isRtlEnabled: boolean, themeFontStyle?: FontModel): string {
     let label: string = text;
     let size: number = measureText(text, font, themeFontStyle).width;
     if (size > maxWidth) {
         const textLength: number = text.length;
         for (let i: number = textLength - 1; i >= 0; --i) {
-            label = text.substring(0, i) + '...';
+            label = isRtlEnabled ? '...' + text.substring(0, i) : text.substring(0, i) + '...';
             size = measureText(label, font, themeFontStyle).width;
             if (size <= maxWidth) {
                 return label;
@@ -1981,14 +1981,14 @@ export function createSvg(chart: Chart | AccumulationChart | RangeNavigator | Ch
  * @param {FontModel} style style of the title
  * @param {number} width width of the title
  */
-export function getTitle(title: string, style: FontModel, width: number, themeFontStyle?: FontModel): string[] {
+export function getTitle(title: string, style: FontModel, width: number, isRtlEnabled: boolean, themeFontStyle?: FontModel): string[] {
     let titleCollection: string[] = [];
     switch (style.textOverflow) {
     case 'Wrap':
-        titleCollection = textWrap(title, width, style, null, null, themeFontStyle);
+        titleCollection = textWrap(title, width, style, isRtlEnabled, null, null, themeFontStyle);
         break;
     case 'Trim':
-        titleCollection.push(textTrim(width, title, style, themeFontStyle));
+        titleCollection.push(textTrim(width, title, style, isRtlEnabled, themeFontStyle));
         break;
     default:
         titleCollection.push(title);
@@ -2015,7 +2015,7 @@ export function titlePositionX(rect: Rect, titleStyle: FontModel): number {
 /**
  * Method to find new text and element size based on textOverflow.
  */
-export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel, wrapAnyWhere ?: boolean, clip ?: boolean, themeFontStyle?: FontModel): string[] {
+export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel, isRtlEnabled : boolean, wrapAnyWhere ?: boolean, clip ?: boolean, themeFontStyle?: FontModel): string[] {
     if (wrapAnyWhere) {
         return (textWrapAnyWhere(currentLabel, maximumWidth, font, themeFontStyle));
     }
@@ -2030,15 +2030,15 @@ export function textWrap(currentLabel: string, maximumWidth: number, font: FontM
                 label = label.concat((label === '' ? '' : ' ') + text);
             } else {
                 if (label !== '') {
-                    labelCollection.push(clip ? label : textTrim(maximumWidth, label, font, themeFontStyle));
+                    labelCollection.push(clip ? label : textTrim(maximumWidth, label, font, isRtlEnabled, themeFontStyle));
                     label = text;
                 } else {
-                    labelCollection.push(clip ? text : textTrim(maximumWidth, text, font, themeFontStyle));
+                    labelCollection.push(clip ? text : textTrim(maximumWidth, text, font, isRtlEnabled, themeFontStyle));
                     text = '';
                 }
             }
             if (label && i === len - 1) {
-                labelCollection.push(clip ? label : textTrim(maximumWidth, label, font, themeFontStyle));
+                labelCollection.push(clip ? label : textTrim(maximumWidth, label, font, isRtlEnabled, themeFontStyle));
             }
         }
         return labelCollection;

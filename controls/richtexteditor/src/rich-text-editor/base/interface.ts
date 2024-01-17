@@ -215,6 +215,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     currentTarget: HTMLElement
     focusIn(): void
     showEmojiPicker?(x?: number, y?: number): void
+    addAnchorAriaLabel?(value: string): string
 }
 /**
  * @deprecated

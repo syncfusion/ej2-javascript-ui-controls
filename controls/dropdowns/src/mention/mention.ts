@@ -669,7 +669,8 @@ export class Mention extends DropDownBase {
             return;
         }
         this.isTyped = e.code !== 'Enter' && e.code !== 'Space' && e.code !== 'ArrowDown' && e.code !== 'ArrowUp' ? true : false;
-        if (document.activeElement != this.inputElement) {
+        const isRteImage: boolean = document.activeElement.parentElement && document.activeElement.parentElement.querySelector('.e-rte-image') ? true : false;
+        if (document.activeElement != this.inputElement && !isRteImage) {
             this.inputElement.focus(); }
         if (this.isContentEditable(this.inputElement)) {
             this.range = this.getCurrentRange();
@@ -1544,6 +1545,11 @@ export class Mention extends DropDownBase {
             myField.selectionStart = startPos + value.length;
             myField.selectionEnd = startPos + value.length;
             if (this.isPopupOpen) { this.hidePopup(); }
+            //New event to update the RichTextEditor value, when a mention item is selected using mouse click action. 
+            if (!isNullOrUndefined((e as PointerEvent).pointerType) && (e as PointerEvent).pointerType === 'mouse') {
+                const event: Event = new CustomEvent('content-changed', { detail: { click: true } });
+                this.inputElement.dispatchEvent(event);
+            };
             this.onChangeEvent(e);
         } else {
             endPos = this.getTriggerCharPosition() + this.mentionChar.length;

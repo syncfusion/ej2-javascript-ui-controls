@@ -48,6 +48,7 @@ export class PivotChart {
     private measuresNames: { [key: string]: string } = {};
     private accumulationType: ChartSeriesType[] = ['Pie', 'Pyramid', 'Doughnut', 'Funnel'];
     private accEmptyPoint: boolean;
+    private isChartInitial: boolean = true;
     /** @hidden */
     public calculatedWidth: number;
     /** @hidden */
@@ -169,7 +170,8 @@ export class PivotChart {
                     }
                 }
             }
-            if (this.parent.enableVirtualization && this.parent.isInitial) {
+            if (this.parent.enableVirtualization && this.isChartInitial) {
+                this.isChartInitial = false;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (this.parent as any).onContentReady();
             }

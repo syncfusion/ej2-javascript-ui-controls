@@ -92,7 +92,7 @@ export class MultiLevelLabel {
                     const len: number = axis.multiLevelLabels[index as number].categories.length;
                     gap = ((i === 0 || i === len - 1) && axis.labelPlacement === 'OnTicks' && axis.edgeLabelPlacement === 'Shift') ? gap / 2 : gap;
                     if ((labelSize.width > gap - padding) && gap > 0 && (multiLevel.overflow === 'Wrap') && !isVertical) {
-                        height = (height * (textWrap(categoryLabel.text, gap - padding, multiLevel.textStyle, null, null, this.chart.themeStyle.axisLabelFont).length));
+                        height = (height * (textWrap(categoryLabel.text, gap - padding, multiLevel.textStyle, this.chart.enableRtl, null, null, this.chart.themeStyle.axisLabelFont).length));
                     }
                     multiLevelLabelsHeight[index as number] = !multiLevelLabelsHeight[index as number] ? height :
                         ((multiLevelLabelsHeight[index as number] < height) ? height : multiLevelLabelsHeight[index as number]);
@@ -217,7 +217,7 @@ export class MultiLevelLabel {
                             }
                         }
                         options.text = (multiLevel.overflow === 'Wrap') ?
-                            textWrap(argsData.text, gap, argsData.textStyle, null, null, this.chart.themeStyle.axisLabelFont) : textTrim(gap, argsData.text, argsData.textStyle, this.chart.themeStyle.axisLabelFont);
+                            textWrap(argsData.text, gap, argsData.textStyle, this.chart.enableRtl, null, null, this.chart.themeStyle.axisLabelFont) : textTrim(gap, argsData.text, argsData.textStyle, this.chart.enableRtl, this.chart.themeStyle.axisLabelFont);
                         options.x = options.x - padding / 2;
                     }
                     textElement(
@@ -392,10 +392,10 @@ export class MultiLevelLabel {
                         textTrim(
                             (categoryLabel.maximumTextWidth === null ? this.yAxisMultiLabelHeight[level as number] :
                                 categoryLabel.maximumTextWidth),
-                            argsData.text, argsData.textStyle, this.chart.themeStyle.axisLabelFont) : options.text;
+                            argsData.text, argsData.textStyle, this.chart.enableRtl, this.chart.themeStyle.axisLabelFont) : options.text;
                     options.text = (multiLevel.overflow === 'Wrap') ?
                         textWrap(argsData.text, (categoryLabel.maximumTextWidth === null ? this.yAxisMultiLabelHeight[level as number] :
-                            categoryLabel.maximumTextWidth), argsData.textStyle, null, null, this.chart.themeStyle.axisLabelFont) : options.text;
+                            categoryLabel.maximumTextWidth), argsData.textStyle, this.chart.enableRtl, null, null, this.chart.themeStyle.axisLabelFont) : options.text;
                     if (typeof options.text !== 'string' && options.text.length > 1) {
                         options.y -= (padding * options.text.length / 2);
                     }

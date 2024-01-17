@@ -3418,6 +3418,28 @@ describe('QueryBuilder', () => {
             queryBuilder.setRulesFromSql("Name.FirstName LIKE ('Date.parse('yyyy-MM-dd','1980-05-24')%')");
             expect(queryBuilder.rule.rules[0].value).toEqual("Date.parse('yyyy-MM-dd','1980-05-24')");
         });
+
+        it('EJ2-863630 - GetValidRules method of query builder returns improper rule for in operator', () => {
+            let customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'FirstName', label: 'First Name', type: 'string' }
+            ];
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData,
+                columns: customFieldData
+                
+            }, '#querybuilder');
+            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            filterElem.showPopup();
+            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            items[0].click();
+            let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances[0];
+            operatorElem.showPopup();
+            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            itemsCln[8].click();
+            expect(operatorElem.value).toEqual('in');
+            expect(queryBuilder.getValidRules()).toEqual({});
+        });
         
     });
 

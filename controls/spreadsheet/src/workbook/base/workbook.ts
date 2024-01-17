@@ -14,7 +14,7 @@ import { SaveOptions, SetCellFormatArgs, ClearOptions, AutoFillSettings, AutoFil
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress, unMerge } from '../common/index';
 import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, dataChanged } from '../common/index';
-import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
+import { getCell, skipDefaultValue, setCell, wrap as wrapText, Cell } from './cell';
 import { DataBind, setRow, setColumn, InsertDeleteEventArgs, NumberFormatArgs } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';
 import { WorkbookChart } from '../integrations/index';
@@ -1148,17 +1148,15 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 isFullPost: true,
                 needBlobData: false,
                 cancel: false,
+                autoDetectFormat: false,
                 pdfLayoutSettings: { fitSheetOnOnePage: false, orientation: 'Portrait' }
             };
             this.trigger('beforeSave', eventArgs);
             this.notify(beginAction, { eventArgs: eventArgs, action: 'beforeSave' });
             if (!eventArgs.cancel) {
                 this.notify(
-                    events.beginSave, {
-                        saveSettings: eventArgs, isFullPost: eventArgs.isFullPost,
-                        needBlobData: eventArgs.needBlobData, customParams: eventArgs.customParams, pdfLayoutSettings:
-                        eventArgs.pdfLayoutSettings
-                    });
+                    events.beginSave, { saveSettings: eventArgs, isFullPost: eventArgs.isFullPost, needBlobData: eventArgs.needBlobData,
+                        customParams: eventArgs.customParams, pdfLayoutSettings: eventArgs.pdfLayoutSettings });
             }
         }
     }

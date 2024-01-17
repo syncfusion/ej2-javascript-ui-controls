@@ -686,6 +686,14 @@ export class DiagramScroller {
                 }
                 this.diagram.setOffset(-this.horizontalOffset - pageBounds.x, -this.verticalOffset - pageBounds.y);
                 updateRuler(this.diagram);
+                //Bug 863516: Overview is not synced with diagram content while zoom-out the diagram.
+                //Updating overview after the page scrolled or zoomed.
+                if(this.diagram.views && (this.diagram.views as any).overview){
+                    let overview = (this.diagram.views as any).overview;
+                    var bounds = overview.scrollOverviewRect(overview.parent.scroller.horizontalOffset, overview.parent.scroller.verticalOffset, overview.parent.scroller.currentZoom, true);
+                    overview.updateOverviewrect(-bounds.x, -bounds.y, bounds.width, bounds.height);
+                    overview.updateView(overview);
+                }
             }
         }
     }

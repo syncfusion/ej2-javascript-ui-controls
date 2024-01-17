@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 24.1.46 (2024-01-17)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#F185974` - The selected node state will now be properly maintained in the filter dialog for the pivot table's date type field.
+- `#I539759` - On-demand grouping will now work properly with CSV data source.
+
 ## 24.1.45 (2024-01-09)
 
 ### PivotTable

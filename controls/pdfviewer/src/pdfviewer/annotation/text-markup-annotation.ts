@@ -2984,11 +2984,20 @@ export class TextMarkupAnnotation {
         if (annotation.IsLocked) {
             annotation.AnnotationSettings.isLock = annotation.IsLocked;
         }
+        if (annotation.TextMarkupAnnotationType === "Highlight") {
+            annotation.AnnotationSelectorSettings = annotation.annotSelectorSettings ? annotation.annotSelectorSettings : this.pdfViewer.highlightSettings.annotationSelectorSettings;
+        }
+        else if (annotation.TextMarkupAnnotationType === "Underline") {
+            annotation.AnnotationSelectorSettings = annotation.annotSelectorSettings ? annotation.annotSelectorSettings : this.pdfViewer.underlineSettings.annotationSelectorSettings;
+        }
+        else {
+            annotation.AnnotationSelectorSettings = annotation.annotSelectorSettings ? annotation.annotSelectorSettings : this.pdfViewer.strikethroughSettings.annotationSelectorSettings;
+        }       
         annotationObject = {
             // eslint-disable-next-line max-len
             textMarkupAnnotationType: annotation.TextMarkupAnnotationType, allowedInteractions: annotation.allowedInteractions, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
             annotationId: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber, isMultiSelect: annotation.IsMultiSelect, annotNameCollection: annotation.AnnotNameCollection, annotpageNumbers: annotation.AnnotpageNumbers, customData: this.pdfViewer.annotation.getCustomData(annotation),
-            annotationSettings : annotation.AnnotationSettings, isLocked: annotation.IsLocked,isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
+            annotationSettings : annotation.AnnotationSettings, isLocked: annotation.IsLocked,isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, annotationSelectorSettings: annotation.AnnotationSelectorSettings
         };
         return annotationObject;
     }

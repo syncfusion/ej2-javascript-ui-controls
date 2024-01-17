@@ -938,11 +938,12 @@ export class Editor {
             this.initComplexHistory('InsertComment');
             const currentCmtStart: CommentCharacterElementBox = commentWidget.commentStart;
             const currentCmtEnd: CommentCharacterElementBox = commentWidget.commentEnd;
-            const offset: number = currentCmtStart.line.getOffset(currentCmtStart, 1);
+            let replyCmtLength: number = commentWidget.replyComments.length;
+            const offset: number = currentCmtStart.line.getOffset(currentCmtStart, replyCmtLength + 1);
 
             let startPosition: TextPosition = new TextPosition(this.documentHelper.owner);
             startPosition.setPositionParagraph(currentCmtStart.line, offset);
-            const endOffset: number = currentCmtEnd.line.getOffset(currentCmtEnd, 1);
+            const endOffset: number = currentCmtEnd.line.getOffset(currentCmtEnd, replyCmtLength + 1);
 
             let endPosition: TextPosition = new TextPosition(this.documentHelper.owner);
             endPosition.setPositionParagraph(currentCmtEnd.line, endOffset);
@@ -12661,7 +12662,7 @@ export class Editor {
         // If previous widget is splitted paragraph, combine paragraph widget.
         let block: BlockWidget = (!isNullOrUndefined(paragraph.previousRenderedWidget) && start.paragraph !== paragraph) ?
             paragraph.previousRenderedWidget.combineWidget(this.documentHelper.viewer) as BlockWidget : undefined;
-        if (!isNullOrUndefined(block) && block instanceof TableWidget && paragraph.isEmpty() && isNullOrUndefined(paragraph.nextRenderedWidget)) {
+        if (this.owner.enableTrackChanges && !isNullOrUndefined(block) && block instanceof TableWidget && paragraph.isEmpty() && isNullOrUndefined(paragraph.nextRenderedWidget)) {
             this.delBlockContinue = true;
             this.delBlock = block;
             return;
@@ -15848,7 +15849,12 @@ export class Editor {
        
         if (offset === selection.getStartOffset(paragraph) && selection.start.currentWidget.isFirstLine()) {
             if (paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listId !== -1) {
-                this.onApplyListInternal(this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId), paragraph.paragraphFormat.listFormat.listLevelNumber - 1);
+                // BUG_859140 - handled backspace for list as per word desktop behaviour
+                if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.undoStack) && this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1].action === 'ListFormat') {
+                    this.onApplyListInternal(this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId), paragraph.paragraphFormat.listFormat.listLevelNumber - 1);
+                } else {
+                    this.onApplyList(undefined);
+                }
                 return;
             }
             if (paragraph.paragraphFormat.firstLineIndent !== 0) {

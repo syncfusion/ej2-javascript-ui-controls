@@ -6,6 +6,7 @@ import { FormValidator } from "@syncfusion/ej2-inputs";
 import { dispatchEvent } from '../../src/rich-text-editor/base/util';
 import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent as dispatchEve } from './../rich-text-editor/render.spec';
+import { SelectionCommands } from '../../src/editor-manager/plugin/selection-commands';
 import { NodeSelection } from '../../src/selection/selection';
 import { IRenderer, QuickToolbar } from '../../src/index';
 
@@ -3264,6 +3265,33 @@ describe('RTE CR issues', () => {
             (document.querySelector(".e-rte-test-elements div") as any).click();
             (rteObj.element.querySelectorAll(".e-rte-toolbar .e-toolbar-item button")[1] as any).click();
             expect(rteObj.inputElement.innerHTML == '<p><strong>​<em>​</em></strong>Rich Text Editor</p>').toBe(true);
+        });
+    });
+    describe("863440: Too many times applying bold to a text, sometimes the text got deleted in RichTextEditor.", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let domSelection: NodeSelection = new NodeSelection();
+        let parentDiv: HTMLDivElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                enterKey: 'BR',
+                value:`<div id="div1"><p id="paragraph1">second rtec</p></div>`
+            });
+            rteEle = rteObj.element;
+            parentDiv = document.getElementById('div1') as HTMLDivElement;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Apply Bold tag for cursor position', () => {
+            let node1: Node = document.getElementById('paragraph1');
+            let text1: Text = node1.childNodes[0] as Text;
+            domSelection.setSelectionText(document, text1, text1, 1, 1);
+            SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
+            expect(node1.childNodes[0].nodeName.toLowerCase()).toEqual('strong');
+            domSelection.setSelectionText(document, text1, text1, 5, 5);
+            SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
+            expect(rteObj.inputElement.innerHTML).toEqual('<div id="div1"><p id="paragraph1">second rtec</p></div>');
         });
     });
 });

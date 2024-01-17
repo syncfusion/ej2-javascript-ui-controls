@@ -192,7 +192,7 @@ export class LineDistribution {
 
             connectorObstacles.push(connectorObstacle);
         }
-
+        this.sortConnectors(graph,diagram)
         const modifiedgrap: ModifiedgrapObject[] = [];
         for (let m: number = 0; m < graph.length; m++) {
             const row: GraphObject = graph[parseInt(m.toString(), 10)];
@@ -362,6 +362,31 @@ export class LineDistribution {
             }
         }
     }
+    //Bug 862601: Connectors are not rendered properly with lineRouting and lineDistribution enables during doLayout process.
+    //To sort the connectors order in graph based on its target point and orientation to avoid connector segments path in same line.
+    private sortConnectors(graph:GraphObject[],diagram:Diagram){
+        for (let i = 0; i < graph.length; i++) {
+            for (let j = 0; j < graph[parseInt(i.toString(), 10)].value.length; j++) {
+                if (graph[parseInt(i.toString(), 10)].value.length > 1) {
+                    if (diagram.layout.orientation === 'LeftToRight' || diagram.layout.orientation === 'RightToLeft') {
+                        graph[parseInt(i.toString(), 10)].value.sort((a, b) => {
+                            const connectorA = diagram.nameTable[`${a.id}`];
+                            const connectorB = diagram.nameTable[`${b.id}`];
+                            
+                            return connectorA.targetPoint.y - connectorB.targetPoint.y;
+                        });
+                    }else if(diagram.layout.orientation === 'TopToBottom' || diagram.layout.orientation === 'BottomToTop'){
+                        graph[parseInt(i.toString(), 10)].value.sort((a, b) => {
+                            const connectorA = diagram.nameTable[`${a.id}`];
+                            const connectorB = diagram.nameTable[`${b.id}`];
+                            
+                            return connectorA.targetPoint.x - connectorB.targetPoint.x;
+                        });
+                    }
+                }
+            }
+        }
+    };
 
     private inflate(rect: Rect, x: number, y: number): Rect {
         rect.x -= x;
@@ -1074,7 +1099,7 @@ export class LineDistribution {
     public resetConnectorSegments(connector: Connector): void {
         const segements: OrthogonalSegment[] = connector.segments as OrthogonalSegment[];
 
-        for (let i: number = segements.length; i > 1; i--) {
+        for (let i: number = segements.length; i > 0; i--) {
             segements.splice(i - 1, 1);
         }
 

@@ -596,8 +596,8 @@ export class Grouping implements IAction {
         let groupFields: IGroupSettings[] =
             PivotUtil.cloneGroupSettings(this.parent.dataSourceSettings.groupSettings);
         if (groupFields.length === 0 && !this.parent.clonedDataSet && !this.parent.clonedReport) {
-            const dataSet: IDataSet[] = this.parent.engineModule.data as IDataSet[];
-            this.parent.clonedDataSet = PivotUtil.getClonedData(dataSet) as IDataSet[];
+            const dataSet: IDataSet[] | string[][] = this.parent.engineModule.data as IDataSet[] | string[][];
+            this.parent.clonedDataSet = this.parent.dataSourceSettings.type === 'CSV' ? PivotUtil.getClonedCSVData(dataSet as string[][]) as string[][] : PivotUtil.getClonedData(dataSet as IDataSet[]) as IDataSet[];
             this.parent.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
             this.parent.clonedReport = extend({}, this.parent.dataSourceSettings, null, true) as DataSourceSettings;
             this.parent.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);

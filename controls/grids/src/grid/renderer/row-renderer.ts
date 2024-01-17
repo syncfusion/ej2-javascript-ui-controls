@@ -243,7 +243,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                     thisRef.parent.trigger(rowDataBound, eventArg);
                     if (!eventArg.isSelectable) {
                         row.isSelectable = eventArg.isSelectable;
-                        this.disableRowSelection(thisRef, row, args, eventArg);
+                        thisRef.disableRowSelection(thisRef, row, args, eventArg);
                     }
                 });
             }

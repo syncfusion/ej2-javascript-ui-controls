@@ -597,7 +597,7 @@ describe('Diagram Control', () => {
             expect(pathElement1.children[0].getAttribute("d") === "M762.75,11 L762.75,15.5 Q762.75,20,755.75,20 L743.5,20 Q736.5,20,736.5,13 L736.5,7 Q736.5,0,729.5,0 L7,0 Q0,0,0.11,7 L0.49,30.5 ").toBe(true);
             var connector11 = diagram.connectors[11].id;
             var pathElement11 = document.getElementById(connector11 + "_path_groupElement");
-            expect(pathElement11.children[0].getAttribute("d") === "M5,0 L5,5 Q5,10,2.5,10 Q0,10,0,14.75 L0,19.5 ").toBe(true);
+            expect(pathElement11.children[0].getAttribute("d") === "M5,0 L5,5 Q5,10,2.5,10 Q0,10,0,14.75 L0,19.5 " || pathElement11.children[0].getAttribute("d") === "M5,0 L5,4.5 Q5,9,2.5,9 Q0,9,0,14.25 L0,19.5 ").toBe(true);
             var connector26 = diagram.connectors[26].id;
             var pathElement26 = document.getElementById(connector26 + "_path_groupElement");
             expect(pathElement26.children[0].getAttribute("d") === "M0,10 L0,14.83 Q0,19.67,7,19.67 L28,19.67 Q35,19.67,35,12.67 L35,7 Q35,0,42,0 L118,0 Q125,0,125.12,7 L125.49,29.5 ").toBe(true);

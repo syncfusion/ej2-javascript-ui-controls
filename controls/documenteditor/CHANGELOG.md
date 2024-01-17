@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 24.1.46 (2024-01-17)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I532824` - Resolved list numbering issue in the attached document.
+- `#I531058` - Resolved the reply comment sorted issue.
+- `#I532310` - Resolved Issue while opening the document Editor exported document.
+- `#F185679` - Resolve script error and deleting cell from table removes other texts outside table.
+
 ## 24.1.45 (2024-01-09)
 
 ### DocumentEditor

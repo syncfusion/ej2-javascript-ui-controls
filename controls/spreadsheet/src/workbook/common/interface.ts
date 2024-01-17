@@ -28,6 +28,7 @@ export interface BeforeSaveEventArgs extends SaveOptions {
     isFullPost: boolean;
     needBlobData: boolean;
     cancel: boolean;
+    autoDetectFormat?: boolean;
 }
 
 export interface SaveCompleteEventArgs extends SaveOptions {
@@ -164,16 +165,11 @@ interface RangeInfo {
 /** @hidden */
 export interface AutoDetectInfo {
     value: string;
-    args: { sheet: Sheet, indexes: number[] };
+    sheet: SheetModel;
     cell: CellModel;
     rowIndex: number;
     colIndex: number;
-    i: number;
-    j: number;
-    k: number;
-    sRanges: number[];
-    range: ExtendedRange;
-    sheetIndex?: number;
+    sheetIndex: number;
 }
 
 /**
@@ -518,7 +514,7 @@ export interface NumberFormatArgs {
 }
 /** @hidden */
 export interface DateFormatCheckArgs {
-    value: string;
+    value: string | number;
     cell?: CellModel;
     rowIndex?: number;
     colIndex?: number;
@@ -530,6 +526,20 @@ export interface DateFormatCheckArgs {
     isEdit?: boolean;
     intl?: Internationalization;
     skipCellFormat?: boolean;
+    updateValue?: boolean;
+}
+/** @hidden */
+export interface AutoDetectGeneralFormatArgs {
+    args?: NumberFormatArgs & DateFormatCheckArgs;
+    fResult?: string;
+    intl?: Internationalization;
+    currencySymbol?: string;
+    isRightAlign?: boolean;
+    curCode?: string;
+    cell?: CellModel;
+    rowIdx?: number;
+    colIdx?: number;
+    sheet?: SheetModel;
 }
 /** @hidden */
 export interface checkCellValid {

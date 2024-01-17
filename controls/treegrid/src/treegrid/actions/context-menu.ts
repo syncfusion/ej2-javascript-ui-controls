@@ -53,7 +53,14 @@ export class ContextMenu {
         const selectedrow: HTMLTableRowElement = tObj.getSelectedRows()[0] as HTMLTableRowElement;
         if ((indent || outdent) && !isNullOrUndefined(selectedrow)) {
             const targetElement: Element = (args.event.target as Element).closest('td');
-            if (isNullOrUndefined(targetElement) || (!isNullOrUndefined(targetElement) && (!targetElement.classList.contains('e-rowcell') || targetElement.querySelectorAll('.e-gridform').length !== 0))) {
+            if (isNullOrUndefined(targetElement) || (!isNullOrUndefined(targetElement) && (!targetElement.classList.contains('e-rowcell') ||
+                targetElement.querySelectorAll('.e-gridform').length !== 0))) {
+                for (const items of args.items) {
+                    if (items.text === 'Outdent' || items.text === 'Indent') {
+                        tObj.grid.contextMenuModule['hiddenItems'].push(items.text);
+                    }
+                }
+                tObj.grid.contextMenuModule.contextMenu.hideItems(tObj.grid.contextMenuModule['hiddenItems']);
                 indent.style.display = outdent.style.display = 'none';
             }
             else {
@@ -82,9 +89,13 @@ export class ContextMenu {
             }
         }
         else {
-            if (tObj.grid.isEdit && isNullOrUndefined(selectedrow)) {
-                indent.style.display = 'none';
-                outdent.style.display = 'none';
+            if (((indent || outdent) || tObj.grid.isEdit) && isNullOrUndefined(selectedrow)) {
+                for (const items of args.items) {
+                    if (items.text === 'Outdent' || items.text === 'Indent') {
+                        tObj.grid.contextMenuModule['hiddenItems'].push(items.text);
+                    }
+                }
+                tObj.grid.contextMenuModule.contextMenu.hideItems(tObj.grid.contextMenuModule['hiddenItems']);
             }
         }
     }

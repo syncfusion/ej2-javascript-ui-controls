@@ -262,7 +262,7 @@ export class AccumulationLegend extends BaseLegend {
                 option.textCollection = textWrap(
                     option.text,
                     (legend.maximumLabelWidth ? Math.min(legend.maximumLabelWidth, (bounds.width - textPadding)) :
-                        (bounds.width - textPadding)), legend.textStyle, null, null, this.chart.themeStyle.legendLabelFont
+                        (bounds.width - textPadding)), legend.textStyle, this.chart.enableRtl, null, null, this.chart.themeStyle.legendLabelFont
                 );
             } else {
                 option.textCollection.push(option.text);
@@ -376,7 +376,7 @@ export class AccumulationLegend extends BaseLegend {
         let availablewidth: number = this.getAvailWidth(legendOption.location.x, this.legendBounds.width);
         availablewidth = this.legend.maximumLabelWidth ? Math.min(this.legend.maximumLabelWidth, availablewidth) : availablewidth;
         if (this.legend.textOverflow === 'Ellipsis' && this.legend.textWrap === 'Normal') {
-            legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle, this.chart.themeStyle.legendTitleFont);
+            legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle, this.chart.enableRtl, this.chart.themeStyle.legendTitleFont);
         }
     }
 

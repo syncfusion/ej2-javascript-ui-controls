@@ -1060,7 +1060,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         this.titleCollection = [];
         this.subTitleCollection = [];
         if (this.title) {
-            this.titleCollection = getTitle(this.title, this.titleStyle, (this.titleStyle.position === 'Left' || this.titleStyle.position === 'Right' ? height : width), this.themeStyle.chartTitleFont);
+            this.titleCollection = getTitle(this.title, this.titleStyle, (this.titleStyle.position === 'Left' || this.titleStyle.position === 'Right' ? height : width), this.enableRtl, this.themeStyle.chartTitleFont);
             titleHeight = (measureText(this.title, this.titleStyle,
                                        this.themeStyle.chartTitleFont).height * this.titleCollection.length) + padding;
             if (this.subTitle) {
@@ -1069,7 +1069,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                     titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
                     maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
                 }
-                this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth, this.themeStyle.chartSubTitleFont);
+                this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth, this.enableRtl, this.themeStyle.chartSubTitleFont);
                 subTitleHeight = (measureText(this.subTitle, this.subTitleStyle,
                                               this.themeStyle.chartSubTitleFont).height * this.subTitleCollection.length) +
                     padding;

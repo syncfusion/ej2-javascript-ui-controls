@@ -5,6 +5,7 @@
 The [JavaScript Ribbon](https://www.syncfusion.com/javascript-ui-controls/js-ribbon?utm_source=npm&utm_medium=listing&utm_campaign=javascript-ribbon-npm) control provides a structured and easy-to-use user interface for users to access different features and functions through series of tabs, improving the overall user experience and making your application more efficient.
 
 <p align="center">
+  <a href="https://ej2.syncfusion.com/documentation/ribbon/getting-started">Getting Started</a> | 
   <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-ribbon-npm#/material/ribbon/default.html">Online demos</a> | 
   <a href="https://www.syncfusion.com/javascript-ui-controls/js-ribbon?utm_source=npm&utm_medium=listing&utm_campaign=javascript-ribbon-npm">Learn more</a>
 </p>
@@ -37,12 +38,12 @@ Ribbon control is also offered in the following list of frameworks.
 
 ## Key features
 
-* **Built-in items**: Several built-in support items, such as buttons, checkboxes, dropdown buttons, split buttons, combo boxes, and color pickers that can be customized and used to execute specific actions.
-* **Modes**: Offers the `classic mode` that organizes items and groups in a traditional form, and `simplified mode` that organizes items and groups into a single row for improved usability and reduced clutter.
-* **Tooltip**: Provide additional information when a user hovers over a ribbon item, improving user experience and increasing the usability of the application.
-* **File menu**: A built-in menu that to add file related actions easily.
-* **Templates**: Customize ribbon items and the help pane content using templates.
-
+* [Built-in items](https://ej2.syncfusion.com/documentation/ribbon/items): Several built-in support items, such as buttons, checkboxes, dropdown buttons, split buttons, combo boxes, group button, and color pickers that can be customized and used to execute specific actions.
+* [Modes](https://ej2.syncfusion.com/documentation/ribbon/layouts): Offers the `classic mode` that organizes items and groups in a traditional form, and `simplified mode` that organizes items and groups into a single row for improved usability and reduced clutter.
+* [Tooltip](https://ej2.syncfusion.com/documentation/ribbon/tooltip): Provide additional information when a user hovers over a ribbon item, improving user experience and increasing the usability of the application.
+* [File menu](https://ej2.syncfusion.com/documentation/ribbon/file-menu): A built-in menu that to add file related actions easily.
+* [Backstage](https://ej2.syncfusion.com/documentation/ribbon/backstage): It is an extension of traditional file menu for displaying information, based on the user interactions with backstage options.
+* [Templates](https://ej2.syncfusion.com/documentation/ribbon/help-pane-template): Customize ribbon items and the help pane content using templates.
 
 ## Support
 

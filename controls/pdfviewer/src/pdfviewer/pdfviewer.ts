@@ -7573,6 +7573,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     break;
                 case 'customStampSettings':
                     if (newProp.customStampSettings.customStamps) {
+                        this.viewerBase.customStampCollection = [];
                         for (let i: number = 0; i < newProp.customStampSettings.customStamps.length; i++) {
                             this.viewerBase.customStampCollection.push({ customStampName: this.customStampSettings.customStamps[i].customStampName, customStampImageSource: this.customStampSettings.customStamps[i].customStampImageSource });
                         }

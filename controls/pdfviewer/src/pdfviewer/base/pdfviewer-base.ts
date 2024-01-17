@@ -5918,7 +5918,7 @@ export class PdfViewerBase {
                 // eslint-disable-next-line max-len
                 this.pdfViewer.annotationModule.createAnnotationLayer(pageDiv, pageWidth, pageHeight, pageNumber, displayMode);
             }
-            if (this.pdfViewer.textSearchModule || this.pdfViewer.textSelectionModule || this.pdfViewer.annotationModule) {
+            if (this.pdfViewer.textSearchModule || this.pdfViewer.textSelectionModule || this.pdfViewer.formFieldsModule || this.pdfViewer.annotationModule) {
                 this.textLayer.addTextLayer(pageNumber, pageWidth, pageHeight, pageDiv);
             }
             if (this.pdfViewer.formDesignerModule && !this.pdfViewer.annotationModule) {

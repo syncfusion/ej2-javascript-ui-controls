@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 24.1.46 (2024-01-17)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I534895` - Issue with `getValidRules` method of query builder returns improper rule for in operator has been fixed.
+
+## 24.1.45 (2024-01-09)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I526596` - Issue with Dropdown tree item expand and selection related issue in query builder has been fixed.
+
 ## 24.1.44 (2024-01-03)
 
 ### QueryBuilder

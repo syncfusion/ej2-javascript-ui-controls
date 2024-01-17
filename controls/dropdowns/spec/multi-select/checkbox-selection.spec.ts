@@ -696,11 +696,11 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: empList,
                 fields: { text: 'text', groupBy: 'country' },
-                headerTemplate: '<div class="head">  Photo  <span style="padding-left:42px"> Contact Info </span></div>',
-                itemTemplate: '<div><img class="eimg" src="../Employees/${eimg}.png" alt="employee"/>' +
+                headerTemplate: '<div class="head">Photo<span style="padding-left:42px">Contact Info</span></div>',
+                itemTemplate: '<div><img class="eimg" src="https://ej2.syncfusion.com/demos/src/drop-down-list/Employees/${eimg}.png" alt="employee"/>' +
                     '<div class="ename"> ${text} </div><div class="temp"> ${country} </div></div>',
                 footerTemplate: '<div class="Foot"> Total Items Count: 5 </div>',
-                valueTemplate: '<span><img class="tempImg" src="../Employees/${eimg}.png" height="20px" width="20px" alt="employee"/>' +
+                valueTemplate: '<span><img class="tempImg" src="https://ej2.syncfusion.com/demos/src/drop-down-list/Employees/${eimg}.png" height="20px" width="20px" alt="employee"/>' +
                     '<span class="tempName"> ${text} </span></span>',
                 width: '250px',
 
@@ -713,7 +713,7 @@ describe('MultiSelect', () => {
             listObj.appendTo(element);
             listObj.showPopup();
             setTimeout(() => {
-                expect('<div class="head"> Photo <span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
+                expect('<div class="head">Photo<span style="padding-left:42px">Contact Info</span></div>').toBe((<any>listObj).header.innerHTML);
                 expect('<div class="Foot"> Total Items Count: 5 </div>').toBe((<any>listObj).footer.innerHTML);
                 expect((<any>listObj).checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
                 expect((<any>listObj).checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
@@ -744,11 +744,11 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: empList,
                 fields: { text: 'text', groupBy: 'country' },
-                headerTemplate: '<div class="head">  Photo  <span style="padding-left:42px"> Contact Info </span></div>',
-                itemTemplate: '<div><img class="eimg" src="../Employees/${eimg}.png" alt="employee"/>' +
+                headerTemplate: '<div class="head">Photo<span style="padding-left:42px">Contact Info</span></div>',
+                itemTemplate: '<div><img class="eimg" src="https://ej2.syncfusion.com/demos/src/drop-down-list/Employees/${eimg}.png" alt="employee"/>' +
                     '<div class="ename"> ${text} </div><div class="temp"> ${country} </div></div>',
                 footerTemplate: '<div class="Foot"> Total Items Count: 5 </div>',
-                valueTemplate: '<span><img class="tempImg" src="../Employees/${eimg}.png" height="20px" width="20px" alt="employee"/>' +
+                valueTemplate: '<span><img class="tempImg" src="https://ej2.syncfusion.com/demos/src/drop-down-list/Employees/${eimg}.png" height="20px" width="20px" alt="employee"/>' +
                     '<span class="tempName"> ${text} </span></span>',
                 width: '250px',
                 mode: 'CheckBox',
@@ -760,7 +760,7 @@ describe('MultiSelect', () => {
             listObj.appendTo(element);
             listObj.showPopup();
             setTimeout(function () {
-                expect('<div class="head"> Photo <span style="padding-left:42px"> Contact Info </span></div>').toBe((<any>listObj).header.innerHTML);
+                expect('<div class="head">Photo<span style="padding-left:42px">Contact Info</span></div>').toBe((<any>listObj).header.innerHTML);
                 expect('<div class="Foot"> Total Items Count: 5 </div>').toBe((<any>listObj).footer.innerHTML);
                 expect((<any>listObj).checkBoxSelectionModule.checkAllParent.classList.contains('e-selectall-parent')).toBe(true);
                 expect((<any>listObj).isPopupOpen()).toBe(true);

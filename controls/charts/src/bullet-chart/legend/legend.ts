@@ -196,7 +196,7 @@ export class BulletChartLegend extends BaseLegend {
         }
         const availwidth: number = (this.legendBounds.x + this.legendBounds.width) - (bulletLegendOption.location.x +
             textPadding - this.legend.shapeWidth / 2);
-        bulletLegendOption.text = textTrim(+availwidth.toFixed(4), bulletLegendOption.text, this.legend.textStyle, this.chart.themeStyle.legendLabelFont);
+        bulletLegendOption.text = textTrim(+availwidth.toFixed(4), bulletLegendOption.text, this.legend.textStyle, this.chart.enableRtl, this.chart.themeStyle.legendLabelFont);
     }
     /**
      * To show the tooltip for the trimmed text in legend.

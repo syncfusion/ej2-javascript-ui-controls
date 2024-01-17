@@ -4359,8 +4359,14 @@ export class Layout {
                         index = startIndex;
                         keepLinesTogether = false;
                         keepWithNext = true;
-                        if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule && !isList) {
-                            this.viewer.owner.editorModule.updateWholeListItems(paragraphWidget);
+                        if (paragraphWidget instanceof ParagraphWidget) {
+                            if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule && !paragraphWidget.paragraphFormat.keepWithNext && !isList) {
+                                this.viewer.owner.editorModule.updateWholeListItems(paragraphWidget);
+                            }
+                        } else {
+                            if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule && !isList) {
+                                this.viewer.owner.editorModule.updateWholeListItems(paragraphWidget);
+                            }
                         }
                     }
                 }

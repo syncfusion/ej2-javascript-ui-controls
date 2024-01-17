@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.45 (2024-01-09)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I534170`  - Fixed an issue where indent/outdent option is not displayed in the context menu when in cell edit mode.
+
 ## 24.1.44 (2024-01-03)
 
 ### Tree Grid

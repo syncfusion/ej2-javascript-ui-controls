@@ -4057,7 +4057,20 @@ export class Annotation {
             this.storeAnnotationCollections(annotation, pageNumber);
             const pageAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };
             pageAnnotation.annotations.push(annotation);
-            index = pageAnnotation.annotations.indexOf(annotation);
+            if (this.pdfViewer.annotationCollection) {
+                this.pdfViewer.annotationCollection.forEach((item: any) => {
+                    if (annotation.annotName !== item.annotationId) {
+                        if ('annotationId' in item) {
+                            const newItem: any = {
+                                ...item,
+                                annotName: item.annotationId,
+                            };
+                            pageNumber = item.pageNumber;
+                            pageAnnotation.annotations.push(newItem);
+                        }
+                    }
+                });
+            }
             const annotationCollection: IPageAnnotations[] = [];
             annotationCollection.push(pageAnnotation);
             const annotationStringified: string = JSON.stringify(annotationCollection);

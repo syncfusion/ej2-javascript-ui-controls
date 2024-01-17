@@ -1027,6 +1027,28 @@ describe('Rating', () => {
             expect(document.body.querySelector('.e-rating-tooltip-content').innerHTML).toEqual('<span>testTemplate</span>');
         });
 
+        it('Tooltip with dynamic template', (done) => {
+            let template = '${if(value==1)}<b>Angry</b> ${else if(value==2)}<b>Sad</b> ${else if(value==3)}<b>Neutral</b> ${else if(value==4)}<b>Good</b> ${else}<b>Happy</b>${/if}';
+            let renderer = createElement("script", { id: "tooltipTemplate", innerHTML: template });
+            renderer.setAttribute("type", "text/x-jsrender");
+            document.body.appendChild(renderer);
+            rating = new Rating({
+                showTooltip: true,
+                tooltipTemplate: '#tooltipTemplate'
+            });
+            rating.appendTo('#rating');
+            (rating as any).isAngular = true;
+            let liElementArray: any = ratingElement.parentElement.querySelectorAll('.e-rating-item-container');
+            expect(ratingElement.parentElement.querySelector('.e-rating-item-list').classList.contains('e-tooltip')).toBe(true);
+            mouseEventArs.target = liElementArray[1];
+            EventHandler.trigger(liElementArray[1], "mousemove");
+            (rating as any).tooltipObj.open(liElementArray[1]);
+            expect(document.body.querySelector('.e-rating-tooltip-content') != null).toEqual(true);
+            expect(document.body.querySelector('.e-rating-tooltip-content').innerHTML).toEqual('<b>Sad</b> ');
+            /* To Signal that the asynchronous code has completed */
+            setTimeout(() => { done(); });
+        });
+
         it('Custom tooltip using cssClass', () => {
             rating = new Rating({
                 cssClass: 'testClass',

@@ -43,6 +43,7 @@ $stepper-bigger-small-optional-size: 12px !default;
 $stepper-bigger-small-text-size: 14px !default;
 
 $step-selected-li-shadow: 0 0 0 2px $overlay-bg-color, 0 0 0 4px $primary, 0 0 0 8px $overlay-bg-color !default;
+$step-keyboard-selected-li-shadow: 0 0 0 2px $overlay-bg-color, 0 0 0 4px $grey-dark-font, 0 0 0 8px $overlay-bg-color !default;
 $step-valid-li-shadow: 0 0 0 2px $overlay-bg-color, 0 0 0 4px $success-bg, 0 0 0 8px $overlay-bg-color !default;
 $step-error-li-shadow: 0 0 0 2px $overlay-bg-color, 0 0 0 4px $error-font, 0 0 0 8px $overlay-bg-color !default;
 $step-li-shadow: 0 0 0 8px $overlay-bg-color !default;

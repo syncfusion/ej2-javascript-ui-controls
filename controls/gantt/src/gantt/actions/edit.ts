@@ -1559,9 +1559,11 @@ export class Edit {
             const taskID: string = updateRecord.ganttProperties.taskId;
             const resourceID: string = prevResource[index as number][this.parent.resourceFields.id];
             const record: IGanttData = flatRecords[this.parent.getTaskIds().indexOf('R' + resourceID)];
-            for (let j: number = 0; j < record.childRecords.length; j++) {
-                if (record.childRecords[j as number].ganttProperties.taskId === taskID) {
-                    this.removeChildRecord(record.childRecords[j as number]);
+            if (!isNullOrUndefined(record)) {
+                for (let j: number = 0; j < record.childRecords.length; j++) {
+                    if (record.childRecords[j as number].ganttProperties.taskId === taskID) {
+                        this.removeChildRecord(record.childRecords[j as number]);
+                    }
                 }
             }
         }
@@ -3077,10 +3079,15 @@ export class Edit {
                 }
                 if(!isNullOrUndefined(args.data[`${tempTaskID}`])) {
                     if(args.data[tempTaskID as string] != args.data['ganttProperties']['taskId']) {
+                        for (const key of Object.keys(this.parent.ids)) {
+                            if (this.parent.ids[key as string] === args.data['ganttProperties']['taskId'].toString()) {
+                                this.parent.ids[key as string] = args.data[tempTaskID as string].toString();
+                                break;
+                            }
+                        }
                         args.data['ganttProperties']['taskId'] = args.data[tempTaskID as string];
                         args.newTaskData[tempTaskID as string] = args.data[tempTaskID as string];
                         args.data['ganttProperties']['rowUniqueID'] = args.data[tempTaskID as string].toString();
-                        this.parent.ids.push(args.data[tempTaskID as string].toString());
                     }
                 }
                 if (!args.cancel) {
@@ -3090,7 +3097,6 @@ export class Edit {
                             addedRecords: [args.newTaskData], // to check
                             changedRecords: args.modifiedTaskData
                         };
-                        const prevID: string = (args.data as IGanttData).ganttProperties.taskId.toString();
                         /* tslint:disable-next-line */
                         const query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
                         const adaptor: any = data.adaptor;
@@ -3099,6 +3105,13 @@ export class Edit {
                             const crud: Promise<Object> =
                                 data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                             crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
+                                if (e.addedRecords[0][this.parent.taskFields.id].toString() != args.data['ganttProperties']['taskId']) {
+                                    args.data['ganttProperties']['taskId'] = e.addedRecords[0][this.parent.taskFields.id].toString();
+                                    args.newTaskData[tempTaskID as string] = e.addedRecords[0][this.parent.taskFields.id].toString();
+                                    args.data['ganttProperties']['rowUniqueID'] = e.addedRecords[0][this.parent.taskFields.id].toString();
+                                    this.parent.ids.push(e.addedRecords[0][this.parent.taskFields.id].toString());
+                                }
+                                const prevID: string = (args.data as IGanttData).ganttProperties.taskId.toString();
                                 if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
                                     e.addedRecords[0][this.parent.taskFields.id].toString() == prevID) {
                                     this.parent.setRecordValue(

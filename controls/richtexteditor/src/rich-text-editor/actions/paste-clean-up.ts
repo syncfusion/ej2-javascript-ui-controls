@@ -709,7 +709,7 @@ export class PasteCleanup {
                 events.afterPasteCleanup,
                 { value : clipBoardElem.innerHTML, filesData: filesData },
                 (updatedArgs: PasteCleanupArgs) => { value = updatedArgs.value; });
-            clipBoardElem.innerHTML = value;
+            clipBoardElem.innerHTML = this.parent.addAnchorAriaLabel(value);
             clipBoardElem = this.addTableClass(clipBoardElem);
             this.parent.formatter.editorManager.execCommand(
                 'inserthtml',

@@ -271,7 +271,7 @@ export class ToolbarRenderer implements IRenderer {
                         }
                     }
                     //Formats preselect
-                    if ((args.items[0 as number] as any).command === 'Formats') {
+                    if ((args.items[0 as number] as any).command === 'Formats' || (args.items[0 as number] as any).command === 'Font') {
                         for (let index: number = 0; index < args.element.childNodes.length; index++) {
                             const divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
                             divNode.innerHTML = dropDown.content.trim();

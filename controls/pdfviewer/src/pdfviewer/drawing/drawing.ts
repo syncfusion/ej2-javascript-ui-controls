@@ -540,6 +540,7 @@ export class Drawing {
                 freeTextEle.content = obj.dynamicText;
                 freeTextEle.style.opacity = obj.opacity;
                 freeTextEle.margin.left = 4;
+                freeTextEle.margin.right = 5;
                 freeTextEle.margin.top = 5 * (obj.fontSize / 16);
                 if (this.pdfViewer.freeTextSettings.enableAutoFit) {
                     freeTextEle.style.textWrapping = 'Wrap';

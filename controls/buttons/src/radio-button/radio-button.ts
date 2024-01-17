@@ -16,7 +16,7 @@ const LABEL: string = 'e-label';
 const RIPPLE: string = 'e-ripple-container';
 const RTL: string = 'e-rtl';
 const WRAPPER: string = 'e-radio-wrapper';
-const ATTRIBUTES: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value'];
+const ATTRIBUTES: string[] = ['title', 'class', 'style', 'disabled', 'readonly', 'name', 'value', 'id'];
 
 /**
  * The RadioButton is a graphical user interface element that allows you to select one option from the choices.

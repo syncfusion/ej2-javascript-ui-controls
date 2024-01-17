@@ -727,7 +727,20 @@ export class DiagramEventHandler {
                     if (this.action === 'Drag' || this.action === 'Rotate') {
                         this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.Interactions;
                     }
+                    //Bug 863516: Overview is not synced with diagram content while zoom-out the diagram.
+                    //Checking page bounds before and after dragging node, and updating the overview rect if the page bounds modified after the drag.
+                    const preDragBounds = this.diagram.scroller.getPageBounds();
                     this.mouseMoveExtend(e, obj);
+                    const postDragBounds = this.diagram.scroller.getPageBounds();
+                    if(obj && (preDragBounds.width !== postDragBounds.width ||
+                        preDragBounds.height !== postDragBounds.height ||
+                        preDragBounds.x !== postDragBounds.x ||
+                        preDragBounds.y !== postDragBounds.y)){
+                        if(this.diagram.views && (this.diagram.views as any).overview){
+                            let overview = (this.diagram.views as any).overview;
+                            overview.updateView(overview);
+                        }
+                    }
                 }
                 this.prevPosition = this.currentPosition;
                 if (!this.isForeignObject(e.target as HTMLElement, true)) {

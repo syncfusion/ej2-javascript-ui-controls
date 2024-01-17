@@ -3628,8 +3628,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.removeMediaListener();
         this.notify(events.destroy, {});
         this.destroyDependentModules();
-        if ((<{ isReact?: boolean }>this).isReact || (<{ isVue?: boolean }>this).isVue) {
+        if ((<{ isReact?: boolean }>this).isReact) {
             this.destroyTemplate(['template']);
+        }
+        if ((<{ isVue?: boolean }>this).isVue) {
+            this.destroyTemplate();
         }
         if (hasGridChild) { super.destroy(); }
         this.toolTipObj.destroy();

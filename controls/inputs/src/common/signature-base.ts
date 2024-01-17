@@ -161,7 +161,6 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
             this.element.height = this.element.offsetHeight;
             this.element.width = this.element.offsetWidth;
         }
-        this.canvasContext.scale(1, 1);
         this.canvasContext.fillStyle = this.strokeColor;
         this.tempCanvas = this.createElement('canvas', { className: 'e-' + this.getModuleName() + '-temp' });
         this.tempContext = this.tempCanvas.getContext('2d');

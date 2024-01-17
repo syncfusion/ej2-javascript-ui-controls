@@ -14822,6 +14822,15 @@ describe('Spreadsheet formula module ->', () => {
             expect(tdEle.textContent).toBe('-22');
             done();
         });
+        it('I864921 -> Throws error while performing arithmetic operation with percentage formatted value', (done: Function) => {
+            helper.edit('J7', '=5.68899%+1.457288%');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('0.07146278');
+            helper.edit('J8', '=(5.68899%)+1.457288%');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('0.07146278');
+            helper.edit('J9', '=(5.68899%)+(1.457288%)');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('0.07146278');
+            done();
+        });
     });
     describe('Provide the support to handle the wrong formula in spreadsheet and display alert dialog -> ', () => {
         beforeEach((done: Function) => {

@@ -1297,8 +1297,14 @@ export class PivotEngine {
                 field.formula = field.formula.replace(/abs\(/g, 'Math.abs(');
             }
             field.name = calcProperties ? calcProperties.name : field.name;
-            keys = keys.filter((key: string) => { return key !== field.name; });
-            keys.push(field.name);  // eslint-disable-next-line no-useless-escape
+            if (this.dataSourceSettings.type === 'CSV') {
+                if (keys.indexOf(field.name) === -1) {
+                    keys.push(field.name);
+                }
+            } else {
+                keys = keys.filter((key: string) => { return key !== field.name; });
+                keys.push(field.name);
+            } // eslint-disable-next-line no-useless-escape
             const formulaType: string[] = actualFormula.split('\"');
             for (let len: number = 0, lmt: number = formulaType.length; len < lmt; len++) {
                 const type: string = formulaType[len as number].trim(); // eslint-disable-next-line no-useless-escape

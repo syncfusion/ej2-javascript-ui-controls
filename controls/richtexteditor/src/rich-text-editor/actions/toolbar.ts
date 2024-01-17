@@ -88,7 +88,7 @@ export class Toolbar {
         if (!Browser.isDevice && this.parent.inlineMode.enable && isIDevice()) {
             return;
         } else {
-            if (this.parent.toolbarSettings.enableFloating && !this.parent.inlineMode.enable) {
+            if (!this.parent.inlineMode.enable) {
                 this.tbWrapper = this.parent.createElement('div', {
                     id: this.parent.getID() + '_toolbar_wrapper',
                     innerHTML: this.tbElement.outerHTML,

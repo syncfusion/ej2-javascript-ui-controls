@@ -4,7 +4,7 @@ import { mouseUpAfterSelection, click } from '../common/index';
 import { getRangeIndexes, getRangeFromAddress, getCellAddress, getCellIndexes } from './../../workbook/common/address';
 import { CellModel, getSheetName, getSheet, SheetModel, checkIsFormula, Workbook, getCell, isCustomDateTime } from '../../workbook/index';
 import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel, isLocked, getColumn } from '../../workbook/index';
-import { ComboBox, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
+import { ComboBox, DropDownList, SelectEventArgs as DdlSelectArgs, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { isUndefined, getNumericObject, initializeCSPTemplate } from '@syncfusion/ej2-base';
@@ -28,6 +28,7 @@ export class FormulaBar {
     private formulaList: ListView;
     private dialog: Dialog;
     private isGoto: boolean = false;
+    private isDevice: boolean;
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
@@ -56,6 +57,9 @@ export class FormulaBar {
                 beforeOpen: this.nameBoxBeforeOpen.bind(this),
                 blur: this.nameBoxBlur.bind(this),
                 select: this.nameBoxSelect.bind(this),
+                open: (args: PopupEventArgs) => {
+                    if (this.isDevice) { (window as any).browserDetails.isDevice = true; }
+                },
                 change: () => {
                     /** */
                 }
@@ -137,6 +141,8 @@ export class FormulaBar {
             args.cancel = true;
         } else {
             (<HTMLInputElement>this.comboBoxInstance.element).select();
+            this.isDevice = (window as any).browserDetails.isDevice;
+            if (this.isDevice) { (window as any).browserDetails.isDevice = false; }
         }
     }
 

@@ -2208,6 +2208,9 @@ export class DialogEdit {
         const ganttObj: Gantt = this.parent;
         const resourceSettings: ResourceFieldsModel = ganttObj.resourceFields;
         const ganttData: IGanttData = this.beforeOpenArgs.rowData;
+        if (((this.beforeOpenArgs.requestType === 'beforeOpenEditDialog' && !isNullOrUndefined(this.editedRecord[this.parent.taskFields.resourceInfo])) || (this.beforeOpenArgs.requestType === 'beforeOpenAddDialog' && !isNullOrUndefined(this.editedRecord[this.parent.taskFields.resourceInfo]))) && (typeof (this.editedRecord[this.parent.taskFields.resourceInfo]) === "object")) {
+            this.parent.setRecordValue('resourceInfo', this.parent.dataOperation.setResourceInfo(this.editedRecord), ganttData.ganttProperties, true);
+        }
         const rowResource: Object[] = ganttData.ganttProperties.resourceInfo;
         const inputModel: TreeGridModel = this.beforeOpenArgs[itemName as string];
         const resourceTreeGridId: string = ganttObj.element.id + '' + itemName + 'TabContainer';
@@ -2242,6 +2245,11 @@ export class DialogEdit {
         inputModel.dataSource = resourceData;
         const resourceInfo: Object[] = ganttData.ganttProperties.resourceInfo;
         if (this.isEdit && !isNullOrUndefined(resourceInfo)) {
+            for (let i: number = 0; i < resourceInfo.length; i++) {
+                this.ganttResources.push(resourceInfo[i as number]);
+            }
+        }
+        else if (!this.isEdit && !isNullOrUndefined(resourceInfo)) {
             for (let i: number = 0; i < resourceInfo.length; i++) {
                 this.ganttResources.push(resourceInfo[i as number]);
             }
@@ -2646,11 +2654,17 @@ export class DialogEdit {
                         tasksData[fieldName as string] = false;
                     }
                 } else {
-                    tasksData[fieldName as string] = controlObj.value;
-                    if (this.parent.enableHtmlSanitizer && typeof (controlObj.value) === 'string') { 
+                    if (fieldName === "Duration") {
+                        let numericValue: number = parseFloat(String(controlObj.value));;
+                        tasksData[fieldName as string] = numericValue
+                    }
+                    else {
+                        tasksData[fieldName as string] = controlObj.value;
+                    }
+                    if (this.parent.enableHtmlSanitizer && typeof (controlObj.value) === 'string') {
                         controlObj.value = SanitizeHtmlHelper.sanitize(controlObj.value);
                         tasksData[fieldName as string] = controlObj.value;
-                        }               
+                    }
                 }
             }
         }

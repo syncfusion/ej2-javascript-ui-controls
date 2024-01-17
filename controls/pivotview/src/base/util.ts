@@ -56,6 +56,11 @@ export class PivotUtil {
         }
         return clonedData;
     }
+    /** @hidden */
+    public static getClonedCSVData(data: string[][]): string[][] {
+        const clonedData: string[][] = data.map((row: string[]) => [...row]);
+        return clonedData;    
+    }
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private static getDefinedObj(data: { [key: string]: any }): { [key: string]: any } {

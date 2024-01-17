@@ -43,6 +43,7 @@ $stepper-bigger-small-optional-size: 12px !default;
 $stepper-bigger-small-text-size: 14px !default;
 
 $step-selected-li-shadow: 0 0 0 2px rgba($content-bg-color), 0 0 0 4px rgba($primary), 0 0 0 8px rgba($content-bg-color) !default;
+$step-keyboard-selected-li-shadow: 0 0 0 2px rgba($content-bg-color), 0 0 0 4px rgba($content-text-color), 0 0 0 8px rgba($content-bg-color) !default;
 $step-valid-li-shadow: 0 0 0 2px rgba($content-bg-color), 0 0 0 4px rgba($success), 0 0 0 8px rgba($content-bg-color) !default;
 $step-error-li-shadow: 0 0 0 2px rgba($content-bg-color), 0 0 0 4px rgba($danger), 0 0 0 8px rgba($content-bg-color) !default;
 $step-li-shadow: 0 0 0 8px rgba($content-bg-color) !default;

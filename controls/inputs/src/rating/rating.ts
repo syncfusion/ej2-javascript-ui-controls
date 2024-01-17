@@ -409,6 +409,7 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
     private tooltipOpen: boolean;
     private isReact?: boolean;
     private isTouchSelected: boolean;
+    private isAngular: boolean;
 
     /**
      * Constructor for creating the widget
@@ -679,6 +680,12 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
                 const templateFunction: Function = this.getTemplateString(this.tooltipTemplate);
                 append(templateFunction({ value: this.currentValue }, this, 'ratingTooltipTemplate', (this.element.id + 'tooltipTemplate'), this.isStringTemplate), (content as HTMLElement));
                 this.tooltipObj.setProperties({ content: content }, isChange);
+                if (this.isAngular) {
+                    setTimeout(() => {
+                        let ratingSpan: NodeListOf<HTMLElement> = this.ratingItemList.querySelectorAll('.' +ITEMCONTAINER+ '.' +SELECTED);
+                        this.tooltipObj.refresh(ratingSpan[ratingSpan.length -1]);
+                    });
+                }
             }
             else {
                 content = this.currentValue.toString();

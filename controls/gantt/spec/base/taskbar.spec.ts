@@ -23,7 +23,7 @@ describe('Gantt taskbar rendering', () => {
         document.body.appendChild(lefttasklabel);
 
         let righttasklabel: Element = createElement('div', { id: 'righttasklabelTS', styles: 'visibility:hidden' });
-        righttasklabel.innerHTML = '<div>Task Name  - ${TaskName}</div>';
+        righttasklabel.innerHTML = '<div>Task Name - ${TaskName}</div>';
         document.body.appendChild(righttasklabel);
 
         let parentTaskTemplate: Element = createElement('div', { id: 'demoParentTaskTemplate', className: cls.traceParentTaskBar + ' ' + cls.parentTaskBarInnerDiv, styles: 'visibility:hidden' });

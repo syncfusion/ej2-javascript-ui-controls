@@ -584,7 +584,7 @@ export class EventBase {
                 name: memberName,
                 isSelected: isInclude ? false : true
             };
-            if (filterObj[actualText as string] !== undefined) {
+            if (filterObj[memberName as string] !== undefined) {
                 obj.isSelected = isInclude ? true : false;
             }
             if (memberCount <= this.parent.control.maxNodeLimitInMemberEditor) {

@@ -1654,7 +1654,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         let maxWidth: number = 0;
         let titleWidth: number = 0;
         if (this.title) {
-            this.titleCollection = getTitle(this.title, this.titleStyle, this.initialClipRect.width, this.themeStyle.chartTitleFont);
+            this.titleCollection = getTitle(this.title, this.titleStyle, this.initialClipRect.width, this.enableRtl, this.themeStyle.chartTitleFont);
         }
         titleHeight = this.title ? measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont).height * this.titleCollection.length : titleHeight;
         if (this.subTitle) {
@@ -1662,7 +1662,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                 titleWidth = measureText(titleText, this.titleStyle, this.themeStyle.chartSubTitleFont).width;
                 maxWidth = titleWidth > maxWidth ? titleWidth : maxWidth;
             }
-            this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth, this.themeStyle.chartTitleFont);
+            this.subTitleCollection = getTitle(this.subTitle, this.subTitleStyle, maxWidth, this.enableRtl, this.themeStyle.chartTitleFont);
             subTitleHeight = (measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont).height * this.subTitleCollection.length);
         }
         subtractRect(
@@ -1944,7 +1944,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         for (let i: number = 0; i < collectionLength; i++) {
             const labelSize: Size = measureText(labelCollection[i as number], this.centerLabel.textStyle, this.themeStyle.chartTitleFont);
             if (labelSize.width > maxwidth) {
-                labelCollection.splice(i, 1, ...(textWrap(labelCollection[i as number], maxwidth, this.centerLabel.textStyle, null, null, this.themeStyle.chartTitleFont)));
+                labelCollection.splice(i, 1, ...(textWrap(labelCollection[i as number], maxwidth, this.centerLabel.textStyle, this.enableRtl, null, null, this.themeStyle.chartTitleFont)));
             }
         }
         if (centerLabelSize.height * (labelCollection.length) > maxwidth) {

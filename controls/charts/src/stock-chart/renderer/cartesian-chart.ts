@@ -131,6 +131,7 @@ export class CartesianChart {
             annotations: stockChart.annotations,
             theme: stockChart.theme,
             legendSettings: { visible: false},
+            enableRtl: stockChart.enableRtl,
             zoomComplete: (args: IZoomCompleteEventArgs) => {
                 if (args.axis.valueType.indexOf('DateTime') !== -1 && stockChart.rangeNavigator) {
                     this.stockChart.zoomChange = true;

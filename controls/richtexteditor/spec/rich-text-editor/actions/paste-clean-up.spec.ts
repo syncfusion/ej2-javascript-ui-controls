@@ -637,7 +637,7 @@ describe("paste cleanup testing", () => {
       expect(pastedElm.children[0].children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
       expect(pastedElm.children[0].children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       let expected: boolean = false;
-      let expectedElem: string = `<p><span>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>is here</span>14</p>`;
+      let expectedElem: string = `<p><span>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\" aria-label=\"Open in new window\">https://ej2.syncfusion.com </a>is here</span>14</p>`;
       if (pastedElm.innerHTML === expectedElem) {
         expected = true;
       }
@@ -669,7 +669,7 @@ describe("paste cleanup testing", () => {
       expect(pastedElm.children[0].children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
       expect(pastedElm.children[0].children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       let expected: boolean = false;
-      let expectedElem: string = `<p><span>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>is here with another URL <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a>text after second URL</span>15</p>`;
+      let expectedElem: string = `<p><span>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\" aria-label=\"Open in new window\">https://ej2.syncfusion.com </a>is here with another URL <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\" aria-label=\"Open in new window\">https://ej2.syncfusion.com </a>text after second URL</span>15</p>`;
       if (pastedElm.innerHTML === expectedElem) {
         expected = true;
       }
@@ -703,7 +703,7 @@ third line`;
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p><span>first line</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\">https://ej2.syncfusion.com </a></p><p><br></p><p><br></p><p>third line</p><p>16</p>`;
+      let expectedElem: string = `<p><span>first line</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\" aria-label=\"Open in new window\">https://ej2.syncfusion.com </a></p><p><br></p><p><br></p><p>third line</p><p>16</p>`;
       if (pastedElm === expectedElem) {
         expected = true;
       }
@@ -736,7 +736,7 @@ third line`;
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p><span><a class="e-rte-anchor" href="http://www.google.com?first=a&amp;parameters=foo" title="http://www.google.com?first=a&amp;parameters=foo" target="_blank">http://www.google.com?first=a¶meters=foo </a></span>160</p>`;
+      let expectedElem: string = `<p><span><a class="e-rte-anchor" href="http://www.google.com?first=a&amp;parameters=foo" title="http://www.google.com?first=a&amp;parameters=foo" target="_blank" aria-label=\"Open in new window\">http://www.google.com?first=a¶meters=foo </a></span>160</p>`;
       if (pastedElm === expectedElem) {
         expected = true;
       }
@@ -2337,7 +2337,7 @@ describe("Pasting the link element added in the editor without prompt", () => {
       setCursorPoint((rteObj as any).inputElement.firstElementChild.firstChild.firstChild, 7);
       rteObj.onPaste(keyBoardEvent);
       setTimeout(() => {
-        expect((rteObj as any).inputElement.innerHTML === `<p><a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">Testing</a><a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">Testing</a></p>`).toBe(true)
+        expect((rteObj as any).inputElement.innerHTML === `<p><a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">Testing</a><a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank" aria-label="Open in new window">Testing</a></p>`).toBe(true)
         done();
       }, 100);
     });
@@ -2392,7 +2392,7 @@ describe("Pasting the link element added in the editor with prompt", () => {
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        expect((rteObj as any).inputElement.innerHTML === `<p><a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">Testing</a><a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">Testing</a></p>`).toBe(true)
+        expect((rteObj as any).inputElement.innerHTML === `<p><a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank">Testing</a><a class="e-rte-anchor" href="http://www.google.com" title="http://www.google.com" target="_blank" aria-label="Open in new window">Testing</a></p>`).toBe(true)
         done();
       }, 100);
     });

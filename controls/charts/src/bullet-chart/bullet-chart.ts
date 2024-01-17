@@ -631,11 +631,11 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         this.themeStyle = getBulletThemeColor(this.theme);
         if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && this.theme.indexOf('Fluent') > -1) {
             this.valueFill = !(this.valueFill) ? (this.theme === 'FluentDark' ? '#797775' : '#A19F9D') : this.valueFill;
-            this.targetColor = (!this.targetColor && this.targetColor != '#191919') ? (this.theme === 'FluentDark' ? '#797775' : '#A19F9D') : this.targetColor;
+            this.targetColor = (this.targetColor == '#191919') ? (this.theme === 'FluentDark' ? '#797775' : '#A19F9D') : this.targetColor;
         }
         if ((this.targetColor === null || this.targetColor === '#191919' || this.valueFill == null) && this.theme.indexOf('Material3') > -1) {
             this.valueFill = !(this.valueFill) ? (this.theme === 'Material3Dark' ? '#938F99' : '#79747E') : this.valueFill;
-            this.targetColor = (!this.targetColor && this.targetColor != '#191919') ? (this.theme === 'Material3Dark' ? '#938F99' : '#79747E') : this.targetColor;
+            this.targetColor = (this.targetColor == '#191919') ? (this.theme === 'Material3Dark' ? '#938F99' : '#79747E') : this.targetColor;
         }
     }
 
@@ -870,7 +870,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         let maxTitlteHeight: number = 0;
         let maxVerticalTitlteHeight: number = padding;
         if (this.title) {
-            this.titleCollections = getTitle(this.title, this.titleStyle, this.titleStyle.maximumTitleWidth, this.themeStyle.titleFont);
+            this.titleCollections = getTitle(this.title, this.titleStyle, this.titleStyle.maximumTitleWidth, this.enableRtl, this.themeStyle.titleFont);
             titleHeight = (measureText(this.title, this.titleStyle, this.themeStyle.titleFont).height * this.titleCollections.length) + padding;
             for (const titleText of this.titleCollections) {
                 titleSize = measureText(titleText, this.titleStyle, this.themeStyle.titleFont);
@@ -878,7 +878,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                 maxTitlteHeight = titleSize.height > maxTitlteHeight ? titleSize.height : maxTitlteHeight;
             }
             maxVerticalTitlteHeight += maxTitlteHeight;
-            this.subTitleCollections = getTitle(this.subtitle, this.subtitleStyle, this.titleStyle.maximumTitleWidth);
+            this.subTitleCollections = getTitle(this.subtitle, this.subtitleStyle, this.titleStyle.maximumTitleWidth, this.enableRtl);
             if (this.subtitle) {
                 for (const subText of this.subTitleCollections) {
                     titleSize = measureText(subText, this.subtitleStyle, this.themeStyle.subTitleFont);

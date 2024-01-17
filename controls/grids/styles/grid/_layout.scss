@@ -1064,7 +1064,8 @@
         & tr.e-row:first-child .e-rowcell.e-dragborder,
         & .e-rowcell.e-dragborder,
         & .e-rowdragdrop.e-dragborder,
-        & .e-detailrowcollapse.e-dragborder {
+        & .e-detailrowcollapse.e-dragborder,
+        & .e-detailrowexpand.e-dragborder {
         z-index: $grid-dragborder-z-index;
         }
     }
@@ -1083,7 +1084,10 @@
         & .e-rowdragdrop.e-dragborder.e-fixedfreeze,
         & .e-detailrowcollapse.e-dragborder.e-leftfreeze,
         & .e-detailrowcollapse.e-dragborder.e-rightfreeze,
-        & .e-detailrowcollapse.e-dragborder.e-fixedfreeze {
+        & .e-detailrowcollapse.e-dragborder.e-fixedfreeze,
+        & .e-detailrowexpand.e-dragborder.e-leftfreeze,
+        & .e-detailrowexpand.e-dragborder.e-rightfreeze,
+        & .e-detailrowexpand.e-dragborder.e-fixedfreeze {
         z-index: 6;
         }
     }
@@ -1094,7 +1098,8 @@
         & tr.e-row:first-child .e-rowcell.e-dragborder,
         & .e-rowcell.e-dragborder,
         & .e-rowdragdrop.e-dragborder,
-        & .e-detailrowcollapse.e-dragborder {
+        & .e-detailrowcollapse.e-dragborder,
+        & .e-detailrowexpand.e-dragborder {
         box-shadow: $grid-dragborder-box-shadow;
         }
     }
@@ -1130,7 +1135,8 @@
         & tr.e-row:first-child .e-rowcell.e-dragborder:not(.e-leftfreeze, .e-rightfreeze, .e-fixedfreeze),
         & .e-rowcell.e-dragborder:not(.e-leftfreeze, .e-rightfreeze, .e-fixedfreeze),
         & .e-rowdragdrop.e-dragborder:not(.e-leftfreeze, .e-rightfreeze, .e-fixedfreeze),
-        & .e-detailrowcollapse.e-dragborder:not(.e-leftfreeze, .e-rightfreeze, .e-fixedfreeze) {
+        & .e-detailrowcollapse.e-dragborder:not(.e-leftfreeze, .e-rightfreeze, .e-fixedfreeze)
+        & .e-detailrowexpand.e-dragborder:not(.e-leftfreeze, .e-rightfreeze, .e-fixedfreeze) {
         position: $grid-dragborder-position;
         }
     }
@@ -4522,6 +4528,11 @@ margin: $grid-group-animator-cell-margin;
         overflow-y: auto;
       }
 
+      .e-gridcontent .e-content,
+      .e-detailrowcollapse.e-dragborder,
+      .e-detailrowexpand.e-dragborder{
+        position: $grid-dragborder-position;
+      }
       .e-gridcontent .e-content.e-yscroll {
         overflow-y: scroll;
       }

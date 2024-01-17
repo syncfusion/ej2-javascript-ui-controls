@@ -43,6 +43,7 @@ $stepper-bigger-small-optional-size: 12px !default;
 $stepper-bigger-small-text-size: 14px !default;
 
 $step-selected-li-shadow: 0 0 0 2px $neutral-white, 0 0 0 4px $theme-primary, 0 0 0 8px $neutral-white !default;
+$step-keyboard-selected-li-shadow: 0 0 0 2px $neutral-white, 0 0 0 4px $neutral-light-fontalt, 0 0 0 8px $neutral-white !default;
 $step-valid-li-shadow: 0 0 0 2px $neutral-white, 0 0 0 4px $success-bg, 0 0 0 8px $neutral-white !default;
 $step-error-li-shadow: 0 0 0 2px $neutral-white, 0 0 0 4px $error-bg, 0 0 0 8px $neutral-white !default;
 $step-li-shadow: 0 0 0 8px $neutral-white !default;

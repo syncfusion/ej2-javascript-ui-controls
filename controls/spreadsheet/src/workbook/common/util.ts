@@ -1,9 +1,10 @@
 import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel, getCellIndexes } from './../index';
-import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, isNumber } from './index';
+import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs } from './index';
 import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel, clearFormulaDependentCells } from './index';
-import { isHiddenCol, isHiddenRow, VisibleMergeIndexArgs } from './../index';
-import { isUndefined, defaultCurrencyCode, getNumberDependable, getNumericObject } from '@syncfusion/ej2-base';
+import { isHiddenCol, isHiddenRow, VisibleMergeIndexArgs, checkDateFormat, checkNumberFormat, DateFormatCheckArgs } from './../index';
+import { isUndefined, defaultCurrencyCode, getNumberDependable, getNumericObject, Internationalization } from '@syncfusion/ej2-base';
 import { parseThousandSeparator } from './internalization';
+import { AutoDetectGeneralFormatArgs, isNumber } from './../index';
 
 /**
  * Check whether the text is formula or not.
@@ -803,4 +804,31 @@ export function setVisibleMergeIndex(args: VisibleMergeIndexArgs): void {
             args.isMergedHiddenCell = true;
         }
     }
+}
+
+/**
+ * Return a function that will auto-detect the number format of the formatted cell value.
+ *
+ * @param {Workbook} context - Specifies the Workbook instance.
+ * @returns {void} - Defines the common variables and returns the auto-detect number format function.
+ * @hidden
+ */
+export function getAutoDetectFormatParser(context: Workbook): (cell: CellModel) => void {
+    const intl: Internationalization = new Internationalization();
+    const option: { currency?: string } = {};
+    intl.getNumberFormat(option);
+    const eventArgs: DateFormatCheckArgs = { intl: intl, updateValue: true, value: '' };
+    const options: AutoDetectGeneralFormatArgs = { args: eventArgs, intl: intl,
+        currencySymbol: getNumberDependable(context.locale, option.currency) };
+    return (cell: CellModel): void => {
+        if (!cell.format && cell.value && !isNumber(cell.value)) {
+            eventArgs.cell = cell;
+            eventArgs.value = cell.value;
+            context.notify(checkDateFormat, eventArgs);
+            if (!cell.format && (cell.value.includes(options.currencySymbol) || cell.value.includes('%'))) {
+                options.fResult = cell.value;
+                context.notify(checkNumberFormat, options);
+            }
+        }
+    };
 }

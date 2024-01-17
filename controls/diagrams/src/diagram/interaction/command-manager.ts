@@ -5842,7 +5842,7 @@ Remove terinal segment in initial
                     }
                     // EJ2-65876 - Exception occurs on line routing injection module
                     //Bug 850195: Exception occurs due to line routing constraints enabled
-                    if(connector.sourceID && connector.targetID && connector.sourceID != connector.targetID){
+                    if(connector.sourceID && connector.targetID && connector.sourceID != connector.targetID && this.diagram.layout.type !== 'ComplexHierarchicalTree'){
                         //EJ2-69573 - Excecption occurs when calling doLayout method with the lineRouting module 
                         let sourceNode:NodeModel= this.diagram.getObject(connector.sourceID);
                         let targetNode:NodeModel = this.diagram.getObject(connector.targetID);

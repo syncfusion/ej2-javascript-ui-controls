@@ -1879,7 +1879,7 @@ export class TaskbarEdit extends DateProcessor {
         pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
         /* To render the milestone in proper date while editing */
         if (isMilestone && !isNullOrUndefined(property.predecessorsName) && property.predecessorsName !== '') {
-            pStartDate.setDate(pStartDate.getDate()-1);
+          //  pStartDate.setDate(pStartDate.getDate()-1);
             this.parent.dateValidationModule.setTime(this.parent.defaultEndTime,pStartDate);
             pStartDate = this.parent.dateValidationModule.checkStartDate(pStartDate,property,true)
         }
@@ -1888,9 +1888,10 @@ export class TaskbarEdit extends DateProcessor {
         if (tierMode !== 'Hour' && tierMode !== 'Minutes') {
             if (this.parent.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) && !this.parent.isInDst(pStartDate)) {
                 pStartDate.setTime(pStartDate.getTime() + (60 * 60 * 1000));
-            } else if (!this.parent.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) && this.parent.isInDst(pStartDate)) {
-                pStartDate.setTime(pStartDate.getTime() - (60 * 60 * 1000));
-            }
+            } 
+            // else if (!this.parent.isInDst(new Date(this.parent.timelineModule.timelineStartDate.toString())) && this.parent.isInDst(pStartDate)) {
+            //     pStartDate.setTime(pStartDate.getTime() - (60 * 60 * 1000));
+            // }
         }
         return pStartDate;
     }

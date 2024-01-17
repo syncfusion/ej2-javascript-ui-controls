@@ -236,6 +236,9 @@ export class LinkCommand {
         if (!isNOU(e.item.target)) {
             anchorEle.setAttribute('target', e.item.target);
         }
+        if (!isNOU(e.item.ariaLabel)) {
+            anchorEle.setAttribute('aria-label', e.item.ariaLabel);
+        }
         return anchorEle;
     }
 

@@ -267,6 +267,9 @@ export class Shape {
         case 'setFlipState':
             this.setFlipState(args.value['x'], args.value['y'], args.value['obj'], args.value['object']);
             break;
+        case 'getNewShapeId':
+            args.value['obj']['id'] = this.getNewShapeId();
+            break;
         }
     }
 
@@ -651,6 +654,7 @@ export class Shape {
         parent.notify('selection', { prop: 'isShapeInserted', onPropertyChange: false, value: {bool: true} });
         if (isBlazor()) {
             parent.updateToolbar(parent.element, 'text');
+            parent.getFontSizes();
         } else {
             parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
                 isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
@@ -2474,7 +2478,7 @@ export class Shape {
                 }
                 if (!isActObj) {
                     if (isNullOrUndefined(parent.activeObj.currIndex)) {
-                        parent.activeObj.currIndex = 'shape_' + (parent.objColl.length + 1);
+                        parent.activeObj.currIndex = this.getNewShapeId();
                     }
                     this.updImgRatioForActObj();
                     const splitWords: string[] = parent.activeObj.currIndex.split('_');
@@ -2503,6 +2507,17 @@ export class Shape {
                 }
             }
         }
+    }
+
+    private getNewShapeId(): string {
+        const parent: ImageEditor = this.parent;
+        let value: number = parent.objColl.length + 1;
+        for (let i: number = 0; i < parent.objColl.length; i++) {
+            if (parent.objColl[i as number].currIndex === 'shape_' + value) {
+                value++; i = -1;
+            }
+        }
+        return 'shape_' + value;
     }
 
     private alignTextAreaIntoCanvas(): void {
@@ -2601,6 +2616,7 @@ export class Shape {
         case 'text':
             shapeDetails.text = obj.keyHistory;
             shapeDetails.fontSize = obj.textSettings.fontSize;
+            shapeDetails.fontFamily = obj.textSettings.fontFamily;
             shapeDetails.color = obj.strokeSettings.strokeColor;
             shapeDetails.fontStyle = [];
             if (obj.textSettings.bold) {shapeDetails.fontStyle.push('bold'); }

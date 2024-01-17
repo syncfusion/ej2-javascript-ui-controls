@@ -1840,6 +1840,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      *
      */
     public zoom(zoomFactor: number, zoomPoint?: Point): void {
+        this.isZoomBtnClick = true;
         this.notify('transform', { prop: 'zoom', onPropertyChange: false,
             value: {zoomFactor: zoomFactor, zoomPoint: zoomPoint}});
         this.notify('draw', { prop: 'redrawDownScale' });

@@ -58,6 +58,7 @@ export class RangeSelector {
             labelPosition:'Inside',
             dataSource: stockChart.dataSource,
             intervalType : stockChart.primaryXAxis.intervalType,
+            enableRtl: stockChart.enableRtl,
             changed: (args: IChangedEventArgs) => {
                 const arg: IRangeChangeEventArgs = {
                     name: 'rangeChange',

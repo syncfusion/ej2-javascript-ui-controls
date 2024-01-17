@@ -302,6 +302,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private isDestroy;
     private isGetNestedData;
     private isCustomOprCols;
+    private dummyDropdownTreeDs;
     /**
      * Triggers when the component is created.
      *
@@ -511,6 +512,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private appendRuleElem;
     private addRuleElement;
     private addRuleSuccessCallBack;
+    private updateDropdowntreeDS;
     private updateAddedRule;
     private changeRuleTemplate;
     private renderToolTip;
@@ -541,7 +543,6 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private filterValue;
     private changeValueSuccessCallBack;
     private fieldClose;
-    private onSelectField;
     private changeField;
     private changeRule;
     private changeFilter;
