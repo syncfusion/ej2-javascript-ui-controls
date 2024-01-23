@@ -309,7 +309,7 @@ export class AccumulationDataLabel extends AccumulationBase {
                 if (size < point.labelRegion.width) {
                     point.labelRegion.x = rect.x;
                 }
-            } else {
+            } else if (this.accumulation.enableSmartLabels) {
                 this.setPointVisibileFalse(point);
             }
             if (point.labelVisible && point.labelRegion) {
@@ -889,7 +889,7 @@ export class AccumulationDataLabel extends AccumulationBase {
     private finalizeDatalabels(point: AccPoints, points: AccPoints[], dataLabel: AccumulationDataLabelSettingsModel): void {
         if (this.isOverlapping(point, points) ||
             (this.titleRect && point.labelRegion && isOverlap(point.labelRegion, this.titleRect))) {
-            if (this.isCircular() && point.labelPosition === 'Outside') {
+            if (this.isCircular() && point.labelPosition === 'Outside' && this.accumulation.enableSmartLabels) {
                 this.setPointVisibileFalse(point);
             }
         }
@@ -911,7 +911,7 @@ export class AccumulationDataLabel extends AccumulationBase {
 
             this.textTrimming(point, this.areaRect, dataLabel.font, position, dataLabel);
         }
-        if (point.labelVisible && point.labelRegion && !dataLabel.maxWidth  && dataLabel.textOverflow !== 'Clip' &&  ((point.labelRegion.y + point.labelRegion.height / 2 >
+        if (point.labelVisible && point.labelRegion && !dataLabel.maxWidth  && dataLabel.textOverflow !== 'Clip' && this.accumulation.enableSmartLabels && ((point.labelRegion.y + point.labelRegion.height / 2 >
             this.areaRect.y + this.areaRect.height || point.labelRegion.y < this.areaRect.y) || (point.labelRegion.x < this.areaRect.x ||
                 point.labelRegion.x + point.labelRegion.width > this.areaRect.x + this.areaRect.width))) {
             this.setPointVisibileFalse(point);

@@ -9,6 +9,7 @@
 #### Bug Fixes
 
 - `#I527482` - Now, overview updated properly while zoom out and move nodes outside viewport.
+- `#I533824` - Now, textAlign justify align the text at center of the node.
 
 ## 24.1.45 (2024-01-09)
 

@@ -307,6 +307,7 @@ export class PivotEngine {
             this.dataSourceSettings.calculatedFieldSettings = dataSource.calculatedFieldSettings ? dataSource.calculatedFieldSettings : [];
             this.enableSort = dataSource.enableSorting === undefined ? true : dataSource.enableSorting;
             this.dataSourceSettings.fieldMapping = dataSource.fieldMapping ? dataSource.fieldMapping : [];
+            this.valueAxisFields = {};
             for (const value of this.dataSourceSettings.values) {
                 this.valueAxisFields[value.name] = value;
             }

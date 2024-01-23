@@ -8,6 +8,16 @@
 
 #### Bug Fixes
 
+- `#I537869` - Now, the text markup annotation comments are properly displayed after exporting and importing the text markup annotation.
+- `#I538222` - Now, the annotations are appeared properly in the provided rotated PDF document.
+- `#I536060` - Now, the form field values export programmatically when updating the `isChecked` property on checkbox.
+
+## 24.1.46 (2024-01-17)
+
+### PDF Viewer
+
+#### Bug Fixes
+
 - `#I537980` - Now, the form fields have rendered properly without injecting the annotation, text selection, and text search modules.
 - `#I533753` - Now, only the formFieldSelect event is called when select the `formField`.
 - `#I537955` - Now, programmatically opening the handwritten signature dialog is works properly after opening the Initial dialog.

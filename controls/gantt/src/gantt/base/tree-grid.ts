@@ -80,9 +80,9 @@ export class GanttTreeGrid {
         this.bindEvents();
         const root: string = 'root';
         this.parent.treeGrid[root as string] = this.parent[root as string] ? this.parent[root as string] : this.parent;
-        setValue('registeredTemplate', this.registeredTemplate, this.parent.treeGrid.grid);
+        setValue('registeredTemplate', this.registeredTemplate, this.parent.treeGrid);
         const ref: string = 'viewContainerRef';
-        setValue('viewContainerRef', this[`${ref}`], this.parent.treeGrid.grid);
+        setValue('viewContainerRef', this.parent[`${ref}`], this.parent.treeGrid);
         this.parent.treeGrid.appendTo(this.treeGridElement);
 	if (this.parent.treeGrid.grid && this.parent.toolbarModule && (this.parent as any).isReact) {
            (this.parent.treeGrid.grid as any).portals = (this.parent as any).portals;

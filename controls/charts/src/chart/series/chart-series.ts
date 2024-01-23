@@ -2223,7 +2223,7 @@ export class Series extends SeriesBase {
                     series.stackedValues = new StackValues(startValues, endValues);
                     const isLogAxis: boolean = series.yAxis.valueType === 'Logarithmic';
                     const isColumnBarType: boolean = (series.type.indexOf('Column') !== -1 || series.type.indexOf('Bar') !== -1);
-                    series.yMin = isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : parseFloat((Math.min.apply(0, isStacking100 ? startValues : endValues)).toFixed(10));
+                    series.yMin = isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin : (series.yAxis.startFromZero && series.yAxis.rangePadding === 'Auto' && series.yMin >= 0) ? 0 : parseFloat((Math.min.apply(0, isStacking100 ? startValues : endValues)).toFixed(10));
                     series.yMax = Math.max.apply(0, endValues);
                     if (series.yMin > Math.min.apply(0, endValues)) {
                         series.yMin = (isStacking100) ? -100 :

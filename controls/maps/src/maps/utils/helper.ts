@@ -1052,7 +1052,7 @@ export function markerShapeChoose(eventArgs: IMarkerRenderingEventArgs, data: an
  */
 export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTMLElement | Element, maps: Maps,
                                 layerIndex: number, markerCollection: Element,
-                                layerElement: Element, check: boolean, zoomCheck: boolean): void {
+                                layerElement: Element, check: boolean, zoomCheck: boolean): boolean {
     let bounds1: DOMRect;
     let bounds2: DOMRect;
     let colloideBounds: DOMRect[] = [];
@@ -1078,45 +1078,50 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
         width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
         data: data, maps: maps, cluster: clusters, border: clusters.border
     };
+    const containerRect: ClientRect = maps.element.getBoundingClientRect();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const translatePoint: any = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
+    let factor: number;
+    if (!maps.isTileMap) {
+        factor = maps.mapLayerPanel.calculateFactor(currentLayer);
+    }
+    let isClusteringCompleted: boolean = false;
     maps.trigger('markerClusterRendering', eventArg, (clusterargs: IMarkerClusterRenderingEventArgs) => {
-        for (let o: number = 0; o < markerTemplate.childElementCount; o++) {
+        Array.prototype.forEach.call(markerTemplate.childNodes, (markerElement: Element, o: number) => {
             indexCollection = [];
-            if (markerTemplate.childNodes[o as number]['style']['visibility'] !== 'hidden') {
-                tempElement = markerTemplate.childNodes[o as number] as Element;
+            if (markerElement['style']['visibility'] !== 'hidden') {
+                tempElement = markerElement as Element;
                 bounds1 = tempElement.getBoundingClientRect() as DOMRect;
-                indexCollection.push(o as number);
+                indexCollection.push(o);
                 if (!isNullOrUndefined(bounds1)) {
-                    for (let p: number = o + 1; p < markerTemplate.childElementCount; p++) {
-                        if (markerTemplate.childNodes[p as number]['style']['visibility'] !== 'hidden') {
-                            tempElement = markerTemplate.childNodes[p as number] as Element;
+                    Array.prototype.forEach.call(markerTemplate.childNodes, (otherMarkerElement: Element, p: number) => {
+                        if (p >= o + 1 && otherMarkerElement['style']['visibility'] !== 'hidden') {
+                            tempElement = otherMarkerElement as Element;
                             bounds2 = tempElement.getBoundingClientRect() as DOMRect;
                             if (!isNullOrUndefined(bounds2)) {
                                 if (!(bounds1.left > bounds2.right || bounds1.right < bounds2.left
                                     || bounds1.top > bounds2.bottom || bounds1.bottom < bounds2.top)) {
                                     colloideBounds.push(bounds2);
-                                    markerTemplate.childNodes[p as number]['style']['visibility'] = 'hidden';
-                                    indexCollection.push(p as number);
+                                    otherMarkerElement['style']['visibility'] = 'hidden';
+                                    indexCollection.push(p);
                                 }
                             }
                         }
-                    }
+                    });
                     tempX = bounds1.left + bounds1.width / 2;
                     tempY = bounds1.top + bounds1.height;
                     if (colloideBounds.length > 0) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         indexCollection = indexCollection.filter((item: any, index: any, value: any) => value.indexOf(item) === index);
-                        const container: ClientRect = maps.element.getBoundingClientRect();
-                        tempX = tempX - container['left'];
-                        tempY = (tempY - ((maps.availableSize.height <= container['height']) ?
-                            container['top'] : (container['bottom'] - container['top'])));
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const translate: any = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
-                        const dataIndex: number = parseInt(markerTemplate.childNodes[o as number]['id'].split('_dataIndex_')[1].split('_')[0], 10);
-                        const markerIndex: number = parseInt(markerTemplate.childNodes[o as number]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                        tempX = tempX - containerRect['left'];
+                        tempY = (tempY - ((maps.availableSize.height <= containerRect['height']) ?
+                            containerRect['top'] : (containerRect['bottom'] - containerRect['top'])));
+                        const dataIndex: number = parseInt(markerElement['id'].split('_dataIndex_')[1].split('_')[0], 10);
+                        const markerIndex: number = parseInt(markerElement['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
                         const markerSetting: MarkerSettingsModel = currentLayer.markerSettings[markerIndex as number];
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const markerData: any = markerSetting.dataSource[dataIndex as number];
-                        let factor: number; let location: Point;
+                        let location: Point;
                         const longitude: number = (!isNullOrUndefined(markerSetting.longitudeValuePath)) ?
                             Number(getValueFromObject(markerData, markerSetting.longitudeValuePath)) :
                             !isNullOrUndefined(markerData['longitude']) ? parseFloat(markerData['longitude']) :
@@ -1126,43 +1131,28 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                             !isNullOrUndefined(markerData['latitude']) ? parseFloat(markerData['latitude']) :
                                 !isNullOrUndefined(markerData['Latitude']) ? parseFloat(markerData['Latitude']) : 0;
                         if (!maps.isTileMap) {
-                            factor = maps.mapLayerPanel.calculateFactor(currentLayer);
                             location = convertGeoToPoint(latitude, longitude, factor, currentLayer, maps);
                         } else if (maps.isTileMap && !maps.zoomSettings.enable) {
                             location = convertTileLatLongToPoint(new Point(longitude, latitude), maps.tileZoomLevel,
                                                                  maps.tileTranslatePoint, true);
                         }
-                        markerTemplate.childNodes[o as number]['style']['visibility'] = 'hidden';
-                        const clusters: MarkerClusterSettingsModel = currentLayer.markerClusterSettings;
+                        markerElement['style']['visibility'] = 'hidden';
                         if (eventArg.cancel) {
                             shapeCustom = {
                                 size: new Size(clusters.width, clusters.height),
                                 fill: clusters.fill, borderColor: clusters.border.color,
                                 borderWidth: clusters.border.width, opacity: clusters.opacity,
-                                dashArray: clusters.dashArray
+                                dashArray: clusters.dashArray, imageUrl: clusters.imageUrl, shape: clusters.shape
                             };
-                            shapeCustom['fill'] = clusters.fill;
-                            shapeCustom['size']['width'] = clusters.width;
-                            shapeCustom['size']['height'] = clusters.height;
-                            shapeCustom['imageUrl'] = clusters.imageUrl;
-                            shapeCustom['shape'] = clusters.shape;
-                            shapeCustom['borderColor'] = clusters.border.color;
-                            shapeCustom['borderWidth'] = clusters.border.width;
                             shapeCustom['borderOpacity'] = isNullOrUndefined(clusters.border.opacity) ? clusters.opacity : clusters.border.opacity;
                         } else {
                             shapeCustom = {
-                                size: new Size(clusters.width, clusters.height),
-                                fill: clusters.fill, borderColor: clusters.border.color,
-                                borderWidth: clusters.border.width, opacity: clusters.opacity,
-                                dashArray: clusters.dashArray
+                                size: new Size(eventArg.width, eventArg.height),
+                                fill: eventArg.fill, borderColor: eventArg.border.color,
+                                borderWidth: eventArg.border.width, opacity: clusters.opacity,
+                                dashArray: clusters.dashArray, imageUrl: eventArg.imageUrl,
+                                shape: eventArg.shape
                             };
-                            shapeCustom['fill'] = eventArg.fill;
-                            shapeCustom['size']['width'] = eventArg.width;
-                            shapeCustom['size']['height'] = eventArg.height;
-                            shapeCustom['imageUrl'] = eventArg.imageUrl;
-                            shapeCustom['shape'] = eventArg.shape;
-                            shapeCustom['borderColor'] = eventArg.border.color;
-                            shapeCustom['borderWidth'] = eventArg.border.width;
                             shapeCustom['borderOpacity'] = isNullOrUndefined(eventArg.border.opacity) ? clusters.opacity : eventArg.border.opacity;
                         }
                         tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : tempX + postionY - (eventArg.width / 2);
@@ -1193,47 +1183,50 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                 }
                 colloideBounds = [];
             }
-        }
+            isClusteringCompleted = true;
+        });
         layerElement.appendChild(clusterGroup);
         maps.svgObject.appendChild(layerElement) as Element;
         maps.element.appendChild(maps.svgObject) as Element;
-        for (let o: number = 0; o < clusterGroup.childElementCount; o++) {
-            if (clusterGroup.childNodes[o as number]['style']['visibility'] !== 'hidden') {
-                tempElement = clusterGroup.childNodes[o as number] as Element;
-                bounds1 = tempElement.getBoundingClientRect() as DOMRect;
-                if (!isNullOrUndefined(bounds1) && !(tempElement.id.indexOf('_datalabel_') > -1)) {
-                    for (let p: number = o + 1; p < clusterGroup.childElementCount; p++) {
-                        if (clusterGroup.childNodes[p as number]['style']['visibility'] !== 'hidden') {
-                            tempElement1 = clusterGroup.childNodes[p as number] as Element;
-                            bounds2 = tempElement1.getBoundingClientRect() as DOMRect;
-                            if (!isNullOrUndefined(bounds2) && !(tempElement1.id.indexOf('_datalabel_') > -1)) {
-                                if (!(bounds1.left > bounds2.right || bounds1.right < bounds2.left
-                                    || bounds1.top > bounds2.bottom || bounds1.bottom < bounds2.top)) {
-                                    clusterColloideBounds.push(tempElement1);
-                                    clusterColloideBounds.push(clusterGroup.childNodes[p - 1] as Element);
-                                    clusterGroup.childNodes[p as number]['style']['visibility'] = 'hidden';
-                                    clusterGroup.childNodes[p - 1]['style']['visibility'] = 'hidden';
-                                    indexCollection.push(p);
+        if (clusters.allowDeepClustering) {
+            Array.prototype.forEach.call(clusterGroup.childNodes, (clusterElement: Element, o: number) => {
+                if (clusterElement['style']['visibility'] !== 'hidden') {
+                    tempElement = clusterElement as Element;
+                    bounds1 = tempElement.getBoundingClientRect() as DOMRect;
+                    if (!isNullOrUndefined(bounds1) && !(tempElement.id.indexOf('_datalabel_') > -1)) {
+                        for (let p: number = o + 1; p < clusterGroup.childElementCount; p++) {
+                            if (clusterGroup.childNodes[p as number]['style']['visibility'] !== 'hidden') {
+                                tempElement1 = clusterGroup.childNodes[p as number] as Element;
+                                bounds2 = tempElement1.getBoundingClientRect() as DOMRect;
+                                if (!isNullOrUndefined(bounds2) && !(tempElement1.id.indexOf('_datalabel_') > -1)) {
+                                    if (!(bounds1.left > bounds2.right || bounds1.right < bounds2.left
+                                        || bounds1.top > bounds2.bottom || bounds1.bottom < bounds2.top)) {
+                                        clusterColloideBounds.push(tempElement1);
+                                        clusterColloideBounds.push(clusterGroup.childNodes[p - 1] as Element);
+                                        clusterGroup.childNodes[p as number]['style']['visibility'] = 'hidden';
+                                        clusterGroup.childNodes[p - 1]['style']['visibility'] = 'hidden';
+                                        indexCollection.push(p);
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (clusterColloideBounds.length > 0) {
-                        tempElement = clusterGroup.childNodes[o as number] as Element;
-                        for (let i: number = 0; i < clusterColloideBounds.length; i++) {
-                            if (tempElement.tagName === 'g') {
-                                tempElement.childNodes[0].textContent = tempElement.childNodes[0].textContent + ',' +
-                                    clusterColloideBounds[i as number].textContent;
-                            } else {
-                                tempElement.textContent = tempElement.textContent + ',' + clusterColloideBounds[i as number].textContent;
+                        if (clusterColloideBounds.length > 0) {
+                            tempElement = clusterElement as Element;
+                            for (let i: number = 0; i < clusterColloideBounds.length; i++) {
+                                if (tempElement.tagName === 'g') {
+                                    tempElement.childNodes[0].textContent = tempElement.childNodes[0].textContent + ',' +
+                                        clusterColloideBounds[i as number].textContent;
+                                } else {
+                                    tempElement.textContent = tempElement.textContent + ',' + clusterColloideBounds[i as number].textContent;
+                                }
+                                clusterGroup.childNodes[o - 1].textContent = ((+(clusterGroup.childNodes[o - 1].textContent)) + (+(clusterColloideBounds[i + 1].textContent))).toString();
+                                i++;
                             }
-                            clusterGroup.childNodes[o - 1].textContent = ((+(clusterGroup.childNodes[o - 1].textContent)) + (+(clusterColloideBounds[i + 1].textContent))).toString();
-                            i++;
                         }
+                        clusterColloideBounds = [];
                     }
-                    clusterColloideBounds = [];
                 }
-            }
+            });
         }
         while (0 < clusterGroup.childNodes.length) {
             markerCollection.insertBefore(clusterGroup.childNodes[0], markerCollection.firstChild);
@@ -1271,6 +1264,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
             }
         }
     });
+    return isClusteringCompleted;
 }
 
 /**

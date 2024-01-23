@@ -332,6 +332,39 @@ describe('Adaptive renderer', () => {
         });
     });
 
+    describe('EJ2-865624 - clipMode EllipsisWithTooltip not functioning correctly in Adaptive View', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: [{ OrderID: 10248, CustomerID: "column shows ellipsis with tooltip", EmployeeID: 1 }],
+                    enableAdaptiveUI: true,
+                    rowRenderingMode: 'Vertical',
+                    height: 400,
+                    width: 300,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', clipMode: "EllipsisWithTooltip", width: 120 },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120 },
+                    ],
+                }, done);
+        });        
+        it('get the tooltip status', () => {
+            let ele: HTMLElement = gridObj.getCellFromIndex(0,1);
+            expect((gridObj as any).getTooltipStatus(ele)).toBeTruthy();
+            ele = null;
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    
     describe('Ensure onproperty change', () => {
         let gridObj: any;
         beforeAll((done: Function) => {

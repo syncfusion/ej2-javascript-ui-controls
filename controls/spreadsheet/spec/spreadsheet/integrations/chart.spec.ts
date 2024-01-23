@@ -3,7 +3,8 @@ import { defaultData, GDPData } from '../util/datasource.spec';
 import { CellModel, getFormatFromType, SheetModel, Spreadsheet } from '../../../src/index';
 import { Overlay } from '../../../src/spreadsheet/services/index';
 import { getComponent, EventHandler } from '@syncfusion/ej2-base';
-import { Chart } from '@syncfusion/ej2-charts';
+import { Chart, Export } from '@syncfusion/ej2-charts';
+Chart.Inject(Export);
 
 /**
  *  Chart test cases
@@ -2179,6 +2180,30 @@ describe('Chart ->', () => {
                 expect(chart.style.width).toBe('480px');
                 expect(chart.style.height).toBe('320px');
                 done();
+            });
+        });
+    });
+    describe('EJ2-866111 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Inserting a chart after hiding some columns, the chart data is not properly updated. ->', (done: Function) => {
+            helper.invoke('hideColumn', [3, 4]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].columns[3].hidden).toBeTruthy();
+                expect(helper.getInstance().sheets[0].columns[4].hidden).toBeTruthy();
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.getInstance().insertChart([{ type: "Scatter", range: 'A1:B4' }]);
+                setTimeout(() => {
+                    let chartId: string = `#${spreadsheet.sheets[0].rows[0].cells[0].chart[0].id}`;
+                    let chartEle: HTMLElement = spreadsheet.element.querySelector(chartId) as HTMLElement;
+                    let chart: Chart = getComponent(chartEle, 'chart');
+                    expect(chart.primaryXAxis['labels'][0]).toBe('Casual Shoes');
+                    done();
+                });
             });
         });
     });

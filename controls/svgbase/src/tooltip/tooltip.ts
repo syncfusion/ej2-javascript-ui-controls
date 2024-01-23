@@ -887,14 +887,19 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const fontSize: string = '12px'; let fontWeight: string = '400'; let labelColor: string = this.themeStyle.tooltipLightLabel;
         const dy: number = (22 / parseFloat(fontSize)) * (parseFloat(font.size));
         const contentWidth: number[] = [];
+        let textHeight: number = 0;
         if (!isRender || this.isCanvas) {
             removeElement(this.element.id + '_text');
             removeElement(this.element.id + '_header_path');
             removeElement(this.element.id + '_trackball_group');
             removeElement(this.element.id + 'SVG_tooltip_definition');
         }
+        // Condition to resolve the text size issue only in chart.
+        if(this.controlName === 'Chart' && parseFloat(fontSize) < parseFloat(font.size)){
+            textHeight = (parseFloat(font.size) - parseFloat(fontSize));
+        }
         const options: TextOption = new TextOption(
-            this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? this.controlName ==='RangeNavigator' ? 5 : 3 : 0)),
+            this.element.id + '_text', this.marginX * 2, (textHeight + this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? this.controlName ==='RangeNavigator' ? 5 : 3 : 0)),
             anchor, ''
         );
         const parentElement: Element = textElement(options, font, font.color || this.themeStyle.tooltipBoldLabel,
@@ -924,7 +929,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 continue;
             }
             if ((k !== 0) || (headerContent === '')) {
-                this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height);
+                this.markerPoint.push((headerContent !== '' ? (this.marginY) : 0) + options.y + height - (textHeight !== 0 ? ((textHeight / this.markerSize) * (parseFloat(font.size) / this.markerSize)) : 0));
             }
             for (let i: number = 0, len: number = textCollection.length; i < len; i++) { // string value of unicode for LTR is \u200E
                 lines = textCollection[i as number].replace(/<b>/g, '<br><b>').replace(/<\/b>/g, '</b><br>').replace(/:/g, (this.enableRTL) ? '<br>\u200E: <br>' : '<br>\u200E:<br>')

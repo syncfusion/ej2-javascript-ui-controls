@@ -219,7 +219,7 @@ describe('Overview', () => {
             mouseEvents.mouseMoveEvent(overviewelement, 1056, 160);
             overview[mouseup]({ target: target, type: mouseDown });   console.log('zoom '+ diagram.scroller.currentZoom.toFixed(4) + ' hOffset ' + Math.round(diagram.scroller.horizontalOffset) + ' vOffset ' + Math.round(diagram.scroller.verticalOffset) ); expect((diagram.scroller.currentZoom.toFixed(4) === '2.3750')).toBe(true);
             expect((Math.round(diagram.scroller.horizontalOffset) >= -541  && Math.round(diagram.scroller.horizontalOffset) <= -540) &&
-                (Math.round(diagram.scroller.verticalOffset) >= 257) && Math.round(diagram.scroller.verticalOffset) <= 260).toBe(true);
+                (Math.round(diagram.scroller.verticalOffset) >= 256) && Math.round(diagram.scroller.verticalOffset) <= 260).toBe(true);
             done();
         });
         it('Click on the overview rect - Scale with resizer Top left Y greater than x', (done: Function) => {

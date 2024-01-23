@@ -1703,9 +1703,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         if (this.element.id === '') {
             let collection: number = document.getElementsByClassName('e-chart').length;
-            const elementid: string = 'chart_' + this.chartid + '_' + collection;
-            if (document.getElementById(elementid)) {
+            let elementid: string = 'chart_' + this.chartid + '_' + collection;
+            while (document.getElementById(elementid)) {
                 collection++;
+                elementid = 'chart_' + this.chartid + '_' + collection;
             }
             this.element.id = 'chart_' + this.chartid + '_' + collection;
         }
@@ -3040,7 +3041,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public chartResize(): boolean {
         this.animateSeries = false;
         const arg: IResizeEventArgs = {
-            chart: this.isBlazor ? {} as Chart : this,
+            chart: this,
             name: resized,
             currentSize: new Size(0, 0),
             previousSize: new Size(
@@ -4257,6 +4258,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 }
             }
         } else {
+            if (this.isTouch) { this.startMove = true; }
             this.mouseX = x as number;
             this.mouseY = y;
             this.tooltipModule.mouseMoveHandler();

@@ -4,6 +4,12 @@
 
 ## 24.1.46 (2024-01-17)
 
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I541407` - The issue with the Dropdown Tree popup not closing when the preselected value is again selected has been resolved.
+
 ### MultiSelect
 
 #### Bug Fixes

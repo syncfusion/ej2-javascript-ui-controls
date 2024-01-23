@@ -471,15 +471,19 @@ export function extendArray(sourceArray: Object[], childArray: Object[]): Object
 export function textAlignToString(value: TextAlign): string {
     let state: string = '';
     switch (value) {
-    case 'Center':
-        state = 'center';
-        break;
-    case 'Left':
-        state = 'left';
-        break;
-    case 'Right':
-        state = 'right';
-        break;
+        case 'Center':
+            state = 'center';
+            break;
+        case 'Left':
+            state = 'left';
+            break;
+        case 'Right':
+            state = 'right';
+            break;
+        case 'Justify':
+            state = 'justify';
+            break;
+            
     }
     return state;
 }

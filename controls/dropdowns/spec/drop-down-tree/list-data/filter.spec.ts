@@ -698,7 +698,7 @@ describe('filter list data testing', () => {
             expect(ddtreeObj.treeSettings.autoCheck).toBe(false);
             ddtreeObj.treeSettings.autoCheck = true;
             ddtreeObj.dataBind();
-            expect(ddtreeObj.treeSettings.autoCheck).toBe(false);
+            expect(ddtreeObj.treeSettings.autoCheck).toBe(true);
             ddtreeObj.allowFiltering = false;
             ddtreeObj.dataBind();
             ddtreeObj.treeSettings.autoCheck = true;

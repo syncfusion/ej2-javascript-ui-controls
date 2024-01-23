@@ -4410,6 +4410,13 @@ margin: $grid-group-animator-cell-margin;
         }
       }
 
+      .e-rowdragdrop {
+        @if $grid-skin == 'material3' or $grid-skin == 'material3-dark' or $grid-skin == 'material' or $grid-skin == 'material-dark' or $grid-skin == 'bootstrap4' {
+          border-width: $grid-rowcell-broder-width;
+          border-color: $grid-dragcell-border-color;
+        }
+      }
+
       .e-rowcell.e-frozen-right-border,
       .e-headercell.e-frozen-right-border,
       .e-filterbarcell.e-frozen-right-border {

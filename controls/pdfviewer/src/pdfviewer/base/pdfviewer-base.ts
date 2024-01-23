@@ -8263,8 +8263,15 @@ export class PdfViewerBase {
         let currentTarget: any = (e.target as HTMLElement).parentElement;
         if (e.type.indexOf('touch') !== -1) {
             touchArg = <TouchEvent & PointerEvent>e;
-            if (this.pdfViewer.annotation) {
-                const pageDiv: HTMLElement = this.getElement('_pageDiv_' + this.pdfViewer.annotation.getEventPageNumber(e));
+            if (this.pdfViewer.annotation || this.isDeviceiOS) {
+                let pageNumber: number = this.pdfViewer.currentPageNumber - 1;
+                if (this.pdfViewer.annotation && !isNaN(this.pdfViewer.annotation.getEventPageNumber(e))) {
+                    pageNumber = this.pdfViewer.annotation.getEventPageNumber(e);
+                }
+                if(isNaN(pageNumber) && this.pdfViewer.formDesignerModule){
+                    pageNumber = this.pdfViewer.formDesignerModule.getEventPageNumber(e);
+                }
+                const pageDiv: HTMLElement = this.getElement('_pageDiv_' + pageNumber);
                 if (pageDiv) {
                     const pageCurrentRect: ClientRect =
                         pageDiv.getBoundingClientRect();
@@ -9224,7 +9231,7 @@ export class PdfViewerBase {
         }
         const target: HTMLElement = evt.target as HTMLElement;
         // eslint-disable-next-line max-len
-        if (!touches && evt.cancelable && this.skipPreventDefault(target)) {
+        if (!touches && (evt.cancelable && !(this.isDeviceiOS && !this.pdfViewer.annotationModule)) && this.skipPreventDefault(target)) {
             evt.preventDefault();
         }
         this.eventArgs = {};
@@ -10252,7 +10259,7 @@ export class PdfViewerBase {
                             let annotObject: IPageAnnotations[];
                             switch (annotationName) {
                                 case 'textMarkup':
-                                    if (annotation[parseInt(i.toString(), 10)].textMarkupAnnotation.length !== 0) {
+                                    if (annotation[parseInt(i.toString(), 10)].textMarkupAnnotation.length !== 0 || annotationData.length !==0) {
                                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotationData, i);
                                         for (let j: number = 0; j < annotationData.length; j++) {
                                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.textMarkupAnnotationModule.updateTextMarkupAnnotationCollections(annotationOrderCollection[parseInt(index.toString(), 10)], i));
@@ -10260,7 +10267,7 @@ export class PdfViewerBase {
                                     }
                                     break;
                                 case 'shape':
-                                    if (annotation[parseInt(i.toString(), 10)].shapeAnnotation.length !== 0) {
+                                    if (annotation[parseInt(i.toString(), 10)].shapeAnnotation.length !== 0 || annotationData.length !==0) {
                                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotationData, i);
                                         for (let j: number = 0; j < annotationData.length; j++) {
                                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.shapeAnnotationModule.updateShapeAnnotationCollections(annotationOrderCollection[parseInt(index.toString(), 10)], i));
@@ -10268,7 +10275,7 @@ export class PdfViewerBase {
                                     }
                                     break;
                                 case 'shape_measure':
-                                    if (annotation[parseInt(i.toString(), 10)].measureShapeAnnotation.length !== 0) {
+                                    if (annotation[parseInt(i.toString(), 10)].measureShapeAnnotation.length !== 0 || annotationData.length !==0) {
                                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotationData, i);
                                         for (let j: number = 0; j < annotationData.length; j++) {
                                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.measureAnnotationModule.updateMeasureAnnotationCollections(annotationOrderCollection[parseInt(index.toString(), 10)], i));
@@ -10276,7 +10283,7 @@ export class PdfViewerBase {
                                     }
                                     break;
                                 case 'stamp':
-                                    if (annotation[parseInt(i.toString(), 10)].stampAnnotations.length !== 0) {
+                                    if (annotation[parseInt(i.toString(), 10)].stampAnnotations.length !== 0 || annotationData.length !==0) {
                                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotationData, i);
                                         for (let j: number = 0; j < annotationData.length; j++) {
                                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.stampAnnotationModule.updateStampAnnotationCollections(annotationOrderCollection[parseInt(index.toString(), 10)], i));
@@ -10285,7 +10292,7 @@ export class PdfViewerBase {
                                     break;
                                 case 'Text Box':
                                 case 'freeText':
-                                    if (annotation[parseInt(i.toString(), 10)].freeTextAnnotation.length !== 0) {
+                                    if (annotation[parseInt(i.toString(), 10)].freeTextAnnotation.length !== 0 || annotationData.length !==0) {
                                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotationData, i);
                                         for (let j: number = 0; j < annotationData.length; j++) {
                                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.freeTextAnnotationModule.updateFreeTextAnnotationCollections(annotationOrderCollection[parseInt(index.toString(), 10)], i));
@@ -10293,7 +10300,7 @@ export class PdfViewerBase {
                                     }
                                     break;
                                 case 'sticky':
-                                    if (annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation.length !== 0) {
+                                    if (annotation[parseInt(i.toString(), 10)].stickyNotesAnnotation.length !== 0 || annotationData.length !==0) {
                                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotationData, i);
                                         for (let j: number = 0; j < annotationData.length; j++) {
                                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateStickyNotesAnnotationCollections(annotationOrderCollection[parseInt(index.toString(), 10)], i));
@@ -10301,7 +10308,7 @@ export class PdfViewerBase {
                                     }
                                     break;
                                 case 'signature':
-                                    if (annotation[parseInt(i.toString(), 10)].signatureAnnotation.length !== 0) {
+                                    if (annotation[parseInt(i.toString(), 10)].signatureAnnotation.length !== 0 || annotationData.length !==0) {
                                         for (let j: number = 0; j < annotationData.length; j++) {
                                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.signatureModule.updateSignatureCollections(annotationOrderCollection[parseInt(index.toString(), 10)], i), true);
                                         }
@@ -10309,7 +10316,7 @@ export class PdfViewerBase {
                                     break;
                                 case 'Ink':
                                 case 'ink':
-                                    if (annotation[parseInt(i.toString(), 10)].signatureInkAnnotation.length !== 0) {
+                                    if (annotation[parseInt(i.toString(), 10)].signatureInkAnnotation.length !== 0 || annotationData.length !==0) {
                                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotationData, i);
                                         for (let j: number = 0; j < annotation[parseInt(i.toString(), 10)].annotationOrder[parseInt(index.toString(), 10)].length; j++) {
                                             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.inkAnnotationModule.updateInkCollections(annotationOrderCollection[parseInt(index.toString(), 10)], i));

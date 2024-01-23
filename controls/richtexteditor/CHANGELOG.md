@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.47 (2024-01-23)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I542710` - Now, pressing the `tab` key in the list applies the nested list properly when the mention component is used in the Rich Text Editor.
+
 ## 24.1.46 (2024-01-17)
 
 ### RichTextEditor
@@ -11,6 +19,8 @@
 - `#I537067` - Now, the content at the top is displayed properly when maximizing the Rich Text Editor with `enableFloating` set to `false`.
 
 - `#I534484` - Now, applying the bold repeatedly to the content in the Rich Text Editor works properly, and the content doesn't get deleted.
+
+- `#I531848` - Now, pressing the space or enter key after inserting the mention list in the Rich Text Editor doesn't scroll the page.
 
 ## 24.1.45 (2024-01-09)
 

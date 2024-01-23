@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.46 (2024-01-17)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I538969`  - Fixed an issue where the `ContextMenu` with indent/outdent items was being displayed when clicking in an empty space.
+
 ## 24.1.45 (2024-01-09)
 
 ### Tree Grid

@@ -1652,12 +1652,16 @@ export class Layout {
         });
     }
     private layoutShape(element: ShapeBase): void {
+        if (element instanceof ShapeElementBox && element.isHorizontalRule) {
+            return;
+        }
         if (element.textWrappingStyle !== 'Inline') {
             const position: Point = this.getFloatingItemPoints(element);
             element.x = position.x;
             element.y = position.y;
             if(!element.paragraph.isInsideTable && element.paragraph.indexInOwner !== 0 && element.verticalPosition >= 0 && Math.round(element.paragraph.y) >= Math.round(element.y) && this.viewer.clientArea.bottom <= element.y + element.height && (element.verticalOrigin == "Line" || element.verticalOrigin == "Paragraph") && element.textWrappingStyle !== "InFrontOfText" && element.textWrappingStyle !== "Behind") {
                 this.moveToNextPage(this.viewer, element.line);
+                this.updateShapeBaseLocation(element.line.paragraph);
             }
             const bodyWidget: BlockContainer = element.paragraph.bodyWidget;
             if (bodyWidget.floatingElements.indexOf(element) === -1) {
@@ -1794,7 +1798,7 @@ export class Layout {
     }
     /* eslint-disable  */
     private layoutElement(element: ElementBox, paragraph: ParagraphWidget, isEmptyField?: boolean): void {
-        if(element.isPageBreak && paragraph.isInHeaderFooter) {
+        if((element.isPageBreak && paragraph.isInHeaderFooter) || (element instanceof ShapeElementBox && element.isHorizontalRule)) {
             return;
         }
         let line: LineWidget = element.line;
@@ -3298,6 +3302,7 @@ export class Layout {
         let beforeSpacing: number = this.getBeforeSpacing(paragraph);
         let lineWidget: LineWidget;
         if (paragraph.childWidgets.length > 0 && !isShiftEnter) {
+            this.isUpdateMarginForCurrentLine(line);
             lineWidget = paragraph.childWidgets[0] as LineWidget;
             if (lineWidget.children.length > 0) {
                 if ((paraFormat.bidi || this.isContainsRtl(lineWidget))) {
@@ -3409,6 +3414,21 @@ export class Layout {
         this.viewer.cutFromTop(this.viewer.clientActiveArea.y + lineWidget.height);
         this.wrapPosition = [];
         //Clears the previous line elements from collection.
+    }
+
+    private isUpdateMarginForCurrentLine(line: LineWidget): void {
+        let isUpdate: boolean = true;
+        if (!isNullOrUndefined(line) && !line.isFirstLine()) {
+            for (let i = 0; i < line.children.length; i++) {
+                if (!(line.children[i] instanceof EditRangeStartElementBox || line.children[i] instanceof EditRangeEndElementBox)) {
+                    isUpdate = false;
+                    break;
+                }
+            }
+            if (isUpdate) {
+                line.margin = new Margin(0, 0, 0, 0);
+            }
+        }
     }
 
     private adjustPositionBasedOnTopAndBottom(lineWidget: LineWidget): void {
@@ -5476,7 +5496,7 @@ export class Layout {
         } else {
             clientWidth = this.viewer.clientArea.x;
         }
-        if (clientActiveX < clientWidth) {
+        if (clientActiveX < clientWidth && (this.documentHelper.compatibilityMode !== 'Word2003' || tabs.length === 0)) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
         let position: number = viewer.clientActiveArea.x -

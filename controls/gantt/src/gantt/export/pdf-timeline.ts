@@ -3,7 +3,7 @@ import { PdfGanttCellStyle} from './../base/interface';
 import {
     PointF, PdfPage, PdfGraphics, PdfColor, PdfPen, PdfBrush, PdfSolidBrush,
     PdfTrueTypeFont, PdfStandardFont, PdfStringFormat, PdfVerticalAlignment,
-    PdfTextAlignment, PdfWordWrapType,PdfFontFamily,PdfBrushes,PdfGraphicsState 
+    PdfTextAlignment, PdfWordWrapType,PdfFontFamily,PdfBrushes,PdfGraphicsState,RectangleF
 } from '@syncfusion/ej2-pdf-export';
 import { TimelineDetails, TimelineFormat, IGanttStyle, PdfQueryTimelineCellInfoEventArgs } from '../base/interface';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -310,11 +310,14 @@ export class PdfTimeline {
         const pLeft: PdfPaddings | number = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.left : 0;
         const pTop: PdfPaddings | number = ganttStyle.timeline.padding ? eventArgs.timelineCell.padding.top : 0;
         /* eslint-disable-next-line */
+        let state = graphics.save();
+        graphics.setClip(new RectangleF(x, y, width, pixelToPoint(height)))
         if (isTopTier) {
             x = x + pLeft + 4;
         } else {
             x = x + pLeft;
         }
         graphics.drawString(eventArgs.value, font, null, textBrush, x, y + pTop, pixelToPoint(width), pixelToPoint(height), e.format);
-    }
+        graphics.restore(state); 
+      }
 }

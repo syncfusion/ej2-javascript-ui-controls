@@ -617,6 +617,10 @@ export abstract class SignatureBase extends Component<HTMLCanvasElement> {
     public clear(): void {
         const args: SignatureChangeEventArgs = { actionName: 'clear'};
         this.canvasContext.clearRect( 0, 0, this.canvasContext.canvas.width, this.canvasContext.canvas.height);
+        this.tempContext.clearRect( 0, 0, this.tempContext.canvas.width, this.tempContext.canvas.height);
+        if (this.saveWithBackground) {
+            this.setBackgroundImage(this.backgroundImage, 'temp');
+        }
         this.internalRefresh();
         this.signRatioPointsColl = [];
         this.updateSnapCollection(true);

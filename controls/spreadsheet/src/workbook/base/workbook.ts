@@ -12,7 +12,7 @@ import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsMod
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, UnprotectArgs, ExtendedRange } from '../common/interface';
 import { SaveOptions, SetCellFormatArgs, ClearOptions, AutoFillSettings, AutoFillDirection, AutoFillType, dateToInt } from '../common/index';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
-import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress, unMerge } from '../common/index';
+import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';
 import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, dataChanged } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText, Cell } from './cell';
 import { DataBind, setRow, setColumn, InsertDeleteEventArgs, NumberFormatArgs } from '../index';
@@ -896,7 +896,16 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void} - To split the merged cell into multiple cells.
      */
     public unMerge(range?: string): void {
-        this.notify(unMerge, { range });
+        let sheetIdx: number; let sheet: SheetModel;
+        if (range) {
+            sheetIdx = getSheetIndexFromAddress(this, range); sheet = getSheet(this, sheetIdx);
+        } else {
+            sheet = this.getActiveSheet(); range = sheet.selectedRange;
+        }
+        this.notify(setMerge, <MergeArgs>{
+            merge: false, range: range, sheetIndex: sheetIdx, type: 'All',
+            refreshRibbon: range.indexOf(sheet.activeCell) > -1 ? true : false, preventRefresh: this.activeSheetIndex !== sheetIdx
+        });
     }
 
     /** Used to compute the specified expression/formula.

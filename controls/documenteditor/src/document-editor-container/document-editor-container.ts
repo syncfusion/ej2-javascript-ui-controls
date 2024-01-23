@@ -638,7 +638,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     this.showHidePropertiesPane(newModel.showPropertiesPane);
                     break;
                 case 'enableTrackChanges':
-                    if(this.documentEditor.documentHelper.isTrackedOnlyMode && !newModel.enableTrackChanges){
+                    if(this.documentEditor.documentHelper.isTrackedOnlyMode && !newModel.enableTrackChanges && newModel.enableTrackChanges !== this.enableTrackChanges){
                         this.enableTrackChanges = true;
                      }
                     if (this.documentEditor) {
@@ -1039,7 +1039,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
 
     private onEnableTrackChanges(model: DocumentEditorModel): void {
-        this.enableTrackChanges = model.enableTrackChanges;
+        if (model.enableTrackChanges !== this.enableTrackChanges) {
+            this.enableTrackChanges = model.enableTrackChanges;
+        }
     }
 
     private triggerAutoResize(args: AutoResizeEventArgs): void {

@@ -503,6 +503,9 @@ export class Renderer {
             && floatingElement.textWrappingStyle !== 'InFrontOfText'))));
     }
     private renderShapeElementBox(shape: ShapeElementBox, shapeLeft: number, shapeTop: number, page: Page): void {
+        if (shape.isHorizontalRule) {
+            return;
+        }
         let isZeroShapeHeight: boolean = (shape.height === 0) ? true : false;
         let shapeType: any = shape.autoShapeType;
         let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];

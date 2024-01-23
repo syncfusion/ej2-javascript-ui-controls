@@ -6544,6 +6544,10 @@ export class ShapeBase extends ShapeCommon {
      * @private
      */
     public isBelowText: boolean;
+    /**
+     * @private
+     */
+    public isHorizontalRule: boolean;
 }
 /** 
  * @private

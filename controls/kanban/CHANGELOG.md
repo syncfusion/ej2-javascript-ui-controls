@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.47 (2024-01-23)
+
+### Kanban
+
+#### Bug Fixes
+
+`#I544423` - Now, the Kanban column header title shows properly when the column is collapsed.
+
 ## 24.1.46 (2024-01-17)
 
 ### Kanban

@@ -5120,9 +5120,16 @@ export class Editor {
             if (!isNullOrUndefined(abstractList)) {
                 let isUpdate: boolean = this.updateListIdForBlocks(pasteContent[sectionsProperty[this.keywordIndex]][sectionId][blocksProperty[this.keywordIndex]], abstractList, lstDup[0], list[listIdProperty[this.keywordIndex]], uniqueListId);
                 if (isUpdate) {
+                    let absListId: number = abstractList[abstractListIdProperty[this.keywordIndex]];
+                    // iterate the list object from pasteContent and update the abstractListId with new value.
+                    for (let i: number = 0; i < pasteContent[listsProperty[this.keywordIndex]].length; i++) {
+                        let listObj: any = pasteContent[listsProperty[this.keywordIndex]][i];
+                        if (listObj[abstractListIdProperty[this.keywordIndex]] === absListId) {
+                            listObj[abstractListIdProperty[this.keywordIndex]] = uniqueAbsLstId;
+                        }
+                    }
                     abstractList[abstractListIdProperty[this.keywordIndex]] = uniqueAbsLstId;
                     list[listIdProperty[this.keywordIndex]] = uniqueListId;
-                    list[abstractListIdProperty[this.keywordIndex]] = uniqueAbsLstId;
                     uniqueListId++;
                     uniqueAbsLstId++;
                 } else {

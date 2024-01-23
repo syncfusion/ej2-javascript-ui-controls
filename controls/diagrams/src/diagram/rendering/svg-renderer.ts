@@ -932,6 +932,9 @@ export class SvgRenderer implements IRenderer {
         } else if (text.textAlign === 'right') {
             pointX = (text.width * 1);
         }
+        else if(text.textAlign === 'justify'){
+            pointX = 0;
+        }
         pos.x = x + pointX + (wrapBound ? wrapBound.x : 0);
         pos.y = y + pointY - bounds.height / 2;
         return pos;

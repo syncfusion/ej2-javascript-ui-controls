@@ -2,39 +2,21 @@
 
 ## [Unreleased]
 
-## 24.1.46 (2024-01-17)
+## 24.1.47 (2024-01-23)
 
 ### Pdf Export
 
-#### Bug Fixes
+#### Features
 
-- Resolved the linear gradient brush with rotated text preservation issue.
+- Added rounded rectangle drawing support in PDF graphics.
 
-## 23.2.4 (2023-11-20)
-
-### Pdf Export
-
-#### Bug Fixes
-
-- Resolved the floating point equality check issue.
-
-## 23.1.43 (2023-10-31)
+## 24.1.41 (2023-12-18)
 
 ### Pdf Export
 
 #### Bug Fixes
 
 - The issue with the missing `PdfPageNumberField` on the minified file has been resolved.
-
-## 23.1.39 (2023-10-04)
-
-### Pdf Export
-
-#### Bug Fixes
-
-- Resolved the linear gradient brush preservation issue.
-
-## 23.1.36 (2023-09-15)
 
 ### Pdf Export
 

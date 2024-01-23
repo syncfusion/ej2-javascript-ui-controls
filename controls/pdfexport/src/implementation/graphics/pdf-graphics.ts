@@ -70,6 +70,7 @@ import { PdfTilingBrush } from './brushes/pdf-tiling-brush';
  * ```
  */
 export class PdfGraphics {
+    /* tslint:disable */
     // Constants
     /**
      * Specifies the mask of `path type values`.
@@ -326,6 +327,8 @@ export class PdfGraphics {
      * @private
      */
     private startCutIndex : number = -1;
+    private _pathPoints : PointF[];
+    private _pathTypes : number[];
     //  Properties
     /**
      * Returns the `result` after drawing string.
@@ -451,7 +454,6 @@ export class PdfGraphics {
         this.getResources.getResources().requireProcedureSet(this.procedureSets.pdf);
     }
     // Public methods
-    /* tslint:disable */
     /**
      * `Draw the template`.
      * @private
@@ -551,7 +553,6 @@ export class PdfGraphics {
      */
     public drawString(s : string, font : PdfFont, pen : PdfPen, brush : PdfBrush, x : number, y : number, format : PdfStringFormat) : void
     public drawString(s : string, font : PdfFont, pen : PdfPen, brush : PdfBrush, x : number, y : number, width : number, height : number, format : PdfStringFormat) : void
-    /* tslint:disable */
     /**
      * @public
      */
@@ -588,7 +589,7 @@ export class PdfGraphics {
             this.pdfStringLayoutResult = result;
             this.isUseFontSize = false;
         }
-    }/* tslint:enable */
+    }
     //DrawLine overloads
     /**
      * `Draws a line` connecting the two points specified by the coordinate pairs.
@@ -732,7 +733,6 @@ export class PdfGraphics {
      * @param height Height of the rectangle to draw.
      */
     public drawRectangle(pen : PdfPen, brush : PdfBrush, x : number, y : number, width : number, height : number) : void
-    /* tslint:disable */
     public drawRectangle(arg1 : PdfPen|PdfBrush, arg2 : PdfBrush|number, arg3 : number, arg4 : number, arg5 : number, arg6 ?: number) : void {
         if ( arg1 instanceof PdfPen && typeof arg2 === 'number' ) {
             let temparg3 : number = arg3 as number;
@@ -769,7 +769,147 @@ export class PdfGraphics {
             this.drawPathHelper(temparg1, temparg2, false);
         }
     }
-
+	/**
+     * Draw rounded rectangle specified by a brush, pen, coordinate pair, a width, a height and a radius.
+     * ```typescript
+     * // Create a new PDF document.
+     * let document : PdfDocument = new PdfDocument();
+     * // Create a new page
+     * let page : PdfPage = document.pages.add();
+     * // Create brush for draw rectangle
+     * let brush : PdfSolidBrush = new PdfSolidBrush(new PdfColor(238, 130, 238));
+	 * // Create a new PDF pen
+	 * let pen: PdfPen = new PdfPen(new PdfColor(255, 0, 0), 1);
+     * // Draw rounded rectangle
+     * page.graphics.drawRoundedRectangle(pen, brush, 20, 20, 100, 50, 5);
+     * // save the document
+     * document.save('output.pdf');
+     * // destroy the document
+     * document.destroy();
+     * ```
+     * @param pen Stoke color of the rectangle.
+     * @param brush Fill color of the rectangle.
+     * @param x The x-coordinate of the upper-left corner of the rectangle to draw.
+     * @param y The y-coordinate of the upper-left corner of the rectangle to draw.
+     * @param width Width of the rectangle to draw.
+     * @param height Height of the rectangle to draw.
+     * @param radius Radius of the arcs to draw.
+     */
+    drawRoundedRectangle(pen: PdfPen, brush: PdfBrush, x: number, y: number, width: number, height: number, radius: number): void {
+        if (pen === null) {
+            throw new Error('pen');
+        }
+        if (brush === null) {
+            throw new Error('brush');
+        }
+        if (radius === 0) {
+            this.drawRectangle(pen, brush, x, y, width, height);
+        } else {
+            const bounds: number[] = [x, y, width, height];
+            const diameter: number = radius * 2;
+            const size: number[] = [diameter, diameter];
+            const arc: number[] = [bounds[0], bounds[1], size[0], size[1]];
+            this._pathPoints = [];
+            this._pathTypes = [];
+            let startFigure: boolean = true;
+            startFigure = this._addArc(arc[0], arc[1], arc[2], arc[3], 180, 90, startFigure);
+            arc[0] = (bounds[0] + bounds[2]) - diameter;
+            startFigure = this._addArc(arc[0], arc[1], arc[2], arc[3], 270, 90, startFigure);
+            arc[1] = (bounds[1] + bounds[3]) - diameter;
+            startFigure = this._addArc(arc[0], arc[1], arc[2], arc[3], 0, 90, startFigure);
+            arc[0] = bounds[0];
+            startFigure = this._addArc(arc[0], arc[1], arc[2], arc[3], 90, 90, startFigure);
+            const index: number = this._pathPoints.length - 1;
+            let type: PathPointType = (<PathPointType>((<number>(this._pathTypes[index]))));
+            type = (type | PathPointType.CloseSubpath);
+            this._pathTypes[index] = (<number>(type));
+            this._drawPath(pen, brush, this._pathPoints, this._pathTypes, PdfFillMode.Alternate);
+            this._pathPoints = [];
+            this._pathTypes = [];
+        }
+    }
+    private _addArc(x: number, y: number, width: number, height: number, startAngle: number, sweepAngle: number, startFigure: boolean): boolean {
+        let points: number[] = this._getBezierArcPoints(x, y, (x + width), (y + height), startAngle, sweepAngle);
+        for (let i : number = 0 ; i < points.length ; i = i + 8 ) {
+            let point : number[] = [ points[i], points[i + 1], points[i + 2], points[i + 3], points[i + 4], points[i + 5], points[i + 6], points[i + 7]];
+            startFigure = this._addArcPoints(point, PathPointType.Bezier3, startFigure);
+        }
+        return startFigure;
+    }
+    private _addArcPoints(points: number[], pointType: PathPointType, startFigure: boolean): boolean {
+        for (let i: number = 0; i < points.length; i++) {
+            let point: PointF = new PointF(points[i], points[(i + 1)]);
+            if (i === 0) {
+                if (this._pathPoints.length === 0 || startFigure) {
+                    this._addPoint(point, PathPointType.Start);
+                    startFigure = false;
+                } else if (point.x !== this._getLastPoint().x || point.y !== this._getLastPoint().y) {
+                    this._addPoint(point, PathPointType.Line);
+                }
+            } else {
+                this._addPoint(point, pointType);
+            }
+            i++;
+        }
+        return startFigure;
+    }
+    private _getLastPoint(): PointF {
+        let lastPoint: PointF = new PointF(0, 0);
+        const count: number = this._pathPoints.length;
+        if (count > 0) {
+            lastPoint.x = this._pathPoints[(count - 1)].x;
+            lastPoint.y = this._pathPoints[(count - 1)].y;
+        }
+        return lastPoint;
+    }
+    private _addPoint(point: PointF, type: PathPointType): void {
+        this._pathPoints.push(point);
+        this._pathTypes.push(<number>type);
+    }
+    private _getBezierArcPoints(x1: number, y1: number, x2: number, y2: number, s1: number, e1: number): number[] {
+        if ((x1 > x2)) {
+            let tmp: number;
+            tmp = x1;
+            x1 = x2;
+            x2 = tmp;
+        }
+        if ((y2 > y1)) {
+            let tmp: number;
+            tmp = y1;
+            y1 = y2;
+            y2 = tmp;
+        }
+        let fragAngle: number;
+        let numFragments: number;
+        if ((Math.abs(e1) <= 90)) {
+            fragAngle = e1;
+            numFragments = 1;
+        } else {
+            numFragments = (<number>(Math.ceil((Math.abs(e1) / 90))));
+            fragAngle = (e1 / numFragments);
+        }
+        let xcen: number = ((x1 + x2) / 2);
+        let ycen: number = ((y1 + y2) / 2);
+        let rx: number = ((x2 - x1) / 2);
+        let ry: number = ((y2 - y1) / 2);
+        let halfAng: number = (<number>((fragAngle * (Math.PI / 360))));
+        let kappa: number = (<number>(Math.abs(4.0 / 3.0 * (1.0 - Math.cos(halfAng)) / Math.sin(halfAng))));
+        let pointList: number[] = [];
+        for (let i: number = 0; (i < numFragments); i++) {
+            let theta0: number = (<number>(((s1 + (i * fragAngle)) * (Math.PI / 180))));
+            let theta1: number = (<number>(((s1 + ((i + 1) * fragAngle)) * (Math.PI / 180))));
+            let cos0: number = (<number>(Math.cos(theta0)));
+            let cos1: number = (<number>(Math.cos(theta1)));
+            let sin0: number = (<number>(Math.sin(theta0)));
+            let sin1: number = (<number>(Math.sin(theta1)));
+            if ((fragAngle > 0)) {
+                pointList.push((xcen  + (rx * cos0)), (ycen - (ry * sin0)), (xcen + (rx * (cos0 - (kappa * sin0)))), (ycen - (ry * (sin0 + (kappa * cos0)))), (xcen + (rx * (cos1 + (kappa * sin1)))), (ycen - (ry * (sin1 - (kappa * cos1)))), (xcen + (rx * cos1)), (ycen - (ry * sin1)));
+            } else {
+                pointList.push((xcen + (rx * cos0)), (ycen - (ry * sin0)), (xcen + (rx * (cos0 + (kappa * sin0)))), (ycen - (ry * (sin0 - (kappa * cos0)))), (xcen + (rx * (cos1 - (kappa * sin1)))), (ycen - (ry * (sin1 + (kappa * cos1)))), (xcen + (rx * cos1)), (ycen - (ry * sin1)));
+            }
+        }
+        return pointList;
+    }
     /**
      * `Draws the path`.
      * @private
@@ -801,7 +941,6 @@ export class PdfGraphics {
             }
         }
     }
-       /* tslint:disable */
     //DrawImage overloads
     /**
      * `Draws the specified image`, using its original physical size, at the location specified by a coordinate pair.
@@ -855,8 +994,7 @@ export class PdfGraphics {
      * @param height Height of the drawn image.
      */
     public drawImage(image : PdfImage, x : number, y : number, width : number, height : number) : void
-    /* tslint:disable */
-    public drawImage(arg1 : PdfImage, arg2 : number, arg3 : number, arg4 ?: number, arg5 ?: number) : void {/* tslint:enable */
+    public drawImage(arg1 : PdfImage, arg2 : number, arg3 : number, arg4 ?: number, arg5 ?: number) : void {
         if (typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'undefined') {
             let size : SizeF = arg1.physicalDimension;
             this.drawImage(arg1, arg2, arg3, size.width, size.height);
@@ -891,12 +1029,11 @@ export class PdfGraphics {
         }
     }
     //Implementation
-    /* tslint:disable */
     /**
      * Returns `bounds` of the line info.
      * @private
      */
-    public getLineBounds(lineIndex : number, result : PdfStringLayoutResult, font : PdfFont, layoutRectangle : RectangleF, format : PdfStringFormat) : RectangleF {/* tslint:enable */
+    public getLineBounds(lineIndex : number, result : PdfStringLayoutResult, font : PdfFont, layoutRectangle : RectangleF, format : PdfStringFormat) : RectangleF {
         let bounds : RectangleF;
         if (!result.empty && lineIndex < result.lineCount && lineIndex >= 0) {
             let line : LineInfo = result.lines[lineIndex];
@@ -907,8 +1044,7 @@ export class PdfGraphics {
             let lineIndent : number = this.getLineIndent(line, format, layoutRectangle, (lineIndex === 0));
             hShift += (!this.rightToLeft(format)) ? lineIndent : 0;
             let x : number = layoutRectangle.x + hShift;
-            /* tslint:disable */
-            let width : number = (!this.shouldJustify(line, layoutRectangle.width, format)) ? lineWidth - lineIndent : layoutRectangle.width - lineIndent;/* tslint:enable */
+            let width : number = (!this.shouldJustify(line, layoutRectangle.width, format)) ? lineWidth - lineIndent : layoutRectangle.width - lineIndent;
             let height : number = result.lineHeight;
             bounds = new RectangleF(x, y, width, height);
         } else {
@@ -957,7 +1093,6 @@ export class PdfGraphics {
      * Adding page number field before page saving.
      * @private
      */
-    /* tslint:disable */
     public pageSave(page : PdfPage) : void {
         if (page.graphics.automaticFields != null) {
             for (let i : number = 0; i < page.graphics.automaticFields.automaticFields.length; i++) {
@@ -1118,12 +1253,11 @@ export class PdfGraphics {
         }
         return shift;
     }
-    /* tslint:disable */
     /**
      * `Draws layout result`.
      * @private
      */
-    private drawLayoutResult(result : PdfStringLayoutResult, font : PdfFont, format : PdfStringFormat, layoutRectangle : RectangleF) : void {/* tslint:enable */
+    private drawLayoutResult(result : PdfStringLayoutResult, font : PdfFont, format : PdfStringFormat, layoutRectangle : RectangleF) : void {
         let vAlignShift : number = this.getTextVerticalAlignShift(result.actualSize.height, layoutRectangle.height, format);
         if (vAlignShift !== 0) {
             this.pdfStreamWriter.startNextLine(0, vAlignShift);
@@ -1238,9 +1372,7 @@ export class PdfGraphics {
     /**
      * Draws array of unicode tokens.
      */
-    /* tslint:disable */
     private drawUnicodeBlocks(blocks : string[], words : string[], font : PdfTrueTypeFont, format : PdfStringFormat, wordSpacing : number) : void {
-        /* tslint:enable */
         if (blocks == null) {
             throw new Error('Argument Null Exception : blocks');
         }
@@ -1398,16 +1530,14 @@ export class PdfGraphics {
         let whitespacesCount : number = StringTokenizer.getCharsCount(line, symbols);
         let hasSpaces : boolean = (whitespacesCount > 0 && line[0] !== StringTokenizer.whiteSpace);
         let goodLineBreakStyle : boolean = ((lineInfo.lineType & LineType.LayoutBreak) > 0);
-        /* tslint:disable */
-        let shouldJustify : boolean = (justifyStyle && goodWidth && hasSpaces && (goodLineBreakStyle || format.alignment === PdfTextAlignment.Justify));/* tslint:enable */
+        let shouldJustify : boolean = (justifyStyle && goodWidth && hasSpaces && (goodLineBreakStyle || format.alignment === PdfTextAlignment.Justify));
         return shouldJustify;
     }
-    /* tslint:disable */
     /**
      * Emulates `Underline, Strikeout` of the text if needed.
      * @private
      */
-    private underlineStrikeoutText(pen : PdfPen, brush : PdfBrush, result : PdfStringLayoutResult, font : PdfFont, layoutRectangle : RectangleF, format : PdfStringFormat) : void {/* tslint:enable */
+    private underlineStrikeoutText(pen : PdfPen, brush : PdfBrush, result : PdfStringLayoutResult, font : PdfFont, layoutRectangle : RectangleF, format : PdfStringFormat) : void {
         if (font.underline || font.strikeout) {
             // Calculate line width.
             let linePen : PdfPen = this.createUnderlineStikeoutPen(pen, brush, font, format);
@@ -1427,9 +1557,7 @@ export class PdfGraphics {
                     let lineIndent : number = this.getLineIndent(lineInfo, format, layoutRectangle, (i === 0));
                     hShift += (!this.rightToLeft(format)) ? lineIndent : 0;
                     let x1 : number = layoutRectangle.x + hShift;
-                    /* tslint:disable */
                     let x2 : number = (!this.shouldJustify(lineInfo, layoutRectangle.width, format)) ? x1 + lineWidth - lineIndent : x1 + layoutRectangle.width - lineIndent;
-                    /* tslint:enable */
                     if (font.underline) {
                         let y : number = underlineYOffset;
                         this.drawLine(linePen, x1, y, x2, y);
@@ -1565,7 +1693,6 @@ export class PdfGraphics {
             } else if (pen != null) {
                 let pdfPen : PdfPen = pen as PdfPen;
                 if (typeof this.pageLayer !== 'undefined' && this.pageLayer != null) {
-                    /* tslint:disable */
                     this.colorSpace = (this.pageLayer.page as PdfPage).document.colorSpace;
                     this.currentColorSpace = (this.pageLayer.page as PdfPage).document.colorSpace;
                 }
@@ -1602,9 +1729,7 @@ export class PdfGraphics {
     private penControl(pen : PdfPen, saveState : boolean) : void {
         if (pen != null) {
             this.currentPen = pen;
-            /* tslint:disable */
             pen.monitorChanges(this.currentPen, this.pdfStreamWriter, this.getResources, saveState, this.colorSpace, this.matrix.clone());
-            /* tslint:enable */
             this.currentPen = pen.clone();
         }
     }
@@ -1627,9 +1752,7 @@ export class PdfGraphics {
             }
             this.currentBrush = lgb;
             let br: PdfSolidBrush = (<PdfSolidBrush>(brush));
-            /* tslint:disable */
             b.monitorChanges(this.currentBrush, this.pdfStreamWriter, this.getResources, saveState, this.colorSpace);
-            /* tslint:enable */
             this.currentBrush = brush;
             brush = null;
         }
@@ -1641,14 +1764,12 @@ export class PdfGraphics {
     private fontControl(font : PdfFont, format : PdfStringFormat, saveState : boolean) : void {
         if (font != null) {
             let curSubSuper : PdfSubSuperScript = (format != null) ? format.subSuperScript : PdfSubSuperScript.None;
-            /* tslint:disable */
-            let prevSubSuper : PdfSubSuperScript = (this.currentStringFormat != null) ? this.currentStringFormat.subSuperScript : PdfSubSuperScript.None; /* tslint:enable */
+            let prevSubSuper : PdfSubSuperScript = (this.currentStringFormat != null) ? this.currentStringFormat.subSuperScript : PdfSubSuperScript.None; 
             if (saveState || font !== this.currentFont || curSubSuper !== prevSubSuper) {
                 let resources : PdfResources = this.getResources.getResources();
                 this.currentFont = font;
                 this.currentStringFormat = format;
                 let size : number = font.metrics.getSize(format);
-                /* tslint:disable */
                 this.isEmfTextScaled = false;
                 let fontName : PdfName = resources.getName(font);
                 this.pdfStreamWriter.setFont(font, fontName, size);
@@ -1804,7 +1925,6 @@ export class PdfGraphics {
         input.translate(x, this.updateY(y));
         return input;
     }
-    /* tslint:disable */
     /**
      * Applies the specified `scaling operation` to the transformation matrix of this Graphics by prepending it to the object's transformation matrix.
      * ```typescript
@@ -1828,7 +1948,6 @@ export class PdfGraphics {
      * @param scaleX Scale factor in the x direction.
      * @param scaleY Scale factor in the y direction.
      */
-    /* tslint:enable */
     public scaleTransform(scaleX : number, scaleY : number) : void {
         let matrix : PdfTransformationMatrix = new PdfTransformationMatrix();
         this.getScaleTransform(scaleX, scaleY, matrix);
@@ -1988,7 +2107,6 @@ export class PdfGraphics {
         this.pdfStreamWriter.restoreGraphicsState();
         return state;
     }
-    /* tslint:enable */
     /**
      * `Draws the specified path`, using its original physical size, at the location specified by a coordinate pair.
      * ```typescript
@@ -2019,6 +2137,9 @@ export class PdfGraphics {
      * @param path Draw path.
      */
     public drawPath(pen: PdfPen, brush: PdfBrush, path: PdfPath) : void {
+        this._drawPath(pen, brush, path.pathPoints, path.pathTypes, path.fillMode);
+    }
+    private _drawPath(pen: PdfPen, brush: PdfBrush, pathPoints: PointF[], pathTypes: number[], fillMode: PdfFillMode) : void {
         if (brush instanceof PdfTilingBrush) {
             this.bCSInitialized = false;
             (<PdfTilingBrush>brush).graphics.colorSpace = this.colorSpace;
@@ -2027,10 +2148,9 @@ export class PdfGraphics {
             (<PdfGradientBrush>brush).colorSpace = this.colorSpace;
         }
         this.stateControl(pen, brush, null);
-        this.buildUpPath(path.pathPoints, path.pathTypes);
-        this.drawPathHelper(pen, brush, path.fillMode, false);
+        this.buildUpPath(pathPoints, pathTypes);
+        this.drawPathHelper(pen, brush, fillMode, false);
     }
-    /* tslint:enable */
     //drawArc overloads
     /**
      * `Draws the specified arc`, using its original physical size, at the location specified by a coordinate pair.
@@ -2427,3 +2547,4 @@ class TransparencyData {
         this.blendMode = blendMode;
     }
 }
+/* tslint:enable */

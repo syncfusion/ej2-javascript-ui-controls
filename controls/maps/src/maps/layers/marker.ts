@@ -54,11 +54,21 @@ export class Marker {
                                             'left:' + maps.mapAreaRect.x + 'px;' +
                                             'height:' + maps.mapAreaRect.height + 'px;' +
                                             'width:' + maps.mapAreaRect.width + 'px;';
-        currentLayer.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
+        const allowAnimation: boolean = (currentLayer.animationDuration !== 0 || animationMode === 'Enable') || isNullOrUndefined(maps.zoomModule);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let translatePoint: any;
+        if (!maps.isTileMap) {
+            translatePoint = !isNullOrUndefined(maps.zoomModule) && maps.zoomSettings.zoomFactor > 1 ?
+            getZoomTranslate(maps, currentLayer, allowAnimation) :
+            getTranslate(maps, currentLayer, allowAnimation)
+        }
+        for (let markerIndex = 0; markerIndex < currentLayer.markerSettings.length; markerIndex++) {
+            let markerSettings: MarkerSettingsModel = currentLayer.markerSettings[markerIndex as number];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const markerData: any[] = <any[]>markerSettings.dataSource;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Array.prototype.forEach.call(markerData, (data: any, dataIndex: number) => {
+            for (let dataIndex: number = 0; dataIndex < markerData.length; dataIndex++) {
+                let data: any = markerData[dataIndex as number];
                 maps.markerNullCount = markerIndex > 0 && dataIndex === 0 ? 0 : maps.markerNullCount;
                 let eventArgs: IMarkerRenderingEventArgs = {
                     cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
@@ -83,16 +93,12 @@ export class Marker {
                         let location: Point = (maps.isTileMap) ? convertTileLatLongToPoint(
                             new MapLocation(lng, lat), factor, maps.tileTranslatePoint, true
                         ) : convertGeoToPoint(lat, lng, factor, currentLayer, maps);
-                        const animate: boolean = (currentLayer.animationDuration !== 0 || animationMode === 'Enable') || isNullOrUndefined(maps.zoomModule);
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const translate: any = (maps.isTileMap) ? (currentLayer.type === 'SubLayer' && isNullOrUndefined(maps.zoomModule)) ? location = convertTileLatLongToPoint(
-                            new MapLocation(lng, lat), maps.tileZoomLevel, maps.tileTranslatePoint, true
-                        ) : new Object() :
-                            !isNullOrUndefined(maps.zoomModule) && maps.zoomSettings.zoomFactor > 1 ?
-                                getZoomTranslate(maps, currentLayer, animate) :
-                                getTranslate(maps, currentLayer, animate);
-                        const scale: number = type === 'AddMarker' ? maps.scale : translate['scale'];
-                        const transPoint: Point = type === 'AddMarker' ? maps.translatePoint : translate['location'] as Point;
+                        if (maps.isTileMap) {
+                            translatePoint = (currentLayer.type === 'SubLayer' && isNullOrUndefined(maps.zoomModule)) ? location = convertTileLatLongToPoint(
+                                new MapLocation(lng, lat), maps.tileZoomLevel, maps.tileTranslatePoint, true) : new Object();
+                        }
+                        const scale: number = type === 'AddMarker' ? maps.scale : translatePoint['scale'];
+                        const transPoint: Point = type === 'AddMarker' ? maps.translatePoint : translatePoint['location'] as Point;
                         if (eventArgs.template &&  (!isNaN(location.x) && !isNaN(location.y))) {
                             markerTemplateCount++;
                             markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateEle, location, transPoint,
@@ -101,7 +107,7 @@ export class Marker {
                             (maps as any).renderReactTemplates();
                         } else if (!eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
                             markerCount++;
-                            marker(eventArgs, markerSettings, markerData, dataIndex,
+                            marker(eventArgs, markerSettings as MarkerSettings, markerData, dataIndex,
                                    location, transPoint, markerID, offset, scale, maps, this.markerSVGObject);
                         }
                     }
@@ -111,6 +117,7 @@ export class Marker {
                     maps.markerNullCount = (isNullOrUndefined(lng) || isNullOrUndefined(lat)) ?
                         maps.markerNullCount + 1 : maps.markerNullCount;
                     const markerDataLength: number = markerData.length - maps.markerNullCount;
+                    let isMarkersClustered: boolean = false;
                     if (this.markerSVGObject.childElementCount === (markerDataLength - markerTemplateCount - nullCount) && (type !== 'Template')) {
                         layerElement.appendChild(this.markerSVGObject);
                         if (currentLayer.markerClusterSettings.allowClustering) {
@@ -118,11 +125,11 @@ export class Marker {
                             maps.element.appendChild(maps.svgObject);
                             if ((currentLayer.layerType === 'OSM' || (currentLayer.urlTemplate.indexOf('openstreetmap') !== -1 && isNullOrUndefined(currentLayer.shapeData)))
                                 && maps.zoomSettings.enable) {
-                                clusterTemplate(currentLayer, this.markerSVGObject,
+                                isMarkersClustered = clusterTemplate(currentLayer, this.markerSVGObject,
                                                 maps, layerIndex, this.markerSVGObject, layerElement, true, false);
                                 layerElement.appendChild(this.markerSVGObject);
                             } else {
-                                clusterTemplate(currentLayer, this.markerSVGObject,
+                                isMarkersClustered = clusterTemplate(currentLayer, this.markerSVGObject,
                                                 maps, layerIndex, this.markerSVGObject, layerElement, true, false);
                             }
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -132,7 +139,7 @@ export class Marker {
                     if (markerTemplateEle.childElementCount === (markerDataLength - markerCount - nullCount) && getElementByID(maps.element.id + '_Secondary_Element')) {
                         getElementByID(maps.element.id + '_Secondary_Element').appendChild(markerTemplateEle);
                         if (maps.checkInitialRender) {
-                            if (currentLayer.markerClusterSettings.allowClustering) {
+                            if (currentLayer.markerClusterSettings.allowClustering && !isMarkersClustered) {
                                 clusterTemplate(currentLayer, markerTemplateEle, maps,
                                                 layerIndex, this.markerSVGObject, layerElement, false, false);
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -141,8 +148,8 @@ export class Marker {
                         }
                     }
                 });
-            });
-        });
+            }
+        }
     }
     /**
      * To find zoom level for individual layers like India, USA.

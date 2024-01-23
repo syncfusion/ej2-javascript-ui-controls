@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 24.1.47 (2024-01-23)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#F186081` - With virtualization, the pivot table will now be properly displayed when using the mouse wheel to scroll.
+- `#I186080` - When "DataCompression" is enabled in the Pivot table, the date formatting will now be properly maintained.
+
 ## 24.1.46 (2024-01-17)
 
 ### PivotTable

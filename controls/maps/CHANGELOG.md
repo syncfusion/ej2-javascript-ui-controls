@@ -8,7 +8,15 @@
 
 ## [Unreleased]
 
-## 24.1.46 (2024-01-17)
+## 24.1.47 (2024-01-23)
+
+### Maps
+
+#### New Features
+
+- `#I524572` - The threshold limit for rendering the markers and marker clusters has now been increased, with improved performance to a decent extent. Nearly 6,000 markers can now be rendered and clustered, with enhanced rendering, zooming, and panning functionalities.
+
+## 24.1.41 (2023-12-18)
 
 ### Maps
 

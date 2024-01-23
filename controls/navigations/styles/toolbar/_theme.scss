@@ -55,6 +55,10 @@
   
           .e-tbar-btn-text {
             color: $tbar-btn-text-focus-color;
+            
+            @if $skin-name == 'bootstrap5' {
+              color: $tbar-btn-icons-focus-color;
+            }
           }
         }
   
@@ -68,6 +72,10 @@
 
           .e-icons {
             color: $tbar-btn-icons-focus-color;
+            
+            @if $skin-name == 'bootstrap5' {
+              color: $tbar-btn-text-focus-color;
+            }
           }
 
           .e-tbar-btn-text {

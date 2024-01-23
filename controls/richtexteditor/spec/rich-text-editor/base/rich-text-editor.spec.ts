@@ -6907,3 +6907,29 @@ describe('849074 - List not cleared properly after selection of the whole list a
         destroy(rteObj);
     });
 });
+
+describe('865021 - in smart suggestions Tab key press on the list is not working properly.', () => {
+    let elem: string = "<div class=\"e-content e-lib e-keyboard e-mention\" id=\"smartSuggestionRTE_rte-edit-view\" contenteditable=\"true\" tabindex=\"0\" role=\"textbox\" aria-label=\"mention\"><ol><li>Testing 1</li><li>Testing 2</li><li>Testing 3</li></ol></div>";
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: elem,
+        });
+        rteEle = rteObj.element;
+    });
+    it(' in smart suggestions Tab key press on the list is not working properly', () => {
+        let contentEditableDiv: HTMLElement = document.getElementById('smartSuggestionRTE_rte-edit-view');
+        let range = document.createRange();
+        let selection = window.getSelection();
+        range.setStart((contentEditableDiv as HTMLElement).firstChild.firstChild, 0);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: function () { }, key: 'Tab', keyCode: 9, stopPropagation: function () { }, shiftKey: false, which: 9 };
+        (rteObj as RichTextEditor).keyDown(keyBoardEvent);
+        expect(contentEditableDiv.outerHTML === '<div class="e-content e-lib e-keyboard e-mention" id="smartSuggestionRTE_rte-edit-view" contenteditable="true" tabindex="0" role="textbox" aria-label="mention"><ol><li style="list-style-type: none;"><ol><li>Testing 1</li></ol></li><li>Testing 2</li><li>Testing 3</li></ol></div>').toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

@@ -1152,16 +1152,26 @@ export class DiagramEventHandler {
             const swimLaneobj: NodeModel = {
                 id: randomId(), width: selectedNode.width, height: selectedNode.height, addInfo: selectedNode.addInfo,
                 shape: {
-                    type: 'SwimLane', header: {
-                        annotation: { content: 'Header' }, height: 50, style: actualShape.lanes[0].header.style
+                    type: 'SwimLane', 
+                    header: {
+                        //864525-Issue in updating swimlane header properties dynamically 
+                        annotation: { 
+                            content: actualShape.header === undefined ? "Header" : actualShape.header.annotation.content,
+                            style: actualShape.header === undefined ? {} : actualShape.header.annotation.style
+                        }, 
+                        height: 50, 
+                        style: actualShape.header? actualShape.header.style:actualShape.lanes[0].header.style
                     },
                     phases: [{ id: randomId(),
+                        //864555-Issue in updating swimlane phase properties dynamically 
                         header: {
                             annotation: {
-                                    content: actualShape.phases === undefined ? "Phase" : actualShape.phases[0].header.annotation.content,
-                                    style: actualShape.phases === undefined ? {} : actualShape.phases[0].header.annotation.style
-                                    },
-                                }
+                                content: actualShape.phases === undefined ? "Phase" : actualShape.phases[0].header === undefined ? "Phase" : actualShape.phases[0].header.annotation.content,
+                                style: actualShape.phases === undefined ? {} : actualShape.phases[0].header === undefined ? {} : actualShape.phases[0].header.annotation.style
+                            },
+                            style: actualShape.phases === undefined ? {} : actualShape.phases[0].header === undefined ? {} : actualShape.phases[0].header.style
+                        },                               
+                        style: actualShape.phases === undefined ? {} : actualShape.phases[0].style,
                         }],
                     lanes: [{
                         id: randomId(), height: selectedNode.height, width: selectedNode.width, style: actualShape.lanes[0].style,

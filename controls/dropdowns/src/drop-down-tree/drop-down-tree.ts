@@ -1013,7 +1013,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             const popupDiv: Element = select('#' + this.element.id + '_options', document);
             detach(popupDiv ? popupDiv : isTree.parentElement);
         }
-        this.ensureAutoCheck();
         if (this.element.tagName === 'INPUT') {
             this.inputEle = this.element as HTMLInputElement;
             if (isNOU(this.inputEle.getAttribute('role'))) {
@@ -1103,12 +1102,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.renderComplete();
     }
 
-    private ensureAutoCheck(): void {
-        if (this.allowFiltering && this.treeSettings.autoCheck) {
-            this.setProperties({ treeSettings: { autoCheck: false } }, true);
-        }
-    }
-
     private hideCheckAll(flag: boolean): void {
         const checkAllEle : HTMLElement = !isNOU(this.popupEle) ? (this.popupEle.querySelector('.' + CHECKALLPARENT) as HTMLElement) : null;
         if (!isNOU(checkAllEle)) {
@@ -1146,9 +1139,22 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
+    private isChildObject() {
+        if (typeof this.treeObj.fields.child === 'object') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private filterHandler(value: string, event: Event): void {
         this.isFromFilterChange = true;
-        if (!this.isFilteredData) { this.treeData = this.treeObj.getTreeData(); }
+        if (!this.isFilteredData) {
+            if (this.isRemoteData) {
+                this.treeObj.expandedNodes = [];
+            }
+            this.treeData = this.treeObj.getTreeData();
+        }
         const filterFields: FieldsModel = this.cloneFields(this.fields);
         const args: DdtFilteringEventArgs = {
             cancel: false,
@@ -1173,6 +1179,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                         fields = this.selfReferencefilter(value, args.fields);
                     } else {
                         if (this.fields.dataSource instanceof DataManager) {
+                            fields = this.remoteDataFilter(value, args.fields);
+                            fields.child = this.fields.child;
+                            this.treeObj.fields = this.getTreeFields(args.fields);
+                            this.treeObj.dataBind();
                             flag = true;
                         } else {
                             fields = this.nestedFilter(value, args.fields);
@@ -1181,6 +1191,14 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 }
                 this.hideCheckAll(this.isFilteredData);
                 if (flag) { return; }
+                if (this.isRemoteData) {
+                    if (this.isChildObject()) {
+                       fields.child = this.fields.child;
+                    } 
+                    else {
+                        fields = args.fields;
+                    }
+                }
                 this.treeObj.fields = this.getTreeFields(fields);
                 this.treeObj.dataBind();
                 if (this.hasTemplate && (this as any).portals && (this.treeObj as any).portals) {
@@ -1195,6 +1213,37 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 }
             }
         });
+    }
+
+    private remoteDataFilter(value: string, filteredFields: FieldsModel): FieldsModel {
+        filteredFields.dataSource = this.treeData.map(item => 
+            this.remoteChildFilter(value, item)).filter(filteredChild => 
+                !isNOU(filteredChild));
+        return filteredFields;
+    }
+
+    private remoteChildFilter(value: string, node: { [key: string]: Object }, isChild?: boolean, isChildFiltering?: boolean): { [key: string]: Object } {
+        let children:any = this.isChildObject() ? node['child'] : node[this.fields.child as string];
+        if (isNOU(children)) {
+            return (this.isMatchedNode(value, node, isChild, isChildFiltering)) ? node : null;
+        }
+        let matchedChildren = [];
+        for (let i = 0; i < children.length; i++) {
+            let filteredChild = this.remoteChildFilter(value, children[i as number], true, true);
+            if (!isNOU(filteredChild)) {
+                matchedChildren.push(filteredChild);
+            }
+        }
+        let filteredItems: any = (<any>Object).assign({}, node);
+        isChildFiltering = false;
+        if (matchedChildren.length !== 0) {
+            filteredItems.child = matchedChildren;
+        }
+        else {
+            filteredItems.child = null;
+            filteredItems = (this.isMatchedNode(value, filteredItems)) ? filteredItems : null;
+        }
+        return filteredItems; 
     }
 
     private nestedFilter(value: string, filteredFields: FieldsModel): FieldsModel {
@@ -1274,8 +1323,17 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     // eslint-disable-next-line
-    private isMatchedNode(value: string, node: { [key: string]: Object }): boolean {
-        let checkValue: string = node[this.fields.text] as string;
+    private isMatchedNode(value: string, node: { [key: string]: Object }, isChild?: boolean, isChildFiltering?: boolean): boolean {
+        let checkValue: string;
+        let isObjectValue = isChild && isChildFiltering && this.isChildObject();
+        checkValue = isObjectValue ? node[(this.fields.child as FieldsModel).text] as string : node[this.fields.text] as string;
+        if (!checkValue) {
+            let tempChild: any = this.fields.child;
+            while (!node[tempChild.text]) {
+                tempChild = tempChild.child;
+            }
+            checkValue = node[tempChild.text] as string;
+        }
         if (this.ignoreCase) {
             checkValue = checkValue.toLowerCase();
             value = value.toLowerCase();
@@ -2237,7 +2295,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (this.isFilteredData) {
             this.filterObj.value = '';
             this.treeObj.fields = this.getTreeFields(this.fields);
-            if ((this as any).isReact) this.refresh();
             this.isFilterRestore = true;
             this.isFilteredData = false;
             this.hideCheckAll(false);
@@ -2257,11 +2314,17 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     this.createPopup(this.popupEle);
                 } else {
                     this.popupEle = this.popupObj.element;
+                    if ((this as any).isReact && this.isFilterRestore) {
+                        this.treeObj.refresh();
+                        this.isFilteredData = true;
+                        this.popupEle.removeChild(this.filterContainer)
+                    }
                 }
             } else {
                 isCancelled = true;
             }
-            if (this.isFirstRender && !isCancelled) {
+            if (this.isFirstRender && !isCancelled || this.isFilteredData) {
+                this.isFilteredData = false;
                 prepend([this.popupDiv], this.popupEle);
                 removeClass([this.popupDiv], DDTHIDEICON);
                 if (this.allowFiltering) { this.renderFilter(); }
@@ -2617,6 +2680,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.oldValue = this.value ? this.value.slice() : this.value;
             if (this.value === null) {
                 this.setProperties({ value: [] }, true);
+            }
+            
+            if (args.node.classList.contains("e-active")) {
+                this.hidePopup();
             }
         }
     }
@@ -3258,7 +3325,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private updateTreeSettings(prop: DropDownTreeModel): void {
         const value: string = Object.keys(prop.treeSettings)[0];
         if (value === 'autoCheck') {
-            this.ensureAutoCheck();
             this.treeObj.autoCheck = this.treeSettings.autoCheck;
         } else if (value === 'loadOnDemand') {
             this.treeObj.loadOnDemand = this.treeSettings.loadOnDemand;
@@ -3381,7 +3447,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.destroyFilter();
             }
         }
-        this.ensureAutoCheck();
     }
 
     private updateFilterPlaceHolder(): void {

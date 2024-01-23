@@ -453,5 +453,62 @@ describe('Merge ->', () => {
                 }, 50)
             });
         });
+        describe('I866383 - Unmerge public method does not work while setting showRibbon as false ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    showRibbon: false, sheets: [{
+                        ranges: [{ dataSource: defaultData }]
+                    }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Unmerge public method with MergeAll', (done: Function) => {
+                helper.invoke('merge', ['A1:C2', 'All']);
+                let spreadsheet: Spreadsheet = helper.getInstance();
+                let cell: CellModel = spreadsheet.sheets[0].rows[0].cells[0];
+                expect(cell.rowSpan).toBe(2);
+                expect(cell.colSpan).toBe(3);
+                expect(spreadsheet.sheets[0].rows[0].cells[1].colSpan).toBe(-1);
+                expect(spreadsheet.sheets[0].rows[1].cells[2].colSpan).toBe(-2);
+                expect(spreadsheet.sheets[0].rows[1].cells[2].rowSpan).toBe(-1);
+                helper.invoke('unMerge', ['A1:C2']);
+                expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('Item Name');
+                expect(spreadsheet.sheets[0].rows[0].cells[0].colSpan).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].rowSpan).toBeUndefined();
+                done();
+            });
+            it('Unmerge public method with Merge Horizontal', (done: Function) => {
+                helper.invoke('merge', ['D1:E2', 'Horizontally']);
+                let spreadsheet: Spreadsheet = helper.getInstance();
+                let cell: CellModel = spreadsheet.sheets[0].rows[0].cells[3];
+                expect(cell.rowSpan).toBeUndefined();
+                expect(cell.colSpan).toBe(2);
+                expect(spreadsheet.sheets[0].rows[0].cells[4].colSpan).toBe(-1);
+                expect(spreadsheet.sheets[0].rows[1].cells[3].colSpan).toBe(2);
+                expect(spreadsheet.sheets[0].rows[1].cells[4].colSpan).toBe(-1);
+                helper.invoke('unMerge', ['D1:E2']);
+                expect(spreadsheet.sheets[0].rows[0].cells[3].value).toBe('Quantity');
+                expect(spreadsheet.sheets[0].rows[0].cells[3].colSpan).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[0].cells[4].rowSpan).toBeUndefined();
+                done();
+            });
+            it('Unmerge public method with Merge Vertical', (done: Function) => {
+                helper.invoke('merge', ['F1:G2', 'Vertically']);
+                let spreadsheet: Spreadsheet = helper.getInstance();
+                let cell: CellModel = spreadsheet.sheets[0].rows[0].cells[5];
+                expect(cell.rowSpan).toBe(2);
+                expect(cell.colSpan).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[0].cells[6].rowSpan).toBe(2);
+                expect(spreadsheet.sheets[0].rows[1].cells[5].rowSpan).toBe(-1);
+                expect(spreadsheet.sheets[0].rows[1].cells[6].rowSpan).toBe(-1);
+                helper.invoke('unMerge', ['F1:G2']);
+                expect(spreadsheet.sheets[0].rows[0].cells[5].value).toBe('Amount');
+                expect(spreadsheet.sheets[0].rows[0].cells[5].colSpan).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[0].cells[5].rowSpan).toBeUndefined();
+                done();
+            });
+        });
     });
 });

@@ -628,7 +628,7 @@ export class TaskbarEdit extends DateProcessor {
             rowElement = this.parent.getRowByIndex(index).children;
         }
         else {
-            rowElement = this.parent.getRowByIndex(parseInt(target.getAttribute('data-rowindex'))).children;;
+            rowElement = this.parent.getRowByIndex(parseInt(target.getAttribute('data-rowindex'))).children;
         }
         if (rowElement) {
             if (this.parent.rowDragAndDropModule['dropPosition'] === 'above') {
@@ -891,7 +891,7 @@ export class TaskbarEdit extends DateProcessor {
                         let rowIndex: number = getValue('rowIndex', rowElement);
                         let droppedTreeGridRecord: IGanttData = this.parent.flatData[rowIndex as number];
                         let isValid: boolean = true;
-                        if(this.parent.viewType === 'ResourceView' && !this.taskBarEditRecord.hasChildRecords && !droppedTreeGridRecord.hasChildRecords && this.taskBarEditRecord.parentItem.taskId === droppedTreeGridRecord.parentItem.taskId) {
+                        if(this.parent.viewType === 'ResourceView' && !this.taskBarEditRecord.hasChildRecords && !droppedTreeGridRecord.hasChildRecords && !isNullOrUndefined(droppedTreeGridRecord.parentItem) && this.taskBarEditRecord.parentItem.taskId === droppedTreeGridRecord.parentItem.taskId) {
                             isValid = false;
                         }
                         if (droppedTreeGridRecord) {
@@ -2313,7 +2313,7 @@ export class TaskbarEdit extends DateProcessor {
                                 droppedRecord.childRecords.length == 0)) ? 'child' : this.parent.rowDragAndDropModule['dropPosition'];
                         }
                         if (this.parent.rowDragAndDropModule) {
-                            if (this.parent.viewType === 'ResourceView' && (position === 'child' && !droppedRecord.hasChildRecords)) {
+                            if (this.parent.viewType === 'ResourceView' && (position === 'child' && !droppedRecord.hasChildRecords) && !isNullOrUndefined(droppedRecord.parentItem)) {
                                 position = 'Invalid';
                                 this.parent.rowDragAndDropModule['dropPosition'] = 'Invalid';
                             }

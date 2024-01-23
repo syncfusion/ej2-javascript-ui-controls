@@ -1793,7 +1793,8 @@ export class Render {
             let headerCnt: number = this.engine.headerContent.length;
             const headerSplit: Object[] = [];
             const splitPos: Object[] = [];
-            const colWidth: number = this.calculateColWidth(this.engine.pivotValues ? this.engine.pivotValues[0].length : 0); // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const colWidth: number = this.calculateColWidth(this.engine.pivotValues && this.engine.pivotValues[0] ?
+                this.engine.pivotValues[0].length : 0); // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const measureFlag: boolean = this.parent.dataType === 'olap' && !isNullOrUndefined((this.engine as OlapEngine).colMeasurePos) && ((this.engine as OlapEngine) as any).colDepth - 1 === this.parent.olapEngineModule.colMeasurePos;
             do {
                 const columnModel: ColumnModel[] = [];

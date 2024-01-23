@@ -265,7 +265,7 @@ export class HtmlEditor {
                 } else {
                     this.parent.notify(events.enterHandler, { args: (e.args as KeyboardEvent) });
                     const newRange: Range = this.parent.getRange();
-                    if (!isNOU(newRange.startContainer) && newRange.startContainer === this.parent.inputElement.lastChild && newRange.startContainer.nodeName !== '#text') {
+                    if (!isNOU(newRange.startContainer) && newRange.startContainer === this.parent.inputElement.lastChild && newRange.startContainer.nodeName !== '#text' && this.parent.height !== 'auto') {
                         (newRange.startContainer as Element).scrollIntoView({ block: "end", inline: "nearest" });
                     }
                 }

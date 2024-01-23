@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.47 (2024-01-23)
+
+### Grid
+
+#### Bug fixes
+
+- `#I539223` - The issue with `ellipsisWithTooltip` not working properly in the Adaptive view has been resolved.
+
 ## 24.1.46 (2024-01-17)
 
 ### Grid

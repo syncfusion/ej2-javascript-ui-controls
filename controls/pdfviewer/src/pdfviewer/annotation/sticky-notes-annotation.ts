@@ -2428,7 +2428,7 @@ export class StickyNotesAnnotation {
         } else {
             currentAnnotation = this.pdfViewer.selectedItems.annotations[0];
         }
-        if(isNullOrUndefined(currentAnnotation) && annotationName){
+        if (isNullOrUndefined(currentAnnotation) && annotationName || (!isNullOrUndefined(currentAnnotation) && currentAnnotation.annotName !== annotationName)) {
             currentAnnotation = this.pdfViewer.annotationCollection.filter(function (annot) { return annot.annotationId === annotationName; })[0];
         }
         if (annotationName && (currentAnnotation.annotName !== annotationName)) {
@@ -2440,6 +2440,7 @@ export class StickyNotesAnnotation {
             }
         }
         if (currentAnnotation) {
+            currentAnnotation.annotName = !isNullOrUndefined(currentAnnotation.annotName) ? currentAnnotation.annotName : currentAnnotation.annotationId;
             // eslint-disable-next-line
             let commentsDiv: HTMLElement = document.getElementById(currentAnnotation.annotName);
             if (commentsDiv) {

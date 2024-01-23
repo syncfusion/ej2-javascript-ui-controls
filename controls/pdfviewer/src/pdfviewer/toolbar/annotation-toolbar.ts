@@ -1593,6 +1593,7 @@ export class AnnotationToolbar {
                 items.push({ separator: true });
             }
             items.push({ text: this.pdfViewer.localeObj.getConstant('Custom Stamp'), label: 'Custom Stamp', items: [] });
+            this.pdfViewerBase.customStampCollection = this.pdfViewer.customStampSettings.customStamps as any ? this.pdfViewer.customStampSettings.customStamps as any : []; 
         }
         this.stampMenu = [
             {

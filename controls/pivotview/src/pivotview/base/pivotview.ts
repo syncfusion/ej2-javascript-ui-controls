@@ -3654,8 +3654,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.tooltip.destroy();
                 }
                 if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0 && this.clonedDataSet) {
-                    const dataSet: IDataSet[] | string[][] = this.dataSourceSettings.type === 'CSV' ? PivotUtil.getClonedCSVData(this.clonedDataSet as string[][]) as string[][]
-						: PivotUtil.getClonedData(this.clonedDataSet as IDataSet[]) as IDataSet[];
+                    const dataSet: IDataSet[] | string[][] = this.dataSourceSettings.type === 'CSV' ?
+                        PivotUtil.getClonedCSVData(this.clonedDataSet as string[][]) as string[][] :
+                        PivotUtil.getClonedData(this.clonedDataSet as IDataSet[]) as IDataSet[];
                     this.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);
                 }
                 super.refresh();
@@ -4017,8 +4018,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             pivot.lastSortInfo = {};
                         }
                     } else {
-                        pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.onHeadersSort
-                            ? pivot.getHeaderSortInfo.bind(pivot) : undefined);
+                        PivotUtil.renderOlapEngine(pivot, customProperties);
                     }
                     pivot.allowServerDataBinding = false;
                     pivot.setProperties({ pivotValues: pivot.olapEngineModule.pivotValues }, true);
@@ -4768,15 +4768,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                     if (this.grid.height !== 'auto') {
                         (this.grid.element.querySelector('.' + cls.VIRTUALSCROLL_DIV) as HTMLElement).style.width = newScrollWidth + horiScrollHeight + 'px';
-                        if (this.grid.element.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV)) {
-                            if (mCnt.parentElement.scrollHeight !== mCnt.scrollHeight) {
-                                mCnt.style.overflowY = 'hidden';
-                            } else {
-                                mCnt.style.overflowY = '';
-                            }
-                        }
                     } else {
                         (this.grid.element.querySelector('.' + cls.VIRTUALSCROLL_DIV) as HTMLElement).style.width = newScrollWidth + 'px';
+                    }
+                }
+                if (this.grid.element.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV)) {
+                    if (mCnt.parentElement.scrollHeight !== mCnt.scrollHeight) {
+                        mCnt.style.overflowY = 'hidden';
+                    } else {
+                        mCnt.style.overflowY = '';
                     }
                 }
                 const colValues: number = this.dataType === 'pivot' ? (this.dataSourceSettings.valueAxis === 'column' ? this.dataSourceSettings.values.length : 1) : 1;
@@ -5510,7 +5510,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (this.grid) {
                 const colLength: number = (this.dataType === 'olap' && this.olapEngineModule.pivotValues.length > 0) ?
                     this.olapEngineModule.pivotValues[0].length : (this.dataSourceSettings.values.length > 0 &&
-                        this.engineModule.pivotValues.length > 0 ? this.engineModule.pivotValues[0].length : 2);
+                        this.engineModule && this.engineModule.pivotValues.length > 0 ? this.engineModule.pivotValues[0].length : 2);
                 const colWidth: number = this.renderModule.calculateColWidth(colLength);
                 this.grid.width = this.renderModule.calculateGridWidth();
                 this.renderModule.calculateGridHeight(true);
@@ -5919,8 +5919,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             } else if (this.dataSourceSettings.providerType === 'SSAS' && this.dataType === 'olap') {
                 customProperties.savedFieldList = this.olapEngineModule.fieldList;
                 (customProperties as IOlapCustomProperties).savedFieldListData = this.olapEngineModule.fieldListData;
-                this.olapEngineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties, this.onHeadersSort
-                    ? this.getHeaderSortInfo.bind(this) : undefined);
+                PivotUtil.renderOlapEngine(this, customProperties);
                 this.allowServerDataBinding = false;
                 this.setProperties({ pivotValues: this.olapEngineModule.pivotValues }, true);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -6264,12 +6263,18 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
-    /** @hidden */
-
+    /**
+     * It used to update the group data.
+     *
+     * @param {IGroupSettings[]} newGroupSettings - It contains the new group settings.
+     * @param {GroupType} updateGroupType - It contains the updated group type.
+     * @returns {void}
+     * @hidden
+     */
     public updateGroupingReport(newGroupSettings: IGroupSettings[], updateGroupType: GroupType): void {
         if (!this.clonedDataSet && !this.clonedReport) {
             const dataSet: IDataSet[] | string[][] = this.engineModule.data as IDataSet[] | string[][];
-            this.clonedDataSet = this.dataSourceSettings.type === 'CSV' ? PivotUtil.getClonedCSVData(dataSet as string[][]) as string[][] :PivotUtil.getClonedData(dataSet as IDataSet[]) as IDataSet[];
+            this.clonedDataSet = this.dataSourceSettings.type === 'CSV' ? PivotUtil.getClonedCSVData(dataSet as string[][]) as string[][] : PivotUtil.getClonedData(dataSet as IDataSet[]) as IDataSet[];
             const dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
             dataSourceSettings.dataSource = [];
             this.clonedReport = this.clonedReport ? this.clonedReport : dataSourceSettings;

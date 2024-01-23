@@ -863,8 +863,8 @@ export class HelperMethods {
         // From xml spec valid chars:
         // #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
         // any Unicode character, excluding the surrogate blocks, FFFE, and FFFF.
-        // and used unicodes in DocumentEditor \f | \v | \r | String.fromCharCode(14) | %02 | %03 | %04
-        const invalidXMLChars = /[^\x09\x0A\x0C\x0D\v\f\r\u000E\u0002\u0003\u0004\x20-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/ug;
+        // and used unicodes in DocumentEditor \f | \v | \r | \u000E
+        const invalidXMLChars = /[^\x09\x0A\x0C\x0D\v\f\r\u000E\x20-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/ug;
         return text.replace(invalidXMLChars, '');
     }
     public static reverseString(text: string): string {

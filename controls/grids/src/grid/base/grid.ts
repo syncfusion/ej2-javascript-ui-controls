@@ -4782,6 +4782,24 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     const headerCellRenderer: HeaderCellRenderer = new HeaderCellRenderer(this, this.serviceLocator);
                     const td: Element = parentsUntil(this.element.querySelectorAll('[e-mappinguid=' + columnUid + ']')[0], 'e-templatecell');
                     headerCellRenderer.refresh(cell, td);
+                    const cols: SortDescriptorModel[] = this.sortSettings.columns;
+                    const columnIndex: number = cols.findIndex(function (col: SortDescriptorModel) { return col.field === cell.column.field; });
+                    if (columnIndex !== -1) {
+                        const header: Element = this.getColumnHeaderByField(cell.column.field);
+                        this.ariaService.setSort(<HTMLElement>header,
+                             (cols[parseInt(columnIndex.toString(), 10)].direction).toLowerCase() as SortDirection);
+                        if (cols.length > 1) {
+                            header.querySelector('.e-headercelldiv').insertBefore(
+                                this.createElement('span', { className: 'e-sortnumber', innerHTML: (columnIndex + 1).toString() }),
+                                header.querySelector('.e-headertext'));
+                        }
+                        const filterElement: Element = header.querySelector('.e-sortfilterdiv');
+                        if (cols[parseInt(columnIndex.toString(), 10)].direction === 'Ascending') {
+                            classList(filterElement, ['e-ascending', 'e-icon-ascending'], []);
+                        } else {
+                            classList(filterElement, ['e-descending', 'e-icon-descending'], []);
+                        }
+                    }
                 }
             }
         }
@@ -6918,7 +6936,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private getTooltipStatus(element: HTMLElement): boolean {
         const headerTable: Element = this.getHeaderTable();
-        const headerDivTag: string = 'e-gridheader';
+        const headerDivTag: string = this.enableAdaptiveUI && this.rowRenderingMode === 'Vertical' ? 'e-gridcontent' : 'e-gridheader';
         const htable: HTMLDivElement = this.createTable(headerTable, headerDivTag, 'header');
         const ctable: HTMLDivElement = this.createTable(headerTable, headerDivTag, 'content');
         const table: HTMLDivElement = element.classList.contains('e-headercell') ? htable : ctable;
@@ -6928,7 +6946,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const width: number = table.querySelector(ele).getBoundingClientRect().width;
         document.body.removeChild(htable);
         document.body.removeChild(ctable);
-        if (width > element.getBoundingClientRect().width && !element.classList.contains('e-editedbatchcell')) {
+        if ((width > element.getBoundingClientRect().width && !element.classList.contains('e-editedbatchcell')) ||
+            (this.enableAdaptiveUI && this.rowRenderingMode === 'Vertical' &&
+                width > (element.getBoundingClientRect().width * 0.55) - (this.height !== 'auto' ? 16 : 0))) {
             return true;
         }
         return false;

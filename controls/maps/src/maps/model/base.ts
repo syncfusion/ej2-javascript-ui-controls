@@ -566,6 +566,15 @@ export class MarkerClusterSettings extends ChildProperty<MarkerClusterSettings> 
     @Property(false)
     public allowClustering: boolean;
     /**
+     * Enables or disables intense marker clustering for improved accuracy.
+     * The default value is true, and clustering logic will be executed twice for improved accuracy.
+     * If set to false, the clustering logic will only be executed once, increasing performance while maintaining decent accuracy.
+     * 
+     * @default true
+     */
+    @Property(true)
+    public allowDeepClustering: boolean;
+    /**
      * Gets or sets the options for customizing the style properties of the border of the clusters in maps.
      */
     @Complex<BorderModel>({ color: 'transparent', width: 1 }, Border)

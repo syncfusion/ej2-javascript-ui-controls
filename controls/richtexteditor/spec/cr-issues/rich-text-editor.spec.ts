@@ -3294,4 +3294,37 @@ describe('RTE CR issues', () => {
             expect(rteObj.inputElement.innerHTML).toEqual('<div id="div1"><p id="paragraph1">second rtec</p></div>');
         });
     });
+    describe('865055 - ValueChange event not triggered when we edit in Code view in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let previousValue: any;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode', 'Bold']
+                },
+                autoSaveOnIdle: true,
+            });
+        });
+        it('Value change event triger when editing in the Code view', (done) => {
+            rteObj.value = "Rich Text Editor";
+            rteObj.saveInterval = 100;
+            rteObj.dataBind();
+            (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as any).click();
+            rteObj.value = "Rich Text Editor componnent";
+            previousValue = rteObj.value;
+            rteObj.dataBind();
+            setTimeout(function () {
+                rteObj.value = "Rich Text Editor";
+                setTimeout(function () {
+                    rteObj.value = "Rich Text Editor value";
+                    expect(previousValue != rteObj.value).toBe(true);
+                    done();
+                }, 200);
+            }, 200);
+        });
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
 });

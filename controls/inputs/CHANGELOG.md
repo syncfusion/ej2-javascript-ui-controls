@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.1.47 (2024-01-23)
+
+### Signature
+
+#### Bug Fixes
+
+- `#F86282` - Issue with "The `getSignature` method data is not cleared after using clear method of signature" has been resolved.
+
 ## 24.1.45 (2024-01-09)
 
 ### Signature

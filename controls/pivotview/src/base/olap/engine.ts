@@ -150,6 +150,8 @@ export class OlapEngine {
     public gridJSON: string = '';
     /** @hidden */
     public namedSetsPosition: { [key: string]: { [key: number]: string } } = {};
+    /** @hidden */
+    public errorInfo: string | Error;
     private colDepth: number = 0;
     private totalCollection: ITotCollection[] = [];
     private parentObjCollection: IParentObjCollection = {};
@@ -3031,6 +3033,9 @@ export class OlapEngine {
             '</CATALOG_NAME><CUBE_NAME>' + args.cube + '</CUBE_NAME></RestrictionList></Restrictions><Properties><PropertyList><Catalog>' + args.catalog +
             '</Catalog> <LocaleIdentifier>' + connectionString.LCID + '</LocaleIdentifier>' + (args.roles ? '<Roles>' + args.roles + '</Roles>' : '') + '</PropertyList></Properties></Discover></Body></Envelope>';
         this.doAjaxPost('POST', connectionString.url, soapMessage, successMethod, customArgs);
+        if (this.errorInfo) {
+            throw this.errorInfo;
+        }
     }
     private getAxisFields(): void {
         this.rows = this.dataSourceSettings.rows ? this.dataSourceSettings.rows : [];
@@ -3122,7 +3127,7 @@ export class OlapEngine {
         let dataFields: IFieldOptions[] = extend([], this.rows, null, true) as IFieldOptions[];
         dataFields = dataFields.concat(this.columns);
         for (const filter of filterItems) {
-            if (filter.type === 'Include' && this.allowMemberFilter) {
+            if (filter.type === 'Include' && this.allowMemberFilter && this.fieldList[filter.name]) {
                 const members: IMembers = this.fieldList[filter.name].members;
                 const isMembersAvail: boolean = (members && Object.keys(members).length > 0);
                 this.fieldList[filter.name].actualFilter = [...filter.items];
@@ -3275,6 +3280,9 @@ export class OlapEngine {
         this.doAjaxPost(
             'POST', connectionString.url, xmla, this.drillThroughSuccess.bind(this),
             { dataSourceSettings: this.dataSourceSettings, action: 'drillThrough' });
+        if (this.errorInfo) {
+            throw this.errorInfo;
+        }
     }
 
     private drillThroughSuccess(xmlDoc: Document): void {
@@ -3358,6 +3366,9 @@ export class OlapEngine {
             this.fieldList[fieldName as string].currrentMembers = {};
         }
         this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, fieldName: fieldName, loadLevelMembers: loadLevelMember, action: 'fetchMembers' });
+        if (this.errorInfo) {
+            throw this.errorInfo;
+        }
     }
     public getChildMembers(dataSourceSettings: IDataOptions, memberUQName: string, fieldName: string): void {
         // dimProp = "dimension properties CHILDREN_CARDINALITY, MEMBER_TYPE";
@@ -3367,6 +3378,9 @@ export class OlapEngine {
         const xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
         const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
         this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, fieldName: fieldName, action: 'fetchChildMembers' });
+        if (this.errorInfo) {
+            throw this.errorInfo;
+        }
     }
     public getCalcChildMembers(dataSourceSettings: IDataOptions, memberUQName: string): void {
         this.calcChildMembers = [];
@@ -3376,6 +3390,9 @@ export class OlapEngine {
         const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url, dataSourceSettings.localeIdentifier);
         const xmla: string = this.getSoapMsg(dataSourceSettings, mdxQuery);
         this.doAjaxPost('POST', connectionString.url, xmla, this.generateMembers.bind(this), { dataSourceSettings: dataSourceSettings, action: 'fetchCalcChildMembers' });
+        if (this.errorInfo) {
+            throw this.errorInfo;
+        }
     }
     public getSearchMembers(dataSourceSettings: IDataOptions, fieldName: string, searchString: string, maxNodeLimit: number,
                             isAllFilterData?: boolean, levelCount?: number): void {
@@ -3398,6 +3415,9 @@ export class OlapEngine {
                 dataSourceSettings: dataSourceSettings,
                 fieldName: fieldName, action: 'fetchSearchMembers'
             });
+            if (this.errorInfo) {
+                throw this.errorInfo;
+            }
         } else {
             return;
         }
@@ -4137,10 +4157,24 @@ export class OlapEngine {
                     const parser: DOMParser = new DOMParser();
                     // parsing string type result as XML
                     const xmlDoc: Document = parser.parseFromString(args as string, 'text/xml');
+                    const body: Element = xmlDoc.querySelector('Body');
+                    if (!body.querySelector('OlapInfo')) {
+                        if (!body.querySelector('DiscoverResponse')) {
+                            // For catalog, calc fields
+                            if (body.querySelector('Fault')) {
+                                this.errorInfo = body.querySelector('Fault').querySelector('faultstring').innerHTML;
+                            } else {
+                                this.errorInfo = body.querySelector('return').querySelector('Error').getAttribute('Description');
+                            }
+                        } else if (!body.querySelector('DiscoverResponse').querySelector('return').querySelector('row')) {
+                            // For cube
+                            this.errorInfo = 'Invalid cube name ' + this.dataSourceSettings.cube;
+                        }
+                    }
                     success(xmlDoc, request, customArgs);
                 },
                 onFailure: (e: string) => {
-                    return e;
+                    this.errorInfo = e;
                 }
             }
         );

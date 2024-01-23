@@ -96,7 +96,9 @@ export class TextHelper {
         elementBox.width = textTrimEndWidth;
         // Calculate the text element's height and baseline offset.
         const textHelper: TextSizeInfo = this.getHeight(characterFormat, elementBox.scriptType);
-        elementBox.height = textHelper.Height;
+        if (!(this.documentHelper.compatibilityMode === 'Word2003' && elementBox.isColumnBreak)) {
+            elementBox.height = textHelper.Height;
+        }
         elementBox.baselineOffset = textHelper.BaselineOffset;
         if (elementBox.text[elementBox.text.length - 1] === ' ') {
             textTrimEndWidth = this.getWidth(HelperMethods.trimEnd(elementBox.text), characterFormat, elementBox.scriptType);

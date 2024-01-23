@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 24.1.47 (2024-01-23)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I515234` - Resolved the issue in paragraph goes to page end while press enter.
+- `#I533538` - Resolved the tracking issue in the revisions only protection mode.
+- `#I539142` - Resolved the script error issue while pasting content.
+- `#I536328` - Resolved the footnote duplicating issue.
+- `#I539648` - Resolved script error issue and layout issue in the exported document.
+
 ## 24.1.46 (2024-01-17)
 
 ### DocumentEditor

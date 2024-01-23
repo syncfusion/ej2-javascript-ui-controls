@@ -588,4 +588,24 @@ describe('SVG Tooltip', () => {
        tooltip.theme = 'Fabric';
        tooltip.refresh();
     });
+    it('tooltip checking for tooltip text size', () => {
+        tooltip.loaded = (arsgs: Object) => {
+            svgObject = getElement('tooltipcontainer_svg');        
+            expect(svgObject).not.toBe(null);
+            let text: Element = document.getElementById('tooltipcontainer_text');
+            expect(text.getAttribute('font-size')).toBe("26px");
+	    tooltip.controlName = '';
+        };
+       tooltip.tooltipRender = null;
+       tooltip.template = null;
+       tooltip.location = {x : 250, y: 250};    
+       tooltip.inverted = false;
+       tooltip.enableAnimation= false;
+       tooltip.shared = false;
+       tooltip.animationComplete = null;
+       tooltip.theme = 'Fabric';
+       tooltip.textStyle.size = '26px';
+       tooltip.controlName = 'Chart';
+       tooltip.refresh();
+    });
 });

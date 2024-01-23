@@ -750,7 +750,15 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         this.wireEvent();
     }
 
-    private frameCustomProperties(fieldListData?: IOlapField[], fieldList?: IOlapFieldListOptions)
+    /**
+     * It performs to returnssorted headers.
+     *
+     * @param {IOlapField[]} fieldListData - It contains the olap field informations.
+     * @param {fieldList} fieldList - It contains the olap field list informations.
+     * @returns {ICustomProperties | IOlapCustomProperties} - It contains the internal properties that used for engine population.
+     * @hidden
+     */
+    public frameCustomProperties(fieldListData?: IOlapField[], fieldList?: IOlapFieldListOptions)
         : ICustomProperties | IOlapCustomProperties {
         if (this.pivotGridModule) {
             this.pivotGridModule.updatePageSettings(false);
@@ -1246,10 +1254,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     this$.trigger(events.dataBound);
                 });
             } else if (this.dataType === 'olap') {
-                this.olapEngineModule.renderEngine(
-                    this.dataSourceSettings as IDataOptions, this.frameCustomProperties(
-                        this.olapEngineModule.fieldListData, this.olapEngineModule.fieldList), this.onHeadersSort ?
-                        this.getHeaderSortInfo.bind(this) : undefined);
+                PivotUtil.renderOlapEngine(this);
                 this.pivotFieldList = this.olapEngineModule.fieldList;
                 const eventArgs: EnginePopulatedEventArgs = {
                     pivotFieldList: this.pivotFieldList,
@@ -1595,8 +1600,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pivot.olapEngineModule.onSort(pivot.dataSourceSettings as IDataOptions);
             }
         } else {
-            pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.onHeadersSort
-                ? pivot.getHeaderSortInfo.bind(pivot) : undefined);
+            PivotUtil.renderOlapEngine(pivot, customProperties);
         }
         pivot.lastSortInfo = {};
         pivot.lastAggregationInfo = {};

@@ -338,6 +338,9 @@ export class ScrollBar {
      */
 
     public scrollMouseWheel(e: WheelEvent): void {
+        if (!this.axis.scrollbarSettings.enableZoom) {
+            return null;
+        }
         const svgRect: ClientRect = getElement(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
         this.mouseX = e.clientX - Math.max(svgRect.left, 0);
         this.mouseY = e.clientY - Math.max(svgRect.top, 0);

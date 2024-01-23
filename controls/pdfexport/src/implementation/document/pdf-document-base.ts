@@ -4,8 +4,7 @@
 import { PdfMainObjectCollection } from './../input-output/pdf-main-object-collection';
 import { PdfCrossTable } from './../input-output/pdf-cross-table';
 import { PdfCatalog } from './pdf-catalog';
-import { StreamWriter } from '@syncfusion/ej2-file-utils';
-import { Encoding } from '@syncfusion/ej2-file-utils';
+import { Encoding, StreamWriter } from '@syncfusion/ej2-file-utils';
 import { PdfDocument } from './pdf-document';
 import { PdfReference } from './../primitives/pdf-reference';
 import { PdfViewerPreferences } from './pdf-viewer-preferences';

@@ -3472,6 +3472,8 @@ export class Draw {
         const lastDotIndex: number = url.lastIndexOf('.');
         if (lastDotIndex !== -1) {
             return url.slice(lastDotIndex + 1).toLowerCase();
+        } else if (url.indexOf('base64') !== -1) {
+            return url.slice(url.indexOf('/') + 1, url.indexOf(';')).toLowerCase();
         }
         return null;
     }

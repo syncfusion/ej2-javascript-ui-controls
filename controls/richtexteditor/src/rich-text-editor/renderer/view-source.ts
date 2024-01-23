@@ -22,6 +22,7 @@ export class ViewSource {
     private rendererFactory: RendererFactory;
     private keyboardModule: KeyboardEvents;
     private previewElement: HTMLElement;
+    private codeViewTimeInterval: number;
 
     /**
      * Constructor for view source module
@@ -184,6 +185,9 @@ export class ViewSource {
         }
         this.parent.trigger(events.actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
         this.parent.invokeChangeEvent();
+        if (!isNullOrUndefined(this.parent.saveInterval) && this.parent.saveInterval > 0 && this.parent.autoSaveOnIdle) {
+            this.codeViewTimeInterval = setInterval(() => { this.parent.notify(events.updateValueOnIdle, {}) }, this.parent.saveInterval);
+        }
     }
 
     /**
@@ -242,6 +246,7 @@ export class ViewSource {
         this.parent.trigger(events.actionComplete, { requestType: 'Preview', targetItem: 'Preview', args: args });
         this.parent.formatter.enableUndo(this.parent);
         this.parent.addAudioVideoWrapper();
+        clearTimeout(this.codeViewTimeInterval);
         this.parent.invokeChangeEvent();
         this.parent.notify(events.tableclass, {});
     }

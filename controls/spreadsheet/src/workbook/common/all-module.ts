@@ -31,7 +31,7 @@ export class WorkbookAllModule {
      * @returns {string} - Get the module name.
      */
     protected getModuleName(): string {
-        return 'workbook-all';
+        return 'workbookAll';
     }
 
     /**

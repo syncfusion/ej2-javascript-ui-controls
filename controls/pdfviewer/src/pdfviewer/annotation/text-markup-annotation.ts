@@ -533,6 +533,35 @@ export class TextMarkupAnnotation {
             } else {
                 annotations = textMarkupAnnotations;
             }
+            if (textMarkupAnnotations) {
+                textMarkupAnnotations.forEach(function (textMarkupAnnotation: { AnnotName: any; }) {
+                    let exists: any = annotations.some(function (existingAnnotation: { annotName: any; }) {
+                        return existingAnnotation.annotName === textMarkupAnnotation.AnnotName;
+                    });
+                    if (!exists) {
+                        annotations.push(textMarkupAnnotation);
+                    }
+                });
+            }
+            if (annotations) {
+                let distinctAnnotations: any = [];
+                for (let i: any = 0; i < annotations.length; i++) {
+                    let duplicateFound:boolean = false;
+                    for (let j: any = 0; j < distinctAnnotations.length; j++) {
+                        if (
+                            annotations[i].AnnotName === distinctAnnotations[j].AnnotName &&
+                            annotations[i].annotName === distinctAnnotations[j].annotName
+                        ) {
+                            duplicateFound = true;
+                            break;
+                        }
+                    }
+                    if (!duplicateFound) {
+                        distinctAnnotations.push(annotations[i]);
+                    }
+                }
+                annotations = distinctAnnotations;
+            }
             if (annotations) {
                 for (let i: number = 0; i < annotations.length; i++) {
                     // eslint-disable-next-line

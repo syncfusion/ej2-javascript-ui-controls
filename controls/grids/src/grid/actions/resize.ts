@@ -933,9 +933,9 @@ export class Resize implements IAction {
         for (const col of column.columns as Column[]) {
             if (col.visible !== false) {
                 if (col.columns) {
-                    return this.getStackedWidth(col, width);
+                    width = this.getStackedWidth(col, width);
                 } else {
-                    width += col.width as number;
+                    width += parseFloat(col.width.toString());
                 }
             }
         }

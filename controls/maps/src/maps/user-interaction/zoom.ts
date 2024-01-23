@@ -563,23 +563,25 @@ export class Zoom {
                             currentEle = layerElement.childNodes[j as number] as Element;
                             let markerAnimation: boolean;
                             if (!isNullOrUndefined(currentEle) && currentEle.id.indexOf('Markers') !== -1) {
-                                for (let k: number = 0; k < currentEle.childElementCount; k++) {
-                                    this.markerTranslate(<Element>currentEle.childNodes[k as number], factor, x, y, scale, 'Marker', animate);
-                                    const layerIndex : number = parseInt(currentEle.childNodes[k as number]['id'].split('_LayerIndex_')[1].split('_')[0], 10);
-                                    const dataIndex : number = parseInt(currentEle.childNodes[k as number]['id'].split('_dataIndex_')[1].split('_')[0], 10);
-                                    const markerIndex  : number = parseInt(currentEle.childNodes[k as number]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                                Array.prototype.forEach.call(currentEle.childNodes, (childNode: HTMLElement, k: number) => {
+                                    this.markerTranslate(<Element>childNode, factor, x, y, scale, 'Marker', animate);
+                                    const layerIndex : number = parseInt(childNode['id'].split('_LayerIndex_')[1].split('_')[0], 10);
+                                    const dataIndex : number = parseInt(childNode['id'].split('_dataIndex_')[1].split('_')[0], 10);
+                                    const markerIndex  : number = parseInt(childNode['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
                                     markerAnimation = this.currentLayer.markerSettings[markerIndex as number].animationDuration > 0 || animationMode === 'Enable';
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    const markerSelectionValues : any = this.currentLayer.markerSettings[markerIndex as number].dataSource[dataIndex as number];
-                                    for (let x : number = 0; x < this.currentLayer.markerSettings[markerIndex as number].initialMarkerSelection.length; x++) {
-                                        if (this.currentLayer.markerSettings[markerIndex as number].initialMarkerSelection[x as number]['latitude'] ===
-                                            markerSelectionValues['latitude'] ||
-                                            this.currentLayer.markerSettings[markerIndex as number].initialMarkerSelection[x as number]['longitude'] ===
-                                            markerSelectionValues['longitude']) {
-                                            maps.markerSelection(this.currentLayer.markerSettings[markerIndex as number].selectionSettings,
-                                                                 maps, currentEle.children[k as number],
-                                                                 this.currentLayer.markerSettings[markerIndex as number].dataSource[dataIndex as number]
-                                            );
+                                    if (this.currentLayer.markerSettings[markerIndex as number].initialMarkerSelection.length > 0) {
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        const markerSelectionValues: any = this.currentLayer.markerSettings[markerIndex as number].dataSource[dataIndex as number];
+                                        for (let x: number = 0; x < this.currentLayer.markerSettings[markerIndex as number].initialMarkerSelection.length; x++) {
+                                            if (this.currentLayer.markerSettings[markerIndex as number].initialMarkerSelection[x as number]['latitude'] ===
+                                                markerSelectionValues['latitude'] ||
+                                                this.currentLayer.markerSettings[markerIndex as number].initialMarkerSelection[x as number]['longitude'] ===
+                                                markerSelectionValues['longitude']) {
+                                                maps.markerSelection(this.currentLayer.markerSettings[markerIndex as number].selectionSettings,
+                                                    maps, currentEle.children[k as number],
+                                                    this.currentLayer.markerSettings[markerIndex as number].dataSource[dataIndex as number]
+                                                );
+                                            }
                                         }
                                     }
                                     if (((this.currentLayer.animationDuration > 0 || animationMode === 'Enable') || ((maps.layersCollection[0].animationDuration > 0 || animationMode === 'Enable') && this.currentLayer.type === 'SubLayer')) && !this.isPanning) {
@@ -593,7 +595,7 @@ export class Zoom {
                                             (currentEle as HTMLElement).style.cssText = markerStyle;
                                         }
                                     }
-                                }
+                                });
                                 if (this.isPanning && maps.markerModule.sameMarkerData.length > 0) {
                                     clusterSeparate(maps.markerModule.sameMarkerData, maps, currentEle, true);
                                 } else if (maps.markerModule.sameMarkerData.length > 0) {
@@ -722,7 +724,7 @@ export class Zoom {
             removeElement(markerTemplateElements.id);
         }
         const currentLayers: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex as number];
-        currentLayers.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
+        Array.prototype.forEach.call(currentLayers.markerSettings, (markerSettings: MarkerSettings, markerIndex: number)=> {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const markerDatas: any[] = <any[]>markerSettings.dataSource;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -774,6 +776,7 @@ export class Zoom {
                     this.maps.markerNullCount = (isNullOrUndefined(lati) || isNullOrUndefined(long))
                         ? this.maps.markerNullCount + 1 : this.maps.markerNullCount;
                     const markerDataLength: number = markerDatas.length - this.maps.markerNullCount;
+                    let isMarkersClustered: boolean = false;
                     if (markerSVGObject.childElementCount === (markerDataLength - markerTemplateCounts - nullCount) && (type !== 'Template')) {
                         if (this.maps.isTileMap) {
                             const polygonsElement: Element = document.getElementById(this.maps.element.id + '_LayerIndex_' + layerIndex + '_Polygons_Group');                            
@@ -793,13 +796,13 @@ export class Zoom {
                         if (currentLayers.markerClusterSettings.allowClustering) {
                             this.maps.svgObject.appendChild(markerSVGObject);
                             this.maps.element.appendChild(this.maps.svgObject);
-                            clusterTemplate(currentLayers, markerSVGObject, this.maps, layerIndex, markerSVGObject, layerElement, true, true);
+                            isMarkersClustered = clusterTemplate(currentLayers, markerSVGObject, this.maps, layerIndex, markerSVGObject, layerElement, true, true);
                         }
                     }
                     if (markerTemplateElements.childElementCount === (markerDataLength - markerCounts - nullCount) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
                         getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateElements);
                         if (scale >= 1) {
-                            if (currentLayers.markerClusterSettings.allowClustering) {
+                            if (currentLayers.markerClusterSettings.allowClustering && !isMarkersClustered) {
                                 clusterTemplate(currentLayers, markerTemplateElements, this.maps, layerIndex, markerSVGObject, layerElement, false, true) ;
                             }
                         }

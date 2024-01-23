@@ -6639,12 +6639,6 @@ export class FormDesigner {
             this.maxLengthItem.destroy();
             this.maxLengthItem = null;
         }
-        if (this.formFieldTooltips != null) {
-            for (let i: number = 0; i < this.formFieldTooltips.length; i++) {
-                this.formFieldTooltips[i].destroy();
-            }
-            this.formFieldTooltips = [];
-        }
         const dialogElement: HTMLElement = this.pdfViewerBase.getElement('_properties_window');
         if (dialogElement) {
             dialogElement.parentElement.removeChild(dialogElement);
@@ -6656,6 +6650,12 @@ export class FormDesigner {
     */
     public destroy(): void {
         this.destroyPropertiesWindow();
+        if (this.formFieldTooltips != null) {
+            for (let i: number = 0; i < this.formFieldTooltips.length; i++) {
+                this.formFieldTooltips[i].destroy();
+            }
+            this.formFieldTooltips = [];
+        }
     }
 
 

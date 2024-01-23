@@ -6,7 +6,7 @@ import { PivotView, PivotViewModel } from '../pivotview';
 import { PivotFieldList, PivotFieldListModel } from '../pivotfieldlist';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { SummaryTypes } from './types';
-import { IOlapField, IOlapFieldListOptions } from './olap/engine';
+import { IOlapCustomProperties, IOlapField, IOlapFieldListOptions } from './olap/engine';
 import { HeadersSortEventArgs } from '../common/base/interface';
 import { PdfPageSize } from '@syncfusion/ej2-grids';
 import { SizeF } from '@syncfusion/ej2-pdf-export';
@@ -56,10 +56,9 @@ export class PivotUtil {
         }
         return clonedData;
     }
-    /** @hidden */
     public static getClonedCSVData(data: string[][]): string[][] {
         const clonedData: string[][] = data.map((row: string[]) => [...row]);
-        return clonedData;    
+        return clonedData;
     }
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -1007,6 +1006,30 @@ export class PivotUtil {
                     sortMembersOrder;
         }
         return sortMembersOrder;
+    }
+
+    /**
+     * It performs to render the olap engine.
+     *
+     * @param {PivotView | PivotFieldList} pivot - It specifies the pivotview and pivot field list component instance.
+     * @param {IOlapCustomProperties} customProperties - It contains the internal properties that used for engine population.
+     * @returns {void}
+     * @hidden
+     */
+     public static renderOlapEngine(pivot: PivotView | PivotFieldList, customProperties?: IOlapCustomProperties): void {
+        try {
+            pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties ? customProperties :
+                (pivot as PivotFieldList).frameCustomProperties(pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList), // eslint-disable-next-line
+                    pivot.onHeadersSort ? (pivot as any).getHeaderSortInfo.bind(pivot) : undefined);
+        } catch (exception) {
+            pivot.actionObj.actionName = 'engineFormation';
+            if (pivot.olapEngineModule.errorInfo) {
+                pivot.actionFailureMethod(pivot.olapEngineModule.errorInfo as Error);
+                pivot.olapEngineModule.errorInfo = undefined;
+            } else {
+                pivot.actionFailureMethod(exception);
+            }
+        }
     }
 
     /**

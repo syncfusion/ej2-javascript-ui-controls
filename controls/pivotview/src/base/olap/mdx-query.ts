@@ -121,6 +121,9 @@ export class MDXQuery {
             args.catalog + '</Catalog> <LocaleIdentifier>' + connectionString.LCID +
             '</LocaleIdentifier>' + (args.roles ? '<Roles>' + args.roles + '</Roles>' : '') + '</PropertyList> </Properties></Execute> </Body> </Envelope>';
         this.engine.doAjaxPost('POST', connectionString.url, soapMessage, successMethod, customArgs);
+        if (this.engine.errorInfo) {
+            throw this.engine.errorInfo;
+        }
     }
     public static frameMDXQuery(rowQuery: string, columnQuery: string, slicerQuery: string, filterQuery: string,
                                 caclQuery: string, refPaging?: boolean): string {
@@ -440,7 +443,8 @@ export class MDXQuery {
     private static updateValueSortQuery(query: string, valueSortSettings: IValueSortSettings): string {
         if (valueSortSettings && valueSortSettings.measure && valueSortSettings.measure !== '') {
             const heirarchize: string = (this.drilledMembers.length > 0 ? 'HIERARCHIZE ({' : '');
-            const measure: string = (this.fieldList[valueSortSettings.measure].isCalculatedField ?
+            const measure: string = (this.fieldList[valueSortSettings.measure] &&
+                this.fieldList[valueSortSettings.measure].isCalculatedField ?
                 this.fieldList[valueSortSettings.measure].tag : valueSortSettings.measure);
             switch (valueSortSettings.sortOrder) {
             case 'Ascending':
@@ -490,7 +494,7 @@ export class MDXQuery {
     private static getDimensionQuery(dimension: IFieldOptions, axis: string): string {
         let query: string = '';
         const name: string = dimension.isCalculatedField ? this.fieldList[dimension.name].tag : dimension.name;
-        const hasAllMember: boolean = this.fieldList[dimension.name].hasAllMember;
+        const hasAllMember: boolean = this.fieldList[dimension.name] && this.fieldList[dimension.name].hasAllMember;
         if (!hasAllMember && !dimension.isNamedSet && !dimension.isCalculatedField) {
             query = '((' + name + ').levels(0).AllMembers)';
         } else {
