@@ -4436,7 +4436,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (!isNullOrUndefined(row)) {
             row.setAttribute('aria-expanded', action === 'expand' ? 'true' : 'false');
         }
-        if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization || this.enableInfiniteScrolling) && !isRemoteData(this)
+        if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) && !isRemoteData(this)
           && !isCountRequired(this)) {
             this.notify(events.localPagedExpandCollapse, {action: action, row: row, record: record});
         } else {

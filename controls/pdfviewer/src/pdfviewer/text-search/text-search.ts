@@ -828,7 +828,7 @@ export class TextSearch {
                 }
             }
         }
-        if (characterBounds) {
+        if (characterBounds && matches !== undefined) {
             for (let i: number = 0; i < matches.length; i++) {
                 if(matches[i].length !==undefined && ArrayReturns !==undefined){
                     if(i === this.searchIndex && pageIndex === this.searchPageIndex){
@@ -1289,7 +1289,8 @@ export class TextSearch {
                             pageIndex: pageIndex,
                             message: 'renderPageSearch',
                             zoomFactor: proxy.pdfViewer.magnificationModule.zoomFactor,
-                            isTextNeed: isTextNeed
+                            isTextNeed: isTextNeed,
+                            textDetailsId: textDetailsId
                         });
                     } else {
                         this.pdfViewerBase.pdfViewerRunner.postMessage({
@@ -1300,10 +1301,11 @@ export class TextSearch {
                             tileY: y,
                             tileXCount: noTileX,
                             tileYCount: noTileY,
-                            isTextNeed: isTextNeed
+                            isTextNeed: isTextNeed,
+                            textDetailsId: textDetailsId
                         });
                     }
-                    this.pdfViewerBase.pdfViewerRunner.onmessage = function (event) {
+                    this.pdfViewerBase.pdfViewerRunner.onmessage = function (event: any) {
                         switch (event.data.message) {
                             case 'imageRenderedSearch':
                                 if (event.data.message === 'imageRenderedSearch') {
@@ -1322,19 +1324,20 @@ export class TextSearch {
                                     const rotation = event.data.rotation;
                                     const characterBounds = event.data.characterBounds;
                                     let hyperlinksDetails : any= proxy.pdfViewer.pdfRendererModule.getHyperlinks(pageIndex);
-                                    let data: any = ({ image: imageUrl, pageNumber: pageIndex, uniqueId: proxy.pdfViewerBase.documentId, pageWidth: width, zoomFactor: zoomFactor, hyperlinks: hyperlinksDetails.hyperlinks, hyperlinkBounds: hyperlinksDetails.hyperlinkBounds,linkAnnotation:hyperlinksDetails.linkAnnotation , linkPage:hyperlinksDetails.linkPage, annotationLocation: hyperlinksDetails.annotationLocation, characterBounds: characterBounds });
-                                    if (isTextNeed) {
+                                    let data: any = ({ image: imageUrl, pageNumber: pageIndex, uniqueId: proxy.pdfViewerBase.documentId, pageWidth: width, zoomFactor: event.data.zoomFactor, hyperlinks: hyperlinksDetails.hyperlinks, hyperlinkBounds: hyperlinksDetails.hyperlinkBounds,linkAnnotation:hyperlinksDetails.linkAnnotation , linkPage:hyperlinksDetails.linkPage, annotationLocation: hyperlinksDetails.annotationLocation, characterBounds: characterBounds });
+                                    if (event.data.isTextNeed) {
                                         data.textBounds = textBounds;
                                         data.textContent = textContent;
                                         data.rotation = rotation;
                                         data.pageText = pageText;
                                         proxy.pdfViewerBase.storeTextDetails(pageIndex, textBounds, textContent, pageText, rotation, characterBounds);
                                     } else {
-                                        let textDetails: any = JSON.parse(proxy.pdfViewerBase.pageTextDetails[`${textDetailsId}`]);
+                                        let textDetails: any = JSON.parse(proxy.pdfViewerBase.pageTextDetails[`${event.data.textDetailsId}`]);
                                         data.textBounds = textDetails.textBounds;
                                         data.textContent = textDetails.textContent;
                                         data.rotation = textDetails.rotation;
                                         data.pageText = textDetails.pageText;
+                                        data.characterBounds = textDetails.characterBounds;
                                     }
                                     if (data && data.image && data.uniqueId === proxy.pdfViewerBase.documentId) {
                                         let currentPageWidth: number = (data.pageWidth && data.pageWidth > 0) ? data.pageWidth : pageWidth;
@@ -1385,8 +1388,10 @@ export class TextSearch {
                                         transformationMatrix: {
                                             Values: [1, 0, 0, 1, tileWidth * x, tileHeight * y, 0, 0, 0]
                                         },
-                                        zoomFactor: proxy.pdfViewerBase.retrieveCurrentZoomFactor(),
-                                        characterBounds: characterBounds 
+                                        zoomFactor: event.data.zoomFactor,
+                                        characterBounds: characterBounds,
+                                        isTextNeed: event.data.isTextNeed,
+                                        textDetailsId: event.data.textDetailsId
                                     };
                                     if (tileData && tileData.image && tileData.uniqueId === proxy.pdfViewerBase.documentId) {
                                         let currentPageWidth: number = (tileData.pageWidth && tileData.pageWidth > 0) ? tileData.pageWidth : pageWidth;
@@ -1401,18 +1406,19 @@ export class TextSearch {
                                                 image: blobUrl, width: tileData.pageWidth, uniqueId: tileData.uniqueId, tileX: tileData.tileX, tileY: tileData.tileY,
                                                 zoomFactor: tileData.zoomFactor
                                             };
-                                            if (isTextNeed) {
+                                            if (tileData.isTextNeed) {
                                                 tileData.textBounds = textBounds;
                                                 tileData.textContent = textContent;
                                                 tileData.rotation = rotation;
                                                 tileData.pageText = pageText;
                                                 proxy.pdfViewerBase.storeTextDetails(pageIndex, textBounds, textContent, pageText, rotation, characterBounds);
                                             } else {
-                                                let textDetails: any = JSON.parse(proxy.pdfViewerBase.pageTextDetails[`${textDetailsId}`]);
+                                                let textDetails: any = JSON.parse(proxy.pdfViewerBase.pageTextDetails[`${tileData.textDetailsId}`]);
                                                 tileData.textBounds = textDetails.textBounds;
                                                 tileData.textContent = textDetails.textContent;
                                                 tileData.rotation = textDetails.rotation;
                                                 tileData.pageText = textDetails.pageText;
+                                                tileData.characterBounds = textDetails.characterBounds;
                                             }
                                             proxy.pdfViewerBase.storeImageData(pageNumber, storeObject, tileData.tileX, tileData.tileY);
                                         }

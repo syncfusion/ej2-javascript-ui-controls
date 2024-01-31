@@ -64,4 +64,14 @@ export class RibbonGroupButtonItem extends ChildProperty<RibbonGroupButtonItem> 
      */
     @Event()
     public click: EmitType<ClickGroupButtonEventArgs>;
+
+    /**
+     * @param {Object} prop - Gets the property of group button.
+     * @param {boolean} muteOnChange - Gets the boolean value of muteOnChange.
+     * @returns {void}
+     * @private
+     */
+    public setProperties(prop: Object, muteOnChange: boolean): void {
+        super.setProperties(prop, muteOnChange);
+    }
 }

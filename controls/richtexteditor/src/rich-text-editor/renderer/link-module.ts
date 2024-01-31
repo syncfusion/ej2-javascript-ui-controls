@@ -402,12 +402,19 @@ export class Link {
         }
         const target: string = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? '_blank' : null;
         const linkLabel = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? (this as NotifyArgs).selfLink.i10n.getConstant('linkAriaLabel') : null;
+        if ((this as NotifyArgs).selfLink.parent.editorMode === 'Markdown' && linkUrl === '') {
+            linkUrl = 'http://';
+        } 
         if (linkUrl === '') {
             (this as NotifyArgs).selfLink.checkUrl(true);
             return;
         }
         if (!(this as NotifyArgs).selfLink.isUrl(linkUrl)) {
-            linkText = (linkText === '') ? linkUrl : linkText;
+            if ((this as NotifyArgs).selfLink.parent.editorMode === 'Markdown') {
+                linkText = (linkText !== '') ? linkText : '';
+            } else {
+                linkText = (linkText === '') ? linkUrl : linkText;
+            }
             if (!(this as NotifyArgs).selfLink.parent.enableAutoUrl) {
                 linkUrl = linkUrl.indexOf('http') > -1 ? linkUrl : 'http://' + linkUrl;
             } else {
@@ -556,6 +563,7 @@ export class Link {
              !closest(target, '#' + this.parent.getID() + '_toolbar_CreateLink') &&
                 !target.querySelector('#' + this.parent.getID() + '_toolbar_CreateLink')))
         ) {
+            this.parent.notify(events.documentClickClosedBy, { closedBy: "outside click" });
             this.dialogObj.hide({ returnValue: true } as Event);
             EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
             this.parent.isBlur = true;

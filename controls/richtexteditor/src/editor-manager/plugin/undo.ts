@@ -106,6 +106,29 @@ export class UndoRedoManager {
         }
         return textContent;
     }
+    private isElementStructureEqual(previousFragment: DocumentFragment | HTMLElement, currentFragment: DocumentFragment | HTMLElement):
+     boolean {
+        if (previousFragment.childNodes.length !== currentFragment.childNodes.length) {
+            return false;
+        }
+        for (let i: number = 0; i < previousFragment.childNodes.length; i++) {
+            const previousFragmentNode: ChildNode = previousFragment.childNodes[i as number];
+            const currentFragmentNode: ChildNode = currentFragment.childNodes[i as number];
+
+            if (!previousFragmentNode || !currentFragmentNode) {
+                return false;
+            }
+
+            if (previousFragmentNode.nodeType !== currentFragmentNode.nodeType) {
+                return false;
+            }
+
+            if ((previousFragmentNode as Element).outerHTML !== (currentFragmentNode as Element).outerHTML) {
+                return false;
+            }
+        }
+        return true;
+    }
     /**
      * RTE collection stored html format.
      *
@@ -142,7 +165,8 @@ export class UndoRedoManager {
             (this.undoRedoStack[this.undoRedoStack.length - 1].range.endOffset === save.range.endOffset) &&
             (this.undoRedoStack[this.undoRedoStack.length - 1].range.range.startContainer === save.range.startContainer) &&
             (this.getTextContentFromFragment(this.undoRedoStack[this.undoRedoStack.length - 1].text).trim() ===
-            this.getTextContentFromFragment(changEle.text as DocumentFragment).trim())) {
+            this.getTextContentFromFragment(changEle.text as DocumentFragment).trim()) &&
+            this.isElementStructureEqual(this.undoRedoStack[this.undoRedoStack.length - 1].text, changEle.text as DocumentFragment)) {
             return;
         }
         this.undoRedoStack.push(changEle);

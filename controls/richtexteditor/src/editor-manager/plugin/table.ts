@@ -66,7 +66,6 @@ export class TableCommand {
         table.appendChild(tblBody);
         e.item.selection.restore();
         InsertHtml.Insert(this.parent.currentDocument, table, this.parent.editableElement);
-        this.removeEmptyNode();
         e.item.selection.setSelectionText(this.parent.currentDocument, table.querySelector('td'), table.querySelector('td'), 0, 0);
         if (table.nextElementSibling === null) {
             let insertElem: HTMLElement;
@@ -106,25 +105,6 @@ export class TableCommand {
             styleValue = value + 'px';
         }
         return styleValue;
-    }
-
-    private removeEmptyNode(): void {
-        const emptyUl: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('ul:empty, ol:empty');
-        for (let i: number = 0; i < emptyUl.length; i++) {
-            detach(emptyUl[i as number]);
-        }
-        let emptyLiChild: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li *:empty:not(img)');
-        for (let i: number = 0; i < emptyLiChild.length; i++) {
-            detach(emptyLiChild[i as number]);
-            if (emptyLiChild.length === i + 1) {
-                emptyLiChild = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li *:empty:not(img)');
-                i = -1;
-            }
-        }
-        const emptyLi: Element[] = <NodeListOf<Element> & Element[]>this.parent.editableElement.querySelectorAll('li:empty');
-        for (let i: number = 0; i < emptyLi.length; i++) {
-            detach(emptyLi[i as number]);
-        }
     }
 
     private insertAfter(newNode: Element, referenceNode: Element): void {
@@ -479,12 +459,21 @@ export class TableCommand {
     }
 
     private tableVerticalAlign(e: IHtmlItem): void {
-        if (e.item.subCommand === 'AlignTop') {
-            e.item.tableCell.style.verticalAlign = 'top';
-        } else if (e.item.subCommand === 'AlignMiddle') {
-            e.item.tableCell.style.verticalAlign = 'middle';
-        } else {
-            e.item.tableCell.style.verticalAlign = 'bottom';
+        let value: string = '';
+        switch (e.item.subCommand) {
+        case 'AlignTop':
+            value = 'top';
+            break;
+        case 'AlignMiddle':
+            value = 'middle';
+            break;
+        case 'AlignBottom':
+            value = 'bottom';
+            break;
+        }
+        e.item.tableCell.style.verticalAlign = value;
+        if (value && value !== '' && e.item.tableCell.getAttribute('valign')) {
+            e.item.tableCell.removeAttribute('valign');
         }
         if (e.callBack) {
             e.callBack({

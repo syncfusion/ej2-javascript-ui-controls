@@ -3059,10 +3059,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (isNullOrUndefined(this.documentHelper)) {
             throw new Error('Invalid operation.');
         }
-        if (formatType === 'Docx' && this.wordExportModule) {
+        if (formatType === 'Docx' || formatType === 'Dotx' && this.wordExportModule) {
             if (this.wordExportModule) {
                 this.documentHelper.owner.sfdtExportModule.isWordExport = true;
-                this.wordExportModule.save(this.documentHelper, fileName);
+                this.wordExportModule.save(this.documentHelper, fileName, formatType);
                 this.documentHelper.owner.sfdtExportModule.isWordExport = false;
             }
         } else if (formatType === 'Txt' && this.textExportModule) {

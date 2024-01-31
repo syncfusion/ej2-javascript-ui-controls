@@ -463,7 +463,7 @@ export class Ribbon {
         }
         const chartThemeDDB: DropDownButton = new DropDownButton({
             items: this.getChartThemeDdbItems(theme),
-            content: l10n.getConstant('Material'),
+            content: l10n.getConstant(theme),
             createPopupOnClick: true,
             select: (args: MenuEventArgs): void => {
                 this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });

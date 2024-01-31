@@ -2451,7 +2451,7 @@ describe('Ribbon', () => {
                 displayOptions: DisplayMode.Overflow,
             }
             ribbon.updateItem(newItem);
-            expect(ribbon.element.querySelector('#item1_container').classList.contains('e-disabled')).toBe(true);
+            expect(ribbon.element.querySelector('#item1_container').classList.contains('e-disabled')).toBe(false);
             (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
             expect(ribbon.element.classList.contains('e-ribbon-minimize')).toBe(false);
             expect(ribbon.activeLayout).toBe('Simplified');
@@ -2714,6 +2714,8 @@ describe('Ribbon', () => {
             ribbon.disableItem('item5');
             ribbon.disableItem('item6');
             ribbon.disableItem('item7');
+            //To cover coverage when click disable button twice
+            ribbon.disableItem('item7');
             expect(ribbon.element.querySelector('#item1').hasAttribute('disabled')).toBe(true);
             expect(ribbon.element.querySelector('#item2').hasAttribute('disabled')).toBe(true);
             expect(ribbon.element.querySelector('#item3').hasAttribute('disabled')).toBe(true);
@@ -2728,6 +2730,8 @@ describe('Ribbon', () => {
             ribbon.enableItem('item4');
             ribbon.enableItem('item5');
             ribbon.enableItem('item6');
+            ribbon.enableItem('item7');
+            //To cover coverage when click enable button twice
             ribbon.enableItem('item7');
             expect(ribbon.element.querySelector('#item1').hasAttribute('disabled')).toBe(false);
             expect(ribbon.element.querySelector('#item2').hasAttribute('disabled')).toBe(false);

@@ -67,7 +67,7 @@ $calendar-normal-month-view-line-height: $calendar-normal-month-view-height !def
 $calendar-normal-day-header-height: $calendar-normal-month-view-height !default;
 $calendar-normal-day-header-text: none !default;
 $calendar-normal-year-decade-height: 45px !default;
-$calendar-normal-header-height: 36px !default;
+$calendar-normal-header-height: 32px !default;
 $calendar-normal-icon-size: 30px !default;
 $calendar-normal-today-button-height: 36px !default;
 $calendar-border-radius: 0 !default;
@@ -156,6 +156,16 @@ $calendar-bigger-icon-padding: 13px !default;
 $calendar-bigger-icon-margin: 0 !default;
 $calendar-selected-border-color: 1px solid $selection-bg !default;
 $calendar-week-number-font-weight: 500 !default;
+$calendar-header-title-padding: 0 5px !default;
+
+// Focus related styles
+$calendar-title-focus-box-shadow: 0 0 0 1px $bg-base-100 !default;
+$calendar-title-focus-background: none !default;
+$calendar-title-active-background: $calendar-bg-color !default;
+$calendar-icon-focus-box-shadow: 0 0 0 1px $bg-base-100 !default;
+$calendar-title-border-radius: 0 !default;
+$calendar-title-hover-bg-color: none !default;
+$calendar-focused-cell-box-shadow: 0 0 0 1px $bg-base-100 !default;
 
 //today
 $calendar-footer-container-padding: 0 10px 10px 10px !default;

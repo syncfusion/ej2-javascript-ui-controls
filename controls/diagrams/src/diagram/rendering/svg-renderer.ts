@@ -504,13 +504,15 @@ export class SvgRenderer implements IRenderer {
                                     textNode.data = child.text;
                                 }
                             }
-                            this.setText(text, tspanElement, child, textNode, offsetX, offsetY);
+                           //EJ2-863489 - Node annotation textAlign "Justify" option is not working correctly
+                           this.alignText(text, tspanElement, child, textNode, offsetX, offsetY,i,options,childNodes);
                             childNodesHeight += child.dy;
                         } else {
                             break;
                         }
                     } else {
-                        this.setText(text, tspanElement, child, textNode, offsetX, offsetY);
+                        //EJ2-863489 - Node annotation textAlign "Justify" option is not working correctly
+                        this.alignText(text, tspanElement, child, textNode, offsetX, offsetY,i,options,childNodes);
                     }
 
                 }
@@ -538,10 +540,32 @@ export class SvgRenderer implements IRenderer {
         }
     }
 
+    private alignText(text: SVGTextElement, tspanElement: SVGElement, child: SubTextElement,
+        textNode: Text, offsetX: number, offsetY: number,i:number,options: TextAttributes,childNodes: SubTextElement[]){
+        //EJ2-863489 - Node annotation textAlign "Justify" option is not working correctly
+        if(options.textAlign !=='justify'){
+            this.setText(text, tspanElement, child, textNode, offsetX, offsetY,options);
+        }
+        else{
+            if (i != childNodes.length - 1) {
+                let textlength:number=options.width; 
+                let adjustlen:string = "spacing"
+                this.setText(text, tspanElement, child, textNode, offsetX, offsetY,options,textlength,adjustlen);
+            }
+            else{
+                this.setText(text, tspanElement, child, textNode, offsetX, offsetY,options);
+            }
+        }
+    } 
+
     private setText(
         text: SVGTextElement, tspanElement: SVGElement, child: SubTextElement,
-        textNode: Text, offsetX: number, offsetY: number): void {
-        setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString() });
+        textNode: Text, offsetX: number, offsetY: number,options?:TextAttributes,textlength?:number,adjustlen?:string): void {
+        if(options.textAlign !=='justify'){
+            setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString()});
+        }else{
+            setAttributeSvg(tspanElement, { 'x': offsetX.toString(), 'y': offsetY.toString(), 'textLength': textlength?textlength:0, 'lengthAdjust': adjustlen ? adjustlen:'spacing'});
+        }
         text.setAttribute('fill', child.text);
         tspanElement.appendChild(textNode);
         text.appendChild(tspanElement);
@@ -917,7 +941,7 @@ export class SvgRenderer implements IRenderer {
         const pos: PointModel = { x: 0, y: 0 }; const x: number = 0; const y: number = 1.2;
         const offsetX: number = text.width * 0.5; const offsety: number = text.height * 0.5;
         let pointX: number = offsetX; const pointY: number = offsety;
-        if (text.textAlign === 'left') {
+        if (text.textAlign === 'left' || text.textAlign === 'justify') {
             pointX = 0;
         } else if (text.textAlign === 'center') {
             if (wrapBound.width > text.width && (text.textOverflow === 'Ellipsis' || text.textOverflow === 'Clip')) {
@@ -931,9 +955,6 @@ export class SvgRenderer implements IRenderer {
             }
         } else if (text.textAlign === 'right') {
             pointX = (text.width * 1);
-        }
-        else if(text.textAlign === 'justify'){
-            pointX = 0;
         }
         pos.x = x + pointX + (wrapBound ? wrapBound.x : 0);
         pos.y = y + pointY - bounds.height / 2;

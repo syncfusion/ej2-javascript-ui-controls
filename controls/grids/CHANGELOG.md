@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 24.2.3 (2024-01-31)
+
+### Grid
+
+#### Bug fixes
+
+- `#FB49514` - Resolved the issue where the entire page was reloading on Command Column button actions in grid with remote data.
+- `#I537973` - Fixed the issue where the clear icon of the search bar was displayed when clicking outside the grid.
+- `#I532462` - Resolved the problem with focus and keyboard traversal in the `checkbox filter popup` elements and `filter menu` elements.
+- `#I538079` - The alignment issue with the frozen grid while using EJ compatibility CSS has been resolved.
+
 ## 24.1.47 (2024-01-23)
 
 ### Grid

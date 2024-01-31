@@ -1180,6 +1180,7 @@ describe('Bold the content inside table in fire fox', () => {
     });
     afterAll(() => {
         detach(divElement);
+        Browser.userAgent = defaultUA;
     });
     it('Apply bold to the content inside the table testing in firefox', () => {
         let node1: Node = document.querySelector('tr');

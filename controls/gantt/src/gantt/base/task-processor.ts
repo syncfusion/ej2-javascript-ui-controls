@@ -1225,7 +1225,7 @@ export class TaskProcessor extends DateProcessor {
                 if (this.getSecondsInDecimal(sDate) === this.parent.defaultStartTime && isValid) {
                     sDate.setHours(0, 0, 0, 0);
                 }
-                if (this.getSecondsInDecimal(eDate) === this.parent.defaultEndTime) {
+                if (this.getSecondsInDecimal(eDate) === this.parent.defaultEndTime && isValid) {
                     eDate.setHours(24);
                 }
                 if (this.getSecondsInDecimal(eDate) === this.parent.defaultStartTime) {

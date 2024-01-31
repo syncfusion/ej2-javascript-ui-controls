@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
+## 24.2.3 (2024-01-31)
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#I541657` - Fixed an issue where the change event in the DateTimePicker was firing after the first time losing focus when milliseconds were included.
+
 ## 24.1.47 (2024-01-23)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I528771` - Fixed an issue where the DateRangePicker in the `Malaysia` region was only returning a single value.
+
+## 24.1.44 (2024-01-03)
 
 ### TimePicker
 

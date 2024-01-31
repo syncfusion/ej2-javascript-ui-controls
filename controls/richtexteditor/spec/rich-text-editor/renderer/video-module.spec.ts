@@ -3915,4 +3915,37 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(rteObj.element.querySelector('.e-rte-video-dialog')).toBe(null);
         });
     });
+
+    describe('837380: The web url is empty when trying to edit after being inserted into the Rich Text Editor', function () {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach(function (done) {
+            rteObj = renderRTE({
+                value: "<p>Testing<span class=\"e-video-wrap\" contenteditable=\"false\" title=\"movie.mp4\"><video class=\"e-rte-video e-video-inline\" controls=\"\"><source src=\"https://www.w3schools.com/html/mov_bbb.mp4\" type=\"video/mp4\"></video></span><br></p>"
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach(function (done) {
+            destroy(rteObj);
+            done();
+        });
+        it('validating whether or not the video web url is present', function (done) {
+            let video: HTMLElement  = rteObj.element.querySelector(".e-video-wrap video");
+            setCursorPoint(video, 0);
+            dispatchEvent(video, 'mousedown');
+            video.click();
+            dispatchEvent(video, 'mouseup');
+            setTimeout(function () {
+                let videoBtn: HTMLElement  = document.getElementById(controlId + "_quick_VideoReplace");
+                videoBtn.parentElement.click();
+                let dialog: HTMLElement  = document.getElementById(controlId + "_video");
+                (dialog.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+                let urlInput: HTMLInputElement = dialog.querySelector('.e-video-url');
+                expect(urlInput.value !== null && urlInput.value !== undefined && urlInput.value !== '').toBe(true);
+                done();
+            }, 100);
+        });
+    });
 });

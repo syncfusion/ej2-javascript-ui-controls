@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.3 (2024-01-31)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I534487` - Now, applying the bold format to the Rich Text Editor when focusing on another Rich Text Editor in the page works properly.
+
 ## 24.1.47 (2024-01-23)
 
 ### RichTextEditor
@@ -9,6 +17,10 @@
 #### Bug Fixes
 
 - `#I542710` - Now, pressing the `tab` key in the list applies the nested list properly when the mention component is used in the Rich Text Editor.
+
+- `#I541522` - Now, when the window is resized to the minimum width, the Rich Text Editor's content font size is updated properly.
+
+- `#I534094` - Now, when using the `click` event with a custom toolbar template, the Rich Text Editor works properly.
 
 ## 24.1.46 (2024-01-17)
 

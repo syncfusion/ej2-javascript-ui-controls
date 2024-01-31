@@ -1527,7 +1527,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (tool.command === 'InsertText') {
                 currentInsertContentLength = value.length;
             }
-            const currentLength: number = this.getText().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\u200B/g, '').length;
+            const currentLength: number = this.getText().trim().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
             const selectionLength: number = this.getSelection().length;
             const totalLength: number = (currentLength - selectionLength) + currentInsertContentLength;
             if (!(this.maxLength === -1 || totalLength <= this.maxLength)) {
@@ -1915,7 +1915,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 FormatPainterEscapeAction = this.formatPainterModule.previousAction === 'escape';
             }
             if (!FormatPainterEscapeAction) {
-                this.formatter.process(this, null, e);
+                if (this.editorMode === 'HTML' && ((e as KeyboardEventArgs).action === 'increase-fontsize' || (e as KeyboardEventArgs).action === 'decrease-fontsize')) {
+                    this.notify(events.onHandleFontsizeChange, { member: 'onHandleFontsizeChange', args: e });
+                } else {
+                    this.formatter.process(this, null, e);
+                }
             }
             switch ((e as KeyboardEventArgs).action) {
             case 'toolbar-focus':
@@ -1939,7 +1943,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.setPlaceHolder();
             }
         }
-
+        this.notify(events.afterKeyDown, { member: 'afterKeyDown', args: e });
         this.autoResize();
     }
 
@@ -1969,7 +1973,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         const formatPainterCopy: boolean = e.key === 'C' && e.altKey && e.shiftKey;
         const formatPainterPaste: boolean = e.key === 'V' && e.altKey && e.shiftKey;
         if ((!formatPainterCopy && !formatPainterPaste) && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
-            && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys)) && !this.inlineMode.enable) {
+            && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys)) || (this.autoSaveOnIdle && Browser.isDevice) && !this.inlineMode.enable) {
             this.formatter.onKeyHandler(this, e);
         }
         if (this.inputElement && this.inputElement.textContent.length !== 0
@@ -2066,55 +2070,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 return;
             }
         }
-        if (e.detail === 3) {
-            const range: Range = this.getRange();
-            const selection: Selection = this.formatter.editorManager.domNode.getSelection();
-            // To handle the triple click node selection improper range due to browser behavior.
-            if (selection.rangeCount > 0 && !isNOU(range.startContainer.parentElement) && (!isNOU(range.startContainer.parentElement.nextSibling) &&
-                (range.startContainer.parentElement.nextSibling.nodeType !== 3 ||
-                /\s+$/.test(range.startContainer.parentElement.nextSibling.textContent)) || range.startOffset === range.endOffset)
-                || range.startContainer.parentElement.tagName.toLocaleLowerCase() === 'li') {
-                const newRange = new Range();
-                let start: HTMLElement= range.startContainer as HTMLElement;
-                let end: HTMLElement = range.endContainer as HTMLElement;
-                let isInvalid: boolean = false;
-                const isInsideList: boolean = range.commonAncestorContainer.nodeName === 'OL' || range.commonAncestorContainer.nodeName === 'UL' 
-                    || range.commonAncestorContainer.nodeName === 'LI';
-                if (!isInsideList && end.nodeType === 1 && end.nodeName === 'LI') {
-                    end = closest(end, 'ol, ul').previousElementSibling.lastElementChild as HTMLElement;
-                } else if (isInsideList && end.nodeType === 1 && range.endOffset === 0) {
-                    if (end.previousElementSibling && end.previousElementSibling.lastElementChild) {
-                        end = end.previousElementSibling.lastElementChild as HTMLElement;
-                    } else {
-                        end = closest(end.parentElement, 'li') as HTMLElement;
-                        if (end && end.nodeName === 'LI') {
-                            end = end.previousElementSibling as HTMLElement;
-                        }
-                    }
-                } else {
-                    if (!closest(end, 'li') && end.previousElementSibling && end.previousElementSibling.lastChild && 
-                        end.previousElementSibling.textContent.trim().length > 0) {
-                        end = end.previousElementSibling.lastChild as HTMLElement;
-                    } else if (closest(end, 'li') && end.previousElementSibling && end.previousElementSibling.lastChild) {
-                        end = closest(end, 'li').parentElement.previousElementSibling.lastChild as HTMLElement;
-                    }
-                }
-                if (!end || end === this.inputElement) {
-                    end = start;
-                    isInvalid = true;
-                }
-                while (end.nodeName !== '#text'  && !isInvalid) {
-                    if (end.lastElementChild) {
-                        end = end.lastElementChild as HTMLElement;
-                    } else {
-                        end = end.lastChild as HTMLElement;
-                    }
-                }
-                newRange.setStart(start, 0);
-                newRange.setEnd(end, end.textContent.length);
-                this.formatter.editorManager.nodeSelection.setRange(this.contentModule.getDocument(), newRange);
-            }
-        }
         this.notifyMouseUp(e);
     }
 
@@ -2159,10 +2114,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             requestType: 'Paste'
         };
         this.trigger(events.actionBegin, evenArgs, (pasteArgs: { [key: string]: Object }) => {
-            const currentLength: number = this.inputElement.textContent.length;
+            const currentLength: number = this.getText().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
             const selectionLength: number = this.getSelection().length;
             const pastedContentLength: number = (isNOU(e as ClipboardEvent) || isNOU((e as ClipboardEvent).clipboardData))
-                ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').replace(/(\r\n|\n|\r)/gm, '').replace(/\u200B/g, '').length;
+                ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
             const totalLength: number = (currentLength - selectionLength) + pastedContentLength;
             if (this.editorMode === 'Markdown') {
                 const args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
@@ -3221,6 +3176,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         addClass([this.element], [classes.CLS_FOCUS]);
         this.preventDefaultResize(e as MouseEvent);
         this.notify(events.mouseDown, { args: e });
+        this.formatter.editorManager.observer.notify(events.mouseDown, { args: e });
         this.clickPoints = { clientX: touch.clientX, clientY: touch.clientY };
     }
 
@@ -3389,6 +3345,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 detach(item[i as number]);
             }
         }
+        this.removeSelectionClassStates(valueElementWrapper);
         return valueElementWrapper.innerHTML;
     }
 
@@ -3437,6 +3394,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         if (this.isBlur && isNOU(trg)) {
             removeClass([this.element], [classes.CLS_FOCUS]);
+            this.removeSelectionClassStates(this.inputElement);
             this.notify(events.focusChange, {});
             const value: string = this.getUpdatedValue();
             this.setProperties({ value: value });
@@ -3612,8 +3570,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     private restrict(e: MouseEvent | KeyboardEvent): void {
         if (this.maxLength >= 0 ) {
-            const element: string = this.editorMode === 'Markdown' ? this.contentModule.getText() :
-                ((e as MouseEvent) && ((e as MouseEvent).currentTarget as HTMLElement).textContent);
+            const element: string = this.editorMode === 'Markdown' ? this.contentModule.getText():
+                (this.getText().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, ''));
             if (!element) { return; }
             const array: number[] = [8, 16, 17, 37, 38, 39, 40, 46, 65];
             let arrayKey: number;
@@ -3761,6 +3719,20 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 (!(toolbarItem[i as number] as HTMLElement).hasAttribute('tabindex') ||
                 (toolbarItem[i as number] as HTMLElement).getAttribute('tabindex') !== '-1')) {
                     (toolbarItem[i as number] as HTMLElement).setAttribute('tabindex', '-1');
+                }
+            }
+        }
+    }
+
+    private removeSelectionClassStates(element: HTMLElement): void {
+        const classNames: string[] = [classes.CLS_IMG_FOCUS, classes.CLS_TABLE_SEL, classes.CLS_VID_FOCUS,  classes.CLS_AUD_FOCUS]
+        for (let i: number = 0; i < classNames.length; i++) {
+            const item: NodeListOf<Element> = element.querySelectorAll('.' + classNames[i as number]);
+            removeClass(item, classNames[i as number]);
+            if (item.length === 0) { continue; }
+            for (let j: number = 0; j < item.length; j++) {
+                if (item[j as number].classList.length === 0) {
+                    item[j as number].removeAttribute('class');
                 }
             }
         }

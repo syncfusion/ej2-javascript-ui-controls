@@ -72,7 +72,7 @@ export class WordExport {
     private xmlContentType: string = 'application/xml';
     private fontContentType: string = 'application/vnd.openxmlformats-officedocument.obfuscatedFont';
     private documentContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml';
-    // private TemplateContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml';
+    private TemplateContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml';
     // private CommentsContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml';
     private settingsContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml';
     private commentsContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml';
@@ -416,24 +416,32 @@ export class WordExport {
      * @param {string} fileName - file name
      * @returns {void}
      */
-    public save(documentHelper: DocumentHelper, fileName: string): void {
+    public save(documentHelper: DocumentHelper, fileName: string, formatType?: string): void {
         this.fileName = fileName;
-        this.serialize(documentHelper);
+        this.serialize(documentHelper, formatType);
         const excelFiles: Promise<Blob>[] = this.serializeExcelFiles();
         if (excelFiles && excelFiles.length > 0) {
             Promise.all(excelFiles).then(() => {
-                this.saveInternal(fileName);
+                this.saveInternal(fileName, formatType);
             });
         } else {
-            this.saveInternal(fileName);
+            this.saveInternal(fileName, formatType);
         }
         this.close();
     }
 
-    private saveInternal(fileName: string): void {
-        this.mArchive.save(fileName + '.docx').then((mArchive: ZipArchive): void => {
-            mArchive.destroy();
-        });
+    private saveInternal(fileName: string, formatType?: string): void {
+        if(formatType == 'Docx'){
+            this.mArchive.save(fileName + '.docx').then((mArchive: ZipArchive): void => {
+                mArchive.destroy();
+            });
+        }
+        else if(formatType == 'Dotx'){
+            this.mArchive.save(fileName + '.dotx').then((mArchive: ZipArchive): void => {
+                mArchive.destroy();
+            });
+        }
+        
     }
     /**
      * @private
@@ -512,7 +520,7 @@ export class WordExport {
         }
     }
     // Saves the word document in the stream
-    private serialize(documentHelper: DocumentHelper): void {
+    private serialize(documentHelper: DocumentHelper, formatType?: string): void {
         this.keywordIndex = documentHelper.owner.documentEditorSettings.optimizeSfdt ? 1 : 0;
         /* eslint-disable @typescript-eslint/no-explicit-any */
         const document: any = documentHelper.owner.sfdtExportModule.write(this.keywordIndex);
@@ -583,7 +591,7 @@ export class WordExport {
         this.serializeGeneralRelations();
 
         //[ContentTypes].xml
-        this.serializeContentTypes(contenttype);
+        this.serializeContentTypes(contenttype, formatType);
 
         // Clears the internal fields maintained for serializing.
         this.clearDocument();
@@ -7308,7 +7316,7 @@ export class WordExport {
         this.mArchive.addItem(zipArchiveItem);
 
     }
-    private serializeContentTypes(contentType: String): void {
+    private serializeContentTypes(contentType: String, formatType?: string): void {
 
         let writer: XmlWriter = new XmlWriter();
 
@@ -7353,8 +7361,11 @@ export class WordExport {
 
         //document.xml
 
-        this.serializeOverrideContentType(writer, this.documentPath, this.documentContentType);
-
+        if (formatType == 'Docx') {
+            this.serializeOverrideContentType(writer, this.documentPath, this.documentContentType);
+        } else if (formatType == 'Dotx') {
+            this.serializeOverrideContentType(writer, this.documentPath, this.TemplateContentType);
+        }
 
         //<Override PartName='/word/numbering.xml' ContentType='application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml'/>
         // if (HasNumbering) {

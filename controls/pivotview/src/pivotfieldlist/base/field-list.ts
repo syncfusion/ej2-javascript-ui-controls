@@ -970,6 +970,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         columnIndex: valueSort.ColumnIndex
                     };
                     this.engineModule.pivotValues = pivotValues;
+                    this.engineModule.isEmptyData = this.dataSourceSettings.values.length === 0 ? true : false;
                 }
             } catch (error) {
                 this.engineModule.pivotValues = [];

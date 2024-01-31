@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { findDlg, locale, dialog, gotoDlg, findHandler, focus, getUpdateUsingRaf, activeSheetChanged } from '../common/index';
 import { DialogBeforeOpenEventArgs } from '../common/index';
-import { L10n, getComponent, isNullOrUndefined, closest, select, EventHandler, detach } from '@syncfusion/ej2-base';
+import { L10n, getComponent, isNullOrUndefined, closest, select, EventHandler, detach, Browser } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { ToolbarFind, goto, FindOptions, showFindAlert, replaceAllDialog, findKeyUp, replace, replaceAll, SheetModel } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, findToolDlg, count } from '../../workbook/common/index';
@@ -193,8 +193,8 @@ export class FindAndReplace {
             dialogDiv = this.parent.createElement(
                 'div', { className: 'e-dlg-div', attrs: { 'aria-label': l10n.getConstant('FindValue') } });
             const sheetPanel: HTMLElement = this.parent.element.getElementsByClassName('e-sheet-panel')[0] as HTMLElement;
-            this.findDialog = new FindDialog({
-                cssClass: 'e-findtool-dlg', content: tbarEle, visible: false, enableRtl: this.parent.enableRtl, target: sheetPanel,
+            const findDlgModel: DialogModel = {
+                cssClass: 'e-findtool-dlg', visible: false, enableRtl: this.parent.enableRtl, target: sheetPanel,
                 open: (): void => {
                     EventHandler.add(document, 'click', this.closeDialog, this);
                     if (this.findValue && (!sheet.isProtected || sheet.protectSettings.selectCells ||
@@ -213,7 +213,7 @@ export class FindAndReplace {
                     const inputContainer: HTMLElement = toolbarObj.element.querySelector('.e-input-group') as HTMLElement;
                     if (inputContainer) {
                         inputContainer.addEventListener('focus', (): void => {
-                            const textInput: HTMLInputElement = document.querySelector('.e-text-findNext-short');
+                            const textInput: HTMLInputElement = toolbarObj.element.querySelector('.e-text-findNext-short');
                             focus(textInput);
                             textInput.classList.add('e-input-focus');
                             (textInput).setSelectionRange(0, textInput.value.length);
@@ -253,7 +253,14 @@ export class FindAndReplace {
                     dialogDiv.style[this.parent.enableRtl ? 'left' : 'right'] = `${this.parent.sheetModule.getScrollSize()}px`;
                     this.findDialog.show();
                 }
-            });
+            };
+            if (Browser.isDevice) {
+                findDlgModel.header = tbarEle;
+                findDlgModel.allowDragging = true;
+            } else {
+                findDlgModel.content = tbarEle;
+            }
+            this.findDialog = new FindDialog(findDlgModel);
             this.findDialog.createElement = this.parent.createElement;
             let animationSettings: AnimationSettingsModel;
             if (args && args.isPublic) {

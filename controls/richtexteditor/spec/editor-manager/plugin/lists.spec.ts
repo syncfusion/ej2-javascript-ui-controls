@@ -1409,6 +1409,26 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
+        describe('865019 - console error occurs when you apply the number format when end of the selection is a empty line', () => {
+            let elem: HTMLElement = createElement('div', {
+                id: 'dom-node', innerHTML: `<div id="content-edit" contenteditable="true"><p>rich text editor</p><p class="startFocus">rich text editor</p><p>rich text editor</p><p class="endFocus"><br></p></div>`
+            });
+            beforeAll(() => {
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            it('console error occurs when you apply the number format when end of the selection is a empty line', () => {
+                startNode = editNode.querySelector('.startFocus');
+                endNode = editNode.querySelector('.endFocus');
+                editorObj.nodeSelection.setSelectionText(document, startNode, endNode.childNodes[0], 0, 0);
+                editorObj.execCommand("Lists", 'OL', null);
+                expect((editorObj.nodeSelection.range.endContainer as HTMLElement).classList.contains('endfocus')).toBe(true);
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
     });
 
     describe(' UL testing', () => {

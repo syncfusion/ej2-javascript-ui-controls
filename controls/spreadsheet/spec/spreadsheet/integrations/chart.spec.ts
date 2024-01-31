@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, GDPData } from '../util/datasource.spec';
-import { CellModel, getFormatFromType, SheetModel, Spreadsheet } from '../../../src/index';
+import { CellModel, getColumnsWidth, getFormatFromType, SheetModel, Spreadsheet } from '../../../src/index';
 import { Overlay } from '../../../src/spreadsheet/services/index';
 import { getComponent, EventHandler } from '@syncfusion/ej2-base';
 import { Chart, Export } from '@syncfusion/ej2-charts';
@@ -13,7 +13,7 @@ describe('Chart ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
 
     describe('public method ->', () => {
-        let cell: CellModel;
+        let cell: CellModel; let spreadsheet: Spreadsheet; let imageCell: CellModel;
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -21,10 +21,99 @@ describe('Chart ->', () => {
             helper.invoke('destroy');
         });
         it('Insert', (done: Function) => {
-            helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5' }]]);
-            cell = helper.getInstance().sheets[0].rows[0].cells[3];
+            spreadsheet = helper.getInstance();
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5', left: getColumnsWidth(spreadsheet.sheets[0], 0, 2, true) + 1 }]]);
+            cell = spreadsheet.sheets[0].rows[0].cells[3];
             // expect(JSON.stringify(cell.chart)).toBe('[{"type":"Column","range":"Sheet1!D1:E5","theme":"Material","isSeriesInRows":false,"id":"e_spreadsheet_chart_1","height":290,"width":480,"top":0,"left":192}]'); check this now
             expect(helper.getElementFromSpreadsheet('#' + cell.chart[0].id).classList).toContain('e-chart');
+            done();
+        });
+        it('Allow Editing property change', (done: Function) => {
+            const overlay: HTMLElement = helper.getElementFromSpreadsheet('.e-ss-overlay');
+            expect(overlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            const ribbonTabObj: any = getComponent(helper.getElementFromSpreadsheet('.e-tab'), 'tab');
+            expect(ribbonTabObj.selectedItem).toBe(6);
+            spreadsheet.allowEditing = false;
+            spreadsheet.dataBind();
+            expect(overlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            expect(ribbonTabObj.selectedItem).toBe(1);
+            helper.triggerMouseAction('mousedown', { x: 0, y: 0 }, overlay, overlay);
+            expect(overlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            expect(ribbonTabObj.selectedItem).toBe(1);
+            helper.invoke('selectChart');
+            expect(overlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            spreadsheet.allowEditing = true;
+            spreadsheet.dataBind();
+            helper.triggerMouseAction('mousedown', { x: 0, y: 0 }, overlay, overlay);
+            expect(overlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            expect(ribbonTabObj.selectedItem).toBe(6);
+            done();
+        });
+        it('select and deselect the chart', (done: Function) => {
+            const chartOverlay: HTMLElement = helper.getElementFromSpreadsheet(`#${cell.chart[0].id}`).parentElement;
+            const ribbonObj: any = spreadsheet.ribbonModule.ribbon;
+            expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            expect(ribbonObj.selectedTab).toBe(5);
+            helper.invoke('selectImage');
+            expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            helper.invoke('deselectChart');
+            expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            expect(ribbonObj.selectedTab).toBe(0);
+            helper.invoke('insertImage', [[{src:"https://cdn.syncfusion.com/content/images/Logo/Logo_150dpi.png", width: 110, height: 70 }], 'B7']);
+            imageCell = spreadsheet.sheets[0].rows[6].cells[1];
+            const imageOverlay: HTMLElement = helper.getElementFromSpreadsheet(`#${imageCell.image[0].id}`);
+            expect(imageOverlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            helper.invoke('selectChart', [cell.chart[0].id]);
+            expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            expect(imageOverlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            expect(ribbonObj.selectedTab).toBe(5);
+            helper.invoke('deselectChart');
+            expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            expect(ribbonObj.selectedTab).toBe(0);
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'B1:C11' }]]);
+            const chartCell: CellModel = spreadsheet.sheets[0].rows[0].cells[1];
+            const chartOverlay1: HTMLElement = helper.getElementFromSpreadsheet(`#${chartCell.chart[0].id}`).parentElement;
+            expect(chartOverlay1.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            expect(ribbonObj.selectedTab).toBe(5);
+            helper.invoke('selectChart');
+            expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            expect(chartOverlay1.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            expect(ribbonObj.selectedTab).toBe(5);
+            helper.invoke('selectRange', ['B1:B1']);
+            helper.invoke('selectChart');
+            expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            expect(chartOverlay1.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            expect(ribbonObj.selectedTab).toBe(5);
+            done();
+        });
+        it('select and deselect the image', (done: Function) => {
+            const imageOverlay: HTMLElement = helper.getElementFromSpreadsheet(`#${imageCell.image[0].id}`);
+            expect(imageOverlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            helper.invoke('selectImage', [imageCell.image[0].id]);
+            expect(imageOverlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            const chartCell: CellModel = spreadsheet.sheets[0].rows[0].cells[1];
+            const chartOverlay: HTMLElement = helper.getElementFromSpreadsheet(`#${chartCell.chart[0].id}`).parentElement;
+            expect(chartOverlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            expect(spreadsheet.ribbonModule.ribbon.selectedTab).toBe(0);
+            helper.invoke('insertImage', [[{src:"https://cdn.syncfusion.com/content/images/Logo/Logo_150dpi.png", width: 110, height: 70 }], 'D10']);
+            const imageCell1: CellModel = spreadsheet.sheets[0].rows[9].cells[3];
+            helper.invoke('selectImage', [imageCell1.image[0].id]);
+            const imageOverlay1: HTMLElement = helper.getElementFromSpreadsheet(`#${imageCell1.image[0].id}`);
+            expect(imageOverlay1.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            expect(imageOverlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            helper.invoke('selectImage');
+            expect(imageOverlay.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            expect(imageOverlay1.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            helper.invoke('selectRange', ['D10:D10']);
+            helper.invoke('selectImage');
+            expect(imageOverlay.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            expect(imageOverlay1.classList.contains('e-ss-overlay-active')).toBeTruthy();
+            helper.invoke('deselectImage');
+            expect(imageOverlay1.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            spreadsheet.sheets[0].isProtected = true;
+            helper.invoke('selectImage', [imageCell1.image[0].id]);
+            expect(imageOverlay1.classList.contains('e-ss-overlay-active')).toBeFalsy();
+            spreadsheet.sheets[0].isProtected = false;
             done();
         });
         it('Apply freezepane with chart', (done: Function) => {
@@ -38,6 +127,7 @@ describe('Chart ->', () => {
             const id: string = cell.chart[0].id;
             (helper.getInstance().serviceLocator.getService('shape') as Overlay).destroy();// Need to remove once destory of overlay service handled in chart.
             helper.invoke('deleteChart', [id]);
+            cell = spreadsheet.sheets[0].rows[0].cells[3];
             expect(JSON.stringify(cell.chart)).toBe('[]');
             expect(helper.getElementFromSpreadsheet('#' + id)).toBeNull();
             done();

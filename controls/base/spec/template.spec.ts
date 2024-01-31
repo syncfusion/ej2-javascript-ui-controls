@@ -178,6 +178,14 @@ describe('Template', () => {
         expect(templateResult).toEqual(result);
     });
     
+    it('new line in the template string', () => {
+        var data = { name: `Aston Martin\n Car Models` };
+        let templateStr: string = "<div>"+data.name+"</div>";
+        let getString: any = template.compile(templateStr);
+        let output: any = getString(templateStr);
+        expect(output).toEqual("<div>Aston Martin Car Models</div>");
+    });
+
     it('JSON array input with href value with apostrophe', () => {
         let templateStr: string = `<div><a href='https://en.wikipedia.org/wiki/France'>France</a><a href='/Projects/Details?id=VINET'>VINET</a></div>`;
         let getString: any = template.compile(templateStr);

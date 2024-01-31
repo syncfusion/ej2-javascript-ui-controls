@@ -58,6 +58,7 @@ $calendar-normal-max-width: 232px !default;
 $calendar-normal-min-width: 232px !default;
 $calendar-small-max-width: $calendar-normal-max-width !default;
 $calendar-small-min-width: $calendar-normal-min-width !default;
+$calendar-header-title-padding: 0 5px !default;
 
 // newly added
 $calendar-active-today-hover-font-color: $neutral-light-fontalt !default;
@@ -168,6 +169,15 @@ $calendar-today-disabled-border-style: $neutral-light !default;
 $calendar-today-disabled-box-shadow: none !default;
 $calendar-today-disabled-color: $neutral-tertiary-alt !default;
 $calendar-week-number-font-weight: 500 !default;
+
+// Focus related styles
+$calendar-title-focus-box-shadow: 0 0 0 1px $neutral-lighter !default;
+$calendar-title-focus-background: none !default;
+$calendar-title-active-background: none !default;
+$calendar-icon-focus-box-shadow: 0 0 0 1px $neutral-lighter !default;
+$calendar-title-border-radius: 0 !default;
+$calendar-title-hover-bg-color: none !default;
+$calendar-focused-cell-box-shadow: 0 0 0 1px $neutral-lighter !default;
 
 //table related styles
 $calendar-rtl-text-indent: 4px !default;

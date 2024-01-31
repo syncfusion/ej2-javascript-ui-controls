@@ -1,4 +1,4 @@
-import { Spreadsheet } from '../base';
+import { Spreadsheet, removeDesignChart, clearChartBorder } from '../index';
 import { getCellPosition, refreshImgCellObj, BeforeImageRefreshData, refreshChartCellObj, insertDesignChart, refreshOverlayElem } from '../common/index';
 import { getRowIdxFromClientY, getColIdxFromClientX, overlayEleSize, getStartEvent, getMoveEvent, selectionStatus } from '../common/index';
 import { getEndEvent, getClientX, getClientY, addDPRValue, spreadsheetDestroyed, getPageX, getPageY, isTouchMove } from '../common/index';
@@ -59,9 +59,12 @@ export class Overlay {
     public insertOverlayElement(id: string, range: string, sheetIndex: number): { element: HTMLElement, top: number, left: number } {
         const div: HTMLElement = this.parent.createElement('div', {
             id: id,
-            attrs: { 'class': 'e-ss-overlay e-ss-overlay-active' },
+            attrs: { 'class': 'e-ss-overlay' },
             styles: 'width: ' + this.minWidth + ';  height: ' + this.minHeight
         });
+        if (this.parent.allowEditing) {
+            div.classList.add('e-ss-overlay-active');
+        }
         const indexes: number[] = getRangeIndexes(range);
         const sheet: SheetModel = this.parent.sheets[sheetIndex as number];
         const frozenRow: number = this.parent.frozenRowCount(sheet);
@@ -106,7 +109,7 @@ export class Overlay {
         div.style.left = Number(addDPRValue(pos.left).toFixed(2)) + 'px';
         if (sheetIndex === this.parent.activeSheetIndex) {
             parent.appendChild(div);
-            this.renderResizeHandles(div);
+            this.renderResizeHandler(div);
             this.addEventListener(div);
         }
         this.originalWidth = parseFloat(getComputedStyle(div, null).getPropertyValue('width').replace('px', ''));
@@ -253,7 +256,7 @@ export class Overlay {
         }
     }
     private overlayMouseUpHandler(e: MouseEvent & TouchEvent, isMouseUp?: boolean): void {
-        if (!this.parent || this.parent.getActiveSheet().isProtected) {
+        if (!this.parent || this.parent.getActiveSheet().isProtected || !this.parent.allowEditing) {
             return;
         }
         this.isResizerClicked = false;
@@ -356,15 +359,18 @@ export class Overlay {
         args.isOverlayClicked = this.isOverlayClicked;
     }
 
-    private refreshOverlayElem(): void {
-        const overlayElem: HTMLElement = document.getElementsByClassName('e-ss-overlay-active')[0] as HTMLElement;
-        if (overlayElem) { 
+    private refreshOverlayElem(args: { selector?: string }): void {
+        const selector: string = '.e-ss-overlay-active' + ((args && args.selector) || '');
+        const overlayElem: HTMLElement = this.parent.element.querySelector(selector);
+        if (overlayElem) {
             removeClass([overlayElem], 'e-ss-overlay-active');
+            this.parent.notify(removeDesignChart, {});
         }
+        this.parent.notify(clearChartBorder, null);
     }
 
     private overlayClickHandler(e: TouchEvent & MouseEvent): void {
-        if (this.parent.getActiveSheet().isProtected) {
+        if (this.parent.getActiveSheet().isProtected || !this.parent.allowEditing) {
             return;
         }
         this.isOverlayClicked = true;
@@ -417,17 +423,16 @@ export class Overlay {
         this.prevX = clientRect.left; this.prevY = clientRect.top;
     }
 
-    private renderResizeHandles(div: HTMLElement): void {
+    private renderResizeHandler(overlay: HTMLElement): void {
         const handles: string[] = ['e-ss-overlay-t', 'e-ss-overlay-r', 'e-ss-overlay-b', 'e-ss-overlay-l'];
-        let i: number = 0;
+        let idx: number = 0;
         let handleElem: HTMLElement;
-        const overlay: Element = div;
-        while (handles.length > i) {
+        while (idx < handles.length) {
             handleElem = this.parent.createElement(
-                'div', { className: handles[i as number] + ' ' + 'e-ss-resizer' + (Browser.isDevice ? ' e-ss-resizer-touch' : ''),
+                'div', { className: handles[idx as number] + ' ' + 'e-ss-resizer' + (Browser.isDevice ? ' e-ss-resizer-touch' : ''),
                 styles: 'width: 8px; height: 8px; border-radius: 4px;' });
             overlay.appendChild(handleElem);
-            i++;
+            idx++;
         }
     }
 

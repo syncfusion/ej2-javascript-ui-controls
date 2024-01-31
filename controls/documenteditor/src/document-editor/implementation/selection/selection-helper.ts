@@ -2240,10 +2240,10 @@ export class Hyperlink {
         }
     }
     private parseFieldValues(value: string, isHyperlink: boolean): void {
-       let codes: string[] = value.split('\\o ');
-        if(codes.length === 2){
+        let codes: string[] = value.split('\\o ');
+        if (codes.length === 2) {
             this.screenTipText = this.parseFieldValue(codes[1], codes[1] === '\"' ? '\"' : undefined, isHyperlink);
-            this.screenTipText = this.screenTipText.substring(0, this.screenTipText.length-1);
+            this.screenTipText = this.screenTipText.substring(0, this.screenTipText.length - 1);
             value = codes[0];
             codes = undefined;
         }
@@ -2267,7 +2267,7 @@ export class Hyperlink {
                         isLocalRef = false;
                         hyperlinkRef = false;
                     } else if (hyperlinkRef) {
-                        this.linkInternal = value;
+                        this.linkInternal = this.parseFieldValue(value, value[0] === '\"' ? '\"' : undefined, isHyperlink);
                     } else {
                         this.linkInternal = code;
                     }

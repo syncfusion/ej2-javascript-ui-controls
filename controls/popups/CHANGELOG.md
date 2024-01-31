@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 24.1.47 (2024-01-23)
+## 24.2.3 (2024-01-31)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I533557` - The console error that occurs when the parent component containing the Tooltip component is removed from the DOM has been resolved.
+
+## 24.1.46 (2024-01-17)
 
 ### Tooltip
 

@@ -84,6 +84,7 @@ export class Table {
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
+        this.parent.on(events.afterKeyDown, this.afterKeyDown, this);
     }
 
     protected removeEventListener(): void {
@@ -110,6 +111,7 @@ export class Table {
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.moduleDestroy, this.moduleDestroy);
+        this.parent.off(events.afterKeyDown, this.afterKeyDown);
         if (!Browser.isDevice && this.parent.tableSettings.resize) {
             EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
         }
@@ -271,7 +273,17 @@ export class Table {
                 }
             }
         }
+        if (event.ctrlKey && event.key === 'a') {
+            this.handleSelectAll();
+        }
     }
+
+    private handleSelectAll(): void {
+        this.cancelResizeAction();
+        const selectedCells: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.' + classes.CLS_TABLE_SEL);
+        removeClass(selectedCells, classes.CLS_TABLE_SEL);
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private tableModulekeyUp(e: NotifyArgs): void {
         if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule) {
@@ -302,7 +314,6 @@ export class Table {
                 name: !isInternal ? 'showDialog' : null
             };
             this.insertTableDialog({ self: this, args: args, selection: selection } as NotifyArgs);
-            this.parent.formatter.editorManager.nodeSelection.restore();
         }
     }
     private showDialog(): void {
@@ -657,7 +668,7 @@ export class Table {
             return;
         }
         const target: HTMLElement = e.target as HTMLElement || (e as TouchEvent).targetTouches[0].target as HTMLElement;
-        const closestTable: Element = closest(target, 'table.e-rte-table');
+        const closestTable: Element = closest(target, 'table.e-rte-table, table.e-rte-paste-table');
         if (!isNOU(this.curTable) && !isNOU(closestTable) && closestTable !== this.curTable &&
             this.parent.contentModule.getEditPanel().contains(closestTable)) {
             this.removeResizeElement();
@@ -1296,6 +1307,7 @@ export class Table {
                 this.popupObj.hide();
             }
             if (this.editdlgObj) {
+                this.parent.notify(events.documentClickClosedBy, { closedBy: "outside click" });
                 this.editdlgObj.hide();
             }
             this.parent.isBlur = true;
@@ -1608,5 +1620,15 @@ export class Table {
      */
     private getModuleName(): string {
         return 'table';
+    }
+
+    private afterKeyDown(e: KeyboardEventArgs): void {
+        if (this.curTable) {
+            setTimeout(() => {
+                const mouseOverEvent = document.createEvent('MouseEvents');
+                mouseOverEvent.initEvent('mouseover', true, true);
+                this.curTable.dispatchEvent(mouseOverEvent);
+            }, 1);
+        }
     }
 }

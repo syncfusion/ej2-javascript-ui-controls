@@ -117,7 +117,7 @@ describe('Count module', () => {
 
         });
         it('Warning character count with background', () => {
-            rteObj.contentModule.getEditPanel().innerHTML = "<p><b>Description:</b></p> <p>The Rich Text Editor (RTE) control is an easy to render in client side. Customer easy to edit the contents and get the HTML content for the displayed content. </p>";
+            rteObj.contentModule.getEditPanel().innerHTML = "<p>The Rich Text Editor component is a WYSIWYG editor that provides the best user experience to create and update the content. Users can format their content using toolbar command</p>";
             (<any>rteObj).countModule.refresh();
             expect(rteObj.element.querySelectorAll('.e-rte-character-count')[0].classList.contains('e-warning')).toBe(true);
         });

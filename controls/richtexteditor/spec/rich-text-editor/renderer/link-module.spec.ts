@@ -1910,4 +1910,71 @@ describe('Link Module', () => {
             expect(rteObj.element.querySelectorAll('.e-rte-quick-popup').length).toBe(0);
         });
     });
+
+    describe('846359 - Need to allow to insertion of empty hyperlink/images in the markdown', function() {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        beforeAll(function() {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateLink', 'Image']
+                },
+                editorMode: 'Markdown',
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(function() {
+            destroy(rteObj);
+        });
+        it(' Checking the insertion of empty hyperlink/images in the markdown - ', function() {
+            rteObj.contentModule.getEditPanel().focus();
+            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = '';
+            rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = '';
+            let target : HTMLElement= rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
+            expect(rteObj.inputElement.value === `[](http://)`).toBe(true);
+        });
+    });
+
+    describe('867370 - OnDialogClose event argument "ClosedBy" is not showing correct values in RichTextEditor for InsertLink', function () {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let outsideClickClosedBy: boolean = false;
+        let divElement: any;
+        beforeAll(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateLink', 'Image']
+                },
+                beforeDialogClose: function (e) {
+                    if (e.closedBy == "outside click") {
+                        outsideClickClosedBy = true;
+                    }
+                }
+            });
+            rteEle = rteObj.element;
+            divElement = document.createElement("div");
+            divElement.id = "customElement";
+            divElement.innerHTML = "Element";
+            document.querySelector("body").appendChild(divElement);
+        });
+        afterAll(function () {
+            destroy(rteObj);
+            divElement.remove();
+        });
+        it('The link dialog closes when you click out of the dialog in the Rich Text Editor', function () {
+            rteObj.contentModule.getEditPanel().focus();
+            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            var myButton = document.querySelector("#customElement");
+            var event = new MouseEvent("mousedown", {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            });
+            myButton.dispatchEvent(event);
+            (myButton as any).click();
+            expect(outsideClickClosedBy).toBe(true);
+        });
+    });
 });

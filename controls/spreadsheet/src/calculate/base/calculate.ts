@@ -2088,12 +2088,17 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 let s: string = this.emptyString;
                 let countValue: number = stack.length;
                 while (countValue > 0) {
-                    s = stack.pop() + s;
-                    if (s === this.emptyString && this.isCellReference(pFormula) &&
-                        this.getTreatEmptyStringAsZero()) {
-                        return '0';
+                    const sCheck: string = stack.pop();
+                    if (this.getErrorStrings().indexOf(sCheck) > -1) {
+                        return sCheck;
+                    } else {
+                        s = sCheck + s;
+                        if (s === this.emptyString && this.isCellReference(pFormula) &&
+                            this.getTreatEmptyStringAsZero()) {
+                            return '0';
+                        }
+                        countValue--;
                     }
-                    countValue--;
                 }
                 return s;
             }
@@ -2106,38 +2111,41 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     }
 
     private getValArithmetic(stack: string[], operator: string, isIfError?: boolean): void {
+        let isErrorString: boolean = false;
         let num1: string = stack.pop();
+        let num2: string = stack.pop();
         num1 = num1 === this.trueValue ? '1' : (num1 === this.falseValue ? '0' : num1);
         num1 = num1 === this.emptyString ? '0' : (this.getErrorStrings().indexOf(num1.toString()) < 0 ? this.parseFloat(num1 + '').toString() : num1);
         let num: number = Number(num1);
         if (isNaN(num) && !isIfError) {
+            isErrorString = true;
             if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {
-                throw this.getErrorStrings()[CommonErrors.divzero];
+                stack.push(this.getErrorStrings()[CommonErrors.divzero]);
             } else {
-                throw this.getErrorStrings()[CommonErrors.value];
+                stack.push(this.getErrorStrings()[CommonErrors.value]);
             }
         }
-        let num2: string = stack.pop();
         num2 = num2 === this.trueValue ? '1' : (num2 === this.falseValue ? '0' : num2);
         num2 = num2 === this.emptyString ? '0' : (this.getErrorStrings().indexOf(num2.toString()) < 0 ? this.parseFloat(num2 + '').toString() : num2);
         num = Number(num2);
         if (isNaN(num) && !isIfError) {
-            if (num1 === this.getErrorStrings()[CommonErrors.divzero]) {
-                throw this.getErrorStrings()[CommonErrors.divzero];
+            isErrorString = true;
+            if (num2 === this.getErrorStrings()[CommonErrors.divzero]) {
+                stack.push(this.getErrorStrings()[CommonErrors.divzero]);
             } else {
-                throw this.getErrorStrings()[CommonErrors.value];
+                stack.push(this.getErrorStrings()[CommonErrors.value]);
             }
         }
-        if (operator === 'add') {
+        if (operator === 'add' && !isErrorString) {
             stack.push((Number(num2) + Number(num1)).toString());
         }
-        if (operator === 'sub') {
+        if (operator === 'sub' && !isErrorString) {
             stack.push((Number(num2) - Number(num1)).toString());
         }
-        if (operator === 'mul') {
+        if (operator === 'mul' && !isErrorString) {
             stack.push((Number(num2) * Number(num1)).toString());
         }
-        if (operator === 'div') {
+        if (operator === 'div' && !isErrorString) {
             if (this.isNaN(this.parseFloat(num1)) || this.isNaN(this.parseFloat(num2))) {
                 stack.push(this.getErrorStrings()[CommonErrors.value]);
             } else if (this.parseFloat(num1) === 0) {
@@ -2161,9 +2169,18 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         let value1: number | string;
         let value2: number | string;
         let isOnlyAsterisk: boolean;
+        let result: string;
+        let isErrorString: boolean = false;
         if (operator !== 'and' && operator !== 'equal') {
             val1 = stack.pop();
             val2 = stack.pop();
+            if (this.getErrorStrings().indexOf(val1) > -1) {
+                result = val1;
+                isErrorString = true;
+            } else if (this.getErrorStrings().indexOf(val2) > -1) {
+                result = val2;
+                isErrorString = true;
+            }
             if (this.isNaN(this.parseFloat(val1)) && this.isNaN(this.parseFloat(val2))) {
                 val1 = val1.toString().toLowerCase();
                 val2 = val2.toString().toLowerCase();
@@ -2178,8 +2195,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 isOnlyAsterisk = true;
             }
         }
-        let result: string;
-        if (operator === 'less') {
+        if (operator === 'less' && !isErrorString) {
             if (!this.isNaN(value1) && !this.isNaN(value2)) {
                 result = (value2 < value1) ? this.trueValue : this.falseValue;
             } else {
@@ -2187,7 +2203,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     this.trueValue : this.falseValue;
             }
         }
-        if (operator === 'greater') {
+        if (operator === 'greater' && !isErrorString) {
             if (!this.isNaN(value1) && !this.isNaN(value2)) {
                 result = (value2 > value1) ? this.trueValue : this.falseValue;
             } else {
@@ -2195,7 +2211,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     this.trueValue : this.falseValue;
             }
         }
-        if (operator === 'lessEq') {
+        if (operator === 'lessEq' && !isErrorString) {
             if (!this.isNaN(value1) && !this.isNaN(value2)) {
                 result = (value2 <= value1) ? this.trueValue : this.falseValue;
             } else {
@@ -2203,7 +2219,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     this.trueValue : this.falseValue;
             }
         }
-        if (operator === 'greaterEq') {
+        if (operator === 'greaterEq' && !isErrorString) {
             if (!this.isNaN(value1) && !this.isNaN(value2)) {
                 result = (value2 >= value1) ? this.trueValue : this.falseValue;
             } else {
@@ -2211,34 +2227,46 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     this.trueValue : this.falseValue;
             }
         }
-        if (operator === 'notEq') {
+        if (operator === 'notEq' && !isErrorString) {
             result = (val2 !== val1) ? this.trueValue : this.falseValue;
             if (isOnlyAsterisk) {
                 result = this.falseValue;
             }
         }
-        if (operator === 'and') {
+        if (operator === 'and' && !isErrorString) {
             val1 = stack.pop().toString();
             val2 = '';
             if (stack.length > 0) {
                 val2 = stack.pop().toString();
             }
-            result = this.emptyString + val2 + val1 + this.emptyString;
-            result = result.split(this.tic).join('');
+            if (this.getErrorStrings().indexOf(val1) > -1) {
+                result = val1;
+            } else if (this.getErrorStrings().indexOf(val2) > -1) {
+                result = val2;
+            } else {
+                result = this.emptyString + val2 + val1 + this.emptyString;
+                result = result.split(this.tic).join('');
+            }
         }
-        if (operator === 'equal') {
+        if (operator === 'equal' && !isErrorString) {
             val1 = stack.pop();
             val2 = stack.pop();
-            if (this.isNaN(this.parseFloat(val1)) && this.isNaN(this.parseFloat(val2))) {
-                val1 = val1.toString().toLowerCase();
-                val2 = val2.toString().toLowerCase();
+            if (this.getErrorStrings().indexOf(val1) > -1) {
+                result = val1;
+            } else if (this.getErrorStrings().indexOf(val2) > -1) {
+                result = val2;
+            } else {
+                if (this.isNaN(this.parseFloat(val1)) && this.isNaN(this.parseFloat(val2))) {
+                    val1 = val1.toString().toLowerCase();
+                    val2 = val2.toString().toLowerCase();
+                }
+                if (val1 === '*' && this.isNaN(this.parseFloat(val2)) && val2 !== '') {
+                    isOnlyAsterisk = true;
+                }
+                result = val1 === val2 || isOnlyAsterisk ? this.trueValue : this.falseValue;
             }
-            if (val1 === '*' && this.isNaN(this.parseFloat(val2)) && val2 !== '') {
-                isOnlyAsterisk = true;
-            }
-            result = val1 === val2 || isOnlyAsterisk ? this.trueValue : this.falseValue;
         }
-        if (operator === 'or') {
+        if (operator === 'or' && !isErrorString) {
             result = Math.pow(this.parseFloat(value2), this.parseFloat(value1)).toString();
             result = this.isNaN(this.parseFloat(result)) ? this.getErrorStrings()[CommonErrors.value] : result;
         }

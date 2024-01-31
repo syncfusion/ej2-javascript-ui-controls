@@ -1528,10 +1528,10 @@ export class PdfViewerBase {
         if (this.clientSideRendering) {
             let proxy: any = this;
             let fileByteArray: any = this.pdfViewer.fileByteArray;
-            this.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageCollection', password: this.passwordData });
+            this.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageCollection', password: this.passwordData, pageIndex: pageIndex, isZoomMode: isZoomMode });
             this.pdfViewerRunner.onmessage = function (event) {
                 if (event.data.message === 'PageLoaded') {
-                    proxy.initialPagesRendered(pageIndex, isZoomMode)
+                    proxy.initialPagesRendered(event.data.pageIndex, event.data.isZoomMode)
                 }
             }
         } else {
@@ -5470,12 +5470,18 @@ export class PdfViewerBase {
                 let imageData: string = (this.renderThumbnailImages && !this.clientSideRendering) ? imageSource : data['image'];
                 if (imageData) {
                     canvas.onload = (): void => {
-                        const oldCanvases: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_tileimg_' + pageIndex + '_"]');
+                        const oldCanvases: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_tileimg_"]');
                         const pageCanvas: HTMLElement = proxy.getElement('_pageDiv_' + pageIndex);
                         for (let i: number = 0; i < oldCanvases.length; i++) {
                             let tileImgId: string[] = oldCanvases[parseInt(i.toString(), 10)].id.split('_');
-                            if (parseFloat(tileImgId[tileImgId.length - 3]) != proxy.getZoomFactor())
-                                pageCanvas.removeChild(oldCanvases[parseInt(i.toString(), 10)]);
+                            if (parseFloat(tileImgId[tileImgId.length - 3]) != proxy.getZoomFactor()){
+                                if(pageIndex !== parseInt(tileImgId[tileImgId.length - 4], 10)){
+                                    proxy.getElement('_pageDiv_' + tileImgId[tileImgId.length - 4]).removeChild(oldCanvases[parseInt(i.toString(), 10)]);
+                                }
+                                else{
+                                    pageCanvas.removeChild(oldCanvases[parseInt(i.toString(), 10)]);
+                                }
+                            }
                         }
                         const oldPageDiv: NodeListOf<Element> = document.querySelectorAll('img[id*="' + proxy.pdfViewer.element.id + '_oldCanvas"]');
                         for (let i: number = 0; i < oldPageDiv.length; i++) {
@@ -7123,7 +7129,7 @@ export class PdfViewerBase {
                 } else {
                     // eslint-disable-next-line
                     let tileData: any = JSON.parse(proxy.getWindowSessionStorageTile(pageIndex, 0, 0, zoomFactor));
-                    if (tileData) {
+                    if (tileCount > 1) {
                         data = tileData;
                     }
                 }
@@ -7318,7 +7324,7 @@ export class PdfViewerBase {
                                     let textDetailsId: string = proxy.documentId + '_' + pageIndex + '_textDetails';
                                     let isTextNeed: boolean = proxy.pageTextDetails ? proxy.pageTextDetails[`${textDetailsId}`] ? false : true : true;
                                     if (viewPortWidth >= pageWidth || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
-                                        this.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'renderPage', zoomFactor: zoomFactor, isTextNeed: isTextNeed });
+                                        this.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'renderPage', zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId });
                                     }
                                     else {
                                         this.showPageLoadingIndicator(pageIndex, true);
@@ -7330,10 +7336,11 @@ export class PdfViewerBase {
                                             tileY: y,
                                             tileXCount: noTileX,
                                             tileYCount: noTileY,
-                                            isTextNeed: isTextNeed
+                                            isTextNeed: isTextNeed,
+                                            textDetailsId: textDetailsId
                                         });
                                     }
-                                    this.pdfViewerRunner.onmessage = function (event) {
+                                    this.pdfViewerRunner.onmessage = function (event: any) {
                                         switch (event.data.message) {
                                             case 'imageRendered':
                                                 if (event.data.message === 'imageRendered') {
@@ -7352,19 +7359,20 @@ export class PdfViewerBase {
                                                     const rotation = event.data.rotation;
                                                     const characterBounds = event.data.characterBounds;
                                                     let hyperlinksDetails : any= proxy.pdfViewer.pdfRendererModule.getHyperlinks(pageIndex);
-                                                    let data: any = ({ image: imageUrl, pageNumber: pageIndex, uniqueId: proxy.documentId, pageWidth: event.data.pageWidth, zoomFactor: zoomFactor, hyperlinks: hyperlinksDetails.hyperlinks, hyperlinkBounds: hyperlinksDetails.hyperlinkBounds,linkAnnotation:hyperlinksDetails.linkAnnotation , linkPage:hyperlinksDetails.linkPage, annotationLocation: hyperlinksDetails.annotationLocation, characterBounds: characterBounds });
-                                                    if (isTextNeed) {
+                                                    let data: any = ({ image: imageUrl, pageNumber: pageIndex, uniqueId: proxy.documentId, pageWidth: event.data.pageWidth, zoomFactor: event.data.zoomFactor, hyperlinks: hyperlinksDetails.hyperlinks, hyperlinkBounds: hyperlinksDetails.hyperlinkBounds,linkAnnotation:hyperlinksDetails.linkAnnotation , linkPage:hyperlinksDetails.linkPage, annotationLocation: hyperlinksDetails.annotationLocation, characterBounds: characterBounds });
+                                                    if (event.data.isTextNeed) {
                                                         data.textBounds = textBounds;
                                                         data.textContent = textContent;
                                                         data.rotation = rotation;
                                                         data.pageText = pageText;
                                                         proxy.storeTextDetails(pageIndex, textBounds, textContent, pageText, rotation, characterBounds);
                                                     } else {
-                                                        let textDetails: any = JSON.parse(proxy.pageTextDetails[`${textDetailsId}`]);
+                                                        let textDetails: any = JSON.parse(proxy.pageTextDetails[`${event.data.textDetailsId}`]);
                                                         data.textBounds = textDetails.textBounds;
                                                         data.textContent = textDetails.textContent;
                                                         data.rotation = textDetails.rotation;
                                                         data.pageText = textDetails.pageText;
+                                                        data.characterBounds = textDetails.characterBounds;
                                                     }
                                                     if (data && data.image && data.uniqueId === proxy.documentId) {
                                                         let currentPageWidth: number = (data.pageWidth && data.pageWidth > 0) ? data.pageWidth : pageWidth;
@@ -7415,8 +7423,13 @@ export class PdfViewerBase {
                                                         transformationMatrix: {
                                                             Values: [1, 0, 0, 1, tileWidth * x, tileHeight * y, 0, 0, 0]
                                                         },
-                                                        zoomFactor: proxy.retrieveCurrentZoomFactor(),
-                                                        characterBounds: characterBounds 
+                                                        zoomFactor: event.data.zoomFactor,
+                                                        characterBounds: characterBounds,
+                                                        isTextNeed: event.data.isTextNeed,
+                                                        textDetailsId: event.data.textDetailsId, 
+                                                        textBounds: textBounds,
+                                                        textContent: textContent,
+                                                        pageText: pageText
                                                     };
                                                     if (tileData && tileData.image && tileData.uniqueId === proxy.documentId) {
                                                         let currentPageWidth: number = (tileData.pageWidth && tileData.pageWidth > 0) ? tileData.pageWidth : pageWidth;
@@ -7426,24 +7439,25 @@ export class PdfViewerBase {
                                                             let blobObj: string = proxy.createBlobUrl(tileData.image.split('base64,')[1], 'image/png');
                                                             let Url: any = URL || webkitURL;
                                                             const blobUrl: string = Url.createObjectURL(blobObj);
-                                                            let storeObject: any = {
-                                                                // eslint-disable-next-line
-                                                                image: blobUrl, width: tileData.width, uniqueId: tileData.uniqueId, tileX: tileData.tileX, tileY: tileData.tileY,
-                                                                zoomFactor: tileData.zoomFactor, transformationMatrix: tileData.transformationMatrix
-                                                            };
-                                                            if (isTextNeed) {
+                                                            if (tileData.isTextNeed) {
                                                                 tileData.textBounds = textBounds;
                                                                 tileData.textContent = textContent;
                                                                 tileData.rotation = rotation;
                                                                 tileData.pageText = pageText;
                                                                 proxy.storeTextDetails(pageIndex, textBounds, textContent, pageText, rotation, characterBounds);
                                                             } else {
-                                                                let textDetails: any = JSON.parse(proxy.pageTextDetails[`${textDetailsId}`]);
+                                                                let textDetails: any = JSON.parse(proxy.pageTextDetails[`${tileData.textDetailsId}`]);
                                                                 tileData.textBounds = textDetails.textBounds;
                                                                 tileData.textContent = textDetails.textContent;
                                                                 tileData.rotation = textDetails.rotation;
                                                                 tileData.pageText = textDetails.pageText;
+                                                                tileData.characterBounds = textDetails.characterBounds;
                                                             }
+                                                            let storeObject: any = {
+                                                                // eslint-disable-next-line
+                                                                image: blobUrl, width: tileData.width, uniqueId: tileData.uniqueId, tileX: tileData.tileX, tileY: tileData.tileY,
+                                                                zoomFactor: tileData.zoomFactor, transformationMatrix: tileData.transformationMatrix, pageText: tileData.pageText, textContent: tileData.textContent, textBounds: tileData.textBounds
+                                                            };
                                                             proxy.storeImageData(pageNumber, storeObject, tileData.tileX, tileData.tileY);
                                                         }
                                                         else {
@@ -7823,7 +7837,7 @@ export class PdfViewerBase {
      *
      */
     public storeTextDetails(pageNumber: number, textBounds: any, textContent: any, pageText: string, rotation: number, characterBounds: any) {
-        let textObject: any = ({ textBounds: textBounds, textContent: textContent, rotation: rotation, pageText: pageText });
+        let textObject: any = ({ textBounds: textBounds, textContent: textContent, rotation: rotation, pageText: pageText, characterBounds: characterBounds });
         if (this.pageSize[parseInt(pageNumber.toString(), 10)]) {
             this.pageSize[parseInt(pageNumber.toString(), 10)].rotation = rotation;
         }

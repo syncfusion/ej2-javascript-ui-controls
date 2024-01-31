@@ -727,6 +727,15 @@ export class Video {
             originalEvent.preventDefault();
             break;
         }
+        if (originalEvent.ctrlKey && originalEvent.key === 'a') {
+            this.handleSelectAll();
+        }
+    }
+
+    private handleSelectAll(): void {
+        this.cancelResizeAction();
+        const videoFocusNodes : NodeList = this.parent.inputElement.querySelectorAll('.' + classes.CLS_VID_FOCUS);
+        removeClass(videoFocusNodes, classes.CLS_VID_FOCUS);
     }
 
     private openDialog(isInternal?: boolean, event?: KeyboardEventArgs, selection?: NodeSelection, ele?: Node[], parentEle?: Node[]): void {
@@ -904,6 +913,7 @@ export class Video {
             /* eslint-disable */
             if (e.offsetX > (e.target as HTMLVideoElement).clientWidth || e.offsetY > (e.target as HTMLVideoElement).clientHeight) {
             } else {
+                this.parent.notify(events.documentClickClosedBy, { closedBy: "outside click" });
                 this.dialogObj.hide({ returnValue: true } as Event);
                 this.parent.isBlur = true;
                 dispatchEvent(this.parent.element, 'focusout');
@@ -1194,6 +1204,15 @@ export class Video {
                 }
             }
         });
+        if (e.selectNode && (((e.selectNode[0] as HTMLElement) && (e.selectNode[0] as HTMLElement).nodeType !== 3 &&
+            (e.selectNode[0] as HTMLElement).nodeName !== 'BR' &&
+            ((e.selectNode[0] as HTMLElement).classList &&
+            (e.selectNode[0] as HTMLElement).classList.contains(classes.CLS_VID_CLICK_ELEM))) ||
+            (e.selectNode[0] as HTMLElement).nodeName === 'IFRAME' || (e.selectNode[0] as HTMLElement).nodeName === 'VIDEO')) {
+            const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+            const sourceElement: HTMLSourceElement = (e.selectNode[0] as HTMLElement).querySelector('source');
+            (this.inputUrl as HTMLInputElement).value = sourceElement.src.match(regex) ? sourceElement.src : '';
+        }
         const embedUrlBtn: RadioButton = new RadioButton({
             label: this.i10n.getConstant('embeddedCode'),
             checked: true,
@@ -1203,7 +1222,6 @@ export class Video {
             },
             change: () => {
                 urlContent.innerHTML = '';
-                (this.inputUrl as HTMLInputElement).value = '';
                 urlContent.appendChild(this.embedInputUrl);
             }
         });
@@ -1213,7 +1231,6 @@ export class Video {
             name: 'URL',
             change: () => {
                 urlContent.innerHTML = '';
-                (this.embedInputUrl as HTMLTextAreaElement).value = '';
                 urlContent.appendChild(this.inputUrl);
             }
         });
@@ -1404,10 +1421,11 @@ export class Video {
                     range, proxy.contentModule.getDocument());
                 (this as IImageNotifyArgs).selectParent = proxy.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
             }
-            const name: string =  url !== '' ? url.split('/')[url.split('/').length - 1] : embedUrl;
+            const webUrlBtn: HTMLInputElement = document.getElementById('webURL') as HTMLInputElement;
+            const name: string =  webUrlBtn.checked ? url.split('/')[url.split('/').length - 1] : embedUrl;
             const value: IVideoCommandsArgs = {
                 cssClass: (proxy.parent.insertVideoSettings.layoutOption === 'Inline' ? classes.CLS_VIDEOINLINE : classes.CLS_VIDEOBREAK),
-                url: url, selection: (this as IImageNotifyArgs).selection, fileName: name, isEmbedUrl: embedUrl !== '' ? true : false,
+                url: url, selection: (this as IImageNotifyArgs).selection, fileName: name, isEmbedUrl: !webUrlBtn.checked,
                 selectParent: (this as IImageNotifyArgs).selectParent, width: {
                     width: proxy.parent.insertVideoSettings.width, minWidth: proxy.parent.insertVideoSettings.minWidth,
                     maxWidth: proxy.parent.getInsertImgMaxWidth()

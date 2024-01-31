@@ -3,7 +3,7 @@
  */
 import { RichTextEditor, ActionBeginEventArgs } from "../../../src/rich-text-editor/index";
 import { MarkdownFormatter } from '../../../src/rich-text-editor/formatter/markdown-formatter';
-import { renderRTE, destroy } from './../render.spec';
+import { renderRTE, destroy, setCursorPoint } from './../render.spec';
 
 describe('Formatter module', () => {
 
@@ -199,6 +199,57 @@ Tabs and shift-tabs work too`;
 
         afterAll(() => {
             destroy(rteObj);
+        });
+    });
+    describe('861633 - Table is created at the top instead of pointed place when using keyboard shortcut (Ctrl+Shift+E) ', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let innerHTML: string = `<p class="focusNode">The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href='https://ej2.syncfusion.com/home/' target='_blank'>HTML markup</a> or <a href='https://ej2.syncfusion.com/home/' target='_blank'>markdown</a> of the content</p>
+        <p><b>Toolbar</b></p>
+        <ol>
+            <li>
+                <p>The Toolbar contains commands to align the text, insert a link, insert an image, insert list, undo/redo operations, HTML view, etc </p>
+            </li>
+            <li>
+                <p>The Toolbar is fully customizable </p>
+            </li>
+        </ol>  `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Test - Check that the inserted table is in the current cursor position.', () => {
+            rteObj.focusIn();
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector("p");
+            setCursorPoint(node, 5);
+            node.focus();
+            const keyEvent = new KeyboardEvent("keydown", {
+                key: "E",
+                ctrlKey: true,
+                shiftKey: true,
+                bubbles: true,
+                cancelable: true,
+                code: "KeyE",
+                charCode: 0,
+                keyCode: 69,
+                which: 69
+            } as EventInit);
+            rteObj.contentModule.getEditPanel().dispatchEvent(keyEvent);
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            let target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            let focusNode: Element = (rteObj as any).inputElement.querySelector(".focusNode").nextSibling as Element;
+            expect(focusNode.classList.contains('e-rte-table')).toBe(true);
         });
     });
 });

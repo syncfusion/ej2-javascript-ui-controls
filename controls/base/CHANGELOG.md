@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 24.2.3 (2024-01-31)
+
+### Common
+
+#### Bug Fixes
+
+- `#I547507` - The issue with "rendering the new line in the html template string" has been resolved.
+
+### Common
+
+#### Bug Fixes
+
+- `#I541838` - Resolved issue with time picker designator "pm" is automatically flips to "am".
+
 ## 24.1.46 (2024-01-17)
 
 ### Common

@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-## 24.1.46 (2024-01-17)
+## 24.2.3 (2024-01-31)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I542557` - Now, multiline textbox field is not able to resize without form designer mode.
+- `#I537053` - Now, the highlight button does not appear focused even after being clicked again.
+- `#I537971` - Now, the signature content is visible when loading the customer provided PDF document.
+- `#I537057` - Now, the font sizes of the input element items in the toolbar does not vary across different themes.
+- `#I537061` - Now, the vertical alignment of toolbar items does not vary across different themes.
+- `#I545609` - Now, the current page does not change when selecting 400% from the zoom drop-down.
+- `#I538873` - Now, the text search is working properly in the Stand-alone PDF Viewer.
+- `#I545609` - The text selection in the Stand-alone PDF Viewer now works properly when zoomed in above 100%.
+- `#I539013` - Scrolling now works even if the annotation module is not injected on iPad and iPhone devices.
+- `#I533379` - Now, the freetext fill color is updated correctly.
+- `#I539640` - Now, the ink annotation is rendered properly in the downloaded document in Stand-alone PDF Viewer.
+
+## 24.1.47 (2024-01-23)
 
 ### PDF Viewer
 

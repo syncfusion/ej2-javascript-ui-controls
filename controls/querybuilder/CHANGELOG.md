@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 24.1.47 (2024-01-23)
+## 24.1.46 (2024-01-17)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I867810` - Issue with Script error thrown in the header template while adding and deleting the conditions has been fixed.
+
+## 24.1.46 (2024-01-17)
 
 ### QueryBuilder
 

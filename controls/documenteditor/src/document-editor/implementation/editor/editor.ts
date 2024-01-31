@@ -548,10 +548,11 @@ export class Editor {
             typeOfProtection = isReadOnly ? 'ReadOnly' : this.documentHelper.protectionType;
             limitToFormatting = restrictFormatType;
         } else {
-            limitToFormatting = true;
             typeOfProtection = restrictFormatType;
         }
-        this.documentHelper.restrictFormatting = limitToFormatting;
+        if (!isNullOrUndefined(limitToFormatting)) {
+            this.documentHelper.restrictFormatting = limitToFormatting;
+        }
         this.documentHelper.protectionType = typeOfProtection;
         this.selection.isHighlightEditRegion = true;
         this.addProtection(credential, this.documentHelper.protectionType, false);
@@ -5343,6 +5344,11 @@ export class Editor {
             paragraphFormat.textAlignment = insertedParaFormat.textAlignment;
         } else {
             paragraphFormat.textAlignment = 'Left';
+        }
+        if (!isNullOrUndefined(insertedParaFormat.outlineLevel)) {
+            paragraphFormat.outlineLevel = insertedParaFormat.outlineLevel;
+        } else {
+            paragraphFormat.outlineLevel = 'BodyText';
         }
         if (insertedParaFormat.beforeSpacing === -1) {
             paragraphFormat.beforeSpacing = 0;
@@ -10778,6 +10784,8 @@ export class Editor {
             }
             format.textAlignment = textAlignment;
             //this.documentHelper.layout.allowLayout = false;
+        } else if (property === 'outlineLevel') {
+            format.outlineLevel = <OutlineLevel>value;
         } else if (property === 'topBorder') {
             this.applyBorder(format.borders.top, <WBorder>value);
         } else if (property === 'bottomBorder') {
@@ -16060,7 +16068,18 @@ export class Editor {
             let indexInInline: number = offset - count;
             inline.ischangeDetected = true;
             if (this.owner.isSpellCheck) {
+                // here we are removing errorCollection for next & previous elements for recalculating spellcheck error
+                const nextElement: ElementBox = inline.nextElement;
+                const previousElement: ElementBox = inline.previousElement;
                 this.owner.spellChecker.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
+                if (!isNullOrUndefined(nextElement) && nextElement instanceof TextElementBox) {
+                    nextElement.ischangeDetected = true;
+                    this.owner.spellChecker.removeErrorsFromCollection({ 'element': nextElement, 'text': nextElement.text });
+                }
+                if (!isNullOrUndefined(previousElement) && previousElement instanceof TextElementBox) {
+                    previousElement.ischangeDetected = true;
+                    this.owner.spellChecker.removeErrorsFromCollection({ 'element': previousElement, 'text': previousElement.text });
+                }
                 if (!inline.canTrigger) {
                     this.documentHelper.triggerSpellCheck = false;
                 }
@@ -21233,6 +21252,10 @@ export interface ParagraphFormatProperties {
      * Defines the widow control property of paragraph
      */
     widowControl?: boolean;
+    /**
+     * Defines the outline level of paragraph
+     */
+    outlineLevel?: OutlineLevel;
 }
 /**
  * Defines the section format properties of document editor

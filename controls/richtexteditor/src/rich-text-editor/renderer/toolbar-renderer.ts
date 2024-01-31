@@ -33,6 +33,7 @@ export class ToolbarRenderer implements IRenderer {
     private currentDropdown: DropDownButton;
     private tooltip: Tooltip;
     private l10n: L10n;
+    private dropdownTooltip :Tooltip;
 
     /**
      * Constructor for toolbar renderer module
@@ -89,6 +90,7 @@ export class ToolbarRenderer implements IRenderer {
 
     private dropDownSelected(args: MenuEventArgs): void {
         this.parent.notify(events.dropDownSelect, args);
+        this.destroyTooltip();
     }
 
     private beforeDropDownItemRender(args: MenuEventArgs): void {
@@ -119,11 +121,18 @@ export class ToolbarRenderer implements IRenderer {
         if (args.element.parentElement.getAttribute('id').indexOf('TableCell') > -1 && !isNOU(args.element.parentElement.querySelector('.e-cell-merge')) &&
         (!isNOU(args.element.parentElement.querySelector('.e-cell-horizontal-split')) || !isNOU(args.element.parentElement.querySelector('.e-cell-vertical-split')))) {
             const listEle: NodeListOf<HTMLElement> = args.element.querySelectorAll('li');
-            if (this.parent.inputElement.querySelectorAll('.e-cell-select').length === 1) {
+            const selectedEles: NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('.e-cell-select');
+            if (selectedEles.length === 1) {
                 addClass([listEle[0]], 'e-disabled');
                 removeClass([listEle[1], listEle[2]], 'e-disabled');
-            } else if (this.parent.inputElement.querySelectorAll('.e-cell-select').length > 1) {
-                removeClass([listEle[0]], 'e-disabled');
+            } else if (selectedEles.length > 1) {
+                if (!Array.from(selectedEles).every((element: HTMLElement) =>
+                    element.tagName.toLowerCase() === selectedEles[0].tagName.toLowerCase()
+                )) {
+                    addClass([listEle[0]], 'e-disabled');
+                } else {
+                    removeClass([listEle[0]], 'e-disabled');
+                }
                 addClass([listEle[1], listEle[2]], 'e-disabled');
             }
         }
@@ -172,6 +181,19 @@ export class ToolbarRenderer implements IRenderer {
                 position: 'BottomCenter'
             });
             this.tooltip.appendTo(args.target);
+        }
+        if (this.parent.showTooltip) {
+            this.dropdownTooltip = new Tooltip({
+                target: '[aria-owns="'+ this.parent.getID() +'"].e-rte-elements [title]',
+                showTipPointer: true,
+                openDelay: 400,
+                opensOn: 'Hover',
+                beforeRender: this.tooltipBeforeRender.bind(this),
+                cssClass: this.parent.getCssClass(),
+                windowCollision: true,
+                position: 'BottomCenter'
+            });
+            this.dropdownTooltip.appendTo(document.body);
         }
     }
 

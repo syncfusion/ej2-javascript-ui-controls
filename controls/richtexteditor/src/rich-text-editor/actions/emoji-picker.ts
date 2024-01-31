@@ -661,7 +661,7 @@ export class EmojiPicker {
                 noEmojiObj.style.margin = '55px';
                 emojipickerAll.appendChild(noEmojiObj);
             }
-            else if (!noEMoji && this.parent.element.querySelector('.e-rte-emojiSearch-noEmoji') || (inputValue === '' && value === ':')) {
+            else if (!noEMoji && this.parent.element.querySelector('.e-rte-emojiSearch-noEmoji') || (inputValue === '' && value === ':') || (inputValue === '' && this.parent.element.querySelector('.e-rte-emojiSearch-noEmoji'))) {
                 emojipickerAll.removeChild(this.parent.element.querySelector('.e-rte-emojiSearch-noEmoji'));
             }
             emojipickerAll.appendChild(emojiBtnDiv);

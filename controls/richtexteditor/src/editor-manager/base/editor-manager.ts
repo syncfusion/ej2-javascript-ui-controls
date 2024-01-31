@@ -1,5 +1,5 @@
 import { Observer } from '@syncfusion/ej2-base';
-import { ICommandModel, IFormatPainterEditor } from './interface';
+import { ICommandModel, IFormatPainterEditor, IHTMLMouseEventArgs } from './interface';
 import { IHtmlKeyboardEvent } from './interface';
 import { EditorExecCommand as ExecCommand } from './types';
 import * as CONSTANT from './constant';
@@ -95,6 +95,7 @@ export class EditorManager {
         this.observer.on(EVENTS.MODEL_CHANGED, this.onPropertyChanged, this);
         this.observer.on(EVENTS.MS_WORD_CLEANUP, this.onWordPaste, this);
         this.observer.on(EVENTS.ON_BEGIN, this.onBegin, this);
+        this.observer.on(EVENTS.MOUSE_DOWN, this.editorMouseDown, this);
     }
     private onWordPaste(e: NotifyArgs): void {
         this.observer.notify(EVENTS.MS_WORD_CLEANUP_PLUGIN, e);
@@ -240,6 +241,78 @@ export class EditorManager {
             this.observer.notify(EVENTS.EMOJI_PICKER_ACTIONS, { item: exeValue, subCommand: value, value: text,
                 event : event, callBack: callBack });
         }
+    }
+
+    
+    private editorMouseDown(e: IHTMLMouseEventArgs): void {
+        if (e.args.detail === 3) {
+            this.tripleClickSelection(e.args as MouseEvent);
+        }
+    }
+
+    private tripleClickSelection(e: MouseEvent): void {
+        const range: Range = this.nodeSelection.getRange(this.currentDocument);
+        const selection: Selection = this.nodeSelection.get(this.currentDocument);
+        if (selection.rangeCount > 0 && selection.toString() !== '') {
+            const startBlockNode: Node = this.getParentBlockNode(range.startContainer);
+            const endBlockNode: Node = this.getParentBlockNode(range.endContainer);
+            if (startBlockNode && endBlockNode &&  startBlockNode === endBlockNode) {
+                const newRange: Range = this.currentDocument.createRange();
+                const startTextNode: Node = this.getFirstTextNode(startBlockNode);
+                const endTextNode: Node = this.getLastTextNode(endBlockNode);
+                if (startTextNode && endTextNode) {
+                    newRange.setStart(startTextNode, 0);
+                    newRange.setEnd(endTextNode, endTextNode.textContent.length);
+                    this.nodeSelection.setRange(this.currentDocument, newRange);
+                    e.preventDefault();
+                }
+            }
+        }
+    }
+
+    private getParentBlockNode(node: Node): Node  {
+        let treeWalker = this.currentDocument.createTreeWalker(this.editableElement, // root
+            NodeFilter.SHOW_ELEMENT, // whatToShow
+            {   // filter
+                acceptNode: function(currentNode: Node): number {
+                    // Check if the node is a block element
+                    let displayStyle = window.getComputedStyle(currentNode as Element).display;
+                    if (displayStyle.indexOf('inline') < 0) {
+                        return NodeFilter.FILTER_ACCEPT;
+                    } else {
+                        return NodeFilter.FILTER_SKIP;
+                    }
+                }
+            },
+        );
+        treeWalker.currentNode = node;
+        let blockParent = treeWalker.parentNode();
+        return blockParent;
+    }
+
+    private getLastTextNode(node: Node): Node | null {
+        let treeWalker: TreeWalker = this.currentDocument.createTreeWalker(
+            node,
+            NodeFilter.SHOW_TEXT,
+            null,
+        );
+        let lastTextNode: Node | null = null;
+        let currentNode: Node | null = treeWalker.nextNode();
+        while(currentNode) {
+            lastTextNode = currentNode;
+            currentNode = treeWalker.nextNode();
+        }
+        return lastTextNode;
+    }
+
+    private getFirstTextNode(node: Node): Node | null {
+        let treeWalker: TreeWalker = this.currentDocument.createTreeWalker(
+            node,
+            NodeFilter.SHOW_TEXT,
+            null,
+        );
+        let firstTextNode: Node | null = treeWalker.nextNode();
+        return firstTextNode;
     }
 }
 

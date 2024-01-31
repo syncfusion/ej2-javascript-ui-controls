@@ -3327,4 +3327,70 @@ describe('RTE CR issues', () => {
             done();
         });
     });
+
+    describe('866230 - Script error throws when using click event with custom toolbar template in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: [{
+                        click:function(){
+                            rteObj.executeCommand('insertHTML','<div>testing</div>');
+                    },
+                    undo:true,
+                    tooltipText: 'Insert Symbol',
+                    template: '<button class="e-tbar-btn e-btn" tabindex="-1" id="custom_tbar"  style="width:100%">'
+                    + '<div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div></button>'
+                    },'Undo','Redo']
+                },
+                value:'RichTextEditor'
+            });
+        });
+        it('check the value undo redo action in custom toolbar click', () => {
+            (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as any).click();
+            (rteObj.element.querySelectorAll(".e-toolbar-item")[1] as any).click();
+            expect(rteObj.inputElement.innerHTML === '<p>RichTextEditor</p>').toBe(true);
+            (rteObj.element.querySelectorAll(".e-toolbar-item")[2] as any).click();
+            expect(rteObj.inputElement.innerHTML === '<div>testing</div><p>RichTextEditor</p>').toBe(true);
+        });
+        afterEach((done) => {
+            destroy(rteObj);
+            done();
+        });
+    });
+    describe('865259: Script error throws and line breaks added when clicking Bold toolbar item in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let rteObj2: RichTextEditor;
+        let defaultUserAgent= navigator.userAgent;
+        let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+        beforeAll(() => {
+            Browser.userAgent = fireFox;
+            rteObj = renderRTE({
+                value: `First RTEC`
+            });
+            rteObj2 = renderRTE({
+                value: `second RTEC`
+            });
+        });
+
+        it('Checking with firefox browser', () => {
+            rteObj.value = "";
+            rteObj.focusIn();
+            let range: Range = document.createRange();
+            range.setStart(rteObj2.element.querySelector('.e-content'), 1);
+            rteObj2.formatter.editorManager.nodeSelection.setRange(document, range);
+            rteObj2.executeCommand('bold');
+            expect(rteObj2.inputElement.innerHTML === '<p><strong></strong>second RTEC</p>').toBe(true);
+            rteObj2.value= `<p><strong></strong>second RTEC</p><p><strong></strong>second RTEC</p>`;
+            range.setStart(rteObj2.element.querySelector('.e-content'), 1);
+            rteObj2.formatter.editorManager.nodeSelection.setRange(document, range);
+            rteObj2.executeCommand('bold');
+            expect(rteObj2.inputElement.nodeName === 'DIV').toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            destroy(rteObj2);
+            Browser.userAgent =defaultUserAgent;
+        });
+    });
 });

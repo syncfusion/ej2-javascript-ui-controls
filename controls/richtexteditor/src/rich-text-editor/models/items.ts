@@ -461,14 +461,14 @@ export let tools: { [key: string]: IToolsItems } = {
     'sourcecode': {
         'id': 'SourceCode',
         'icon': 'e-source-code',
-        'tooltip': 'Source Code',
+        'tooltip': 'Code View (Ctrl+Shift+H)',
         'command': 'SourceCode',
         'subCommand': 'SourceCode'
     },
     'preview': {
         'id': 'Preview',
         'icon': 'e-preview',
-        'tooltip': 'Preview',
+        'tooltip': 'Preview (Ctrl+Shift+H)',
         'command': 'Preview',
         'subCommand': 'Preview'
     },

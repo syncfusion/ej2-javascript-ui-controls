@@ -268,6 +268,14 @@ export class Audio {
             originalEvent.preventDefault();
             break;
         }
+        if (originalEvent.ctrlKey && originalEvent.key === 'a') {
+            this.handleSelectAll();
+        }
+    }
+
+    private handleSelectAll(): void {
+        const audioFocusNodes: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.' + classes.CLS_AUD_FOCUS);
+        removeClass(audioFocusNodes, classes.CLS_AUD_FOCUS);
     }
 
     private openDialog(isInternal?: boolean, event?: KeyboardEventArgs, selection?: NodeSelection, ele?: Node[], parentEle?: Node[]): void {
@@ -407,6 +415,7 @@ export class Audio {
             /* eslint-disable */
             if (e.offsetX > (e.target as HTMLElement).clientWidth || e.offsetY > (e.target as HTMLElement).clientHeight) {
             } else {
+                this.parent.notify(events.documentClickClosedBy, { closedBy: "outside click" });
                 this.dialogObj.hide({ returnValue: true } as Event);
                 this.parent.isBlur = true;
                 dispatchEvent(this.parent.element, 'focusout');
@@ -668,6 +677,11 @@ export class Audio {
                 }
             }
         });
+        if (e.selectNode && this.isAudioElem(e.selectNode[0] as HTMLElement)) {
+            const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+            const sourceElement: HTMLSourceElement = (e.selectNode[0] as HTMLElement).querySelector('source');
+            (this.inputUrl as HTMLInputElement).value = sourceElement.src.match(regex) ? sourceElement.src : '';
+        }
         audioUrl.appendChild(this.inputUrl);
         return audioUrl;
     }

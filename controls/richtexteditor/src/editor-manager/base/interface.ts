@@ -226,3 +226,12 @@ export interface CSSPropCollection {
     value: string;
     priority: string;
 }
+
+/**
+ * @private
+ * @hidden
+ */
+export interface IHTMLMouseEventArgs {
+    name: string;
+    args: MouseEvent;
+}

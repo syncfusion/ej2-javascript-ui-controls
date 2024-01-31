@@ -136,6 +136,9 @@
         min-height: 350px;
       }
     }
+    .e-rte-content .e-content {
+      font-size: $rte-big-content-font-size;
+    }
   }
 
   .e-richtexteditor {
@@ -442,10 +445,7 @@
         position: relative;
         text-align: inherit;
         z-index: 2;
-
-        @media screen and (min-width: 992px) {
-          font-size: $rte-content-font-size;
-        }
+        font-size: $rte-content-font-size;
       }
 
       .e-content p {
@@ -630,6 +630,34 @@
     .e-toolbar .e-toolbar-item .e-tbar-btn,
     .e-toolbar.e-extended-toolbar .e-toolbar-extended.e-toolbar-pop .e-toolbar-item .e-tbar-btn{
       font-size: $rte-tbar-icon-size;
+    }
+    .e-clickelem::after,
+    .e-video-clickelem::after {
+      left: 0;
+      right: 0;
+      z-index: 1;
+    }
+    .e-clickelem::before,
+    .e-video-clickelem::before {
+      left: 0;
+      right: 0;
+      z-index: 1;
+    }
+    .e-clickelem::before {
+      bottom: 70%;
+      top: 0;
+    }
+    .e-clickelem::after {
+      bottom: 0;
+      top: 70%;
+    }
+    .e-video-clickelem::before {
+      bottom: 85%;
+      top: 0;
+    }
+    .e-video-clickelem::after {
+      bottom: 0;
+      top: 90%;
     }
   }
 
@@ -926,7 +954,6 @@
     height: 20px;
     min-width: 20px;
     padding: 2px 5px;
-    vertical-align: middle;
   }
 
   .e-rte-table.e-dashed-border td,
@@ -966,6 +993,14 @@
   }
 
   .e-rte-img-dialog .e-rte-label:first-child {
+    padding-top: 0;
+  }
+
+  .e-rte-video-dialog .e-rte-label {
+    padding-top: $rte-insert-dialog-label-padding-top;
+  }
+
+  .e-rte-video-dialog .e-rte-label:first-child {
     padding-top: 0;
   }
 

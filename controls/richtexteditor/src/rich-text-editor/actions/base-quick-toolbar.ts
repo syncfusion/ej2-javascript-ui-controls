@@ -335,6 +335,9 @@ export class BaseQuickToolbar {
                 this.parent.enableToolbarItem(this.parent.toolbarSettings.items as string[]);
             }
         }
+        if (this.parent.showTooltip && !isNOU(document.querySelector('.e-tooltip-wrap'))) {
+            this.parent.notify(events.destroyTooltip, {args: event});
+        }
         this.removeEleFromDOM();
         this.isDOMElement = false;
     }

@@ -186,7 +186,7 @@ export class ViewSource {
         this.parent.trigger(events.actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
         this.parent.invokeChangeEvent();
         if (!isNullOrUndefined(this.parent.saveInterval) && this.parent.saveInterval > 0 && this.parent.autoSaveOnIdle) {
-            this.codeViewTimeInterval = setInterval(() => { this.parent.notify(events.updateValueOnIdle, {}) }, this.parent.saveInterval);
+            this.codeViewTimeInterval = setInterval(()=>{this.parent.notify(events.updateValueOnIdle,{})}, this.parent.saveInterval);
         }
     }
 

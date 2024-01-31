@@ -155,7 +155,23 @@
         }
       }
 
-      & .e-dlg-content {
+      &.e-device {
+        & .e-dlg-header-content {
+          display: inline-flex;
+          flex: 1 1 auto;
+
+          & .e-dlg-header {
+            flex: 1 1 auto;
+          }
+        }
+
+        & .e-dlg-content {
+          display: none;
+        }
+      }
+
+      & .e-dlg-content,
+      &.e-device .e-dlg-header-content {
         padding: 0%;
         @if $sheet-skin == 'tailwind' or $sheet-skin == 'tailwind-dark' {
           border-radius: 5px;
@@ -2970,9 +2986,13 @@
         padding: 0;
       }
 
-      & .e-findtool-dlg .e-dlg-content .e-find-toolbar .e-input {
+      & .e-findtool-dlg .e-find-toolbar .e-input {
         width: calc(100% - 70px);
       }
+    }
+
+    & .e-findtool-dlg.e-device .e-toolbar-items {
+      width: 100%;
     }
 
     .e-spreadsheet-function-dlg.e-dialog {

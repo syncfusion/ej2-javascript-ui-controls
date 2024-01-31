@@ -2,7 +2,7 @@
  * Template Engine
  */
 
-const LINES: RegExp = new RegExp('\\n\\s+|(?<=>)\\s{1,}(?=<)', 'g');
+const LINES: RegExp = new RegExp('\\n|\\r|\\s\\s+', 'g');
 const QUOTES: RegExp = new RegExp(/'|"/g);
 const IF_STMT: RegExp = new RegExp('if ?\\(');
 const ELSEIF_STMT: RegExp = new RegExp('else if ?\\(');

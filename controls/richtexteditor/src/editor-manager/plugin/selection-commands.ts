@@ -41,6 +41,21 @@ export class SelectionCommands {
             const nodeCutter: NodeCutter = new NodeCutter();
             const isFormatted: IsFormatted = new IsFormatted();
             let range: Range = domSelection.getRange(docElement);
+            if (Browser.userAgent.indexOf('Firefox') !== -1 && range.startContainer === range.endContainer && !isNOU(endNode) && range.startContainer === endNode) {
+                const startChildNodes: NodeListOf<Node> = range.startContainer.childNodes;
+                const startNode: Element = <Element>((startChildNodes[(range.startOffset > 0) ? (range.startOffset - 1) :
+                    range.startOffset]) || range.startContainer);
+                const endNode: Element = <Element>(range.endContainer.childNodes[(range.endOffset > 0) ? (range.endOffset - 1) :
+                    range.endOffset] || range.endContainer);
+                let lastSelectionNode: Element = <Element>(endNode.lastChild.nodeName === 'BR' ? (isNOU(endNode.lastChild.previousSibling) ? endNode
+                    : endNode.lastChild.previousSibling) : endNode.firstChild);
+                while (!isNOU(lastSelectionNode) && lastSelectionNode.nodeName !== '#text' && lastSelectionNode.nodeName !== 'IMG' &&
+                lastSelectionNode.nodeName !== 'BR' && lastSelectionNode.nodeName !== 'HR') {
+                    lastSelectionNode = lastSelectionNode.lastChild as Element;
+                };
+                domSelection.setSelectionText(docElement, startNode, lastSelectionNode, 0, 0);
+                range = domSelection.getRange(docElement);
+            }
             const save: NodeSelection = domSelection.save(range, docElement);
             const nodes: Node[] = range.collapsed ? domSelection.getSelectionNodeCollection(range) :
                 domSelection.getSelectionNodeCollectionBr(range);

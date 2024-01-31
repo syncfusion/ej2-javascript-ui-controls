@@ -1389,9 +1389,33 @@ export class CheckBoxFilterBase {
         }
     }
 
+    /**
+     * Method to set the next target element on keyboard navigation using arrow keys.
+     *
+     */
+    private focusNextOrPrev(e: KeyboardEventArgs, focusableElements: HTMLElement[]): void {
+        const nextIndex: number = (e.key === 'ArrowUp') ? focusableElements.indexOf(document.activeElement as HTMLElement) - 1
+         : focusableElements.indexOf(document.activeElement as HTMLElement) + 1;
+        const nextElement: Element = focusableElements[((nextIndex + focusableElements.length) % focusableElements.length)];
+
+        // Set focus on the next / previous element
+        if (nextElement) {
+            (nextElement as HTMLElement).focus();
+            const target: Element = nextElement.classList.contains('e-chk-hidden') ? parentsUntil(nextElement, 'e-ftrchk') : nextElement;
+            this.setFocus(target);
+        }
+    }
+
     private keyupHandler(e: KeyboardEventArgs): void {
-        if ((e.key === 'Tab' && e.shiftKey) || e.key === 'Tab' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        if ((e.key === 'Tab' && e.shiftKey) || e.key === 'Tab' || ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey)) {
             this.setFocus(parentsUntil(e.target as Element, 'e-ftrchk'));
+        }
+        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey && (this.parent.filterSettings as any).type === 'CheckBox') {
+            e.preventDefault();
+            const focusableElements: HTMLElement[] = Array.from(this.dlg.querySelectorAll(
+                'input, button, [tabindex]:not([tabindex="-1"])'
+            ));
+            this.focusNextOrPrev(e, focusableElements);
         }
     }
 

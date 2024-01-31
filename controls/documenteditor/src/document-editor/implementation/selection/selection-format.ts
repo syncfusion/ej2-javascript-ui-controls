@@ -4,7 +4,8 @@ import {
     CellVerticalAlignment, HeightType, TableAlignment, BiDirectionalOverride, FootEndNoteNumberFormat,
     FootnoteRestartIndex,
     FontScriptType,
-    HeaderFooterType
+    HeaderFooterType,
+    OutlineLevel
 } from '../../base/types';
 import {
     WSectionFormat, WCharacterFormat, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WShading, WColumnFormat
@@ -896,6 +897,7 @@ export class SelectionParagraphFormat {
     private spaceAfterAutoIn: boolean = undefined;
     private spaceBeforeAutoIn: boolean = undefined;
     private textAlignmentIn: TextAlignment = undefined;
+    private outlineLevelIn: OutlineLevel = undefined;
     private firstLineIndentIn: number = 0;
     private lineSpacingIn: number = 1;
     private lineSpacingTypeIn: LineSpacingType = undefined;
@@ -1009,6 +1011,26 @@ export class SelectionParagraphFormat {
         }
         this.textAlignmentIn = value;
         this.notifyPropertyChanged('textAlignment');
+    }
+    /**
+     * Gets or Sets the outline level for selected paragraphs.
+     *
+     * @default undefined
+     */
+    public get outlineLevel(): OutlineLevel {
+        return this.outlineLevelIn;
+    }
+    /**
+     * Sets the outline level for selected paragraphs.
+     *
+     * @default undefined
+     */
+    public set outlineLevel(value: OutlineLevel) {
+        if (value === this.outlineLevelIn) {
+            return;
+        }
+        this.outlineLevelIn = value;
+        this.notifyPropertyChanged('outlineLevel');
     }
     /**
      * Sets the after spacing for selected paragraphs.
@@ -1339,6 +1361,8 @@ export class SelectionParagraphFormat {
                 return this.keepLinesTogether;
             case 'widowControl':
                 return this.widowControl;
+            case 'outlineLevel':
+                    return this.outlineLevel;
             default:
                 return undefined;
         }
@@ -1405,6 +1429,7 @@ export class SelectionParagraphFormat {
         this.lineSpacing = format.lineSpacing;
         this.lineSpacingType = format.lineSpacingType;
         this.textAlignment = format.textAlignment;
+        this.outlineLevel = format.outlineLevel;
         this.bidi = format.bidi;
         this.keepLinesTogether = format.keepLinesTogether;
         this.keepWithNext = format.keepWithNext;
@@ -1449,6 +1474,9 @@ export class SelectionParagraphFormat {
         }
         if (!isNullOrUndefined(this.textAlignment)) {
             format.textAlignment = this.textAlignment;
+        }
+        if (!isNullOrUndefined(this.outlineLevel)) {
+            format.outlineLevel = this.outlineLevel;
         }
         if (!isNullOrUndefined(this.lineSpacing)) {
             format.lineSpacing = this.lineSpacing;
@@ -1511,6 +1539,9 @@ export class SelectionParagraphFormat {
         }
         if (!isNullOrUndefined(this.textAlignment) && this.textAlignment !== format.textAlignment) {
             this.textAlignment = undefined;
+        }
+        if (!isNullOrUndefined(this.outlineLevel) && this.outlineLevel !== format.outlineLevel) {
+            this.outlineLevel = undefined;
         }
         if (this.listLevelNumber >= 0 && !isNullOrUndefined(this.listId) && (isNullOrUndefined(format.listFormat) || format.listFormat.listLevelNumber !== this.listLevelNumber)) {
             this.listLevelNumber = -1;

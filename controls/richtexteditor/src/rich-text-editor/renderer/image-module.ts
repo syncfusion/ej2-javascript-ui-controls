@@ -748,7 +748,17 @@ export class Image {
             originalEvent.preventDefault();
             break;
         }
+        if (originalEvent.ctrlKey && originalEvent.key === 'a') {
+            this.handleSelectAll();
+        }
     }
+
+    private handleSelectAll(): void {
+        this.cancelResizeAction();
+        const imgFocusNodes: NodeListOf<Element> = this.parent.inputElement.querySelectorAll('.' + classes.CLS_IMG_FOCUS);
+        removeClass(imgFocusNodes, classes.CLS_IMG_FOCUS);
+    }
+
     private openDialog(isInternal?: boolean, event?: KeyboardEventArgs, selection?: NodeSelection, ele?: Node[], parentEle?: Node[]): void {
         let range: Range;
         let save: NodeSelection;
@@ -913,9 +923,11 @@ export class Image {
                     this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                     this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
                     this.quickToolObj.imageQTBar.showPopup(args.pageX, pageY, target as Element);
+                    this.resizeStart(e.args as PointerEvent, target);
                 }, 400);
             } else {
-                this.quickToolObj.imageQTBar.showPopup(args.pageX, pageY, target as Element);
+                const coordinates: DOMRect = target.getBoundingClientRect() as DOMRect;
+                this.quickToolObj.imageQTBar.showPopup(coordinates.left, coordinates.top, target as Element, 'Image');
             }
         }
     }
@@ -1380,7 +1392,7 @@ export class Image {
             isModal: (Browser.isDevice as boolean),
             buttons: [{
                 click: this.insertImageUrl.bind(selectObj),
-                buttonModel: { content: imgInsert, cssClass: 'e-flat e-insertImage' + this.parent.getCssClass(true), isPrimary: true, disabled: true }
+                buttonModel: { content: imgInsert, cssClass: 'e-flat e-insertImage' + this.parent.getCssClass(true), isPrimary: true, disabled: this.parent.editorMode === 'Markdown' ? false : true }
             },
             {
                 click: (e: MouseEvent) => {
@@ -1482,6 +1494,7 @@ export class Image {
             /* eslint-disable */
             if (e.offsetX > (e.target as HTMLImageElement).clientWidth || e.offsetY > (e.target as HTMLImageElement).clientHeight) {
             } else {
+                this.parent.notify(events.documentClickClosedBy, { closedBy: "outside click" });
                 this.dialogObj.hide({ returnValue: true } as Event);
                 this.parent.isBlur = true;
                 dispatchEvent(this.parent.element, 'focusout');
@@ -1541,6 +1554,10 @@ export class Image {
                 }
             }
         });
+        if (e.selectNode && e.selectNode[0].nodeName === 'IMG') {
+            const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+            (this.inputUrl as HTMLInputElement).value = (e.selectNode[0] as HTMLImageElement).src.match(regex) ? (e.selectNode[0] as HTMLImageElement).src : '';
+        }
         imgUrl.appendChild(this.inputUrl);
         return imgUrl;
     }
@@ -1549,7 +1566,10 @@ export class Image {
     private insertImageUrl(e: MouseEvent): void {
         const proxy: Image = (this as IImageNotifyArgs).selfImage;
         proxy.isImgUploaded = false;
-        const url: string = (proxy.inputUrl as HTMLInputElement).value;
+        let url: string = (proxy.inputUrl as HTMLInputElement).value;
+        if (proxy.parent.editorMode === 'Markdown' && url === '') {
+            url = 'http://';
+        }
         if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
             proxy.parent.formatter.saveData();
         }

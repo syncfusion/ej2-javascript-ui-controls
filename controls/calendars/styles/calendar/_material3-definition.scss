@@ -24,7 +24,7 @@ $calendar-active-state-icon-bg-color: rgba($content-text-color, .12) !default;
 $calendar-icon-hover-bg-color: rgba($content-text-color, .08) !default;
 $calendar-device-icon-hover-bg-color: none !default;
 $calendar-focus-date-color: rgba($flyout-text-color) !default;
-$calendar-other-month-date: rgba($content-text-color-alt1, .6) !default;
+$calendar-other-month-date: rgba($content-text-color-alt1, .84) !default;
 $calendar-text-color: rgba($content-text-color) !default;
 $calendar-hover-text: $calendar-text-color !default;
 $calendar-text-color-focus: rgba($primary-text-color) !default;
@@ -71,7 +71,7 @@ $calendar-normal-year-decade-height: 56px !default;
 $calendar-normal-header-height: 40px !default;
 $calendar-normal-icon-size: 36px !default;
 $calendar-normal-today-button-height: 36px !default;
-$calendar-border-radius: 32px !default;
+$calendar-border-radius: 4px !default;
 $calendar-pointer-events: initial !default;
 $calendar-float-right-style: right !default;
 $calendar-icon-padding-top: 0 !default;
@@ -162,6 +162,16 @@ $calendar-selected-border-color: none !default;
 $calendar-week-number-font-weight: 500 !default;
 $calendar-bigger-year-decade-width: 69px !default;
 $calendar-normar-year-decade-width: 56px !default;
+$calendar-header-title-padding: 0 5px !default;
+
+// Focus related styles
+$calendar-title-focus-box-shadow: 0 0 0 1px rgba($primary) !default;
+$calendar-title-focus-background: none !default;
+$calendar-title-active-background: rgba($content-text-color, .12) !default;
+$calendar-icon-focus-box-shadow: 0 0 0 1px rgba($primary) !default;
+$calendar-title-border-radius: 4px !default;
+$calendar-title-hover-bg-color: rgba($content-text-color, .08) !default;
+$calendar-focused-cell-box-shadow: 0 0 0 1px rgba($primary) !default;
 
 //today
 $calendar-footer-container-padding: 8px 12px 8px 12px !default;

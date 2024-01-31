@@ -5,7 +5,8 @@ import { getIndex } from '../base/util';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
-import { getDropDownValue, getFormattedFontSize, getTooltipText } from '../base/util';
+import { getDropDownValue, getFormattedFontSize, getTooltipText, getTooltipTextDropdownItems, getQuickToolbarTooltipText} from '../base/util';
+import { fontNameLocale, formatsLocale, numberFormatListLocale, bulletFormatListLocale} from '../models/default-locale';
 import * as model from '../models/items';
 import { IRichTextEditor, IRenderer, IDropDownModel, IDropDownItemModel, IDropDownRenderArgs, IListDropDownModel, ICssClassArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
@@ -53,9 +54,27 @@ export class DropDownButtons {
         if (item.cssClass) {
             addClass([args.element], item.cssClass);
         }
+        if (item.command === 'Images' || item.command === 'Videos' || item.command === 'Audios' || item.command === 'Table') {
+            args.element.setAttribute('title', getQuickToolbarTooltipText(item.text));
+        }
         if (item.command === 'Alignments' || item.subCommand === 'JustifyLeft'
             || item.subCommand === 'JustifyRight' || item.subCommand === 'JustifyCenter') {
             args.element.setAttribute('title', getTooltipText(item.subCommand.toLocaleLowerCase(), this.locator));
+        }
+        if (item.command === 'Formats') {
+            args.element.setAttribute('title', getTooltipTextDropdownItems(item.subCommand.toLocaleLowerCase(), this.locator, formatsLocale));
+        }
+        if (item.command === 'Font') {
+            args.element.setAttribute('title', getTooltipTextDropdownItems(item.value.toLocaleLowerCase(), this.locator, fontNameLocale));
+        }
+        if (item.subCommand === 'BulletFormatList') {
+            args.element.setAttribute('title', getTooltipTextDropdownItems(item.value.toLocaleLowerCase(), this.locator, bulletFormatListLocale));
+        }
+        if (item.subCommand === 'NumberFormatList') {
+            args.element.setAttribute('title', getTooltipTextDropdownItems(item.text.replace(/\s/g, '').toLocaleLowerCase(), this.locator, numberFormatListLocale));
+        }
+        if (item.subCommand === 'FontSize') {
+            args.element.setAttribute('title', getTooltipTextDropdownItems(item.value.toLocaleLowerCase(), null, null, this.parent));
         }
     }
 
@@ -168,7 +187,7 @@ export class DropDownButtons {
                     if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
                         return;
                     }
-                    const fontsize: IDropDownItemModel[] = this.parent.fontSize.items.slice();
+                    const fontsize: IDropDownItemModel[] = !isNullOrUndefined(this.fontSizeDropDown) && !isNullOrUndefined(this.fontSizeDropDown.items) && this.fontSizeDropDown.items.length > 0 ? this.fontSizeDropDown.items : JSON.parse(JSON.stringify(this.parent.fontSize.items.slice()));
                     fontsize.forEach((item: IDropDownItemModel): void => {
                         Object.defineProperties((item as object), {
                             command: { value: 'Font', enumerable: true }, subCommand: { value: 'FontSize', enumerable: true }

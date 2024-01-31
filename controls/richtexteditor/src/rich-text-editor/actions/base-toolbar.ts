@@ -10,6 +10,7 @@ import { IToolbarOptions, IToolbarItemModel } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { isNullOrUndefined, extend, EmitType, Browser } from '@syncfusion/ej2-base';
+import { IHtmlUndoRedoData } from '../../editor-manager';
 
 /**
  * `Toolbar` module is used to handle Toolbar actions.
@@ -174,11 +175,14 @@ export class BaseToolbar {
                             this.parent.formatter.saveData();
                         }
                         callback.call(this);
-                        const currentContentElem: HTMLElement = this.parent.createElement('div');
-                        currentContentElem.appendChild(
-                            this.parent.formatter.getUndoRedoStack()[this.parent.formatter.getUndoRedoStack().length - 1].text);
-                        if (currentContentElem.innerHTML.trim() === this.parent.inputElement.innerHTML.trim()) {
-                            return;
+                        if(this.parent.formatter.getUndoRedoStack().length > 0 ){
+                            const currentContentElem: HTMLElement = this.parent.createElement('div');
+                            let stackItem: IHtmlUndoRedoData = this.parent.formatter.getUndoRedoStack()[this.parent.formatter.getUndoRedoStack().length - 1];
+                            let clonedItem:DocumentFragment = (stackItem.text).cloneNode(true) as DocumentFragment;
+                            currentContentElem.appendChild(clonedItem);
+                            if (currentContentElem.innerHTML.trim() === this.parent.inputElement.innerHTML.trim()) {
+                                return;
+                            }
                         }
                         if (proxy.undo) {
                             this.parent.formatter.saveData();

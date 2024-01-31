@@ -1209,6 +1209,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             }
             //symbol description-textElement
             this.getSymbolDescription(symbolInfo, width, stackPanel);
+            //EJ2-867827 - In diagram palette symbols, part of the symbol is not visible in left and top side 
+            stackPanel.padding={left:1,right:1,bottom:1,top:1};
             stackPanel.measure(new Size());
             stackPanel.arrange(stackPanel.desiredSize);
             symbolInfo.width = symbolInfo.width || content.actualSize.width;

@@ -57,7 +57,9 @@ const keyCode: { [key: string]: number } = {
     'singlequote': 222,
     ']': 221,
     '[': 219,
-    '=': 187
+    '=': 187,
+    '<': 188,
+    '>': 190
 };
 
 /**

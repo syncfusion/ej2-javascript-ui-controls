@@ -553,6 +553,9 @@ export class FormFieldsBase {
         checkBoxField.visibility = this.getFormFieldsVisibility(formFieldAttributes.visibility);
         checkBoxField._dictionary.set('ExportValue', formFieldAttributes.value);
         checkBoxField.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g, formFieldAttributes.backgroundColor.b];
+        if (formFieldAttributes.backgroundColor.r === 0 && formFieldAttributes.backgroundColor.g === 0 && formFieldAttributes.backgroundColor.b === 0 && formFieldAttributes.backgroundColor.a === 0) {
+            checkBoxField.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g, formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
+        }
         checkBoxField.borderColor = [formFieldAttributes.borderColor.r, formFieldAttributes.borderColor.g, formFieldAttributes.borderColor.b];
         checkBoxField.border.width = formFieldAttributes.thickness;
         checkBoxField.toolTip = isNullOrUndefined(formFieldAttributes.tooltip) ? "" : formFieldAttributes.tooltip;
@@ -1256,8 +1259,12 @@ export class FormFieldsBase {
         formFields.PageIndex = pageNumber;
         formFields.BorderWidth = textBox.border.width;
         formFields.BorderStyle = textBox.border.style;
-        formFields.BackColor = { R: textBox.backColor[0], G: textBox.backColor[1], B: textBox.backColor[2] };
-        formFields.IsTransparent = this.checkTransparent(formFields.BackColor);
+        if (!isNullOrUndefined(textBox.backColor)) {
+            formFields.BackColor = { R: textBox.backColor[0], G: textBox.backColor[1], B: textBox.backColor[2] };
+        }
+        else {
+            formFields.IsTransparent = true;
+        }
         formFields.Alignment = textBox.textAlignment;
         formFields.MaxLength = textBox.maxLength;
         formFields.Visible = textBox.visibility;
@@ -1302,8 +1309,12 @@ export class FormFieldsBase {
         formFields.LineBounds = { X: comboBoxField.bounds.x, Y: comboBoxField.bounds.y, Width: comboBoxField.bounds.width, Height: comboBoxField.bounds.height };
         formFields.TabIndex = comboBoxField.tabIndex;
         formFields.PageIndex = pageNumber;
-        formFields.BackColor = { R: comboBoxField.backColor[0], G: comboBoxField.backColor[1], B: comboBoxField.backColor[2] };
-        formFields.IsTransparent = this.checkTransparent(formFields.BackColor);
+        if (!isNullOrUndefined(comboBoxField.backColor)) {
+            formFields.BackColor = { R: comboBoxField.backColor[0], G: comboBoxField.backColor[1], B: comboBoxField.backColor[2] };
+        }
+        else {
+            formFields.IsTransparent = true;
+        }
         formFields.BorderWidth = comboBoxField.border.width;
         formFields.BorderStyle = comboBoxField.border.style;
         formFields.BorderColor = { R: comboBoxField.borderColor[0], G: comboBoxField.borderColor[1], B: comboBoxField.borderColor[2] };
@@ -1372,8 +1383,12 @@ export class FormFieldsBase {
         formFields.ActualFieldName = chkField.name;
         formFields.PageIndex = index;
         formFields.BorderWidth = chkField.border.width;
-        formFields.BackColor = { R: chkField.backColor[0], G: chkField.backColor[1], B: chkField.backColor[2] };
-        formFields.IsTransparent = this.checkTransparent(formFields.BackColor);
+        if (!isNullOrUndefined(chkField.backColor)) {
+            formFields.BackColor = { R: chkField.backColor[0], G: chkField.backColor[1], B: chkField.backColor[2] };
+        }
+        else {
+            formFields.IsTransparent = true;
+        }
         formFields.BorderStyle = chkField.border.style;
         formFields.BorderColor = { R: chkField.borderColor[0], G: chkField.borderColor[1], B: chkField.borderColor[2] };
         formFields.RotationAngle = this.GetRotateAngle(chkField.page.rotation);
@@ -1421,8 +1436,12 @@ export class FormFieldsBase {
         formFields.PageIndex = pageNumber;
         formFields.BorderWidth = listBoxField.border.width;
         formFields.BorderStyle = listBoxField.border.style;
-        formFields.BackColor = { R: listBoxField.backColor[0], G: listBoxField.backColor[1], B: listBoxField.backColor[2] };
-        formFields.IsTransparent = this.checkTransparent(formFields.BackColor);
+        if (!isNullOrUndefined(listBoxField.backColor)) {
+            formFields.BackColor = { R: listBoxField.backColor[0], G: listBoxField.backColor[1], B: listBoxField.backColor[2] };
+        }
+        else {
+            formFields.IsTransparent = true;
+        }
         formFields.FontColor = { R: listBoxField.color[0], G: listBoxField.color[1], B: listBoxField.color[2] };
         formFields.BorderColor = { R: listBoxField.borderColor[0], G: listBoxField.borderColor[1], B: listBoxField.borderColor[2] };
         formFields.Rotation = listBoxField.rotationAngle;
@@ -1463,8 +1482,12 @@ export class FormFieldsBase {
         formFields.LineBounds = { X: item.bounds.x, Y: item.bounds.y, Width: item.bounds.width, Height: item.bounds.height };
         formFields.Value = item.value;
         formFields.PageIndex = index;
-        formFields.BackColor = { R: item.backColor[0], G: item.backColor[1], B: item.backColor[2] };
-        formFields.IsTransparent = this.checkTransparent(formFields.BackColor);
+        if (!isNullOrUndefined(item.backColor)) {
+            formFields.BackColor = { R: item.backColor[0], G: item.backColor[1], B: item.backColor[2] };
+        }
+        else {
+            formFields.IsTransparent = true;
+        }
         formFields.BorderWidth = item.border.width;
         formFields.BorderStyle = item.border.style;
         formFields.BorderColor =  { R: parent.borderColor[0], G: parent.borderColor[1], B: parent.borderColor[2] };

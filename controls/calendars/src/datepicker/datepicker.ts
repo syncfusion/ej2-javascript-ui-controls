@@ -1231,7 +1231,7 @@ export class DatePicker extends Calendar implements IInput {
     }
     protected popupUpdate(): void {
         if ((isNullOrUndefined(this.value)) && (!isNullOrUndefined(this.previousDate)) ||
-            (+this.value !== +this.previousDate)) {
+            (((this.getModuleName() !== 'datetimepicker') && (+this.value !== +this.previousDate)) || ((this.getModuleName() === 'datetimepicker') && (+this.value !== +this.previousDateTime)))) {
             if (this.popupObj) {
                 if (this.popupObj.element.querySelectorAll('.' + SELECTED).length > 0) {
                     removeClass(this.popupObj.element.querySelectorAll('.' + SELECTED), [SELECTED]);

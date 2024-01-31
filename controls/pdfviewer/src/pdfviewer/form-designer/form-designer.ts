@@ -3575,6 +3575,7 @@ export class FormDesigner {
         inputElement.style.textAlign = obj.alignment ? obj.alignment.toLowerCase() : 'left';
         inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
         inputElement.style.pointerEvents = obj.isReadonly ? (obj.isMultiline ? 'default' : 'none') : 'default';
+        inputElement.style.resize = obj.isMultiline && !this.pdfViewer.isFormDesignerToolbarVisible ? 'none' : 'default';
         if (obj.isReadonly) {
             (inputElement as HTMLInputElement).disabled = true;
             inputElement.style.cursor = 'default';

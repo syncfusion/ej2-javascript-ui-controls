@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 24.1.47 (2024-01-23)
+
+### Svg Base
+
+- `#I542620` - Fixed the issue where a console error was thrown while zooming the chart with the tooltip.
+
 ## 24.1.46 (2024-01-17)
 
 ### Svg Base

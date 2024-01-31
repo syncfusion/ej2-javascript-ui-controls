@@ -7491,7 +7491,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }else{
                 portContainer.style.fill = 'none';
             }
-            portContainer.style.strokeColor = 'none'; portContainer.horizontalAlignment = 'Stretch';
+            portContainer.style.strokeColor = 'none'; 
+            //EJ2-865476 - Issue with Pivot Point in group node during resizing
+            portContainer.pivot = obj.pivot;
+            portContainer.horizontalAlignment = 'Stretch';
             portContainer.verticalAlignment = 'Stretch'; canvas.style = obj.style;
             canvas.padding.left = obj.padding.left; canvas.padding.right = obj.padding.right; canvas.padding.top = obj.padding.top; canvas.padding.bottom = obj.padding.bottom;
             portContainer.children = []; portContainer.preventContainer = true;
@@ -11994,7 +11997,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             }
                             value = this.add(clonedObject, true);
                         }
-                        if ((clonedObject || value) && canSingleSelect(this)) {
+                        //EJ2-864543 - Added symbols don't get correctly selected in MultipleSelect mode in Diagram
+                        if ((clonedObject || value) && (canSingleSelect(this) || canMultiSelect(this))) {
                             this.select([this.nameTable[clonedObject[`${id}`]]], false, this.previousSelectedObjects);
                         }
                         if (arg.target && arg.target instanceof Connector) {

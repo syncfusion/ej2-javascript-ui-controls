@@ -25,6 +25,16 @@ $calendar-title-font-size: 16px !default;
 $calendar-title-margin-left-style: 8px !default;
 $calendar-title-font-weight-style: 600 !default;
 $calendar-title-decoration-style: none !default;
+$calendar-header-title-padding: 0 5px !default;
+
+// Focus related styles
+$calendar-title-focus-box-shadow: 0 0 0 1px $grey-light-font !default;
+$calendar-title-focus-background: none !default;
+$calendar-title-active-background: $grey-dark-font !default;
+$calendar-icon-focus-box-shadow: 0 0 0 1px $grey-light-font !default;
+$calendar-title-border-radius: 4px !default;
+$calendar-title-hover-bg-color: none !default;
+$calendar-focused-cell-box-shadow: 0 0 0 1px $grey-light-font !default;
 
 //bgcolor
 $calendar-header-font-color: $grey-dark-font !default;

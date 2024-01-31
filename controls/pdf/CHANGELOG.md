@@ -8,6 +8,14 @@
 
 #### Bug Fixes
 
+- The issues related to the preservation of transparent background colour in form fields and free text annotation have been resolved.
+
+## 24.1.44 (2024-01-03)
+
+### PDF Parser
+
+#### Bug Fixes
+
 - Appearance preservation issues in custom stamp annotation import and export have been resolved.
 - Resolved the exception encountered during the negative number value set to leader extension property of line annotations.
 

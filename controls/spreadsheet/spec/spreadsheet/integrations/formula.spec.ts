@@ -11670,6 +11670,110 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
+        describe('EJ2-865555 - Formula with logical operators and Arithmatic operator throws #DIV/0! error ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{
+                        ranges: [{ dataSource: defaultData }],
+                        rows: [
+                            { cells: [{ index: 8, value: '0' }] }, { cells: [{ index: 8, value: '1' }] }]
+                    }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Nested IF formula with logical operators throws #DIV/0! error', (done: Function) => {
+                helper.edit('J1', '=IF(H2=0,0,IF(OR(D2=10,D3=20),IF(F2>SUM(E2:E5)/E10,10,20),IF(1=1,H3*(I2/I1),SUM(G2:G5))))');
+                expect(helper.invoke('getCell', [0, 9]).textContent).toBe('10');
+                helper.edit('J2', '=IF(1=1,H3*(I2/I1),SUM(G2:G5))');
+                expect(helper.invoke('getCell', [1, 9]).textContent).toBe('#DIV/0!');
+                helper.edit('J3', '=IF(F2>SUM(E2:E5)/E10,10,20)');
+                expect(helper.invoke('getCell', [2, 9]).textContent).toBe('10');
+                helper.edit('J4', '=IF(F2>SUM(E2:E5)/E10,SUM(D2/A2),20)');
+                expect(helper.invoke('getCell', [3, 9]).textContent).toBe('#VALUE!');
+                done();
+            });
+            it('Checking Logical operators with #DIV/0 error', (done: Function) => {
+                helper.edit('J5', '=H3*(I2/I1)=D2');
+                expect(helper.invoke('getCell', [4, 9]).textContent).toBe('#DIV/0!');
+                helper.edit('J6', '=H3*(I2/I1)<>D2');
+                expect(helper.invoke('getCell', [5, 9]).textContent).toBe('#DIV/0!');
+                helper.edit('J7', '=H3*(I2/I1)<=D2');
+                expect(helper.invoke('getCell', [6, 9]).textContent).toBe('#DIV/0!');
+                helper.edit('J8', '=H3*(I2/I1)>=D2');
+                expect(helper.invoke('getCell', [7, 9]).textContent).toBe('#DIV/0!');
+                helper.edit('J9', '=H3*(I2/I1)<D2');
+                expect(helper.invoke('getCell', [8, 9]).textContent).toBe('#DIV/0!');
+                helper.edit('J10', '=H3*(I2/I1)>D2');
+                expect(helper.invoke('getCell', [9, 9]).textContent).toBe('#DIV/0!');
+                done();
+            });
+            it('Checking Arithmatic operators with #DIV/0 error', (done: Function) => {
+                helper.edit('J11', '=H3*(I2/I1)+G2');
+                expect(helper.invoke('getCell', [10, 9]).textContent).toBe('#DIV/0!');
+                helper.edit('J12', '=H3*(I2*I1)+G2');
+                expect(helper.invoke('getCell', [11, 9]).textContent).toBe('1');
+                helper.edit('J13', '=H3*(I2+I1)+G2');
+                expect(helper.invoke('getCell', [12, 9]).textContent).toBe('51');
+                helper.edit('J14', '=H3*(I2-I1)+G2');
+                expect(helper.invoke('getCell', [13, 9]).textContent).toBe('51');
+                helper.edit('J15', '=H3/(I2/I1)+G2');
+                expect(helper.invoke('getCell', [14, 9]).textContent).toBe('#DIV/0!');
+                helper.edit('J16', '=H3+(I2/I1)+G2');
+                expect(helper.invoke('getCell', [15, 9]).textContent).toBe('#DIV/0!');
+                helper.edit('J17', '=H3-(I2/I1)+G2');
+                expect(helper.invoke('getCell', [16, 9]).textContent).toBe('#DIV/0!');
+                helper.edit('J18', '=H3*(I2/I1)*G2');
+                expect(helper.invoke('getCell', [17, 9]).textContent).toBe('#DIV/0!');
+                done();
+            });
+            it('Checking Logical operators with #VALUE! error', (done: Function) => {
+                helper.edit('K1', '=H3*(A3/I1)=D2');
+                expect(helper.invoke('getCell', [0, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K2', '=H3*(A3/I1)<>D2');
+                expect(helper.invoke('getCell', [1, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K3', '=H3*(A3/I1)<=D2');
+                expect(helper.invoke('getCell', [2, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K4', '=H3*(A3/I1)>=D2');
+                expect(helper.invoke('getCell', [3, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K5', '=H3*(A3/I1)<D2');
+                expect(helper.invoke('getCell', [4, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K6', '=H3*(A3/I1)>D2');
+                expect(helper.invoke('getCell', [5, 10]).textContent).toBe('#VALUE!');
+                done();
+            });
+            it('Checking Arithmatic operators with #VALUE! error', (done: Function) => {
+                helper.edit('K7', '=H3*(A3/I1)+G2');
+                expect(helper.invoke('getCell', [6, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K8', '=H3*(A3*I1)+G2');
+                expect(helper.invoke('getCell', [7, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K9', '=H3*(A3+I1)+G2');
+                expect(helper.invoke('getCell', [8, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K10', '=H3*(A3-I1)+G2');
+                expect(helper.invoke('getCell', [9, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K11', '=H3/(A3/I1)+G2');
+                expect(helper.invoke('getCell', [10, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K12', '=H3+(A3/I1)+G2');
+                expect(helper.invoke('getCell', [11, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K13', '=H3-(A3/I1)+G2');
+                expect(helper.invoke('getCell', [12, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K14', '=H3*(A3/I1)*G2');
+                expect(helper.invoke('getCell', [13, 10]).textContent).toBe('#VALUE!');
+                done();
+            });
+            it('Checking & and ^ operators with Error Values', (done: Function) => {
+                helper.edit('K15', '=H3&(I2/I1)');
+                expect(helper.invoke('getCell', [14, 10]).textContent).toBe('#DIV/0!');
+                helper.edit('K16', '=H3&(A3/I1)');
+                expect(helper.invoke('getCell', [15, 10]).textContent).toBe('#VALUE!');
+                helper.edit('K17', '=H3^(I2/I1)');
+                expect(helper.invoke('getCell', [16, 10]).textContent).toBe('#DIV/0!');
+                helper.edit('K18', '=H3^(A3/I1)');
+                expect(helper.invoke('getCell', [17, 10]).textContent).toBe('#VALUE!');
+                done();
+            });
+        });
     });
     describe('Stability ->', () => {
         describe('SUM Formula', () => {

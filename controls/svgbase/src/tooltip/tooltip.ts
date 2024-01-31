@@ -694,6 +694,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
         const markerGroup: HTMLElement = <HTMLElement>this.renderer.createGroup({ id: this.element.id + '_trackball_group' });
         const groupElement: Element = getElement(this.element.id + '_group');
+        if (!groupElement) {
+            return null;
+        }
         const x: number = ((this.enableRTL) ? this.elementSize.width - (size / 2) :
             (this.marginX * 2) + (size / 2)) + (isRight ? this.arrowPadding : 0);
         for (const shape of this.shapes) {

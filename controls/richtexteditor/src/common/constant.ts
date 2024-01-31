@@ -107,3 +107,10 @@ export const FORMAT_PAINTER_ACTIONS: string = 'format_painter_actions';
  * @hidden
  */
 export const EMOJI_PICKER_ACTIONS: string = 'emoji_picker_actions';
+
+/**
+ * Mouse down event constant
+ *
+ * @hidden
+ */
+export const MOUSE_DOWN: string = 'mouseDown';

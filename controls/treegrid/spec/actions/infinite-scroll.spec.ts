@@ -141,12 +141,12 @@ describe('TreeGrid Infinite Scroll', () => {
         it('collapse test', () => {
             let rows: Element[] = treegrid.grid.getRows();
             (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
-            expect(treegrid.getCurrentViewRecords().indexOf(treegrid.flatData[1])).toBe(-1);
+            expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
         });
         it('expand test', () => {
             let rows: Element[] = treegrid.grid.getRows();
             (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
-            expect(treegrid.getCurrentViewRecords().indexOf(treegrid.flatData[1])).toBe(1);
+            expect((rows[1] as HTMLTableRowElement).style.display).toBe('table-row');
         });
         it('scroll bottom', (done: Function) => {
             treegrid.getContent().firstElementChild.scrollTop = 5550;
@@ -434,7 +434,7 @@ describe('TreeGrid Infinite Scroll', () => {
                     enableInfiniteScrolling: true,
                     childMapping: 'Crew',
                     treeColumnIndex: 1,
-                    pageSettings: { pageSize: 5 },
+                    pageSettings: { pageSize: 50 },
                     enableCollapseAll: true,
                     height: 400,
                     columns: [
@@ -453,7 +453,43 @@ describe('TreeGrid Infinite Scroll', () => {
             );
         });
         it('Collapsed records count test of the visible records', (done: Function) => {
-            expect(treegrid.getCurrentViewRecords().length).toBe(15);
+            expect(treegrid.getCurrentViewRecords().length).toBe(150);
+            done();
+        });
+        afterAll(() => {
+            treegrid['infiniteScrollModule']['destroy']();
+            destroy(treegrid);
+        });
+    });
+
+    describe('EJ2-860214 - Expand and collapse is not working properly when using cache mode with infinite scrolling feature', () => {
+        let treegrid: TreeGrid;
+        beforeAll((done: Function) => {
+            treegrid = createGrid(
+                {
+                    dataSource: virtualData,
+                    enableInfiniteScrolling: true,
+                    infiniteScrollSettings: { enableCache: true },
+                    treeColumnIndex: 1,
+                    childMapping: 'Crew',
+                    pageSettings: { pageSize: 30 },
+                    height: 317,
+                    columns: [
+                        { field: 'TaskID', headerText: 'Player Jersey', width: 140, textAlign: 'Right' },
+                        { field: 'FIELD1', headerText: 'Player Name', width: 140 },
+                        { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+                        { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+                        { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' }
+                       ]
+                },
+                done
+            );
+        });
+        it('Expand/Collapse check', (done: Function) => {
+            treegrid.collapseRow(treegrid.getRows()[0]);
+            expect(treegrid.getVisibleRecords().length).toBe(86);
+            treegrid.expandRow(treegrid.getRows()[0]);
+            expect(treegrid.getVisibleRecords().length).toBe(90);
             done();
         });
         afterAll(() => {

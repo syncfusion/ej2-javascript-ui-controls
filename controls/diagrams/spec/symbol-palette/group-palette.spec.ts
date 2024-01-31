@@ -87,7 +87,7 @@ describe('Symbol Palette - Group', () => {
                 events.mouseUpEvent(palette.element, 150, 150, false, false);
                 palette.getPersistData();
                 let start: HTMLElement = document.getElementById('group');
-                expect(start.offsetWidth == 55 && start.offsetHeight == 55).toBe(true);
+                expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
                 done();
             }, 10);
         });
@@ -247,7 +247,9 @@ describe('Symbol Palette - Group', () => {
                 events.mouseUpEvent(palette.element, 150, 150, false, false);
                 palette.getPersistData();
                 let start: HTMLElement = document.getElementById('group3');
-                expect(start.offsetWidth == 55 && start.offsetHeight == 55).toBe(true);
+                console.log(start.offsetWidth);
+                console.log(start.offsetHeight);
+                expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
                 done();
             }, 10);
         });
@@ -342,7 +344,9 @@ describe('Symbol Palette - Group', () => {
                 events.mouseUpEvent(palette.element, 150, 150, false, false);
                 palette.getPersistData();
                 let start: HTMLElement = document.getElementById('SHAPE_BELL11');
-                expect(start.offsetWidth == 55 && start.offsetHeight == 55).toBe(true);
+                console.log(start.offsetWidth);
+                console.log(start.offsetHeight);
+                expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
                 done();
             }, 10);
         });
@@ -394,10 +398,92 @@ describe('Symbol Palette - Group', () => {
                     events.mouseUpEvent(palette.element, 150, 150, false, false);
                     palette.getPersistData();
                     let start: HTMLElement = document.getElementById('group');
-                    expect(start.offsetWidth == 55 && start.offsetHeight == 55).toBe(true);
+                    console.log(start.offsetWidth);
+                    console.log(start.offsetHeight);
+                    expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
                     done();
                 }, 10);
         });
+    });
+    describe('Testing multiSelect tool enables selector for dropped node', () => {
+        let diagram: Diagram;
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        let basicShapes: NodeModel[] = [
+            { id: 'Rectangle', shape: { type: 'Basic', shape: 'Rectangle' }, style: { strokeWidth: 2 },width:50,height:30,offsetX:50,offsetY:50 },
+            { id: 'Ellipse', shape: { type: 'Basic', shape: 'Ellipse' }, style: { strokeWidth: 2 },width:50,height:30,offsetX:70,offsetY:80 },
+            { id: 'group', children: ['Rectangle', 'Ellipse', 'id'] },
+        ];
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:250px;height:550px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:500px;height:550px;float:right;' }));
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                    annotations: [{ content: 'Default Shape' }]
+                },
+                {
+                    id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,
+                    constraints: NodeConstraints.PointerEvents | NodeConstraints.Select,
+                    shape: {
+                        type: 'Path', data: 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296L550.7723,171.9366' +
+                            'L558.9053,194.9966L540.3643,' +
+                            '179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z'
+                    }, annotations: [{ content: 'Path Element' }]
+                }
+            ];
+            let connectors: ConnectorModel[] = [{
+                id: 'connector1', type: 'Straight', sourcePoint: { x: 100, y: 300 },
+                targetPoint: { x: 200, y: 400 },
+            }];
+
+            diagram = new Diagram({
+                connectors: connectors, nodes: nodes, pageSettings: { background: { color: 'transparent' } },
+                width: '74%', height: '600px'
+            });
+            diagram.appendTo('#diagram');
+
+            palette = new SymbolPalette({
+                width: '250px', height: '100%',
+                palettes: [
+                    { id: 'basic', expanded: true, symbols: basicShapes, title: 'Basic Shapes' },
+                ], enableAnimation: false, enableSearch: true, symbolHeight: 50, symbolWidth: 50,
+                symbolMargin: { top: 12, bottom: 12, left: 12, right: 12 }
+            });
+            palette.appendTo('#symbolPalette');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            palette.destroy();
+            ele.remove();
+        });
+        it('Multiselect tool enables selector at drop', (done: Function) => {
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: any;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let symbols: IElement = palette.symbolTable['group'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            let events: MouseEvents = new MouseEvents();
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
+            events.mouseUpEvent(diagram.element, 300, 300, false, false);
+            done();
+        });
+     
     });
 
 

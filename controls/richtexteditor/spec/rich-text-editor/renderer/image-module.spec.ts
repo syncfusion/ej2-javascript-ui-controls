@@ -4768,4 +4768,122 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 500);
         });
     });
+
+    describe('846359 - Need to allow to insertion of empty hyperlink/images in the markdown', () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                editorMode: 'Markdown',
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Checking the insertion of empty images in the markdown', () => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = '';
+            (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+            expect(rteObj.inputElement.value === `![](http://)`).toBe(true);
+        });
+    });
+
+    describe('850034 - Content scrolls to the top, when we apply formats to the image caption', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in
+                client side. Customer easy to edit the contents and get the HTML content for
+                the displayed content. A rich text editor control provides users with a toolbar
+                that helps them to apply rich text formats to the text entered in the text
+                area. </p><p><b>Functional
+                Specifications/Requirements:</b></p><ol><li><p>Provide
+                the tool bar support, it’s also customizable.</p></li><li><p>Options
+                to get the HTML elements with styles.</p></li><li><p>Support
+                to insert image from a defined path.</p></li><li><p>Footer
+                elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
+                the editor support.</p></li><li><p>Provide
+                efficient public methods and client side events.</p></li><li><p>Keyboard
+                navigation support.</p></li></ol><p><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="w3-round-large e-rte-image e-imginline" alt="Norway" style=""><span class="e-img-inner" contenteditable="true">Caption</span></span></span></p>`
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it("The content scrolls to the top when contenteditable is set to false in the Rich Text Editor.", (done) => {
+            var imageCaption = rteObj.element.querySelector(".e-img-caption .e-img-inner");
+            (rteObj as any).formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), imageCaption, imageCaption, 0, 1);
+            (rteObj as any).element.querySelectorAll(".e-toolbar-wrapper .e-toolbar-item")[0].click();
+            expect(document.activeElement.classList.contains("e-img-inner")).toBe(true);
+            done();
+        });
+    });
+    describe('837380: The web url is empty when trying to edit after being inserted into the Rich Text Editor', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><img class='e-rte-image e-imgcenter' id="image" alt="Logo" src="https://cdn.syncfusion.com/content/images/home-v1/home/home-banner-v4.png" style="width: 300px;">`
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('validating whether or not the image web url is present', (done) => {
+            let image: HTMLElement = rteObj.element.querySelector("#image");
+            setCursorPoint(image, 0);
+            dispatchEvent(image, 'mousedown');
+            image.click();
+            dispatchEvent(image, 'mouseup');
+            setTimeout(() => {
+                let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_Replace");
+                imageBtn.parentElement.click();
+                let dialog: HTMLElement = document.getElementById(controlId + "_image");
+                let urlInput: HTMLInputElement = dialog.querySelector('.e-img-url');
+                expect(urlInput.value !== null && urlInput.value !== undefined && urlInput.value !== '').toBe(true); 
+                done();
+            }, 100);
+        });
+    });
+
+    describe('820211 - Quick toolbar is not rendered while pasting only an image in the Rich Text Editor', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({});
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should render a quick toolbar and then start the resize action.', (done: DoneFn) => {
+            editor.focusIn();
+            editor.inputElement.dispatchEvent(new Event('mousedown'));
+            const clipBoardData: string = `<html>
+            <body>
+            <!--StartFragment--><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" alt="Logo"/><!--EndFragment-->
+            </body>
+            </html>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(() => {
+                expect(document.querySelector('.e-rte-quick-toolbar')).not.toBe(null);
+                expect(document.querySelector('.e-img-resize')).not.toBe(null);
+                done();
+            }, 800);
+        });
+    }); 
 });

@@ -469,7 +469,7 @@ export class Shape {
                             parent.notify('selection', { prop: 'isShapeInserted', onPropertyChange: false, value: {bool: true} });
                             parent.notify('undo-redo', { prop: 'updateUrObj', onPropertyChange: false, value: {objColl: objColl}});
                             if (parent.isPublicMethod) {
-                                parent.notify('undo-redo', {prop: 'updateUndoRedo', onPropertyChange: false});
+                                parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
                             }
                             parent.isPublicMethod = false;
                         });
@@ -493,7 +493,7 @@ export class Shape {
                             isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
                         parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
                         if (parent.isPublicMethod) {
-                            parent.notify('undo-redo', {prop: 'updateUndoRedo', onPropertyChange: false});
+                            parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
                         }
                         parent.isPublicMethod = false;
                     }
@@ -589,7 +589,7 @@ export class Shape {
                 (parent.dotNetRef.invokeMethodAsync('ShapeEventAsync', 'OnShape', shapeChangingArgs, null) as any).then((shapeChangingArgs: ShapeChangeEventArgs) => {
                     this.drawShapeTextEvent(shapeChangingArgs);
                     if (parent.isPublicMethod) {
-                        parent.notify('undo-redo', {prop: 'updateUndoRedo', onPropertyChange: false});
+                        parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
                     }
                     parent.isPublicMethod = false;
                 });
@@ -597,7 +597,7 @@ export class Shape {
                 parent.trigger('shapeChanging', shapeChangingArgs);
                 this.drawShapeTextEvent(shapeChangingArgs);
                 if (parent.isPublicMethod) {
-                    parent.notify('undo-redo', {prop: 'updateUndoRedo', onPropertyChange: false});
+                    parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
                 }
                 parent.isPublicMethod = false;
             }
@@ -611,7 +611,7 @@ export class Shape {
         parent.objColl.push(parent.activeObj);
         const prevCropObj: CurrentObject = extend({}, parent.cropObj, {}, true) as CurrentObject;
         parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
-            value: {operation: 'shapeTransform', previousObj: this.prevObj, previousObjColl: this.prevObj.objColl,
+            value: {operation: 'shapeInsert', previousObj: this.prevObj, previousObjColl: this.prevObj.objColl,
                 previousPointColl: this.prevObj.pointColl, previousSelPointColl: this.prevObj.selPointColl, previousCropObj: prevCropObj,
                 previousText: null, currentText: null, previousFilter: null, isCircleCrop: null}});
         parent.notify('selection', { prop: 'redrawShape', onPropertyChange: false,
@@ -641,7 +641,7 @@ export class Shape {
         parent.objColl.push(parent.activeObj);
         const prevCropObj: CurrentObject = extend({}, parent.cropObj, {}, true) as CurrentObject;
         parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
-            value: {operation: 'shapeTransform', previousObj: this.prevObj, previousObjColl: this.prevObj.objColl,
+            value: {operation: 'shapeInsert', previousObj: this.prevObj, previousObjColl: this.prevObj.objColl,
                 previousPointColl: this.prevObj.pointColl, previousSelPointColl: this.prevObj.selPointColl,
                 previousCropObj: prevCropObj, previousText: null, currentText: null, previousFilter: null, isCircleCrop: null}});
         parent.notify('selection', { prop: 'redrawShape', onPropertyChange: false,

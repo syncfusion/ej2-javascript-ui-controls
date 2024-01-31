@@ -168,7 +168,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         const changeEventArgs: ChangeEventArgs = { checked: this.element.checked, event: evt };
         this.trigger('change', changeEventArgs);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((this as any).isAngular) {
+        if ((this as any).isAngular && evt) {
             evt.stopPropagation();evt.preventDefault();
         }
     }

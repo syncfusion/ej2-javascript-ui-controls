@@ -10,6 +10,7 @@ export class DialogRenderer {
     public dialogObj: Dialog;
     private dialogEle: Element;
     private parent: IRichTextEditor;
+    private outsideClickClosedBy: string;
     public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
@@ -20,6 +21,7 @@ export class DialogRenderer {
         }
         this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
         this.parent.on(events.destroy, this.removeEventListener, this);
+        this.parent.on(events.documentClickClosedBy, this.documentClickClosedBy, this);
     }
     protected removeEventListener(): void {
         if (this.parent.isDestroyed) {
@@ -27,6 +29,7 @@ export class DialogRenderer {
         }
         this.parent.off(events.destroy, this.removeEventListener);
         this.parent.off(events.moduleDestroy, this.moduleDestroy);
+        this.parent.off(events.documentClickClosedBy, this.documentClickClosedBy);
     }
     /**
      * dialog render method
@@ -73,10 +76,14 @@ export class DialogRenderer {
     private open(args: Object): void {
         this.parent.trigger(events.dialogOpen, args);
     }
+    private documentClickClosedBy(args: any): void {
+        this.outsideClickClosedBy = args.closedBy;
+    }
     private beforeClose(args: BeforeCloseEventArgs): void {
         if (this.dialogEle) {
             this.dialogEle.removeEventListener('keydown', this.handleEnterKeyDown);
         }
+        args.closedBy = this.outsideClickClosedBy === 'outside click' ? this.outsideClickClosedBy : args.closedBy;
         this.parent.trigger(events.beforeDialogClose, args, (closeArgs: BeforeCloseEventArgs) => {
             if (!closeArgs.cancel) {
                 if (closeArgs.container.classList.contains('e-popup-close')) {
@@ -84,6 +91,7 @@ export class DialogRenderer {
                 }
             }
         });
+        this.outsideClickClosedBy = "";
     }
     
     private getDialogPosition(): string {

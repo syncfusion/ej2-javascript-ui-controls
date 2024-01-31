@@ -55,7 +55,7 @@ describe('Toolbar - view html', () => {
 
         it('Mobile - open view html', () => {
             Browser.userAgent = mobileUA;
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Source Code");
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View (Ctrl+Shift+H)");
             rteObj.contentModule.getEditPanel().innerHTML = '<p>data</p>';
             let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
             trgEle.click();

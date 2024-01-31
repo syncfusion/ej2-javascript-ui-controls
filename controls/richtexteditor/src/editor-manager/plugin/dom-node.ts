@@ -594,7 +594,9 @@ export class DOMNode {
         } else if (start.tagName === 'BR') {
             this.replaceWith(start, this.marker(className, this.encode(start.textContent)));
             const markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + className);
-            markerStart.parentElement.appendChild(start);
+            if (markerStart) {
+                markerStart.parentElement.appendChild(start);
+            }
         } else {
             if (start.tagName === 'IMG') {
                 const parNode: HTMLParagraphElement = document.createElement('p');

@@ -179,11 +179,11 @@ export class RibbonGroupButton {
                 for (let j: number = 0; j < grpBtnSettings.items.length; j++) {
                     if (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + j) && document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + j).classList.contains('e-active')) {
                         document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + j).classList.remove('e-active');
-                        (grpBtnSettings.items[parseInt(j.toString(), 10)] as RibbonGroupButtonItem).selected = false;
+                        (grpBtnSettings.items[parseInt(j.toString(), 10)] as RibbonGroupButtonItem).setProperties({ selected: false }, true);
                     }
                 }
                 document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.toggle('e-active');
-                (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).selected = true;
+                (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).setProperties({ selected: true }, true);
                 if (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.contains('e-active') && this.parent.activeLayout === 'Simplified') {
                     this.grpBtnIndex = itemIndex;
                     groupButtonEle = document.querySelector('#' + item.id);
@@ -200,10 +200,10 @@ export class RibbonGroupButton {
                 }
                 document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.toggle('e-active');
                 if (document.querySelector('#' + item.id + constants.RIBBON_GROUP_BUTTON_ID + itemIndex).classList.contains('e-active')) {
-                    (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).selected = true;
+                    (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).setProperties({ selected: true }, true);
                 }
                 else {
-                    (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).selected = false;
+                    (grpBtnSettings.items[parseInt(itemIndex.toString(), 10)] as RibbonGroupButtonItem).setProperties({ selected: false }, true);
                 }
                 let activeEleCount: number = 0;
                 for (let n: number = 0; n < grpBtnSettings.items.length; n++) {

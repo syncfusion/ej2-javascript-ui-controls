@@ -35,7 +35,7 @@ export class Toolbar {
     private isTransformChild: boolean;
     private contentRenderer: IRenderer;
     protected toolbarRenderer: IRenderer;
-    private dropDownModule: DropDownButtons;
+    public dropDownModule: DropDownButtons;
     private toolbarActionModule: ToolbarAction;
     protected renderFactory: RendererFactory;
     private keyBoardModule: KeyboardEvents;

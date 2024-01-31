@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, addDPRValue, rangeSelectionByKeydown } from '../common/index';
-import { showAggregate, refreshOverlayElem, getRowIdxFromClientY, getColIdxFromClientX, clearChartBorder, hideAutoFillElement } from '../common/index';
+import { showAggregate, refreshOverlayElem, getRowIdxFromClientY, getColIdxFromClientX, hideAutoFillElement } from '../common/index';
 import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook, getSelectedRange } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
 import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest, remove, detach } from '@syncfusion/ej2-base';
@@ -8,7 +8,7 @@ import { BeforeSelectEventArgs, getMoveEvent, getEndEvent, isTouchStart, isMouse
 import { isTouchEnd, isTouchMove, getClientX, getClientY, mouseUpAfterSelection, selectRange, rowHeightChanged } from '../common/index';
 import { colWidthChanged, protectSelection, editOperation, initiateFormulaReference, initiateCur, clearCellRef, getScrollBarWidth } from '../common/index';
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
-import { addressHandle, removeDesignChart, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle } from '../common/index';
+import { addressHandle, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle } from '../common/index';
 import { isCellReference, getSheetNameFromAddress, CellModel, isLocked, getColumn, getCell } from '../../workbook/index';
 import { getIndexesFromAddress, selectionComplete, skipHiddenIdx } from '../../workbook/common/index';
 
@@ -703,7 +703,6 @@ export class Selection {
         const formulaRefIndicator: HTMLElement = this.parent.element.querySelector('.e-formularef-indicator');
         const mergeArgs: MergeArgs = { range: [].slice.call(range), isActiveCell: false, skipChecking: skipChecking };
         let isMergeRange: boolean;
-        const overlayEle: HTMLElement = document.querySelector('.e-datavisualization-chart.e-ss-overlay-active') as HTMLElement;
         let rowColSelectArgs: { isRowSelected: boolean, isColSelected: boolean } = this.isRowColSelected(range);
         if (!rowColSelectArgs.isColSelected && !rowColSelectArgs.isRowSelected) {
             this.parent.notify(mergedRange, mergeArgs);
@@ -881,11 +880,7 @@ export class Selection {
         if (this.parent.showAggregate) {
             this.parent.notify(showAggregate, {});
         }
-        this.parent.notify(refreshOverlayElem, {});
-        if (overlayEle) {
-            this.parent.notify(removeDesignChart, {});
-        }
-        this.parent.notify(clearChartBorder, {});
+        this.parent.notify(refreshOverlayElem, null);
     }
 
     private isRowColSelected(indexes: number[]): { isRowSelected: boolean, isColSelected: boolean } {
@@ -1188,8 +1183,14 @@ export class Selection {
         startcell: { rowIndex: number, colIndex: number }, endcell: { rowIndex: number, colIndex: number },
         classes: string[], isChart?: boolean): void {
         isChart = isNullOrUndefined(isChart) ? false : isChart;
-        const range: number[] = getSwapRange([startcell.rowIndex, startcell.colIndex, endcell.rowIndex, endcell.colIndex]);
         const sheet: SheetModel = this.parent.getActiveSheet();
+        const range: number[] = getSwapRange([startcell.rowIndex, startcell.colIndex, endcell.rowIndex, endcell.colIndex]);
+        const topLeftIdx: number[] = getRangeIndexes(sheet.topLeftCell);
+        const hiddenCol: number = this.parent.hiddenCount(topLeftIdx[1], range[3] - 1, 'columns', sheet);
+        if (isChart && hiddenCol > 0) {
+            range[1] -= hiddenCol;
+            range[3] -= hiddenCol;
+        }
         if (sheet.frozenRows || sheet.frozenColumns) {
             const rangeReference: HTMLElement = this.parent.createElement('div', {
                 className: isChart ? 'e-range-indicator e-chart-range' : 'e-range-indicator e-formuala-range' });

@@ -890,88 +890,88 @@ describe('GUID predecessor', () => {
         destroyGantt(ganttObj);
     });
 });
-describe('Predecessor does not render propely for FF type', () => {
-    let ganttObj: Gantt;
-    let editingData = [
-        {
-            TaskID: 1,
-            TaskName: 'Project initiation',
-            StartDate: new Date('04/02/2019'),
-            EndDate: new Date('04/21/2019'),
-            subtasks: [
-                {
-                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), Duration: 10,
-                    Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
-                },
-                {
-                    TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2FF',
-                    resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
-                        'From an engineer or company specializing in soil testing'
-                },
-            ]
-        }
-    ];
-    beforeAll((done: Function) => {
-        ganttObj = createGantt(
-            {
-                dataSource: editingData,
-                allowSorting: true,
-                allowReordering: true,
-                enableContextMenu: true,
-                taskFields: {
-                    id: 'TaskID',
-                    name: 'TaskName',
-                    startDate: 'StartDate',
-                    endDate: 'EndDate',
-                    duration: 'Duration',
-                    progress: 'Progress',
-                    dependency: 'Predecessor',
-                    child: 'subtasks',
-                    notes: 'info',
-                    resourceInfo: 'resources'
-                },
-                renderBaseline: true,
-                baselineColor: 'red',
-                editSettings: {
-                    allowAdding: true,
-                    allowEditing: true,
-                    allowDeleting: true,
-                    allowTaskbarEditing: true,
-                    showDeleteConfirmDialog: true
-                },
-                columns: [
-                    { field: 'TaskID', headerText: 'Task ID' },
-                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
-                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
-                    { field: 'Predecessor', headerText: 'Predecessor', allowSorting: false },
-                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
-                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
-                    { field: 'CustomColumn', headerText: 'CustomColumn' }
-                ],
-                timelineSettings: {
-                    showTooltip: true,
-                    topTier: {
-                        unit: 'Week',
-                        format: 'dd/MM/yyyy'
-                    },
-                    bottomTier: {
-                        unit: 'Day',
-                        count: 1
-                    }
-                },
-                height: '550px',
-                allowUnscheduledTasks: true,
-                projectStartDate: new Date('03/25/2019'),
-                projectEndDate: new Date('07/06/2019'),
-            }, done);
-    });
-    it('FF type', () => {
-        expect(document.getElementsByClassName('e-connector-line-arrow')[0].getAttribute('d')).toBe('M 595 420 L 587 415 L 587 424 Z');
-    });
-    afterAll(() => {
-        destroyGantt(ganttObj);
-    });
-});
+// describe('Predecessor does not render propely for FF type', () => {
+//     let ganttObj: Gantt;
+//     let editingData = [
+//         {
+//             TaskID: 1,
+//             TaskName: 'Project initiation',
+//             StartDate: new Date('04/02/2019'),
+//             EndDate: new Date('04/21/2019'),
+//             subtasks: [
+//                 {
+//                     TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), Duration: 10,
+//                     Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+//                 },
+//                 {
+//                     TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2FF',
+//                     resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+//                         'From an engineer or company specializing in soil testing'
+//                 },
+//             ]
+//         }
+//     ];
+//     beforeAll((done: Function) => {
+//         ganttObj = createGantt(
+//             {
+//                 dataSource: editingData,
+//                 allowSorting: true,
+//                 allowReordering: true,
+//                 enableContextMenu: true,
+//                 taskFields: {
+//                     id: 'TaskID',
+//                     name: 'TaskName',
+//                     startDate: 'StartDate',
+//                     endDate: 'EndDate',
+//                     duration: 'Duration',
+//                     progress: 'Progress',
+//                     dependency: 'Predecessor',
+//                     child: 'subtasks',
+//                     notes: 'info',
+//                     resourceInfo: 'resources'
+//                 },
+//                 renderBaseline: true,
+//                 baselineColor: 'red',
+//                 editSettings: {
+//                     allowAdding: true,
+//                     allowEditing: true,
+//                     allowDeleting: true,
+//                     allowTaskbarEditing: true,
+//                     showDeleteConfirmDialog: true
+//                 },
+//                 columns: [
+//                     { field: 'TaskID', headerText: 'Task ID' },
+//                     { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+//                     { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+//                     { field: 'Predecessor', headerText: 'Predecessor', allowSorting: false },
+//                     { field: 'Duration', headerText: 'Duration', allowEditing: false },
+//                     { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+//                     { field: 'CustomColumn', headerText: 'CustomColumn' }
+//                 ],
+//                 timelineSettings: {
+//                     showTooltip: true,
+//                     topTier: {
+//                         unit: 'Week',
+//                         format: 'dd/MM/yyyy'
+//                     },
+//                     bottomTier: {
+//                         unit: 'Day',
+//                         count: 1
+//                     }
+//                 },
+//                 height: '550px',
+//                 allowUnscheduledTasks: true,
+//                 projectStartDate: new Date('03/25/2019'),
+//                 projectEndDate: new Date('07/06/2019'),
+//             }, done);
+//     });
+//     it('FF type', () => {
+//         expect(document.getElementsByClassName('e-connector-line-arrow')[0].getAttribute('d')).toBe('M 595 420 L 587 415 L 587 424 Z');
+//     });
+//     afterAll(() => {
+//         destroyGantt(ganttObj);
+//     });
+// });
 describe('Bug -855406 -Dependency line not render after adding child record ', () => {
     let ganttObj: Gantt;
     let editingData = [

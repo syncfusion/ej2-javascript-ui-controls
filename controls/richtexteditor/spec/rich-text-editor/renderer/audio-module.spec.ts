@@ -2201,5 +2201,36 @@ describe('insert Audio', () => {
             }, 200);
         });
      });
+    describe('837380: The web url is empty when trying to edit after being inserted into the Rich Text Editor', function () {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach(function (done) {
+            rteObj = renderRTE({
+                value: "<p><span class=\"e-audio-wrap\" contenteditable=\"false\" title=\"horse.mp3\"><span class=\"e-clickElem\"><audio class=\"e-rte-audio e-audio-inline\" controls=\"\"><source src=\"https://www.w3schools.com/html/horse.mp3\" type=\"audio/mp3\"></audio></span></span><br></p>"
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach(function (done) {
+            destroy(rteObj);
+            done();
+        });
+        it('validating whether or not the audio web url is present', function (done) {
+            let audio: HTMLElement = rteObj.element.querySelector(".e-audio-wrap");
+            setCursorPoint(audio, 0);
+            dispatchEvent(audio, 'mousedown');
+            audio.click();
+            dispatchEvent(audio, 'mouseup');
+            setTimeout(function () {
+                let audioBtn: HTMLElement = document.getElementById(controlId + "_quick_AudioReplace");
+                audioBtn.parentElement.click();
+                let dialog: HTMLElement = document.getElementById(controlId + "_audio");
+                let urlInput: HTMLInputElement = dialog.querySelector('.e-audio-url');
+                expect(urlInput.value !== null && urlInput.value !== undefined && urlInput.value !== '').toBe(true);
+                done();
+            }, 100);
+        });
+    });
  });
  

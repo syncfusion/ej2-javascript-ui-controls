@@ -3681,9 +3681,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 if (remRule && remRule.rules) {
                     for (let r: number = 0; r < remRule.rules.length; r++) {
                         const column: ColumnsModel = this.getColumn(remRule.rules[r as number].field);
-                        const isTemplateRendered: Element = ruleElemColl[r as number].querySelector('.e-template-value');
-                        if (column && (column.ruleTemplate || (this.isPlatformTemplate(column) && isTemplateRendered))) {
-                            removeString.push(ruleElemColl[r as number].id);
+                        if(ruleElemColl[r as number]) {
+                            const isTemplateRendered: Element = ruleElemColl[r as number].querySelector('.e-template-value');
+                            if (column && (column.ruleTemplate || (this.isPlatformTemplate(column) && isTemplateRendered))) {
+                                removeString.push(ruleElemColl[r as number].id);
+                            }
                         }
                     }
                 }

@@ -1069,6 +1069,7 @@ export class DocumentHelper {
         paragraphFormat.keepWithNext = false;
         paragraphFormat.keepLinesTogether = false;
         paragraphFormat.widowControl = true;
+        paragraphFormat.outlineLevel = 'BodyText';
     }
     /**
      * @private
@@ -2174,7 +2175,7 @@ export class DocumentHelper {
                             && this.isMouseDownInSelection
                             && this.isLeftButtonPressed(event)
                             && !this.owner.selection.isEmpty
-                            && this.selection.checkCursorIsInSelection(widget, touchPoint)) || (!this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && !this.isDragStarted && this.isLeftButtonPressed(event) && !this.owner.selection.isEmpty && this.owner.imageResizerModule.selectedImageWidget.containsKey(widget) && !this.owner.imageResizerModule.isImageResizing)) {
+                            && this.selection.checkCursorIsInSelection(widget, touchPoint)) || (!this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && !this.isDragStarted && this.isLeftButtonPressed(event) && !this.owner.selection.isEmpty && !isNullOrUndefined(widget) && this.owner.imageResizerModule.selectedImageWidget.containsKey(widget) && !this.owner.imageResizerModule.isImageResizing)) {
                             this.isDragStarted = true;
                             this.isMouseDownInSelection = false;
                             if (this.selection.isForward) {

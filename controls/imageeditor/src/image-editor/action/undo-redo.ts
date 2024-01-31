@@ -68,10 +68,10 @@ export class UndoRedo {
             this.redo();
             break;
         case 'updateUrObj':
-            this.updateUrObj(args.value['objColl']);
+            this.updateUrObj(args.value['objColl'], args.value['operation']);
             break;
         case 'updateUndoRedo':
-            this.updateUndoRedo();
+            this.updateUndoRedo(args.value ? args.value['operation'] : null);
             break;
         case 'getAppliedUndoRedoColl':
             args.value['obj']['appliedUndoRedoColl'] = this.appliedUndoRedoColl;
@@ -324,6 +324,7 @@ export class UndoRedo {
                 case 'invert':
                 case 'sharpen':
                 case 'imageRotate':
+                case 'shapeInsert':
                     this.shapeTransform(obj.previousObjColl);
                     break;
                 case 'freehanddraw':
@@ -452,6 +453,7 @@ export class UndoRedo {
                 case 'invert':
                 case 'sharpen':
                 case 'imageRotate':
+                case 'shapeInsert':
                     this.shapeTransform(obj.currentObjColl);
                     break;
                 case 'freehanddraw':
@@ -770,6 +772,31 @@ export class UndoRedo {
         }
         parent.notify('filter', { prop: 'setAdjustmentValue', onPropertyChange: false, value: {adjustmentValue: this.lowerContext.filter }});
         parent.currObjType.isCustomCrop = false;
+        if (isBlazor() && parent.events && parent.events.historyChanged.hasDelegate === true) {
+            let imageAction: string = this.getImageAction(operation);
+            const args: object = { length: this.undoRedoColl.length, index: this.undoRedoStep, actionTrigger: isUndo ? 'Undo' : 'Redo', imageAction: imageAction };
+            parent.dotNetRef.invokeMethodAsync('OnHistoryChangedAsync', args);
+        }
+    }
+
+    private getImageAction(operation: string): string {
+        if (['brightness', 'contrast', 'saturation', 'opacity', 'blur', 'hue'].indexOf(operation) !== -1) {
+            return 'FinetuneApplied';
+        } else if (['chrome', 'cold', 'warm', 'grayscale', 'blackandwhite', 'sepia', 'invert'].indexOf(operation) !== -1) {
+            return 'FilterApplied';
+        } else if (operation === 'frame') {
+            return 'FrameApplied';
+        } else if (operation === 'resize') {
+            return 'ImageResized';
+        } else if (['deleteFreehandDrawing', 'deleteObj'].indexOf(operation) !== -1) {
+            return 'ShapeDeleted';
+        } else if (operation === 'crop') {
+            return 'Cropped';
+        } else if (['shapeInsert', 'freehanddraw', 'freehand-draw'].indexOf(operation) !== -1) {
+            return 'ShapeInserted';
+        } else {
+            return 'ShapeCustomized';
+        }
     }
 
     private updateUrc(operation: string, previousObj: CurrentObject, previousObjColl: SelectionPoint[],
@@ -835,7 +862,7 @@ export class UndoRedo {
         }
     }
 
-    private updateUrObj(objColl: SelectionPoint[]): void {
+    private updateUrObj(objColl: SelectionPoint[], operation?: string): void {
         const parent: ImageEditor = this.parent;
         if (parent.allowUndoRedo) {
             if (parent.currObjType.isUndoAction) { this.refreshUrc(true); }
@@ -854,7 +881,8 @@ export class UndoRedo {
             parent.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
                 value: {obj: selPointCollObj }});
             obj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
-            this.undoRedoColl.push({operation: 'shapeTransform', previousObj: obj, currentObj: obj,
+            let oper: string = operation ? operation : 'shapeTransform';
+            this.undoRedoColl.push({operation: oper, previousObj: obj, currentObj: obj,
                 previousObjColl: objColl, currentObjColl: obj.objColl,
                 previousPointColl: obj.pointColl, currentPointColl: obj.pointColl,
                 previousSelPointColl: obj.selPointColl, currentSelPointColl: obj.selPointColl,
@@ -864,7 +892,7 @@ export class UndoRedo {
         }
     }
 
-    private updateUndoRedo(): void {
+    private updateUndoRedo(operation?: string): void {
         const parent: ImageEditor = this.parent;
         const prevCropObj: CurrentObject = extend({}, parent.cropObj, {}, true) as CurrentObject;
         const object: Object = {currObj: {} as CurrentObject };
@@ -881,7 +909,8 @@ export class UndoRedo {
             parent.notify('shape', { prop: 'updImgRatioForActObj', onPropertyChange: false});
         }
         parent.objColl.push(parent.activeObj);
-        this.updateUrc('shapeTransform', prevObj, prevObj.objColl, prevObj.pointColl, prevObj.selPointColl, prevCropObj);
+        let oper: string = operation ? operation : 'shapeTransform';
+        this.updateUrc(oper, prevObj, prevObj.objColl, prevObj.pointColl, prevObj.selPointColl, prevCropObj);
         parent.objColl.pop();
         parent.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: null}});
         parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});

@@ -1,5 +1,5 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer } from '../base/interface';
+import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer, IDropDownItemModel } from '../base/interface';
 import { NotifyArgs, IToolbarOptions, ActionBeginEventArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach, MouseEventArgs, EventHandler, L10n } from '@syncfusion/ej2-base';
@@ -22,6 +22,9 @@ import { RichTextEditorModel } from '../base/rich-text-editor-model';
 import { XhtmlValidation } from './xhtml-validation';
 import { ON_BEGIN } from './../../common/constant';
 import { EditorManager } from '../../editor-manager';
+import { FontSizeModel } from '../models/models';
+import { Toolbar } from '../actions/toolbar';
+import * as CONSTANT from '../base/constant';
 
 /**
  * `HtmlEditor` module is used to HTML editor
@@ -97,6 +100,7 @@ export class HtmlEditor {
         this.parent.on(events.readOnlyMode, this.updateReadOnly, this);
         this.parent.on(events.paste, this.onPaste, this);
         this.parent.on(events.tableclass, this.isTableClassAdded, this);
+        this.parent.on(events.onHandleFontsizeChange, this.onHandleFontsizeChange, this)
     }
     private updateReadOnly(): void {
         if (this.parent.readonly) {
@@ -115,7 +119,9 @@ export class HtmlEditor {
 
     private onSelectionRestore(e: IToolbarOptions): void {
         this.parent.isBlur = false;
-        (this.contentRenderer.getEditPanel() as HTMLElement).focus();
+        if (isNOU(this.saveSelection) || isNOU(closest(this.saveSelection.range.startContainer.parentElement, ".e-img-caption")) ? true : !((closest(this.saveSelection.range.startContainer.parentElement, ".e-img-caption") as Element).getAttribute("contenteditable") == "false")) {
+            (this.contentRenderer.getEditPanel() as HTMLElement).focus();
+        }
         if (isNullOrUndefined(e.items) || e.items) {
             this.saveSelection.restore();
         }
@@ -124,10 +130,81 @@ export class HtmlEditor {
     private isTableClassAdded(): void  {
         const tableElement : NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('table');
         for (let i: number = 0; i < tableElement.length; i++) {
-            if (!tableElement[i as number].classList.contains('e-rte-table')){
+            if (!tableElement[i as number].classList.contains('e-rte-table') && !tableElement[i as number].classList.contains('e-rte-paste-table') ){
                 tableElement[i as number].classList.add('e-rte-table');
             }
         }
+    }
+
+    private onHandleFontsizeChange(e: NotifyArgs): void {
+        const keyboardArgs: KeyboardEventArgs = e.args as KeyboardEventArgs;
+        const args: ActionBeginEventArgs = { name: 'dropDownSelect' };
+        args.item = {
+            command: 'Font',
+            subCommand: 'FontSize'
+        } as IDropDownItemModel;
+        const items: IDropDownItemModel[] = (this.parent.fontSize as FontSizeModel).items;
+        let activeElem: string;
+        if (this.parent.toolbarModule && (this.parent.toolbarModule as Toolbar).dropDownModule &&
+            (this.parent.toolbarModule as Toolbar).dropDownModule.fontSizeDropDown && !isNOU((this.parent.toolbarModule as Toolbar).dropDownModule.fontSizeDropDown.activeElem[0].textContent) && (this.parent.toolbarModule as Toolbar).dropDownModule.fontSizeDropDown.activeElem[0].textContent !== '') {
+            activeElem = this.parent.toolbarModule.dropDownModule.fontSizeDropDown.activeElem[0].textContent;
+        } else {
+            let fontSizeValue: string;
+            const selection: Selection = this.parent.contentModule.getDocument().getSelection();
+            if (selection && selection.focusNode && selection.focusNode.parentElement) {
+                fontSizeValue = document.defaultView.getComputedStyle(selection.focusNode.parentElement, null).getPropertyValue('font-size');
+            } else {
+                fontSizeValue = (this.parent.fontSize as FontSizeModel).width;
+            }
+            fontSizeValue = isNOU(fontSizeValue) ? (this.parent.fontSize as FontSizeModel).width : fontSizeValue;
+            const actualTxtFontValues: RegExpMatchArray = fontSizeValue.match(/^([\d.]+)(\D+)$/);
+            const size: number = parseInt(actualTxtFontValues[1], 10);
+            const unit: string = actualTxtFontValues[2];
+            const defaultFontValues: RegExpMatchArray = items[0].value.match(/^([\d.]+)(\D+)$/);
+            if (defaultFontValues[2] === unit) {
+                const index: number = items.findIndex(({ value }: { value: string }) => parseInt(value, 10) >= size);
+                activeElem = items[index as number].text;
+            } else {
+                const convertedSize: number = this.convertFontSize(size, unit, defaultFontValues[2]);
+                const index: number = items.findIndex(({ value }: { value: string }) => parseInt(value, 10) >= convertedSize);
+                activeElem = items[index as number].text;
+            }
+        }
+        const fontIndex: number = items.findIndex((size: IDropDownItemModel) => size.text === activeElem);
+        if (keyboardArgs.action === 'increase-fontsize' && fontIndex !== -1) {
+            if (fontIndex >= items.length - 1) {
+                const fontValues: RegExpMatchArray = items[fontIndex as number].value.match(/^([\d.]+)(\D+)$/);
+                if (fontValues) {
+                    const size: number = parseInt(fontValues[1], 10);
+                    const unit: string = fontValues[2];
+                    const roundedSize: number = size % 10 === 0 ? Math.ceil((size + 1) / 10) * 10 : Math.ceil(size / 10) * 10;
+                    (args.item as IDropDownItemModel).value = roundedSize.toLocaleString() + unit;
+                    (args.item as IDropDownItemModel).text = roundedSize.toLocaleString() + ' ' + unit;
+                }
+                this.parent.fontSize.items.push(args.item);
+            } else {
+                (args.item as IDropDownItemModel).value = items[fontIndex + 1].value;
+                (args.item as IDropDownItemModel).text = items[fontIndex + 1].text;
+            }
+        } else if (keyboardArgs.action === 'decrease-fontsize' && fontIndex !== -1 && fontIndex > 0) {
+            (args.item as IDropDownItemModel).value = items[fontIndex - 1].value;
+            (args.item as IDropDownItemModel).text = items[fontIndex - 1].text;
+        }
+        else {
+            if (fontIndex >= 0 && fontIndex < items.length && items[fontIndex as number]) {
+                (args.item as IDropDownItemModel).value = items[fontIndex as number].value;
+                (args.item as IDropDownItemModel).text = items[fontIndex as number].text;
+            }
+        }
+        this.parent.formatter.process(this.parent, args, keyboardArgs);
+    }
+
+    private convertFontSize(value: number, originalUnit: string, targetUnit: string): number {
+        if (CONSTANT.supportedUnits.indexOf(originalUnit) !== -1 || CONSTANT.supportedUnits.indexOf(targetUnit) !== -1) {
+            originalUnit = 'px';
+        }
+        const convertedValue: number = value * CONSTANT.conversionFactors[originalUnit as string][targetUnit as string];
+        return convertedValue;
     }
 
     private onKeyUp(e: NotifyArgs): void {
@@ -255,7 +332,7 @@ export class HtmlEditor {
             ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 13) {
             this.spaceLink(e.args as KeyboardEvent);
             if (this.parent.editorMode === 'HTML' && !this.parent.readonly) {
-                const currentLength: number = this.parent.getText().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\u200B/g, '').length;
+                const currentLength: number = this.parent.getText().trim().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
                 const selectionLength: number = this.parent.getSelection().length;
                 const totalLength: number = (currentLength - selectionLength) + 1;
                 if (!(this.parent.maxLength === -1 || totalLength <= this.parent.maxLength) &&
@@ -412,7 +489,7 @@ export class HtmlEditor {
         let liElement: HTMLElement;
         let rootElement: HTMLElement;
         if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Delete' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 46 &&
-            this.parent.contentModule.getText().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\u200B/g, '').length !== 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.parentElement.tagName !== 'TD' &&
+            this.parent.contentModule.getText().trim().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length !== 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.parentElement.tagName !== 'TD' &&
             currentRange.startContainer.parentElement.tagName !== 'TH') {
             this.deleteRangeElement = rootElement = (this.getRootBlockNode(currentRange.startContainer) as HTMLElement);
             if (this.deleteRangeElement.tagName === 'OL' || this.deleteRangeElement.tagName === 'UL') {

@@ -9,7 +9,7 @@ import { performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
 import { ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs, addFileMenuItems, getSiblingsHeight } from '../common/index';
-import { defaultLocale, locale, setResize, initiateFilterUI, clearFilter, focus } from '../common/index';
+import { defaultLocale, locale, setResize, initiateFilterUI, clearFilter, focus, removeDesignChart } from '../common/index';
 import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation, addRibbonTabs } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange, addToolbarItems } from '../common/index';
 import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetChanged, refreshFormulaDatasource } from '../common/index';
@@ -44,11 +44,11 @@ import { DataValidation } from '../actions/index';
 import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndReplace, WorkbookAutoFill } from '../../workbook/actions/index';
 import { FindAllArgs, findAllValues, ClearOptions, ConditionalFormatModel, ImageModel, getFormattedCellObject } from './../../workbook/common/index';
 import { ConditionalFormatting } from '../actions/conditional-formatting';
-import { WorkbookImage, WorkbookChart, updateView } from '../../workbook/index';
+import { WorkbookImage, WorkbookChart, updateView, focusChartBorder } from '../../workbook/index';
 import { WorkbookProtectSheet } from '../../workbook/actions/index';
-import { contentLoaded, completeAction, freeze, ConditionalFormatEventArgs } from '../common/index';
+import { contentLoaded, completeAction, freeze, ConditionalFormatEventArgs, refreshOverlayElem, insertDesignChart } from '../common/index';
 import { beginAction, sheetsDestroyed, workbookFormulaOperation, getRangeAddress, cellValidation } from './../../workbook/common/index';
-import { updateScroll, SelectionMode, clearCopy, isImported, clearUndoRedoCollection } from '../common/index';
+import { updateScroll, SelectionMode, clearCopy, isImported, clearUndoRedoCollection, clearChartBorder } from '../common/index';
 /**
  * Represents the Spreadsheet component.
  *
@@ -2712,6 +2712,96 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     }
 
     /**
+     * Allows you to select a chart from the active sheet. To select a specific chart from the active sheet, pass the chart `id`.
+     * If you pass an empty argument, the chart present in the active cell will be selected. If the active cell does not have a chart,
+     * the initially rendered chart will be selected from the active sheet.
+     *
+     * @param {string} id - Specifies the chart `id` to be selected.
+     * @returns {void}
+     */
+    public selectChart(id?: string): void {
+        this.selectOverlay(id, true);
+    }
+
+    /**
+     * Allows you to select an image from the active sheet. To select a specific image from the active sheet, pass the image `id`.
+     * If you pass an empty argument, the image present in the active cell will be selected. If the active cell does not have an image,
+     * the initially rendered image will be selected from the active sheet.
+     *
+     * @param {string} id - Specifies the image `id` to be selected.
+     * @returns {void}
+     */
+    public selectImage(id?: string): void {
+        this.selectOverlay(id);
+    }
+
+    private selectOverlay(id?: string, isChart?: boolean): void {
+        const sheet: SheetModel = this.getActiveSheet();
+        if (sheet.isProtected || !this.allowEditing) {
+            return;
+        }
+        if (!id) {
+            const activeCell: number[] = getCellIndexes(sheet.activeCell);
+            const cell: CellModel = getCell(activeCell[0], activeCell[1], sheet, false, true);
+            if (isChart) {
+                if (cell.chart && cell.chart.length) {
+                    id = cell.chart[cell.chart.length - 1].id;
+                }
+            } else if (cell.image && cell.image.length) {
+                id = cell.image[cell.image.length - 1].id;
+            }
+        }
+        let overlayEle: HTMLElement;
+        if (id) {
+            overlayEle = this.element.querySelector(`#${id}`);
+            if (!overlayEle.classList.contains('e-ss-overlay')) {
+                overlayEle = overlayEle.parentElement;
+            }
+        } else {
+            overlayEle = this.element.querySelector(
+                `.e-ss-overlay${isChart ? '.e-datavisualization-chart' : ':not(.e-datavisualization-chart)'}`);
+        }
+        if (overlayEle) {
+            let isChartActive: boolean;
+            const activeOverlay: Element = this.element.getElementsByClassName('e-ss-overlay-active')[0];
+            if (activeOverlay) {
+                activeOverlay.classList.remove('e-ss-overlay-active');
+                isChartActive = activeOverlay.classList.contains('e-datavisualization-chart');
+                if (isChartActive) {
+                    this.notify(clearChartBorder, null);
+                }
+            }
+            overlayEle.classList.add('e-ss-overlay-active');
+            if (overlayEle.classList.contains('e-datavisualization-chart')) {
+                this.notify(focusChartBorder, { id: overlayEle.id });
+                if (!isChartActive) {
+                    this.notify(insertDesignChart, { id: overlayEle.id });
+                }
+            } else if (isChartActive) {
+                this.notify(removeDesignChart, null);
+            }
+        }
+    }
+
+    /**
+     * Allows you to remove a selection from the active chart.
+     *
+     * @returns {void}
+     */
+    public deselectChart(): void {
+        this.notify(refreshOverlayElem, { selector: '.e-datavisualization-chart' });
+    }
+
+    /**
+     * Allows you to remove a selection from the active image.
+     *
+     * @returns {void}
+     */
+    public deselectImage(): void {
+        this.notify(refreshOverlayElem, { selector: ':not(.e-datavisualization-chart)' });
+    }
+
+    /**
      * Start edit the active cell.
      *
      * {% codeBlock src='spreadsheet/startEdit/index.md' %}{% endcodeBlock %}
@@ -2859,6 +2949,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                             this.selectionSettings.mode = mode; this.dataBind();
                         }
                     }
+                } else {
+                    this.notify(refreshOverlayElem, null);
                 }
                 break;
             case 'allowInsert':

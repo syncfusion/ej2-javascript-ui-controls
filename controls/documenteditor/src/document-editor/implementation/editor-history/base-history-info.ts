@@ -3378,6 +3378,7 @@ export class BaseHistoryInfo {
             paragraphFormat.lineSpacing = paraFormat.hasValue('lineSpacing') ? paraFormat.lineSpacing : paragraphFormat.lineSpacing;
             paragraphFormat.lineSpacingType = paraFormat.hasValue('lineSpacingType') ? paraFormat.lineSpacingType : paragraphFormat.lineSpacingType;
             paragraphFormat.textAlignment = paraFormat.hasValue('textAlignment') ? paraFormat.textAlignment : paragraphFormat.textAlignment;
+            paragraphFormat.outlineLevel = paraFormat.hasValue('outlineLevel') ? paraFormat.outlineLevel : paragraphFormat.outlineLevel;
             paragraphFormat.borders = paraFormat.hasValue('borders') ? paraFormat.borders : paragraphFormat.borders;
             if (paraFormat.listFormat.listId !== -1) {
                 let listFormat: any = {};

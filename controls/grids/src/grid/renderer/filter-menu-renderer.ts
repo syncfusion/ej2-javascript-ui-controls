@@ -171,6 +171,14 @@ export class FilterMenuRenderer {
             && !isNullOrUndefined(column.filter.ui.create as Function)))) {
             this.afterRenderFilterUI();
         }
+        if (!isNullOrUndefined(column.filterTemplate)) {
+            (this.dlgDiv.querySelector('.e-flmenu-valuediv').firstElementChild as HTMLElement).focus();
+            this.dlgDiv.querySelector('.e-flmenu-valuediv').firstElementChild.classList.add('e-input-focus');
+        }
+        else if (!isNullOrUndefined(this.dlgDiv.querySelector('.e-flmenu-input'))) {
+            (this.dlgDiv.querySelector('.e-flmenu-input') as HTMLElement).focus();
+            this.dlgDiv.querySelector('.e-flmenu-input').parentElement.classList.add('e-input-focus');
+        }
     }
 
     /**

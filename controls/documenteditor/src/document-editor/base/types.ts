@@ -801,7 +801,11 @@ export type FormatType =
     /**
      * Syncfusion Document Text Format.
      */
-    'Sfdt';
+    'Sfdt'|
+    /**
+     * Microsoft Word Template format.
+     */
+    'Dotx';
 /**
  * Enum for find option
  */

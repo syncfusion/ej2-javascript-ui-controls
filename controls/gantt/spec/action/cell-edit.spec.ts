@@ -2434,3 +2434,50 @@ describe('Edit for start date column to be null', () => {
         triggerMouseEvent(element, 'click');
     });
 });
+describe('CR:866697-The taskbar render validation not working properly', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 0.5, Progress: 30 },
+                            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 0.5, Predecessor: "2", Progress: 30 },
+                        ]
+                    }
+                ],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowNextRowEdit: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Checking taskbar width and enddate', () => {
+        expect(ganttObj.currentViewData[3].ganttProperties.duration).toBe(0.5);
+        expect(ganttObj.currentViewData[3].ganttProperties.width).toBe(16.5);
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.endDate, 'MM/dd/yyyy')).toBe('04/02/2019');
+    });
+});

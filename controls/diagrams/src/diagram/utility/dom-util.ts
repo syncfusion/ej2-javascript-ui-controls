@@ -287,7 +287,8 @@ function wrapSvgTextAlign(text: TextAttributes, childNodes: SubTextElement[]): T
     for (k = 0; k < childNodes.length; k++) {
         txtWidth = childNodes[parseInt(k.toString(), 10)].width;
         width = txtWidth;
-        if (text.textAlign === 'left') {
+        //EJ2-863489 - Node annotation textAlign "Justify" option is not working correctly
+        if (text.textAlign === 'left' || text.textAlign === 'justify') {
             txtWidth = 0;
         } else if (text.textAlign === 'center') {
             if (txtWidth > text.width && (text.textOverflow === 'Ellipsis' || text.textOverflow === 'Clip')) {

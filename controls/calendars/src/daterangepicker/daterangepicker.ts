@@ -4685,7 +4685,7 @@ export class DateRangePicker extends CalendarBase {
         attributes(this.secondHiddenChild, {
             'type': 'text', 'name': this.inputElement.getAttribute('data-name'), 'class' : HIDDENELEMENT
         });
-        const format: Object = { type: 'datetime', skeleton: 'yMd' };
+        const format: Object = { format: this.formatString, type: 'datetime', skeleton: 'yMd' };
         this.firstHiddenChild.value = this.startDate && this.globalize.formatDate(this.startDate, format);
         this.secondHiddenChild.value = this.endDate && this.globalize.formatDate(this.endDate, format);
         this.inputElement.parentElement.appendChild(this.firstHiddenChild);

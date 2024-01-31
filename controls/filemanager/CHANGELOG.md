@@ -8,6 +8,14 @@
 
 #### Bug Fixes
 
+- `#I543790` - The issue with the breadcrumb bar of the File Manager showing an incorrect name for the Azure File service provider has been resolved.
+
+## 24.1.45 (2024-01-09)
+
+### FileManager
+
+#### Bug Fixes
+
 - `#I536863` - The issue while creating a new folder within empty subfolder using the context menu from navigation pane selection is resolved.
 
 ## 24.1.44 (2024-01-03)

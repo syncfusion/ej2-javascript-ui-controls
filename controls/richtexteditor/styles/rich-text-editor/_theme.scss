@@ -360,15 +360,19 @@
     .e-clickelem::after,
     .e-video-clickelem::after {
       background: transparent;
-      bottom: 0;
       content: '';
       cursor: default;
       display: block;
-      left: 0;
       position: absolute;
-      right: 0;
-      top: 0;
-      z-index: 1;
+    }
+
+    .e-clickelem::before,
+    .e-video-clickelem::before {
+      background: transparent;
+      content: '';
+      cursor: default;
+      display: block;
+      position: absolute;
     }
 
     .e-videoheader,

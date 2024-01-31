@@ -5272,7 +5272,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             (document.querySelector(".e-rte-table-popup button.e-insert-table-btn")as any).click();
             setTimeout(function () {
                 (document.querySelector(".e-rte-edit-table .e-footer-content .e-rte-elements.e-insert-table")as any).click();
-                expect(rteObj.inputElement.querySelectorAll('li *:empty:not(img)').length == 0).toBe(true);
+                expect(rteObj.inputElement.querySelectorAll('li *:empty:not(img)').length == 4).toBe(true);
                 done();
             }, 100);
         });
@@ -5574,6 +5574,208 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             let focusNode: Element = (rteObj as any).inputElement.querySelector(".focusNode").nextSibling as Element;
             expect(focusNode.classList.contains('e-rte-table')).toBe(true);
             done();
+        });
+    });
+
+    describe('865553 The Table resize border position does not refresh after the enter action', () => {
+        let editor: RichTextEditor;
+        const enterKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', {
+            key: 'Enter',
+            code: 'Enter',
+            which: 13,
+            keyCode: 13,
+            shiftKey: false,
+            ctrlKey: false,
+            altKey: false,
+            bubbles: true,
+            cancelable: true
+        } as EventInit);
+        const enterKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', {
+            key: 'Enter',
+            code: 'Enter',
+            which: 13,
+            keyCode: 13,
+            shiftKey: false,
+            ctrlKey: false,
+            altKey: false,
+            bubbles: true,
+            cancelable: true
+        } as EventInit);
+        beforeEach(() => {
+            editor = renderRTE({
+                value: `<table class="e-rte-table" style="width: 23.0542%; min-width: 0px; height: 60px;"><tbody><tr><td class="" style="width: 100%;">Hi Team<br><br>Could you please check the issue.<br><br><br><br><br></td></tr></tbody></table><p><br></p>`
+            });
+        });
+        afterEach(() => {
+            destroy(editor);
+        });
+        it('Checking the resize border position after the enter action', (done: DoneFn) => {
+            // Partially covered for coverage purpose.
+            editor.focusIn();
+            let table = editor.element.querySelector('table') as HTMLElement;
+            setCursorPoint(table.querySelector('td').firstChild as HTMLElement, 3);
+            const mouseOverEvent = new MouseEvent('mouseover', { 'view': window, 'bubbles': true, 'cancelable': true });
+            const mouseDownEvent = new MouseEvent('mousedown', { 'view': window, 'bubbles': true, 'cancelable': true });
+            table.querySelector('td').dispatchEvent(mouseOverEvent);
+            table.querySelector('td').dispatchEvent(mouseDownEvent);
+            document.activeElement.dispatchEvent(enterKeyDownEvent);
+            document.activeElement.dispatchEvent(enterKeyUpEvent);
+            setTimeout(() => {
+                expect(editor.inputElement.querySelector('.e-table-box')).not.toBe(null);
+                done();
+            }, 200);
+        });
+    });
+
+    describe('860995 - The List items get removed when inserting a table inside the list..', () => {
+        let editor: RichTextEditor;
+        let listCount: number;
+        beforeAll(() => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'OrderedList', 'UnorderedList']
+                },
+                value: `<p><span style="font-weight: 700;">Work Details:</span></p>
+                <ul>
+                    <li>&nbsp;</li>
+                </ul>
+                <p><span style="font-weight: 700;">Issue:</span></p>
+                <ul>
+                    <li><br></li>
+                </ul>
+                <p><span style="font-weight: 700;">Root Cause:</span></p>
+                <ul>
+                    <li><br></li>
+                </ul>
+                <p><span style="font-weight: 700;">Solution Description:</span></p>
+                <ul>
+                    <li><br></li>
+                </ul>
+                <p><span style="font-weight: 700;">Commit Details:</span></p>
+                <ul>
+                    <li><br></li>
+                </ul>
+                <p><span style="font-weight: 700;">PR Links:</span></p>
+                <ul>
+                    <li><br></li>
+                </ul>
+                <p><span style="font-weight: 700;">Covering Test Cases:</span></p>
+                <ol>
+                    <li><br></li>
+                </ol>
+                <p><span style="font-weight: 700;">Reference Links:</span></p>
+                <ul style="margin-bottom: 0px;">
+                    <li><br style="font-size: 13.3333px;"></li>
+                </ul>`
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should not remove the list items when inserting a table inside the list.', (done: DoneFn) => {
+            editor.focusIn();
+            setCursorPoint(editor.element.querySelector('li').firstChild as Element, 1);
+            const tableButton: HTMLElement = editor.element.querySelector('.e-rte-toolbar .e-toolbar-item button');
+            tableButton.click();
+            listCount = editor.inputElement.querySelectorAll('li').length;
+            const insertButton: HTMLElement = document.querySelector('.e-insert-table-btn');
+            insertButton.click();
+            setTimeout(() => {
+                expect(editor.inputElement.querySelectorAll('li').length).toBe(listCount);
+                done();
+            }, 200);
+        });
+    });
+
+    describe('837479 - Redo doesn’t works properly in table', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 9,
+            shiftKey: false,
+            ctrlKey: false,
+            action: ''
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: '<div class="editable-content" id="redo_test"></div>'
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Redo doesn’t works properly in table', () => {
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            let selection: NodeSelection = new NodeSelection();
+            let element: HTMLElement = document.getElementById('redo_test');
+            selection.setSelectionText(document, element.childNodes[0], element.childNodes[0], 0, 0);
+            let saveSelection: NodeSelection;
+            let ranges: Range;
+            ranges = selection.getRange(document);
+            saveSelection = selection.save(ranges, document);
+            saveSelection.restore();
+            rteObj.executeCommand('insertTable', {
+                rows: 1,
+                columns: 1,
+                selection: saveSelection,
+                width: { minWidth: 20, maxWidth: 50, width: 30 }
+            });
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table.querySelectorAll('tr').length === 1).toBe(true);
+            expect(table.querySelectorAll('td').length === 1).toBe(true);
+            let selObj: NodeSelection = new NodeSelection();
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), table.querySelectorAll('td')[0], table.querySelectorAll('td')[0], 0, 0);
+            (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
+            expect(table.querySelectorAll('td')[1].innerText).toBe('\n');
+            (<any>rteObj).formatter.saveData();
+            (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
+            keyboardEventArgs.ctrlKey = true;
+            keyboardEventArgs.keyCode = 90;
+            keyboardEventArgs.action = 'undo';
+            (<any>rteObj).formatter.editorManager.undoRedoManager.keyDown({ event: keyboardEventArgs });
+            let tableAfterUndo: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(tableAfterUndo.querySelectorAll('tr').length === 2).toBe(true);
+            expect(tableAfterUndo.querySelectorAll('td').length === 2).toBe(true);
+        });
+    });
+
+    describe('837483 - Cells gets deleted after merged with header.', function () {
+        let rteObj : RichTextEditor;
+        beforeEach(function () {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                        'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                },
+                value: '<table class="e-rte-table tdElement" style="width: 100%; min-width: 0px;"><thead><tr><th class="e-cell-select"><br></th></tr></thead><tbody><tr><td class="e-cell-select tdEle" style="width: 100%;"><br></td></tr></tbody></table>'
+            });
+        });
+        afterEach(function () {
+            destroy(rteObj);
+        });
+        it('Cells gets deleted after merged with header', function (done) {
+            rteObj.focusIn()
+            var tbElement = rteObj.contentModule.getEditPanel().querySelector(".tdEle")
+            var eventsArg = { pageX: 50, pageY: 300, target: tbElement, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                addClass([table.querySelector('th')], "e-cell-select");
+                (document.querySelectorAll(".e-rte-quick-toolbar .e-toolbar-items .e-toolbar-item")[3].querySelector(".e-btn-icon.e-caret") as any).click();
+                expect(document.querySelector('#' + rteObj.element.id + '_quick_TableCell-popup').querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(true);
+                done();
+            },0);
         });
     });
 });

@@ -1126,6 +1126,46 @@ describe('Group', () => {
             done();
         });
     });
+    describe('Resize handle not rendered properly issue', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+    
+        beforeAll(() => {
+    
+            ele = createElement('div', { id: 'diagrampivot' });
+            document.body.appendChild(ele);
+    
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }],
+                    pivot: { x: 0, y: 0 }
+                },
+                { id: 'group', children: ['node1'], pivot: { x: 0, y: 0 }},
+                
+            ];
+            diagram = new Diagram({
+                width: '900px', height: '500px', nodes: nodes,
+            });
+            diagram.appendTo('#diagrampivot');
+    
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Check whether resize handle renders properly for node pivot - 0, 0', function (done) {
+            diagram.select([diagram.nodes[1]]);
+            let northWestelement: HTMLElement = document.getElementById('resizeNorthWest');
+            let northEastelement: HTMLElement = document.getElementById('resizeNorthEast');
+            let southWestelement: HTMLElement = document.getElementById('resizeSouthWest');
+            let southEastelement: HTMLElement = document.getElementById('resizeSouthEast');
+            expect(northWestelement.getAttribute('x') === '93' && northWestelement.getAttribute('y') === '93').toBe(true);
+            expect(northEastelement.getAttribute('x') === '193' && northEastelement.getAttribute('y') === '93').toBe(true);
+            expect(southWestelement.getAttribute('x') === '93' && southWestelement.getAttribute('y') === '193').toBe(true);
+            expect(southEastelement.getAttribute('x') === '193' && southEastelement.getAttribute('y') === '193').toBe(true);
+            done();
+        });
+    });
     describe('Group - with selection issue', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

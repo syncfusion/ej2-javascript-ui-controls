@@ -592,7 +592,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.tooltipEventArgs = null;
     }
     private closePopupHandler(): void {
-        if ((this as any).isReact && !(this.opensOn === 'Click' || typeof (this.content) === 'function')) {
+        if ((this as any).isReact && !(this.opensOn === 'Click' && typeof (this.content) === 'function')) {
             this.clearTemplate(['content']);
         }
         this.clear();
@@ -1160,15 +1160,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.trigger('beforeClose', this.tooltipEventArgs, (observedArgs: TooltipEventArgs) => {
             if (!observedArgs.cancel) {
                 this.mouseMoveBeforeRemove();
-                this.popupHide(hideAnimation, target);
+                this.popupHide(hideAnimation, target, e);
             } else {
                 this.isHidden = false;
             }
         });
         this.tooltipEventArgs = null;
     }
-    private popupHide(hideAnimation: TooltipAnimationSettings, target: HTMLElement): void {
-        if (target) { this.restoreElement(target); }
+    private popupHide(hideAnimation: TooltipAnimationSettings, target: HTMLElement, e?: Event): void {
+        if (target && e) { this.restoreElement(target); }
         this.isHidden = true;
         let closeAnimation: Object = {
             name: (hideAnimation.effect === 'None' && animationMode === 'Enable') ? 'FadeOut': this.animation.close.effect,
@@ -1190,6 +1190,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.removeDescribedBy(target);
     }
     private clear(): void {
+        const target: HTMLElement = this.findTarget();
+        if(target) { this.restoreElement(target); }
         if (this.tooltipEle) {
             removeClass([this.tooltipEle], POPUP_CLOSE);
             addClass([this.tooltipEle], POPUP_OPEN);

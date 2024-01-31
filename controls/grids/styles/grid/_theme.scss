@@ -335,20 +335,26 @@
       border-left-color: $frozen-border-color;
     }
 
+    &.e-lib .e-leftfreeze.e-freezeleftborder,
     .e-leftfreeze.e-freezeleftborder {
       border-right-color: $frozen-border-color;
     }
 
+    &.e-lib .e-rightfreeze.e-freezerightborder,
     .e-rightfreeze.e-freezerightborder {
       border-left-color: $frozen-border-color;
     }
 
+    &.e-lib .e-filterbarcell.e-fixedfreeze.e-freezeleftborder,
     .e-filterbarcell.e-fixedfreeze.e-freezeleftborder,
+    &.e-lib .e-fixedfreeze.e-freezeleftborder,
     .e-fixedfreeze.e-freezeleftborder {
       border-left-color: $frozen-border-color;
     }
 
+    &.e-lib .e-filterbarcell.e-fixedfreeze.e-freezerightborder,
     .e-filterbarcell.e-fixedfreeze.e-freezerightborder,
+    &.e-lib .e-fixedfreeze.e-freezerightborder,
     .e-fixedfreeze.e-freezerightborder  {
       border-right-color: $frozen-border-color;
     }

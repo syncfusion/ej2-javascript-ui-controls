@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 24.2.3 (2024-01-31)
+
+### GanttChart
+
+#### Bug Fixes
+
+- `#I540355` - RTE create column not working in dialog box issue has been fixed.
+- `#I543351` - The taskbar render validation not working properly issue has been fixed.
+
 ## 24.1.47 (2024-01-23)
 
 ### GanttChart

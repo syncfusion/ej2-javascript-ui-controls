@@ -1,5 +1,5 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, NotifyArgs, IRenderer, ImageSuccessEventArgs, ICssClassArgs, CleanupResizeElemArgs } from '../base/interface';
+import { IRichTextEditor, NotifyArgs, IRenderer, ImageSuccessEventArgs, ICssClassArgs, CleanupResizeElemArgs, IShowPopupArgs } from '../base/interface';
 import { PasteCleanupArgs } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
@@ -140,7 +140,8 @@ export class PasteCleanup {
                     args: e.args,
                     text: e.text,
                     allowedStylePropertiesArray: this.parent.pasteCleanupSettings.allowedStyleProps,
-                    callBack: (a: string, cropImageData: { [key: string]: string | boolean | number }[]) => {
+                    callBack: (a: string, cropImageData: { [key: string]: string | boolean | number }[], pasteTableSource?: string) => {
+                        args.pasteTableSource = pasteTableSource;
                         value = a.trim();
                         this.cropImageData = cropImageData;
                     }
@@ -710,7 +711,7 @@ export class PasteCleanup {
                 { value : clipBoardElem.innerHTML, filesData: filesData },
                 (updatedArgs: PasteCleanupArgs) => { value = updatedArgs.value; });
             clipBoardElem.innerHTML = this.parent.addAnchorAriaLabel(value);
-            clipBoardElem = this.addTableClass(clipBoardElem);
+            clipBoardElem = this.addTableClass(clipBoardElem, (args as NotifyArgs).pasteTableSource);
             this.parent.formatter.editorManager.execCommand(
                 'inserthtml',
                 'pasteCleanup',
@@ -718,6 +719,20 @@ export class PasteCleanup {
                 (returnArgs: IHtmlFormatterCallBack) => {
                     extend(args, { elements: returnArgs.elements, imageElements: returnArgs.imgElem }, true);
                     this.parent.formatter.onSuccess(this.parent, args);
+                    if (!isNOU(returnArgs.elements) && !isNOU(returnArgs.imgElem)) {
+                        const pasteContent: Element[] = returnArgs.elements as Element[];
+                        const imageContent: Element[] = returnArgs.imgElem as Element[];
+                        const lastElementChild: Element | null = this.findLastElement(pasteContent[pasteContent.length - 1]);
+                        const isImageAtLast: boolean = !isNOU(lastElementChild) ? lastElementChild.nodeName === 'IMG' : false;
+                        if (isImageAtLast || pasteContent[pasteContent.length - 1] === imageContent[imageContent.length - 1]) {
+                            this.parent.notify(events.insertCompleted, {
+                                args: (args as IHtmlFormatterCallBack).event,
+                                type: 'Images',
+                                isNotify: true,
+                                elements: imageContent[imageContent.length - 1]
+                            } as IShowPopupArgs);
+                        }
+                    }
                 },
                 clipBoardElem, null, null, this.parent.enterKey
             );
@@ -770,11 +785,13 @@ export class PasteCleanup {
         }
     }
 
-    private addTableClass(element: HTMLElement): HTMLElement {
+    private addTableClass(element: HTMLElement, source?: string): HTMLElement {
         const tableElement : NodeListOf<HTMLElement> = element.querySelectorAll('table');
         for (let i: number = 0; i < tableElement.length; i++) {
-            if (!tableElement[i as number].classList.contains('e-rte-table')){
+            if (!tableElement[i as number].classList.contains('e-rte-table') && (source === 'html' || source === '')){
                 tableElement[i as number].classList.add('e-rte-table');
+            } else if(source && source !== 'html') {
+                tableElement[i as number].classList.add('e-rte-paste-' + source + '-table');
             }
         }
         return element;
@@ -1127,6 +1144,17 @@ export class PasteCleanup {
             }
         }
         return clipBoardElem;
+    }
+
+    private findLastElement(element: Element): Element {
+        if (!isNOU(element) && !isNOU(element.lastElementChild)) {
+            let lastChild: Element = element.lastElementChild;
+            while(lastChild && lastChild.lastElementChild) {
+                lastChild = lastChild.lastElementChild;
+            }
+            return lastChild;
+        }
+        return null;
     }
 
     /**

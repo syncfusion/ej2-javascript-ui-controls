@@ -1,7 +1,7 @@
 /**
  * Library Spec
  */
-import { Base, getComponent, removeChildInstance } from '../src/base';
+import { Base, getComponent, removeChildInstance, DomElements, setProxyToRaw } from '../src/base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, Event, Property } from '../src/notify-property-change';
 import { createElement } from '../src/dom';
 import { Touch } from '../src/touch';
@@ -85,6 +85,24 @@ describe('Library', (): void => {
             expect(obj.isDestroyed).toEqual(false);
             obj.destroy();
             expect(obj.isDestroyed).toEqual(true);
+        });
+        it('destroy Vue instance', () => {
+            let vueEle: HTMLElement = createElement('div', { id: 'singleEle', styles: 'height:100px;width:100px;' });
+            let reactive = function (instance: DemoClass) {
+                instance['__reactive'] = true;
+                return instance;
+            }
+            let toRaw = function (instance: DemoClass) {
+                delete instance['__reactive'];
+                return instance;
+            }
+            setProxyToRaw(toRaw);
+            let vueObj: DemoClass = reactive(new DemoClass(vueEle));
+            expect((<DomElements>vueObj.element).ej2_instances.length).toEqual(1);
+            expect(vueObj.isDestroyed).toEqual(false);
+            vueObj.destroy();
+            expect(vueObj.isDestroyed).toEqual(true);
+            expect((<DomElements>vueObj.element).ej2_instances.length).toEqual(0);
         });
     });
 

@@ -2519,7 +2519,7 @@ describe('849075 - The screen reader does not read the toolbar items in the Rich
         for (let i: number = 0; i < toolbarItems.length; i++) {
             // Source code view toolbar items are focusable.
             // Other toolbar items are not focusable.
-            if (toolbarItems[i].getAttribute('title') === 'Preview' || toolbarItems[i].getAttribute('title') === 'Minimize(Esc)'){
+            if (toolbarItems[i].getAttribute('title') === 'Preview (Ctrl+Shift+H)' || toolbarItems[i].getAttribute('title') === 'Minimize(Esc)'){
                 expect(toolbarItems[i].firstElementChild.getAttribute('tabindex') === null).toBe(true);
             } else {
                 expect(toolbarItems[i].firstElementChild.getAttribute('tabindex') === '-1').toBe(true);
@@ -2596,6 +2596,38 @@ describe('849075 - Checking the tab index on navigating the toolbar items using 
         }, 800);
     });
 });
+describe('863039-Top sentence is not showing when Maximize/Minimize toolbar', () => {
+    let rteObj: any;
+    let rteEle: HTMLElement;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['FullScreen', 'Italic', 'Underline', 'StrikeThrough', 'SuperScript', 'SubScript', '|',
+                'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                'LowerCase', 'UpperCase', '|',
+                'Formats', 'Alignments', '|', 'NumberFormatList', 'BulletFormatList', '|',
+                'Outdent', 'Indent', '|', 'CreateLink', 'Image', 'FileManager', 'Video', 'Audio', 'CreateTable', '|', 'FormatPainter', 'ClearFormat',
+                '|', 'EmojiPicker', 'Print', '|',
+                'SourceCode', 'Bold', '|', 'Undo', 'Redo']
+            },
+        });
+        rteEle = rteObj.element;
+    });
+
+    it('Test - Toolbar height testing when height after maximize/minimize', () => {
+        const toolbarElement = rteEle.querySelector('.e-toolbar-wrapper') as HTMLElement | null;
+        const toolbarHeight: string | null = toolbarElement.style.height;
+        const trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+        trgEle.click();
+        trgEle.click();
+        const newElement = rteEle.querySelector('.e-toolbar-wrapper') as HTMLElement | null;
+        const newHeight: string | null = newElement.style.height;      
+        expect(newHeight).toBe(toolbarHeight);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
 describe('864182-Texts got hidden under the toolbar, when we maximize the RichTextEditor when enableFloating is false.', () => {
     let rteObj: RichTextEditor;
     let rteEle: HTMLElement;
@@ -2620,6 +2652,59 @@ describe('864182-Texts got hidden under the toolbar, when we maximize the RichTe
         const newHeight: string | null = newElement.style.height;      
         expect(newHeight).toBe(toolbarHeight);
         
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe("863056-Code view shortcut key tooltip is not displaying properly", () => {
+    let rteObj : RichTextEditor;
+    beforeAll( () =>{
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['SourceCode']
+            },
+        });
+    });
+    it('check tooltip name of code view and preview', (done) => {
+        rteObj.focusIn();
+        let codeView: HTMLElement = <HTMLElement>document.body.querySelectorAll(".e-toolbar-items")[0].childNodes[0];
+        expect(codeView.title === 'Code View (Ctrl+Shift+H)').toBe(true);
+        codeView.click();
+            setTimeout(() => {
+              const previewButton: HTMLElement = <HTMLElement>document.body.querySelectorAll(".e-toolbar-item")[0];
+              expect(previewButton.title === 'Preview (Ctrl+Shift+H)').toBe(true);
+              previewButton.click();
+              setTimeout(() => {
+                codeView = <HTMLElement>document.body.querySelectorAll(".e-toolbar-item")[0];
+                expect(codeView.title === 'Code View (Ctrl+Shift+H)').toBe(true);
+                done();
+              }, 1000);
+            }, 1000);
+    });
+    afterAll( () => {
+        destroy(rteObj);
+    });
+});
+
+describe('865043 - In toolbar settings, enable floating set to false the tooltip does not render', () => {
+    let rteObj: RichTextEditor;
+    beforeAll((done) => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['FontName', 'FontSize', 'Formats', 'OrderedList', 'UnorderedList'],
+                enableFloating: false
+            },
+            value: "Rich Text Editor"
+        });
+        done();
+    });
+    it('Checking the tooltip is rendered when enabling floating is set to false.', (done: Function) => {
+        const toolbarItems: NodeListOf<Element> = document.querySelectorAll('.e-toolbar-item');
+        event = new MouseEvent('mouseover', { bubbles: true, cancelable: true });
+        toolbarItems[0].dispatchEvent(event);
+        expect((toolbarItems[0] as HTMLElement).getAttribute('data-content')).not.toBe(null);
+        done();
     });
     afterAll(() => {
         destroy(rteObj);

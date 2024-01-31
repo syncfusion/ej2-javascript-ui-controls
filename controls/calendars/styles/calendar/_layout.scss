@@ -200,6 +200,9 @@
         font-size: $calendar-title-font-size;
         font-weight: $calendar-title-font-weight-style;
         text-align: $calendar-float-left-style;
+        padding: $calendar-header-title-padding;
+        border: $calendar-none-style;
+        border-radius: $calendar-title-border-radius;
       }
       #{if(&, '&', '*')} .e-title {
         margin-left: $calendar-title-margin-left-style;

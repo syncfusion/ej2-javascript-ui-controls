@@ -1259,7 +1259,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.trigger(gaugeMouseUp, args);
         if (this.activeAxis && this.activePointer) {
             const pointerInd: number = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
-            const axisInd: number = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
+            const axisInd: number = parseInt(this.activePointer.pathElement[0].id.split('_AxisIndex_')[1], 10);
             if (this.activePointer.enableDrag) {
                 this.trigger(dragEnd, {
                     name: dragEnd,
@@ -1708,7 +1708,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     break;
                 }
             }
-            if (!this.isTouchPointer) {
+            if (!this.isTouchPointer && isNullOrUndefined(this.activePointer)) {
                 if (!refreshBounds && renderer) {
                     this.removeSvg();
                     this.renderGaugeElements();

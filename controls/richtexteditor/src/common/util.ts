@@ -83,29 +83,38 @@ export function updateTextNode(value: string, enterAction?: string): string {
         }
         const tableElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('table');
         for (let i: number = 0; i < tableElm.length; i++) {
-            if (tableElm[i as number].getAttribute('border') === '0') {
-                tableElm[i as number].removeAttribute('border');
-            }
-            const tdElm: NodeListOf<HTMLElement> = tableElm[i as number].querySelectorAll('td');
-            for (let j: number = 0; j < tdElm.length; j++) {
-                if (tdElm[j as number].style.borderLeft === 'none') {
-                    tdElm[j as number].style.removeProperty('border-left');
+            if (tableElm[i as number].classList.length > 0 && !tableElm[i as number].classList.contains('e-rte-table')) {
+                tableElm[i as number].classList.add('e-rte-paste-table');
+                if (tableElm[i as number].classList.contains('e-rte-paste-word-table')) {
+                    tableElm[i as number].classList.remove('e-rte-paste-word-table');
+                    continue; // Sking the removal of the border if the source is from word.
+                } else if (tableElm[i as number].classList.contains('e-rte-paste-excel-table')) {
+                    tableElm[i as number].classList.remove('e-rte-paste-excel-table');
+                    if (tableElm[i as number].getAttribute('border') === '0') {
+                        tableElm[i as number].removeAttribute('border');
+                    }
+                    const tdElm: NodeListOf<HTMLElement> = tableElm[i as number].querySelectorAll('td');
+                    for (let j: number = 0; j < tdElm.length; j++) {
+                        if (tdElm[j as number].style.borderLeft === 'none') {
+                            tdElm[j as number].style.removeProperty('border-left');
+                        }
+                        if (tdElm[j as number].style.borderRight === 'none') {
+                            tdElm[j as number].style.removeProperty('border-right');
+                        }
+                        if (tdElm[j as number].style.borderBottom === 'none') {
+                            tdElm[j as number].style.removeProperty('border-bottom');
+                        }
+                        if (tdElm[j as number].style.borderTop === 'none') {
+                            tdElm[j as number].style.removeProperty('border-top');
+                        }
+                        if (tdElm[j as number].style.border === 'none') {
+                            tdElm[j as number].style.removeProperty('border');
+                        }
+                    }
+                } else if (tableElm[i as number].classList.contains('e-rte-paste-onenote-table')) {
+                    tableElm[i as number].classList.remove('e-rte-paste-onenote-table');
+                    continue;
                 }
-                if (tdElm[j as number].style.borderRight === 'none') {
-                    tdElm[j as number].style.removeProperty('border-right');
-                }
-                if (tdElm[j as number].style.borderBottom === 'none') {
-                    tdElm[j as number].style.removeProperty('border-bottom');
-                }
-                if (tdElm[j as number].style.borderTop === 'none') {
-                    tdElm[j as number].style.removeProperty('border-top');
-                }
-                if (tdElm[j as number].style.border === 'none') {
-                    tdElm[j as number].style.removeProperty('border');
-                }
-            }
-            if (!tableElm[i as number].classList.contains('e-rte-table')) {
-                tableElm[i as number].classList.add('e-rte-table');
             }
         }
         const imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');

@@ -1072,6 +1072,9 @@
     @if $skin-name == 'bootstrap4' {
       color: $pv-thumbnail-border-selection-font-color;
     }
+    @if $skin-name == 'bootstrap5' {
+      color: $white;
+    }
     line-height: $pv-thumbnail-view-button-selection-line-height;
     padding: $pv-thumbnail-view-button-selection-padding;
   }
@@ -1083,6 +1086,9 @@
     border-radius: $pv-thumbnail-border-selection-radius;
     @if $skin-name == 'bootstrap4' {
       color: $pv-thumbnail-border-selection-font-color;
+    }
+    @if $skin-name == 'bootstrap5' {
+      color: $white;
     }
     line-height: $pv-thumbnail-view-button-selection-line-height;
     padding: $pv-thumbnail-view-button-selection-padding;
@@ -1467,6 +1473,8 @@
 
   .e-pv-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:hover,
   .e-pv-annotation-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:hover,
+  .e-pv-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:hover:focus,
+  .e-pv-annotation-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:hover:focus,
   .e-pv-annotation-toolbar .e-dropdown-btn.e-btn:hover,
   .e-pv-annotation-toolbar .e-dropdown-btn.e-btn:hover .e-caret,
   .e-pv-formdesigner-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:hover,
@@ -1477,7 +1485,6 @@
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused .e-menu-icon:hover,
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused .e-caret:hover,
   .e-pv-annotation-toolbar .e-dropdown-btn.e-btn.e-active,
-  .e-pv-formdesigner-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:focus,
   .e-pv-formdesigner-toolbar .e-dropdown-btn.e-btn:focus,
   .e-pv-formdesigner-toolbar .e-dropdown-btn.e-btn:focus .e-caret,
   .e-pv-shapes-toolbar .e-pv-tbar-btn:focus,
@@ -1496,9 +1503,10 @@
       color: $pv-item-selection-color;
     }
   }
-  
+
   .e-pv-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:focus,
-  .e-pv-annotation-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:focus
+  .e-pv-annotation-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:focus,
+  .e-pv-formdesigner-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:focus,
   {
     @if $skin-name == 'bootstrap4' {
       color: $pv-icon-color-hover;
@@ -1729,6 +1737,10 @@
   .e-pv-search-btn.e-btn:hover:not(:disabled),
   .e-pv-sidebar-toolbar .e-pv-tbar-btn:hover:not(:disabled) {
     @if $skin-name == 'bootstrap4' {
+      background-color: $pv-item-selection-background-color;
+      color: $pv-item-selection-color;
+    }
+    @if $skin-name == 'bootstrap5' {
       background-color: $pv-item-selection-background-color;
       color: $pv-item-selection-color;
     }
@@ -4813,6 +4825,16 @@
   .e-pv-annotation-toolbar .e-dropdown-btn.e-btn:not(:hover) {
     @if ($skin-name == 'bootstrap4') {
       color: $pv-stamp-icon-color;
+    }
+  }
+  
+  .e-pv-annotation-toolbar .e-dropdown-btn.e-btn:focus,
+  .e-pv-annotation-toolbar .e-dropdown-btn.e-btn:focus .e-caret {
+    @if ($skin-name == 'bootstrap4') {
+      color: $pv-prop-win-drop-down-color-hover;
+    }
+    @if ($skin-name == 'bootstrap5') {
+      color: $white;
     }
   }
 

@@ -4050,6 +4050,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             }
             if (this.selectedTab === itemProp.tabIndex) { this.refreshLayout(); }
             if (item.cssClass) { itemContainer.classList.add(ribbonItem.cssClass); }
+            if (!(ribbonItem.disabled) && itemContainer.classList.contains(constants.DISABLED_CSS)) {
+                itemContainer.classList.remove(constants.DISABLED_CSS);
+            }
             this.enableDisableItem(ribbonItem.id, ribbonItem.disabled);
         }
     }
@@ -4101,6 +4104,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private enableDisableItem(itemId: string, isDisabled: boolean): void {
+        let isUpdated: boolean = false;
         const itemProp: itemProps = getItem(this.tabs, itemId);
         if (!itemProp) { return; }
         (itemProp.item as RibbonItem).setProperties({ disabled: isDisabled }, true);
@@ -4113,29 +4117,32 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         }
         if (ele) {
             const itemEle: HTMLElement = closest(ele, '.e-ribbon-item') as HTMLElement;
-            itemEle.classList.toggle(constants.DISABLED_CSS, itemProp.item.disabled);
             const moduleName: string = this.getItemModuleName(itemProp.item);
+            isUpdated = isDisabled ? !itemEle.classList.contains(constants.DISABLED_CSS) : itemEle.classList.contains(constants.DISABLED_CSS);
             if (moduleName !== 'template') {
-                if (moduleName === 'group-btn' && this.activeLayout === 'Simplified') {
-                    updateControlDisabled(ele, 'dropdown-btn', isDisabled);
-                    for (let i: number = 0; i < itemProp.item.groupButtonSettings.items.length; i++) {
-                        const btnEle: HTMLElement = document.querySelector('#' + itemId + constants.RIBBON_GROUP_BUTTON_ID + i);
-                        updateControlDisabled(btnEle, 'btn', isDisabled);
+                if (isUpdated) {
+                    if (moduleName === 'group-btn' && this.activeLayout === 'Simplified') {
+                        updateControlDisabled(ele, 'dropdown-btn', isDisabled);
+                        for (let i: number = 0; i < itemProp.item.groupButtonSettings.items.length; i++) {
+                            const btnEle: HTMLElement = document.querySelector('#' + itemId + constants.RIBBON_GROUP_BUTTON_ID + i);
+                            updateControlDisabled(btnEle, 'btn', isDisabled);
+                        }
                     }
-                }
-                else if (moduleName === 'group-btn' && this.activeLayout === 'Classic') {
-                    for (let i: number = 0; i < itemProp.item.groupButtonSettings.items.length; i++) {
-                        const btnEle: HTMLElement = ele.querySelector('#' + itemId + constants.RIBBON_GROUP_BUTTON_ID + i);
-                        updateControlDisabled(btnEle, 'btn', isDisabled);
+                    else if (moduleName === 'group-btn' && this.activeLayout === 'Classic') {
+                        for (let i: number = 0; i < itemProp.item.groupButtonSettings.items.length; i++) {
+                            const btnEle: HTMLElement = ele.querySelector('#' + itemId + constants.RIBBON_GROUP_BUTTON_ID + i);
+                            updateControlDisabled(btnEle, 'btn', isDisabled);
+                        }
                     }
-                }
-                else {
-                    updateControlDisabled(ele, moduleName, isDisabled);
+                    else {
+                        updateControlDisabled(ele, moduleName, isDisabled);
+                    }
                 }
             } else {
                 ele.classList.toggle(constants.DISABLED_CSS, isDisabled);
                 ele.toggleAttribute('disabled', isDisabled);
             }
+            itemEle.classList.toggle(constants.DISABLED_CSS, itemProp.item.disabled);
         }
     }
 

@@ -856,8 +856,8 @@ export function PdfiumRunner(): void {
                     pageText: this.PageText,
                     characterBounds: this.CharacterBounds,
                     textDetailsId: textDetailsId,
-                    isTextNeed: isTextNeed
-
+                    isTextNeed: isTextNeed,
+                    zoomFactor: zoomFactor
                 };
             } else {
                 return {
@@ -871,7 +871,8 @@ export function PdfiumRunner(): void {
                     pageIndex: n,
                     message: 'renderTileImage',
                     textDetailsId: textDetailsId,
-                    isTextNeed: isTextNeed
+                    isTextNeed: isTextNeed,
+                    zoomFactor: zoomFactor
                 };
             }
           };

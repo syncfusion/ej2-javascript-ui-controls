@@ -2375,8 +2375,7 @@ export class AnnotationToolbar {
             if (this.pdfViewer.drawingObject) {
                 this.pdfViewer.drawingObject.opacity = opacityValue / 100;
                 if (this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
-                    this.pdfViewer.freeTextSettings.opacity = opacityValue / 100;
-                    this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+                    this.pdfViewer.annotation.freeTextAnnotationModule.opacity = opacityValue / 100;
                 }
             }
         }
@@ -2532,8 +2531,7 @@ export class AnnotationToolbar {
                 this.pdfViewer.drawingObject.thickness = args.value;
             }
             if (this.pdfViewer.drawingObject && this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
-                this.pdfViewer.freeTextSettings.borderWidth = args.value;
-                this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+                this.pdfViewer.annotation.freeTextAnnotationModule.borderWidth = args.value;
             }
         }
         // eslint-disable-next-line
@@ -2545,8 +2543,7 @@ export class AnnotationToolbar {
             this.pdfViewer.drawingObject.thickness = args;
         }
         if (this.pdfViewer.drawingObject && this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
-            this.pdfViewer.freeTextSettings.borderWidth = args;
-            this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+            this.pdfViewer.annotation.freeTextAnnotationModule.borderWidth = args;
         }
         if (!isBlazor()) {
             this.updateThicknessIndicator();
@@ -3236,8 +3233,7 @@ export class AnnotationToolbar {
             if (this.pdfViewer.drawingObject) {
                 this.pdfViewer.drawingObject.fillColor = currentColor;
                 if (this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
-                    this.pdfViewer.freeTextSettings.fillColor = currentColor;
-                    this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+                    this.pdfViewer.annotation.freeTextAnnotationModule.fillColor = currentColor;
                 }
             }
         }
@@ -3298,8 +3294,7 @@ export class AnnotationToolbar {
                 this.pdfViewer.drawingObject.strokeColor = currentColor;
             }
             if (this.pdfViewer.drawingObject && this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
-                this.pdfViewer.freeTextSettings.borderColor = currentColor;
-                this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+                this.pdfViewer.annotation.freeTextAnnotationModule.borderColor = currentColor;
             }
         }
         if (isBlazor()) {

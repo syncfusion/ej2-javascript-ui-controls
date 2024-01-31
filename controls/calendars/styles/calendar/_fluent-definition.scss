@@ -26,6 +26,16 @@ $calendar-title-font-size: $text-sm !default;
 $calendar-title-margin-left-style: 6px !default;
 $calendar-title-font-weight-style: $font-weight-medium !default;
 $calendar-title-decoration-style: none !default;
+$calendar-header-title-padding: 0 5px !default;
+
+// Focus related styles
+$calendar-title-focus-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
+$calendar-title-focus-background: none !default;
+$calendar-title-active-background: $secondary-bg-color-hover !default;
+$calendar-icon-focus-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
+$calendar-title-border-radius: 2px !default;
+$calendar-title-hover-bg-color: $secondary-bg-color-hover !default;
+$calendar-focused-cell-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
 
 // common size properties
 $calendar-wrapper-border-radius: 0 !default;
@@ -141,7 +151,7 @@ $calendar-date-font-size: $text-xs !default;
 $calendar-bigger-day-font-size: $text-base !default;
 $calendar-link-font-weight-style: $font-weight-normal !default;
 $calendar-disable-font-weight-style: $font-weight-normal !default;
-$calendar-border-radius: 0 !default;
+$calendar-border-radius: 2px !default;
 
 //week header font size
 $calendar-bigger-week-header-font-size: $text-sm !default;

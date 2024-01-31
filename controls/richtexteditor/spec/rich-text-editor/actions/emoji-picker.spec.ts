@@ -1794,4 +1794,39 @@ describe('Emoji picker module', () => {
             }, 0)
         });
     });
+
+    describe('849570 - "No result found" text was not removed from the emoji picker even after clearing the invalid content from the search bar in the emoji picker', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+        let innerHTML: string = `<p id="rte-p"> </p>`;
+        beforeAll(() => {
+            document.body.appendChild(defaultRTE);
+            rteObj = new RichTextEditor({
+                value: innerHTML,
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                },
+            });
+            rteObj.appendTo('#defaultRTE');
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            detach(defaultRTE);
+        });
+        it('Emoji Picker input element close icon click ', () => {
+            const element: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
+            element.click();
+            const inputEle: HTMLInputElement = rteObj.element.querySelector('.e-rte-emoji-search');
+            const popupObj: HTMLElement = rteObj.element.querySelector('.e-rte-emojipicker-popup');
+            inputEle.value = 'sssssssssssssssss';
+            dispatchEvent(popupObj, 'keyup');
+            (rteObj as any).element.querySelector(".e-rte-emojipicker-popup .e-input-group .e-clear-icon").click();
+            dispatchEvent(popupObj, 'keyup');
+            expect(rteObj.element.querySelector(".e-rte-emojipicker-popup .e-rte-emojiSearch-noEmoji") == null).toBe(true);
+        });
+    });
 });

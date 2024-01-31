@@ -6266,8 +6266,8 @@ describe('Dialog textbox aria-lable checking', () => {
         expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-img-url').getAttribute('aria-label')).toBe('You can also provide a link from the web');
         rteObj.closeDialog(DialogType.InsertImage);
         (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
-        expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-rte-linkurl').getAttribute('aria-label')).toBe('Web Address');
-        expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-rte-linkText').getAttribute('aria-label')).toBe('Display Text');
+        expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-rte-linkurl').getAttribute('aria-label')).toBe('Web address');
+        expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-rte-linkText').getAttribute('aria-label')).toBe('Display text');
         expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-rte-linkTitle').getAttribute('aria-label')).toBe('Enter a title');
         rteObj.closeDialog(DialogType.InsertLink);
         (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[2] as HTMLElement).click();
@@ -6836,6 +6836,150 @@ describe('69081 - When user paste the table in insert media option, It doesn’t
     });
 });
 
+describe('865660 -  Table cell select class is not removed after pasting the table',  () => {
+    let editor: RichTextEditor;
+    function dispatchEnterAction() {
+        const keyDownEvent = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, view: window, key: 'a', ctrlKey: true });
+        editor.inputElement.dispatchEvent(keyDownEvent);
+        const keyUpEvent = new KeyboardEvent('keyup', { bubbles: true, cancelable: true, view: window, key: 'a', ctrlKey: true });
+        editor.inputElement.dispatchEvent(keyUpEvent);
+    }
+    beforeEach(() => {
+        editor = renderRTE({
+            value: `<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href='https://ej2.syncfusion.com/home/' target='_blank'>HTML markup</a> or <a href='https://ej2.syncfusion.com/home/' target='_blank'>markdown</a> of the content</p>
+            <p><b>Toolbar</b></p>
+            <ol>
+                <li>
+                    <p>The Toolbar contains commands to align the text, insert a link, insert an image, insert list, undo/redo operations, HTML view, etc </p>
+                </li>
+                <li>
+                    <p>The Toolbar is fully customizable </p>
+                </li>
+            </ol>
+            <p><b>Links</b></p>
+            <ol>
+                <li>
+                    <p>You can insert a hyperlink with its corresponding dialog </p>
+                </li>
+                <li>
+                    <p>Attach a hyperlink to the displayed text. </p>
+                </li>
+                <li>
+                    <p>Customize the quick toolbar based on the hyperlink </p>
+                </li>
+            </ol>
+            <p><b>Image.</b></p>
+            <ol>
+                <li>
+                    <p>Allows you to insert images from an online source as well as the local computer </p>
+                </li>
+                <li>
+                    <p>You can upload an image </p>
+                </li>
+                <li>
+                    <p>Provides an option to customize the quick toolbar for an image </p>
+                </li>
+            </ol>
+            <img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;"/>
+            <table class="e-rte-table" style="width: 54.7572%; min-width: 0px; height: 109px;">
+                <thead>
+                    <tr>
+                        <th class="">SNo<br></th>
+                        <th class="">Task<br></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="width: 23.7179%;" class="">1</td>
+                        <td style="width: 75.641%;" class="">Ensuring the Accessibility for the Rich Text Editor.</td>
+                    </tr>
+                    <tr>
+                        <td style="width: 23.7179%;" class="">2</td>
+                        <td style="width: 75.641%;" class="">Ensuring the Accessibility for the Kanban.<br></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                <video controls>
+                    <source
+                        src="https://www.w3schools.com/tags/movie.mp4"
+                        type="video/mp4" />
+                </video>
+            </p>
+            <p><b>Get started with Quick Toolbar to click on an audio</b></p>
+            <p>Using the quick toolbar, users can replace, display, and delete the selected audio.</p>
+            <p>
+                <audio controls>
+                    <source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3" />
+                </audio>
+            </p>`
+        });
+    });
+    afterEach(() => {
+        destroy(editor);
+    });
+    it ('Should remove the cell select class after the CTRL + A selection', () => {
+        editor.focusIn();
+        const tdELem = editor.inputElement.querySelector('td');
+        const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true, cancelable: true, view: window });
+        tdELem.dispatchEvent(mouseoverEvent);
+        const mouseDownEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+        tdELem.dispatchEvent(mouseDownEvent);
+        const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
+        tdELem.dispatchEvent(mouseUpEvent);
+        dispatchEnterAction();
+        expect(editor.inputElement.querySelector('.e-cell-select')).toBe(null);
+    });
+    it ('Should remove the e-img-focus class after the CTRL + A selection', () => {
+        editor.focusIn();
+        const imgELem = editor.inputElement.querySelector('img');
+        const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true, cancelable: true, view: window });
+        imgELem.dispatchEvent(mouseoverEvent);
+        const mouseDownEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+        imgELem.dispatchEvent(mouseDownEvent);
+        const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
+        imgELem.dispatchEvent(mouseUpEvent);
+        dispatchEnterAction();
+        expect(editor.inputElement.querySelector('.e-img-focus')).toBe(null);
+    });
+    it('Should remove the e-audio-focus class after the CTRL + A selection', () => {
+        editor.focusIn();
+        const audioELem = editor.inputElement.querySelector('audio');
+        const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true, cancelable: true, view: window });
+        audioELem.dispatchEvent(mouseoverEvent);
+        const mouseDownEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+        audioELem.dispatchEvent(mouseDownEvent);
+        const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
+        audioELem.dispatchEvent(mouseUpEvent);
+        dispatchEnterAction();
+        expect(editor.inputElement.querySelector('.e-audio-focus')).toBe(null);
+    });
+    it('Should remove the e-video-focus class after the CTRL + A selection', () => {
+        editor.focusIn();
+        const videoELem = editor.inputElement.querySelector('video');
+        const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true, cancelable: true, view: window });
+        videoELem.dispatchEvent(mouseoverEvent);
+        const mouseDownEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+        videoELem.dispatchEvent(mouseDownEvent);
+        const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
+        videoELem.dispatchEvent(mouseUpEvent);
+        dispatchEnterAction();
+        expect(editor.inputElement.querySelector('.e-video-focus')).toBe(null);
+    });
+    it('Should remove the cell select when focused out of the editor.', () => {
+        editor.focusIn();
+        const tdELem = editor.inputElement.querySelector('td');
+        const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true, cancelable: true, view: window });
+        tdELem.dispatchEvent(mouseoverEvent);
+        const mouseDownEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window });
+        tdELem.dispatchEvent(mouseDownEvent);
+        const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window });
+        tdELem.dispatchEvent(mouseUpEvent);
+        editor.focusOut();
+        expect(editor.inputElement.querySelector('.e-cell-select')).toBe(null);
+    });
+});
+
 describe('852939 - Undo redo is enabled by default in the quick format toolbar sample issue', () => {
     let rteObj: RichTextEditor;
     let elem: HTMLElement;
@@ -6902,6 +7046,31 @@ describe('849074 - List not cleared properly after selection of the whole list a
         (rteObj as any).keyUp(keyBoardEvent);
         expect(!isNullOrUndefined(startNode)).toBe(true);
         expect (startNode.childNodes.length === 1).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('858194 - The tooltip is not show in the dropdown items in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    beforeAll((done) => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['FontName', 'FontSize', 'Formats', 'OrderedList', 'UnorderedList']
+            },
+            value: "Rich Text Editor"
+        });
+        done();
+    });
+    it('Checking the tooltip is shown in the dropdown items', (done: Function) => {
+        const dropButton: NodeList = document.body.querySelectorAll('.e-dropdown-btn');
+        (dropButton[0] as HTMLElement).click();
+        const dropItems: NodeList = document.body.querySelectorAll('.e-item');
+        event = new MouseEvent('mouseover', { bubbles: true, cancelable: true });
+        dropItems[0].dispatchEvent(event);
+        expect((dropItems[0] as HTMLElement).getAttribute('data-content')).not.toBe(null);
+        done();
     });
     afterAll(() => {
         destroy(rteObj);

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 24.2.3 (2024-01-31)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I544455` - When we bind no fields to the value axis using the server-side engine, the static pivot field list will now be rendered properly.
+
+#### New features
+
+- `#F184050` - Added error handling support when fetching data from an OLAP cube using an incorrect MDX query during the pivot table's initial rendering.
+
 ## 24.1.47 (2024-01-23)
 
 ### PivotTable

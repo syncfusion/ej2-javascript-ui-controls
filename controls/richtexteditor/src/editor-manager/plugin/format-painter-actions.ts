@@ -194,7 +194,7 @@ export class FormatPainterActions implements IFormatPainterEditor{
 
     private copyAction(): void {
         const copyCollection: FormatPainterCollection[] = [];
-        const range: Range = this.parent.nodeSelection.getRange(document);
+        const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         const domSelection: NodeSelection = this.parent.nodeSelection;
         let nodes: Node[] = range.collapsed  ? domSelection.getSelectionNodeCollection(range) :
             domSelection.getSelectionNodeCollectionBr(range);

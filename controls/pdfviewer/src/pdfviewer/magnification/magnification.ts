@@ -709,11 +709,9 @@ export class Magnification {
             const previousPageTop: number = (currentPageBoundsTop) * this.previousZoomFactor;
             const canvasPreviousY: number = scrollValue + this.mouseCenterY;
             // eslint-disable-next-line max-len
-            const canvasCurrentY: number = (currentPageBoundsTop) * this.zoomFactor + ((canvasPreviousY - previousPageTop) < 0 ? canvasPreviousY - previousPageTop : (canvasPreviousY -
-                // eslint-disable-next-line max-len
-                previousPageTop) * (this.zoomFactor / this.previousZoomFactor));
+            const canvasCurrentY: number = (currentPageBoundsTop) * this.zoomFactor + ((canvasPreviousY - previousPageTop) * (this.zoomFactor / this.previousZoomFactor));
             // eslint-disable-next-line max-len
-            let pageGapValue = this.zoomFactor - this.previousZoomFactor > 0 ? - this.pdfViewerBase.pageGap *(this.zoomFactor / this.previousZoomFactor) : this.pdfViewerBase.pageGap * (this.previousZoomFactor / this.zoomFactor );
+            let pageGapValue = this.pdfViewerBase.pageGap * (this.zoomFactor / this.previousZoomFactor);
             if(this.pdfViewerBase.isTouchPad && !this.pdfViewerBase.isMacSafari){
                 pageGapValue =  pageGapValue / this.pdfViewerBase.zoomInterval;
             }
@@ -1020,10 +1018,10 @@ export class Magnification {
                             if (this.pdfViewerBase.clientSideRendering) {
                                 storedData = this.pdfViewerBase.getWindowSessionStorage(i, zoomFactor) ? this.pdfViewerBase.getWindowSessionStorage(i, zoomFactor) : this.pdfViewerBase.getPinchZoomPage(i);
                             } else {
-                                storedData = this.pdfViewerBase.getLinkInformation(i);
+                                storedData = this.pdfViewerBase.getLinkInformation(i) ? this.pdfViewerBase.getLinkInformation(i) : this.pdfViewerBase.getWindowSessionStorage(i, zoomFactor);
                             }
                             if (storedData) {
-                                storedData = this.pdfViewerBase.clientSideRendering ? storedData : JSON.parse(storedData);
+                                storedData = this.pdfViewerBase.clientSideRendering && typeof storedData === 'object' ? storedData : JSON.parse(storedData);
                                 let imageData: string = storedData['image'];
                                 if (imageData) {
                                     (canvas as HTMLImageElement).src = imageData;

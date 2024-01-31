@@ -2,6 +2,7 @@ import { EditorManager } from '../base/editor-manager';
 import * as EVENTS from '../../common/constant';
 import { NotifyArgs } from '../../rich-text-editor/base/interface';
 import { createElement, isNullOrUndefined as isNOU, detach } from '@syncfusion/ej2-base';
+import { PASTE_SOURCE } from '../base/constant';
 /**
  * PasteCleanup for MsWord content
  *
@@ -72,6 +73,7 @@ export class MsWordPaste {
         const pattern4: RegExp = /style='mso-width-source:/i;
         if (patern.test(tempHTMLContent) || patern2.test(tempHTMLContent) || patern3.test(tempHTMLContent) ||
             pattern4.test(tempHTMLContent)) {
+            const source = this.findSource(elm);
             this.imageConversion(elm, rtfData);
             tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
             this.addListClass(elm);
@@ -92,16 +94,8 @@ export class MsWordPaste {
             if (pattern4.test(tempHTMLContent)) {
                 this.addTableBorderClass(elm);
             }
-            // Removing the margin for list items
-            const liChildren: NodeList = elm.querySelectorAll('li');
-            if (liChildren.length > 0) {
-                for (let i: number = 0; i < liChildren.length; i++) {
-                    if (!isNOU((liChildren[i as number] as HTMLElement).style.marginLeft)) {
-                        (liChildren[i as number] as HTMLElement).style.marginLeft = '';
-                    }
-                }
-            }
-            e.callBack(elm.innerHTML, this.cropImageDimensions);
+            this.processMargin(elm);
+            e.callBack(elm.innerHTML, this.cropImageDimensions, source);
         } else {
             e.callBack(elm.innerHTML);
         }
@@ -935,6 +929,27 @@ export class MsWordPaste {
         }
         this.listContents.push(elem.innerHTML);
     }
+
+    private processMargin(element:HTMLElement) {
+        const liChildren = element.querySelectorAll('li');
+        if (liChildren.length > 0) {
+            for (let i: number = 0; i < liChildren.length; i++) {
+                if (!isNOU((liChildren[i as number]).style.marginLeft)) {
+                    (liChildren[i as number]).style.marginLeft = '';
+                }
+            }
+        }
+        const tableChildren = element.querySelectorAll('table');
+        if (tableChildren.length > 0) {
+            for (let i: number = 0; i < tableChildren.length; i++) {
+                if (!isNOU((tableChildren[i as number]).style.marginLeft) && 
+                    (tableChildren[i as number]).style.marginLeft.indexOf('-') >= 0) {
+                    (tableChildren[i as number]).style.marginLeft = '';
+                }
+            }
+        }
+    }
+
     private removeEmptyAnchorTag(element: HTMLElement): void {
         const removableElement: NodeListOf<Element> = element.querySelectorAll('a:not([href])');
         for (let j: number = removableElement.length - 1; j >= 0; j--) {
@@ -944,5 +959,22 @@ export class MsWordPaste {
             }
             parentElem.removeChild(removableElement[j as number]);
         }
+    }
+
+    private findSource(element: HTMLElement): string {
+        const metaNodes: NodeListOf<Element> = element.querySelectorAll('meta');
+        for (let i: number = 0; i < metaNodes.length; i++) {
+            const metaNode: Element = metaNodes[i as number];
+            const content: string = metaNode.getAttribute('content');
+            const name: string = metaNode.getAttribute('name');
+            if (name && name.toLowerCase().indexOf('generator') >= 0 && content && content.toLowerCase().indexOf('microsoft') >= 0) {
+                for(let j: number = 0; j < PASTE_SOURCE.length; j++) {
+                    if (content.toLowerCase().indexOf(PASTE_SOURCE[j as number]) >= 0) {
+                        return PASTE_SOURCE[j as number];
+                    }
+                }
+            }
+        }
+        return 'html';
     }
 }

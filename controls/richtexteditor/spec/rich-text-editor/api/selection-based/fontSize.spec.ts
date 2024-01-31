@@ -3,7 +3,7 @@
  */
 import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { RichTextEditor } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent } from './../../render.spec';
+import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
 
 describe('RTE SELECTION BASED - fontSize - ', () => {
 
@@ -325,6 +325,192 @@ describe('RTE SELECTION BASED - fontSize - ', () => {
                 expect(toolbarClick).toHaveBeenCalled();
                 expect(changeSpy).toHaveBeenCalled();
             });
+        });
+    });
+
+    describe('865019 - Keyboard shortcuts of "decrease-fontsize": "ctrl+shift+<", "increase-fontsize": "ctrl+shift+>", are not working properly.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let elem: string = "<p class=\"startFocus\">rich text editor</p>"
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize']
+                },
+                value: elem,
+            });
+            rteEle = rteObj.element;
+        });
+        it('Keyboard shortcuts of "decrease-fontsize": "ctrl+shift+<", "increase-fontsize": "ctrl+shift+>", are not working properly', () => {
+            rteObj.focusIn();
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector("p");
+                setCursorPoint(node, 0);
+                node.focus();
+                const fontSizeIncreasekeyEvent = new KeyboardEvent("keydown", {
+                    key: ">",
+                    ctrlKey: true,
+                    shiftKey: true,
+                    bubbles: true,
+                    cancelable: true,
+                    code: "Period",
+                    charCode: 0,
+                    keyCode: 190,
+                    which: 190
+                } as EventInit);
+                const fontSizeDecreasekeyEvent = new KeyboardEvent("keydown", {
+                    key: "<",
+                    ctrlKey: true,
+                    shiftKey: true,
+                    bubbles: true,
+                    cancelable: true,
+                    code: "Comma",
+                    charCode: 0,
+                    keyCode: 188,
+                    which: 188
+                } as EventInit);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "12pt").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "10pt").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "8pt").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "8pt").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "36pt").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "40pt").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "50pt").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "36pt").toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('865019 - Keyboard shortcuts of "decrease-fontsize": "ctrl+shift+<", "increase-fontsize": "ctrl+shift+>", are not working properly - inline toolbar.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let elem: string = "<p class=\"startFocus\">rich text editor</p>"
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontSize']
+                },
+                value: elem,
+                inlineMode:{
+                    enable: true
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        it('Keyboard shortcuts of "decrease-fontsize": "ctrl+shift+<", "increase-fontsize": "ctrl+shift+>", are not working properly - inline toolbar.', () => {
+            rteObj.focusIn();
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector("p");
+                setCursorPoint(node, 0);
+                node.focus();
+                const fontSizeIncreasekeyEvent = new KeyboardEvent("keydown", {
+                    key: ">",
+                    ctrlKey: true,
+                    shiftKey: true,
+                    bubbles: true,
+                    cancelable: true,
+                    code: "Period",
+                    charCode: 0,
+                    keyCode: 190,
+                    which: 190
+                } as EventInit);
+                const fontSizeDecreasekeyEvent = new KeyboardEvent("keydown", {
+                    key: "<",
+                    ctrlKey: true,
+                    shiftKey: true,
+                    bubbles: true,
+                    cancelable: true,
+                    code: "Comma",
+                    charCode: 0,
+                    keyCode: 188,
+                    which: 188
+                } as EventInit);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "14pt").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "12pt").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "14pt").toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('865019 - Keyboard shortcuts of "decrease-fontsize": "ctrl+shift+<", "increase-fontsize": "ctrl+shift+>", are not working properly - inline toolbar with custom fontsizes.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let elem: string = "<p class=\"startFocus\">rich text editor</p>"
+        beforeAll(() => {
+            rteObj = renderRTE({
+                fontSize: {
+                    items:[
+                      {text: "8 px", value: "8px", command: "Font", subCommand: "FontSize"},
+                      {text: "12 px", value: "12px", command: "Font", subCommand: "FontSize"},
+                      {text: "14 px", value: "14px", command: "Font", subCommand: "FontSize"},
+                      {text: "16 px", value: "16px", command: "Font", subCommand: "FontSize"},
+                    ]
+                },
+                toolbarSettings: {
+                    items: ['FontSize']
+                },
+                value: elem,
+                inlineMode:{
+                    enable: true
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        it('Keyboard shortcuts of "decrease-fontsize": "ctrl+shift+<", "increase-fontsize": "ctrl+shift+>", are not working properly - inline toolbar custom fontsizes.', () => {
+            rteObj.focusIn();
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector("p");
+                setCursorPoint(node, 0);
+                node.focus();
+                const fontSizeIncreasekeyEvent = new KeyboardEvent("keydown", {
+                    key: ">",
+                    ctrlKey: true,
+                    shiftKey: true,
+                    bubbles: true,
+                    cancelable: true,
+                    code: "Period",
+                    charCode: 0,
+                    keyCode: 190,
+                    which: 190
+                } as EventInit);
+                const fontSizeDecreasekeyEvent = new KeyboardEvent("keydown", {
+                    key: "<",
+                    ctrlKey: true,
+                    shiftKey: true,
+                    bubbles: true,
+                    cancelable: true,
+                    code: "Comma",
+                    charCode: 0,
+                    keyCode: 188,
+                    which: 188
+                } as EventInit);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "20px").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeDecreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "16px").toBe(true);
+                rteObj.contentModule.getEditPanel().dispatchEvent(fontSizeIncreasekeyEvent);
+                expect((node.childNodes[0] as HTMLElement).style.fontSize === "20px").toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
         });
     });
 });

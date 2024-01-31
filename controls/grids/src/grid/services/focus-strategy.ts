@@ -189,6 +189,17 @@ export class FocusStrategy {
         }
     }
 
+    private handleFilterNavigation(e: KeyboardEvent, inputSelector: string, buttonSelector: string): void {
+        if ((e.target as HTMLElement) === document.querySelector(inputSelector) && e.key === 'Tab' && e.shiftKey) {
+            e.preventDefault();
+            (document.querySelector(buttonSelector) as HTMLElement).focus();
+        } else if ((e.target as HTMLElement) === document.querySelector(buttonSelector) && e.key === 'Tab' && !e.shiftKey &&
+            document.activeElement === document.querySelector(buttonSelector)) {
+            e.preventDefault();
+            (document.querySelector(inputSelector) as HTMLElement).focus();
+        }
+    }
+
     protected onKeyPress(e: KeyboardEventArgs): void {
         if (this.parent.allowPaging) {
             const pagerElement: Element = this.parent.pagerModule.pagerObj.element;
@@ -240,14 +251,13 @@ export class FocusStrategy {
             }
         }
         if (this.parent.filterSettings.type === 'Excel') {
-            if ((e.target as HTMLElement) === document.querySelectorAll('.e-excelfilter .e-menu-item')[0] && e.key === 'Tab' && e.shiftKey && (e.target as HTMLElement).classList.contains('e-menufocus')) {
-                e.preventDefault();
-                (e.target as HTMLElement).classList.remove('e-menufocus');
-                (document.querySelector('.e-excelfilter .e-footer-content button:nth-child(2)') as HTMLElement).focus();
-            } else if ((e.target as HTMLElement) === document.querySelector('.e-excelfilter .e-footer-content button:nth-child(2)') && e.key === 'Tab' && !e.shiftKey && document.activeElement === document.querySelector('.e-excelfilter .e-footer-content button:nth-child(2)')) {
-                e.preventDefault();
-                (document.querySelectorAll('.e-excelfilter .e-menu-item')[0] as HTMLElement).focus();
-            }
+            this.handleFilterNavigation(e, '.e-excelfilter .e-menu-item:not(.e-disabled)', '.e-excelfilter .e-footer-content button:nth-child(2)');
+        }
+        if (this.parent.filterSettings.type === 'CheckBox') {
+            this.handleFilterNavigation(e, '.e-searchinput.e-input', '.e-checkboxfilter .e-footer-content button:nth-child(2)');
+        }
+        if (this.parent.filterSettings.type === 'Menu') {
+            this.handleFilterNavigation(e, '.e-flmenu .e-input-group.e-popup-flmenu', '.e-flmenu .e-footer-content button:nth-child(2)');
         }
         if (this.skipOn(e)) {
             return;
@@ -651,7 +661,8 @@ export class FocusStrategy {
                 if (!isNullOrUndefined(this.currentInfo.elementToFocus)) {
                     if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
                         this.focusVirtualElement(e);
-                    } else {
+                    } else if (isNullOrUndefined(this.parent.element.querySelector('.e-flmenu')) ||
+                    parentsUntil(document.activeElement, 'e-flmenu-valuediv') !== this.parent.element.querySelector('.e-flmenu-valuediv')) {
                         this.currentInfo.elementToFocus.focus();
                     }
                 }
@@ -1576,8 +1587,8 @@ export class SearchBox {
         else {
             (<HTMLInputElement>args.target).parentElement.classList.remove('e-input-focus');
         }
-        if ((<HTMLElement>args.target).classList.contains('e-search') && relatedTarget && !((<HTMLElement>relatedTarget).classList.contains('e-sicon e-clear-icon'))
-        && !((<HTMLElement>relatedTarget).classList.contains('e-sicon'))){
+        if ((<HTMLElement>args.target).classList.contains('e-search') && ((relatedTarget && !((<HTMLElement>relatedTarget).classList.contains('e-sicon e-clear-icon'))
+        && !((<HTMLElement>relatedTarget).classList.contains('e-sicon'))) || isNullOrUndefined(relatedTarget))){
             const sIcon: HTMLInputElement = (<HTMLInputElement>args.target).parentElement.querySelector('.e-sicon');
             sIcon.classList.remove('e-clear-icon');
             sIcon.removeAttribute('title');

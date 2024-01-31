@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 24.1.47 (2024-01-23)
+## 24.2.3 (2024-01-31)
+
+### Switch
+
+#### Bug Fixes
+
+- `#I547814` - The issue with "Script error thrown when using toggle in angular platform" has been resolved.
+
+## 24.1.46 (2024-01-17)
 
 ### Checkbox
 

@@ -8,7 +8,15 @@
 
 ## [Unreleased]
 
-## 24.1.47 (2024-01-23)
+## 24.1.46 (2024-01-17)
+
+### LinearGauge
+
+#### Bug Fixes
+
+- `#I539323` - The pointer value will no longer be reset when the pointer is dragged and the scrollbar on the page is moved.
+
+## 24.1.41 (2023-12-18)
 
 ### LinearGauge
 

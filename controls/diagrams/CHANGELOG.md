@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 24.2.3 (2024-01-31)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I533824` - Now, textAlign Justify is working correctly.
+- `#I539121` - Now, oldValue & newValue argument of size change event updated properly while resize the nodes.
+- `#FB50125` - Now, symbols are rendered properly in symbol palette.
+
+## 24.1.47 (2024-01-23)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I538596` - Now, resizing group node with pivot point works fine.
+- `#FB49421` - Now, selector renders at initial for multiselect tool.
+- `#I534426` - Now, Complex hierarchical tree layout is working fine while injecting line routing.
+- `#F186044` - Now, swimlane phase properties are dynamically updated during drag and drop operations.
+- `#F185333` - Now, swimlane header properties are dynamically updated during drag and drop operations.
+
 ## 24.1.46 (2024-01-17)
 
 ### Diagram

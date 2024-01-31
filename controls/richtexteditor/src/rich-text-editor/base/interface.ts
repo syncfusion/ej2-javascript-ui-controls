@@ -272,7 +272,7 @@ export interface NotifyArgs {
     range?: Range
     /** Defines the action. */
     action?: string
-    callBack?(args?: string | IImageCommandsArgs, cropImageData?: { [key: string]: string | boolean | number }[]): void
+    callBack?(args?: string | IImageCommandsArgs, cropImageData?: { [key: string]: string | boolean | number }[], pasteTableSource?: string): void
     file?: Blob
     insertElement?: Element
     touchData?: ITouchData
@@ -280,6 +280,11 @@ export interface NotifyArgs {
     formatPainterSettings?: FormatPainterSettingsModel
     emojiPickerSettings?: EmojiSettingsModel
     ariaLabel?: string
+    /**
+     * Defines the source of the Table content.
+     * @private
+     */
+    pasteTableSource?: string
 }
 
 /**

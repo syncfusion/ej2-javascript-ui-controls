@@ -353,7 +353,6 @@
 
     &.e-ul {
       @include bigger-ul-size;
-      max-width: $cmenu-bigger-max-width;
       min-width: $cmenu-bigger-min-width;
 
       & .e-menu-item  {

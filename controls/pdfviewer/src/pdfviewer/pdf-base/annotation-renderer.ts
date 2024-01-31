@@ -640,7 +640,7 @@ export class AnnotationRenderer {
             let val = stampObjects[parseInt(p.toString(), 10)];
             drawingPath._addLine(val.x, val.y, 0, 0);
         }
-        for (let k = 0; k < stampObjects.length; k += 2) {
+        for (let k = 0; k < drawingPath._points.length; k += 2) {
             const value = drawingPath._points[parseInt(k.toString(), 10)];
 
             if (minimumX == -1) {
@@ -672,8 +672,8 @@ export class AnnotationRenderer {
         if (newDifferenceX == 0) {
             newDifferenceX = 1;
         }
-        else if (newDifferenceX == 0) {
-            newDifferenceX = 1;
+        else if (newDifferenceY == 0) {
+            newDifferenceY = 1;
         }
 
         let linePoints: number[] = [];

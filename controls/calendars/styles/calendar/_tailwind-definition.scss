@@ -14,9 +14,18 @@ $calendar-bigger-month-view-height: 36px !default;
 $calendar-bigger-month-view-line-height: $calendar-bigger-month-view-height !default;
 $calendar-bigger-month-view-width: 36px !default;
 
+// Focus related styles
+$calendar-title-focus-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
+$calendar-title-focus-background: none !default;
+$calendar-title-active-background: none !default;
+$calendar-icon-focus-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
+$calendar-title-border-radius: 4px !default;
+$calendar-title-hover-bg-color: none !default;
+$calendar-focused-cell-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
+
 //header dimension
 $calendar-header-font-size: $text-xs !default;
-
+$calendar-header-title-padding: 0 5px !default;
 $calendar-bigger-day-header-height: $calendar-bigger-month-view-height !default;
 $calendar-bigger-header-height: 28px !default;
 

@@ -10291,7 +10291,7 @@ export class PdfSoundAnnotation extends PdfComment {
  * // Get the first page
  * let page: PdfPage = document.getPage(0) as PdfPage;
  * // Create a new free text annotation
- * const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation (50, 100, 100, 50);
+ * const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation(50, 100, 100, 50);
  * // Add annotation to the page
  * page.annotations.add(annotation);
  * // Destroy the document
@@ -10333,7 +10333,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
      * // Get the first page
      * let page: PdfPage = document.getPage(0) as PdfPage;
      * // Create a new free text annotation
-     * const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation (50, 100, 100, 50);
+     * const annotation: PdfFreeTextAnnotation = new PdfFreeTextAnnotation(50, 100, 100, 50);
      * // Add annotation to the page
      * page.annotations.add(annotation);
      * // Destroy the document
@@ -12087,6 +12087,7 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
     _visibility: PdfFormFieldVisibility = PdfFormFieldVisibility.visible;
     _fontName: string;
     _isFont: boolean = false;
+    _isTransparentBackColor: boolean = false;
     /**
      * Initializes a new instance of the `PdfWidgetAnnotation` class.
      *
@@ -12198,44 +12199,30 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Get the first page
-     * let page: PdfPage = document.getPage(0) as PdfPage;
-     * // Get the first annotation of the page
-     * let annotation: PdfWidgetAnnotation = page.annotations.at(0) as PdfWidgetAnnotation;
+     * // Access the text box field at index 0
+     * let field: PdfField = document.form.fieldAt(0);
      * // Gets the back color of the annotation
-     * let backColor: number[] = annotation.backColor;
+     * let backColor: number[] = field.itemAt(0).backColor;
      * // Destroy the document
      * document.destroy();
      * ```
      */
     get backColor(): number[] {
-        if (typeof this._backColor === 'undefined') {
-            const dictionary: _PdfDictionary = this._mkDictionary;
-            if (dictionary && dictionary.has('BG')) {
-                const colorArray: number[] = dictionary.getArray('BG');
-                if (colorArray) {
-                    this._backColor = _parseColor(colorArray);
-                }
-            }
-        }
-        if (typeof this._backColor === 'undefined' || this._backColor === null) {
-            this._backColor = [255, 255, 255];
-        }
-        return this._backColor;
+        return this._parseBackColor();
     }
     /**
      * Sets the back color of the annotation.
      *
-     * @param {number[]} value Color as R, G, B color array in between 0 to 255.
+     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data, password);
-     * // Get the first page
-     * let page: PdfPage = document.getPage(0) as PdfPage;
-     * // Get the first annotation of the page
-     * let annotation: PdfWidgetAnnotation = page.annotations.at(0) as PdfWidgetAnnotation;
-     * // Sets the back color of the annotation.
-     * annotation.backColor = [255,255,255];
+     * // Access the text box field at index 0
+     * let field: PdfField = document.form.fieldAt(0);
+     * // Sets the background color of the field item
+     * field.itemAt(0).backColor = [255, 0, 0];
+     * // Sets the background color of the field item to transparent
+     * field.itemAt(1).backColor = [0, 0, 0, 0];
      * // Save the document
      * document.save('output.pdf');
      * // Destroy the document
@@ -12243,14 +12230,14 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
      * ```
      */
     set backColor(value: number[]) {
-        if (typeof this.backColor === 'undefined' || this.backColor !== value) {
-            if (typeof this._mkDictionary === 'undefined') {
-                this._dictionary.update('MK', new _PdfDictionary(this._crossReference));
-            }
-            this._mkDictionary.update('BG', [Number.parseFloat((value[0] / 255).toFixed(3)),
-                Number.parseFloat((value[1] / 255).toFixed(3)),
-                Number.parseFloat((value[2] / 255).toFixed(3))]);
-            this._backColor = value;
+        this._updateBackColor(value);
+    }
+    get _hasBackColor(): boolean {
+        if (this._isLoaded) {
+            const mkDictionary: _PdfDictionary = this._mkDictionary;
+            return (mkDictionary && mkDictionary.has('BG'));
+        } else {
+            return !this._isTransparentBackColor;
         }
     }
     /**
@@ -12875,6 +12862,57 @@ export class PdfWidgetAnnotation extends PdfAnnotation {
             this._dictionary.update('Rect', _getUpdatedBounds([value.x, value.y, value.width, value.height], this._page));
         }
     }
+    _parseBackColor(): number[] {
+        let value: number[];
+        if ((this._isLoaded && this._hasBackColor) || (!this._isLoaded && !this._isTransparentBackColor)) {
+            if (typeof this._backColor === 'undefined') {
+                const dictionary: _PdfDictionary = this._mkDictionary;
+                if (dictionary && dictionary.has('BG')) {
+                    const colorArray: number[] = dictionary.getArray('BG');
+                    if (colorArray) {
+                        this._backColor = _parseColor(colorArray);
+                    }
+                }
+            }
+            if (typeof this._backColor === 'undefined' || this._backColor === null) {
+                this._backColor = [255, 255, 255];
+            }
+            value = this._backColor;
+        }
+        return value;
+    }
+    _updateBackColor(value: number[], setAppearance: boolean = false): void {
+        let isChanged: boolean = false;
+        if (value.length === 4 && value[3] !== 255) {
+            this._isTransparentBackColor = true;
+            if (this._dictionary.has('BG')) {
+                delete this._dictionary._map.BG;
+                isChanged = true;
+            }
+            const mkDictionary: _PdfDictionary = this._mkDictionary;
+            if (mkDictionary && mkDictionary.has('BG')) {
+                delete mkDictionary._map.BG;
+                this._dictionary._updated = true;
+                isChanged = true;
+            }
+        } else {
+            this._isTransparentBackColor = false;
+            if (typeof this.backColor === 'undefined' || this._backColor !== value) {
+                if (typeof this._mkDictionary === 'undefined') {
+                    this._dictionary.update('MK', new _PdfDictionary(this._crossReference));
+                }
+                this._mkDictionary.update('BG', [Number.parseFloat((value[0] / 255).toFixed(3)),
+                    Number.parseFloat((value[1] / 255).toFixed(3)),
+                    Number.parseFloat((value[2] / 255).toFixed(3))]);
+                this._backColor = [value[0], value[1], value[2]];
+                this._dictionary._updated = true;
+                isChanged = true;
+            }
+        }
+        if (setAppearance && isChanged && this._field) {
+            this._field._setAppearance = true;
+        }
+    }
 }
 /**
  * `PdfStateItem` class represents the check box field item objects.
@@ -13276,6 +13314,52 @@ export class PdfRadioButtonListItem extends PdfStateItem {
      */
     set value(option: string) {
         this._optionValue = option;
+    }
+    /**
+     * Gets the back color of the annotation.
+     *
+     * @returns {number[]} Color as R, G, B color array in between 0 to 255.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Get the first annotation of the page
+     * let annotation: PdfWidgetAnnotation = page.annotations.at(0) as PdfWidgetAnnotation;
+     * // Gets the back color of the annotation
+     * let backColor: number[] = annotation.backColor;
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get backColor(): number[] {
+        return this._parseBackColor();
+    }
+    /**
+     * Sets the back color of the annotation.
+     *
+     * @param {number[]} value Array with R, G, B, A color values in between 0 to 255. For optional A (0-254), it signifies transparency.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Gets the first page of the document
+     * let page: PdfPage = document.getPage(0);
+     * // Access the PDF form
+     * let form: PdfForm = document.form;
+     * // Access the radio button list field
+     * let field: PdfRadioButtonListField = form.fieldAt(0) as PdfRadioButtonListField;
+     * // Sets the back color of the radio button list item
+     * field.itemAt(0).backColor = [255, 255, 255];
+     * // Sets the background color of the field item to transparent
+     * field.itemAt(1).backColor = [0, 0, 0, 0];
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set backColor(value: number[]) {
+        this._updateBackColor(value, true);
     }
     _initializeItem(value: string, bounds: {x: number, y: number, width: number, height: number}, page: PdfPage, field?: PdfField): void {
         this._optionValue = value;

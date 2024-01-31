@@ -128,12 +128,13 @@ export class FormDesignerToolbar {
                 //this.deselectAllItems();
                 if (this.pdfViewer.formFieldCollection) {
                     let filteredFields: any = this.pdfViewer.formFieldCollection.filter((field: any) => {
-                        return field.formFieldAnnotationType === 'Textbox' && field.isMultiline && field.isReadonly;
+                        return field.formFieldAnnotationType === 'Textbox' && field.isMultiline;
                     });
                     filteredFields.forEach((field: any) => {
                         const resize = document.getElementById(field.id);
                         if (resize) {
                             (resize as HTMLElement).style.pointerEvents = 'none';
+                            (resize as HTMLElement).style.resize = 'none';
                         }
                     });
                 }
@@ -163,12 +164,13 @@ export class FormDesignerToolbar {
                 }
                 if (this.pdfViewer.formFieldCollection) {
                     let filteredFields: any = this.pdfViewer.formFieldCollection.filter((field: any) => {
-                        return field.formFieldAnnotationType === 'Textbox' && field.isMultiline && field.isReadonly;
+                        return field.formFieldAnnotationType === 'Textbox' && field.isMultiline;
                     });
                     filteredFields.forEach((field: any) => {
                         const resize = document.getElementById(field.id);
                         if (resize) {
                             (resize as HTMLElement).style.pointerEvents = 'auto';
+                            (resize as HTMLElement).style.resize = 'auto';
                         }
                     });
                 }

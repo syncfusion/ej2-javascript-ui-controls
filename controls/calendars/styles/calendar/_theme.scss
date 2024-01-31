@@ -31,11 +31,25 @@
           color: $calendar-title-font-color;
         }
         #{if(&, '&', '*')} .e-title:hover {
-          color: $calendar-title-hover-color;
+          background: $calendar-title-hover-bg-color;
           cursor: pointer;
           text-decoration: $calendar-title-decoration-style;
         }
-
+        #{if(&, '&', '*')} .e-title:focus{
+          box-shadow: $calendar-title-focus-box-shadow;
+          background: $calendar-title-focus-background;
+          @if $skin-name == 'highcontrast' {
+            text-decoration: none;
+          }
+          @else {
+            text-decoration: $calendar-title-decoration-style;
+          }
+        }
+        #{if(&, '&', '*')} .e-title:active{
+          box-shadow: $calendar-box-shadow;
+          background: $calendar-title-active-background;
+          text-decoration: $calendar-title-decoration-style;
+        }
         #{if(&, '&', '*')} .e-prev:hover > span,
         #{if(&, '&', '*')} .e-next:hover > span {
           border: $calendar-icon-hover-border-color;
@@ -47,7 +61,10 @@
         #{if(&, '&', '*')} .e-next:hover {
           background: $calendar-icon-hover-bg-color;
         }
-
+        #{if(&, '&', '*')} .e-prev:focus,
+        #{if(&, '&', '*')} .e-next:focus {
+          box-shadow: $calendar-icon-focus-box-shadow;
+        }
         #{if(&, '&', '*')} .e-prev:active,
         #{if(&, '&', '*')} .e-next:active {
           background: $calendar-active-state-icon-bg-color;
@@ -530,5 +547,9 @@
     @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
       color: $calendar-today-disabled-color;
     }
+  }
+  .e-calendar .e-cell.e-focused-cell {
+    box-shadow: $calendar-focused-cell-box-shadow;
+    border-radius: $calendar-border-radius;
   }
 }

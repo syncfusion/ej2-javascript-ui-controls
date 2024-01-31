@@ -2990,12 +2990,12 @@ export class Selection {
                 if (this.currentDrawingShape === 'text') {
                     const prevCropObj: CurrentObject = extend({}, parent.cropObj, {}, true) as CurrentObject;
                     parent.notify('undo-redo', { prop: 'updateUndoRedoColl', onPropertyChange: false,
-                        value: {operation: 'shapeTransform', previousObj: this.initialPrevObj, previousObjColl: this.initialPrevObj.objColl,
+                        value: {operation: 'shapeInsert', previousObj: this.initialPrevObj, previousObjColl: this.initialPrevObj.objColl,
                             previousPointColl: this.initialPrevObj.pointColl, previousSelPointColl: this.initialPrevObj.selPointColl,
                             previousCropObj: prevCropObj, previousText: null,
                             currentText: null, previousFilter: null, isCircleCrop: null }});
                 } else {
-                    parent.notify('undo-redo', { prop: 'updateUrObj', onPropertyChange: false, value: {objColl: this.initialPrevObj.objColl}});
+                    parent.notify('undo-redo', { prop: 'updateUrObj', onPropertyChange: false, value: {objColl: this.initialPrevObj.objColl, operation: 'shapeInsert'}});
                 }
                 this.isShapeInserted = true; this.currentDrawingShape = '';
                 if (parent.activeObj.activePoint.width === 0 && parent.activeObj.activePoint.height === 0) {

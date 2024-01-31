@@ -122,8 +122,8 @@ export class PivotButton implements IAction {
                 for (let i: number = 0, cnt: number = field.length; i < cnt; i++) {     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     for (let element of (this.parent.getModuleName() === 'pivotfieldlist' ? [axisElement] : this.parentElement.querySelectorAll('.e-group-' + axis) as any)) {
                         element = element as HTMLElement;
-                        if ((this.parent.olapEngineModule && this.parent.olapEngineModule.fieldList[field[i as number].name]) ||
-                            this.parent.engineModule) {
+                        if ((this.parent.olapEngineModule && (this.parent.olapEngineModule.fieldList[field[i as number].name] ||
+                            field[i as number].name === '[Measures]')) || this.parent.engineModule) {
                             const isMeasureAvail: boolean = (this.parent.dataType === 'olap' && (field[i as number].name.toLowerCase() === '[measures]' || axis === 'values'));
                             const isMeasureFieldsAvail: boolean = (this.parent.dataType === 'olap' && axis === 'values');
                             if (!element.classList.contains(cls.GROUP_CHART_VALUE) && !element.classList.contains(cls.GROUP_CHART_COLUMN)) {
@@ -131,7 +131,8 @@ export class PivotButton implements IAction {
                                     className: cls.PIVOT_BUTTON_WRAPPER_CLASS + (i === 0 && axis !== 'all-fields' ? ' e-first-btn' : ''),
                                     attrs: { 'data-tag': axis + ':' + field[i as number].name }
                                 });
-                                let buttonCaption: string = field[i as number].caption ? field[i as number].caption : field[i as number].name;
+                                let buttonCaption: string = field[i as number].caption ? field[i as number].caption :
+                                    field[i as number].name;
                                 buttonCaption = this.parent.enableHtmlSanitizer ?
                                     SanitizeHtmlHelper.sanitize(buttonCaption) : buttonCaption;
                                 const buttonElement: HTMLElement = createElement('div', {

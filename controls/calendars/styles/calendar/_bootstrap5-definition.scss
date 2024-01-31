@@ -26,6 +26,7 @@ $calendar-title-font-size: $text-base !default;
 $calendar-title-margin-left-style: 2px !default;
 $calendar-title-font-weight-style: $font-weight-bold !default;
 $calendar-title-decoration-style: none !default;
+$calendar-header-title-padding: 3px 5px !default;
 
 // common size properties
 $calendar-wrapper-border-radius: 4px !default;
@@ -158,13 +159,20 @@ $calendar-header-icon-color: $icon-color !default;
 $calendar-title-font-color: $content-text-color-alt1 !default;
 $calendar-icon-font-color: $content-text-color-alt1 !default;
 $calendar-active-icon-color: $secondary-text-color !default;
-$calendar-title-hover-color: $content-text-color-alt3 !default;
+$calendar-title-hover-color: $content-bg-color-alt2 !default;
+$calendar-title-border-radius: 4px !default;
+$calendar-title-hover-bg-color: $content-bg-color-alt2 !default;
+$calendar-title-focus-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
+$calendar-icon-focus-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
+$calendar-title-focus-background: none !default;
+$calendar-title-active-background: $content-bg-color-alt4 !default;
 $calendar-icon-hover-color: $secondary-text-color !default;
 $calendar-icon-hover-bg-color: $secondary-bg-color-hover !default;
 $calendar-device-icon-hover-bg-color: $secondary-bg-color-hover !default;
 $calendar-default-border-color: none !default;
 $calendar-icon-hover-border-color: $content-bg-color-hover !default;
 $calendar-active-state-icon-bg-color: $secondary-border-color-pressed !default;
+$calendar-focused-cell-box-shadow: 0 0 0 1px $content-text-color-alt3 !default;
 
 //popup styles
 $calendar-border-style: 1px solid $border-light !default;

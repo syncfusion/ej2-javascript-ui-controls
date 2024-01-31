@@ -13,7 +13,7 @@ import { Gantt } from '../base/gantt';
 import {
     RichTextEditor, Toolbar as RTEToolbar, Link, HtmlEditor, QuickToolbar,
     RichTextEditorModel,
-    Count
+    Count, Table
 } from '@syncfusion/ej2-richtexteditor';
 import { AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, TaskFieldsModel, ResourceFieldsModel, AddDialogFieldSettings } from '../models/models';
 import { CObject } from '../base/enum';
@@ -2305,7 +2305,7 @@ export class DialogEdit {
         inputModel.enableHtmlSanitizer = this.parent.enableHtmlSanitizer;
         const ganttProp: ITaskData = this.editedRecord.ganttProperties;
         const divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
-        RichTextEditor.Inject(RTEToolbar, Link, HtmlEditor, QuickToolbar, Count);
+        RichTextEditor.Inject(RTEToolbar, Link, HtmlEditor, QuickToolbar, Count, Table);
         inputModel.value = ganttProp.notes;
         const notesColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.notes];
         if (notesColumn.allowEditing === false || notesColumn.isPrimaryKey || this.parent.readOnly) {

@@ -1,4 +1,4 @@
-import { extend, isNullOrUndefined as isNOU, KeyboardEventArgs, Browser } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined as isNOU, KeyboardEventArgs, Browser, closest } from '@syncfusion/ej2-base';
 import * as CONSTANT from '../base/constant';
 import { updateUndoRedoStatus, isIDevice } from '../base/util';
 import { ActionBeginEventArgs, IDropDownItemModel, IShowPopupArgs, IVideoCommandsArgs } from './../base/interface';
@@ -32,12 +32,21 @@ export class Formatter {
         const selection: Selection = self.contentModule.getDocument().getSelection();
         const range: Range = (selection.rangeCount > 0) ? selection.getRangeAt(selection.rangeCount - 1) : null;
         let saveSelection: NodeSelection;
+        let newRange: Range;
+        if (!isNOU(value) && !isNOU(value.selection)) {
+            newRange = value.selection.range;
+        }
         const isKeyboardVideoInsert: boolean = (!isNOU(value) && !isNOU((value as IVideoCommandsArgs).cssClass) &&
-        (value as IVideoCommandsArgs).cssClass !== 'e-video-inline');
+            (value as IVideoCommandsArgs).cssClass !== 'e-video-inline');
         if (self.editorMode === 'HTML') {
             if (!isNOU(args) && !isKeyboardVideoInsert) {
                 if (isNOU(args.name) || (!isNOU(args.name) && args.name !== 'showDialog')) {
-                    saveSelection = this.editorManager.nodeSelection.save(range, self.contentModule.getDocument());
+                    if (newRange) {
+                        saveSelection = this.editorManager.nodeSelection.save(newRange, self.contentModule.getDocument());
+                    }
+                    else {
+                        saveSelection = this.editorManager.nodeSelection.save(range, self.contentModule.getDocument());
+                    }
                 }
             }
         }
@@ -65,7 +74,7 @@ export class Formatter {
             if (args.item.command === 'Images' || args.item.command === 'Videos' || args.item.command === 'Table' || args.item.command === 'Files') {
                 currentInsertContentLength = 1;
             }
-            const currentLength: number = self.getText().trim().replace(/(\r\n|\n|\r)/gm, '').replace(/\u200B/g, '').length;
+            const currentLength: number = self.getText().trim().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
             const selectionLength: number = self.getSelection().length;
             const totalLength: number = (currentLength - selectionLength) + currentInsertContentLength;
             if (!(self.maxLength === -1 || totalLength <= self.maxLength)) {
@@ -83,7 +92,7 @@ export class Formatter {
             extend(args, args, items, true);
             if (action !== 'tab' && action !== 'enter' && action !== 'space' && action !== 'escape') {
                 if (self.editorMode === 'Markdown' && action === 'insert-table') {
-                    value  = <{}>{
+                    value = <{}>{
                         'headingText': self.localeObj.getConstant('TableHeadingText'),
                         'colText': self.localeObj.getConstant('TableColText')
                     };
@@ -97,11 +106,11 @@ export class Formatter {
                 });
             }
             if (!args.cancel) {
-                const isTableModule : boolean = isNOU(self.tableModule) ? true : self.tableModule ?
+                const isTableModule: boolean = isNOU(self.tableModule) ? true : self.tableModule ?
                     self.tableModule.ensureInsideTableList : false;
                 if ((event.which === 9 && isTableModule) || event.which !== 9) {
                     if (event.which === 13 && self.editorMode === 'HTML') {
-                        value =  <{}>{
+                        value = <{}>{
                             'enterAction': self.enterKey
                         };
                     }
@@ -124,11 +133,13 @@ export class Formatter {
                     const formatPainterCopy: boolean = !isNOU(actionBeginArgs.requestType) && actionBeginArgs.requestType === 'FormatPainter' && actionBeginArgs.name === 'format-copy';
                     const formatPainterPaste: boolean = !isNOU(actionBeginArgs.requestType) && actionBeginArgs.requestType === 'FormatPainter' && actionBeginArgs.name === 'format-paste';
                     if ((this.getUndoRedoStack().length === 0 && actionBeginArgs.item.command !== 'Links' && actionBeginArgs.item.command !== 'Images' && !formatPainterCopy)
-                    || formatPainterPaste) {
+                        || formatPainterPaste) {
                         this.saveData();
                     }
                     self.isBlur = false;
-                    (self.contentModule.getEditPanel() as HTMLElement).focus();
+                    if (isNOU(saveSelection) || isNOU(closest(saveSelection.range.startContainer.parentElement, ".e-img-caption")) ? true : !((closest(saveSelection.range.startContainer.parentElement, ".e-img-caption") as Element).getAttribute("contenteditable") == "false")) {
+                        (self.contentModule.getEditPanel() as HTMLElement).focus();
+                    }
                     if (self.editorMode === 'HTML' && !isKeyboardVideoInsert) {
                         if (isNOU(args.selectType) || (!isNOU(args.selectType) && args.selectType !== 'showDialog')) {
                             saveSelection.restore();
@@ -146,7 +157,7 @@ export class Formatter {
                             this.onSuccess.bind(this, self),
                             (actionBeginArgs.item as IDropDownItemModel).value,
                             actionBeginArgs.item.subCommand === 'Pre' && actionBeginArgs.selectType === 'dropDownSelect' ?
-                                { name : actionBeginArgs.selectType } : value,
+                                { name: actionBeginArgs.selectType } : value,
                             ('#' + self.getID() + ' iframe'),
                             self.enterKey
                         );
