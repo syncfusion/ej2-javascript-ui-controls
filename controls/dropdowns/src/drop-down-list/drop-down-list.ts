@@ -1606,6 +1606,9 @@ export class DropDownList extends DropDownBase implements IInput {
             if (this.inputWrapper.container.classList.contains(dropDownListClasses.inputFocus) || this.isPopupOpen) {
                 this.isDocumentClick = true;
                 const isActive: boolean = this.isRequested;
+                if (this.getModuleName() === 'combobox' && this.isTyped) {
+                    this.isInteracted = false;
+                }
                 this.hidePopup(e);
                 this.isInteracted = false;
                 if (!isActive) {
@@ -2309,6 +2312,11 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.virtualListInfo = null;
                 }
                 this.resetList(dataSource, fields, query);
+                if (this.getModuleName() === 'dropdownlist' && this.list.classList.contains(dropDownBaseClasses.noData)) {
+                    this.popupContentElement.setAttribute('role','status');
+                    this.popupContentElement.setAttribute('id','no-record');
+                    attributes(this.filterInputObj.container, { 'aria-activedescendant': 'no-record' });
+                }
                 if (this.enableVirtualization && isNoData && !this.list.classList.contains(dropDownBaseClasses.noData)) {
                     if (!this.list.querySelector('.e-virtual-ddl-content')) {
                         this.list.appendChild(this.createElement('div', {
@@ -2858,6 +2866,11 @@ export class DropDownList extends DropDownBase implements IInput {
                     }, 5);
                 }
                 attributes(this.targetElement(), { 'aria-expanded': 'true', 'aria-owns': this.element.id + '_popup', 'aria-controls': this.element.id });
+                if (this.getModuleName() !== 'dropdownlist' && this.list.classList.contains('e-nodata')) {
+                        attributes(this.targetElement(), { 'aria-activedescendant': 'no-record' });
+                        this.popupContentElement.setAttribute('role','status');
+                        this.popupContentElement.setAttribute('id','no-record');
+                }
                 this.inputElement.setAttribute('aria-expanded', 'true');
                 this.inputElement.setAttribute('aria-controls', this.element.id );
                 const inputParent: HTMLElement = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
@@ -4137,6 +4150,9 @@ export class DropDownList extends DropDownBase implements IInput {
             this.clearTemplate();
         }
         this.hidePopup();
+        if (this.popupObj) {
+            this.popupObj.hide();
+        }
         this.unWireEvent();
         if (this.list) {
             this.unWireListEvents();

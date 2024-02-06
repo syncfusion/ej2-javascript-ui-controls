@@ -1339,6 +1339,26 @@ describe('Inversed Scrollbar ', function () {
            
         });
 
+        it('Checking scrollbar with RTL', (done: Function) => {
+            loaded = (args: Object): void => {
+                trigger.draganddropEvent(ele, 200, 200, 350, 350);
+                let svgChildEle: Element = document.getElementById('container_scrollBar_svgprimaryXAxis').children[0];
+                let backRectEle: Element = svgChildEle.children[0].children[0];
+                let width: string = backRectEle.getAttribute('width');
+                expect(svgChildEle.id).toBe('container_scrollBar_primaryXAxis');
+                expect(svgChildEle.getAttribute('transform') === 'translate(832.5,10) rotate(180)' || svgChildEle.getAttribute('transform') === 'translate(836.5,10) rotate(180)').toBe(true);
+                expect(backRectEle.getAttribute('x')).toBe('0');
+                expect(backRectEle.getAttribute('y')).toBe('0');
+                expect(backRectEle.getAttribute('height')).toBe('10');
+                expect(width === '832.5' || width === '836.5').toBe(true);
+                expect(backRectEle.getAttribute('rx')).toBe('6');
+                expect(backRectEle.id).toBe('container_scrollBarBackRect_primaryXAxis');
+                 done();
+            };
+            chartObj.enableRtl = true;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
 
         it('memory leak', () => {
             profile.sample();

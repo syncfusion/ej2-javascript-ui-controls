@@ -97,6 +97,8 @@ export class MultiSelect extends DropDownBase implements IInput {
     private previousFilterText:string = '';
     private selectedElementID: string;
     private focusFirstListItem: boolean;
+    private isCustomRendered: boolean;
+    private isRemoteSelection: boolean;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -178,9 +180,9 @@ export class MultiSelect extends DropDownBase implements IInput {
     /**
      * Defines whether to allow the cross-scripting site or not.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
     /**
      * Accepts the list items either through local or remote service and binds it to the MultiSelect component.
@@ -910,7 +912,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (activeElement && activeElement.item !== null) {
             this.addListFocus((<HTMLElement>activeElement.item));
-            this.scrollBottom((<HTMLElement>activeElement.item), <number>activeElement.index);
+            if(((this.allowCustomValue || this.allowFiltering) && this.isPopupOpen() && this.closePopupOnSelect) || this.closePopupOnSelect){
+                this.scrollBottom((<HTMLElement>activeElement.item), <number>activeElement.index);
+            }
         }
     }
 
@@ -1028,6 +1032,13 @@ export class MultiSelect extends DropDownBase implements IInput {
         else {
         this.updateActionList(ulElement, list, e);
         }
+        if (this.dataSource instanceof DataManager && this.allowCustomValue && !this.isCustomRendered && this.inputElement.value && this.inputElement.value !== '') {
+            let query: Query = new Query();
+            query = this.allowFiltering ? query.where(
+            this.fields.text, 'startswith', this.inputElement.value, this.ignoreCase, this.ignoreAccent) : query;
+            this.checkForCustomValue(query, this.fields);
+            this.isCustomRendered = true;
+        }
         if (this.dataSource instanceof DataManager && this.mode === 'CheckBox' && this.allowFiltering) {
             this.removeFocus();
         }
@@ -1051,7 +1062,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         if ((this.remoteCustomValue || list.length <= 0) && this.allowCustomValue && this.inputFocus && this.allowFiltering &&
             this.inputElement.value && this.inputElement.value !== '') {
             this.checkForCustomValue(this.tempQuery, this.fields);
-            return;
+            if (this.isCustomRendered) {
+                return;
+            }
         }
         if (this.value && this.value.length && ((this.mode !== 'CheckBox' && !isNullOrUndefined(this.inputElement) && this.inputElement.value.trim() !== '') ||
             this.mode === 'CheckBox' || ((this.keyCode === 8|| this.keyCode === 46) && this.allowFiltering && 
@@ -1321,12 +1334,12 @@ export class MultiSelect extends DropDownBase implements IInput {
     private tempValues: string[] | number[] | boolean[];
     private checkForCustomValue(query?: Query, fields?: FieldSettingsModel): void {
         const dataChecks: boolean = !this.getValueByText(this.inputElement.value, this.ignoreCase);
+        const field: FieldSettingsModel = fields ? fields : this.fields;
         if (this.allowCustomValue && dataChecks) {
             const value: string = this.inputElement.value;
-            const field: FieldSettingsModel = fields ? fields : this.fields;
             const customData: Object | string = (!isNullOrUndefined(this.mainData) && this.mainData.length > 0) ?
                 (this.mainData as { [key: string]: Object }[])[0] : this.mainData;
-            if (typeof (customData) !== 'string' && typeof (customData) !== 'number' && typeof (customData) !== 'boolean') {
+            if (customData && typeof (customData) !== 'string' && typeof (customData) !== 'number' && typeof (customData) !== 'boolean') {
                 const dataItem: { [key: string]: string | Object } = {};
                 setValue(field.text, value, dataItem);
                 if (typeof getValue((this.fields.value ? this.fields.value : 'value'), customData as { [key: string]: Object })
@@ -1338,7 +1351,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 const tempData: [{ [key: string]: Object }] = JSON.parse(JSON.stringify(this.listData));
                 tempData.splice(0, 0, dataItem);
                 this.resetList(tempData, field, query);
-            } else {
+            } else if (this.listData) {
                 const tempData: string[] = JSON.parse(JSON.stringify(this.listData));
                 tempData.splice(0, 0, this.inputElement.value);
                 (tempData[0] as string | number) = (typeof customData === 'number' && !isNaN(parseFloat(tempData[0]))) ?
@@ -1346,6 +1359,22 @@ export class MultiSelect extends DropDownBase implements IInput {
                 (tempData[0]  as string | boolean) = (typeof customData === 'boolean') ?
                     (tempData[0] === 'true' ? true : (tempData[0] === 'false' ? false : tempData[0])) : tempData[0];
                 this.resetList(tempData, field);
+            }
+        } 
+        else if (this.listData && this.mainData && !dataChecks && this.allowCustomValue) {
+            if (this.allowFiltering && this.isRemoteSelection && this.remoteCustomValue) {
+                this.isRemoteSelection = false;
+                this.resetList(this.listData, field, query);
+            } 
+            else if (!this.allowFiltering && this.list) {
+                const liCollections: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>
+                    this.list.querySelectorAll('li.' + dropDownBaseClasses.li + ':not(.e-hide-listitem)');
+                const activeElement: { [key: string]: Element | number } =
+                    Search(this.targetElement(), liCollections, 'StartsWith', this.ignoreCase);
+
+                if (activeElement && activeElement.item !== null) {
+                    this.addListFocus((<HTMLElement>activeElement.item));
+                }
             }
         }
         if (this.value && this.value.length) {
@@ -2960,6 +2989,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             const text: string = this.targetElement();
             if (this.allowFiltering) {
+                if (this.allowCustomValue) {
+                    this.isRemoteSelection = true;
+                }
                 const eventArgs: { [key: string]: Object } = {
                     preventDefaultAction: false,
                     text: this.targetElement(),
@@ -2987,7 +3019,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 });
             } else if (this.allowCustomValue) {
                 let query: Query = new Query();
-                query = (text !== '') ? query.where(
+                query = this.allowFiltering && (text !== '') ? query.where(
                     this.fields.text, 'startswith', text, this.ignoreCase, this.ignoreAccent) : query;
                 this.dataUpdater(this.mainData, query, this.fields);
             } else {
@@ -3031,6 +3063,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.focused = true;
         this.initial = true;
         this.backCommand = true;
+        this.isCustomRendered = false;
+        this.isRemoteSelection = false;
     }
 
     private updateData(delimiterChar: string, e?: MouseEvent | KeyboardEventArgs): void {

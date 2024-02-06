@@ -2756,7 +2756,7 @@ export class OlapEngine {
                             let j: number = 0;
                             while (j < valueIndex[orderedIndex[i as number]].length) {
                                 const index: number = (i * cLen) + j;
-                                if (vOrdinalIndex[index as number]) {
+                                if (!isNullOrUndefined(vOrdinalIndex[index as number])) {
                                     const ordinalValue: string = vOrdinalIndex[index as number].toString();
                                     const tuple: Element = vTuples[Number(valueIndex[orderedIndex[i as number]][j as number])];
                                     tuple.setAttribute('CellOrdinal', ordinalValue.toString());

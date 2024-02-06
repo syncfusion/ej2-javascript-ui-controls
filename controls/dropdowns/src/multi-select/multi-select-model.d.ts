@@ -87,7 +87,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
     /**
      * Defines whether to allow the cross-scripting site or not.
      *
-     * @default false
+     * @default true
      */
     enableHtmlSanitizer?: boolean;
 

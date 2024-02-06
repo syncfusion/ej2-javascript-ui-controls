@@ -1,4 +1,4 @@
-import { Grid } from '@syncfusion/ej2-grids';
+import { Grid, ActionEventArgs } from '@syncfusion/ej2-grids';
 import { Page as GridPage } from '@syncfusion/ej2-grids';
 import { TreeGrid, ITreeData, RowCollapsedEventArgs } from '../base';
 import * as events from '../base/constant';
@@ -157,7 +157,7 @@ export class Page {
         }
     }
 
-    private pageAction(pageingDetails: {result: ITreeData[], count: number}): void {
+    private pageAction(pageingDetails: {result: ITreeData[], count: number, actionArgs: ActionEventArgs}): void {
         const dm: DataManager = new DataManager(pageingDetails.result);
         if (this.parent.pageSettings.pageSizeMode === 'Root') {
             let temp: ITreeData[] = [];
@@ -180,8 +180,8 @@ export class Page {
             const expanded: Predicate = new Predicate('expanded', 'notequal', null).or('expanded', 'notequal', undefined);
             const parents: ITreeData[] = dm.executeLocal(new Query().where(expanded));
             let visualData: ITreeData[];
-            if (isFilterChildHierarchy(this.parent) && ((this.parent.searchSettings.key !== this.parent.grid.searchSettings.key) ||
-          (this.parent.filterSettings.columns.length !== this.parent.grid.filterSettings.columns.length))) {
+            if (isFilterChildHierarchy(this.parent) && (pageingDetails.actionArgs.action !== 'collapse' &&
+                pageingDetails.actionArgs.action !== 'expand')) {
                 visualData = parents;
             } else {
                 visualData = parents.filter((e: ITreeData) => {

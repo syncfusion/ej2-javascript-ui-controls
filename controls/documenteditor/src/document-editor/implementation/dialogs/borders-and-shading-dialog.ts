@@ -640,7 +640,11 @@ export class BordersAndShadingDialog {
                 this.documentHelper.owner.editorHistory.updateComplexHistory();
             }
         }
-
+        if (this.ulelementShading.value === 'Cell') {
+            editorModule.isCellFormatApplied = true;
+        } else {
+            editorModule.isCellFormatApplied = false;
+        }
         editorModule.isBordersAndShadingDialog = false;
     }
 

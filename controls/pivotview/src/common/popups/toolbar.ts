@@ -1117,7 +1117,7 @@ export class Toolbar {
     }
     private getCurrentReport(): string {
         let reportStr: string = this.parent.getPersistData();
-        if (this.parent.dataSourceSettings.type === 'CSV') {
+        if (this.parent.dataSourceSettings.type === 'CSV' && this.parent.dataSourceSettings.mode !== 'Server') {
             const reportSettings: PivotView = JSON.parse(reportStr);
             (reportSettings.dataSourceSettings.dataSource as string[][]).splice(0, 0, this.parent.engineModule.fields);
             reportStr = JSON.stringify(reportSettings);

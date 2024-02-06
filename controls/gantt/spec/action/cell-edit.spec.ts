@@ -1125,6 +1125,7 @@ describe('Work', () => {
                 { type: 'Resources' },
                 { type: 'Notes' },
             ],
+	    taskType:'FixedWork',
             splitterSettings: {
                 columnIndex: 9
             },
@@ -1397,6 +1398,7 @@ describe('work mapping with tasktype', () => {
                 allowTaskbarEditing: true,
                 showDeleteConfirmDialog: true
             },
+	    taskType:'FixedWork',
             toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
             columns: [
                 { field: 'TaskID' },
@@ -1456,6 +1458,7 @@ describe('taskType with resourceUnit mapping', () => {
             unit: 'unit'
         },
         workUnit: 'Hour',
+	taskType:'FixedWork',
         toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
         allowSelection: true,
         height: '450px',

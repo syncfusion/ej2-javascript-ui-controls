@@ -548,7 +548,7 @@
       color: $calendar-today-disabled-color;
     }
   }
-  .e-calendar .e-cell.e-focused-cell {
+  .e-calendar .e-content-table .e-cell.e-focused-cell span.e-day {
     box-shadow: $calendar-focused-cell-box-shadow;
     border-radius: $calendar-border-radius;
   }

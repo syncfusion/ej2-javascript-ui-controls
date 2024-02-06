@@ -1475,7 +1475,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private setActive(value: number, skipDataBind: boolean = false, isInteracted: boolean = false): void {
         this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
         const trg: HTEle = this.tbItem[value];
-        if (value < 0 || isNaN(value) || this.tbItem.length === 0) {
+        if (value < 0 || isNaN(value) || this.tbItem.length === 0 || !isNOU(trg) && trg.classList.contains(CLS_DISABLE)) {
             return;
         }
         if (value >= 0 && !skipDataBind) {
@@ -1842,6 +1842,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                         this.hideTab(index, ((newVal === true) ? false : true));
                     }
                 }
+            }
+            if (this.isReact && (this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
+                this.renderReactTemplates(() => {
+                    this.refreshActiveTabBorder();
+                });
             }
         } else {
             this.lastIndex = 0;

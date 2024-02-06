@@ -4399,9 +4399,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             series.marker || series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
                                     blazorProp = true;
                             }
-                            if (series && (series.dataSource || series.query || series.errorBar || series.xName ||
+                            if (!isNullOrUndefined(series) && (series.dataSource || series.query || series.errorBar || series.xName ||
                                 series.yName || series.size || series.high || series.low || series.open || series.close || series.trendlines ||
-                                series.fill || series.name || series.marker || series.width || series.binInterval || series.type || blazorProp)) {
+                                series.fill || series.name || series.marker || series.width || series.binInterval || series.type || (series.visible !== oldProp.series[i].visible) || blazorProp)) {
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }

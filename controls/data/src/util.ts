@@ -2033,9 +2033,6 @@ export class DataUtil {
                     if (DataUtil.serverTimezoneOffset == null) {
                         value = DataUtil.dateParse.addSelfOffset(value);
                     }
-                } else if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-                    const arr = value.split(/[^0-9.]/);
-                    return new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10));
                 }
             }
             return value;

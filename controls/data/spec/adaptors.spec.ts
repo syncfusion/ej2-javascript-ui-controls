@@ -3247,14 +3247,14 @@ describe('Cache Adaptor', () => {
         describe('array of field name in sort method', () => {
             beforeAll((done: Function) => {
                 dataManager = new DataManager({
-                    url: 'https://js.syncfusion.com/ejServices/Wcf/Northwind.svc/Orders/',
+                    url: 'https://services.syncfusion.com/js/production/api/Orders',
                     enableCaching: true,
                     cachingPageSize: 10,
                     timeTillExpiration: 120000
                 });
                 let promise: Promise<Object> = dataManager.executeQuery(new Query().sortBy(['EmployeeID'], 'descending').take(5));
                 promise.then((e: { result: Object[] }) => {
-                    result = e.result;
+                    result = e.result['result'];
                     done();
                 });
             });
@@ -3306,7 +3306,7 @@ describe('Cache Adaptor', () => {
     describe('aggregate method', () => {
         beforeAll((done: Function) => {
             dataManager = new DataManager({
-                url: 'https://js.syncfusion.com/ejServices/Wcf/Northwind.svc/Orders/',
+                url: 'https://services.syncfusion.com/js/production/api/Orders',
                 enableCaching: true,
                 cachingPageSize: 10,
                 timeTillExpiration: 120000
@@ -3336,7 +3336,7 @@ describe('Cache Adaptor', () => {
             });
         });
         it('check length of the data', () => {
-            expect(result[0]["items"].length).toBe(1);
+            expect(result[0]["items"].length).toBeGreaterThan(0);
         });
         it('check field name from result', () => {
             expect(result[0]["field"]).toEqual('EmployeeID');

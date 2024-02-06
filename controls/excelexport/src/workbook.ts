@@ -1121,12 +1121,18 @@ export class Workbook {
         }
         return image;
     }
-    public saveAsBlob(blobSaveType: BlobSaveType): Promise<{ blobData: Blob }> {
+    /**
+     * Returns a Promise with a Blob based on the specified BlobSaveType and optional encoding.
+     * @param {BlobSaveType} blobSaveType - A string indicating the type of Blob to generate ('text/csv' or other).
+     * @param {string} [encodingType] - The supported encoding types are "ansi", "unicode" and "utf8".
+     */
+    /* tslint:disable:no-any */
+    public saveAsBlob(blobSaveType: BlobSaveType, encodingType?: string): Promise<{ blobData: Blob }> {
         switch (blobSaveType) {
             case 'text/csv':
                 return new Promise((resolve: Function, reject: Function) => {
                     let obj: any = {};
-                    obj.blobData = this.csvHelper.saveAsBlob();
+                    obj.blobData = this.csvHelper.saveAsBlob(encodingType);
                     resolve(obj);
                 });
             default:

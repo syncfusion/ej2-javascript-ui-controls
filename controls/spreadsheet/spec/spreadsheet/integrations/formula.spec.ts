@@ -1549,8 +1549,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('EXACT formula with direct inputs->', (done: Function) => {
             helper.edit('I6', '=EXACT(word, word)');
-            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('TRUE');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":true,"formula":"=EXACT(word, word)"}');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[5].cells[8])).toBe('{"value":"#NAME?","formula":"=EXACT(word, word)"}');
             done();
         });
         it('EXACT formula with more than 2 inputs->', (done: Function) => {
@@ -1581,8 +1581,8 @@ describe('Spreadsheet formula module ->', () => {
         });
         it('EXACT formula with alphabets and numbers->', (done: Function) => {
             helper.edit('I9', '=EXACT(word, 123)');
-            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('FALSE');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[8])).toBe('{"value":false,"formula":"=EXACT(word, 123)"}');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[8].cells[8])).toBe('{"value":"#NAME?","formula":"=EXACT(word, 123)"}');
             done();
         });
         it('EXACT formula for numbers->', (done: Function) => {
@@ -1600,13 +1600,13 @@ describe('Spreadsheet formula module ->', () => {
         it('EXACT formula with "" for one text->', (done: Function) => {
             helper.edit('I12', '=EXACT("apple",apple)');
             expect(helper.getInstance().sheets[0].rows[11].cells[8].formula).toBe('=EXACT("apple",apple)');
-            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('FALSE');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('#NAME?');
             done();
         });
         it('EXACT formula with alphabets and number combined Text->', (done: Function) => {
             helper.edit('I13', '=EXACT(word123,word123)');
-            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('FALSE');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[8])).toBe('{"value":true,"formula":"=EXACT(word123,word123)"}');
+            expect(helper.invoke('getCell', [11, 8]).textContent).toBe('#NAME?');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[12].cells[8])).toBe('{"value":"#NAME?","formula":"=EXACT(word123,word123)"}');
             done();
         });
         it('LEN Formula with cell Reference->', (done: Function) => {
@@ -11650,7 +11650,7 @@ describe('Spreadsheet formula module ->', () => {
                 });
             });
         });
-        describe('EJ2-863643 ->', () => {
+        describe('EJ2-863643, EJ2-867609 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{
@@ -11667,6 +11667,35 @@ describe('Spreadsheet formula module ->', () => {
             it('Formula return wrong result for negative sign referred with negative cell address value without using brackets', (done: Function) => {
                 helper.edit('J1', '=IF(A9=I1,-I4*(I3-I2),0)');
                 expect(helper.invoke('getCell', [0, 9]).textContent).toBe('5000');
+                helper.edit('J2', '=IF(A9=I1,-I4*(-I3-I2),0)');
+                expect(helper.invoke('getCell', [1, 9]).textContent).toBe('-505000');
+                helper.edit('J3', '=IF(A9=I1,-I4/(I3-I2),0)');
+                expect(helper.invoke('getCell', [2, 9]).textContent).toBe('200');
+                helper.edit('J4', '=IF(A9=I1,-I4/(I3+I2),0)');
+                expect(helper.invoke('getCell', [3, 9]).textContent).toBe('1.98019802');
+                helper.edit('J5', '=IF(A9=I1,-I4*G3/(I3-I2),0)');
+                expect(helper.invoke('getCell', [4, 9]).textContent).toBe('1000');
+                helper.edit('J6', '=IF(A9=I1,-I4*-G3/(I3-I2),0)');
+                expect(helper.invoke('getCell', [5, 9]).textContent).toBe('-1000');
+                done();
+            });
+            it('Formula calculation is not working properly with the combinations of negative sign and brackets', (done: Function) => {
+                helper.edit('J7', '=IF(D2<E2,-(I4+G2+F3+G5+E2)/(D5),0)');
+                expect(helper.invoke('getCell', [6, 9]).textContent).toBe('24.53333333');
+                helper.edit('J8', '=IF(D2<E2,-(I4+G2+F3+G5+E2)/(-D5),0)');
+                expect(helper.invoke('getCell', [7, 9]).textContent).toBe('-24.53333333');
+                helper.edit('J9', '=IF(D2>E2,0,-(I4+G2*F3/G5+E2)/(D2))');
+                expect(helper.invoke('getCell', [8, 9]).textContent).toBe('92.54545455');
+                helper.edit('J10', '=IF(D2>E2,0,-(-(I4+G2*F3/G5+E2)/(D2)))');
+                expect(helper.invoke('getCell', [9, 9]).textContent).toBe('-92.54545455');
+                helper.edit('J11', '=IF(D2=H2,---(I4)/(F4+F6-F8)-F5,0)');
+                expect(helper.invoke('getCell', [10, 9]).textContent).toBe('-297.5');
+                helper.edit('J12', '=IF(D2=H2,--(I4)/(F4+F6-F8)-F5,0)');
+                expect(helper.invoke('getCell', [11, 9]).textContent).toBe('-302.5');
+                helper.edit('J13', '=IF(A9=I1,--I4*--G3/(I3-I2),0)');
+                expect(helper.invoke('getCell', [12, 9]).textContent).toBe('-1000');
+                helper.edit('J13', '=IF(A9=I1,--I4*-G3/(I3-I2),0)');
+                expect(helper.invoke('getCell', [12, 9]).textContent).toBe('1000');
                 done();
             });
         });

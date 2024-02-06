@@ -1467,4 +1467,66 @@ describe('Milestone Baseline render', () => {
              expect(ganttObj.currentViewData[0].ganttProperties.segments[1].progressWidth).toBe(-1);
          });
      });
+     describe('Work is mapped ', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: [],
+                taskType: 'FixedDuration',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    work:'Work',
+                    segments: 'Segments',
+                    durationUnit: 'durationUnit',
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Job Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' },
+                ],
+                enableContextMenu: true,
+                allowSelection: true,
+                height: '450px',
+                treeColumnIndex: 1,
+                highlightWeekends: true,
+                splitterSettings: {
+                    position: '35%',
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: '${Progress}%',
+                },
+            }, done);
+
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+        it ('check tasktype value', () => {
+            expect(ganttObj.taskType).toBe('FixedDuration');
+        });
+    });
 });

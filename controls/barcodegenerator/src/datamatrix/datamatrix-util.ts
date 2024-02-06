@@ -186,7 +186,6 @@ export class DataMatrix {
                 result[parseInt(index.toString(), 10)] = (dataCodeword[parseInt(i.toString(), 10)] + 1);
                 index++;
             } else {
-                result[parseInt(index.toString(), 10)] = 235;
                 result[parseInt(index.toString(), 10)] = (((dataCodeword[parseInt(i.toString(), 10)] - 127)));
                 index++;
             }

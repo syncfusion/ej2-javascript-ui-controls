@@ -173,10 +173,9 @@ export class MonthEvent extends EventBase {
                 setStyleAttribute(cell, { 'height': height + 'px' });
             });
         }
-        const cellDetail: ClientRect = this.workCells[this.parent.activeView.isTimelineView() ?
-            0 : this.workCells.length - 1].getBoundingClientRect();
-        this.cellWidth = cellDetail.width;
-        this.cellHeight = cellDetail.height;
+        const cellDetail: HTMLElement = this.workCells[this.parent.activeView.isTimelineView() ? 0 : this.workCells.length - 1];
+        this.cellWidth = this.parent.eventBase.getCellWidth(cellDetail);
+        this.cellHeight = cellDetail.getBoundingClientRect().height;
         this.dateRender = dateRender;
         const filteredDates: Date[] = this.getRenderedDates(dateRender);
         this.getSlotDates(workDays || this.parent.activeViewOptions.workDays);

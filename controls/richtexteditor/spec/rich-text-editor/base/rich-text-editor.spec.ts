@@ -7102,3 +7102,43 @@ describe('865021 - in smart suggestions Tab key press on the list is not working
         destroy(rteObj);
     });
 });
+describe('865731 - Mention list not inserts in the cursor position into the RichTextEditor', () => {
+    let rteObj: RichTextEditor;
+    let blurSpy: jasmine.Spy = jasmine.createSpy('onBlur');
+    beforeEach((done: Function) => {
+        rteObj = renderRTE({
+            iframeSettings: {
+                enable: true
+            },
+            saveInterval: 0,
+            change: blurSpy
+        });
+        done();
+    });
+    it('checking range before and after when & is typed', (done: Function) => {
+        rteObj.focusIn();
+        rteObj.value = "<p>&</p>";
+        rteObj.dataBind();
+        expect(rteObj.element.classList.contains('e-focused')).toBe(true);
+        let node= (rteObj as any).inputElement.querySelector('p');
+        rteObj.focusIn();
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        let e: EventListenerOrEventListenerObject;
+        (rteObj as any).blurHandler({} as FocusEvent);
+        expect(blurSpy).toHaveBeenCalled();
+        const range2 = document.createRange();
+        range2.selectNodeContents(node);
+        const selection2 = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range2);
+        expect(selection === selection2).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

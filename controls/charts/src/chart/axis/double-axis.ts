@@ -404,7 +404,8 @@ export class Double {
      */
 
     public formatValue(axis: Axis, isCustom: boolean, format: string, tempInterval: number): string {
-        let labelValue: Number = !(tempInterval % 1) ? tempInterval : Number(tempInterval.toLocaleString().split(',').join(''));
+        /*The toLocaleString method is used to adjust the decimal points for this ticket, specifically for ticket numbers I481747 and I541484.*/
+        let labelValue: Number = !(tempInterval % 1) ? tempInterval : Number(tempInterval.toLocaleString('en-US').split(',').join(''));
         return isCustom ? format.replace('{value}', axis.format(labelValue))
             : format ? axis.format(tempInterval) : axis.format(labelValue);
     }

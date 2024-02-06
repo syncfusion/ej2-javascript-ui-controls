@@ -33,6 +33,7 @@ const DEVICE: string = 'e-device';
 const HEADER: string = 'e-header';
 const RTL: string = 'e-rtl';
 const CONTENT: string = 'e-content';
+const CONTENTTABLE: string = 'e-content-table';
 const YEAR: string = 'e-year';
 const MONTH: string = 'e-month';
 const DECADE: string = 'e-decade';
@@ -48,6 +49,7 @@ const WEEKEND: string = 'e-weekend';
 const WEEKNUMBER: string = 'e-week-number';
 const SELECTED: string = 'e-selected';
 const FOCUSEDDATE: string = 'e-focused-date';
+const FOCUSEDCELL: string = 'e-focused-cell';
 const OTHERMONTHROW: string = 'e-month-hide';
 const TODAY: string = 'e-today';
 const TITLE: string = 'e-title';
@@ -562,6 +564,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         const ariaTitleAttrs: Object = {
             'aria-atomic': 'true', 'aria-live': 'assertive', 'aria-label': 'title'
         };
+        const tabIndexAttr: Object = {'tabindex': '0'};
         this.headerElement = this.createElement('div', { className: HEADER });
         const iconContainer: HTMLElement = this.createElement('div', { className: ICONCONTAINER });
         this.previousIcon = this.createElement('button', { className: '' + PREVICON, attrs: { type: 'button' } });
@@ -571,6 +574,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             isCenterRipple: true
         });
         attributes(this.previousIcon, <{ [key: string]: string }>ariaPrevAttrs);
+        attributes(this.previousIcon, <{ [key: string]: string }>tabIndexAttr);
         this.nextIcon = this.createElement('button', { className: '' + NEXTICON, attrs: { type: 'button' } });
         rippleEffect(this.nextIcon, {
             selector: '.e-next',
@@ -582,8 +586,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             attributes(this.nextIcon, {tabIndex: '-1'});
         }
         attributes(this.nextIcon, <{ [key: string]: string }>ariaNextAttrs);
+        attributes(this.nextIcon, <{ [key: string]: string }>tabIndexAttr);
         this.headerTitleElement = this.createElement('div', { className: '' + LINK + ' ' + TITLE });
         attributes(this.headerTitleElement, <{ [key: string]: string }>ariaTitleAttrs);
+        attributes(this.headerTitleElement, <{ [key: string]: string }>tabIndexAttr);
         this.headerElement.appendChild(this.headerTitleElement);
         this.previousIcon.appendChild(this.createElement('span', { className: '' + PREVSPAN + ' ' + ICON }));
         this.nextIcon.appendChild(this.createElement('span', { className: '' + NEXTSPAN + ' ' + ICON }));
@@ -599,7 +605,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected createContent(): void {
         this.contentElement = this.createElement('div', { className: CONTENT });
-        this.table = this.createElement('table', { attrs: { tabIndex: '0', 'role': 'grid', 'aria-activedescendant': '', 'aria-labelledby': this.element.id } });
+        this.table = this.createElement('table', { attrs: { 'class': CONTENTTABLE, 'tabIndex': '0', 'role': 'grid', 'aria-activedescendant': '', 'aria-labelledby': this.element.id } });
         if (this.getModuleName() === 'calendar') {
             this.element.appendChild(this.contentElement);
         } else {
@@ -611,6 +617,30 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.createContentBody();
         if (this.showTodayButton) {
             this.createContentFooter();
+        }
+        if(this.getModuleName() != 'daterangepicker') {
+            EventHandler.add(this.table, 'focus', this.addContentFocus, this);
+            EventHandler.add(this.table, 'blur', this.removeContentFocus, this);
+        }
+    }
+    private addContentFocus(args: any): void {
+        const focusedDate: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
+        const selectedDate: Element = this.tableBodyElement.querySelector('tr td.e-selected');
+        if (!isNullOrUndefined(selectedDate)) {
+            selectedDate.classList.add(FOCUSEDCELL);
+        }
+        else if (!isNullOrUndefined(focusedDate)) {
+            focusedDate.classList.add(FOCUSEDCELL);
+        }
+    }
+    private removeContentFocus(args: any): void {
+        const focusedDate: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
+        const selectedDate: Element = this.tableBodyElement.querySelector('tr td.e-selected');
+        if (!isNullOrUndefined(selectedDate)) {
+            selectedDate.classList.remove(FOCUSEDCELL);
+        }
+        else if (!isNullOrUndefined(focusedDate)) {
+            focusedDate.classList.remove(FOCUSEDCELL);
         }
     }
     protected getCultureValues(): string[] {
@@ -691,6 +721,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected updateFooter(): void {
         this.todayElement.textContent = this.l10.getConstant('today');
         this.todayElement.setAttribute('aria-label', this.l10.getConstant('today'));
+        this.todayElement.setAttribute('tabindex', '0');
     }
     protected createContentFooter(): void {
         if (this.showTodayButton) {
@@ -794,32 +825,52 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.effect = '';
         switch (e.action) {
         case 'moveLeft':
-            this.keyboardNavigate(-1, view, e, this.max, this.min);
-            e.preventDefault();
+            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains('e-content-table')) {
+                this.keyboardNavigate(-1, view, e, this.max, this.min);
+                e.preventDefault();
+            }
             break;
         case 'moveRight':
-            this.keyboardNavigate(1, view, e, this.max, this.min);
-            e.preventDefault();
+            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains('e-content-table')) {
+                this.keyboardNavigate(1, view, e, this.max, this.min);
+                e.preventDefault();
+            }
             break;
         case 'moveUp':
-            if (view === 0) {
-                this.keyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
-            } else {
-                this.keyboardNavigate(-4, view, e, this.max, this.min); // move the current year to the previous four days.
+            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains('e-content-table')) {
+                if (view === 0) {
+                    this.keyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
+                } else {
+                    this.keyboardNavigate(-4, view, e, this.max, this.min); // move the current year to the previous four days.
+                }
+                e.preventDefault();
             }
-            e.preventDefault();
             break;
         case 'moveDown':
-            if (view === 0) {
-                this.keyboardNavigate(7, view, e, this.max, this.min);
-            } else {
-                this.keyboardNavigate(4, view, e, this.max, this.min);
+            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains('e-content-table')) {
+                if (view === 0) {
+                    this.keyboardNavigate(7, view, e, this.max, this.min);
+                } else {
+                    this.keyboardNavigate(4, view, e, this.max, this.min);
+                }
+                e.preventDefault();
             }
-            e.preventDefault();
             break;
         case 'select':
-            if (e.target === this.todayElement) {
+            if(e.target === this.headerTitleElement){
+                this.navigateTitle(e);
+            }
+            else if (e.target === this.previousIcon) {
+                this.navigatePrevious(e);
+            }
+            else if (e.target === this.nextIcon) {
+                this.navigateNext(e);
+            }
+            else if (e.target === this.todayElement) {
                 this.todayButtonClick(e, value);
+                if (this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') {
+                    this.element.focus();
+                }
             } else {
                 const element: Element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
                 if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
@@ -829,6 +880,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                         this.selectDate(e, d, (element));
                     } else {
                         this.contentClick(null, --view, (element), value);
+                    }
+                    if (this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') {
+                        this.element.focus();
                     }
                 }
             }
@@ -895,9 +949,20 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 11, 31));
             e.preventDefault();
             break;
-        }
-        if (this.getModuleName() === 'calendar') {
-            this.table.focus();
+        case 'tab':
+            if ((this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') && e.target === this.todayElement) {
+                e.preventDefault();
+                (this as any).element.focus();
+                (this as any).hide();
+            }
+            break;
+        case 'shiftTab':
+            if ((this.getModuleName() === 'datepicker' || this.getModuleName() === 'datetimepicker') && e.target === this.headerTitleElement) {
+                e.preventDefault();
+                (this as any).element.focus();
+                (this as any).hide();
+            }
+            break;
         }
     }
 

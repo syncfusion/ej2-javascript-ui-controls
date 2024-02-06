@@ -4,7 +4,7 @@ import { NodeCutter } from './nodecutter';
 import * as CONSTANT from './../base/constant';
 import { detach, Browser, isNullOrUndefined as isNOU, createElement, closest } from '@syncfusion/ej2-base';
 import { InsertMethods } from './insert-methods';
-import { updateTextNode } from './../../common/util';
+import { updateTextNode,nestedListCleanUp } from './../../common/util';
 
 /**
  * Insert a HTML Node or Text
@@ -98,7 +98,11 @@ export class InsertHtml {
                     lasNode.textContent.length : lasNode.childNodes.length);
                 range = nodeSelection.getRange(docElement);
             }
-            range.extractContents();
+            if (range.startContainer.parentElement.closest('ol,ul') !== null && range.endContainer.parentElement.closest('ol,ul') !== null) {
+                nestedListCleanUp(range);
+            } else {
+                range.extractContents();
+            }
             if ((insertNode as HTMLElement).tagName === 'TABLE') {
                 this.removeEmptyElements(editNode as HTMLElement);
             }

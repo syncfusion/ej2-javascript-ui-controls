@@ -2,7 +2,27 @@
 
 ## [Unreleased]
 
-## 24.2.3 (2024-01-31)
+## 24.2.4 (2024-02-06)
+
+### Chart
+
+#### Features
+
+- `#I528067` - Now, right-to-left scrolling is functioning correctly in the charts.
+
+#### Bug Fixes
+
+- `#I539074` - Now, the stacking column renders properly even when the series is sorted based on the series name.
+- `#I541484` - Now, the decimal point is displayed in the y-axis label when the language setting on Google is set to French.
+- `#I546219` - Now, the `visible` property in the series is working properly when updated dynamically.
+
+### BulletChart
+
+#### Bug Fixes
+
+- `#I544771` - Now, the `textAlignment` property in the `dataLabel` is working properly.
+
+## 24.1.47 (2024-01-23)
 
 ### AccumulationChart
 

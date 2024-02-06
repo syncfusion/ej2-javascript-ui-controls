@@ -1558,6 +1558,7 @@ export class Annotation {
                             this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, actionObject.annotation.shapeAnnotationType, 'delete');
                             // eslint-disable-next-line max-len
                             this.stampAnnotationModule.updateSessionStorage(actionObject.annotation, null, 'delete');
+                            actionObject.duplicate = this.modifyInCollections(actionObject.annotation, 'delete');
                             isAnnotationUpdate = true;
                         }
                         if (shapeType === 'FreeText' || shapeType === 'HandWrittenSignature' || shapeType === 'SignatureImage' || shapeType === 'SignatureText' || shapeType === 'Ink') {
@@ -2816,6 +2817,9 @@ export class Annotation {
             if (property !== 'bounds') {
                 this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationBase);
             }
+        }
+        if (property !== 'bounds') {
+            this.updateAnnotationCollection(annotationBase);
         }
         return returnObj;
     }

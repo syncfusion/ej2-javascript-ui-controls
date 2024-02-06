@@ -2888,7 +2888,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private onSuccess(excelExportProperties: ExcelExportProperties): void {
         if (this.request.readyState === XMLHttpRequest.DONE) {
             if (this.currentAction === 'onExcelExport' || this.currentAction === 'onCsvExport') {
-                if (this.request.statusText === 'OK') {
+                if (this.request.status === 200) {
                     const buffer: Blob = this.request.response;
                     const fileName: string = isNullOrUndefined(excelExportProperties.fileName) ? (this.currentAction === 'onExcelExport' ? 'default.xlsx' : 'default.csv') : excelExportProperties.fileName;
                     Save.save(fileName, buffer);
@@ -5370,11 +5370,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             stackedColumns: this.getStackedColumns(gridcolumns, [])
         };
         this.trigger(events.beforeColumnsRender, eventArgs);
-        if (this.enableVirtualization && eventArgs.columns.length > 0
-            && (eventArgs.columns as PivotColumn[])[0].width !== (gridcolumns as ColumnModel[])[0].width) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this.element.querySelector('.e-frozenscrollbar') as any).style.width = Number((eventArgs.columns as PivotColumn[])[0].width.toString().split('px')[0]) + 'px';
-        }
         this.updateTotColWidth();
         if (firstColWidth !== this.pivotColumns[0].width) {
             this.firstColWidth = this.pivotColumns[0].width;

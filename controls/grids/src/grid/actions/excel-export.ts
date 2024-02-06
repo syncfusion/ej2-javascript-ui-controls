@@ -471,7 +471,7 @@ export class ExcelExport {
         } else {
             this.processRecordRows(gObj, record, headerRow, 0, 0, exportProperties, excelRow, helper);
         }
-        if (!isNullOrUndefined((returnType as ReturnType).aggregates) && Object.keys((returnType as ReturnType).aggregates).length > 0) {
+        if (!isNullOrUndefined((returnType as ReturnType).aggregates)) {
             if (!isNullOrUndefined(currentViewRecords) && !this.parent.groupSettings.enableLazyLoading) {
                 this.processAggregates(gObj, (returnType as ReturnType).result, excelRow, currentViewRecords);
             } else {

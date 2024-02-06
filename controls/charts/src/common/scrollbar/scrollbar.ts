@@ -276,6 +276,7 @@ export class ScrollBar {
         this.zoomFactor = (currentWidth + (currentScrollWidth >= this.width ? circleRadius + circleWidth : 0)) / axisSize;
         this.zoomPosition = currentScrollWidth > axisSize ? (1 - axis.zoomFactor) : currentX < (circleRadius + circleWidth) ? 0 :
             (currentX - (currentX - currentZPWidth <= 0 ? currentZPWidth : 0)) / axisSize;
+        this.zoomPosition = (this.component.enableRtl && !this.isVertical && !axis.isInversed) || (axis.isInversed && !(this.component.enableRtl && !this.isVertical)) ? 1 - (this.zoomPosition + axis.zoomFactor) : this.zoomPosition;
     }
     /**
      * Handles the mouse move on scrollbar.
@@ -780,8 +781,9 @@ export class ScrollBar {
             this.getLazyDefaults(axis);
         }
         this.isVertical = axis.orientation === 'Vertical';
+        const isRtlEnabled: boolean = (this.component.enableRtl && !this.isVertical && !axis.isInversed) || (axis.isInversed && !(this.component.enableRtl && !this.isVertical));
         this.zoomFactor = this.isLazyLoad ? this.zoomFactor : axis.zoomFactor;
-        this.zoomPosition = this.isLazyLoad ? this.zoomPosition : axis.zoomPosition;
+        this.zoomPosition = this.isLazyLoad ? isRtlEnabled ? 1 - (this.zoomPosition + this.zoomFactor) : this.zoomPosition : isRtlEnabled ? 1 - (axis.zoomPosition + axis.zoomFactor) : axis.zoomPosition;
         let currentWidth: number = this.zoomFactor * (this.isVertical ? axis.rect.height : axis.rect.width);
         currentWidth = (this.isLazyLoad && !this.axis.scrollbarSettings.enableZoom) || currentWidth > minThumbWidth ? currentWidth : minThumbWidth;
         this.scrollX = axis.rect.x;
@@ -835,6 +837,7 @@ export class ScrollBar {
         const zoomPosition: number = (visibleRange.min - start) / (end - start);
         this.zoomFactor = range.minimum || range.maximum ? zoomFactor : (this.axis.maxPointLength / axis.scrollbarSettings.pointsLength);
         this.zoomPosition = range.minimum || range.maximum ? zoomPosition : axis.zoomPosition;
+        this.zoomPosition = (this.component.enableRtl && axis.orientation === 'Horizontal' && !axis.isInversed) || (axis.isInversed && !(this.component.enableRtl && axis.orientation === 'Horizontal')) ? 1 - (this.zoomPosition + this.zoomFactor) : this.zoomPosition;
         this.scrollRange.min = start;
         this.scrollRange.max = end;
         this.scrollRange.delta = end - start;

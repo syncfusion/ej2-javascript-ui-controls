@@ -1245,6 +1245,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
                 viewType: 'ResourceView',
                 collapseAllParentTasks: true,
                 showOverAllocation: true,
+                taskType: 'FixedWork',
                 taskFields: {
                     id: 'TaskID',
                     name: 'TaskName',
@@ -1315,6 +1316,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
                 viewType: 'ResourceView',
                 collapseAllParentTasks: true,
                 showOverAllocation: true,
+                taskType: 'FixedWork',
                 taskFields: {
                     id: 'TaskID',
                     name: 'TaskName',
@@ -1430,6 +1432,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
                 viewType: 'ResourceView',
                 collapseAllParentTasks: true,
                 showOverAllocation: true,
+                 taskType: 'FixedWork',
                 taskFields: {
                     id: 'TaskID',
                     name: 'TaskName',

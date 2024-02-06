@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 24.2.4 (2024-02-06)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I544458` - Now, the tooltip content is not displayed for read-only form fields in preview mode.
+- `#I542660` - Now, the annotation collection was properly updated when performing undo and redo.
+- `#I538222` - Now, the annotations are appeared properly in the MVC package in the provided rotated PDF document.
+- `#F186268` - Now, the measurement value is retained when downloading the document in a Stand-alone PDF Viewer.
+- `#F186304` - Now, the measurement scale ratio value does not get swapped when opened again after setting it in the scale ratio property dialog.
+- `#I541860` - Now, the radio button position is not changed when downloading the document after zooming in PDF Viewer MVC.
+- `#I544942` - Now, the `exportAnnotationsAsBase64String` functionality is working properly.
+
 ## 24.2.3 (2024-01-31)
 
 ### PDF Viewer

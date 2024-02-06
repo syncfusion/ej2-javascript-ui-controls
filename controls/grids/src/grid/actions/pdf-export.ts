@@ -328,7 +328,7 @@ export class PdfExport {
                     gObj.aggregateModule.prepareSummaryInfo();
                 }
                 if (this.customDataSource) {
-                    sRows = summaryModel.generateRows(dataSource, <SummaryData>returnType.aggregates);
+                    sRows = summaryModel.generateRows(dataSource, <SummaryData>returnType.aggregates, null, null, column);
                 } else if (this.currentViewData) {
                     sRows = summaryModel.generateRows(this.parent.getCurrentViewRecords(), <SummaryData>returnType.aggregates);
                 } else if (isGrouping) {

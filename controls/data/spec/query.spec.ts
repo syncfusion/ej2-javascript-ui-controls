@@ -59,7 +59,7 @@ describe('Query', () => {
             let result: Object[];
             beforeAll((done: Function) => {
                 let dataManager: DataManager = new DataManager({
-                    url: 'https://services.syncfusion.com/js/production/api/Orders'
+                    url: 'https://services.syncfusion.com/js/production/api/Orders',
                 });
                 let query: Query = new Query().select(['OrderID', 'CustomerID', 'ShipName']).take(3);
                 let promise: Promise<Object> = query.execute(dataManager);
@@ -1260,7 +1260,7 @@ describe('Query', () => {
         describe('multiple select method', () => {
             beforeAll((done: Function) => {
                 dataManager = new DataManager({
-                    url: 'https://services.syncfusion.com/js/production/api/Orders'
+                    url: 'https://services.syncfusion.com/js/production/api/Orders',
                 });
                 query = new Query().select(['OrderID', 'CustomerID', 'Freight']).select(['CustomerID', 'Freight']).take(10);
                 query.execute(dataManager).then((e: { result: Object[] }) => {

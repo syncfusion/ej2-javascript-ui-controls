@@ -2681,10 +2681,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             if (this.value === null) {
                 this.setProperties({ value: [] }, true);
             }
-            
-            if (args.node.classList.contains("e-active")) {
-                this.hidePopup();
-            }
         }
     }
 

@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 24.2.4 (2024-02-06)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I540139` - The appointment disappearance issue while using the `rowAutoHeight` has been resolved.
+- `#I524766` - An issue related to scaling has been fixed.
+
+## 24.2.3 (2024-01-31)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I541680` - An issue related to more indicator in the timeline views has been fixed.
+
 ## 24.1.41 (2023-12-18)
 
 ### Schedule

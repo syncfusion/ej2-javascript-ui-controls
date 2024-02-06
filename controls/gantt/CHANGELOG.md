@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 24.2.4 (2024-02-06)
+
+### GanttChart
+
+#### Bug Fixes
+
+- `#I550406` - Task type property does not update properly by mapping work field issue has been fixed.
+- `#I542029` - Unable to render full lengthy text in pdf export issue has been fixed.
+- `#I549638` - The taskbar edit action is not working in RTL mode issue has been fixed.
+- `#I544478` - Validation rules not working for numeric field issue has been fixed.
+
 ## 24.2.3 (2024-01-31)
 
 ### GanttChart

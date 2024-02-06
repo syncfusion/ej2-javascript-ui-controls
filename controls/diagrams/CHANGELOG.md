@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 24.2.4 (2024-02-06)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#F185529` - Now, Annotation alignment updated properly with virtualisation constraints enabled.
+- `#I544969` - Now, grouping a grouped nodes no longer throws error.
+- `#I539121` - Now, the oldValue & newValue arguments of the size change event are updated properly while resizing the nodes.
+
 ## 24.2.3 (2024-01-31)
 
 ### Diagram

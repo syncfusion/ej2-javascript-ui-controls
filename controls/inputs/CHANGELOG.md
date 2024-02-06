@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 24.2.4 (2024-02-06)
+
+### Uploader
+
+#### Bug Fixes
+
+- `#I526571` - Fixed the issue where the header in the Cancel Event was not returning in the header as expected. Instead, it was returning in the payload.
+
+### TextBox
+
+#### Bug Fixes
+
+- `#I548068` - Fixed the issue where a compilation error occurred while generating the CSS file from the `DataForm` related styles.
+
 ## 24.1.47 (2024-01-23)
 
 ### Signature

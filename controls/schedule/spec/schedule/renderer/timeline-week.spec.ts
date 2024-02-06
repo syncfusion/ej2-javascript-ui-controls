@@ -4823,6 +4823,141 @@ describe('Schedule Timeline Week view', () => {
         });
     });
 
+    describe('ES-867036 - More indicator count incorrect on different time slots', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: '1',
+            StartTime: new Date(2024, 0, 9, 7),
+            EndTime: new Date(2024, 0, 9, 8),
+            OwnerId: 1,
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;'
+        },
+        {
+            Id: 2,
+            Subject: '2',
+            StartTime: new Date(2024, 0, 9, 8),
+            EndTime: new Date(2024, 0, 9, 9),
+            OwnerId: 1,
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;'
+        },
+        {
+            Id: 3,
+            Subject: '3',
+            StartTime: new Date(2024, 0, 9, 9),
+            EndTime: new Date(2024, 0, 9, 12),
+            OwnerId: 1,
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;'
+        },
+        {
+            Id: 4,
+            Subject: '4',
+            StartTime: new Date(2024, 0, 9, 8),
+            EndTime: new Date(2024, 0, 9, 9),
+            OwnerId: 1,
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;'
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '100%',
+                height: '550px',
+                selectedDate: new Date(2024, 0, 9),
+                timeScale: { enable: true, slotCount: 1, interval: 240 },
+                views: [
+                    { option: 'TimelineDay' }
+                ],
+                group: {
+                    byGroupID: false,
+                    resources: ['Owners']
+                },
+                resources: [
+                    {
+                        field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { OwnerText: 'Nancy', Id: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Steven', Id: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Michael', Id: 3, OwnerColor: '#7499e1' }
+                        ],
+                        textField: 'OwnerText', idField: 'Id', colorField: 'OwnerColor'
+                    }
+                ],
+                eventSettings: {
+                    dataSource: data,
+                    enableMaxHeight: true,
+                    enableIndicator: true
+                }
+            };
+            schObj = util.createSchedule(schOptions, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('checking appointment rendering', () => {
+            expect(schObj.eventsData.length).toEqual(4);
+            const eventList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventList.length).toEqual(3);
+            const indicator: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
+            expect(indicator.length).toEqual(1);
+            expect(indicator[0].innerHTML).toEqual('+2&nbsp;more');
+        });
+    });
+
+    describe('ES-866125 - Appointment disappearing issue', () => {
+        let schObj: Schedule;
+        const data: Record<string, any>[] = [{
+            Id: 1,
+            Subject: '1',
+            StartTime: new Date(2024, 0, 28),
+            EndTime: new Date(2024, 1, 4),
+            IsAllDay: true
+        }, {
+            Id: 2,
+            Subject: '2',
+            StartTime: new Date(2024, 1, 4),
+            EndTime: new Date(2024, 1, 11),
+            IsAllDay: true
+        }, {
+            Id: 3,
+            Subject: '3',
+            StartTime: new Date(2024, 0, 28),
+            EndTime: new Date(2024, 1, 4),
+            IsAllDay: true
+        }, {
+            Id: 4,
+            Subject: '4',
+            StartTime: new Date(2024, 0, 28),
+            EndTime: new Date(2024, 1, 4),
+            IsAllDay: true
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '250px',
+                selectedDate: new Date(2024, 0, 28),
+                currentView: 'TimelineWeek',
+                views: [{ option: 'TimelineWeek', interval: 2 }],
+                headerRows: [
+                    { option: 'Year' },
+                    { option: 'Week' }
+                ],
+                rowAutoHeight: true,
+            };
+            schObj = util.createSchedule(model, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking the scroll width of the col elements and appointment position', () => {
+            const contentWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            expect(contentWrap.style.height).toEqual('131px');
+            expect(contentWrap.offsetWidth > contentWrap.clientWidth).toBeTruthy();
+            const appEle: HTMLElement = schObj.element.querySelector('.e-appointment[data-id="Appointment_2"]') as HTMLElement;
+            const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells[data-date="1707004800000"]') as HTMLElement;
+            expect(appEle.offsetLeft).toEqual(workCell.offsetLeft);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

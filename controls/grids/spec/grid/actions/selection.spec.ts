@@ -5840,6 +5840,62 @@ describe('BUG 842498 - In a checkbox with a specified field, if you click the in
     });
 });
 
+describe('Code Coverage - autofill with scroll', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                selectionSettings: {
+                    mode: 'Cell',
+                    type: 'Multiple'
+                },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                enableAutoFill: true,
+                pageSettings: { pageSize: 5 },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', visible: false, textAlign: 'Right', width: 120, isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 150 },
+                    { field: 'ShipName', headerText: 'Ship Name', visible: false, width: 150 },
+                    { field: 'OrderDate', headerText: 'Order Date', editType: 'datetimepickeredit', width: 160, format: { type: 'dateTime', format: 'M/d/y hh:mm a' }, },
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } } },
+                    { field: 'ShipAddress', headerText: 'Ship Address', width: 150 },
+                    { field: 'ShipRegion', headerText: 'Ship Region', width: 150 },
+                ],
+            }, done);
+    });
+    it('for coverage - 1', () => {
+        (gridObj.getCellFromIndex(2, 2) as HTMLElement).click();
+        (<any>gridObj.selectionModule).startDIndex = 2;
+        (<any>gridObj.selectionModule).startDCellIndex = 2;
+        (<any>gridObj.selectionModule).startAFCell = gridObj.getCellFromIndex(2, 2);
+    });
+    it('for coverage - 2', () => {
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'right', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'right', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'right', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'right', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'left', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'left', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'left', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'left', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'down', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'up', null);
+        (<any>gridObj.selectionModule).isAutoFillSel = true;
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'left', null);
+        (<any>gridObj.selectionModule).isAutoFillSel = false;
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'left', null);
+        (<any>gridObj.selectionModule).setScrollPosition(gridObj.getContent(), 'up', { target: gridObj.getColumnHeaderByIndex(2) });
+    });
+    afterAll(function () {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
 describe('Code Coverage - left freeze with autofill', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {

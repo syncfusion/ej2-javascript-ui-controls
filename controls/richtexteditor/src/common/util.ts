@@ -193,3 +193,31 @@ export function getDefaultMDTbStatus(): IToolbarStatus {
         formats: null
     };
 }
+
+/**
+ * @param {Range} range - specifies the range
+ * @returns {void}
+ * @hidden
+ */
+export function nestedListCleanUp(range: Range): void {
+    if (range.startContainer.parentElement.closest('ol,ul') !== null && range.endContainer.parentElement.closest('ol,ul') !== null) {
+        range.extractContents();
+        while ((range.startContainer.nodeName === "#text" ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll('li :empty').length > 0 ||
+        (range.startContainer.nodeName === "#text" ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll('ol :empty').length > 0) {
+            let emptyLI = (range.startContainer.nodeName === "#text" ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll('li :empty');
+            if (emptyLI.length > 0) {
+                emptyLI.forEach((item) => {
+                    item.remove();
+                });
+            }
+        }
+        let liElem = (range.startContainer.nodeName === "#text" ? range.startContainer.parentElement : range.startContainer as HTMLElement).querySelectorAll("li");
+        if (liElem.length > 0) {
+            liElem.forEach((item) => {
+                if(item.firstChild.nodeName === "OL" || item.firstChild.nodeName === "UL"){
+                    item.style.listStyleType = "none";
+                }
+            });
+        }
+    }
+}

@@ -104,7 +104,7 @@ describe("Quick Toolbar - Actions Module", () => {
             expect(imgTBItems.length).toBe(12);
             expect((<HTMLElement>imgTBItems.item(0)).title).toBe('Replace');
             expect((<HTMLElement>imgTBItems.item(1)).title).toBe('Align');
-            expect((<HTMLElement>imgTBItems.item(2)).title).toBe('Image Caption');
+            expect((<HTMLElement>imgTBItems.item(2)).title).toBe('Caption');
             expect((<HTMLElement>imgTBItems.item(3)).title).toBe('Remove');
             expect((<HTMLElement>imgTBItems.item(4)).classList.contains("e-separator")).toBe(true);
             expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link (Ctrl+K)');
@@ -122,7 +122,7 @@ describe("Quick Toolbar - Actions Module", () => {
             expect(imgPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             expect((<HTMLElement>imgTBItems.item(0)).title).toBe('Replace');
             expect((<HTMLElement>imgTBItems.item(1)).title).toBe('Align');
-            expect((<HTMLElement>imgTBItems.item(2)).title).toBe('Image Caption');
+            expect((<HTMLElement>imgTBItems.item(2)).title).toBe('Caption');
             expect((<HTMLElement>imgTBItems.item(3)).title).toBe('Remove');
             expect((<HTMLElement>imgTBItems.item(4)).classList.contains("e-separator")).toBe(true);
             expect((<HTMLElement>imgTBItems.item(5)).title).toBe('Insert Link (Ctrl+K)');

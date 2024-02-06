@@ -2578,6 +2578,7 @@ describe('Calendar', () => {
             it(' up arrow with min and max  on month view test case ', () => {
                 calendar = new Calendar({ value: new Date('1/2/2017'), min: new Date('1/1/2017'), max: new Date('2/2/2017') });
                 calendar.appendTo('#calendar');
+                keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
                 keyEventArgs.action = 'moveUp';
                 calendar.keyActionHandle(keyEventArgs);
                 expect(calendar.currentView()).toBe("Month");
@@ -2616,6 +2617,7 @@ describe('Calendar', () => {
                 });
                 calendar.appendTo('#calendar');
                 (<HTMLElement>calendar.tableBodyElement.querySelectorAll('tr td')[10]).click();
+                keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
                 keyEventArgs.action = 'controlUp';
                 calendar.keyActionHandle(keyEventArgs);
                 keyEventArgs.action = 'moveRight';
@@ -2633,6 +2635,7 @@ describe('Calendar', () => {
                 });
                 calendar.appendTo('#calendar');
                 (<HTMLElement>calendar.tableBodyElement.querySelectorAll('tr td')[10]).click();
+                keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
                 keyEventArgs.action = 'controlUp';
                 calendar.keyActionHandle(keyEventArgs);
                 keyEventArgs.action = 'controlUp';
@@ -2686,6 +2689,7 @@ describe('Calendar', () => {
                 calendar = new Calendar({ start: "Decade", value: new Date('3/3/2017') });
                 calendar.appendTo('#calendar');
                 expect(calendar.tableBodyElement.querySelector('tr td.e-selected').textContent).toBe('2017');
+                keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
                 keyEventArgs.action = 'moveDown';
                 calendar.keyActionHandle(keyEventArgs);
                 expect(calendar.tableBodyElement.querySelector('tr td.e-focused-date').textContent).toBe('2021');
@@ -2695,6 +2699,7 @@ describe('Calendar', () => {
                 calendar = new Calendar({ start: "Month", value: new Date('3/3/2017') });
                 calendar.appendTo('#calendar');
                 expect(calendar.tableBodyElement.querySelector('tr td.e-selected').textContent).toBe('3');
+                keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
                 keyEventArgs.action = 'moveDown';
                 calendar.keyActionHandle(keyEventArgs);
                 expect(calendar.tableBodyElement.querySelector('tr td.e-focused-date').textContent).toBe('10');
@@ -2704,6 +2709,7 @@ describe('Calendar', () => {
                 calendar = new Calendar({ start: "Year", value: new Date('3/3/2017') });
                 calendar.appendTo('#calendar');
                 expect(calendar.tableBodyElement.querySelector('tr td.e-selected').textContent).toBe('Mar');
+                keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
                 keyEventArgs.action = 'moveLeft';
                 calendar.keyActionHandle(keyEventArgs);
                 expect(calendar.tableBodyElement.querySelector('tr td.e-focused-date').textContent).toBe('Feb');
@@ -2714,6 +2720,7 @@ describe('Calendar', () => {
                 calendar = new Calendar({ start: "Month", value: new Date('3/3/2017') });
                 calendar.appendTo('#calendar');
                 expect(calendar.tableBodyElement.querySelector('tr td.e-selected').textContent).toBe('3');
+                keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
                 keyEventArgs.action = 'moveRight';
                 calendar.keyActionHandle(keyEventArgs);
                 expect(calendar.tableBodyElement.querySelector('tr td.e-focused-date').textContent).toBe('4');
@@ -2723,6 +2730,7 @@ describe('Calendar', () => {
                 calendar = new Calendar({ start: "Month", value: new Date('3/3/2017') });
                 calendar.appendTo('#calendar');
                 expect(calendar.tableBodyElement.querySelector('tr td.e-selected').textContent).toBe('3');
+                keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
                 keyEventArgs.action = 'moveRight';
                 calendar.keyActionHandle(keyEventArgs);
                 keyEventArgs.action = 'select';
@@ -2894,6 +2902,7 @@ describe('Calendar', () => {
                 calendar = new Calendar({ start: "Month", value: new Date('7/3/2017') });
                 calendar.appendTo('#calendar');
                 expect(calendar.tableBodyElement.querySelector('tr td.e-selected').textContent).toBe('3');
+                keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
                 keyEventArgs.action = 'moveUp';
                 calendar.keyActionHandle(keyEventArgs);
                 expect(calendar.tableBodyElement.querySelector('tr td.e-focused-date').textContent).toBe('26');
@@ -2903,6 +2912,7 @@ describe('Calendar', () => {
                 calendar = new Calendar({ start: "Year", value: new Date('7/3/2017') });
                 calendar.appendTo('#calendar');
                 expect(calendar.tableBodyElement.querySelector('tr td.e-selected').textContent).toBe('Jul');
+                keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
                 keyEventArgs.action = 'moveUp';
                 calendar.keyActionHandle(keyEventArgs);
                 expect(calendar.tableBodyElement.querySelector('tr td.e-focused-date').textContent).toBe('Mar');
@@ -3029,7 +3039,8 @@ describe('Calendar', () => {
         it('e-focused-date test case', () => {
             calendar = new Calendar({ value: new Date('4/4/2017') });
             calendar.appendTo('#calendar');
-            expect(document.querySelectorAll('.e-content table tbody tr td.e-selected')[0].classList.contains('e-selected')).toBe(true)
+            expect(document.querySelectorAll('.e-content table tbody tr td.e-selected')[0].classList.contains('e-selected')).toBe(true);
+            keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
             keyEventArgs.action = 'moveRight';
             calendar.keyActionHandle(keyEventArgs);
             expect((new Date(getIdValue(calendar.tableBodyElement.querySelector('tr td.e-focused-date')))).toDateString()).toBe(new Date('4/5/2017').toDateString());
@@ -3093,9 +3104,11 @@ describe('Calendar', () => {
         it(' EJ2-1535 selected value is not maintained properly in year view using keyboard ', () => {
             calendar = new Calendar({ value: new Date('4/3/2017') });
             calendar.appendTo('#calendar');
+            keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
             keyEventArgs.action = 'controlUp';
             calendar.keyActionHandle(keyEventArgs);
             expect(calendar.currentView()).toBe("Year");
+            keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
             keyEventArgs.action = 'moveLeft';
             calendar.keyActionHandle(keyEventArgs);
             expect((getIdValue(calendar.tableBodyElement.querySelector('tr td.e-selected')))).toBe(new Date("4/1/2017").valueOf());

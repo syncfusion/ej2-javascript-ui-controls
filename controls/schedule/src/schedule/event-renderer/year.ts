@@ -79,7 +79,7 @@ export class YearEvent extends TimelineEvent {
 
     private timelineYearViewEvents(): void {
         const workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')');
-        this.cellWidth = workCell.getBoundingClientRect().width;
+        this.cellWidth = this.parent.eventBase.getCellWidth(workCell);
         this.cellHeader = util.getOuterHeight(workCell.querySelector('.' + cls.DATE_HEADER_CLASS));
         const eventTable: Element = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
         this.eventHeight = util.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);

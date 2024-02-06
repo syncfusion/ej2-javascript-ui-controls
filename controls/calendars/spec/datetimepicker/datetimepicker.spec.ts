@@ -1939,12 +1939,10 @@ describe('keyboard events', () => {
         });
         datetimepicker.appendTo('#dateTime');
         (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
-        keyEventArgs.action = 'tab';
+        keyEventArgs.action = keyEventArgs.key = keyEventArgs.code = 'tab';
+        keyEventArgs.target = datetimepicker.element;
         datetimepicker.calendarKeyActionHandle(keyEventArgs);
-        setTimeout(function () {
-            expect(isNullOrUndefined(datetimepicker.popupWrapper)).toBe(true), 1000
-        })
-        expect(datetimepicker.popupObj).toBe(null);
+        expect(!isNullOrUndefined(datetimepicker.popupWrapper)).toBe(true);
     });
     it('tab key when popup close test case', function () {
         datetimepicker = new DateTimePicker({
@@ -1953,10 +1951,11 @@ describe('keyboard events', () => {
         datetimepicker.element.focus();
         keyEventArgs.action = 'altDownArrow';
         datetimepicker.inputKeyAction(keyEventArgs);
-        keyEventArgs.action = 'tab';
+        keyEventArgs.action = keyEventArgs.key = keyEventArgs.code = 'tab';
+        keyEventArgs.target = datetimepicker.element;
         datetimepicker.inputKeyActionHandle(keyEventArgs);
-        expect(datetimepicker.popupWrapper).toBe(null)
-        expect(document.activeElement).toBe(datetimepicker.element);
+        expect(!isNullOrUndefined(datetimepicker.popupWrapper)).toBe(true);
+        expect(document.activeElement).toBe(datetimepicker.headerTitleElement);
     });
     it('DateTimePicker popup open testing', () => {
         datetimepicker = new DateTimePicker({ value: new Date("12/12/2016 10:00") });

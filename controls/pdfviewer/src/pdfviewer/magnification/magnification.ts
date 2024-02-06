@@ -612,7 +612,7 @@ export class Magnification {
         this.pdfViewerBase.renderedPagesList = [];
         this.pdfViewerBase.pinchZoomStorage = [];
         this.isMagnified = false;
-        this.pdfViewerBase.pageViewScrollChanged(this.reRenderPageNumber);
+        this.pdfViewerBase.pageViewScrollChanged(this.pdfViewer.currentPageNumber);
         // eslint-disable-next-line
         let proxy: any = this;
         this.rerenderInterval = setInterval(
@@ -714,6 +714,9 @@ export class Magnification {
             let pageGapValue = this.pdfViewerBase.pageGap * (this.zoomFactor / this.previousZoomFactor);
             if(this.pdfViewerBase.isTouchPad && !this.pdfViewerBase.isMacSafari){
                 pageGapValue =  pageGapValue / this.pdfViewerBase.zoomInterval;
+            }
+            if(canvasCurrentY === 0) {
+                pageGapValue = 0;
             }
             this.pdfViewerBase.viewerContainer.scrollTop = canvasCurrentY - this.mouseCenterY + pageGapValue;
             // update scroll left for the viewer container based on mouse zoom factor

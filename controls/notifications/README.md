@@ -70,6 +70,26 @@ The [JavaScript Toast](https://www.syncfusion.com/javascript-ui-controls/js-toas
 * [Action buttons](https://ej2.syncfusion.com/documentation/toast/action-buttons/) - Supports to add buttons in the toast for archiving any actions within the toast.
 * [Template](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notification-npm#/material/toast/template.html) - User customized element can be defined for the toast using the template property.
 
+### JavaScript Skeleton
+
+The [JavaScript Skeleton](https://www.syncfusion.com/javascript-ui-controls/js-skeleton?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notifications-npm) control is a placeholder that animates a shimmer effect to let users know that the page’s content is currently loading. It has several built-in features such as support for shapes, shimmer effect, and UI customization.
+
+<p align="center">
+    <a href="https://ej2.syncfusion.com/documentation/skeleton/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notifications-npm">Getting Started</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notifications-npm#/material/skeleton/default.html">Online demos</a> .
+    <a href="https://www.syncfusion.com/javascript-ui-controls/js-skeleton?utm_source=npm&utm_medium=listing&utm_campaign=javascript-notifications-npm">Learn more</a>
+</p>
+
+<p align="center">
+<img alt="JavaScript Skeleton Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-skeleton.gif">
+</p>
+
+#### Key features
+
+* [Shapes](https://ej2.syncfusion.com/documentation/skeleton/shapes) - Provides various built-in shape variants to design the layout of the page.
+* [ShimmerEffect](https://ej2.syncfusion.com/documentation/skeleton/shimmer-effect) - Provides an option to display the skeleton with various animation effects.
+* [Styles](https://ej2.syncfusion.com/documentation/skeleton/styles) - Customize the style of a skeleton.
+
 <p align="center">
 Trusted by the world's leading companies
   <a href="https://www.syncfusion.com/">
@@ -119,4 +139,4 @@ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-contr
 
 See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=notification) for more info.
 
-&copy; Copyright 2023 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+&copy; Copyright 2024 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

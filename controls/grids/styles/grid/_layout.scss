@@ -3417,6 +3417,8 @@ margin: $grid-group-animator-cell-margin;
     }
 
     &.e-lib .e-leftfreeze,
+    &.e-lib.e-grid .e-headercell.e-leftfreeze,
+    &.e-lib.e-grid .e-headercell.e-rightfreeze,
     &.e-lib .e-rightfreeze,
     .e-leftfreeze,
     .e-rightfreeze {
@@ -3425,6 +3427,7 @@ margin: $grid-group-animator-cell-margin;
     }
 
     &.e-lib .e-fixedfreeze,
+    &.e-lib.e-grid .e-headercell.e-fixedfreeze,
     .e-fixedfreeze {
       position: sticky;
       z-index: 3;
@@ -3485,6 +3488,7 @@ margin: $grid-group-animator-cell-margin;
       overflow-x: hidden;
     }
 
+    &.e-lib.e-default .e-headercell.e-leftfreeze.e-freezeleftborder,
     &.e-lib .e-leftfreeze.e-freezeleftborder,
     .e-leftfreeze.e-freezeleftborder {
       border-right-width: 2px;
@@ -3516,6 +3520,7 @@ margin: $grid-group-animator-cell-margin;
       box-shadow: $grid-dragborder-box-shadow, -4px 0 8px $grid-frozen-shadow-background-color;
     }
   
+    &.e-lib.e-default .e-headercell.e-rightfreeze.e-freezerightborder,
     &.e-lib .e-rightfreeze.e-freezerightborder,
     .e-rightfreeze.e-freezerightborder {
       border-left-width: 2px;
@@ -3547,11 +3552,13 @@ margin: $grid-group-animator-cell-margin;
       box-shadow: $grid-dragborder-box-shadow, 4px 0 8px $grid-frozen-shadow-background-color;
     }
 
+    &.e-lib.e-default .e-headercell.e-fixedfreeze.e-freezeleftborder,
     &.e-lib .e-fixedfreeze.e-freezeleftborder,
     .e-fixedfreeze.e-freezeleftborder {
       border-left-width: 1px;
     }
 
+    &.e-lib.e-default .e-headercell.e-fixedfreeze.e-freezerightborder,
     &.e-lib .e-fixedfreeze.e-freezerightborder,
     .e-fixedfreeze.e-freezerightborder {
       border-right-width: 1px;
@@ -3690,21 +3697,25 @@ margin: $grid-group-animator-cell-margin;
         }
       }
 
+      &.e-lib.e-default .e-headercell.e-leftfreeze.e-freezeleftborder,
       &.e-lib .e-leftfreeze.e-freezeleftborder,
       .e-leftfreeze.e-freezeleftborder {
         border-left-width: 2px;
       }
     
+      &.e-lib.e-default .e-headercell.e-rightfreeze.e-freezerightborder,
       &.e-lib .e-rightfreeze.e-freezerightborder,
       .e-rightfreeze.e-freezerightborder {
         border-right-width: 2px;
       }
   
+      &.e-lib.e-default .e-headercell.e-fixedfreeze.e-freezeleftborder,
       &.e-lib .e-fixedfreeze.e-freezeleftborder,
       .e-fixedfreeze.e-freezeleftborder {
         border-right-width: 1px;
       }
   
+      &.e-lib.e-default .e-headercell.e-fixedfreeze.e-freezerightborder,
       &.e-lib .e-fixedfreeze.e-freezerightborder,
       .e-fixedfreeze.e-freezerightborder {
         border-left-width: 1px;

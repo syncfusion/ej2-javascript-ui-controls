@@ -449,6 +449,11 @@ export interface CancelEventArgs {
      *
      */
     customFormData: { [key: string]: Object }[]
+    /**
+     * Defines the additional data in key and value pair format that will be submitted on the header when the upload action is canceled.
+     *
+     */
+    currentRequest?: { [key: string]: string }[]
 }
 
 export interface PauseResumeEventArgs {
@@ -2277,7 +2282,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     }
                 } else {
                     this.internalCreateFileList(fileData);
-                    if (this.autoUpload && this.sequenceUpload && this.filesData.length > 0 && this.filesData[this.filesData.length - 1 as number].statusCode !== '2' && this.filesData[this.filesData.length - 1 as number].statusCode !== '0') {
+                    if (this.autoUpload && this.sequenceUpload && this.sequentialUpload && this.filesData.length > 0 && this.filesData[this.filesData.length - 1 as number].statusCode !== '2' && this.filesData[this.filesData.length - 1 as number].statusCode !== '0') {
                         this.filesData = this.filesData.concat(fileData);
                         return;
                     }
@@ -2919,7 +2924,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 event: e,
                 fileData: files,
                 cancel: false,
-                customFormData : []
+                customFormData : [],
+                currentRequest : null
             };
             this.trigger('canceling', eventArgs, (eventArgs: CancelEventArgs) => {
                 if (eventArgs.cancel) {
@@ -2942,6 +2948,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                         this.updateFormData(formData, eventArgs.customFormData);
                         const ajax: Ajax = new Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
                         ajax.emitError = false;
+                        ajax.beforeSend = (e: BeforeSendEventArgs) => {
+                            if (eventArgs.currentRequest) {
+                                this.updateCustomheader(ajax.httpRequest, eventArgs.currentRequest);
+                            }
+                        };
                         ajax.onLoad = (e: Event): object => {
                             this.removecanceledFile(e, files); return {};
                         };

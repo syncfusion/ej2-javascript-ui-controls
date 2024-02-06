@@ -1133,8 +1133,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                 const textHeight: number = labelSize['height'];
                 if (this.orientation === 'Horizontal') {
                     anchor = this.type === 'Rect' ? 'end' : (enableRtl ? 'end' : 'start');
-                    x = featureBounds.x + (enableRtl ? (this.type === 'Rect' ? textWidth + elementSpacing : -elementSpacing) :
-                        featureBounds.width) + (this.type === 'Rect' ? -elementSpacing / 2 : elementSpacing / 2);
+                    x = this.findTextAlignment(featureBounds, textWidth, alignment);
                     if (x - textWidth < this.initialClipRect.x) {
                         anchor = 'start';
                     }
@@ -1143,10 +1142,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                     }
                     y = featureBounds.y + featureBounds.height / 2;
                 } else {
-                    anchor = (alignment === 'Far') ? 'end' : ((alignment === 'Near') ? 'start' : 'middle');
+                    anchor = 'middle';
                     x = featureBounds.y + featureBounds.height / 2;
-                    y = featureBounds.x + (enableRtl ? featureBounds.width + (this.type === 'Rect' ? -elementSpacing : elementSpacing) : 0) +
-                        (this.type === 'Rect' ? elementSpacing : -elementSpacing);
+                    y = this.findTextAlignment(featureBounds, textWidth, alignment);
                     if (y + (textHeight / 2) > this.initialClipRect.height + this.initialClipRect.y) {
                         y = y - (textHeight / 3);
                     }
@@ -1159,6 +1157,26 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                     this.dataLabel.labelStyle.color || this.themeStyle.dataLabelFont.color, this.svgObject, null, null, null, null, null, null, null, null, null, null, this.themeStyle.dataLabelFont);
             }
         }
+    }
+    private findTextAlignment(featureBounds: IFeatureBarBounds, textWidth: number, alignment: string): number {
+        const elementSpacing: number = 10;
+        let x: number = 0;
+        switch (alignment) {
+            case 'Center':
+                x = featureBounds.x + featureBounds.width / 2;
+                break;
+            case 'Near':
+                x = featureBounds.x + (this.orientation === 'Horizontal' ? (this.enableRtl ? featureBounds.width - elementSpacing / 2 : elementSpacing / 2)
+                    : (this.enableRtl ? elementSpacing : featureBounds.width));
+                break;
+            case 'Far':
+                x = featureBounds.x + (this.orientation === 'Horizontal' ? ((this.enableRtl ? (this.type === 'Rect' ? textWidth + elementSpacing : - elementSpacing) :
+                    featureBounds.width) + (this.type === 'Rect' ? -elementSpacing / 2 : elementSpacing / 2))
+                    : (this.enableRtl ? featureBounds.width + (this.type === 'Rect' ? - elementSpacing : elementSpacing) : 0) +
+                    (this.type === 'Rect' ? elementSpacing : - elementSpacing));
+                break;
+        }
+        return x;
     }
     private findHorizontalAlignment(margin: MarginModel): number {
         let x: number = 0;

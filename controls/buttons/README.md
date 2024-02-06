@@ -86,6 +86,49 @@ The [JavaScript Switch](https://www.syncfusion.com/javascript-ui-controls/js-tog
 * [Text](https://ej2.syncfusion.com/documentation/switch/getting-started#set-text-on-switch) - Supports text.
 * [Sizes](https://ej2.syncfusion.com/documentation/switch/how-to#change-size) - Provided with different sizes of Switch.
 
+### JavaScript Floating Action Button
+
+The [JavaScript Floating Action Button](https://www.syncfusion.com/javascript-ui-controls/js-fab?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm) control performs the primary action that appears in front of all screen contents. It has several built-in features such as support for icons, predefined styles, positions, and UI customization.
+
+<p align="center">
+    <a href="https://ej2.syncfusion.com/documentation/floating-action-button/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm">Getting Started</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm#/material/floating-action-button/overview.html">Online demos</a> .
+    <a href="https://www.syncfusion.com/javascript-ui-controls/js-fab?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm">Learn more</a>
+</p>
+
+<p align="center">
+<img alt="JavaScript Floating Action Button Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-fab.png">
+</p>
+
+#### Key features
+
+* [Icons](https://ej2.syncfusion.com/documentation/floating-action-button/icons) - Supports addition of both text and icon on the Button.
+* [Predefined styles](https://ej2.syncfusion.com/documentation/floating-action-button/styles) - Provided with predefined styles for the Floating Action Button.
+* [Positions](https://ej2.syncfusion.com/documentation/floating-action-button/positions) - Positioned anywhere on the target. If the target is not defined, then Floating Action Button is positioned based on the browser viewport.
+
+### JavaScript Speed Dial
+
+The [JavaScript Speed Dial](https://www.syncfusion.com/javascript-ui-controls/js-speed-dial?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm) control is an extension of the floating action button that displays a list of action buttons when clicked. It has several built-in features such as support for items, predefined styles, positions, and UI customization.
+
+<p align="center">
+    <a href="https://ej2.syncfusion.com/documentation/speed-dial/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm">Getting Started</a> .
+    <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm#/material/speed-dial/default.html">Online demos</a> .
+    <a href="https://www.syncfusion.com/javascript-ui-controls/js-speed-dial?utm_source=npm&utm_medium=listing&utm_campaign=javascript-buttons-npm">Learn more</a>
+</p>
+
+<p align="center">
+<img alt="JavaScript Speed Dial Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-speeddial.gif">
+</p>
+
+#### Key features
+
+* [Items](https://ej2.syncfusion.com/documentation/speed-dial/items) - Provides different items support for the Speed Dial.
+* [Predefined styles](https://ej2.syncfusion.com/documentation/speed-dial/styles) - Provided with predefined styles for the Speed Dial.
+* [Positions](https://ej2.syncfusion.com/documentation/speed-dial/positions) - Positioned anywhere on the target. If the target is not defined, then Speed Dial is positioned based on the browser viewport.
+* [Modes](https://ej2.syncfusion.com/documentation/speed-dial/display-modes) - Supports display of items in both linear and radial modes.
+* [Modal](https://ej2.syncfusion.com/documentation/speed-dial/modal) - Adds an overlay to prevent the background interaction.
+* [Templates](https://ej2.syncfusion.com/documentation/speed-dial/template) - Customize Speed Dial items and the popup content using templates.
+
 <p align="center">
 Trusted by the world's leading companies
   <a href="https://www.syncfusion.com/">
@@ -135,4 +178,4 @@ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-contr
 
 See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_campaign=button) for more info.
 
-&copy; Copyright 2023 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+&copy; Copyright 2024 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

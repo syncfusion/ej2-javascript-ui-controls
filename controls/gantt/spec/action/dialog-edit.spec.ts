@@ -4412,3 +4412,74 @@ describe('CR-861733-Action begin event arguments not working properly', () => {
         }
     });
 });
+describe('validation in progress', () => {
+    let ganttObj: Gantt;
+    let editingData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project Initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            Progress:30
+        }
+    ];
+    beforeAll(function (done) {
+        ganttObj = createGantt({
+            dataSource: editingData,
+            allowSorting: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name'},
+            { field: 'StartDate', headerText: 'Start Date' },
+            { field: 'Duration', headerText: 'Duration' },
+            { field: 'Progress', validationRules: { required: true } }, 
+        ],
+        editSettings: {
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+        allowSelection: true,
+        showColumnMenu: false,
+        highlightWeekends: true,
+        height: '550px',
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done) => {
+        setTimeout(done, 1000);
+        ganttObj.openEditDialog(1);
+    });
+    it('validation rule not working in numeric edit', () => {
+        let element = document.getElementById("Gantt_0Progress");
+        if (element) {
+            if ('ej2_instances' in element) {
+                let numericInstance = (element as any).ej2_instances[0];
+                numericInstance.focusIn();
+                numericInstance.clear()
+                numericInstance.focusOutHandler()
+                let element1 = document.getElementsByClassName("e-formvalidator")[0].querySelectorAll(".e-griderror").length;
+                expect(element1>=1).toBe(true); 
+            }
+        }
+    });
+});

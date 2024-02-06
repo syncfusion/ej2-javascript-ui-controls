@@ -314,6 +314,49 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('848794 - Unable to resize the video when the resizeByPercent is set to true', () => {
+        let rteObj: RichTextEditor;
+        let clickEvent: any;
+        let innerHTML: string = `<p><b>Description:</b></p>
+        <p>The Rich Text Editor (RTE) control is an easy to render in
+        client side. Customer easy to edit the contents and get the HTML content for
+        <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>
+        `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML,
+                insertVideoSettings: { resizeByPercent: true }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Unable to resize the video when the resizeByPercent is set to true', () => {
+            let trg = (rteObj.element.querySelector('video') as HTMLElement);
+            (rteObj.videoModule as any).resizeStart({ target: trg, pageX: 0 });
+            let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-rte-botRight') as HTMLElement;
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            resizeBot.dispatchEvent(clickEvent);
+            (rteObj.videoModule as any).resizeStart(clickEvent);
+            (<any>rteObj.videoModule).resizeBtnStat.botRight = true;
+            (rteObj.videoModule as any).resizing({ target: resizeBot, pageX: 200 });
+            let width = (rteObj.element.querySelector('video') as HTMLElement).offsetWidth;
+            (<any>rteObj.videoModule).resizeBtnStat.botRight = true;
+            (rteObj.videoModule as any).resizing({ target: resizeBot, pageX: 300 });
+            width += 100;
+            expect(width).toEqual(width);
+            (<any>rteObj.videoModule).resizeBtnStat.botRight = true;
+            (rteObj.videoModule as any).resizing({ target: resizeBot, pageX: 100 });
+            width -= 200;
+            expect(width).toEqual(width);
+        });
+    });
+
     describe('mobile resize', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -367,6 +410,46 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(rteObj.contentModule.getDocument().body.contains(this.vidResizeDiv)).toBe(false);
             (rteObj.videoModule as any).resizeStart(clickEvent);
             (rteObj.videoModule as any).resizeStart({ target: resizeBot, preventDefault: function () { }, stopImmediatePropagation: function () { } });
+        });
+    });
+
+    describe('868583 - The resize bar not shown while Rich Textbox Editor inside the iframe', () => {
+        let rteObj: RichTextEditor;
+        let clickEvent: any;
+        let innerHTML: string = `<p><b>Description:</b></p>
+        <p>The Rich Text Editor (RTE) control is an easy to render in
+        client side. Customer easy to edit the contents and get the HTML content for
+        <span class="e-video-wrap" contenteditable="false" title="mov_bbb.mp4"><video class="e-rte-video e-video-inline" controls=""><source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4"></video></span><br>
+        `;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML,
+                insertVideoSettings: { resizeByPercent: true },
+                iframeSettings: { enable: true }
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('The resize bar not shown while Rich Textbox Editor inside the iframe', () => {
+            let trg = (rteObj.contentModule.getEditPanel().querySelector('video') as HTMLElement);
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            trg.dispatchEvent(clickEvent);
+            (rteObj.videoModule as any).resizeStart(clickEvent);
+            expect(rteObj.contentModule.getEditPanel().querySelector('.e-vid-resize')).not.toBe(null);
+            expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-rte-videoboxmark').length).toBe(4);
+            const styles = rteObj.contentModule.getDocument().defaultView.getComputedStyle(rteObj.contentModule.getEditPanel().querySelectorAll('.e-rte-videoboxmark')[0]);
+            expect(styles.width).toBe('10px');
+            expect(styles.height).toBe('10px');
+            expect(styles.position).toBe('absolute');
+            expect(styles.display).toBe('block');
+            expect(styles.background.includes('rgb(74, 144, 226)')).toBe(true);
+            expect(styles.zIndex).toBe('1000');
         });
     });
 

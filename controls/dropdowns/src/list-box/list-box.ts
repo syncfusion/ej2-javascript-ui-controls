@@ -3,7 +3,7 @@
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
 import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
-import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';
+import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n, setValue } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';
 import { getUniqueID, Browser, formatUnit, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { prepend, append } from '@syncfusion/ej2-base';
@@ -419,6 +419,13 @@ export class ListBox extends DropDownBase {
      * @returns {void}
      */
     public render(): void {
+        if (this.isAngular && this.allowFiltering) {
+            const originalElement: HTMLElement = this.element;
+            const clonedElement: HTMLElement = originalElement.cloneNode(true) as HTMLElement;
+            originalElement.parentNode.replaceChild(clonedElement, originalElement);
+            this.element = clonedElement;
+            setValue('ej2_instances', [this], this.element);
+        }
         this.inputString = '';
         this.initLoad = true;
         this.isCustomFiltering = false;
@@ -683,6 +690,19 @@ export class ListBox extends DropDownBase {
             this.list.insertBefore(searchEle, this.list.firstElementChild);
             this.filterParent = this.list.getElementsByClassName('e-filter-parent')[0] as HTMLElement;
             this.filterWireEvents(searchEle);
+            let inputSearch: HTMLElement = searchEle.querySelector('.e-input-filter');
+            if (inputSearch) {
+                inputSearch.addEventListener('focus', function() {
+                    if (!(searchEle.childNodes[0] as HTMLElement).classList.contains('e-input-focus')) {
+                        (searchEle.childNodes[0] as HTMLElement).classList.add('e-input-focus');
+                    }
+                });
+                inputSearch.addEventListener('blur', function() {
+                    if ((searchEle.childNodes[0] as HTMLElement).classList.contains('e-input-focus')) {
+                        (searchEle.childNodes[0] as HTMLElement).classList.remove('e-input-focus');
+                    }
+                });
+            }
         }
         this.initWrapper();
         this.setSelection();

@@ -1307,15 +1307,18 @@ export class CommandHandler {
                 obj.children.push(order[parseInt(i.toString(), 10)].id);
             }
         }
-        const group: Node | Connector = this.diagram.add(obj as IElement);
-        if (group) {
-            this.select(group);
-        }
-        const entry: HistoryEntry = { type: 'Group', undoObject: obj, redoObject: obj, category: 'Internal' };
-        this.addHistoryEntry(entry);
-        this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Group;
-        this.diagram.protectPropertyChange(protectedChange);
-        this.updateBlazorSelector();
+        //867606 - Exception throws while grouping the existing group nodes 
+        if (obj.children.length > 1) {
+            const group: Node | Connector = this.diagram.add(obj as IElement);
+            if (group) {
+                this.select(group);
+            }
+            const entry: HistoryEntry = { type: 'Group', undoObject: obj, redoObject: obj, category: 'Internal' };
+            this.addHistoryEntry(entry);
+            this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.Group;
+            this.diagram.protectPropertyChange(protectedChange);
+            this.updateBlazorSelector();
+        }        
     }
 
 

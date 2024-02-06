@@ -1261,10 +1261,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.panelResponsiveUpdate();
             this.updateGridLines();
         }
-        this.removeResizeClasses(this.panelCollection);
-        this.setClasses(this.panelCollection);
+        if (!isNullOrUndefined(this.panelCollection)){
+            this.removeResizeClasses(this.panelCollection);
+            this.setClasses(this.panelCollection);
+        }
         this.resizeEvents();
+        if (!isNullOrUndefined(this.panelCollection)){
         this.checkDragging(this.dragCollection);
+        }
     }
 
     protected updateGridLines(): void {
@@ -1332,9 +1336,13 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 this.panelPropertyChange(updatedPanel[i as number], { row: i, col: 0 });
                 this.setPanelPosition(<HTMLElement>panelElement, updatedPanel[i as number].row, updatedPanel[i as number].col);
                 this.panelsSizeY = this.panelsSizeY + updatedPanel[i as number].sizeY;
-                this.setClasses(this.panelCollection);
-                this.checkDragging(this.dragCollection);
-                this.removeResizeClasses(this.panelCollection);
+                if (!isNullOrUndefined(this.panelCollection)){
+                    this.setClasses(this.panelCollection);
+                    this.removeResizeClasses(this.panelCollection);
+                }
+                if (!isNullOrUndefined(this.dragCollection)){
+                    this.checkDragging(this.dragCollection);
+                }
             }
         }
         this.updateRowHeight();

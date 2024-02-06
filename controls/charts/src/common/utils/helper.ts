@@ -516,7 +516,7 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
 export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, index: number, isVertical: boolean, rect: Rect): Element {
     const margin: number = 5;
     const opposedPosition: boolean = axis.isAxisOpposedPosition;
-    const anchor: string = isVertical ? 'start' : 'auto';
+    const anchor: string = chart.enableRtl ? 'end' : isVertical ? 'start' : 'auto';
     let size: Size;
     const chartRect: number = chart.availableSize.width;
     let pathElement: Element;
@@ -527,8 +527,9 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
     let direction: string;
     const scrollBarHeight: number = axis.scrollbarSettings.enable || (axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject)
         ? axis.scrollBarHeight : 0;
+    const isRtlEnabled: boolean = (chart.enableRtl && !isVertical && !axis.isInversed) || (axis.isInversed && !(chart.enableRtl && !isVertical));
     for (let i: number = 0; i < 2; i++) {
-        size = measureText(i ? axis.endLabel : axis.startLabel, axis.labelStyle, chart.themeStyle.axisLabelFont);
+        size = measureText(i ? (isRtlEnabled ? axis.startLabel : axis.endLabel) : (isRtlEnabled ? axis.endLabel : axis.startLabel), axis.labelStyle, chart.themeStyle.axisLabelFont);
         if (isVertical) {
             arrowLocation = i ? new ChartLocation(rect.x - scrollBarHeight, rect.y + rx) :
                 new ChartLocation(axis.rect.x - scrollBarHeight, (rect.y + rect.height - rx));
@@ -575,7 +576,7 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
         textElement(
             chart.renderer,
             new TextOption(
-                chart.element.id + '_Zoom_' + index + '_AxisLabel_' + i, x, y, anchor, i ? axis.endLabel : axis.startLabel),
+                chart.element.id + '_Zoom_' + index + '_AxisLabel_' + i, x, y, anchor, i ? (isRtlEnabled ? axis.startLabel : axis.endLabel) : (isRtlEnabled ? axis.endLabel : axis.startLabel)),
             { color: chart.themeStyle.crosshairLabelFont.color, fontFamily: 'Segoe UI', fontWeight: 'Regular', size: '11px' },
             chart.themeStyle.crosshairLabelFont.color, parent, null, null, null, null, null, null, null, null, null, null, chart.themeStyle.crosshairLabelFont
         );
@@ -728,12 +729,16 @@ export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Se
     let xValues: Object[];
     let minVal: number;
     let seriesMin: number;
+    let stackingGroups: string[] = [];
     for (let index: number = 0; index < seriesCollection.length; index++) {
         const series: Series = seriesCollection[index as number];
         xValues = [];
         if (series.visible &&
             (axis.name === series.xAxisName || (axis.name === 'primaryXAxis' && series.xAxisName === null)
                 || (axis.name === series.chart.primaryXAxis.name && !series.xAxisName))) {
+            if (series.type.indexOf('Stacking') > -1 && stackingGroups.indexOf(series.stackingGroup) === -1) {
+                stackingGroups.push(series.stackingGroup);
+            }      
             xValues = series.points.map((point: Points) => {
                 return point.xValue;
             });
@@ -749,7 +754,7 @@ export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Se
                 for (let index: number = 0; index < xValues.length; index++) {
                     const value: Object = xValues[index as number];
                     if (index > 0 && value) {
-                        minVal = <number>value - <number>xValues[index - 1];
+                        minVal = series.type.indexOf('Stacking') > -1 && axis.valueType == "Category" ? stackingGroups.length : <number>value - <number>xValues[index - 1];
                         if (minVal !== 0) {
                             minDelta = Math.min(minDelta, minVal);
                         }

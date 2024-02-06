@@ -229,6 +229,8 @@ export class MeasureAnnotation {
      */
     public isAddAnnotationProgramatically: boolean = false;
     private ratio: number;
+    private srcValue: number;
+    private destValue: number;
     private scaleRatioString: string;
     private scaleRatioDialog: Dialog;
     private sourceTextBox: NumericTextBox;
@@ -524,7 +526,7 @@ export class MeasureAnnotation {
         this.volumeThickness = this.pdfViewer.volumeSettings.thickness ? this.pdfViewer.volumeSettings.thickness : 1;
         this.unit = this.pdfViewer.measurementSettings.conversionUnit.toLowerCase() as CalibrationUnit;
         this.displayUnit = this.pdfViewer.measurementSettings.displayUnit.toLowerCase() as CalibrationUnit;
-        this.ratio = this.pdfViewer.measurementSettings.scaleRatio;
+        this.ratio = !isNullOrUndefined(this.ratio) ? this.ratio : 1 * this.pdfViewer.measurementSettings.scaleRatio;
         this.volumeDepth = this.pdfViewer.measurementSettings.depth;
         this.scaleRatioString = '1 ' + this.unit + ' = ' + this.ratio.toString() + ' ' + this.displayUnit;
     }
@@ -841,7 +843,7 @@ export class MeasureAnnotation {
         element.appendChild(sourceContainer);
         // eslint-disable-next-line max-len
         const srcInputElement: HTMLElement = this.createInputElement('input', 'e-pv-scale-ratio-src-input', elementID + '_src_input', sourceContainer);
-        this.sourceTextBox = new NumericTextBox({ value: this.ratio ? this.ratio : 1, format: '##', cssClass: 'e-pv-scale-ratio-src-input', min: 1, max: 100 }, (srcInputElement as HTMLInputElement));
+        this.sourceTextBox = new NumericTextBox({ value: this.srcValue ? this.srcValue : 1, format: '##', cssClass: 'e-pv-scale-ratio-src-input', min: 1, max: 100 }, (srcInputElement as HTMLInputElement));
         // eslint-disable-next-line max-len
         const srcUnitElement: HTMLElement = this.createInputElement('button', 'e-pv-scale-ratio-src-unit', elementID + '_src_unit', sourceContainer);
         this.convertUnit = new DropDownButton({ items: items, cssClass: 'e-pv-scale-ratio-src-unit' }, (srcUnitElement as HTMLButtonElement));
@@ -849,7 +851,7 @@ export class MeasureAnnotation {
         const destinationContainer: HTMLElement = createElement('div', { id: elementID + '_scale_dest_container' });
         // eslint-disable-next-line max-len
         const destInputElement: HTMLElement = this.createInputElement('input', 'e-pv-scale-ratio-dest-input', elementID + '_dest_input', destinationContainer);
-        this.destTextBox = new NumericTextBox({ value: 1, format: '##', cssClass: 'e-pv-scale-ratio-dest-input', min: 1, max: 100 }, (destInputElement as HTMLInputElement));
+        this.destTextBox = new NumericTextBox({ value: this.destValue ? this.destValue : 1, format: '##', cssClass: 'e-pv-scale-ratio-dest-input', min: 1, max: 100 }, (destInputElement as HTMLInputElement));
         // eslint-disable-next-line max-len
         const destUnitElement: HTMLElement = this.createInputElement('button', 'e-pv-scale-ratio-dest-unit', elementID + '_dest_unit', destinationContainer);
         this.dispUnit = new DropDownButton({ items: items, cssClass: 'e-pv-scale-ratio-dest-unit' }, (destUnitElement as HTMLButtonElement));
@@ -929,6 +931,8 @@ export class MeasureAnnotation {
         } else {
             this.unit = this.getContent(this.convertUnit.content) as CalibrationUnit;
             this.displayUnit = this.getContent(this.dispUnit.content) as CalibrationUnit;
+            this.srcValue = this.sourceTextBox.value;
+            this.destValue = this.destTextBox.value;
             this.ratio = this.destTextBox.value / this.sourceTextBox.value;
             this.volumeDepth = this.depthTextBox.value;
             this.scaleRatioString = this.sourceTextBox.value + ' ' + this.unit + ' = ' + this.destTextBox.value + ' ' + this.displayUnit;

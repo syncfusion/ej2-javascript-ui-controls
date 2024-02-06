@@ -650,7 +650,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             ele.appendChild(noDataElement[i as number]);
                         }
                     } else {
-                        if(noDataElement[i as number] instanceof HTMLElement)
+                        if(noDataElement[i as number] instanceof HTMLElement || noDataElement[i as number] instanceof Text)
                         {
                             ele.appendChild(noDataElement[i as number]);
                         }
@@ -1201,25 +1201,28 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @returns {HTMLElement} Return the ul li list items.
      */
     private createListItems(dataSource: { [key: string]: Object }[], fields: FieldSettingsModel): HTMLElement {
-        if (dataSource && fields.groupBy || this.element.querySelector('optgroup')) {
-            if (fields.groupBy) {
-                if (this.sortOrder !== 'None') {
-                    dataSource = this.getSortedDataSource(dataSource);
+        if (dataSource) {
+            if (fields.groupBy || this.element.querySelector('optgroup')) {
+                if (fields.groupBy) {
+                    if (this.sortOrder !== 'None') {
+                        dataSource = this.getSortedDataSource(dataSource);
+                    }
+                    dataSource = ListBase.groupDataSource(
+                        dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, this.sortOrder);
                 }
-                dataSource = ListBase.groupDataSource(
-                    dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, this.sortOrder);
+                addClass([this.list], dropDownBaseClasses.grouping);
+            } else {
+                dataSource = this.getSortedDataSource(dataSource);
             }
-            addClass([this.list], dropDownBaseClasses.grouping);
-        } else {
-            dataSource = this.getSortedDataSource(dataSource);
+            const options: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
+            const spliceData: { [key: string]: Object }[] = (dataSource.length > 100) ?
+                <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
+                : dataSource;
+            this.sortedData = dataSource;
+            return ListBase.createList(
+                this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true, this);
         }
-        const options: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
-        const spliceData: { [key: string]: Object }[] = (dataSource.length > 100) ?
-            <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
-            : dataSource;
-        this.sortedData = dataSource;
-        return ListBase.createList(
-            this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true, this);
+        return null;
     }
 
     protected listOption(
@@ -1313,7 +1316,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
 
     private updateGroupFixedHeader(element: HTMLElement, target: Element): void {
         this.fixedHeaderElement.innerHTML = element.innerHTML;
-        this.fixedHeaderElement.style.top = target.scrollTop + 'px';
+        this.fixedHeaderElement.style.position = 'fixed';
+        this.fixedHeaderElement.style.top = this.list.parentElement.offsetTop + this.list.offsetTop + 'px';
         this.fixedHeaderElement.style.display = 'block';
     }
 
@@ -1500,10 +1504,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected getIndexByValueFilter(value: string | number | boolean): number {
         let index: number;
         const listItems: HTMLElement = this.renderItems(this.selectData as { [key: string]: Object }[], this.fields);
-        for (let i: number = 0; i < listItems.children.length; i++) {
-            if (!isNullOrUndefined(value) && listItems.children[i as number].getAttribute('data-value') === value.toString()) {
-                index = i;
-                break;
+        if (listItems && listItems.children) {
+            for (let i: number = 0; i < listItems.children.length; i++) {
+                if (!isNullOrUndefined(value) && listItems.children[i as number].getAttribute('data-value') === value.toString()) {
+                    index = i;
+                    break;
+                }
             }
         }
         return index;

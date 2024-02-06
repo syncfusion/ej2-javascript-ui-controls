@@ -1145,7 +1145,8 @@ describe('Datepicker', () => {
         });
         let keyEventArgs: any = {
             preventDefault: (): void => { /** NO Code */ },
-            action: 'moveLeft'
+            action: 'moveLeft',
+            target: null
         };
         it('strictMode false with key test case ', () => {
             datepicker = new DatePicker({
@@ -1157,6 +1158,7 @@ describe('Datepicker', () => {
             datepicker.appendTo('#date');
             expect(document.querySelector('.e-input-group').classList.contains('e-error')).toEqual(true);
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
+            keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
             datepicker.inputKeyActionHandle(keyEventArgs);
            // expect(document.querySelector('.e-focused-date').textContent).toBe('13');
             keyEventArgs.action = "moveRight";
@@ -1173,6 +1175,7 @@ describe('Datepicker', () => {
             datepicker.appendTo('#date');
             expect(document.querySelector('.e-input-group').classList.contains('e-error')).toEqual(false);
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
+            keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);
             keyEventArgs.action = 'moveDown';
             datepicker.inputKeyActionHandle(keyEventArgs);
             expect(document.querySelector('.e-focused-date').textContent).toBe('10');
@@ -2031,7 +2034,8 @@ describe('Datepicker', () => {
             });
             datePicker.appendTo('#date');
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);	    
-            datePicker.value=new Date('12/12/2016');	  
+            datePicker.value=new Date('12/12/2016');
+            keyEventArgs.target = (document.querySelector('.e-content-table') as HTMLElement);  
             keyEventArgs.action = 'enter';
             datePicker.inputKeyActionHandle(keyEventArgs);
             expect(datePicker.value.valueOf()).toBe(new Date('12/12/2016').valueOf());
@@ -2755,30 +2759,6 @@ describe('Datepicker', () => {
             datePicker.popupWrapper = datePicker.popupObj = null
             datePicker.calendarKeyActionHandle(keyEventArgs);
             expect(document.activeElement).toBe(document.querySelector('.e-input'));
-        });
-        it('tab key when popup open test case', function () {
-            datePicker = new DatePicker({
-            });
-            datePicker.appendTo('#date');
-            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
-            keyEventArgs.action = 'tab';
-            datePicker.calendarKeyActionHandle(keyEventArgs);
-            setTimeout(function () {
-                expect(isNullOrUndefined(datePicker.popupWrapper)).toBe(true), 1000
-            })
-            expect(datePicker.popupObj).toBe(null);
-        });
-        it('tab key when popup close test case', function () {
-            datePicker = new DatePicker({
-            });
-            datePicker.appendTo('#date');
-            datePicker.element.focus();
-            keyEventArgs.action = 'altDownArrow';
-            datePicker.inputKeyActionHandle(keyEventArgs);
-            keyEventArgs.action = 'tab';
-            datePicker.inputKeyActionHandle(keyEventArgs);
-            expect(datePicker.popupWrapper).toBe(null)
-            expect(document.activeElement).toBe(datePicker.element);
         });
     });
     describe('events', () => {
@@ -3883,7 +3863,8 @@ describe('Datepicker', () => {
         it('popup will not closed.', () => {
             datepicker1.focusIn();
             datepicker1.show();
-            keyEventArgs.action = 'shiftTab';
+            keyEventArgs.action = keyEventArgs.key = keyEventArgs.code = 'shiftTab';
+            keyEventArgs.target = datepicker1.element;
             datepicker1.inputKeyActionHandle(keyEventArgs);
             expect(isNullOrUndefined(datepicker1.popupObj)).toBe(true);
         });
@@ -4699,10 +4680,6 @@ describe('Masked DatePicker', () => {
             datepicker.element.selectionStart = 1;
             datepicker.inputHandler();
             expect(datepicker.element.value).toBe('Jun');
-            datepicker.element.value = 'f';
-            datepicker.element.selectionStart = 1;
-            datepicker.inputHandler();
-            //expect(datepicker.element.value).toBe('Feb');
         });
 
         it('Alphabetical input for month format -2 ', () => { 

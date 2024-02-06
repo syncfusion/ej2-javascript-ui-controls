@@ -2544,7 +2544,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             if (this.valueContainer) {
                 this.valueContainer.value = (this.enableHtmlEncode) ? this.value : value;
             }
-            if (this.editorMode === 'HTML' && this.inputElement && this.inputElement.innerHTML.replace('&amp;', '&').trim() !== value.trim()) {
+            if (this.editorMode === 'HTML' && this.inputElement && this.inputElement.innerHTML.trim() !== value.trim()) {
                 this.inputElement.innerHTML = value;
             } else if (this.editorMode === 'Markdown' && this.inputElement
                 && (this.inputElement as HTMLTextAreaElement).value.trim() !== value.trim()) {
@@ -2561,11 +2561,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.inputElement.innerHTML = '<br/>';
                 } else {
                     this.inputElement.innerHTML = '<p><br/></p>';
-                    if (value === '' && this.formatter && this.inputElement) {
-                        this.formatter.editorManager.nodeSelection.setCursorPoint(
-                            this.contentModule.getDocument(), this.inputElement.firstElementChild as Element,
-                            this.inputElement.firstElementChild.childElementCount);
-                    }
                 }
             } else {
                 (this.inputElement as HTMLTextAreaElement).value = '';
@@ -3733,6 +3728,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             for (let j: number = 0; j < item.length; j++) {
                 if (item[j as number].classList.length === 0) {
                     item[j as number].removeAttribute('class');
+                }
+                if (item[j as number].nodeName === 'IMG' && (item[j as number] as HTMLElement).style.outline !== '') {
+                    (item[j as number] as HTMLElement).style.outline = '';
                 }
             }
         }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.4 (2024-02-06)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#FB49154` - The console error in the Dashboard Layout component when resizing the browser window has been resolved.
+
 ## 20.4.48 (2023-02-01)
 
 ### Splitter

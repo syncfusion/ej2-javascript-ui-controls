@@ -11271,6 +11271,40 @@ describe('Tab Control', () => {
         });
     });
 
+    describe('ES-867783 - Tab switching happening for disabled items, ', () => {
+        let tab: Tab;
+        let i: number = 0;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('the tab selecting event is triggered issue fixed', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ],
+                selecting: () => {
+                    i++;
+                },
+            });
+            tab.appendTo('#ej2Tab');
+            tab.enableTab(1, false);
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            const items: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-toolbar-item'));
+            expect(items[0].classList.contains('e-active')).toEqual(true);
+            tab.select(1);
+            expect(items[0].classList.contains('e-active')).toEqual(true);            
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

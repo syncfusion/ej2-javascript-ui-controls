@@ -2102,6 +2102,38 @@ describe('MultiSelect', () => {
             mEle.remove();
         });
         it('popup shows custom entered value instead of data source values.', () => {
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                mode: 'Default',
+                allowCustomValue: true,
+                fields: { value: 'id', text: 'text' }
+            });
+            listObj.appendTo(mEle);
+            keyboardEventArgs.keyCode = 9;
+            keyboardEventArgs.altKey = false;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            listObj.inputElement.value = 'x';
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 88;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            expect((<any>listObj).ulElement.querySelectorAll('li').length).toBe(10);
+            listObj.onBlurHandler();
+            (<any>listObj).wrapperClick(mouseEventArgs);
+            expect((<any>listObj).ulElement.querySelectorAll('li').length).toBe(9);
+        });
+        it('popup shows custom entered value instead of data source values with filtering.', () => {
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                mode: 'Default',
+                allowCustomValue: true,
+                allowFiltering: true,
+                fields: { value: 'id', text: 'text' }
+            });
+            listObj.appendTo(mEle);
             keyboardEventArgs.keyCode = 9;
             keyboardEventArgs.altKey = false;
             (<any>listObj).keyDownStatus = true;

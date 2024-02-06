@@ -2888,6 +2888,7 @@ describe('Quick Popups', () => {
 
         beforeAll((done: DoneFn) => {
             const model: ScheduleModel = {
+                selectedDate: new Date(2023, 0, 22),
                 currentView: 'Year',
                 views: ['Year'],
                 eventSettings: { dataSource: data}

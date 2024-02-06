@@ -1499,6 +1499,9 @@ export class ResizeTool extends ToolBase {
     /** @private */
     public resizeStart: boolean = false;
 
+    /** @private */
+    public startValues:SelectorModel;
+
     /**   @private  */
     public initialBounds: Rect = new Rect();
 
@@ -1604,12 +1607,11 @@ export class ResizeTool extends ToolBase {
                 this.blocked = this.scaleObjects(
                     deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
                 const oldValue: SelectorModel = {
-                    offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
                     width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
                 };
                 const arg: ISizeChangeEventArgs = {
                     source: cloneBlazorObject(args.source), state: 'Completed',
-                    oldValue: oldValue, newValue: oldValue, cancel: false
+                    oldValue: this.startValues, newValue: oldValue, cancel: false
                 };
                 this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
             }
@@ -1647,10 +1649,10 @@ export class ResizeTool extends ToolBase {
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
         if (this.undoElement.offsetX === object.wrapper.offsetX && this.undoElement.offsetY === object.wrapper.offsetY && !this.resizeStart) {
             const oldValue: SelectorModel = {
-                offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
                 width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
             };
-
+            //EJ2-866122 - Need to enhance the sizeChange Event
+            this.startValues = oldValue;
             const arg: ISizeChangeEventArgs = {
                 source: args.source, state: 'Start', oldValue: oldValue, newValue: this.currentElement, cancel: false
             };
@@ -1775,12 +1777,10 @@ export class ResizeTool extends ToolBase {
             }
         }
         const oldValue: SelectorModel = {
-            offsetX: source.offsetX, offsetY: source.offsetY,
             width: source.width, height: source.height
         };
         this.blocked = this.commandHandler.scaleSelectedItems(deltaWidth, deltaHeight, this.getPivot(this.corner));
         const newValue: SelectorModel = {
-            offsetX: source.offsetX, offsetY: source.offsetY,
             width: source.width, height: source.height
         };
         let arg: ISizeChangeEventArgs;

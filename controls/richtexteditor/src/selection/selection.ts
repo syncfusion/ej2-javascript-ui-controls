@@ -108,6 +108,9 @@ export class NodeSelection {
                 || this.isChildNode(nodeCollection, startNode))) {
             return null;
         }
+        if (startNode.nodeType === 3 && startNode.previousSibling === endNode && endNode.nodeName === 'IMG') {
+            return null;
+        }
         if (nodeCollection.indexOf(startNode.firstChild) === -1 && startNode.firstChild && !this.isChildNode(nodeCollection, startNode)) {
             return startNode.firstChild;
         }

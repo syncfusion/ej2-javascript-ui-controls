@@ -1878,7 +1878,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         const targetElement: Element = getElement(marker.targetId);
         let latLongValue: GeoPosition = this.getClickLocation(marker.targetId, pageX, pageY, (targetElement as HTMLElement), x, y);
         const location: Point = (this.isTileMap) ? convertTileLatLongToPoint(
-            new MapLocation(latLongValue.longitude, latLongValue.latitude), this.scale, this.tileTranslatePoint, true
+            new MapLocation(latLongValue.longitude, latLongValue.latitude), this.tileZoomLevel, this.tileTranslatePoint, true
         ) : convertGeoToPoint(latLongValue.latitude, latLongValue.longitude, this.mapLayerPanel.currentFactor,
             <LayerSettings>this.layersCollection[marker.layerIndex], this);
         const transPoint: Point = this.translatePoint;
@@ -1896,7 +1896,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         return latLongValue;
     }
-    private getClickLocation(targetId: string, pageX: number, pageY: number, targetElement: HTMLElement,
+    /** @private */
+    public getClickLocation(targetId: string, pageX: number, pageY: number, targetElement: HTMLElement,
                              x: number, y: number): GeoPosition {
         let layerIndex: number = 0;
         let latLongValue: any;
@@ -1906,12 +1907,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             layerIndex = parseFloat(targetId.split('_LayerIndex_')[1].split('_')[0]);
             if (this.layers[layerIndex as number].geometryType === 'Normal') {
                 if (targetId.indexOf('_shapeIndex_') > -1) {
-                    const location: MapLocation = getMousePosition(pageX, pageY, (targetElement as any).parentElement);
-                    const minLongitude: number = Math.abs((-this.baseMapBounds.longitude.min) * this.mapLayerPanel.currentFactor);
-                    const minLatitude: number = Math.abs(this.baseMapBounds.latitude.max * this.mapLayerPanel.currentFactor);
+                    const immediateParent: Element = (targetElement as any).parentElement;
+                    const parentElement: Element = immediateParent.id.indexOf('_Point_Group') > -1 || immediateParent.id.indexOf('_LineString_Group') > -1
+                        || immediateParent.id.indexOf('_MultiLineString_Group') > -1 || immediateParent.id.indexOf('_Polygon_Group') > -1 ?
+                        immediateParent.parentElement : immediateParent;
+                    const location: MapLocation = getMousePosition(pageX, pageY, parentElement);
+                    const zoomScaleValue: number = this.mapLayerPanel.currentFactor * this.mapScaleValue;
+                    const minLongitude: number = Math.abs((-this.baseMapBounds.longitude.min) * zoomScaleValue);
+                    const minLatitude: number = Math.abs(this.baseMapBounds.latitude.max * zoomScaleValue);
                     latLongValue = {
-                        latitude: Math.abs(this.baseMapBounds.latitude.max - (location.y / this.mapLayerPanel.currentFactor)),
-                        longitude: Math.abs((location.x / this.mapLayerPanel.currentFactor) + this.baseMapBounds.longitude.min)
+                        latitude: Math.abs(this.baseMapBounds.latitude.max - (location.y / zoomScaleValue)),
+                        longitude: Math.abs((location.x / zoomScaleValue) + this.baseMapBounds.longitude.min)
                     };
                     if (this.baseMapBounds.longitude.min < 0 && minLongitude > location.x) {
                         (latLongValue as any).longitude = -(latLongValue as any).longitude;

@@ -40,6 +40,7 @@ export class Video {
     private isAllowedTypes: boolean = true;
     private pageX: number = null;
     private pageY: number = null;
+    private mouseX: number = null;
     private dialogRenderObj: DialogRenderer;
     private deletedVid: Node[] = [];
     private changedWidthValue: string;
@@ -457,57 +458,44 @@ export class Video {
         if (isNullOrUndefined(vidEleStyle)) {
             return;
         }
-        // eslint-disable-next-line
-        const width: string | number = vidEleStyle.width !== '' ? vidEleStyle.width.match(/^\d+(\.\d*)?%$/g) ? parseFloat(vidEleStyle.width) :
+        /* eslint-disable */
+        let width: string | number = vidEleStyle.width !== '' ? vidEleStyle.width.match(/^\d+(\.\d*)?%$/g) ? parseFloat(vidEleStyle.width) :
             parseInt(vidEleStyle.width, 10) : vid.style.width !== '' ? vid.style.width : vid.width;
-        const height: string | number = vidEleStyle.height !== '' ? parseInt(vidEleStyle.height, 10) : vid.style.height !== '' ? vid.style.height : vid.height;
+        let height: string | number = vidEleStyle.height !== '' ? parseInt(vidEleStyle.height, 10) : vid.style.height !== '' ? vid.style.height : vid.height;
+        width = width.toString().match(/\b\d+(\.\d*)?(%|$)\b/g) ? parseFloat(width.toString()) : parseInt(width.toString(), 10);
+        height = height.toString().match(/\b\d+(\.\d*)?(%|$)\b/g) ? parseFloat(height.toString()) : parseInt(height.toString(), 10);
+        /* eslint-enable */
         if (width > height) {
             vid.style.minWidth = this.parent.insertVideoSettings.minWidth === 0 ? '200px' : formatUnit(this.parent.insertVideoSettings.minWidth);
             vid.style.minHeight = this.parent.insertVideoSettings.minHeight === 0 ? '90px' : formatUnit(this.parent.insertVideoSettings.minHeight);
             if (this.parent.insertVideoSettings.resizeByPercent) {
-                if (parseInt('' + vid.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
-                    const percentageValue: number = this.pixToPerc(
-                        (parseInt(width.toString(), 10) / parseInt(height.toString(), 10) * expectedY),
-                        (vid.previousElementSibling || vid.parentElement));
-                    vid.style.width = Math.min(
-                        Math.round((percentageValue / vid.getBoundingClientRect().width) * expectedX * 100) / 100, 100) + '%';
-                } else {
-                    vid.style.width = this.pixToPerc(parseInt(width.toString(), 10) / parseInt(height.toString(), 10) * expectedY, (vid.previousElementSibling || vid.parentElement)) + '%';
-                }
-                vid.style.height = null;
-                vid.removeAttribute('height');
+                this.updateVidEleWidth(vid, width, height, expectedX, expectedY);
             } else if ((vid.style.width === '' && vid.style.height !== '') || (vidEleStyle.width === '' && vidEleStyle.height !== '')) {
                 vid.style.height = expectedY + 'px';
             } else if ((vid.style.width !== '' && vid.style.height === '') || (vidEleStyle.width !== '' && vidEleStyle.height === '')) {
-                const currentWidth: number = ((parseInt(width.toString(), 10) / parseInt(height.toString(), 10) * expectedY) +
-                    parseInt(width.toString(), 10) / parseInt(height.toString(), 10)) <
+                const currentWidth: number = ((width / height * expectedY) +
+                    width / height) <
                     (this.parent.inputElement.getBoundingClientRect().right - 32) ?
-                    ((parseInt(width.toString(), 10) / parseInt(height.toString(), 10) * expectedY) +
-                    parseInt(width.toString(), 10) / parseInt(height.toString(), 10)) :
+                    ((width / height * expectedY) +
+                        width / height) :
                     (this.parent.inputElement.getBoundingClientRect().right - 32);
                 vid.style.width = currentWidth.toString() + 'px';
             } else if (vid.style.width !== '' || vidEleStyle.width !== '') {
-                const currentWidth: number = (parseInt(width.toString(), 10) / parseInt(height.toString(), 10) * expectedY) <
+                const currentWidth: number = (width / height * expectedY) <
                     (this.parent.inputElement.getBoundingClientRect().right - 32) ?
-                    (parseInt(width.toString(), 10) / parseInt(height.toString(), 10) * expectedY) :
+                    (width / height * expectedY) :
                     (this.parent.inputElement.getBoundingClientRect().right - 32);
                 vid.style.width = currentWidth + 'px';
                 vid.style.height = expectedY + 'px';
             } else {
-                vid.setAttribute('width', (parseInt(((parseInt(width.toString(), 10) / parseInt(height.toString(), 10) * expectedY) + parseInt(width.toString(), 10) / parseInt(height.toString(), 10)).toString(), 10)).toString());
+                vid.setAttribute('width', (parseInt(((width / height * expectedY) + width / height).toString(), 10)).toString());
             }
         } else if (height > width) {
             if (this.parent.insertVideoSettings.resizeByPercent) {
-                if (parseInt('' + vid.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
-                    vid.style.width = Math.min(Math.round((parseInt(width.toString(), 10) / vid.getBoundingClientRect().width) * expectedX * 100) / 100, 100) + '%';
-                } else {
-                    vid.style.width = this.pixToPerc((expectedX / parseInt(height.toString(), 10) * expectedY), (vid.previousElementSibling || vid.parentElement)) + '%';
-                }
-                vid.style.height = null;
-                vid.removeAttribute('height');
+                this.updateVidEleWidth(vid, width, height, expectedX, expectedY);
             } else if (vid.style.width !== '' || vidEleStyle.width !== '') {
                 vid.style.width = expectedX + 'px';
-                vid.style.height = (parseInt(height.toString(), 10) / parseInt(width.toString(), 10) * expectedX) + 'px';
+                vid.style.height = (height / width * expectedX) + 'px';
             } else {
                 vid.setAttribute('width', this.resizeBtnStat.botRight ? (this.getPointX(e.event as PointerEvent) - vid.getBoundingClientRect().left).toString() : expectedX.toString());
             }
@@ -521,6 +509,21 @@ export class Video {
                 vid.style.height = expectedX + 'px';
             }
         }
+    }
+    private updateVidEleWidth(vid: HTMLVideoElement | HTMLIFrameElement, width: number, height: number, expectedX: number, expectedY: number): void {
+        if (parseInt('' + vid.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
+            const original: number = vid.offsetWidth + this.mouseX;
+            const finalWidthByPerc: number = (original / vid.offsetWidth) * (parseFloat(vid.style.width).toString() === 'NaN' ? (vid.offsetWidth / (parseFloat(getComputedStyle(this.parent.element).width)) * 100) : parseFloat(vid.style.width));
+            vid.style.width = ((finalWidthByPerc > 3) ? finalWidthByPerc : 3) + '%';
+        } else {
+            if (width > height) {
+                vid.style.width = this.pixToPerc(width / height * expectedY, (vid.previousElementSibling || vid.parentElement)) + '%';
+            } else {
+                vid.style.width = this.pixToPerc((expectedX / height * expectedY), (vid.previousElementSibling || vid.parentElement)) + '%';
+            }
+        }
+        vid.style.height = null;
+        vid.removeAttribute('height');
     }
     private pixToPerc(expected: number, parentEle: Element): number {
         return expected / parseFloat(getComputedStyle(parentEle).width) * 100;
@@ -561,6 +564,7 @@ export class Video {
         const height: number = parseInt(this.vidDupPos.height as string, 10) + mouseY;
         this.pageX = pageX;
         this.pageY = pageY;
+        this.mouseX = mouseX;
         if (this.resizeBtnStat.botRight) {
             this.vidDupMouseMove(width + 'px', height + 'px', e);
         } else if (this.resizeBtnStat.botLeft) {

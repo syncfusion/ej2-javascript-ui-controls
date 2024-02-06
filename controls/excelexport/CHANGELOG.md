@@ -2,9 +2,21 @@
 
 ## [Unreleased]
 
-## 24.2.3 (2024-01-31)
+## 24.2.4 (2024-02-06)
 
 ### Excel Export
+
+#### Bug Fixes
+
+- Fixed the new line character after end row being rendered improperly in CSV export.
+
+## 24.1.41 (2023-12-18)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Provided encoding support in CSV file.
 
 #### Bug Fixes
 

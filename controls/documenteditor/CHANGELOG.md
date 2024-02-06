@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 24.2.4 (2024-02-06)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I526349` - Resolved the shape overlapping issue.
+- `#I507001` - Resolved the track changes count mismatch issue.
+- `#I542276` - Resolved the shape alignment issue when insert enter.
+- `#I543927` - Resolved the spacing issue of the image is being pushed to a third page.
+- `#I538962` - Resolved the issues when accepting the track changes.
+- `#I534920` - Resolved the track changes issue.
+- `#I539334` - Resolved the undo issue with deleted table on track changes enabled.
+- `#I543421` - Resolved the spell check issue in Blazor.
+- `#I525746` - Resolved the input lag issue when using multi columns.
+- `#I541459` - Resolved the table border style issue.
+
 ## 24.1.47 (2024-01-23)
 
 ### DocumentEditor

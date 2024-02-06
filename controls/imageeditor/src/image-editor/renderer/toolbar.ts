@@ -1611,7 +1611,12 @@ export class ToolbarModule {
         const args: ToolbarEventArgs = {toolbarType: parent.activeObj.shape ? parent.activeObj.shape : 'shapes',
             toolbarItems: this.defToolbarItems };
         parent.trigger('toolbarUpdating', args);
-        this.defToolbarItems = args.toolbarItems as ItemModel[];
+        if (this.isToolbarString(args.toolbarItems)) {
+            items = args.toolbarItems;
+            this.excludeItems(args.toolbarItems);
+        } else {
+            this.defToolbarItems = args.toolbarItems as ItemModel[];
+        }
         const toolbar: Toolbar = new Toolbar({
             width: '100%',
             items: this.defToolbarItems,
@@ -1621,8 +1626,12 @@ export class ToolbarModule {
                 this.createShapeColor(items);
                 this.createShapeBtn(items);
                 if (parent.activeObj.shape === 'arrow') {
-                    this.createStartBtn();
-                    this.createEndBtn();
+                    if ((items as string[]).some(item => item.toLowerCase().indexOf('start') > -1)) {
+                        this.createStartBtn();
+                    }
+                    if ((items as string[]).some(item => item.toLowerCase().indexOf('end') > -1)) {
+                        this.createEndBtn();
+                    }
                 }
                 this.wireZoomBtnEvents();
                 if (!Browser.isDevice) {
@@ -1778,24 +1787,24 @@ export class ToolbarModule {
 
     private createShapeBtn(items: (string | ItemModel)[]): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
-        let strokeWidthItems: DropDownButtonItemModel[] = [
-            { id: '1', text: this.l10n.getConstant('XSmall') },
-            { id: '2', text: this.l10n.getConstant('Small') },
-            { id: '3', text: this.l10n.getConstant('Medium') },
-            { id: '4', text: this.l10n.getConstant('Large') },
-            { id: '5', text: this.l10n.getConstant('XLarge') }
-        ];
-        if (parent.activeObj.shape && (parent.activeObj.shape === 'rectangle' || parent.activeObj.shape === 'ellipse')) {
-            strokeWidthItems = [
-                { id: '1', text: this.l10n.getConstant('NoOutline') },
-                { id: '2', text: this.l10n.getConstant('XSmall') },
-                { id: '3', text: this.l10n.getConstant('Small') },
-                { id: '4', text: this.l10n.getConstant('Medium') },
-                { id: '5', text: this.l10n.getConstant('Large') },
-                { id: '6', text: this.l10n.getConstant('XLarge') }
-            ];
-        }
         if (items.indexOf('strokeWidth') > -1) {
+            let strokeWidthItems: DropDownButtonItemModel[] = [
+                { id: '1', text: this.l10n.getConstant('XSmall') },
+                { id: '2', text: this.l10n.getConstant('Small') },
+                { id: '3', text: this.l10n.getConstant('Medium') },
+                { id: '4', text: this.l10n.getConstant('Large') },
+                { id: '5', text: this.l10n.getConstant('XLarge') }
+            ];
+            if (parent.activeObj.shape && (parent.activeObj.shape === 'rectangle' || parent.activeObj.shape === 'ellipse')) {
+                strokeWidthItems = [
+                    { id: '1', text: this.l10n.getConstant('NoOutline') },
+                    { id: '2', text: this.l10n.getConstant('XSmall') },
+                    { id: '3', text: this.l10n.getConstant('Small') },
+                    { id: '4', text: this.l10n.getConstant('Medium') },
+                    { id: '5', text: this.l10n.getConstant('Large') },
+                    { id: '6', text: this.l10n.getConstant('XLarge') }
+                ];
+            }
             const strokeWidthBtn: HTMLElement = document.getElementById(id + '_borderWidthBtn');
             const spanElem: HTMLElement = document.createElement('span');
             spanElem.innerHTML = this.l10n.getConstant('XSmall');
@@ -2009,7 +2018,12 @@ export class ToolbarModule {
         }
         const args: ToolbarEventArgs = {toolbarType: 'text', toolbarItems: this.defToolbarItems };
         parent.trigger('toolbarUpdating', args);
-        this.defToolbarItems = args.toolbarItems as ItemModel[];
+        if (this.isToolbarString(args.toolbarItems)) {
+            items = args.toolbarItems;
+            this.excludeItems(args.toolbarItems);
+        } else {
+            this.defToolbarItems = args.toolbarItems as ItemModel[];
+        }
         const toolbar: Toolbar = new Toolbar({
             width: '100%',
             items: this.defToolbarItems,
@@ -2470,7 +2484,8 @@ export class ToolbarModule {
                 template: '<button id="' + id + '_penColorBtn"></button>' });
         }
         if (items.indexOf('strokeWidth') > -1) {
-            toolbarItems.push({ prefixIcon: 'e-icons e-copy', cssClass: 'top-icon e-size',
+            toolbarItems.push({ prefixIcon: 'e-icons e-copy', id: id + '_pen_strokewidth',
+                cssClass: 'top-icon e-size',
                 tooltipText: this.l10n.getConstant('StrokeWidth'),
                 align: 'Center', type: 'Input', template: '<button id="' + id + '_penStrokeWidth"></button>' });
         }
@@ -2505,7 +2520,12 @@ export class ToolbarModule {
         }
         const args: ToolbarEventArgs = {toolbarType: 'pen', toolbarItems: this.defToolbarItems };
         parent.trigger('toolbarUpdating', args);
-        this.defToolbarItems = args.toolbarItems as ItemModel[];
+        if (this.isToolbarString(args.toolbarItems)) {
+            items = args.toolbarItems;
+            this.excludeItems(args.toolbarItems);
+        } else {
+            this.defToolbarItems = args.toolbarItems as ItemModel[];
+        }
         const toolbar: Toolbar = new Toolbar({
             width: '100%',
             items: this.defToolbarItems,
@@ -3577,6 +3597,7 @@ export class ToolbarModule {
             const pathObject: Object = {isNewPath: null }; let ctx: CanvasRenderingContext2D;
             parent.notify('draw', {prop: 'getNewPath', value: {obj: pathObject}});
             const type: string = args.item.id.replace(id + '_', '').toLowerCase();
+            let left: HTMLElement; let right: HTMLElement;
             switch (type) {
             case 'duplicate':
                 if (!parent.element.querySelector('#' + id + '_duplicate').classList.contains('e-disabled')) {
@@ -3624,8 +3645,10 @@ export class ToolbarModule {
                 break;
             case 'rotleft':
             case 'rotright':
-                if (!parent.element.querySelector('#' + id + '_rotLeft').classList.contains('e-disabled') ||
-                    !parent.element.querySelector('#' + id + '_rotRight').classList.contains('e-disabled')) {
+                left = parent.element.querySelector('#' + id + '_rotLeft');
+                right = parent.element.querySelector('#' + id + '_rotRight');
+                if ((left && !left.classList.contains('e-disabled')) ||
+                    (right && !right.classList.contains('e-disabled'))) {
                     parent.rotateImage(args.item.id.replace(id + '_', '').toLowerCase());
                 }
                 break;
@@ -4671,6 +4694,66 @@ export class ToolbarModule {
         parent.activeObj.shapeFlip = parent.transform.currFlipState;
         parent.activeObj.textFlip = parent.transform.currFlipState;
         parent.activeObj.flipObjColl = [];
+    }
+
+    private isToolbarString(items: (string | ItemModel)[]): boolean {
+        let isString: boolean = false;
+        for (let i: number = 0; i < items.length; i++) {
+            if (typeof(items[i as number]) === 'string') {
+                isString = true;
+                break;
+            }
+        }
+        return isString;
+    }
+
+    private excludeItems(items: (string | ItemModel)[]): void {
+        const indexArr: number[] = [];
+        for (let i: number = 0; i < items.length; i++) {
+            const index: number = this.getIndex(items[i as number]);
+            if (index !== -1) {
+                indexArr.push(index);
+            }
+        }
+        const negativeIndexArr: number[] = [];
+        for (let i: number = 0; i < this.defToolbarItems.length; i++) {
+            if (this.defToolbarItems[i as number].align === 'Center' && !this.isSameIndex(indexArr, i) &&
+            this.defToolbarItems[i as number].id !== this.parent.element.id + '_' + 'annotation') {
+                negativeIndexArr.push(i);
+            }
+        }
+        for (let i: number = negativeIndexArr.length - 1; i >= 0; i--) {
+            this.defToolbarItems.splice(negativeIndexArr[i as number], 1);
+        }
+    }
+
+    private isSameIndex(indexArr: number[], index: number): boolean {
+        for (let i: number = 0; i < indexArr.length; i++) {
+            if (indexArr[i as number] === index) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private getIndex(item: string | ItemModel): number {
+        let index: number = -1; let isFontColor: boolean = false;
+        if (item === 'rotateLeft') {item = 'rotLeft'; }
+        if (item === 'rotateRight') {item = 'rotRight'; }
+        if (item === 'horizontalFlip') {item = 'hflip'; }
+        if (item === 'verticalFlip') {item = 'vflip'; }
+        if (item === 'arrowStart') {item = 'start'; }
+        if (item === 'arrowEnd') {item = 'end'; }
+        if (item === 'fontColor') {item = 'strokeColor'; isFontColor = true; }
+        for (let i: number = 0; i < this.defToolbarItems.length; i++) {
+            const id: string = this.defToolbarItems[i as number].id;
+            if (id && id.toLowerCase().indexOf((item as string).toLowerCase()) !== -1) {
+                index = i;
+                break;
+            }
+        }
+        if (isFontColor) {item = 'fontColor'; }
+        return index;
     }
 
     public getModuleName(): string {

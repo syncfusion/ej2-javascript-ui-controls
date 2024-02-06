@@ -414,3 +414,41 @@ describe('829581 -  Underline and strikethrough toolbars are not highlighted pro
         expect(format.strikethrough).toEqual(true);
     });
 });
+
+
+describe('861659 - Format toolbar name is blank in overview/Online HTML editor tab Case 1', () => {
+    let innervalue = '<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to cre<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="snow.jpg" width="auto" height="auto" style="min-width: 0px; min-height: 0px;"> ate and edit content and return the valid of the content</p>';
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let parentDiv: HTMLDivElement;
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+        parentDiv = document.getElementById('divElement') as HTMLDivElement;
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    // When the cursor is placed after the image and the getNodeCollection should return only the text node.
+    it('Should not traverse over entire dom and should provide only one text node as output', () => {
+        let node: Node = document.querySelector('p');
+        domSelection.setSelectionText(document, node, node, 2, 2);
+        let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p'], ['8pt'], ['arial,sans-serif']);
+        const selection: NodeSelection = new NodeSelection();
+        expect(selection.getNodeCollection(window.getSelection().getRangeAt(0))[0]).toEqual(node.childNodes[2]);
+        expect(format.formats).toEqual("p");
+    });
+    // When the cursor is placed after the image and the getNodeCollection should return only the text node.
+    it('Case 2 Should not traverse over entire dom and should provide only one text node as output', () => {
+        innervalue = '<p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" style="border: 0px; vertical-align: bottom; cursor: pointer; display: inline-block; float: none; margin: auto; position: relative; padding: 1px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); width: 300px;"> <br></p>';
+        divElement.innerHTML = innervalue;
+        let node: Node = document.querySelector('p');
+        domSelection.setSelectionText(document, node, node, 1, 1);
+        let format: IToolbarStatus = ToolbarStatus.get(document, parentDiv, ['p'], ['8pt'], ['arial,sans-serif']);
+        const selection: NodeSelection = new NodeSelection();
+        expect(selection.getNodeCollection(window.getSelection().getRangeAt(0))[0]).toEqual(node.childNodes[1]);
+        expect(format.formats).toEqual("p");
+    });
+});

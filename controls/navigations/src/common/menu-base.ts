@@ -906,7 +906,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         }
                         closeArgs = { element: ul, parentItem: item, items: items };
                         this.trigger('onClose', closeArgs); this.navIdx.pop();
-                        if (this.navIdx.length === 0) { this.showSubMenu = false; }
+                        if (this.navIdx.length === 0 && e && e.type === 'keyup') { this.showSubMenu = false; }
                         if (!this.isMenu) {
                             EventHandler.remove(ul, 'keydown', this.keyHandler);
                             if (this.keyType === 'right') {

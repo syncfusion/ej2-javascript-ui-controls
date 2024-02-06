@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 24.2.4 (2024-02-06)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I545563` - On demand date formatting will now be applied properly in the pivot table.
+- `#I540803` - The pivot table will now be properly rendered while changing the width of the first column with virtualization enabled.
+- `#I547664` - The pivot table will now be properly exported as an excel document via the server-side engine.
+- `#I548392` - Aggregated values will now be displayed correctly in the OLAP pivot table.
+
 ## 24.2.3 (2024-01-31)
 
 ### PivotTable

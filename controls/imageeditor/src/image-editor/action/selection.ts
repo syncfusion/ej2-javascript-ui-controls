@@ -47,6 +47,7 @@ export class Selection {
     private isImageClarity: boolean = true;
     private isPinching: boolean = false;
     private isSliding: boolean = false;
+    private mouseDown: string = '';
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -320,6 +321,7 @@ export class Selection {
         this.isFhdCustomized = false; this.touchEndPoint = {} as Point; this.panDown = null; this.isSliding = false;
         this.isFhdEditing = false; this.pathAdjustedIndex = null; this.touchTime = 0; this.isImageClarity = true;
         this.currentDrawingShape = ''; this.initialPrevObj = {} as CurrentObject; this.resizedElement = '';
+        this.mouseDown = '';
     }
 
     private performTabAction(): void {
@@ -2482,6 +2484,8 @@ export class Selection {
 
     private mouseDownEventHandler(e: MouseEvent & TouchEvent): void {
         const parent: ImageEditor = this.parent;
+        this.mouseDown = e.currentTarget === parent.lowerCanvas || e.currentTarget === parent.upperCanvas ?
+            'canvas' : '';
         if (e.type === 'touchstart') {
             this.isTouch = true;
         } else {
@@ -2883,8 +2887,11 @@ export class Selection {
             !parent.element.querySelector('#' + id + '_contextualToolbar').parentElement.classList.contains('e-hide')) ||
             (parent.element.querySelector('#' + id + '_headWrapper')
             && !parent.element.querySelector('#' + id + '_headWrapper').parentElement.classList.contains('e-hide')))) {
-                return;
-            }
+            return;
+        } else if (e.currentTarget === document && this.mouseDown === '') {
+            e.stopImmediatePropagation();
+            return;
+        }
         if (e.type === 'touchstart') {
             this.isTouch = false;
         } else if (e.type === 'touchend') {
@@ -3106,7 +3113,7 @@ export class Selection {
             parent.notify('freehand-draw', { prop: 'freehandUpHandler', onPropertyChange: false,
                 value: {e: e, canvas: parent.upperCanvas, context: this.upperContext} });
         } else {parent.currObjType.shape = ''; }
-        this.dragElement = '';
+        this.dragElement = ''; this.mouseDown = '';
         parent.currObjType.isInitialLine = parent.currObjType.isDragging = false;
         this.selMouseUpEvent();
     }

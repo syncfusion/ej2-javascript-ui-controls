@@ -568,6 +568,10 @@ export class RevisionCollection {
         let selection: Selection = this.owner.selection;
         let startPos: TextPosition = selection.start;
         let endPos: TextPosition = selection.end;
+        let revisionCollec: Revision[] = changes ? changes : this.changes;
+        if (revisionCollec.length <= 0) {
+            return;
+        }
         if (!selection.start.isExistBefore(selection.end)) {
             startPos = selection.end;
             endPos = selection.start;
@@ -579,7 +583,6 @@ export class RevisionCollection {
         } else {
             this.owner.editor.initComplexHistory('Reject All');
         }
-        let revisionCollec: Revision[] = changes ? changes : this.changes;
         while (revisionCollec.length > 0) {
             if (isfromAcceptAll) {
                 revisionCollec[0].accept();

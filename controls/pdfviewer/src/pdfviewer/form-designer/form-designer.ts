@@ -1401,7 +1401,7 @@ export class FormDesigner {
         }
         this.updateSignInitialFieldProperties(signatureField, signatureField.isInitialField, this.pdfViewer.isFormDesignerToolbarVisible, this.isSetFormFieldMode);
         if (!isNullOrUndefined(signatureField.tooltip) && signatureField.tooltip != "") {
-            this.setToolTip(signatureField.tooltip, element);
+            this.setToolTip(signatureField.tooltip, element.firstElementChild);
         }
         this.updateSignatureFieldProperties(signatureField, element, isPrint);
         return element;
@@ -1528,7 +1528,7 @@ export class FormDesigner {
         select.selectedIndex = !isNullOrUndefined((drawingObject as any).selectedIndex) ? (drawingObject as any).selectedIndex : 0;
         element.appendChild(select);
         if (!isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip != "") {
-            this.setToolTip(drawingObject.tooltip, element);
+            this.setToolTip(drawingObject.tooltip, element.firstElementChild);
         }
         return element;
     }
@@ -1573,7 +1573,7 @@ export class FormDesigner {
         }
         element.appendChild(select);
         if (!isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip != "") {
-            this.setToolTip(drawingObject.tooltip, element);
+            this.setToolTip(drawingObject.tooltip, element.firstElementChild);
         }
         return element;
     }
@@ -1780,8 +1780,12 @@ export class FormDesigner {
         if (!isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip != "") {
             if (formFieldAnnotationType === 'RadioButton')
                 this.setToolTip(drawingObject.tooltip, labelElement);
-            else
-                this.setToolTip(drawingObject.tooltip, element);
+            else if (formFieldAnnotationType === 'Textbox') {
+                this.setToolTip(drawingObject.tooltip, element.firstElementChild);
+            }
+            else if (formFieldAnnotationType === 'Checkbox') {
+                this.setToolTip(drawingObject.tooltip, element.firstElementChild.lastElementChild);
+            }
         }
         this.isDrawHelper = false;
         return element;
@@ -3792,8 +3796,9 @@ export class FormDesigner {
         let background = obj.backgroundColor ? obj.backgroundColor : '#FFE48559';
         background = this.getSignatureBackground(background);
         inputElement.style.backgroundColor = isPrint ? 'transparent' : background;
+        inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
         if (obj.isReadonly) {
-            (inputElement as HTMLInputElement).disabled = true;
+            (inputElement.firstElementChild as HTMLInputElement).disabled = true;
             inputElement.style.cursor = 'default';
             inputElement.style.backgroundColor = 'transparent';
         }
@@ -5291,7 +5296,7 @@ export class FormDesigner {
         }
         (this.pdfViewer.nameTable as any)[selectedItem.id.split('_')[0]].tooltip = this.formFieldTooltip.value;
         if (!isNullOrUndefined(this.formFieldTooltip.value) && this.formFieldTooltip.value !== '') {
-            this.setToolTip(this.formFieldTooltip.value, selectedItem.formFieldAnnotationType == "RadioButton" || selectedItem.formFieldAnnotationType == "DropdownList" ? (element as any).parentElement : element);
+            this.setToolTip(this.formFieldTooltip.value, selectedItem.formFieldAnnotationType == "RadioButton" ? (element as any).parentElement : element);
         }
         if (isToolTipChanged) {
             this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');

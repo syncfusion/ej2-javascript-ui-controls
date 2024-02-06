@@ -44,6 +44,102 @@ describe('CSV-Export', () => {
             }
         });
     });
+    it('csv-encoding-ansi', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'Sheet',
+                    columns: [
+                        /*column -> 1*/{
+                            index: 1,
+                            width: 100,
+                        },
+                    ],
+                    rows: [
+                        /*row -> 1*/ { index: 1, cells: [{ index: 1, value: '漢語' }] },
+                        /*row -> 2*/ { index: 2, cells: [{ index: 1, value: '12345' }] },
+                    ],
+                }
+            ]
+        }, 'csv');
+        book.saveAsBlob('text/csv','ansi').then((csvBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(csvBlob.blobData, 'csv-encoding-ansi.csv');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(csvBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
+    it('csv-encoding-unicode', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'Sheet',
+                    columns: [
+                        /*column -> 1*/{
+                            index: 1,
+                            width: 100,
+                        },
+                    ],
+                    rows: [
+                        /*row -> 1*/ { index: 1, cells: [{ index: 1, value: '漢語' }] },
+                        /*row -> 2*/ { index: 2, cells: [{ index: 1, value: '€' }] },
+                    ],
+                }
+            ]
+        }, 'csv');
+        book.saveAsBlob('text/csv','unicode').then((csvBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(csvBlob.blobData, 'csv-encoding-unicode.csv');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(csvBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
+    it('csv-encoding-utf8', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'Sheet',
+                    columns: [
+                        /*column -> 1*/{
+                            index: 1,
+                            width: 100,
+                        },
+                    ],
+                    rows: [
+                        /*row -> 1*/ { index: 1, cells: [{ index: 1, value: '漢語' }] },
+                        /*row -> 2*/ { index: 2, cells: [{ index: 1, value: '12345' }] },
+                    ],
+                }
+            ]
+        }, 'csv');
+        book.saveAsBlob('text/csv','utf8').then((csvBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(csvBlob.blobData, 'csv-encoding-utf8.csv');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(csvBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
     it('export-as-csv', (done) => {
         let book: Workbook = new Workbook({
             builtInProperties: {

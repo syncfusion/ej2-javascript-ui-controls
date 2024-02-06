@@ -388,6 +388,9 @@ export class TrackChangesPane {
             }
             currentChangeView.layoutElementText(revision.range, changesDiv);
         }
+        if (revision.range.length === 0) {
+            this.owner.revisions.remove(revision);
+        }
     }
     public updateTrackChanges(show?: boolean): void {
         if (show || isNullOrUndefined(show)) {

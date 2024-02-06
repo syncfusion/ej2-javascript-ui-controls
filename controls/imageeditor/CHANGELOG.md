@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 24.2.4 (2024-02-06)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "Undo redo not proper with annotations and frame" has been resolved.
+
+- The issue with "Toolbar updating event argument values are not updated properly" has been resolved.
+
+- The issue with "Text area is unable to deselect while placing an external text area with Image Editor" has been resolved.
+
 ## 24.1.46 (2024-01-17)
 
 ### Image Editor

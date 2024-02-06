@@ -652,7 +652,7 @@ export class GanttChart {
      */
     private ganttChartMove(e: PointerEvent): void {
         if (this.parent.editSettings.allowTaskbarEditing) {
-            if (this.parent.element.getElementsByClassName('e-clone-taskbar').length > 0) {
+            if (this.parent.element.getElementsByClassName('e-clone-taskbar').length > 0 && !this.parent.enableRtl) {
                 let xValue: number;
                 if (e.type === 'touchmove' || e.type === 'touchstart' || e.type === 'touchend') {
                     xValue = e['changedTouches'][0].pageX;

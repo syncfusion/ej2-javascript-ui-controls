@@ -1342,3 +1342,69 @@ describe('Selection issue with large annotation content', () => {
     });
 
 })
+describe('Annotation Alignment Issue in virtualisation', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramAnnotationVirtualisationIssue' });
+        document.body.appendChild(ele);
+
+        let shape: BasicShapeModel = { type: 'Basic', shape: 'Rectangle', cornerRadius: 10 };
+        let node1: NodeModel = {
+            id: 'NewIdea', width: 150, height: 60, offsetX: 300, offsetY: 60,
+            shape: { type: 'Flow', shape: 'Terminator' },
+            annotations: [{
+                id: 'label1', content: 'New idea identified',verticalAlignment: "Bottom",horizontalAlignment: "Center"
+            }]
+        };
+      
+        let node2: NodeModel = {
+            id: 'node2', width: 150, height: 60, offsetX: 300, offsetY: 160,
+            shape: { type: 'Flow', shape: 'Terminator' },
+            annotations: [{
+                id: 'label2', content: 'Node 2',
+            }]
+        };
+        diagram = new Diagram({ width: 1000, height: 1000, nodes: [node1, node2], mode: 'SVG',constraints: DiagramConstraints.Default|DiagramConstraints.Virtualization });
+        diagram.appendTo('#diagramAnnotationVirtualisationIssue');
+        
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Testing Annotation alignment in initial rendering', (done: Function) => {
+        expect(diagram.nodes[0].annotations[0].horizontalAlignment == "Center").toBe(true);
+        expect(diagram.nodes[0].annotations[0].verticalAlignment == "Bottom").toBe(true);
+        expect(Math.round(diagram.nodes[0].wrapper.children[1].bounds.x) == 248).toBe(true);
+        expect(Math.round(diagram.nodes[0].wrapper.children[1].bounds.y) == 46).toBe(true);
+        expect(diagram.nodes[1].annotations[0].horizontalAlignment == "Center").toBe(true);
+        expect(diagram.nodes[1].annotations[0].verticalAlignment == "Center").toBe(true);
+        expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.x) == 279).toBe(true);
+        expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.y) == 153).toBe(true);
+        done();
+    });
+    it('Testing Annotation alignment update at run time and save and load', (done: Function) => {
+        diagram.nodes[1].annotations[0].horizontalAlignment = "Center";
+        diagram.nodes[1].annotations[0].verticalAlignment = "Bottom";        
+        diagram.dataBind();
+        expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.x) == 279).toBe(true);
+        expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.y) == 146).toBe(true);
+        let savedata: string;
+        savedata = diagram.saveDiagram();
+        diagram.loadDiagram(savedata);
+        expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.x) == 279).toBe(true);
+        expect(Math.round(diagram.nodes[1].wrapper.children[1].bounds.y) == 146).toBe(true);
+        done();
+    });
+
+});

@@ -9734,10 +9734,13 @@ export class PdfViewerBase {
                 else {
                     let resultData: string = this.pdfViewer.pdfRendererModule.exportAnnotation(jsonObject, isObject);
                     if (isObject) {
-                        let annotData: any = proxy.exportAnnotationFileDownload(resultData, proxy, annotationDataFormat, jsonObject, isObject, isBase64String);
-                        resolve(annotData);
+                        proxy.exportAnnotationFileDownload(resultData, proxy, annotationDataFormat, jsonObject, isObject, isBase64String).then(function (annotData) {
+                            resolve(annotData);
+                        });
                     } else {
-                        proxy.exportAnnotationFileDownload(resultData, proxy, annotationDataFormat, jsonObject, isObject, isBase64String)
+                        proxy.exportAnnotationFileDownload(resultData, proxy, annotationDataFormat, jsonObject, isObject, isBase64String).then(function (annotData) {
+                            resolve(annotData);
+                        });
                     }
                 }
                 // eslint-disable-next-line
@@ -9748,10 +9751,13 @@ export class PdfViewerBase {
                     if (!redirect) {
                         if (data) {
                             if (isObject) {
-                                let annotData: any = proxy.exportAnnotationFileDownload(data, proxy, annotationDataFormat, jsonObject, isObject, isBase64String);
-                                resolve(annotData);
+                                proxy.exportAnnotationFileDownload(data, proxy, annotationDataFormat, jsonObject, isObject, isBase64String).then(function (annotData) {
+                                    resolve(annotData);
+                                });
                             } else {
-                                proxy.exportAnnotationFileDownload(data, proxy, annotationDataFormat, jsonObject, isObject, isBase64String)
+                                proxy.exportAnnotationFileDownload(data, proxy, annotationDataFormat, jsonObject, isObject, isBase64String).then(function (annotData) {
+                                    resolve(annotData);
+                                });
                             }
                         } else {
                             let fileName: string;

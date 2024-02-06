@@ -857,7 +857,7 @@ export class CartesianAxisLayoutPanel {
         if (isLabelInside) {
             labelPadding = !isLabelOnAxisLineLeft ? -padding : padding;
         } else {
-            labelPadding = !isLabelOnAxisLineLeft ? -padding + scrollBarHeight : padding + scrollBarHeight;
+            labelPadding = !isLabelOnAxisLineLeft ? -padding + (chart.enableRtl ? -scrollBarHeight : scrollBarHeight) : padding + (chart.enableRtl ? -scrollBarHeight : scrollBarHeight);
         }
         const sizeWidth: number[] = []; const breakLabelSizeWidth: number[] = [];
         axis.visibleLabels.map(item => {

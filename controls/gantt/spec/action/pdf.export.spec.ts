@@ -792,3 +792,85 @@ describe('Gantt PDF Export with holiday label', () => {
         ganttObj.pdfExport(exportProperties);
     });
 }); 
+describe('Gantt PDF Export with Long text to taskname', () => {
+    Gantt.Inject(Toolbar, PdfExport);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource:  [
+                    {
+                        TaskID: 1,
+                        TaskName:"Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+                            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                            Indicators: [
+                                {
+                                    'date': '04/10/2019',
+                                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                    'name': 'Indicator title',
+                                    'tooltip': 'tooltip'
+                                }
+                            ] 
+                        },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+                        ]
+                    }],
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 20,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                columns: [
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                eventMarkers: [
+                    {
+                        day: '04/02/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                treeColumnIndex: 0,
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with long text', () => {
+        ganttObj.pdfExport();
+    });
+}); 

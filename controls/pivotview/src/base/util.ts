@@ -1016,7 +1016,7 @@ export class PivotUtil {
      * @returns {void}
      * @hidden
      */
-     public static renderOlapEngine(pivot: PivotView | PivotFieldList, customProperties?: IOlapCustomProperties): void {
+    public static renderOlapEngine(pivot: PivotView | PivotFieldList, customProperties?: IOlapCustomProperties): void {
         try {
             pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties ? customProperties :
                 (pivot as PivotFieldList).frameCustomProperties(pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList), // eslint-disable-next-line

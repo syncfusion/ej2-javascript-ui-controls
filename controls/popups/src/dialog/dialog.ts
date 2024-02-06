@@ -2213,7 +2213,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         const left: number = this.element.offsetLeft;
         /* eslint-enable */
         if (args) {
-            this.element.style.top = document.scrollingElement.scrollTop + 'px';
+            if (!this.isModal) {
+                this.element.style.top = document.scrollingElement.scrollTop + 'px';
+            }
             addClass([this.element], FULLSCREEN);
             const display: string = this.element.style.display;
             this.element.style.display = 'none';

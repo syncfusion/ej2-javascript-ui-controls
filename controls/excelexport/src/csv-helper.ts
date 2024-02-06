@@ -1,4 +1,5 @@
 import { ValueFormatter } from './value-formatter';
+import {Encoding} from '@syncfusion/ej2-file-utils';
 /**
  * CsvHelper class
  * @private
@@ -64,6 +65,7 @@ export class CsvHelper {
             }
 
         }
+		this.csvStr += '\r\n';
     }
     /* tslint:disable:no-any */
     private parseRow(row: any): void {
@@ -168,7 +170,31 @@ export class CsvHelper {
         }
     }
 
-    public saveAsBlob(): Blob {
-        return new Blob(['\ufeff' + this.csvStr], { type: 'text/csv;charset=UTF-8' });
+    /**
+    * Returns a Blob object containing CSV data with optional encoding.
+    * @param {string} [encodingType] - The supported encoding types are "ansi", "unicode" and "utf8".
+    */
+    /* tslint:disable:no-any */
+    public saveAsBlob(encodingType?: string): Blob {
+        if (encodingType != undefined) {
+            let encoding: Encoding = new Encoding();
+            let encodeString = 'UTF-8';
+            if (encodingType.toUpperCase() == "ANSI") {
+                encoding.type = 'Ansi';
+                encodeString = 'ANSI';
+            }
+            else if (encodingType.toUpperCase() == "UNICODE") {
+                encoding.type = 'Unicode';
+                encodeString = 'UNICODE';
+            }
+            else {
+                encoding.type = 'Utf8';
+                encodeString = 'UTF-8';
+            }
+            let buffer = encoding.getBytes(this.csvStr, 0, this.csvStr.length);
+            return new Blob([buffer], { type: 'text/csv;charset=' + encodeString});
+        }
+        else
+            return new Blob(['\ufeff' + this.csvStr], { type: 'text/csv;charset=UTF-8' });
     }
 }

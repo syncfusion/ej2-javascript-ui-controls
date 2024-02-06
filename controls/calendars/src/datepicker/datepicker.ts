@@ -1037,8 +1037,6 @@ export class DatePicker extends Calendar implements IInput {
                 this.inputElement.focus();
             }
             break;
-        case 'tab':
-            this.hide(e);
         }
     }
     private inputFocusHandler(): void {
@@ -1207,7 +1205,13 @@ export class DatePicker extends Calendar implements IInput {
                 this.inputElement.selectionStart = start ;
                 this.inputElement.selectionEnd = end;
             }
-            this.hide(e);
+            if(e.action === 'tab' && e.target === this.inputElement && this.isCalendar() && document.activeElement === this.inputElement) {
+                e.preventDefault();
+                this.headerTitleElement.focus();
+            }
+            if(e.action === 'shiftTab' && e.target === this.inputElement && this.isCalendar() && document.activeElement === this.inputElement) {
+                this.hide(e);
+            }
             break;
         }
         default:

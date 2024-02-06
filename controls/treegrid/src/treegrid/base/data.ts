@@ -810,7 +810,7 @@ export class DataManipulation {
                    isPrinting: boolean, exportType: string, args: Object): BeforeDataBoundArgs {
         if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')
      && (!isPrinting || this.parent.printMode === 'CurrentPage'))  {
-            this.parent.notify(events.pagingActions, {result: results, count: count});
+            this.parent.notify(events.pagingActions, {result: results, count: count, actionArgs: args});
             results = <ITreeData[]>this.dataResults.result;
             count = isCountRequired(this.parent) ? getValue('count', this.parent.dataSource)
                 : this.dataResults.count;

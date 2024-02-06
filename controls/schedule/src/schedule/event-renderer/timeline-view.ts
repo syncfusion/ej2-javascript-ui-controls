@@ -225,8 +225,11 @@ export class TimelineEvent extends MonthEvent {
                             this.slotCount / this.interval;
                         for (let k: number = 0; k < slotCount; k++) {
                             startDate = (k === 0) ? new Date(startDate.getTime()) : new Date(startDate.getTime() + (60000 * interval));
+                            if (slotCount < 1) {
+                                startDate = this.adjustToNearestTimeSlot(startDate, interval);
+                            }
                             endDate = new Date(startDate.getTime() + (60000 * interval));
-                            if (endDate.getTime() > endTime.getTime()) {
+                            if (slotCount >= 1 && endDate.getTime() > endTime.getTime()) {
                                 break;
                             }
                             const position: number = this.getPosition(startDate, endDate, false, (this.day + i));
@@ -241,6 +244,25 @@ export class TimelineEvent extends MonthEvent {
             }
         }
         this.parent.renderTemplates();
+    }
+
+    private adjustToNearestTimeSlot(inputTime: Date, interval: number): Date {
+        // Parse the input time
+        const parsedTime: Date = new Date(inputTime);
+
+        // Get the minutes of the input time in milliseconds
+        const minutesInMilliseconds: number = parsedTime.getHours() * 60 * 60 * 1000 + parsedTime.getMinutes() * 60 * 1000;
+
+        // Calculate the adjusted time in milliseconds (nearest time slot)
+        const adjustedMinutesInMilliseconds: number = Math.floor(minutesInMilliseconds / (interval * 60 * 1000)) * (interval * 60 * 1000);
+
+        // Create a new Date object with the adjusted time
+        const adjustedTime: Date = new Date(parsedTime.getTime());
+        adjustedTime.setHours(adjustedMinutesInMilliseconds / (60 * 60 * 1000) % 24);
+        adjustedTime.setMinutes((adjustedMinutesInMilliseconds % (60 * 60 * 1000)) / (60 * 1000));
+
+        // Return the adjusted time in string format
+        return adjustedTime;
     }
 
     private renderTimelineMoreIndicator(startTime: Date, startDate: Date, endDate: Date, appHeight: number, interval: number, resIndex: number, appointmentsList: Record<string, any>[], top: number, appLeft: number, appRight: number, cellTd: HTMLElement, moreIndicator: HTMLElement, appPos: number, position: number): void {
@@ -263,8 +285,8 @@ export class TimelineEvent extends MonthEvent {
             appHeight = this.withIndicator ? appArea - EVENT_GAP : appHeight;
             const renderedAppCount: number = Math.floor(appArea / (appHeight + EVENT_GAP));
             const count: number = this.parent.activeViewOptions.maxEventsPerRow && !this.parent.eventSettings.enableIndicator
-            ? filterEvents.length - this.parent.activeViewOptions.maxEventsPerRow : (filterEvents.length - renderedAppCount) <= 0 ? 1
-                : filterEvents.length - renderedAppCount;            
+                ? filterEvents.length - this.parent.activeViewOptions.maxEventsPerRow : (filterEvents.length - renderedAppCount) <= 0 ? 1
+                    : filterEvents.length - renderedAppCount;
             let moreIndicatorElement: HTMLElement;
             if (this.renderType === 'day') {
                 moreIndicatorElement = this.getMoreIndicatorElement(count, startDate, endDate);
@@ -303,8 +325,9 @@ export class TimelineEvent extends MonthEvent {
 
     private adjustAppointments(conWidth: number): void {
         const tr: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr');
-        this.cellWidth = this.workCells[0].getBoundingClientRect().width;
-        const currentPercentage: number = (this.cellWidth * tr.children.length) / (conWidth / 100);
+        const actualCellWidth: number = this.workCells[0].getBoundingClientRect().width;
+        this.cellWidth = actualCellWidth / +(this.workCells[0].getAttribute('colspan') || 1);
+        const currentPercentage: number = (actualCellWidth * tr.children.length) / (conWidth / 100);
         const apps: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
         apps.forEach((app: HTMLElement) => {
             if (this.parent.enableRtl && app.style.right !== '0px') {

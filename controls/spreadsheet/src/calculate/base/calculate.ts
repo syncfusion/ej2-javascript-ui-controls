@@ -3384,6 +3384,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     argArr[k as number] = '1';
                 }
                 value = this.getValueFromArg(argArr[k as number].split(this.tic).join(''));
+                if (this.getErrorStrings().indexOf(value) > -1) {
+                    return value;
+                }
                 avgVal = avgVal + this.parseFloat(value);
                 countNum = countNum + 1;
             }

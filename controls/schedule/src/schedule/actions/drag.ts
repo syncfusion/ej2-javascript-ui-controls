@@ -1040,12 +1040,19 @@ export class DragAndDrop extends ActionBase {
         if (this.isStepDragging) {
             const widthDiff: number = this.getWidthDiff(tr, index);
             if (widthDiff !== 0) {
-                const timeDiff: number = Math.round(widthDiff / this.widthPerMinute);
+                let timeDiff: number = Math.ceil(widthDiff / this.widthPerMinute);
                 eventStart.setMinutes(eventStart.getMinutes() + (timeDiff * this.actionObj.interval));
                 if (this.isCursorAhead || cursorDrag) {
                     eventStart.setMilliseconds(-(eventDuration));
                 } else {
                     eventStart.setMinutes(eventStart.getMinutes() - this.minDiff);
+                    const intervalInMS: number = this.actionObj.interval * util.MS_PER_MINUTE;
+                    timeDiff = Math.abs(eventStart.getTime() - this.actionObj.start.getTime()) / intervalInMS;
+                    const roundTimeDiff: number = Math.trunc(timeDiff);
+                    if (roundTimeDiff !== timeDiff) {
+                        timeDiff = (roundTimeDiff * intervalInMS) * (eventStart > this.actionObj.start ? 1 : -1);
+                        eventStart = new Date(this.actionObj.start.getTime() + timeDiff);
+                    }
                 }
             } else {
                 eventStart = this.actionObj.start;
@@ -1063,7 +1070,9 @@ export class DragAndDrop extends ActionBase {
                     (this.cursorPointIndex * (this.isTimelineDayProcess ? MINUTES_PER_DAY : this.actionObj.slotInterval)));
             }
         }
-        eventStart = this.calculateIntervalTime(eventStart);
+        if (!this.isStepDragging) {
+            eventStart = this.calculateIntervalTime(eventStart);
+        }
         if (this.isTimelineDayProcess) {
             const eventSrt: Date = eventObj[this.parent.eventFields.startTime] as Date;
             eventStart.setHours(eventSrt.getHours(), eventSrt.getMinutes(), eventSrt.getSeconds());

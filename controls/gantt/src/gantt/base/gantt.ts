@@ -1678,9 +1678,6 @@ export class Gantt extends Component<HTMLElement>
         if (isNullOrUndefined(this.resourceFields.unit)) { //set resourceUnit as unit if not mapping
           this.setProperties({ resourceFields: { unit: 'unit' } }, true)
         }
-        if (!isNullOrUndefined(this.taskFields.work)) {
-            this.setProperties({ taskType: 'FixedWork' }, true)
-        }
         this.taskIds = [];
     }
     /**

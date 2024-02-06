@@ -990,7 +990,7 @@ describe('Gantt taskbar editing', () => {
             triggerMouseEvent(dragElement, 'mouseup');
         });
         it('Date time picker in dialog segment tab', () => {
-            ganttObj.openEditDialog(2);
+            ganttObj.openEditDialog(3);
             let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
             tab.selectedItem = 2;
             tab.dataBind();
@@ -4256,5 +4256,67 @@ describe('Cant able to merge the splited taskbar by resizing in split tasks samp
         triggerMouseEvent(dragElement, 'mouseup');
         var segmentElement = ganttObj.ganttChartModule.chartBodyContainer.querySelector('.e-segmented-taskbar')
         expect(isNullOrUndefined(segmentElement)).toBe(true);
+    });
+});
+describe('CR-868784-The taskbar edit action is not working in RTL mode', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Product Concept',
+                    StartDate: new Date('04/02/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                        { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3 },
+                        { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+                    ]
+                }
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            gridLines: "Both",
+            enableRtl: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            highlightWeekends: true,
+            labelSettings: {
+                taskLabel: 'Progress'
+            },
+            splitterSettings:{
+                columnIndex: 2,
+            },
+            height: '550px',
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+   it('Drag and Drop Taskbar while RTL is enabled', () => {
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft - 80, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/04/2019');
     });
 });

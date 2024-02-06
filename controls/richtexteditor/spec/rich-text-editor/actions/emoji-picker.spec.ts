@@ -3,7 +3,8 @@
  */
 import { addClass, createElement, detach } from "@syncfusion/ej2-base";
 import { dispatchEvent, RichTextEditor, ToolbarType } from "../../../src/rich-text-editor/index";
-import { destroy, setCursorPoint } from "./../render.spec";
+import { destroy, renderRTE, setCursorPoint } from "./../render.spec";
+import { EditorManager } from "../../../src";
 
 let keyboardEventArgs: any = {
     preventDefault: function () { },
@@ -1827,6 +1828,34 @@ describe('Emoji picker module', () => {
             (rteObj as any).element.querySelector(".e-rte-emojipicker-popup .e-input-group .e-clear-icon").click();
             dispatchEvent(popupObj, 'keyup');
             expect(rteObj.element.querySelector(".e-rte-emojipicker-popup .e-rte-emojiSearch-noEmoji") == null).toBe(true);
+        });
+    });
+
+    describe('850067 - "Nested List element not removed while apply the emoji', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let editorObj: EditorManager;
+        let innerHTML: string = `<ol><li>fristli<ol><li class="startContainer">second<ol><li>third<ol><li>fourth</li><li>fifth</li><li>sixth<ol><li class="endContainer">seventh</li><li>eidth<ol><li>ninth</li></ol></li></ol></li></ol></li></ol></li></ol></li><li>secondli</li><li>third</li><li>fourth<ol><li>first</li><li>second</li><li>third<ol><li>fourth</li></ol></li></ol></li></ol>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['EmojiPicker']
+                },
+                value: innerHTML
+              });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check nested list element removed when apply the emoji', () => {
+            const startContainer: HTMLElement = document.querySelector('.startContainer');
+            const endContainer: HTMLElement = document.querySelector('.endContainer');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document,startContainer.firstChild,endContainer.firstChild,4,4);
+            const emojiEle: HTMLElement = document.querySelectorAll('.e-toolbar-item')[0] as HTMLElement;
+            emojiEle.click();
+            (document.querySelector('.e-rte-emojipickerbtn-group [title="Grinning face"]') as HTMLElement).click();
+            let innerHtml = '<ol><li>fristli<ol><li class="startContainer">seco😀<ol><li style="list-style-type: none;"><ol><li style="list-style-type: none;"><ol><li class="endContainer">nth</li><li>eidth<ol><li>ninth</li></ol></li></ol></li></ol></li></ol></li></ol></li><li>secondli</li><li>third</li><li>fourth<ol><li>first</li><li>second</li><li>third<ol><li>fourth</li></ol></li></ol></li></ol>'
+            expect(rteObj.inputElement.innerHTML == innerHtml).toBe(true); 
         });
     });
 });

@@ -2275,4 +2275,27 @@ describe('Row Drag and Drop module', () => {
             gridObj2 = null;
         });
     });
+
+    describe('EJ2-867031: Empty grid message does not display correctly when drag and drop is enabled', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    allowRowDragAndDrop: true,
+                    height: 100,
+                    columns: [
+                        { headerText: '#', field: 'OrderID', width: 10 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                }, done);
+        });
+        it('Check colspan when no records to display', () => {
+            expect(parseInt((gridObj.getContentTable().querySelector('.e-emptyrow').firstChild as HTMLElement).getAttribute('colspan'), 10)).toBe(3);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

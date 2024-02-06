@@ -8,7 +8,7 @@ import {
 } from '../base/interface';
 import { SelectionSettings } from '../base/grid';
 import { setCssInGridPopUp, getPosition, isGroupAdaptive, addRemoveActiveClasses, removeAddCboxClasses } from '../base/util';
-import { getCellsByTableName, parentsUntil } from '../base/util';
+import { getCellsByTableName, parentsUntil, getScrollBarWidth } from '../base/util';
 import * as events from '../base/constant';
 import { RenderType, CheckState } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
@@ -158,6 +158,8 @@ export class Selection implements IAction {
      */
     public autoFillRLselection: boolean = true;
     private mouseButton: number;
+    private timer1: number;
+    private timer2: number;
 
     /**
      * Constructor for the Grid selection module
@@ -1349,6 +1351,7 @@ export class Selection implements IAction {
 
     private mouseMoveHandler(e: MouseEventArgs): void {
         e.preventDefault();
+        this.stopTimer();
         const gBRect: ClientRect = this.parent.element.getBoundingClientRect();
         let x1: number = this.x;
         let y1: number = this.y;
@@ -1388,10 +1391,121 @@ export class Selection implements IAction {
                 if (td) {
                     this.startAFCell = this.startCell;
                     this.endAFCell = parentsUntil(e.target as Element, literals.rowCell);
-                    this.selectLikeExcel(e, rowIndex, parseInt(td.getAttribute(literals.dataColIndex), 10));
+                    if (rowIndex > -1) {
+                        this.selectLikeExcel(e, rowIndex, parseInt(td.getAttribute(literals.dataColIndex), 10));
+                    }
                 }
             }
         }
+        if (!e.ctrlKey && !e.shiftKey && !this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling &&
+            !this.parent.enableColumnVirtualization && !this.parent.groupSettings.columns.length && this.isCellDrag) {
+            this.updateScrollPosition(e, position, this.parent.getContent());
+        }
+    }
+
+    private updateScrollPosition(e: MouseEvent | TouchEvent, position: IPosition, scrollElem: Element): void {
+        const cliRect: ClientRect = scrollElem.getBoundingClientRect();
+        if (cliRect.left >= position.x - 20) {
+            this.timer1 = window.setInterval(
+                () => { this.setScrollPosition(scrollElem.firstElementChild, 'left', e); }, 200);
+        } else if (cliRect.left + scrollElem.clientWidth - 20 -
+            (this.parent.height !== 'auto' ? getScrollBarWidth() : 0) < position.x) {
+            this.timer1 = window.setInterval(
+                () => { this.setScrollPosition(scrollElem.firstElementChild, 'right', e); }, 200);
+        }
+        if (cliRect.top >= position.y - (this.parent.getRowHeight() * 0.5)) {
+            this.timer2 = window.setInterval(
+                () => { this.setScrollPosition(scrollElem.firstElementChild, 'up', e); }, 200);
+        } else if (cliRect.top + scrollElem.clientHeight - (this.parent.getRowHeight() * 0.5) -
+            (scrollElem.firstElementChild.scrollWidth > (scrollElem.firstElementChild as HTMLElement).offsetWidth ?
+                getScrollBarWidth() : 0) <= position.y) {
+            this.timer2 = window.setInterval(
+                () => { this.setScrollPosition(scrollElem.firstElementChild, 'down', e); }, 200);
+        }
+    }
+
+    private stopTimer(): void {
+        if (this.timer1) {
+            window.clearInterval(this.timer1);
+            this.timer1 = null;
+        }
+        if (this.timer2) {
+            window.clearInterval(this.timer2);
+            this.timer2 = null;
+        }
+        this.preventFocus = false;
+    }
+
+    private setScrollPosition(scrollElem: Element, direction: string, e?: MouseEvent | TouchEvent): void {
+        let rowIndex: number = -1; let colIndex: number = -1;
+        if (this.endAFCell || this.prevECIdxs) {
+            rowIndex = this.endAFCell ? parseInt(this.endAFCell.getAttribute('index')) : this.prevECIdxs.rowIndex;
+            colIndex = this.endAFCell ? parseInt(this.endAFCell.getAttribute('data-colindex')) : this.prevECIdxs.cellIndex;
+        }
+        switch (direction) {
+            case 'up':
+                if (e && closest(e.target as Element, '.e-headercontent'))
+                    return;
+                if (this.isAutoFillSel && this.selectedRowCellIndexes.length &&
+                    ((this.selectedRowCellIndexes.length === 1 && this.startAFCell !== this.startCell) ||
+                        (this.selectedRowCellIndexes.length > 1 && this.startAFCell.getBoundingClientRect().top > 0))) {
+                    rowIndex = parseInt(this.startAFCell.getAttribute('index'));
+                }
+                rowIndex -= 1;
+                if (this.parent.frozenRows)
+                    rowIndex += this.parent.frozenRows + 1;
+                rowIndex < 1 ? scrollElem.scrollTop = 0 : scrollElem.scrollTop -= (this.parent.getRowByIndex(rowIndex) as HTMLElement).offsetHeight;
+                break;
+            case 'down':
+                if (rowIndex < this.parent.getRows().length - 1) {
+                    rowIndex += 1;
+                    scrollElem.scrollTop += (this.parent.getRowByIndex(rowIndex) as HTMLElement).offsetHeight;
+                } else {
+                    scrollElem.scrollTop = scrollElem.scrollHeight;
+                }
+                break;
+            case 'left':
+                if (colIndex > 0 && rowIndex > -1) {
+                    if (this.isAutoFillSel && this.selectedRowCellIndexes.length &&
+                        ((this.selectedRowCellIndexes[0].cellIndexes.length > 0 && this.startAFCell !== this.startCell) ||
+                        (this.selectedRowCellIndexes[0].cellIndexes.length > 1 && this.startAFCell.getBoundingClientRect().left > 0))) {
+                        colIndex = parseInt(this.startAFCell.getAttribute('data-colindex'));
+                    }
+                    const nextEle: HTMLElement = this.findNextCell(scrollElem, direction, colIndex, rowIndex);
+                    colIndex = nextEle ? parseInt(nextEle.getAttribute('data-colindex')) : -1;
+                    colIndex < 1 ? scrollElem.scrollLeft = 0 : scrollElem.scrollLeft -= nextEle.offsetWidth;
+                }
+                break;
+            case 'right':
+                if (colIndex < this.parent.columns.length - 1) {
+                    const nextEle: HTMLElement = this.findNextCell(scrollElem, direction, colIndex, rowIndex);
+                    colIndex = nextEle ? parseInt(nextEle.getAttribute('data-colindex')) : -1;
+                    colIndex < this.parent.columns.length - 1 ? scrollElem.scrollLeft += nextEle.offsetWidth : scrollElem.scrollLeft = scrollElem.scrollWidth;
+                }
+                break;
+        }
+        if (rowIndex > -1 && colIndex > -1) {
+            let e: any = { target: this.parent.getCellFromIndex(rowIndex, colIndex) };
+            this.endAFCell = e.target;
+            this.preventFocus = true;
+            this.selectLikeExcel(e, rowIndex, colIndex);
+        }
+    }
+
+    private findNextCell(scrollElem: Element, direction: string, colInd: number, rowInd: number): HTMLElement {
+        let nextEle: HTMLElement = this.parent.getCellFromIndex(rowInd, direction === 'left' ? colInd - 1 : colInd + 1) as HTMLElement;
+        if (nextEle && nextEle.classList.contains('e-hide')) {
+            const siblingEles: NodeListOf<Element> = nextEle.closest('tr').querySelectorAll('.e-rowcell:not(.e-hide)');
+            const nextEleInd: number = Array.from(siblingEles).indexOf(nextEle.nextElementSibling);
+            if (nextEleInd > 0 && nextEleInd < siblingEles.length - 1) {
+                nextEle = (siblingEles[nextEleInd + (direction === 'left' ? -1 : 1)] as HTMLElement);
+                return nextEle;
+            } else {
+                scrollElem.scrollLeft = 0;
+                return null;
+            }
+        }
+        return nextEle;
     }
 
     private selectLikeExcel(e: MouseEvent, rowIndex: number, cellIndex: number): void {
@@ -1529,7 +1643,7 @@ export class Selection implements IAction {
             filter((ele: HTMLElement) => ele.style.display === '');
         if (cells.length && this.parent.isFrozenGrid()) {
             const strCell: string[] = ['', 'e-leftfreeze', 'e-unfreeze', 'e-leftfreeze', 'e-unfreeze', 'e-rightfreeze', 'e-rightfreeze'];
-            cells = [].slice.call(parentEle.querySelectorAll('.e-cellselectionbackground' + '.' + strCell[`${bdrStr}`])).
+            cells = [].slice.call(parentEle.querySelectorAll('.e-cellselectionbackground' + '.' + strCell[`${bdrStr}`] + ':not(.e-hide)')).
                     filter((ele: HTMLElement) => ele.style.display === '');
         }
         if (cells.length) {
@@ -1856,8 +1970,14 @@ export class Selection implements IAction {
         const sLeft: number = (this.startAFCell as HTMLElement).offsetParent.parentElement.scrollLeft;
         let scrollTop: number = sTop - (this.startAFCell as HTMLElement).offsetTop;
         let scrollLeft: number = sLeft - (this.startAFCell as HTMLElement).offsetLeft;
-        const totalHeight: number = this.parent.element.clientHeight;
-        const totalWidth: number = this.parent.element.clientWidth;
+        let totalHeight: number = this.parent.element.clientHeight - getScrollBarWidth();
+        if (this.parent.allowPaging) {
+            totalHeight -= (this.parent.element.querySelector('.e-pager') as HTMLElement).offsetHeight;
+        }
+        if (this.parent.aggregates.length) {
+            totalHeight -= (this.parent.getFooterContent() as HTMLElement).offsetHeight;
+        }
+        const totalWidth: number = this.parent.element.clientWidth - (this.parent.height !== 'auto' ? getScrollBarWidth() : 0);
         scrollTop = scrollTop > 0 ? Math.floor(scrollTop) - 1 : 0;
         scrollLeft = scrollLeft > 0 ? scrollLeft : 0;
         const left: number = stOff.left - parentRect.left;
@@ -2093,6 +2213,7 @@ export class Selection implements IAction {
     }
 
     private mouseUpHandler(e: MouseEventArgs): void {
+        this.stopTimer();
         document.body.classList.remove('e-disableuserselect');
         if (this.element && !isNullOrUndefined(this.element.parentElement)) {
             remove(this.element);
@@ -2116,6 +2237,7 @@ export class Selection implements IAction {
         this.isDragged = false;
         this.updateAutoFillPosition();
         if (this.isAutoFillSel) {
+            this.preventFocus = true;
             const lastCell: Element = parentsUntil(e.target as Element, literals.rowCell);
             this.endAFCell = lastCell ? lastCell : this.endCell === this.endAFCell ? this.startAFCell : this.endAFCell;
             this.startAFCell = this.startCell;
@@ -2129,6 +2251,10 @@ export class Selection implements IAction {
                 this.refreshFrozenBorders();
             }
             this.isAutoFillSel = false;
+            if (this.parent.aggregates.length > 0) {
+                this.parent.notify(events.refreshFooterRenderer, {});
+            }
+            this.preventFocus = false;
         }
         EventHandler.remove(this.parent.getContent(), 'mousemove', this.mouseMoveHandler);
         if (this.parent.frozenRows) {

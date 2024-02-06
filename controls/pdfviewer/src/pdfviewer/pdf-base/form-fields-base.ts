@@ -664,8 +664,8 @@ export class FormFieldsBase {
             radioButtonItem.borderColor = [radiobuttonItem.borderColor.r, radiobuttonItem.borderColor.g, radiobuttonItem.borderColor.b];
             radioButtonItem.border.width = radiobuttonItem.thickness;
             radioButtonItem.backColor = [radiobuttonItem.backgroundColor.r, radiobuttonItem.backgroundColor.g, radiobuttonItem.backgroundColor.b];
-            if (formFieldAttributes.backgroundColor.r == 0 && formFieldAttributes.backgroundColor.g == 0 && formFieldAttributes.backgroundColor.b == 0 && formFieldAttributes.backgroundColor.a == 0) {
-                radioButtonItem.backColor = [formFieldAttributes.backgroundColor.r, formFieldAttributes.backgroundColor.g, formFieldAttributes.backgroundColor.b, formFieldAttributes.backgroundColor.a];
+            if (radiobuttonItem.backgroundColor.r == 0 && radiobuttonItem.backgroundColor.g == 0 && radiobuttonItem.backgroundColor.b == 0 && radiobuttonItem.backgroundColor.a == 0) {
+                radioButtonItem.backColor = [radiobuttonItem.backgroundColor.r, radiobuttonItem.backgroundColor.g, radiobuttonItem.backgroundColor.b, radiobuttonItem.backgroundColor.a];
             }
             radioButtonItem.visibility = this.getFormFieldsVisibility(radiobuttonItem.visibility);
             field.add(radioButtonItem);

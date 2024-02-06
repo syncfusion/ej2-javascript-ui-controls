@@ -2475,3 +2475,69 @@ describe('Copy Paste the child node of group outside the group', () => {
         done();
     });
 });
+describe('867606-Perform Grouping on the existing group', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'exisitingGroup' });
+        document.body.appendChild(ele);
+
+        let nodes: any = [
+            {
+                id: 'node1', width: 50, height: 50, offsetX: 100,
+                offsetY: 100,
+            }, {
+                id: 'node2', width: 50, height: 50, offsetX: 200,
+                offsetY: 200
+            },{
+            id: 'node3', width: 50, height: 50, offsetX: 450,
+                offsetY: 150
+            },
+            { id: 'group', children: ['node1', 'node2'], rotateAngle: 45 },
+            
+        ];
+        let connectors: any = [
+            { id: 'connector1', sourcePoint: { x: 300, y: 100 }, targetPoint: { x: 300, y: 200 }}
+            
+        ]
+        diagram = new Diagram({
+            width: '500px', height: '600px', nodes: nodes, connectors: connectors
+        });
+        diagram.appendTo('#exisitingGroup');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('select nodes of a group as multiple select and perform grouping', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        expect((diagram.nodes[3] as any).children.length === 2).toBe(true);
+        expect(diagram.nodes.length === 4).toBe(true);
+        //do rubber band selection
+        mouseEvents.dragAndDropEvent(diagramCanvas, 100, 40, 210, 275);
+        diagram.group();
+        expect(diagram.nodes.length === 4).toBe(true);
+        expect((diagram.nodes[3] as any).children.length === 2).toBe(true);
+        diagram.unSelect(diagram.nodes[3]);
+        done();
+    });
+    it('select nodes and conectors of a different group as multiple select and perform grouping ', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        expect((diagram.nodes[3] as any).children.length === 2).toBe(true);
+        expect(diagram.nodes.length === 4).toBe(true);
+        //do rubber band selection
+        mouseEvents.dragAndDropEvent(diagramCanvas, 253, 80, 513, 230);
+        diagram.group();
+        expect(diagram.nodes.length === 5).toBe(true);
+        expect((diagram.nodes[3] as any).children.length === 2).toBe(true);
+        expect((diagram.nodes[4] as any).children.length === 2).toBe(true);
+        done();
+    });
+});

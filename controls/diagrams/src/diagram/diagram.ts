@@ -8374,6 +8374,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             const element: TextElement = object.wrapper.children[parseInt(j.toString(), 10)] as TextElement;
             if (element instanceof TextElement) {
                 element.canMeasure = true;
+                //866384-Annotation Alignment is wrong when virtualisation constraints enabled
+                let viewPortHeight = this.scroller.viewPortHeight;
+                let viewPortWidth = this.scroller.viewPortWidth;
+                let measureText: boolean = false;
+                if ((object as Node).offsetX < viewPortWidth && (object as Node).offsetY < viewPortHeight) {
+                    measureText = true;
+                }
+                if (measureText && canVitualize(this) && element.actualSize.height == undefined && element.actualSize.width == undefined) {
+                    object.wrapper.measure(new Size((object as Node).width, (object as Node).height), object.id, this.onLoadImageSize.bind(this));
+                    object.wrapper.arrange(object.wrapper.desiredSize);
+                }
                 element.measure(new Size((object as Node).width, (object as Node).height));
                 element.arrange(element.desiredSize);
             }

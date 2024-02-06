@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.4 (2024-02-06)
+
+### Toast
+
+#### Bug Fixes
+
+- `F186544` - Resolved issue where the Toast Destroy method was causing an exception.
+
 ## 24.1.41 (2023-12-18)
 
 ### Message

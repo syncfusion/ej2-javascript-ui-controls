@@ -1358,9 +1358,7 @@ export class AnnotationRenderer {
             }
             const measureDetail: any = JSON.parse(measureShapeAnnotation.calibrate);
             if (!isNullOrUndefined(measureDetail)) {
-                lineAnnotation.measure = true;
-                let unit: string = JSON.parse(measureDetail.distance)[0].unit;
-                lineAnnotation.unit = this.setMeasurementUnit(unit);
+                lineAnnotation._dictionary.set('Measure', this.setMeasureDictionary(measureDetail));
             }
             if (!isNullOrUndefined(measureShapeAnnotation.customData)) {
                 lineAnnotation.setValues('CustomData', measureShapeAnnotation.customData);

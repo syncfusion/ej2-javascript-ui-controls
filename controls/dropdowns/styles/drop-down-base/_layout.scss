@@ -101,11 +101,6 @@
     cursor: default;
   }
 
-  .e-mention .e-mention-chip::selection {
-    color: $mention-gradient-color;
-    background: $mention-active-font-color;
-  }
-
   .e-mention.e-editable-element {
     border: 2px solid $ddl-list-border-color;
     height: auto;

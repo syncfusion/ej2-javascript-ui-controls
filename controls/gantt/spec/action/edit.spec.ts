@@ -1645,6 +1645,7 @@ describe('Gantt Edit support', () => {
                     allowDeleting: true,
                     allowTaskbarEditing: true
                 },
+		taskType: 'FixedWork',
                 columns: [
                     { field: 'TaskID', visible: false },
                     { field: 'TaskName', headerText: 'Name', width: 250 },

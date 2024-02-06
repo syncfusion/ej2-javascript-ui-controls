@@ -2,13 +2,27 @@
 
 ## [Unreleased]
 
+## 24.2.4 (2024-02-06)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I530749` - Now, the `change` event is triggered properly when inserting the mention list items in the Rich Text Editor.
+
+- `#I534487` - Now, applying the bold format to the Rich Text Editor when focusing on another Rich Text Editor in the page works properly.
+
+- `#I539510` - Now, when an empty string `value` is loaded, the cursor will not focus automatically in the Rich Text Editor.
+
 ## 24.2.3 (2024-01-31)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
-- `#I534487` - Now, applying the bold format to the Rich Text Editor when focusing on another Rich Text Editor in the page works properly.
+- `#I534094` - Now, when using the `click` event with a custom toolbar template, the Rich Text Editor works properly.
+
+- `#I541522` - Now, when the window is resized to the minimum width, the Rich Text Editor's content font size is updated properly.
 
 ## 24.1.47 (2024-01-23)
 
@@ -17,10 +31,6 @@
 #### Bug Fixes
 
 - `#I542710` - Now, pressing the `tab` key in the list applies the nested list properly when the mention component is used in the Rich Text Editor.
-
-- `#I541522` - Now, when the window is resized to the minimum width, the Rich Text Editor's content font size is updated properly.
-
-- `#I534094` - Now, when using the `click` event with a custom toolbar template, the Rich Text Editor works properly.
 
 ## 24.1.46 (2024-01-17)
 
@@ -41,8 +51,6 @@
 #### Bug Fixes
 
 - `#I534488` - Now, applying different style formats without focusing inside the Rich Text Editor works properly.
-
-- `#I530749` - Now, the `change` event is triggered properly when inserting the mention list items in the Rich Text Editor.
 
 - `#I534481` - Now, when applying the font family `Arial` to the text content in the Rich Text Editor, the toolbar status is updated properly.
 

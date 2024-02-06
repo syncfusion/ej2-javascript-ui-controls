@@ -39,6 +39,7 @@ let ganttModel: Object = {
         allowTaskbarEditing: true,
         showDeleteConfirmDialog: true
     },
+    taskType: 'FixedWork',
     columns: [
         { field: 'TaskID', visible: false },
         { field: 'TaskName', headerText: 'Name', width: 250 },
@@ -513,6 +514,7 @@ describe('Self reference data', () => {
             resources: multiResources,
             viewType: 'ResourceView',
             enableMultiTaskbar: true,
+            taskType: 'FixedWork',
             taskFields: {
                 id: 'TaskID',
                 name: 'TaskName',
@@ -1117,6 +1119,7 @@ describe('Self reference data', () => {
                 allowTaskbarEditing: true,
                 showDeleteConfirmDialog: true
             },
+            taskType:'FixedWork',
             columns: [
                 { field: 'TaskID', visible: false },
                 { field: 'TaskName', headerText: 'Name', width: 250 },
@@ -1244,6 +1247,7 @@ describe('Self reference data', () => {
             rightLabel: 'resources',
             taskLabel: 'Progress'
         },
+        taskType:'FixedWork',
         allowResizing: true,
         allowSelection: true,
         highlightWeekends: true,
@@ -1329,6 +1333,7 @@ describe('Resource view with persistence', () => {
                 rightLabel: 'resources',
                 taskLabel: 'Progress'
             },
+            taskType:'FixedWork',
             enablePersistence: true,
             allowResizing: true,
             allowSelection: true,
@@ -1358,6 +1363,7 @@ describe('Resource view with persistence', () => {
             dataSource: normalResourceData,
         resources: resourceCollection,
         viewType: 'ResourceView',
+        taskType:'FixedWork',
         taskFields: {
             id: 'TaskID',
             name: 'TaskName',
@@ -1440,6 +1446,7 @@ describe('Resource view with persistence', () => {
                 dataSource: [],
             resources: resourceCollection,
             viewType: 'ResourceView',
+            taskType:'FixedWork',
             taskFields: {
                 id: 'TaskID',
                 name: 'TaskName',
@@ -1519,6 +1526,7 @@ describe('Resource view with persistence', () => {
                 dataSource: normalResourceData,
             resources: resourceCollection,
             viewType: 'ResourceView',
+          taskType:'FixedWork',
             taskFields: {
                 id: 'TaskID',
                 name: 'TaskName',
@@ -1946,6 +1954,7 @@ describe('Resource view with persistence', () => {
                 enableMultiTaskbar: true,
                 viewType: 'ResourceView',
                 collapseAllParentTasks: true,
+               taskType:'FixedWork',
                 taskFields: {
                     id: 'TaskID',
                     name: 'TaskName',
@@ -2176,6 +2185,7 @@ describe('Resource view with persistence', () => {
                     allowTaskbarEditing: true,
                     showDeleteConfirmDialog: true
                 },
+                taskType:'FixedWork',
                 columns: [
                     { field: 'TaskID', visible: false },
                     { field: 'TaskName', headerText: 'Name', width: 250 },
@@ -2438,6 +2448,7 @@ describe('Incorrect duration for parent task in hour mode', () => {
                     work: 'work',
                     child: 'subtasks'
                 },
+               taskType: 'FixedWork',
                 durationUnit: 'Hour',
                 resourceFields: {
                     id: 'resourceId',

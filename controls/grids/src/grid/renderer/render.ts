@@ -360,7 +360,7 @@ export class Render {
             remove(tbody);
         }
         tbody = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } } );
-        let spanCount: number = 0;
+        let spanCount: number = gObj.allowRowDragAndDrop && isNullOrUndefined(gObj.rowDropSettings.targetID) ? 1 : 0;
         if (gObj.detailTemplate || gObj.childGrid) {
             ++spanCount;
         }

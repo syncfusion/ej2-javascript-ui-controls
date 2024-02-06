@@ -1503,3 +1503,37 @@ describe('EJ2-70405 - Background Color not applied properly when nested styles a
         expect(imageCaptionWrapper.firstChild.style.fontSize).toEqual('24pt');
     });
 });
+
+describe('Reverting font color to the list element.', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach(() => {
+        rteObj = renderRTE({
+            value: `<ul>
+            <li style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Saves time and effort in formatting</span></li>
+            <li style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Consistent formatting throughout the document or website</span></li>
+            <li style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="color: rgb(255, 0, 0); text-decoration: inherit;">Quick and easy to use</span></li>
+        </ul>`,
+            toolbarSettings: {
+                items: ['FontColor']
+            }
+        });
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    it('Should remove the color from link and then the span element.', () => {
+        const range: Range = document.createRange();
+        const spanELemCollection = rteObj.inputElement.querySelectorAll('span');
+        range.setStart(spanELemCollection[0].firstChild, 0);
+        range.setEnd(spanELemCollection[2].firstChild, spanELemCollection[2].firstChild.textContent.length);
+        domSelection.setRange(document, range);
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(255, 0, 0)');
+        const updatedSpanElemCollection = rteObj.inputElement.querySelectorAll('span');
+        expect(updatedSpanElemCollection.length).toEqual(3);
+        const liElementCollection = rteObj.inputElement.querySelectorAll('li');
+        expect(liElementCollection[0].style.color).toEqual('rgb(255, 0, 0)');
+        expect(liElementCollection[1].style.color).toEqual('rgb(255, 0, 0)');
+        expect(liElementCollection[2].style.color).toEqual('rgb(255, 0, 0)');
+    });
+});

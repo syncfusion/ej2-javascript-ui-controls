@@ -1918,7 +1918,9 @@ export class DialogEdit {
     private createDivElement(className?: string, id?: string): HTMLElement {
         return createElement('div', { className: className, id: id });
     }
-
+    private createFormElement(className?: string, id?: string): HTMLElement {
+        return createElement('form', { className: className, id: id });
+    }
     private createInputElement(className: string, id: string, fieldName: string, type?: string): HTMLElement {
         return createElement(type || 'input', {
             className: className, attrs: {
@@ -2028,7 +2030,7 @@ export class DialogEdit {
     private renderGeneralTab(itemName: string): HTMLElement {
         const ganttObj: Gantt = this.parent;
         const itemModel: Object = this.beforeOpenArgs[itemName as string];
-        const divElement: HTMLElement = this.createDivElement('e-edit-form-row', ganttObj.element.id
+        const divElement: HTMLElement = this.createFormElement('e-edit-form-row', ganttObj.element.id
             + '' + itemName + 'TabContainer');
         for (const key of Object.keys(itemModel)) {
             if (this.parent.columnByField[key as string].visible === false) {
@@ -2319,7 +2321,7 @@ export class DialogEdit {
     private renderInputElements(inputModel: CObject, column: GanttColumnModel): HTMLElement {
         const ganttId: string = this.parent.element.id;
         const ganttData: IGanttData = this.editedRecord;
-        const divElement: HTMLElement = this.createDivElement('e-edit-form-column');
+        const divElement: HTMLElement = this.createFormElement('e-edit-form-column');
         let inputElement: HTMLElement;
         const editArgs: Record<string, unknown> = { column: column, data: ganttData };
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {

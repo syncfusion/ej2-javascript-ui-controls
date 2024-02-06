@@ -566,6 +566,58 @@ describe('TreeGrid Pager module', () => {
 		});
 	});
 
+    describe('867916 - Filtering not working on navigating to another page when all records are collapsed', () => {
+		let gridObj: TreeGrid;
+        let actionComplete: () => void;
+		beforeAll((done: Function) => {
+			gridObj = createGrid(
+				{
+                    dataSource: sampleData,
+                    allowPaging: true,
+                    pageSettings: { pageSize: 5 },
+                    allowFiltering: true,
+                    filterSettings: {
+                      type: 'FilterBar',
+                      hierarchyMode: 'Child',
+                      mode: 'Immediate',
+                    },
+                    childMapping: 'subtasks',
+                    enableCollapseAll: true,
+                    height: 350,
+                    treeColumnIndex: 1, 
+                    columns: [
+                      { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 80 },
+                      { field: 'taskName', headerText: 'Task Name', width: 200 },
+                      {
+                        field: 'startDate',
+                        headerText: 'Start Date',
+                        textAlign: 'Right',
+                        width: 100,
+                        format: { skeleton: 'yMd', type: 'date' },
+                      }
+                    ]
+				},
+				done
+			);
+		});
+		it('Checking the Filtering with page navigation', (done: Function) => {
+            gridObj.actionComplete = (args: any) => {
+                if (args.requestType == 'filtering') {
+                    expect(gridObj.grid.currentViewData.length === 5).toBe(true);
+                }
+                if (args.requestType == 'paging') { 
+                    expect(gridObj.grid.currentViewData.length === 2).toBe(true);
+                }
+                done();
+            };
+            gridObj.filterByColumn('taskName', 'contains', 'Dev');
+            gridObj.goToPage(2);
+		});
+		afterAll(() => {
+			destroy(gridObj);
+		});
+	});
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

@@ -101,6 +101,11 @@ export class PdfTreeGridCell {
         if (typeof this.value === 'string') {
             /* eslint-disable-next-line */
             let font: PdfStandardFont | PdfTrueTypeFont = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+            if (this.row.isParentRow) {
+                font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, PdfFontStyle.Bold);
+            } else {
+                font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+            }
             if (this.row.treegrid.ganttStyle.font) {
                 font = this.row.treegrid.ganttStyle.font;
             }
@@ -136,13 +141,24 @@ export class PdfTreeGridCell {
                 currentValue = !(isNullOrUndefined(this.remainingString) || this.remainingString === '') ? this.remainingString : (this.value as string);
             }
             /* eslint-disable */
-            let font: PdfStandardFont | PdfTrueTypeFont = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+            let font: PdfFont = null;
+
+            if (this.row.isParentRow) {
+                font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, PdfFontStyle.Bold);
+            } else {
+                font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+            }
             if (this.row.treegrid.ganttStyle.font) {
                 font = this.row.treegrid.ganttStyle.font;
             }
             /* eslint-disable */
             const slr: PdfStringLayoutResult = layouter.layout(currentValue, font, this.style.format, new SizeF(width, 0), false, new SizeF(0, 0));
-            height += slr.actualSize.height;
+            if (currentValue.length > 80) {
+                height += slr.actualSize.height + 20;
+            }
+            else {
+                height += slr.actualSize.height;
+            }     
             height += (this.style.borders.top.width + this.style.borders.bottom.width) * 2;
         }
         height += this.row.treegrid.style.cellPadding.top + this.row.treegrid.style.cellPadding.bottom;
@@ -195,7 +211,7 @@ export class PdfTreeGridCell {
                 }
             }
         }
-        //bounds = this.adjustContentLayoutArea(bounds);
+       //bounds = this.adjustContentLayoutArea(bounds);
         this.drawCellBackground(graphics, bounds);
         const textPen: PdfPen = null;
         const textBrush: PdfBrush = new PdfSolidBrush(this.style.fontColor);
@@ -231,7 +247,7 @@ export class PdfTreeGridCell {
             if (this.finishedDrawingCell) {
                 temp = (this.remainingString === '') ? this.remainingString : this.value as string;
                 /* eslint-disable-next-line */
-                graphics.drawString(temp, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
+                graphics.drawString(temp, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y -3 , (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
             } else {
                 /* eslint-disable-next-line */
                 graphics.drawString(this.remainingString, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, this.style.format);

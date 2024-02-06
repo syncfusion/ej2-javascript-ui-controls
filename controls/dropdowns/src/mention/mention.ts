@@ -1048,6 +1048,7 @@ export class Mention extends DropDownBase {
                     this.inputElement.parentElement.parentElement.classList.contains('e-richtexteditor')) {
                     if (popupEle.firstElementChild && popupEle.firstElementChild.childElementCount > 0) {
                         popupEle.firstElementChild.setAttribute('aria-owns', this.inputElement.parentElement.parentElement.id);
+                        addClass([popupEle], 'e-rte-elements');
                     }
                 }
                 if ((!this.popupObj || !document.body.contains(this.popupObj.element)) ||
@@ -1545,11 +1546,6 @@ export class Mention extends DropDownBase {
             myField.selectionStart = startPos + value.length;
             myField.selectionEnd = startPos + value.length;
             if (this.isPopupOpen) { this.hidePopup(); }
-            //New event to update the RichTextEditor value, when a mention item is selected using mouse click action. 
-            if (!isNullOrUndefined((e as PointerEvent).pointerType) && (e as PointerEvent).pointerType === 'mouse') {
-                const event: Event = new CustomEvent('content-changed', { detail: { click: true } });
-                this.inputElement.dispatchEvent(event);
-            };
             this.onChangeEvent(e);
         } else {
             endPos = this.getTriggerCharPosition() + this.mentionChar.length;
@@ -1591,6 +1587,11 @@ export class Mention extends DropDownBase {
                 selection.addRange(range);
             }
             if (this.isPopupOpen) { this.hidePopup(); }
+            //New event to update the RichTextEditor value, when a mention item is selected using mouse click action. 
+            if (!isNullOrUndefined((e as PointerEvent).pointerType) && (e as PointerEvent).pointerType === 'mouse') {
+                const event: Event = new CustomEvent('content-changed', { detail: { click: true } });
+                this.inputElement.dispatchEvent(event);
+            };
             this.onChangeEvent(e);
         }
     }

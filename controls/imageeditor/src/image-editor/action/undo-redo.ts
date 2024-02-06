@@ -269,6 +269,7 @@ export class UndoRedo {
     private undo(): void {
         const parent: ImageEditor = this.parent;
         this.cancelCropSelection();
+        parent.notify('draw', { prop: 'resetFrameZoom', onPropertyChange: false, value: {isOk: false }});
         if (!parent.disabled && parent.isImageLoaded) {
             if (this.undoRedoStep > 0) {
                 this.refreshToolbarActions();
@@ -402,6 +403,7 @@ export class UndoRedo {
     private redo(): void {
         const parent: ImageEditor = this.parent;
         this.cancelCropSelection();
+        parent.notify('draw', { prop: 'resetFrameZoom', onPropertyChange: false, value: {isOk: false }});
         if (!parent.disabled && parent.isImageLoaded) {
             if (this.undoRedoStep < this.appliedUndoRedoColl.length) {
                 this.refreshToolbarActions();

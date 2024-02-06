@@ -483,7 +483,12 @@ export class Resize extends ActionBase {
         const left: number = (this.parent.enableRtl) ? parseInt(this.actionObj.element.style.right, 10) : this.actionObj.clone.offsetLeft;
         if (isTimeViews) {
             offsetWidth = targetWidth + (Math.ceil(pageWidth / slotInterval) * slotInterval);
-            offsetWidth = (Math.round((left + offsetWidth) / slotInterval) * slotInterval) - left;
+            if (!isLeft) {
+                const roundedLeft: string = (+parseFloat(this.actionObj.element.style[this.parent.enableRtl ? 'right' : 'left'])).toFixed(1);
+                if (roundedLeft !== left.toFixed(1)) {
+                    offsetWidth = (Math.round((left + offsetWidth) / slotInterval) * slotInterval) - left;
+                }
+            }
             this.actionObj.event[this.parent.eventFields.isAllDay] = false;
         }
         let width: number = !isLeft && ((offsetWidth + this.actionObj.clone.offsetLeft > this.scrollArgs.width)) ?
@@ -493,9 +498,11 @@ export class Resize extends ActionBase {
                 -(offsetWidth - this.actionObj.cellWidth);
             rightValue = isTimelineView ? rightValue : isLeft ? 0 : rightValue > 0 ? 0 : rightValue;
             if (isTimelineView && !isLeft) {
-                rightValue = Math.ceil((this.actionObj.element.offsetLeft + (this.actionObj.element.getBoundingClientRect().width +
-                    (this.actionObj.pageX - this.actionObj.X))) / slotInterval) * slotInterval;
-                rightValue = rightValue < 0 ? Math.abs(rightValue) : -rightValue;
+                rightValue = rightValue - (Math.ceil((this.actionObj.pageX - this.actionObj.X) / slotInterval) * slotInterval);
+                if (rightValue < 0) {
+                    rightValue = parseInt(this.actionObj.clone.style.right, 10);
+                    width = parseInt(this.actionObj.clone.style.width, 10);
+                }
             }
             rightValue = rightValue >= this.scrollArgs.width ? this.scrollArgs.width - this.actionObj.cellWidth : rightValue;
             styles.right = formatUnit(rightValue);
@@ -515,12 +522,18 @@ export class Resize extends ActionBase {
                 }
             }
             const leftValue: number = offsetLeft;
-            offsetLeft = isTimelineView ? isTimeViews ? isLeft ? Math.floor(offsetLeft / slotInterval) * slotInterval : offsetLeft :
+            offsetLeft = isTimelineView ? isTimeViews ? isLeft ? this.actionObj.element.offsetLeft -
+                (Math.ceil((this.actionObj.element.offsetLeft - offsetLeft) / slotInterval) * slotInterval) : offsetLeft :
                 Math.floor(offsetLeft / this.actionObj.cellWidth) * this.actionObj.cellWidth :
                 Math.ceil(Math.abs(offsetLeft) / this.actionObj.cellWidth) * this.actionObj.cellWidth;
             if (offsetLeft < 0) {
-                offsetLeft = 0;
-                width = this.actionObj.clone.getBoundingClientRect().width;
+                if (isTimelineView && isLeft && (offsetLeft % slotInterval)) {
+                    offsetLeft = parseInt(this.actionObj.clone.style.left, 10);
+                    width = parseInt(this.actionObj.clone.style.width, 10);
+                } else {
+                    offsetLeft = 0;
+                    width = this.actionObj.clone.getBoundingClientRect().width;
+                }
             }
             const cloneWidth: number = Math.ceil(this.actionObj.clone.getBoundingClientRect().width / this.actionObj.cellWidth) *
                 this.actionObj.cellWidth;

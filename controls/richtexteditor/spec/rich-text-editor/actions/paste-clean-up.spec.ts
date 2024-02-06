@@ -3414,6 +3414,32 @@ describe("846697 - Pasting content doesn't work properly with enterKey 'BR' in R
     });
 });
 
+describe('850189 - Border lines are appeared on the images while copy paste the image', () => {
+    let editor: RichTextEditor;
+    beforeAll(() => {
+        editor = renderRTE({
+            pasteCleanupSettings : {
+                keepFormat : true
+            }
+        });
+    });
+    afterAll(() => {
+        destroy(editor);
+    });
+    it ('Should remvoe the outline style for the pasted image.', (done: DoneFn) => {
+        editor.focusIn();
+        const clipBoardData: string = '\n\n\x3C!--StartFragment--><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-resize e-img-focus" style="box-sizing: border-box; border: 0px; vertical-align: bottom; cursor: pointer; display: inline-block; float: none; margin: auto; max-width: 1489px; position: relative; padding: 1px; z-index: 1000; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; width: 300px; outline: rgb(74, 144, 226) solid 2px;">\x3C!--EndFragment-->\n\n';
+        const dataTransfer: DataTransfer = new DataTransfer();
+        dataTransfer.setData('text/html', clipBoardData);
+        const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+        editor.onPaste(pasteEvent);
+        setTimeout(() => {
+            expect(editor.inputElement.querySelectorAll('img')[0].style.outline).toBe('');
+            done();
+        }, 100);
+    });
+});
+
 describe("853350 - pasting content from online Excel sheet doesn't remove the styles from the content - ", () => {
     let rteObj: RichTextEditor;
     let editorObj: EditorManager;
