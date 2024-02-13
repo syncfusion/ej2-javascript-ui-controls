@@ -2,7 +2,7 @@ import { L10n, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { remove, resetBlazorTemplate, blazorTemplates, getValue } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend, DateFormatOptions } from '@syncfusion/ej2-base';
 import { DataManager, Group, Query, Deferred, Predicate, DataUtil } from '@syncfusion/ej2-data';
-import { IGrid, NotifyArgs, IValueFormatter } from '../base/interface';
+import { IGrid, NotifyArgs, IValueFormatter, GroupEventArgs } from '../base/interface';
 import { ValueFormatter } from '../services/value-formatter';
 import { RenderType, CellType, Action } from '../base/enum';
 import { ReturnType } from '../base/type';
@@ -124,6 +124,13 @@ export class Render {
                 }
                 if (args.action === 'clear-filter' && (this.parent.filterSettings.type === 'CheckBox' || this.parent.filterSettings.type === 'Excel')){
                     this.parent.filterSettings.columns = this.parent.filterModule.checkboxPrevFilterObject;
+                }
+                if (args.requestType === 'grouping') {
+                    // Remove the dropped column name from groupsettings.columns if args.cancel is true                
+                    const index: number = this.parent.groupSettings.columns.indexOf((args as GroupEventArgs).columnName);
+                    if (index !== -1) {
+                        this.parent.groupSettings.columns.splice(index, 1);
+                    }
                 }
                 return;
             }

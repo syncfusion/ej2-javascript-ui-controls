@@ -2073,3 +2073,40 @@ describe('Code Coverage - show grouped column edit grouped row reorder and Key b
         gridObj = null;
     });
 });
+
+describe('EJ2-867832-groupSettings not updated properly when cancelling group action => ', () => {
+    let gridObj: Grid;
+    let actionBegin: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                groupSettings: { showGroupedColumn: true , columns:['OrderID'] },
+                columns: [{ field: 'OrderID', headerText: 'Order ID' },
+                { field: 'CustomerID', headerText: 'CustomerID' },
+                { field: 'EmployeeID', headerText: 'Employee ID' },
+                { field: 'Freight', headerText: 'Freight' },
+                { field: 'ShipCity', headerText: 'Ship City' }],
+                allowSorting: true,
+                allowPaging: true,
+                allowGrouping: true,
+                actionBegin: function (args?: any): void {
+                    args.cancel = true;
+                    done();
+                },
+            }, done);
+    });
+    it('Checking initial Grouping columns', () => {
+        expect(gridObj.groupSettings.columns.length).toBe(1);
+    });
+    it('Checking groupsetting columns after setting args.cancel as true', () => {
+        gridObj.groupModule.groupColumn('ShipCity');
+        expect(gridObj.groupSettings.columns.length).toBe(1);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        gridObj = actionBegin = null;
+    });
+});

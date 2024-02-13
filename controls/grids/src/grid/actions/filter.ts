@@ -1316,11 +1316,13 @@ export class Filter implements IAction {
             if (parentsUntil(target, 'e-filter-popup') || target.classList.contains('e-filtermenudiv')) {
                 return;
             } else if (this.filterModule && !parentsUntil(target, 'e-date-overflow') && (!parentsUntil(target, 'e-popup-wrapper')
-                && (!closest(target, '.e-filter-item.e-menu-item'))) && !datepickerEle) {
+                && (!closest(target, '.e-filter-item.e-menu-item'))) && !datepickerEle
+                && !(parentsUntil(target, 'e-search-wrapper') && !hasDialogClosed)) {
                 if ((hasDialog && (!parentsUntil(target, 'e-filter-popup'))
                     && (!parentsUntil(target, 'e-popup-flmenu'))) || (!popupEle && hasDialogClosed)) {
                     this.filterModule.isresetFocus = parentsUntil(target, 'e-grid') &&
-                    parentsUntil(target, 'e-grid').id === this.parent.element.id;
+                    parentsUntil(target, 'e-grid').id === this.parent.element.id && !(parentsUntil(target, 'e-search-wrapper')
+                    && hasDialogClosed);
                     this.filterModule.closeDialog(target);
                 }
             }

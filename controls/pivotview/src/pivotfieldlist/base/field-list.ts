@@ -3,7 +3,7 @@ import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration } from '@sy
 import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';
 import { PivotEngine, IFieldListOptions, IPageSettings, IDataOptions, ICustomProperties, IDrilledItem } from '../../base/engine';
-import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../../base/engine';
+import { ISort, IFilter, IFieldOptions, IAxisSet, ICalculatedFields, IDataSet } from '../../base/engine';
 import { PivotFieldListModel } from './field-list-model';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
@@ -914,17 +914,19 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     {
                         isFormatAvail = true;
                     }
+                    const isDateField: boolean = isFormatAvail && (['date', 'dateTime', 'time'].indexOf(this.engineModule.formatFields[engine.memberName as string].type) > -1);
                     const valuesCollection: any = Object.keys(currentMembers).map((key: string) => currentMembers[key as string]); // eslint-disable-line @typescript-eslint/no-explicit-any
                     for (let i: number = 0; i < valuesCollection.length; i++) {
-                        const formattedText: string = isFormatAvail ?
-                            this.engineModule.getFormattedValue(valuesCollection[i as number].Name, engine.memberName).formattedText :
-                            valuesCollection[i as number].Name;
+                        const memberName: string = valuesCollection[i as number].Name as string;
+                        const formattedValue: IAxisSet  = isFormatAvail ?
+                            this.engineModule.getFormattedValue(memberName, engine.memberName) : { formattedText: memberName };
                         dateMembers.push({
-                            formattedText: formattedText,
-                            actualText: valuesCollection[i as number].Name
+                            formattedText: formattedValue.formattedText,
+                            actualText: isDateField ? formattedValue.dateText : this.engineModule.fieldList[engine.memberName].type === 'number' ?
+                                (!isNaN(Number(memberName)) ? Number(memberName) : memberName) : memberName
                         });
-                        formattedMembers[formattedText as string] = {};
-                        members[valuesCollection[i as number].Name] = {};
+                        formattedMembers[formattedValue.formattedText as string] = {};
+                        members[memberName as string] = {};
                     }
                     this.engineModule.fieldList[engine.memberName].dateMember = dateMembers;
                     this.engineModule.fieldList[engine.memberName].formattedMembers = formattedMembers;

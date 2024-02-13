@@ -544,7 +544,7 @@ export class Sort {
                 <= eventArgs.filterRange[3]) || (range[3] >= eventArgs.filterRange[1] && range[3] <= eventArgs.filterRange[3]))))) {
             range[0] = eventArgs.filterRange[0]; range[1] = eventArgs.filterRange[1];
             range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
-            sortOptions.containsHeader = true; isSingle = false;
+            sortOptions.containsHeader = !eventArgs.enableColumnHeaderFiltering; isSingle = false;
         }
         address = getRangeAddress(range);
         const beforeArgs: BeforeSortEventArgs = { range: address, sortOptions: sortOptions, cancel: false };

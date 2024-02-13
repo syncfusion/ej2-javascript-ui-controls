@@ -19,8 +19,10 @@ const IFRAMEHEADER: string = `
                 span.e-selected-node	{background-color: #939393;color: white;}
                 span.e-selected-node.e-highlight {background-color: #1d9dd8;}
                 body{color:#333;word-wrap:break-word;padding: 8px;box-sizing: border-box;}
-                .e-rte-image, .e-rte-audio, .e-rte-video  {border: 0;cursor: pointer;display:
+                .e-rte-image, .e-rte-video {border: 0;cursor: pointer;display:
                     block;float: none;height: auto;margin: 5px auto;max-width: 100%;position: relative;}
+                .e-rte-audio {border: 0;cursor: pointer;display:
+                        block;float: none;margin: 5px auto;max-width: 100%;position: relative;}
                 .e-rte-image.e-imginline, .e-rte-audio.e-audio-inline, .e-rte-video.e-video-inline {display: inline-block;float: none;max-width: calc(100% - (2 * 5px));padding: 1px;vertical-align: bottom;}
                 .e-rte-image.e-imgcenter, .e-rte-video.e-video-center {cursor: pointer;display: block;float: none;margin: 5px auto;max-width: 100%;position: relative;}
                 .e-rte-image.e-imgright, .e-rte-video.e-video-right { float: right; margin: 0 auto;margin-left: 5px;text-align: right;}

@@ -677,7 +677,7 @@ export class Mention extends DropDownBase {
             rangetextContent = this.range.startContainer.textContent.split('');
         }
         let currentRange: string = this.getTextRange();
-	    const lastWordRange: string = this.getLastLetter(currentRange);
+	let lastWordRange: string = this.getLastLetter(currentRange);
 	const lastTwoLetters: string = this.mentionChar.toString() + this.mentionChar.toString();
         // eslint-disable-next-line security/detect-non-literal-regexp
         const Regex: RegExp = new RegExp(this.mentionChar.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
@@ -704,7 +704,9 @@ export class Mention extends DropDownBase {
             }
             return;
         }
-        this.queryString = lastWordRange.replace(this.mentionChar, '');
+        if ((lastWordRange as any).includes(this.mentionChar)) {
+            this.queryString = lastWordRange.replace(this.mentionChar, '');
+        }
         if (this.mentionChar.charCodeAt(0) === lastWordRange.charCodeAt(0) &&
             this.queryString !== '' && e.keyCode !== 38 && e.keyCode !== 40 && !this.lineBreak) {
             this.searchLists(e);

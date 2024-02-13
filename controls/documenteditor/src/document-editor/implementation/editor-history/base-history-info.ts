@@ -481,9 +481,18 @@ export class BaseHistoryInfo {
             let isForward: boolean = TextPosition.isForwardSelection(this.insertPosition, this.endPosition);
             let insertTextPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(isForward ? this.insertPosition : this.endPosition);
             let endTextPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(isForward ? this.endPosition : this.insertPosition);
-            if (this.lastElementRevision && this.editorHistory.isUndoing) {
-                if (isNullOrUndefined(this.endRevisionLogicalIndex)) {
+            // Set the endRevisionLogicalIndex based on undo stack value when the selection contains a table with the above paragraph (undoing).
+            if (this.action === 'RemoveRowTrack' && this.editorHistory.isUndoing) {
+                this.owner.selection.select(this.selectionEnd, this.selectionEnd);
+                if (this.owner.selection.start.paragraph.isInsideTable) {
+                    this.endRevisionLogicalIndex = this.selectionEnd;
+                }
+            }
+            if (this.editorHistory.isUndoing) {
+                if (this.lastElementRevision && isNullOrUndefined(this.endRevisionLogicalIndex)) {
                     this.updateEndRevisionInfo();
+                } else if (this.action === 'RemoveRowTrack') {
+                    this.endRevisionLogicalIndex = this.selectionEnd;
                 }
             }
             if (this.action === 'ClearRevisions') {
@@ -786,7 +795,7 @@ export class BaseHistoryInfo {
                     } else {
                         deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);
                     }
-                } else if (lastNode instanceof TableWidget) {
+                } else if (lastNode instanceof TableWidget && !(this.action === 'RemoveRowTrack')) {
                     this.owner.editorModule.insertBlock(lastNode as TableWidget);
                 } else {
                     this.insertRemovedNodes(deletedNodes, deletedNodes[deletedNodes.length - 1] as BlockWidget);
@@ -914,24 +923,16 @@ export class BaseHistoryInfo {
                             this.documentHelper.layout.layoutBodyWidgetCollection(block.index, block.containerWidget, block, false);
                         }
                     }
-                } else if (block instanceof TableWidget) {
+                } else if (block instanceof TableWidget && this.action !== 'RemoveRowTrack') {
                     this.owner.editorModule.insertBlockTable(this.owner.selection, node as BlockWidget, block as TableWidget);
                 } else {
                     if (node instanceof ParagraphWidget && !node.isInsideTable && this.action === 'RemoveRowTrack') {
-                        if (skipSelection) {
-                            this.owner.selection.moveToPreviousCharacter();
-                            skipSelection = false;
-                        }
-                        this.owner.editorModule.insertNewParagraphWidget(node, true);
-                        if (!isNullOrUndefined(node.lastChild) && node.lastChild instanceof LineWidget) {
-                            this.owner.selection.start.setPositionParagraph(node.lastChild as LineWidget, (node.lastChild as LineWidget).getEndOffset());
-                        }
+                        this.owner.editorModule.insertNewParagraphWidget(node, false);
                     } else if (node instanceof TableWidget && this.action === 'RemoveRowTrack') {
-                        let block: BlockWidget = this.owner.selection.start.paragraph;
-                        if (block.nextRenderedWidget && block.nextRenderedWidget instanceof TableWidget) {
-                            let table: TableWidget = block.nextRenderedWidget as TableWidget;
-                            node = node.combineWidget(this.viewer) as BlockWidget;
-                            this.owner.editorModule.insertTableInternal(table as TableWidget, node as TableWidget, false);
+                            this.owner.editorModule.insertTableInternal(node as TableWidget, node as TableWidget, false, true);
+                        if (!isNullOrUndefined(deletedNodes[i - 1]) && !isNullOrUndefined(node.nextRenderedWidget) && node.nextRenderedWidget instanceof ParagraphWidget) {
+                            this.owner.selection.start.setPositionParagraph(node.nextRenderedWidget.firstChild as LineWidget, 0);
+                            this.owner.selection.end.setPositionParagraph(node.nextRenderedWidget.firstChild as LineWidget, 0);
                         }
                     } else {
                         this.owner.editorModule.insertBlock(node);
@@ -993,10 +994,16 @@ export class BaseHistoryInfo {
         let startoffset: number = this.owner.selection.getParagraphInfo(start).offset;
         let endoffset: number = this.owner.selection.getParagraphInfo(end).offset;
         let isSamePara: boolean = start.paragraph === end.paragraph;
+        let isSplittedWidget: boolean = false;
         if (this.editorHistory.isUndoing) {
             while (currentPara !== endPara) {
+                isSplittedWidget = false;
                 this.owner.editor.applyRevisionForCurrentPara(currentPara, startoffset, currentPara.getLength(), id, true);
-                currentPara = this.documentHelper.selection.getNextParagraphBlock(currentPara.getSplitWidgets().pop() as BlockWidget);
+                //Correct the condition to get next widget instead of next widget of next splitted widget
+                currentPara = this.documentHelper.selection.getNextParagraphBlock(currentPara as BlockWidget);
+                if (!isNullOrUndefined(currentPara) && !isNullOrUndefined(currentPara.previousRenderedWidget) && currentPara.previousRenderedWidget instanceof ParagraphWidget && currentPara.previousRenderedWidget.nextSplitWidget && currentPara === endPara) {
+                    isSplittedWidget = true;
+                }
                 if (currentPara !== endPara) {
                     startoffset = 0;
                 }
@@ -1004,6 +1011,10 @@ export class BaseHistoryInfo {
             if (currentPara === endPara) {
                 if (!isSamePara) {
                     startoffset = 0;
+                }
+                // Update the startoffset to the paragraph end if next paragraph is splitted widget
+                if (isSplittedWidget) {
+                    startoffset = (currentPara.previousRenderedWidget as ParagraphWidget).getLength();
                 }
                 this.owner.editor.applyRevisionForCurrentPara(currentPara, startoffset, endoffset, id, false);
             }

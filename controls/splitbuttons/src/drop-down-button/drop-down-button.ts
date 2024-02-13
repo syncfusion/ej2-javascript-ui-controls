@@ -629,6 +629,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             return;
         }
         if (e.keyCode === 13 && this.activeElem[0].classList.contains('e-split-btn')) {
+            this.triggerSelect(e);
             this.activeElem[0].focus();
             return;
         }
@@ -694,19 +695,24 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             }
         } else {
             if (closest(trgt, '[id="' + this.getPopUpElement().id + '"]')) {
-                let eventArgs: MenuEventArgs;
-                let liIdx: number;
-                let item: ItemModel;
-                const li: Element = this.getLI(trgt);
+                const li: Element = this.getLI(e.target as HTMLElement);
                 if (li) {
-                    liIdx = Array.prototype.indexOf.call(this.getULElement().children, li);
-                    item = this.items[liIdx as number];
-                    if (item) {
-                        eventArgs = { element: li as HTMLElement, item: item, event: e };
-                        this.trigger('select', eventArgs);
-                    }
+                    this.triggerSelect(e);
                     this.closePopup(e, this.activeElem[0]);
                 }
+            }
+        }
+    }
+
+    private triggerSelect(e: MouseEvent | KeyboardEventArgs): void {
+        let eventArgs: MenuEventArgs; let liIdx: number; let item: ItemModel;
+        const li: Element = this.getLI(e.target as HTMLElement);
+        if (li) {
+            liIdx = Array.prototype.indexOf.call(this.getULElement().children, li);
+            item = this.items[liIdx as number];
+            if (item) {
+                eventArgs = { element: li as HTMLElement, item: item, event: e };
+                this.trigger('select', eventArgs);
             }
         }
     }

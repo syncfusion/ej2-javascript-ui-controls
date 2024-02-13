@@ -1,4 +1,4 @@
-import { FileType, ShapeType, ImageFinetuneOption, ImageFilterOption, FrameType, FrameLineStyle } from '../index';
+import { FileType, ShapeType, ImageFinetuneOption, ImageFilterOption, FrameType, FrameLineStyle, ArrowheadType } from '../index';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 
 /**
@@ -436,7 +436,7 @@ export interface ShapeSettings {
      */
     color?: string;
     /**
-     * Returns the points collection of freehand drawing.
+     * Returns the points collection of freehand drawing and path annotation.
      */
     points?: Point[];
     /**
@@ -447,6 +447,30 @@ export interface ShapeSettings {
      * Returns the imageData of the image annotation.
      */
     imageData?: string | ImageData;
+    /**
+     * Returns the width radius of the ellipse shape.
+     */
+    radiusX?: number;
+    /**
+     * Returns the height radius of the ellipse shape.
+     */
+    radiusY?: number;
+    /**
+     * Returns the end x position of line and arrow.
+     */
+    endX?: number;
+    /**
+     * Returns the end y position of line and arrow.
+     */
+    endY?: number;
+    /**
+     * Returns the head type of an arrow.
+     */
+    arrowHead?: ArrowheadType;
+    /**
+     * Returns the tail type of an arrow.
+     */
+    arrowTail?: ArrowheadType;
 }
 
 /** 

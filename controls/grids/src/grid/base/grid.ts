@@ -3728,6 +3728,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.notify(events.inBoundModelChanged, { module: 'pager', properties: newProp.pageSettings });
                     break;
                 }
+                if (this.pagerModule && this.pagerModule.isCancel) {
+                    this.pagerModule.isCancel = false;
+                    return;
+                }
                 this.notify(events.inBoundModelChanged, { module: 'pager', properties: newProp.pageSettings });
                 if (isNullOrUndefined(newProp.pageSettings.currentPage) && isNullOrUndefined(newProp.pageSettings.pageSize)
                     && isNullOrUndefined(newProp.pageSettings.totalRecordsCount)
@@ -3735,6 +3739,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     ((newProp.pageSettings.currentPage !== oldProp.pageSettings.currentPage)
                         && !this.enableColumnVirtualization && !this.enableVirtualization
                         && this.pageSettings.totalRecordsCount <= this.pageSettings.pageSize)) { requireRefresh = true; }
+                if (this.pagerModule && this.pagerModule.isCancel) {
+                    this.pagerModule.isCancel = false;
+                }
                 break;
             case 'allowSorting':
                 this.notify(events.uiUpdate, { module: 'sort', enable: this.allowSorting });
@@ -7872,7 +7879,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Object[] | Promise<Object>} Returns the filtered records
      */
     public getFilteredRecords(): Object[] | Promise<Object> {
-        if (this.allowFiltering && this.filterSettings.columns.length) {
+        if ((this.allowFiltering && this.filterSettings.columns.length) || this.searchSettings.key.length) {
             const query: Query = this.renderModule.data.generateQuery(true);
             if (this.dataSource && this.renderModule.data.isRemote() && this.dataSource instanceof DataManager) {
                 return this.renderModule.data.getData(this.dataSource as DataOptions, query);

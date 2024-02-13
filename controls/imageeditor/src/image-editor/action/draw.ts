@@ -3352,7 +3352,8 @@ export class Draw {
         if (!isBlazor()) {
             parent.notify('toolbar', { prop: 'getDefToolbarItems', value: {obj: obj }});
             if (obj['defToolbarItems'].length === 0 &&
-                (isNullOrUndefined(document.getElementById(id + '_toolbar')))) {
+                (isNullOrUndefined(document.getElementById(id + '_toolbar'))) &&
+                parent.element.querySelector('#' + id + '_toolbarArea')) {
                 const height: number = parent.element.querySelector('#' + id + '_toolbarArea').clientHeight;
                 parent.notify('toolbar', { prop: 'setToolbarHeight', value: {height: height }});
             }

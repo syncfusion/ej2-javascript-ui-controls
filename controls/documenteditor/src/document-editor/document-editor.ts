@@ -3115,8 +3115,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             throw new Error('Invalid operation');
         }
         return new Promise((resolve: (value: Blob | PromiseLike<Blob>) => void) => {
-            if (formatType === 'Docx' && this.wordExportModule) {
-                resolve(this.wordExportModule.saveAsBlob(this.documentHelper));
+            if ((formatType === 'Docx' || formatType === 'Dotx') && this.wordExportModule) {
+                resolve(this.wordExportModule.saveAsBlob(this.documentHelper, formatType));
             } else if (formatType === 'Txt' && this.textExportModule) {
                 resolve(this.textExportModule.saveAsBlob(this.documentHelper));
             } else if (formatType === 'Sfdt' && this.enableSfdtExport && this.sfdtExportModule) {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I547586` - Now, the performance of diagram is improved while dragging large number of HTML shapes.
+
 ## 24.2.4 (2024-02-06)
 
 ### Diagram

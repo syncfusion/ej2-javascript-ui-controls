@@ -429,6 +429,24 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public cellEdit: EmitType<CellEditEventArgs>;
 
     /**
+     * Triggers when the cell has been edited.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       cellEdited: (args: CellEditEventArgs) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     *
+     * @event cellEdited
+     */
+    @Event()
+    public cellEdited: EmitType<CellEditEventArgs>;
+
+    /**
      * Triggers every time a request is made to access cell information.
      * This will be triggered when editing a cell.
      * ```html

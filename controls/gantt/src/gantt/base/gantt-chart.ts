@@ -1147,21 +1147,39 @@ export class GanttChart {
         const mouseUp: string = Browser.touchEndEvent;
         const mouseMove: string = Browser.touchMoveEvent;
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
-        EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, mouseDown, this.ganttChartMouseDown);
-        EventHandler.remove(this.parent.chartPane, cancel, this.ganttChartLeave);
-        EventHandler.remove(this.parent.chartPane, mouseMove, this.ganttChartMove);
+        if (!isNullOrUndefined(this.parent.chartRowsModule.ganttChartTableBody)) {
+            EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, mouseDown, this.ganttChartMouseDown);
+        }
+        if (!isNullOrUndefined(this.parent.chartPane)) {
+            EventHandler.remove(this.parent.chartPane, cancel, this.ganttChartLeave);
+            EventHandler.remove(this.parent.chartPane, mouseMove, this.ganttChartMove);
+        }
         if (this.parent.isAdaptive) {
-            EventHandler.remove(this.parent.chartPane, click, this.ganttChartMouseClick);
-            EventHandler.remove(this.parent.chartPane, mouseUp, this.ganttChartMouseUp);
+            if (!isNullOrUndefined(this.parent.chartPane)) {
+                EventHandler.remove(this.parent.chartPane, click, this.ganttChartMouseClick);
+                EventHandler.remove(this.parent.chartPane, mouseUp, this.ganttChartMouseUp);
+            }
         }
         if (!this.parent.isAdaptive) {
-            EventHandler.remove(this.parent.element, mouseUp, this.documentMouseUp);
-            EventHandler.remove(document, mouseUp, this.mouseUp);
+            if (!isNullOrUndefined(this.parent.element)) {
+                EventHandler.remove(this.parent.element, mouseUp, this.documentMouseUp);
+            }
+            if (!isNullOrUndefined(document)) {
+                EventHandler.remove(document, mouseUp, this.mouseUp);
+            }
         }
-        EventHandler.remove(this.parent.element, 'mousemove', this.mouseMoveHandler);
-        EventHandler.remove(document.body, 'contextmenu', this.contextClick);
-        EventHandler.remove(document, 'mouseup', this.contextClick);
-        EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler);
+        if (!isNullOrUndefined(this.parent.element)) {
+            EventHandler.remove(this.parent.element, 'mousemove', this.mouseMoveHandler);
+        }
+        if (!isNullOrUndefined(document)) {
+            EventHandler.remove(document, 'mouseup', this.contextClick);
+            if (!isNullOrUndefined(document.body)) {
+                EventHandler.remove(document.body, 'contextmenu', this.contextClick);
+            }
+        }
+        if (!isNullOrUndefined(this.parent.chartRowsModule.ganttChartTableBody)) {
+            EventHandler.remove(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler);
+        }
     }
 
     /**
@@ -1625,7 +1643,9 @@ export class GanttChart {
     private destroy(): void {
         this.removeEventListener();
         this.unWireEvents();
-        this.scrollObject.destroy();
-        this.scrollObject = null;
+        if (!isNullOrUndefined(this.scrollObject)) {
+            this.scrollObject.destroy();
+            this.scrollObject = null;
+        }
     }
 }

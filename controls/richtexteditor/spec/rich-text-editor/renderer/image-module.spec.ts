@@ -4175,36 +4175,38 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
-    describe( "BLAZ-25362: In RTE image the image border and resize icons are unevenly aligned", () => {
+    describe('BLAZ-25362: In RTE image the image border and resize icons are unevenly aligned', () => {
         let rteObj: RichTextEditor;
-        beforeAll( () => {
-            rteObj = renderRTE( {
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
                 value: `<p>Rich Text Editor allows inserting images from online sources as well as the local computers where you want to insert the image in your content.</p>
                         <img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;"/>`
                 , toolbarSettings: {
                     items: [ 'Image' ]
                 }
-            } )
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
         } );
-        afterAll( () => {
-            destroy( rteObj );
-        } );
-        it( ( "checking left top posistion and alignment of the resize icon" ), (done: Function) => {
+        it(('checking left top posistion and alignment of the resize icon'), (done: Function) => {
             let imgElem: HTMLElement = rteObj.element.querySelector( '.e-rte-image' );
-            setTimeout( () => {
-                dispatchEvent( imgElem, 'mousedown' );
-                expect( ( rteObj.element.querySelector( '.e-rte-topLeft' ) as HTMLElement ).style.left ).toEqual( '-6px' );
-                expect( ( rteObj.element.querySelector( '.e-rte-topLeft' ) as HTMLElement ).style.top ).toEqual( '120px' );
-                expect( ( rteObj.element.querySelector( '.e-rte-topRight' ) as HTMLElement ).style.left ).toEqual( '296px' );
-                expect( ( rteObj.element.querySelector( '.e-rte-topRight' ) as HTMLElement ).style.top ).toEqual( '120px' );
-                expect( ( rteObj.element.querySelector( '.e-rte-botLeft' ) as HTMLElement ).style.left ).toEqual( '-6px' );
-                expect( ( rteObj.element.querySelector( '.e-rte-botLeft' ) as HTMLElement ).style.top ).toEqual( '320px' );
-                expect( ( rteObj.element.querySelector( '.e-rte-botRight' ) as HTMLElement ).style.left ).toEqual( '296px' );
-                expect( ( rteObj.element.querySelector( '.e-rte-botRight' ) as HTMLElement ).style.top ).toEqual( '320px' );
+            dispatchEvent(imgElem, 'mousedown' );
+            setTimeout(() => {
+                expect((rteObj.element.querySelector('.e-rte-topLeft') as HTMLElement ).style.left ).toEqual( '-6px' );
+                expect((rteObj.element.querySelector('.e-rte-topLeft') as HTMLElement ).style.top ).toEqual( '120px' );
+                expect((rteObj.element.querySelector('.e-rte-topRight') as HTMLElement ).style.left ).toEqual( '296px' );
+                expect((rteObj.element.querySelector('.e-rte-topRight') as HTMLElement ).style.top ).toEqual( '120px' );
+                expect((rteObj.element.querySelector('.e-rte-botLeft') as HTMLElement ).style.left ).toEqual( '-6px' );
+                expect((rteObj.element.querySelector('.e-rte-botLeft') as HTMLElement ).style.top ).toEqual( '320px' );
+                expect((rteObj.element.querySelector('.e-rte-botRight') as HTMLElement ).style.left ).toEqual( '296px' );
+                expect((rteObj.element.querySelector('.e-rte-botRight') as HTMLElement ).style.top ).toEqual( '320px' );
                 done();
-            }, 1000);
-        } );
-    } );
+            }, 2500);
+        });
+    });
 
     describe('EJ2-66350: DisplayLayout option checking in image quicktoolbar', () => {
         let rteObj: any;

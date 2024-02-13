@@ -189,12 +189,20 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         let batchChanges: Object = {};
         const gridData: string = 'dataSource';
         let isFiltered: boolean = false;
-        if (!this.parent.renderModule.data.isRemote() && this.parent.allowFiltering && this.parent.filterSettings.columns.length) {
+        if (!(this.parent.renderModule.data.isRemote() || (!isNullOrUndefined(this.parent.dataSource)
+            && (<{result: object[]}>this.parent.dataSource).result)) && ((this.parent.allowFiltering
+            && this.parent.filterSettings.columns.length) || this.parent.searchSettings.key.length)) {
             isFiltered = true;
         }
-        let currentViewData: Object[] = this.parent.dataSource instanceof Array ?
-            (isFiltered ? this.parent.getFilteredRecords() : this.parent.dataSource) : (this.parent.dataSource[`${gridData}`].json.length ?
-                this.parent.dataSource[`${gridData}`].json : this.parent.getCurrentViewRecords());
+        let currentViewData: Object[];
+        if (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result) {
+            currentViewData = this.parent.getCurrentViewRecords();
+        } else {
+            currentViewData = this.parent.dataSource instanceof Array ?
+                (isFiltered ? this.parent.getFilteredRecords() : this.parent.dataSource) : (this.parent.dataSource[`${gridData}`].json.length ?
+                    (isFiltered ? this.parent.getFilteredRecords() : this.parent.dataSource[`${gridData}`].json)
+                    : this.parent.getCurrentViewRecords());
+        }
         if (this.parent.parentDetails && !this.parent.getDataModule().isRemote()) {
             currentViewData = this.getData();
         }

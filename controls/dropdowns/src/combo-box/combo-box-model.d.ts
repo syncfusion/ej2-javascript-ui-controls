@@ -68,7 +68,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * @default null
      * @deprecated
      */
-    index?: number;
+    index?: number | null;
 
     /**
      * Specifies whether to show or hide the clear button.
@@ -221,7 +221,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * @default null
      * @deprecated
      */
-    text?: string;
+    text?: string | null;
 
     /**
      * Gets or sets the value of the selected item in the component.
@@ -230,6 +230,6 @@ export interface ComboBoxModel extends DropDownListModel{
      * @isGenericType true
      * @deprecated
      */
-    value?: number | string | boolean;
+    value?: number | string | boolean | null;
 
 }

@@ -632,16 +632,8 @@ export class SvgRenderer implements IRenderer {
         element: DiagramHtmlElement, canvas: HTMLElement, transform?: Transforms, value?: boolean, indexValue?: number): void {
         let htmlElement: HTMLElement; let parentHtmlElement: HTMLElement;
         if (canvas) {
-            let i: number; let j: number; let parentElement: HTMLElement;
-            for (i = 0; i < canvas.childNodes.length; i++) {
-                parentElement = canvas.childNodes[parseInt(i.toString(), 10)] as HTMLElement;
-                for (j = 0; j < parentElement.childNodes.length; j++) {
-                    if ((parentElement.childNodes[parseInt(j.toString(), 10)] as HTMLElement).id === element.id + '_html_element') {
-                        htmlElement = parentElement.childNodes[parseInt(j.toString(), 10)] as HTMLElement;
-                        break;
-                    }
-                }
-            }
+            //869698- drag performance is slow when dealing with 1000 plus HTML shapes and Overview feature
+            htmlElement = canvas.querySelector('#' + element.id + '_html_element');
         }
         if (!htmlElement) {
             parentHtmlElement = canvas.querySelector(('#' + element.id + '_html_element')) ||

@@ -112,9 +112,13 @@ export class PagerDropDown {
             }
         }
         this.pagerModule.dataBind();
-        this.pagerModule.trigger('dropDownChanged', { pageSize: this.pagerModule.isAllPage ||
-            (this.pagerModule.isAllPage === undefined && this.dropDownListObject.value === this.pagerModule.getLocalizedLabel('All')) ?
-            this.pagerModule.totalRecordsCount : parseInt(this.dropDownListObject.value as string, 10) });
+        if (!this.pagerModule.isCancel) {
+            this.pagerModule.trigger('dropDownChanged', {
+                pageSize: this.pagerModule.isAllPage ||
+                    (this.pagerModule.isAllPage === undefined && this.dropDownListObject.value === this.pagerModule.getLocalizedLabel('All')) ?
+                    this.pagerModule.totalRecordsCount : parseInt(this.dropDownListObject.value as string, 10)
+            });
+        }
     }
 
     public refresh(): void {

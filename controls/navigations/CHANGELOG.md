@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### TreeView
+
+#### Bug fixes
+
+- `#I550140` - Resolved the accessibility issue with TreeView component when rendered with checkbox.
+
+## 24.2.4 (2024-02-06)
+
+### Tab
+
+#### Bug fixes
+
+- `#I523951` - The issue with React's selection of a tab item using the select method, where all tab items were being underlined, has been resolved.
+
 ## 24.2.3 (2024-01-31)
 
 ### Menu
@@ -15,7 +31,6 @@
 #### Bug fixes
 
 - `#I546255` - An issue tab switching on disable item has been resolved.
-- `#I523951` - The issue with React's selection of a tab item using the select method, where all tab items were being underlined, has been resolved.
 
 ## 24.1.46 (2024-01-17)
 

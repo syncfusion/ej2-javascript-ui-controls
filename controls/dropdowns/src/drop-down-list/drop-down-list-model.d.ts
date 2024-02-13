@@ -164,7 +164,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      *
      * @default null
      */
-    text?: string;
+    text?: string | null;
 
     /**
      * Gets or sets the value of the selected item in the component.
@@ -172,7 +172,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * @default null
      * @isGenericType true
      */
-    value?: number | string | boolean;
+    value?: number | string | boolean | null;
 
     /**
      * Gets or sets the index of the selected item in the component.
@@ -183,7 +183,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      *
      * @default null
      */
-    index?: number;
+    index?: number | null;
 
     /**
      * Specifies whether to display the floating label above the input element.

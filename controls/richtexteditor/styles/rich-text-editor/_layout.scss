@@ -139,6 +139,11 @@
     .e-rte-content .e-content {
       font-size: $rte-big-content-font-size;
     }
+    .e-dialog .e-img-uploadwrap.e-droparea .e-browsebtn,
+    .e-dialog .e-aud-uploadwrap.e-droparea .e-browsebtn,
+    .e-dialog .e-vid-uploadwrap.e-droparea .e-browsebtn {
+      top: $rte-big-droparea-browsebtn-top;
+    }
   }
 
   .e-richtexteditor {
@@ -1111,7 +1116,7 @@
 
     .e-dialog .e-vid-uploadwrap.e-droparea .e-browsebtn,
     .e-rte-video-dialog.e-dialog.e-device.e-dlg-modal .e-vid-uploadwrap.e-droparea .e-browsebtn {
-      top: -130px;
+      top: $rte-droparea-browsebtn-top;
     }
 
     .e-dialog.e-device.e-dlg-modal .e-img-uploadwrap.e-droparea .e-browsebtn,
@@ -2018,7 +2023,9 @@
 
   @if $skin-name == 'Material3' {
     .e-rte-toolbar .e-rte-table-popup .e-insert-table-btn{
-      border-color: $outline;
+      font-weight: $font-weight;
+      border: 1px solid rgba($info-outline-border);
+      border-radius: 20px;
     }
     .e-dialog .e-dlg-header-content + .e-dlg-content{
       padding-top: 0;

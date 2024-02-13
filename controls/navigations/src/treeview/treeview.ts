@@ -1684,7 +1684,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             element = this.element.querySelector('[data-uid="' + data[this.fields.id] + '"]');
         }
         if (element) {
-            let ariaChecked: string = element.querySelector('.' + CHECKBOXWRAP).getAttribute('aria-checked');
+            let ariaChecked: string = element.getAttribute('aria-checked');
             if (ariaChecked !== 'true') {
                 this.changeState(element, 'indeterminate', null, true, true);
             }
@@ -1738,22 +1738,20 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private beforeNodeCreate(e: ItemCreatedArgs): void {
         if (this.showCheckBox) {
             let checkboxEle: Element = createCheckBox(this.createElement, true, { cssClass: this.touchClass });
-            checkboxEle.setAttribute('role', 'checkbox');
-            checkboxEle.setAttribute('aria-label', e.text);
             let icon: Element = select('div.' + ICON, e.item);
             let id: string = e.item.getAttribute('data-uid');
             e.item.childNodes[0].insertBefore(checkboxEle, e.item.childNodes[0].childNodes[isNOU(icon) ? 0 : 1]);
             let checkValue: Object = getValue(e.fields.isChecked, e.curData);
             if (this.checkedNodes.indexOf(id) > -1) {
                 select('.' + CHECKBOXFRAME, checkboxEle).classList.add(CHECK);
-                checkboxEle.setAttribute('aria-checked', 'true');
+                e.item.setAttribute('aria-checked', 'true');
                 this.addCheck(e.item);
             } else if (!isNOU(checkValue) && checkValue.toString() === 'true') {
                 select('.' + CHECKBOXFRAME, checkboxEle).classList.add(CHECK);
-                checkboxEle.setAttribute('aria-checked', 'true');
+                e.item.setAttribute('aria-checked', 'true');
                 this.addCheck(e.item);
             } else {
-                checkboxEle.setAttribute('aria-checked', 'false');
+                e.item.setAttribute('aria-checked', 'false');
             }
             let frame: Element = select('.' + CHECKBOXFRAME, checkboxEle);
             EventHandler.add(frame, 'mousedown', this.frameMouseHandler, this);
@@ -2266,7 +2264,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         ariaState = state === 'check' ? 'true' : state === 'uncheck' ? 'false' : ariaState;
         if (!isNOU(ariaState)) {
-            wrapper.setAttribute('aria-checked', ariaState);
+            currLi.setAttribute('aria-checked', ariaState);
         }
         if (isAdd) {
             let data: { [key: string]: Object }[] = [].concat([], this.checkActionNodes);
@@ -2280,7 +2278,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (!isPrevent) {
             if (!isNOU(ariaState)) {
-                wrapper.setAttribute('aria-checked', ariaState);
+                currLi.setAttribute('aria-checked', ariaState);
                 eventArgs.data[0].checked = ariaState;
                 this.trigger('nodeChecked', eventArgs);
                 this.checkActionNodes = [];
@@ -3310,7 +3308,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.checkActionNodes = [];
         let ariaState: string = !isCheck ? 'true' : 'false';
         if (!isNOU(ariaState)) {
-            checkWrap.setAttribute('aria-checked', ariaState);
+            currLi.setAttribute('aria-checked', ariaState);
         }
         let eventArgs: NodeCheckEventArgs = this.getCheckEvent(currLi, isCheck ? 'uncheck' : 'check', e);
         this.trigger('nodeChecking', eventArgs, (observedArgs: NodeCheckEventArgs) => {
@@ -3713,7 +3711,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let checked: string = null;
             const checkboxElement = select('.' + CHECKBOXWRAP, currLi);
             if (this.showCheckBox && checkboxElement) {
-                checked = checkboxElement.getAttribute('aria-checked');
+                checked = currLi.getAttribute('aria-checked');
             }
             return {
                 id: id, text: text, parentID: pid, selected: selected, selectable: selectable, expanded: expanded,

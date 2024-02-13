@@ -6,7 +6,7 @@
       background: $drop-down-btn-ul-bgcolor;
     }
     @else {
-      background-color: $drop-down-btn-ul-bgcolor;
+      background: $drop-down-btn-ul-bgcolor;
     }
     color: $drop-down-btn-color;
 
@@ -21,23 +21,25 @@
         }
 
         &.e-focused {
-          background-color: $drop-down-btn-li-focus-bgcolor;
+          @if $skin-name != 'FluentUI' {
+            background: $drop-down-btn-li-focus-bgcolor;
+          }
           box-shadow: $drop-down-btn-li-box-shadow;
         }
 
         &:hover {
           @if $skin-name == 'bootstrap5' {
-            background-color: $drop-down-btn-li-hover-bgcolor;
+            background: $drop-down-btn-li-hover-bgcolor;
           }
           @else {
-            background-color: $drop-down-btn-li-bgcolor;
+            background: $drop-down-btn-li-bgcolor;
           }
           color: $drop-down-btn-li-selection-font-color;
         }
 
         &:active,
         &.e-selected {
-          background-color: $drop-down-btn-li-selection-bgcolor;
+          background: $drop-down-btn-li-selection-bgcolor;
           color: $drop-down-btn-selected-color;
 
           & .e-menu-url {
@@ -73,7 +75,7 @@
       &:focus,
       &:active,
       &.e-active {
-        background-color: rgba(transparent, .056);
+        background: rgba(transparent, .056);
         border-color: transparent;
         box-shadow: none;
         color: inherit;

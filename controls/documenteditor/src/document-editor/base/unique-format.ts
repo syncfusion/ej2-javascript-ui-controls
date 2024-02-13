@@ -237,6 +237,9 @@ export class WUniqueFormat {
         if (property === 'restartLevel') {
             return 5;
         }
+        if (property === 'isLegalStyleNumbering') {
+            return 6;
+        }
         return 0;
     }
 
@@ -861,6 +864,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('restartLevel', source, modifiedProperty, modifiedValue, 9)) {
+            return false;
+        }
+        if (this.isNotEqual('isLegalStyleNumbering', source, modifiedProperty, modifiedValue, 9)) {
             return false;
         }
         return true;

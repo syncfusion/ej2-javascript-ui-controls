@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### Grid
+
+#### Bug fixes
+
+- `#I545865` - Resolved the issue where the grid aggregate value was not updating correctly after filtering and editing.
+- `#I545552` - The Excel filter is not displaying the advanced filtering sub menu items when selecting number/text/date filtering options on mobile and tablet devices.
+
 ## 24.2.4 (2024-02-06)
 
 ### Grid

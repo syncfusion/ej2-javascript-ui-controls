@@ -388,7 +388,7 @@ export class TrackChangesPane {
             }
             currentChangeView.layoutElementText(revision.range, changesDiv);
         }
-        if (revision.range.length === 0) {
+        if (!isNullOrUndefined(revision) && revision.range.length === 0) {
             this.owner.revisions.remove(revision);
         }
     }
@@ -563,7 +563,7 @@ export class TrackChangesPane {
                 let nextRowIndex: number = nextRow.index;
 
                 if (!startTable.equals(nextTable) &&
-                    startParentTable.equals(this.owner.documentHelper.layout.getParentTable(nextTable))) {
+                    (!isNullOrUndefined(startParentTable) && startParentTable.equals(this.owner.documentHelper.layout.getParentTable(nextTable)))) {
                     continue;
                 }
                 if (currentRevisionType === nextRevisionType && startRevision.author === nextRevision.author
@@ -584,7 +584,7 @@ export class TrackChangesPane {
                     let nextTable: TableWidget = block.associatedCell.ownerTable;
                     let parentTable: TableWidget = this.owner.documentHelper.layout.getParentTable(nextTable)
                     if (startTable.equals(nextTable) || (!startTable.equals(nextTable) &&
-                        startParentTable.equals(parentTable))) {
+                        (!isNullOrUndefined(startParentTable) && startParentTable.equals(parentTable)))) {
                         continue;
                     }
                 }

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an exception during form field reordering.
+- Resolved an exception encountered while parsing destination from document link annotation.
+
 ## 24.1.47 (2024-01-23)
 
 ### PDF Parser

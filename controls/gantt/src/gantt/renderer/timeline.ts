@@ -113,6 +113,8 @@ export class Timeline {
      */
     public updateChartByNewTimeline(): void {
         this.parent.chartRowsModule.refreshChartByTimeline();
+        let currentScrollLeft = this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0].scrollLeft;
+        this.parent.element.getElementsByClassName('e-timeline-header-container')[0].scrollLeft = currentScrollLeft;
         this.parent.notify('refreshDayMarkers', {});
 
     }

@@ -138,7 +138,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * @private
      * @deprecated
      */
-    index?: number;
+    index?: number | null;
 
     /**
      * Specifies whether to display the floating label above the input element.
@@ -193,6 +193,6 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * @private
      * @deprecated
      */
-    text?: string;
+    text?: string | null;
 
 }

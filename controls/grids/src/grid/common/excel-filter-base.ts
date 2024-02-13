@@ -160,14 +160,18 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     }
 
     private wireExEvents(): void {
+        if (!Browser.isDevice) {
         EventHandler.add(this.dlg, 'mouseover', this.hoverHandler, this);
+        }
         EventHandler.add(this.dlg, 'click', this.clickExHandler, this);
         EventHandler.add(this.dlg, 'keyup', this.keyUp, this);
         EventHandler.add(this.dlg, 'keydown', this.keyDown, this);
     }
 
     private unwireExEvents(): void {
-        EventHandler.remove(this.dlg, 'mouseover', this.hoverHandler);
+        if (!Browser.isDevice) {
+            EventHandler.remove(this.dlg, 'mouseover', this.hoverHandler);
+        }
         EventHandler.remove(this.dlg, 'click', this.clickExHandler);
         EventHandler.remove(this.dlg, 'keyup', this.keyUp);
         EventHandler.remove(this.dlg, 'keydown', this.keyDown);
@@ -180,7 +184,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             if (this.getLocalizedLabel('ClearFilter') === menuItem.innerText.trim()) {
                 this.clearFilter();
                 this.closeDialog();
-            } else if (this.options.isResponsiveFilter
+            } else if ((this.options.isResponsiveFilter || Browser.isDevice)
                 && this.getLocalizedLabel(options[this.options.type]) === menuItem.innerText.trim()) {
                 this.hoverHandler(e);
             }

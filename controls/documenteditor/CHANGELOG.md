@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I554171` - Resolved the document corruption in save as blob exported document.
+- `#I544606` - Resolved the arabic text selection issue when selecting justified rtl paragraph.
+- `#I544673` - Resolved the page number field text update issue.
+- `#I543368` - Resolved the numbers of each section has been changed to roman numerals issue.
+- `#I543923` - Resolved the extra table is being displayed on the first page.
+
 ## 24.2.4 (2024-02-06)
 
 ### DocumentEditor

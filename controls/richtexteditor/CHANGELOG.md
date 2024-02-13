@@ -8,11 +8,21 @@
 
 #### Bug Fixes
 
+- `#F183065` - Now, applying the mention by using the '&' keyword in the text editor is now properly working.
+
+## 24.2.3 (2024-01-31)
+
+### RichTextEditor
+
+#### Bug Fixes
+
 - `#I530749` - Now, the `change` event is triggered properly when inserting the mention list items in the Rich Text Editor.
 
 - `#I534487` - Now, applying the bold format to the Rich Text Editor when focusing on another Rich Text Editor in the page works properly.
 
 - `#I539510` - Now, when an empty string `value` is loaded, the cursor will not focus automatically in the Rich Text Editor.
+
+- `#I544943` - Now, pasting images along with content in different languages from MS Word in the Rich Text Editor works properly.
 
 ## 24.2.3 (2024-01-31)
 

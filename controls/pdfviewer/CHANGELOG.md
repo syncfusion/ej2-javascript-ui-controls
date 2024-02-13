@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I543533` - Now, the `annotationPropertiesChange` event is triggered when updating the freetext annotation value for the first time.
+- `#I549061` - Now, the tree text annotation selector is resized after programmatically changing font size.
+- `#I549061` - Now, the text markup selection is working properly in mobile devices.
+- `#I549061` - Now, the page does not zoom when selecting the free text annotation on a mobile device.
+- `#I542451` - Now, the background color of the freeText annotation does not appear as black after downloading the document in a Stand-alone PDF Viewer.
+- `#I547297` - Now, the canvas within the Signature dialogue container is now centred for mobile view, and in the mobile view, the data property has been included in the `addSignature` event arguments.
+
 ## 24.2.4 (2024-02-06)
 
 ### PDF Viewer

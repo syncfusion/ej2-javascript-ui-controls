@@ -569,6 +569,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const collisionLeft: number = collisionPosition[0];
         const collisionTop: number = collisionPosition[1];
         const elePos: OffsetPosition = this.collisionFlipFit(target, collisionLeft, collisionTop);
+        if (!this.isBodyContainer) {
+            elePos.top -= (this.containerElement.getBoundingClientRect() as DOMRect).top;
+        }
         elePos.left = elePos.left / scalingFactors.x;
         elePos.top = elePos.top / scalingFactors.y;
         this.tooltipEle.style.display = '';
@@ -1102,8 +1105,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         const eleOffset: OffsetPosition = { left: elePos.left, top: elePos.top };
-        const position: OffsetPosition = this.isBodyContainer ?
-            fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: this.windowCollision }, eleOffset) : eleOffset;
+        const position: OffsetPosition = fit(this.tooltipEle, this.checkCollideTarget(), { X: true, Y: this.windowCollision }, eleOffset);
         this.tooltipEle.style.display = 'block';
         const arrowEle: HTMLElement = select('.' + ARROW_TIP, this.tooltipEle) as HTMLElement;
         if (this.showTipPointer && arrowEle != null && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {

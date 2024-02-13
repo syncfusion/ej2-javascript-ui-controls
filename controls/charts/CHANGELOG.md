@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### StockChart
+
+#### Bug Fixes
+
+- `#I549996` - Now, the stock chart axis labels render properly.
+
 ## 24.2.4 (2024-02-06)
 
 ### Chart

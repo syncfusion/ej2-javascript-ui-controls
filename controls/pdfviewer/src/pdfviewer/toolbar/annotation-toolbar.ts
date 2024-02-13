@@ -291,7 +291,7 @@ export class AnnotationToolbar {
     }
     public hideMobileAnnotationToolbar(): void {
         if (this.toolbarElement != null) {
-            if (this.pdfViewer.selectedItems.annotations.length > 0 || this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+            if (this.pdfViewer.selectedItems.annotations.length > 0 || (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule) && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation)) {
                 if (this.propertyToolbar && this.propertyToolbar.element.children.length > 0) {
                     this.propertyToolbar.element.style.display = 'block';
                     this.toolbarCreated = true;
@@ -391,7 +391,7 @@ export class AnnotationToolbar {
                 // eslint-disable-next-line max-len
                 items: this.createPropertyToolbarForMobile(shapeType), width: '', height: '', overflowMode: 'Scrollable',
                 created: () => {
-                    if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                    if (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule) && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                         id = this.pdfViewer.element.id + '_underlineIcon';
                     }
                     else if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
@@ -417,7 +417,7 @@ export class AnnotationToolbar {
             propertyToolbar.isStringTemplate = true;
             propertyToolbar.appendTo(shapeToolbarElement);
             
-            if (!this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+            if (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule) && !this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                 if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line') {
                     this.enableItems(this.colorDropDownElement.parentElement, false);
                 }

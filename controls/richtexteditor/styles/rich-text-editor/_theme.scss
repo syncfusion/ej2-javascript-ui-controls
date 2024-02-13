@@ -500,7 +500,15 @@
   }
 
   .e-dialog .e-vid-uploadwrap .e-droptext {
-    height: 108px;
+    height: $rte-drop-text-height;
+  }
+
+  .e-bigger .e-richtexteditor {
+    .e-dialog .e-img-uploadwrap .e-droptext,
+    .e-dialog .e-aud-uploadwrap .e-droptext,
+    .e-dialog .e-vid-uploadwrap .e-droptext {
+      height: $rte-big-drop-text-height;
+    }
   }
 
   .e-dialog.e-device.e-dlg-modal .e-img-uploadwrap .e-droptext,
@@ -821,6 +829,9 @@
     }
     .e-bigger .e-rtl .e-rte-toolbar .e-toolbar-items {
       border-top-right-radius: $rte-border-top-right-radius;
+    }
+    .e-rte-toolbar .e-rte-table-popup .e-insert-table-btn{
+      color: $rte-content-color;
     }
   }
   // Blazor styles start

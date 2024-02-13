@@ -497,4 +497,12 @@ describe('Template', () => {
         expect(outputDOM(data)).toEqual(output);
     });
 
+    it('Template string with encrypted value: ', () => {
+        // Below is an base64 encrypted value `jaVasCript:/*-/*`/*\`/*'/*/**/"(/* */oNcliCk=alert('XSS') )//%0D%0A%0D%0A//`
+        const unformattedValue: string = window.atob(
+            'amFWYXNDcmlwdDovKi0vKmAvKlxgLyonLyovKiovIigvKiAqL29OY2xpQ2s9YWxlcnQoJ1hTUycpICkvLyUwRCUwQSUwRCUwQS8v'
+        );
+        const templateFn: Function = template.compile(unformattedValue);
+        expect(templateFn()).toBe('jaVasCript:/*-/*`/*`/*\'/*/**/"(/* */oNcliCk=alert(\'XSS\') )//%0D%0A%0D%0A//');
+    });
 });

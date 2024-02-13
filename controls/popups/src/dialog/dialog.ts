@@ -1378,6 +1378,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setContent(): void {
         this.contentEle = this.createElement('div', { className: DLG_CONTENT, id: this.element.id + '_dialog-content' });
+        if (this.headerEle){
+            attributes(this.element, { 'aria-describedby': this.element.id + '_title' + ' ' + this.element.id + '_dialog-content' });
+        }
+        else {
+            attributes(this.element, { 'aria-describedby': this.element.id + '_dialog-content' });
+        } 
         if (this.innerContentElement) {
             this.contentEle.appendChild(this.innerContentElement);
         } else if (!isNullOrUndefined(this.content) && this.content !== '' || !this.initialRender) {
@@ -1514,7 +1520,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.createHeaderContent();
         this.headerContent.appendChild(this.headerEle);
         this.setTemplate(this.header, this.headerEle, 'header');
-        attributes(this.element, { 'aria-labelledby': this.element.id + '_title' });
+        attributes(this.element, { 'aria-describedby': this.element.id + '_title' });
+        attributes(this.element, { 'aria-label': "dialog" });
         this.element.insertBefore(this.headerContent, this.element.children[0]);
         if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
             this.setAllowDragging();

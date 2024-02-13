@@ -98,7 +98,7 @@ export class ComboBox extends DropDownList {
      * @deprecated
      */
     @Property(null)
-    public index: number;
+    public index: number | null;
     /**
      * Specifies whether to show or hide the clear button.
      * When the clear button is clicked, `value`, `text`, and `index` properties are reset to null.
@@ -253,7 +253,7 @@ export class ComboBox extends DropDownList {
      * @deprecated
      */
     @Property(null)
-    public text: string;
+    public text: string | null;
     /**
      * Gets or sets the value of the selected item in the component.
      *
@@ -262,7 +262,7 @@ export class ComboBox extends DropDownList {
      * @deprecated
      */
     @Property(null)
-    public value: number | string | boolean;
+    public value: number | string | boolean | null;
     /**
      * *Constructor for creating the component
      *

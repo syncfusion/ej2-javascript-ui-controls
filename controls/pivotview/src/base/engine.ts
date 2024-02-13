@@ -208,8 +208,8 @@ export class PivotEngine {
         dataSource?: IDataOptions, customProperties?: ICustomProperties, fn?: Function, onHeadersSort?: Function): void {
         this.getValueCellInfo = fn;
         this.getHeaderSortInfo = onHeadersSort;
-        if (this.formatFields && Object.keys(this.formatFields).length > 0) {
-            for (let i: number = 0, j: IFormatSettings[] = this.dataSourceSettings.formatSettings; i < j.length; i++) {
+        if (this.fieldList) {
+            for (let i: number = 0, j: IFormatSettings[] = dataSource.formatSettings; i < j.length; i++) {
                 if (!this.formatFields[j[i as number].name] && this.fieldList[j[i as number].name]) {
                     this.fieldList[j[i as number].name].members = {};
                     this.fieldList[j[i as number].name].formattedMembers = {};

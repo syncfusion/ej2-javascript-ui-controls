@@ -2321,7 +2321,7 @@ export class DialogEdit {
     private renderInputElements(inputModel: CObject, column: GanttColumnModel): HTMLElement {
         const ganttId: string = this.parent.element.id;
         const ganttData: IGanttData = this.editedRecord;
-        const divElement: HTMLElement = this.createFormElement('e-edit-form-column');
+        const divElement: HTMLElement = this.createDivElement('e-edit-form-column');
         let inputElement: HTMLElement;
         const editArgs: Record<string, unknown> = { column: column, data: ganttData };
         if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {

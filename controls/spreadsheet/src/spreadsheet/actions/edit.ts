@@ -422,7 +422,7 @@ export class Edit {
         }
         if (this.parent.isEdit && editorElem && trigEvent && this.editCellData.value === editorElem.textContent) {
             if (this.triggerEvent('cellEditing').cancel) {
-                this.cancelEdit();
+                this.cancelEdit(false, false, null, true);
             }
         }
         // if (this.editorElem.scrollHeight + 2 <= this.editCellData.element.offsetHeight) {
@@ -817,7 +817,7 @@ export class Edit {
                 updateEditValue();
                 const evtArgs: CellEditEventArgs = this.triggerEvent('cellEdit', null, value);
                 if (evtArgs.cancel) {
-                    this.cancelEdit(true, false);
+                    this.cancelEdit(true, false, null, true);
                     return;
                 }
                 if (evtArgs.showFormattedText) {
@@ -1232,11 +1232,16 @@ export class Edit {
         this.updateEditedValue(true, triggerEventArgs.value, event, isPublic);
     }
 
-    public cancelEdit(refreshFormulaBar: boolean = true, trigEvent: boolean = true, event?: MouseEvent & TouchEvent |
-    KeyboardEventArgs): void {
+    public cancelEdit(
+        refreshFormulaBar: boolean = true, trigEvent: boolean = true, event?: MouseEvent & TouchEvent | KeyboardEventArgs,
+        isInternal?: boolean): void {
         this.refreshEditor(this.editCellData.oldValue, refreshFormulaBar, false, false, false);
-        if (trigEvent) {
-            this.triggerEvent('cellSave', event);
+        if (!isInternal) {
+            if (trigEvent) {
+                this.triggerEvent('cellSave', event);
+            } else {
+                this.triggerEvent('cellEdited');
+            }
         }
         this.resetEditState();
         this.focusElement();
@@ -1280,19 +1285,24 @@ export class Edit {
                     this.parent, sheet, { cell: cell, rowIdx: this.editCellData.rowIndex, colIdx: this.editCellData.colIndex,
                         eventOnly: true });
                 if (cancel) {
-                    this.cancelEdit(false, false);
+                    this.cancelEdit(false, false, null, true);
                     (<CellEditEventArgs>eventArgs).cancel = true;
                     return <CellEditEventArgs>eventArgs;
                 }
             }
             this.parent.trigger(eventName, eventArgs);
             if (eventName === 'cellSave') {
+                this.parent.trigger('cellEdited', eventArgs);
                 if (this.editCellData.formula) { eventArgs.formula = this.editCellData.formula; }
                 eventArgs.originalEvent = event;
                 this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'cellSave' });
             }
-        } else if (eventName !== 'cellSave' && eventName !== 'beforeCellSave') {
-            this.parent.trigger(eventName, eventArgs);
+        } else if (eventName !== 'beforeCellSave') {
+            if (eventName === 'cellSave') {
+                this.parent.trigger('cellEdited', eventArgs);
+            } else {
+                this.parent.trigger(eventName, eventArgs);
+            }
         }
         return <CellEditEventArgs>eventArgs;
     }

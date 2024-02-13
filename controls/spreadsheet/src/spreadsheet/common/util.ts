@@ -8,7 +8,7 @@ import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, C
 import { RangeModel, getRangeIndexes, wrap, setRowHeight, insertModel, InsertDeleteModelArgs, getColumnWidth } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, isLocked } from '../../workbook/index';
 import { cellValidation, clearCFRule, ConditionalFormatModel, getColumn, getRow, updateCell } from '../../workbook/index';
-import { getCell, setChart, ApplyCFArgs, VisibleMergeIndexArgs, setVisibleMergeIndex } from '../../workbook/index';
+import { getCell, setChart, ApplyCFArgs, VisibleMergeIndexArgs, setVisibleMergeIndex, Row, Sheet, Column } from '../../workbook/index';
 import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel, deleteModel } from '../../workbook/index';
 import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, setCellFormat, updateCFModel } from '../../workbook/index';
 import { checkUniqueRange, applyCF, ActionEventArgs, skipHiddenIdx, isFilterHidden, ConditionalFormat } from '../../workbook/index';
@@ -1414,7 +1414,7 @@ export function updateAction(
         } else {
             spreadsheet.notify(
                 initiateFilterUI, { predicates: eventArgs.predicates, range: eventArgs.range, sIdx: eventArgs.sheetIndex, promise: promise,
-                    isInternal: true, useFilterRange: eventArgs.useFilterRange });
+                    isInternal: true, useFilterRange: eventArgs.useFilterRange, enableColumnHeaderFiltering: eventArgs.enableColumnHeaderFiltering });
         }
         if (actionEventArgs && !isFromUpdateAction) {
             promise.then((): void => {
@@ -2186,4 +2186,48 @@ export function addDPRValue(size: number): number {
         return size + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
     }
     return size;
+}
+
+/**
+ * @hidden
+ */
+export function getSheetProperties(context: Spreadsheet, keys?: string[]): string {
+    const skipProps: string[] = [];
+    if (keys) {
+        let propList: { colPropNames: string[], complexPropNames: string[], propNames: string[] } = Object.getPrototypeOf(
+            new Cell(<any>context, 'cells', {}, true)).constructor.prototype.propList;
+        const cellProps: string[] = propList.colPropNames.concat(propList.complexPropNames).concat(propList.propNames);
+        propList = Object.getPrototypeOf(new Row(<any>context, 'rows', {}, true)).constructor.prototype.propList;
+        const rowProps: string[] = propList.colPropNames.concat(propList.complexPropNames).concat(propList.propNames);
+        propList = Object.getPrototypeOf(new Column(<any>context, 'columns', {}, true)).constructor.prototype.propList;
+        const colProps: string[] = propList.colPropNames.concat(propList.complexPropNames).concat(propList.propNames);
+        propList = Object.getPrototypeOf(new Sheet(<any>context, 'sheets', {}, true)).constructor.prototype.propList;
+        const sheetProps: string[] = propList.colPropNames.concat(propList.complexPropNames).concat(propList.propNames);
+        sheetProps.splice(sheetProps.indexOf('rows'), 1);
+        sheetProps.splice(sheetProps.indexOf('columns'), 1);
+        sheetProps.splice(sheetProps.indexOf('cells'), 1);
+        rowProps.splice(rowProps.indexOf('cells'), 1);
+        skipProps.push(...sheetProps);
+        if (keys.indexOf('rows') === -1) {
+            skipProps.push(...rowProps);
+        }
+        if (keys.indexOf('columns') === -1) {
+            skipProps.push(...colProps);
+        }
+        if (keys.indexOf('cells') === -1) {
+            skipProps.push(...cellProps);
+        }
+        let idx: number;
+        keys.forEach((key: string) => {
+            idx = skipProps.indexOf(key);
+            if (skipProps.indexOf(key) > -1) {
+                skipProps.splice(idx, 1);
+            }
+        });
+    } else {
+        skipProps.push('ranges');
+    }
+    const eventArgs: { skipProps: string[], model?: string } = { skipProps: skipProps };
+    context.notify('getStringifyObject', eventArgs);
+    return eventArgs.model;
 }

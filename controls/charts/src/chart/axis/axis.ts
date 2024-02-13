@@ -1338,7 +1338,7 @@ export class Axis extends ChildProperty<Axis> {
             // To avoid overlap axis label with chart title or chart legend when it is outside.
             if (this.labelPosition === 'Outside' && !isHorizontalAngle && isBreakLabel(this.rotatedLabel)) {
                 this.maxLabelSize = new Size(this.maxLabelSize.height, this.maxLabelSize.width);
-            } else if (!chart.stockChart) {
+            } else {
                 this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
             }
         } else if (this.angle !== 0 && this.orientation === 'Vertical') {
@@ -1349,7 +1349,7 @@ export class Axis extends ChildProperty<Axis> {
             // To avoid overlap axis label with chart title or chart legend when it is outside.
             if (this.labelPosition === 'Outside' && !isHorizontalAngle && isBreakLabel(this.rotatedLabel)) {
                 this.maxLabelSize = new Size(this.maxLabelSize.height, this.maxLabelSize.width);
-            } else if (!chart.stockChart) {
+            } else {
                 this.maxLabelSize = rotateTextSize(this.labelStyle, this.rotatedLabel, this.angle, chart);
             }
         }

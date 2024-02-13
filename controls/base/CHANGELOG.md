@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### Common
+
+#### Bug Fixes
+
+- `#I495294` - The issue with content sanitization in the tooltip component has been resolved.
+
 ## 24.2.3 (2024-01-31)
 
 ### Common

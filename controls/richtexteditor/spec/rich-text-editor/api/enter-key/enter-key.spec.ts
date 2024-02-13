@@ -2345,3 +2345,46 @@ describe('850231 - Enter key press does not copy the styles content of Previous 
         destroy(rteObj);
     });
 });
+
+describe('868816 - The enter key is not working properly in the Rich Text Editor.', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            enterKey: 'P',
+            value: `<p class="firstNode"> </p> <table class="e-rte-table" style="width: 54.7572%; min-width: 0px; height: 109px;">
+            <thead>
+                <tr>
+                    <th class="">SNo<br></th>
+                    <th class="">Task<br></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 23.7179%;" class="">1</td>
+                    <td style="width: 75.641%;" class="">Ensuring the Accessibility for the Rich Text Editor.</td>
+                </tr>
+                <tr>
+                    <td style="width: 23.7179%;" class="">2</td>
+                    <td style="width: 75.641%;" class="">Ensuring the Accessibility for the Kanban.<br></td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="focusNode"> </p>`
+        });
+        done();
+    });
+    it('Press enter at the end of the container', function (): void {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.focusNode');
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode.childNodes[0], startNode.childNodes[0], 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.querySelector('.e-rte-table').nextElementSibling.getAttribute('style')).toBe(null);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+})

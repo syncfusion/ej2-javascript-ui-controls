@@ -151,7 +151,7 @@ $rte-table-popup-bdr-radius: 0 !default;
 
 $rte-inline-dropdown-line-height: 30px !default;
 $rte-big-inline-dropdown-line-height: 34px !default;
-$rte-table-popup-border: rgba(0, 0, 0, .2) !default;
+$rte-table-popup-border:1px solid rgba(0, 0, 0, .2) !default;
 $rte-big-content-font-size: 16px !default;
 $rte-dropdown-caret-icon-size: 8px !default;
 $rte-big-dropdown-caret-icon-size: 10px !default;
@@ -198,13 +198,15 @@ $rte-big-file-browser-dlg-max-height: 557px !default;
 $rte-big-table-dlg-max-height: 302px !default;
 $rte-big-edit-table-dlg-max-height: 378px !default;
 $rte-drop-text-width: 300px !default;
-$rte-drop-text-height: 185px !default;
+$rte-drop-text-height: 128px !default;
+$rte-big-drop-text-height: 140px !default;
 $rte-drop-text-mobile-width: 250px !default;
 $rte-tbar-default-bg: $gray-100;
 $rte-droparea-line-height: 10;
 $rte-droparea-browsebtn-height: 36px;
 $rte-droparea-browsebtn-padding: 0 18px;
-$rte-droparea-browsebtn-top: -50px;
+$rte-droparea-browsebtn-top: -120px;
+$rte-big-droparea-browsebtn-top: -120px;
 $rte-insert-dialog-font-size: 15px;
 $rte-big-insert-dialog-font-size: 15px;
 $rte-table-popup-tablecell-height: 14px;
@@ -331,7 +333,7 @@ $rte-format-painter-cursor: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiI
     }
 
     & .e-rte-table-popup.e-popup.e-popup-open {
-      border: 1px solid $rte-table-popup-border;
+      border: $rte-table-popup-border;
       border-radius: 4px;
 
       & .e-insert-table-btn .e-btn-icon.e-icons {

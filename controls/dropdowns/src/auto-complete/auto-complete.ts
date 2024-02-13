@@ -164,7 +164,7 @@ export class AutoComplete extends ComboBox {
      * @deprecated
      */
     @Property(null)
-    public index: number;
+    public index: number | null;
     /**
      * Specifies whether to display the floating label above the input element.
      * Possible values are:
@@ -219,7 +219,7 @@ export class AutoComplete extends ComboBox {
      * @deprecated
      */
     @Property(null)
-    public text: string;
+    public text: string | null;
     /**
      * * Constructor for creating the widget
      *

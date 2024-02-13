@@ -137,7 +137,10 @@ describe('Split Button', () => {
             type: 'keyup',
             target: null
         };
-        button = new SplitButton({ items: items });
+        const onSelect: any = (args: any) => {
+            expect(args.item.text).toEqual('Copy');
+        };
+        button = new SplitButton({ items: items, select: onSelect });
         button.appendTo('#splitbtn');
         button.secondaryBtnObj.element.click();
         const li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>button.dropDown.element.querySelectorAll('li');

@@ -647,7 +647,7 @@ export class TextSearch {
                             this.searchedPages = [searchPageIndex];
                             this.searchIndex = -1;
                         } else {
-                            if (!this.isMessagePopupOpened && this.pdfViewerBase.currentPageNumber !== 1 && !this.isSearchText) {
+                            if (!this.isMessagePopupOpened && this.pdfViewerBase.currentPageNumber !== 0 && !this.isSearchText) {
                                 this.onMessageBoxOpen();
                             }
                             this.searchPageIndex = searchPageIndex;

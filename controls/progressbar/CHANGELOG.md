@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- `#I548132` - Optimized the inline style of the progress bar.
+
 ## 23.2.6 (2023-11-28)
 
 ### ProgressBar

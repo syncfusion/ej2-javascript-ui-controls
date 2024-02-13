@@ -60,6 +60,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     private pageRefresh: string = 'pager-refresh';
     private parent: object;
     private firstPagerFocus: boolean = false;
+    /** @hidden */
+    public isCancel: boolean = false;
 
     //Module declarations
     /*** @hidden */
@@ -437,6 +439,10 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                 if (newProp.pageSize !== oldProp.pageSize) {
                     this.pageSize = newProp.pageSize;
                     this.currentPageChanged(newProp, oldProp);
+                    if (this.isCancel && this.hasParent) {
+                        (this.parent as { setProperties(prop: Object, muteOnChange: boolean): void })
+                            .setProperties({ pageSettings: { pageSize: oldProp.pageSize } }, true);
+                    }
                 } else {
                     this.refresh();
                 }
@@ -939,11 +945,14 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             };
             this.trigger('click', args);
             if (!args.cancel) {
+                this.isCancel = false;
                 this.refresh();
             }
             else {
                 if (oldProp.pageSize && this.pageSize !== oldProp.pageSize) {
-                    this.setProperties({ pageSize: oldProp.pageSize }, false);
+                    this.isCancel = true;
+                    this.setProperties({ pageSize: oldProp.pageSize }, true);
+                    this.pagerdropdownModule.setDropDownValue('value', oldProp.pageSize);
                     this.pagerdropdownModule['dropDownListObject'].text = oldProp.pageSize + '';
                 }
             }

@@ -293,9 +293,6 @@ export class Grouping implements IAction {
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],
-            overlayClick: () => {
-                this.removeDialog();
-            },
             closeOnEscape: true,
             close: this.removeDialog.bind(this),
             target: this.parentElement,

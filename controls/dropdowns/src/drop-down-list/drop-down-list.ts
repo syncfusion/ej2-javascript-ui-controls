@@ -365,7 +365,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * @default null
      */
     @Property(null)
-    public text: string;
+    public text: string | null;
     /**
      * Gets or sets the value of the selected item in the component.
      *
@@ -373,7 +373,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * @isGenericType true
      */
     @Property(null)
-    public value: number | string | boolean;
+    public value: number | string | boolean | null;
     /**
      * Gets or sets the index of the selected item in the component.
      *
@@ -384,7 +384,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * @default null
      */
     @Property(null)
-    public index: number;
+    public index: number | null;
     /**
      * Specifies whether to display the floating label above the input element.
      * Possible values are:

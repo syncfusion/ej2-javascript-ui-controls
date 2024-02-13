@@ -54,6 +54,18 @@ export class WListLevel {
     public set restartLevel(restartLevel: number) {
         this.setPropertyValue('restartLevel', restartLevel);
     }
+    /**
+     * Gets the boolean that specifies that the format for the numbering at this level should be in the decimal format.
+     */
+    public get isLegalStyleNumbering(): boolean {
+        return this.getPropertyValue('isLegalStyleNumbering') as boolean;
+    }
+    /**
+     * Sets the boolean that specifies that the format for the numbering at this level should be in the decimal format.
+     */
+    public set isLegalStyleNumbering(isLegalStyleNumbering: boolean) {
+        this.setPropertyValue('isLegalStyleNumbering', isLegalStyleNumbering);
+    }
 
     public constructor(node: WAbstractList | WLevelOverride) {
         if (node instanceof WAbstractList) {
@@ -94,6 +106,7 @@ export class WListLevel {
         this.addUniqueWListLevel('followCharacter', property, propValue, uniqueListLevelTemp);
         this.addUniqueWListLevel('numberFormat', property, propValue, uniqueListLevelTemp);
         this.addUniqueWListLevel('restartLevel', property, propValue, uniqueListLevelTemp);
+        this.addUniqueWListLevel('isLegalStyleNumbering', property, propValue, uniqueListLevelTemp);
         this.uniqueListLevel = WListLevel.uniqueListLevels.addUniqueFormat(uniqueListLevelTemp, WListLevel.uniqueFormatType);
     }
 
@@ -124,6 +137,9 @@ export class WListLevel {
             break;
         case 'restartLevel':
             value = 0;
+            break;
+        case 'isLegalStyleNumbering':
+            value = false;
             break;
         }
         return value;

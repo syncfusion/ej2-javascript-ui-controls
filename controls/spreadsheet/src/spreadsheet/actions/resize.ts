@@ -5,7 +5,7 @@ import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange, getTe
 import { setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit } from '../common/index';
 import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol } from '../../workbook/base/index';
 import { getColumn, setRow, getCell, CellModel } from '../../workbook/base/index';
-import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs, isRowSelected } from '../../workbook/common/index';
+import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs, isRowSelected, beginAction } from '../../workbook/common/index';
 import { getFormattedCellObject, hideShow, NumberFormatArgs } from '../../workbook/common/index';
 
 /**
@@ -108,7 +108,9 @@ export class Resize {
     }
 
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
-        if (!closest(e.target as Element, '.e-header-cell')) { return; }
+        if (!closest(e.target as Element, '.e-header-cell') || (e.target as Element).className.includes('e-filter-icon')) {
+            return;
+        }
         this.event = e;
         this.trgtEle = <HTMLElement>e.target;
         if (this.trgtEle.parentElement.classList.contains('e-hide-end') || this.trgtEle.classList.contains('e-hide-end')) {
@@ -151,7 +153,9 @@ export class Resize {
     }
 
     private dblClickHandler(e?: MouseEvent & TouchEvent): void {
-        if (!closest(e.target as Element, '.e-header-cell')) { return; }
+        if (!closest(e.target as Element, '.e-header-cell') || (e.target as Element).className.includes('e-filter-icon')) {
+            return;
+        }
         this.trgtEle = <HTMLElement>e.target;
         this.updateTarget(e, this.trgtEle);
         if (this.trgtEle.classList.contains('e-colresize')) {
@@ -160,7 +164,7 @@ export class Resize {
             if (this.trgtEle.classList.contains('e-unhide-column')) {
                 this.showHiddenColumns(colIndx - 1);
             } else {
-                this.setAutofit(colIndx, true, prevWidth);
+                this.setAutofit(colIndx, true, prevWidth, this.trgtEle);
             }
         } else if (this.trgtEle.classList.contains('e-rowresize')) {
             const rowIndx: number = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
@@ -171,7 +175,9 @@ export class Resize {
     }
 
     private setTarget(e: MouseEvent): void {
-        if (!closest(e.target as Element, '.e-header-cell')) { return; }
+        if (!closest(e.target as Element, '.e-header-cell') || (e.target as Element).className.includes('e-filter-icon')) {
+            return;
+        }
         const trgt: HTMLElement = <HTMLElement>e.target;
         const sheet: SheetModel = this.parent.getActiveSheet();
         if (sheet.isProtected && (!sheet.protectSettings.formatColumns || !sheet.protectSettings.formatRows)) {
@@ -318,9 +324,24 @@ export class Resize {
         return displayText;
     }
 
-    private setAutofit(idx: number, isCol: boolean, prevData?: string): void {
-        const sheet: SheetModel = this.parent.getActiveSheet();
-        let oldValue: number; let cell: CellModel; let cellEle: HTMLElement; let colGrp: HTMLElement; let wrapCell: boolean;
+    private setAutofit(idx: number, isCol: boolean, prevData?: string, hdrCell?: Element): void {
+        const sheet: SheetModel = this.parent.getActiveSheet(); let includeHeader: boolean;
+        if (hdrCell) {
+            const eventArgs: { [key: string]: string | number | boolean } = { cancel: false, index: idx, isCol: isCol,
+                sheetIndex: this.parent.activeSheetIndex };
+            if (isCol) {
+                eventArgs.oldWidth = prevData;
+                eventArgs.includeHeader = false;
+            } else {
+                eventArgs.oldHeight = prevData;
+            }
+            this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'resizeToFit' });
+            if (eventArgs.cancel) {
+                return;
+            }
+            includeHeader = <boolean>eventArgs.includeHeader;
+        }
+        let oldValue: number; let cell: CellModel = {}; let cellEle: HTMLElement; let colGrp: HTMLElement; let wrapCell: boolean;
         const table: HTMLElement = this.parent.createElement(
             'table', { className: this.parent.getContentTable().className + ' e-resizetable', styles: 'height: auto' });
         const tBody: HTMLElement = this.parent.createElement('tbody');
@@ -329,22 +350,28 @@ export class Resize {
         if (isCol) {
             let row: HTMLElement;
             table.style.width = 'auto';
+            const appendRow: Function = (content: string): void => {
+                cellEle = tdEle.cloneNode() as HTMLElement;
+                cellEle.textContent = content;
+                cellEle.style.fontFamily = (cell.style && cell.style.fontFamily) || this.parent.cellStyle.fontFamily;
+                cellEle.style.fontSize = (cell.style && cell.style.fontSize) || this.parent.cellStyle.fontSize;
+                row = <HTMLElement>rowEle.cloneNode();
+                row.appendChild(cellEle);
+                tBody.appendChild(row);
+            };
+            if (includeHeader) {
+                appendRow(hdrCell.textContent);
+            }
             for (let rowIdx: number = 0, len: number = sheet.rows.length; rowIdx < len; rowIdx++) {
                 cell = getCell(rowIdx, idx, sheet);
                 if (cell) {
-                    cellEle = tdEle.cloneNode() as HTMLElement;
                     if (cell.wrap) {
                         wrapCell = true;
-                        cellEle.textContent = this.getWrapText(this.parent.getDisplayText(cell), getExcludedColumnWidth(
-                            sheet, idx, idx, cell.colSpan > 1 ? idx + cell.colSpan - 1 : idx), cell.style);
+                        appendRow(this.getWrapText(this.parent.getDisplayText(cell), getExcludedColumnWidth(
+                            sheet, idx, idx, cell.colSpan > 1 ? idx + cell.colSpan - 1 : idx), cell.style));
                     } else {
-                        cellEle.textContent = this.parent.getDisplayText(cell);
+                        appendRow(this.parent.getDisplayText(cell));
                     }
-                    cellEle.style.fontFamily = (cell.style && cell.style.fontFamily) || this.parent.cellStyle.fontFamily;
-                    cellEle.style.fontSize = (cell.style && cell.style.fontSize) || this.parent.cellStyle.fontSize;
-                    row = <HTMLElement>rowEle.cloneNode();
-                    row.appendChild(cellEle);
-                    tBody.appendChild(row);
                 }
             }
             oldValue = getColumnWidth(sheet, idx);

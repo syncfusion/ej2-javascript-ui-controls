@@ -2300,7 +2300,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     this.upload(this.filesData, true);
                 }
             }
-            this.raiseActionComplete();
+            for (let item: number = 0; item < this.filesData.length; item++) {
+                if (this.filesData[item as number].statusCode === '0') {
+                    this.checkActionComplete(true);
+                }
+            }
             this.isFirstFileOnSelection = true;
         }
     }

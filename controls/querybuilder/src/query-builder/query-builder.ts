@@ -15,7 +15,7 @@ import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChange
 import { TextBoxModel, NumericTextBoxModel } from '@syncfusion/ej2-inputs';
 import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs, DatePickerModel } from '@syncfusion/ej2-calendars';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { Tooltip, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { Tooltip, createSpinner, showSpinner, hideSpinner, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { compile as templateCompiler } from '@syncfusion/ej2-base';
 
  type ReturnType = { result: Object[], count: number, aggregates?: Object };
@@ -1019,7 +1019,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         dataSource: this.columns as { [key: string]: Object }[], // tslint:disable-line
                         fields: this.fields, placeholder: this.l10n.getConstant('SelectField'),
                         popupHeight: ((this.columns.length > 5) ? height : 'auto'), close: this.fieldClose.bind(this, ruleElem.id + '_filterkey'),
-                        change: this.changeField.bind(this), value: rule ? ddlValue : null, open: this.popupOpen.bind(this, true)
+                        change: this.changeField.bind(this), value: rule ? ddlValue : null, open: this.popupOpen.bind(this, true),
+                        cssClass: 'qb-dropdownlist'
                     };
                     if (this.fieldModel) {
                         ddlField = {...ddlField, ...this.fieldModel as DropDownListModel};
@@ -1141,9 +1142,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
 
     private renderToolTip(element: HTMLElement): void {
-        const tooltip: Tooltip = new Tooltip({ content: this.l10n.getConstant('ValidationMessage'),
+        const tooltip: Tooltip = new Tooltip({ content: this.l10n.getConstant('ValidationMessage'), isSticky: true,
             position: 'BottomCenter', cssClass: 'e-querybuilder-error', afterClose: (): void => {
                 tooltip.destroy();
+            }, beforeOpen: (args: TooltipEventArgs): void => {
+                const tooltipCloseElement: HTMLElement = args.element.querySelector('.e-tooltip-close') as HTMLElement;
+                if (tooltipCloseElement) {
+                    tooltipCloseElement.style.display = 'none';
+                }
             }});
         tooltip.appendTo(element);
         tooltip.open(element);
@@ -1185,7 +1191,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                     fieldElem = tempElem.querySelector('.e-rule-operator .e-control');
                     if (!rule.rules[index as number].operator) {
-                        if (fieldElem.parentElement.className.indexOf('e-tooltip') < 0) {
+                        if (fieldElem.parentElement.className.indexOf('e-tooltip') < 0 && fieldElem.className.indexOf('e-tooltip') < 0) {
                             this.renderToolTip(fieldElem.parentElement);
                         }
                         isValid = false;
@@ -3097,12 +3103,19 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const queryElement: Element = this.element;
         if (!queryElement) { return; }
         let element: NodeListOf<HTMLElement>; let i: number; let len: number; let tooltip: NodeListOf<HTMLElement>;
+        let popupElement: NodeListOf<HTMLElement>;
         super.destroy();
         element = this.element.querySelectorAll('.e-addrulegroup') as NodeListOf<HTMLElement>;
         len = element.length;
         for (i = 0; i < len; i++) {
             (getComponent(element[i as number], 'dropdown-btn') as DropDownButton).destroy();
             detach(element[i as number]);
+        }
+        popupElement = document.querySelectorAll('.qb-dropdownlist') as NodeListOf<HTMLElement>;
+        if (popupElement) {
+            for( i = 0; i < popupElement.length; i++) {
+                popupElement[i as number].remove();
+            }
         }
         tooltip = this.element.querySelectorAll('.e-rule-filter .e-control.e-tooltip') as NodeListOf<HTMLElement>;
         for (i = 0; i < tooltip.length; i++) {

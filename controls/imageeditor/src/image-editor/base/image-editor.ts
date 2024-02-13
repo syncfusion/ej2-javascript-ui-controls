@@ -1337,7 +1337,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         EventHandler.add(this.lowerCanvas, 'mousedown', this.canvasMouseDownHandler, this);
         EventHandler.add(this.lowerCanvas, 'mousemove', this.canvasMouseMoveHandler, this);
         EventHandler.add(this.lowerCanvas, 'mouseup', this.canvasMouseUpHandler, this);
-        EventHandler.add(document, 'mouseup', this.canvasMouseUpHandler, this);
         EventHandler.add(this.upperCanvas, 'touchstart', this.touchStartHandler, this);
         EventHandler.add(this.lowerCanvas, 'touchstart', this.touchStartHandler, this);
         EventHandler.add(this.lowerCanvas, 'mousewheel DOMMouseScroll', this.handleScroll, this);
@@ -1365,7 +1364,6 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         EventHandler.remove(this.lowerCanvas, 'mousedown', this.canvasMouseDownHandler);
         EventHandler.remove(this.lowerCanvas, 'mousemove', this.canvasMouseMoveHandler);
         EventHandler.remove(this.lowerCanvas, 'mouseup', this.canvasMouseUpHandler);
-        EventHandler.remove(document, 'mouseup', this.canvasMouseUpHandler);
         EventHandler.remove(this.upperCanvas, 'touchstart', this.touchStartHandler);
         EventHandler.remove(this.lowerCanvas, 'touchstart', this.touchStartHandler);
         EventHandler.remove(this.lowerCanvas, 'mousewheel DOMMouseScroll', this.handleScroll);
@@ -1456,10 +1454,12 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.upperCanvas.style.cursor = this.cursor = 'default';
         this.upperCanvas.style.display = 'block';
         this.upperContext = this.upperCanvas.getContext('2d');
-        document.getElementById(this.element.id + '_dropBrowse').onclick = () => {
-            (this.element.querySelector('#' + this.element.id + '_dropfileUpload') as HTMLInputElement).click();
-            return false;
-        };
+        dropAnchorElement.addEventListener('click', function(e: MouseEvent) {
+            e.preventDefault(); dropUploader.click(); return false;
+        });
+        minDropAnchorElem.addEventListener('click', function(e: MouseEvent) {
+            e.preventDefault(); dropUploader.click(); return false;
+        });
     }
 
     private touchStartHandler(e: MouseEvent & TouchEvent): void {

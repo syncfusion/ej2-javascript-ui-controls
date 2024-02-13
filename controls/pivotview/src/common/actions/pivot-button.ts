@@ -1089,6 +1089,8 @@ export class PivotButton implements IAction {
             }
             if (type !== 'Value') {
                 this.parent.lastFilterInfo = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
+                this.parent.lastFilterInfo = (<{ [key: string]: Object }>this.parent.lastFilterInfo).properties ?
+                    (<{ [key: string]: Object }>this.parent.lastFilterInfo).properties : this.parent.lastFilterInfo;
             }
             this.parent.pivotCommon.filterDialog.dialogPopUp.close();
             if (!observedArgs.cancel) {

@@ -43,6 +43,7 @@ export class CellRenderer implements ICellRenderer {
         }
         this.parent.trigger(
             'beforeCellRender', <CellRenderEventArgs>{ cell: null, element: headerCell, address: headerText, colIndex: index });
+        this.parent.notify(renderFilterCell, { td: headerCell, rowIndex: 0, colIndex: index });
         attributes(headerCell, { 'aria-colindex': (index + 1).toString(), 'tabindex': '-1' });
     }
     public renderRowHeader(index: number, row: Element, refChild?: Element): void {

@@ -93,7 +93,7 @@ export class ConditionalFormatting {
                 enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
                 position: { X: 'center', Y: 'center' }, allowDragging: true, buttons: buttonModel,
                 beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
-                cssClass: this.parent.cssClass, header: this.parent.localeObj.getConstant('conditionalFormating'), target: document.body
+                cssClass: this.parent.cssClass, header: this.parent.localeObj.getConstant('conditionalFormatting'), target: document.body
             });
         } else {
             dialog = new Dialog({
@@ -101,7 +101,7 @@ export class ConditionalFormatting {
                 beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
                 cssClass: this.parent.cssClass, isModal: true, closeOnEscape: true,
                 enableRtl: this.parent.enableRtl, locale: this.parent.locale, enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
-                showCloseIcon: true, header: this.parent.localeObj.getConstant('conditionalFormating'), target: this.parent.element
+                showCloseIcon: true, header: this.parent.localeObj.getConstant('conditionalFormatting'), target: this.parent.element
             });
         }
         dialog.isStringTemplate = true;
@@ -111,7 +111,7 @@ export class ConditionalFormatting {
 
     private beforeOpen(): void {
         select('#' + this.parentID + 'conditionalformatting', document).querySelector('.' + cls.DIALOG_HEADER)
-            .setAttribute('title', this.parent.localeObj.getConstant('conditionalFormating'));
+            .setAttribute('title', this.parent.localeObj.getConstant('conditionalFormatting'));
     }
 
     private addButtonClick(): void {

@@ -4626,6 +4626,12 @@ export class Layout {
                 // this.updateLinearIndex(paragraphWidget);
                 // this.updateLinearIndex(nextParagraph);
                 nextParagraph.containerWidget = nextBody;
+                for (let m = 0; m < nextParagraph.floatingElements.length; m++) {
+                    const element: ShapeBase = nextParagraph.floatingElements[m];
+                    if (element.line.paragraph.bodyWidget !== paragraphWidget.bodyWidget && element.textWrappingStyle !== 'Inline') {
+                        paragraphWidget.bodyWidget.floatingElements.splice(paragraphWidget.bodyWidget.floatingElements.indexOf(element), 1);
+                    }
+                }
                 const footWidget: BodyWidget[] = this.getFootNoteWidgetsOf(nextParagraph);
                 this.moveFootNotesToPage(footWidget, paragraphWidget.bodyWidget, nextBody);
                 paragraphWidget = nextParagraph;
@@ -4735,6 +4741,14 @@ export class Layout {
         nextParagraph.characterFormat = srcParagraph.characterFormat;
         nextParagraph.index = srcParagraph.index;
         srcParagraph.childWidgets.splice(childStartIndex);
+        for (let i = 0; i < srcParagraph.floatingElements.length; i++) {
+            const element: ShapeBase = srcParagraph.floatingElements[i] as ShapeBase;
+            if (element.line.paragraph !== srcParagraph) {
+                nextParagraph.floatingElements.push(element);
+                srcParagraph.floatingElements.splice(srcParagraph.floatingElements.indexOf(element), 1);
+                i--;
+            }
+        }
         return nextParagraph;
     }
     /**
@@ -5349,12 +5363,14 @@ export class Layout {
             for (let i: number = 0; i < keys.length; i++) {
                 let levelNumber: number = keys[i];
                 let levelKey: string = '%' + (levelNumber + 1).toString();
+                // if isLegalStyleNumber boolean is true, consider the currentlistlevel for getting the replace text else use the levels from starting.
                 let listLevel: WListLevel = this.getListLevel(listAdv, levelNumber);
+                let pattern: ListLevelPattern = i < listLevelNumber ? listLevel.listLevelPattern !== 'LeadingZero' ? 'Arabic' : listLevel.listLevelPattern : undefined;
                 if (listText.match(levelKey)) {
                     if (levelNumber > listLevelNumber) {
                         return '';
                     } else if (levels.containsKey(levelNumber) && !isNullOrUndefined(listLevel)) {
-                        listText = listText.replace(levelKey, this.getListTextListLevel(listLevel, levels.get(levelNumber)));
+                        listText = listText.replace(levelKey, this.getListTextListLevel(listLevel, levels.get(levelNumber), currentListLevel.isLegalStyleNumbering ? pattern : undefined));
                     } else {
                         listText = listText.replace(levelKey, '0');
                     }
@@ -5385,8 +5401,8 @@ export class Layout {
         return listValue;
     }
 
-    public getListTextListLevel(listLevel: WListLevel, listValue: number): string {
-        switch (listLevel.listLevelPattern) {
+    public getListTextListLevel(listLevel: WListLevel, listValue: number, customPattern?: ListLevelPattern ): string {
+        switch (!isNullOrUndefined(customPattern) ? customPattern : listLevel.listLevelPattern) {
             case 'UpRoman':
                 return this.getAsRoman(listValue).toUpperCase();
             case 'LowRoman':
@@ -8673,7 +8689,10 @@ export class Layout {
         this.isRelayoutFootnote = false;
 
     }
-    private checkAndGetBlock(containerWidget: Widget, blockIndex: number): BlockWidget {
+    /**
+     * @private
+     */
+    public checkAndGetBlock(containerWidget: Widget, blockIndex: number): BlockWidget {
         if (containerWidget instanceof TextFrame) {
             return containerWidget.childWidgets[blockIndex] as BlockWidget;
         } else {
@@ -9611,13 +9630,19 @@ export class Layout {
                     }
                 } else if (widget.containerWidget instanceof BodyWidget && widget.containerWidget.firstChild === widget && widget.previousRenderedWidget && widget.previousRenderedWidget instanceof ParagraphWidget && (widget.previousRenderedWidget.containerWidget as BodyWidget).sectionFormat.breakCode == 'NoBreak' && widget.containerWidget.page.index !== (widget.previousRenderedWidget.containerWidget as BodyWidget).page.index && widget.containerWidget.index !== widget.previousRenderedWidget.containerWidget.index) {
                     let bodyWidget: BodyWidget = widget.previousRenderedWidget.bodyWidget as BodyWidget;
+                    let breakCode: string = bodyWidget.sectionFormat.breakCode;
                     if (bodyWidget.sectionFormat.columns.length > 1) {
                         bodyWidget = this.getBodyWidget(bodyWidget, true);
+                    }
+                    if (!isNullOrUndefined(bodyWidget.previousRenderedWidget) && bodyWidget.sectionFormat.breakCode === 'NoBreak'
+                        && (bodyWidget.previousRenderedWidget as BodyWidget).sectionFormat.breakCode == 'NewPage'
+                        && bodyWidget.page.index === (bodyWidget.previousRenderedWidget as BodyWidget).page.index) {
+                        breakCode = (bodyWidget.previousRenderedWidget as BodyWidget).sectionFormat.breakCode;
                     }
                     let bottom: number = HelperMethods.round((this.getNextWidgetHeight(bodyWidget) + widget.height), 2);
                     // Bug 858530: Shift the widgets to previous container widget if the client height is not enough to place this widget.
                     if (!(widget.previousRenderedWidget.containerWidget.lastChild as ParagraphWidget).isEndsWithPageBreak && !(widget.previousRenderedWidget.containerWidget.lastChild as ParagraphWidget).isEndsWithColumnBreak 
-                        && bottom <= HelperMethods.round(this.viewer.clientActiveArea.bottom, 2)) {
+                        && bottom <= HelperMethods.round(this.viewer.clientActiveArea.bottom, 2) && breakCode === 'NoBreak') {
                         let page: Page = (widget.previousRenderedWidget as ParagraphWidget).bodyWidget.page;
                         let nextPage: Page = widget.containerWidget.page;
                         for (let j: number = 0; j < nextPage.bodyWidgets.length; j++) {

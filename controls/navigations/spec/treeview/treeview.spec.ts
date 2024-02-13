@@ -658,6 +658,7 @@ describe('TreeView control', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function() {
                     let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    let liEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                     expect(checkEle.length).toBeGreaterThan(0);
                     expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
                     var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
@@ -666,7 +667,7 @@ describe('TreeView control', () => {
                     checkEle[0].querySelector('.e-frame').dispatchEvent(e);
                     var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
                     checkEle[0].querySelector('.e-frame').dispatchEvent(e);
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                    expect(liEle[0].getAttribute('aria-checked')).toBe('true');
                     done();
                 }, 100);
             });
@@ -692,23 +693,24 @@ describe('TreeView control', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function() {
                     let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    let liEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                     expect(checkEle.length).toBeGreaterThan(0);
                     mouseEventArgs.target = checkEle[0].querySelector('.e-frame.e-icons');
                     tapEvent.originalEvent.which = 1;
                     treeObj.touchClickObj.tap(tapEvent);
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                    expect(liEle[0].getAttribute('aria-checked')).toBe('true');
                     expect(treeObj.element.querySelectorAll('.e-check').length).toBeGreaterThan(0);    
                     tapEvent.originalEvent.which = 3;
                     treeObj.touchClickObj.tap(tapEvent);
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                    expect(liEle[0].getAttribute('aria-checked')).toBe('true');
                     expect(treeObj.element.querySelectorAll('.e-check').length).toBeGreaterThan(0);
                     tapEvent.originalEvent.which = 1;
                     treeObj.touchClickObj.tap(tapEvent);
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('false');
+                    expect(liEle[0].getAttribute('aria-checked')).toBe('false');
                     expect(treeObj.element.querySelectorAll('.e-check').length).toBe(0);
                     tapEvent.originalEvent.which = 3;
                     treeObj.touchClickObj.tap(tapEvent);
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('false');
+                    expect(liEle[0].getAttribute('aria-checked')).toBe('false');
                     expect(treeObj.element.querySelectorAll('.e-check').length).toBe(0);
                     done();
                 }, 100);
@@ -721,6 +723,7 @@ describe('TreeView control', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function() {
                     let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    let liEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                     expect(checkEle.length).toBeGreaterThan(0);
                     expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
                     var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
@@ -729,7 +732,7 @@ describe('TreeView control', () => {
                     checkEle[0].querySelector('.e-frame').dispatchEvent(e);
                     var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
                     checkEle[0].querySelector('.e-frame').dispatchEvent(e);
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                    expect(liEle[0].getAttribute('aria-checked')).toBe('true');
                     expect(treeObj.checkedNodes.length).toBe(13);
                     var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                     checkEle[0].querySelector('.e-frame').dispatchEvent(e);
@@ -750,6 +753,7 @@ describe('TreeView control', () => {
                     }, '#tree1');
                     setTimeout(function () {
                         let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                        let liEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                         expect(checkEle.length).toBeGreaterThan(0);
                         expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
                         var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
@@ -758,7 +762,7 @@ describe('TreeView control', () => {
                         checkEle[0].querySelector('.e-frame').dispatchEvent(e);
                         var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
                         checkEle[0].querySelector('.e-frame').dispatchEvent(e);
-                        expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                        expect(liEle[0].getAttribute('aria-checked')).toBe('true');
                         var checknodes = treeObj.getAllCheckedNodes();
                         expect(checknodes.length).toBe(5);
                         treeObj.checkAll(['03']);
@@ -779,6 +783,7 @@ describe('TreeView control', () => {
                 }, '#tree1');
                 setTimeout(function () {
                     let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    let liEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                     expect(checkEle.length).toBeGreaterThan(0);
                     expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
                     var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
@@ -787,10 +792,11 @@ describe('TreeView control', () => {
                     checkEle[0].querySelector('.e-frame').dispatchEvent(e);
                     var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
                     checkEle[0].querySelector('.e-frame').dispatchEvent(e);
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                    expect(liEle[0].getAttribute('aria-checked')).toBe('true');
                     treeObj.expandAll(['01']);
                     var childCheck= treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                    expect(childCheck[1].getAttribute('aria-checked')).toBe('false');
+                    let liElement: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                    expect(liElement[1].getAttribute('aria-checked')).toBe('false');
                     expect(childCheck[1].firstElementChild.nextElementSibling.classList.contains('.e-check')).toBe(false);
                     done();
                 }, 100);
@@ -803,6 +809,7 @@ describe('TreeView control', () => {
                     }, '#tree1');
                     setTimeout(function () {
                         let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                        let liEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                         expect(checkEle.length).toBeGreaterThan(0);
                         expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
                         var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
@@ -811,10 +818,9 @@ describe('TreeView control', () => {
                         checkEle[0].querySelector('.e-frame').dispatchEvent(e);
                         var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
                         checkEle[0].querySelector('.e-frame').dispatchEvent(e);
-                        expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                        expect(liEle[0].getAttribute('aria-checked')).toBe('true');
                         treeObj.expandAll(['01']);
-                        var childCheck= treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                        expect(childCheck[1].getAttribute('aria-checked')).toBe('true');
+                        expect(liEle[1].getAttribute('aria-checked')).toBe('true');
                         treeObj.expandAll(['03']);
                         treeObj.checkAll(['03-03']);
                         treeObj.dataBind();
@@ -838,6 +844,7 @@ describe('TreeView control', () => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                        let liEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                         expect(checkEle.length).toBeGreaterThan(0);
                         expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
                         var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
@@ -846,7 +853,7 @@ describe('TreeView control', () => {
                         checkEle[0].querySelector('.e-frame').dispatchEvent(e);
                         var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
                         checkEle[0].querySelector('.e-frame').dispatchEvent(e);
-                        expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                        expect(liEle[0].getAttribute('aria-checked')).toBe('true');
                         var checknodes = treeObj.getAllCheckedNodes();
                         expect(checknodes.length).toBe(9);
                         expect(treeObj.checkedNodes.length).toBe(9);
@@ -863,6 +870,7 @@ describe('TreeView control', () => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function () {
                         let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                        let liEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                         expect(checkEle.length).toBeGreaterThan(0);
                         expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
                         var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
@@ -871,7 +879,7 @@ describe('TreeView control', () => {
                         checkEle[0].querySelector('.e-frame').dispatchEvent(e);
                         var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
                         checkEle[0].querySelector('.e-frame').dispatchEvent(e);
-                        expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                        expect(liEle[0].getAttribute('aria-checked')).toBe('true');
                         var checknodes = treeObj.getAllCheckedNodes();
                         expect(checknodes.length).toBe(9);
                         expect(treeObj.checkedNodes.length).toBe(9);
@@ -13632,8 +13640,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 expect(treeObj.checkedNodes.length).toBe(12);
                 expect(treeObj.checkedNodes).toContain('9');
                 expect(treeObj.checkedNodes).toContain('20');
-                expect(li[8].querySelector('.e-checkbox-wrapper').getAttribute('aria-checked')).toBe("true");
-                expect(li[19].querySelector('.e-checkbox-wrapper').getAttribute('aria-checked')).toBe("true");
+                expect(li[8].getAttribute('aria-checked')).toBe("true");
+                expect(li[19].getAttribute('aria-checked')).toBe("true");
                 done();
             });
             it('hasChildren attribute in getNode method testing when loadOnDemand disabled', (done: Function) => {
@@ -13768,7 +13776,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
                     treeObj.checkedNodes = ["1"];
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(function() {
-                        expect(li[1].querySelector('.e-checkbox-wrapper').getAttribute('aria-checked')).toBe('true');
+                        expect(li[1].getAttribute('aria-checked')).toBe('true');
                         done();
                     }, 450);
             });
@@ -13833,8 +13841,8 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 expect(treeObj.checkedNodes.length).toBe(11);
                 expect(treeObj.checkedNodes).toContain('10');
                 expect(treeObj.checkedNodes).toContain('20');
-                expect(li[9].querySelector('.e-checkbox-wrapper').getAttribute('aria-checked')).toBe("true");
-                expect(li[19].querySelector('.e-checkbox-wrapper').getAttribute('aria-checked')).toBe("true");
+                expect(li[9].getAttribute('aria-checked')).toBe("true");
+                expect(li[19].getAttribute('aria-checked')).toBe("true");
                 done();
             });
             it('checkedNodes property testing with invalid id', (done: Function) => {
@@ -13966,7 +13974,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 treeObj.checkedNodes = ["02-01"];
                 setTimeout(function() {
                     let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('tree1').querySelectorAll('li')
-                    expect(li[3].querySelector('.e-checkbox-wrapper').getAttribute('aria-checked')).toBe('true');
+                    expect(li[3].getAttribute('aria-checked')).toBe('true');
                     done();
                 }, 450);
         });
@@ -13986,7 +13994,7 @@ describe('Drag and drop with different TreeView functionality testing with empty
             let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
             setTimeout(function() {
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('tree1').querySelectorAll('li')
-                expect(li[1].querySelector('.e-checkbox-wrapper').getAttribute('aria-checked')).toBe('true');
+                expect(li[1].getAttribute('aria-checked')).toBe('true');
                 done();
             }, 450);
         });

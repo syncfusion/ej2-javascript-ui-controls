@@ -791,11 +791,19 @@ export class Shape {
             }
             parent.activeObj.strokeSettings.strokeColor = shapeSettings.strokeColor;
             parent.activeObj.strokeSettings.fillColor = shapeSettings.fillColor;
+            parent.activeObj.strokeSettings.strokeWidth = shapeSettings.strokeWidth;
             parent.activeObj.opacity = shapeSettings.opacity;
             if (isNullOrUndefined(shapeSettings.degree)) { shapeSettings.degree = 0; }
             switch (parent.activeObj.shape) {
             case 'ellipse':
-                parent.activeObj.activePoint.width = shapeSettings.radius * 2;
+                if (isBlazor()) {
+                    parent.activeObj.activePoint.width = shapeSettings.radius;
+                } else {
+                    parent.activeObj.activePoint.width = shapeSettings.radiusX * 2;
+                    parent.activeObj.activePoint.height = shapeSettings.radiusY * 2;
+                    parent.activeObj.activePoint.endX = parent.activeObj.activePoint.startX + parent.activeObj.activePoint.width;
+                    parent.activeObj.activePoint.endY = parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height;
+                }
                 if (shapeSettings.degree) {
                     parent.activeObj.rotatedAngle = shapeSettings.degree * (Math.PI / 180);
                 }
@@ -803,18 +811,35 @@ export class Shape {
             case 'line':
             case 'arrow':
                 parent.activeObj.activePoint.width = shapeSettings.length;
+                if (!isBlazor()) {
+                    parent.activeObj.activePoint.endX = shapeSettings.endX;
+                    parent.activeObj.activePoint.endY = shapeSettings.endY;
+                    parent.activeObj.activePoint.width = parent.activeObj.activePoint.startX + parent.activeObj.activePoint.width;
+                    parent.activeObj.activePoint.height = parent.activeObj.activePoint.startY + parent.activeObj.activePoint.height;
+                    if (parent.activeObj.shape === 'arrow') {
+                        parent.activeObj.start = this.getArrowType(shapeSettings.arrowHead);
+                        parent.activeObj.end = this.getArrowType(shapeSettings.arrowTail);
+                    }
+                }
                 break;
             case 'text':
                 parent.activeObj.keyHistory = parent.activeObj.textSettings.text = shapeSettings.text;
                 parent.activeObj.textSettings.fontSize = shapeSettings.fontSize;
                 parent.activeObj.strokeSettings.strokeColor = shapeSettings.color;
                 parent.activeObj.textSettings.fontFamily = shapeSettings.fontFamily;
+                if (shapeSettings.degree) {
+                    parent.activeObj.rotatedAngle = shapeSettings.degree * (Math.PI / 180);
+                }
                 break;
             case 'rectangle':
             case 'image':
                 if (shapeSettings.degree) {
                     parent.activeObj.rotatedAngle = shapeSettings.degree * (Math.PI / 180);
                 }
+                // Prevented setting image src as it cannot be set in canvas
+                break;
+            case 'path':
+                parent.activeObj.pointColl = shapeSettings.points;
                 break;
             }
             if (parent.activeObj.shape === 'text' && parent.activeObj.textSettings) {
@@ -2600,18 +2625,31 @@ export class Shape {
             shapeDetails.strokeColor = obj.strokeSettings.strokeColor;
             shapeDetails.fillColor = obj.strokeSettings.fillColor;
             shapeDetails.strokeWidth = obj.strokeSettings.strokeWidth;
+            shapeDetails.degree = obj.rotatedAngle * (180 / Math.PI);
             break;
         case 'ellipse':
             shapeDetails.radius = obj.activePoint.width / 2;
             shapeDetails.strokeColor = obj.strokeSettings.strokeColor;
             shapeDetails.fillColor = obj.strokeSettings.fillColor;
             shapeDetails.strokeWidth = obj.strokeSettings.strokeWidth;
+            shapeDetails.radiusX = obj.activePoint.width / 2;
+            shapeDetails.radiusY = obj.activePoint.height / 2;
+            shapeDetails.degree = obj.rotatedAngle * (180 / Math.PI);
             break;
         case 'line':
         case 'arrow':
             shapeDetails.length = obj.activePoint.width;
             shapeDetails.strokeColor = obj.strokeSettings.strokeColor;
             shapeDetails.strokeWidth = obj.strokeSettings.strokeWidth;
+            shapeDetails.endX = obj.activePoint.endX;
+            shapeDetails.endY = obj.activePoint.endY;
+            if (obj.shape === 'arrow') {
+                const arrowObj: Object = {type: null };
+                parent.notify('selection', {prop: 'getArrowType', onPropertyChange: false, value: {type: obj.start, obj: arrowObj}});
+                shapeDetails.arrowHead = arrowObj['type'];
+                parent.notify('selection', {prop: 'getArrowType', onPropertyChange: false, value: {type: obj.end, obj: arrowObj}});
+                shapeDetails.arrowTail = arrowObj['type'];
+            }
             break;
         case 'text':
             shapeDetails.text = obj.keyHistory;
@@ -2621,10 +2659,26 @@ export class Shape {
             shapeDetails.fontStyle = [];
             if (obj.textSettings.bold) {shapeDetails.fontStyle.push('bold'); }
             if (obj.textSettings.italic) {shapeDetails.fontStyle.push('italic'); }
+            shapeDetails.degree = obj.rotatedAngle * (180 / Math.PI);
             break;
         case 'path':
             shapeDetails.strokeColor = obj.strokeSettings.strokeColor;
             shapeDetails.strokeWidth = obj.strokeSettings.strokeWidth;
+            shapeDetails.points = obj.pointColl;
+            break;
+        case 'image':
+            shapeDetails.imageData = obj.imageCanvas.toDataURL();
+            shapeDetails.degree = obj.rotatedAngle * (180 / Math.PI);
+            shapeDetails.width = obj.activePoint.width;
+            shapeDetails.height = obj.activePoint.height;
+            shapeDetails.opacity = obj.opacity;
+            break;
+        case 'image':
+            shapeDetails.imageData = obj.imageCanvas.toDataURL();
+            shapeDetails.degree = obj.rotatedAngle * (180 / Math.PI);
+            shapeDetails.width = obj.activePoint.width;
+            shapeDetails.height = obj.activePoint.height;
+            shapeDetails.opacity = obj.opacity;
             break;
         }
         return shapeDetails;

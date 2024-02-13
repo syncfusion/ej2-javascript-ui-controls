@@ -1075,7 +1075,7 @@ export class Toolbar {
                         id: this.parent.element.id + 'numberFormattingMenu'
                     },
                     {
-                        text: this.parent.localeObj.getConstant('conditionalFormatingMenu'),
+                        text: this.parent.localeObj.getConstant('conditionalFormattingMenu'),
                         iconCss: cls.CONDITIONAL_FORMATTING_MENU + ' ' + cls.ICON,
                         id: this.parent.element.id + 'conditionalFormattingMenu'
                     }

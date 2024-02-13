@@ -4,7 +4,7 @@
  import { getValue, L10n } from '@syncfusion/ej2-base';
  import { Gantt, Edit, Toolbar, IGanttData, ContextMenu, ContextMenuClickEventArgs,Sort,  } from '../../src/index';
  import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1} from '../base/data-source.spec';
- import { createGantt, destroyGantt, triggerMouseEvent,  } from '../base/gantt-util.spec';
+ import { createGantt, destroyGantt, triggerKeyboardEvent, triggerMouseEvent,  } from '../base/gantt-util.spec';
  import { DropDownList } from '@syncfusion/ej2-dropdowns';
  import { DataManager } from '@syncfusion/ej2-data';
  import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -4480,6 +4480,18 @@ describe('validation in progress', () => {
                 let element1 = document.getElementsByClassName("e-formvalidator")[0].querySelectorAll(".e-griderror").length;
                 expect(element1>=1).toBe(true); 
             }
+        }
+    });
+    it('gantt refreshing while pressing enter', () => {
+        ganttObj.dataBind();
+        let taskField: any = document.querySelector('#' + ganttObj.element.id + 'TaskName') as HTMLInputElement;
+        triggerMouseEvent(taskField, 'dblclick');
+        if (taskField) {
+            let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'TaskName')).ej2_instances[0];
+            textObj.value = 'updated value';
+            textObj.dataBind();
+            triggerKeyboardEvent(taskField, 'keydown', 'Enter');
+            expect(document.getElementById(ganttObj.element.id + '_dialog')).toBeDefined();
         }
     });
 });

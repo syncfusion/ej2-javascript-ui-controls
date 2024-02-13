@@ -1136,7 +1136,7 @@ export class AnnotationRenderer {
             const subject: string = stampAnnotation.subject.toString();
             const icon: string = stampAnnotation.icon.toString();
             const stampColor: string = stampAnnotation.stampFillcolor.toString();
-            const fillColor: string = stampAnnotation.fillColor.toString();
+            const fillColor: string = !isNullOrUndefined(stampAnnotation.fillColor) ? stampAnnotation.fillColor.toString() : '#192760';
             const isDynamic: string = stampAnnotation.isDynamicStamp.toString();
             let textBrush: PdfBrush = new PdfBrush([0, 0, 0]);
             let colors: number[] = [];
@@ -1774,7 +1774,7 @@ export class AnnotationRenderer {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const fillColor: any = JSON.parse(freeTextAnnotation.fillColor);
             if (!this.isTransparentColor(fillColor)){
-                const color: number[] = [fillColor.r, fillColor.g, fillColor.b];
+                const color: number[] = [fillColor.r, fillColor.g, fillColor.b,fillColor.a];
                 annotation.color = color;
             }
             if (fillColor.a < 1 && fillColor.a > 0) {

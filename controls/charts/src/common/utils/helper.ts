@@ -115,7 +115,7 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
         labelText = text as string;
     }
     const htmlObject: HTMLElement = renderer.createText(options, labelText) as HTMLElement;
-    if (!chart.delayRedraw && !chart.redraw) {
+    if (!chart.delayRedraw && !chart.redraw && !(chart as Chart).stockChart) {
         chart.element.appendChild(chart.svgObject);
     }
     // for line break label
@@ -140,7 +140,7 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
         chart.element.style.transform = transformValue;
     }
     remove(htmlObject);
-    if (!chart.delayRedraw && !chart.redraw) {
+    if (!chart.delayRedraw && !chart.redraw && !(chart as Chart).stockChart) {
         remove(chart.svgObject);
     }
     if ((chart as Chart).enableCanvas) {

@@ -4320,3 +4320,198 @@ describe('CR-868784-The taskbar edit action is not working in RTL mode', () => {
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/04/2019');
     });
 });
+describe('Incorrect offset update while dragging taskbar', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Project initiation',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            {
+                                TaskID: 2,
+                                TaskName: 'Identify site location',
+                                StartDate: new Date('04/02/2019'),
+                                Duration: 0,
+                                Progress: 30,
+                                resources: [1],
+                                info: 'Measure the total property area alloted for construction',
+                            },
+                            {
+                                TaskID: 3,
+                                TaskName: 'Perform Soil test',
+                                StartDate: new Date('04/02/2019'),
+                                Duration: 4,
+                                Predecessor: '2',
+                                resources: [2, 3, 5],
+                                info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                                    'From an engineer or company specializing in soil testing',
+                            },
+                            {
+                                TaskID: 4,
+                                TaskName: 'Soil test approval',
+                                StartDate: new Date('04/02/2019'),
+                                Duration: 0,
+                                Predecessor: '3',
+                                Progress: 30,
+                            },
+                        ],
+                    },
+                    {
+                        TaskID: 5,
+                        TaskName: 'Project estimation',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            {
+                                TaskID: 6,
+                                TaskName: 'Develop floor plan for estimation',
+                                StartDate: new Date('04/04/2019'),
+                                Duration: 3,
+                                Predecessor: '7,8SS',
+                                Progress: 30,
+                                resources: 4,
+                                info: 'Develop floor plans and obtain a materials list for estimations',
+                            },
+                            {
+                                TaskID: 7,
+                                TaskName: 'List materials',
+                                StartDate: new Date('04/04/2019'),
+                                Duration: 3,
+                                resources: [4, 8],
+                                info: '',
+                            },
+                            {
+                                TaskID: 8,
+                                TaskName: 'Estimation approval',
+                                StartDate: new Date('04/04/2019'),
+                                Duration: 0,
+                                Predecessor: '9',
+                                resources: [12, 5],
+                                info: '',
+                            },
+                        ],
+                    },
+                    {
+                        TaskID: 9,
+                        TaskName: 'Sign contract',
+                        StartDate: new Date('04/04/2019'),
+                        Duration: 1,
+                        Predecessor: '7',
+                        Progress: 30,
+                        resources: [12],
+                        info: 'If required obtain approval from HOA (homeowners association) or ARC (architectural review committee)',
+                    },
+                ],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    },
+                },
+                eventMarkers: [
+                    {
+                        day: '04/10/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer' },
+                    { resourceId: 2, resourceName: 'Rose Fuller' },
+                    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                    { resourceId: 4, resourceName: 'Fuller King' },
+                    { resourceId: 5, resourceName: 'Davolio Fuller' },
+                    { resourceId: 6, resourceName: 'Van Jack' },
+                    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                    { resourceId: 8, resourceName: 'Jack Davolio' },
+                    { resourceId: 9, resourceName: 'Tamer Vinet' },
+                    { resourceId: 10, resourceName: 'Vinet Fuller' },
+                    { resourceId: 11, resourceName: 'Bergs Anton' },
+                    { resourceId: 12, resourceName: 'Construction Supervisor' },
+                ],
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('07/28/2019'),
+            }, done);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 2000);
+    });
+    it('checking offset', () => {
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#'+ganttObj.element.id+ 'GanttTaskTableBody > tr:nth-child(9) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.currentViewData[5].ganttProperties.predecessor[0].offset).toBe(5);
+    });
+});

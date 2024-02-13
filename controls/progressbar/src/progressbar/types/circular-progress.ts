@@ -155,7 +155,7 @@ export class Circular {
                 linearClipPath = progress.createClipPath(progress.clipPath, null, refresh ? previousPath : '', refresh);
                 circularProgressGroup.appendChild(progress.clipPath);
                 if (((progress.animation.enable && animationMode != 'Disable') || animationMode === 'Enable') && !progress.isIndeterminate && !progress.isActive) {
-                    circularProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
+                    (<SVGPathElement>circularProgress).style.clipPath = 'url(#' + progress.element.id + '_clippath)';
                     this.animation.doCircularAnimation(
                         this.centerX, this.centerY, radius, progressEndAngle, progressEnd, linearClipPath, progress,
                         thickness, this.delay, refresh ? previousEnd : null, refresh ? previousTotalEnd : null

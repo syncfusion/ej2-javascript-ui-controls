@@ -444,12 +444,19 @@ export class Overlay {
                 EventHandler.remove(<Element>overlays[idx as number], getMoveEvent(), this.overlayMouseMoveHandler);
             }
         }
-        EventHandler.remove(this.parent.element.querySelector('#' + this.parent.element.id + '_sheet'), getMoveEvent(), this.overlayMouseMoveHandler);
-        EventHandler.remove(document, getEndEvent(), this.overlayMouseUpHandler);
-        this.parent.off(overlayEleSize, this.setOriginalSize);
-        this.parent.off(selectionStatus, this.isOverlaySelected);
-        this.parent.off(refreshOverlayElem, this.refreshOverlayElem);
-        this.parent.off(spreadsheetDestroyed, this.destroy);
+        const ele: Element = this.parent.element.querySelector('#' + this.parent.element.id + '_sheet');
+        if (ele) {
+            EventHandler.remove(ele, getMoveEvent(), this.overlayMouseMoveHandler);
+        }
+        if (document) {
+            EventHandler.remove(document, getEndEvent(), this.overlayMouseUpHandler);
+        }
+        if (!this.parent.isDestroyed) {
+            this.parent.off(overlayEleSize, this.setOriginalSize);
+            this.parent.off(selectionStatus, this.isOverlaySelected);
+            this.parent.off(refreshOverlayElem, this.refreshOverlayElem);
+            this.parent.off(spreadsheetDestroyed, this.destroy);
+        }
     }
 
     /**

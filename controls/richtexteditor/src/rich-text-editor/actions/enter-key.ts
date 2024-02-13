@@ -508,10 +508,10 @@ export class EnterKeyAction {
         }
         const previousBlockNode: Element = this.parent.formatter.editorManager.domNode.blockNodes()[0].previousSibling as Element;
         const nextBlockNode: Element = this.parent.formatter.editorManager.domNode.blockNodes()[0].nextSibling as Element;
-        if (!isNOU(previousBlockNode) && previousBlockNode.hasAttribute('style')) {
+        if (!isNOU(previousBlockNode) && previousBlockNode.hasAttribute('style') && previousBlockNode.nodeName !== 'TABLE') {
             insertElem.setAttribute('style', previousBlockNode.getAttribute('style'));
         }
-        if (isNOU(previousBlockNode) && !isNOU(nextBlockNode) && nextBlockNode.hasAttribute('style')) {
+        if (isNOU(previousBlockNode) && !isNOU(nextBlockNode) && nextBlockNode.hasAttribute('style') && nextBlockNode.nodeName !== 'TABLE') {
             insertElem.setAttribute('style', nextBlockNode.getAttribute('style'));
         }
         return insertElem;

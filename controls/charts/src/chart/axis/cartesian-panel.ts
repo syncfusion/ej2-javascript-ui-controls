@@ -1411,7 +1411,7 @@ export class CartesianAxisLayoutPanel {
                 anchor = (chart.enableRtl) ? ((isEndAnchor) ? '' : 'end') : (chart.isRtlEnabled || isEndAnchor) ? 'end' : '';
             }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
-            if (angle !== 0 && !chart.stockChart) {
+            if (angle !== 0) {
                 rotatedLabelSize = rotateTextSize(label.labelStyle, label.originalText, angle, chart);
                 isLeft = ((angle < 0 && angle > -90) || (angle < -180 && angle > -270) || (angle > 90 && angle < 180) || (angle > 270 && angle < 360));
             }

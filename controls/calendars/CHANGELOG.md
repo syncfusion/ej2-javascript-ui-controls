@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#I860067` - Resolved an issue where users were unable to focus on the Today button using the Tab key.
+
 ## 24.2.3 (2024-01-31)
 
 ### DateTimePicker

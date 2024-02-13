@@ -2232,5 +2232,42 @@ describe('insert Audio', () => {
             }, 100);
         });
     });
+
+    describe('869663 - Inserted Audio is not shown ', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                toolbarSettings: {
+                    items: ['Audio']
+                },
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it('Test the inserted audio in the component ', (done) => {
+            let iframeBody: HTMLElement = (document.querySelector('iframe') as HTMLIFrameElement).contentWindow.document.body as HTMLElement;
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[0] as HTMLElement).click();
+            setTimeout(function () {
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).value = 'https://www.w3schools.com/html/horse.mp3';
+            (dialogEle.querySelector('.e-audio-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            let fileObj: File = new File(["Horse"], "horse.mp3", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).audioModule.uploadObj.onSelectFiles(eventArgs);
+            (document.querySelector('.e-insertAudio') as HTMLElement).click();
+            let trg = (iframeBody.querySelector('.e-rte-audio') as HTMLElement);
+            expect(!isNullOrUndefined(trg)).toBe(true);
+            done();
+            }, 100);
+        });
+    });
  });
  

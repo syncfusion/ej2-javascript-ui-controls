@@ -245,3 +245,64 @@ describe('Table Dialog', () => {
         expect(dialogCloseEvent).toBe(true);
     });
 });
+
+describe('Dialog Position Testing', () => {
+    let editorObj: RichTextEditor;
+    let dummy: HTMLDivElement;
+    beforeAll((done: DoneFn) => {
+        let link = document.createElement('link');
+        link.href = 'https://cdn.syncfusion.com/ej2/material.css';
+        link.rel = 'stylesheet';
+        link.id = 'materialTheme';
+        document.head.appendChild(link);
+        done();
+    });
+    beforeEach((done: DoneFn) => {
+        editorObj = renderRTE({
+            toolbarSettings: {
+                items: ['Image']
+            },
+            height: 400,
+            value: '<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in the\nclient side. Customer easy to edit the contents and get the HTML content for\nthe displayed content. A rich text editor control provides users with a toolbar\nthat helps them to apply rich text formats to the text entered in the text\narea. </p><p><b>Functional\nSpecifications/Requirements:</b></p><ol><li><p>Provide\nthe tool bar support, it’s also customizable.</p></li><li><p>Options\nto get the HTML elements with styles.</p></li><li><p>Support\nto insert image from a defined path.</p></li><li><p>Footer\nelements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size\nthe editor support.</p></li><li><p>Provide\nefficient public methods and client side events.</p></li><li><p>Keyboard\nnavigation support.</p></li></ol><p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in\nclient side. Customer easy to edit the contents and get the HTML content for\nthe displayed content. A rich text editor control provides users with a toolbar\nthat helps them to apply rich text formats to the text entered in the text\narea. </p><p><b>Functional\nSpecifications/Requirements:</b></p><ol><li><p>Provide\nthe tool bar support, it’s also customizable.</p></li><li><p>Options\nto get the HTML elements with styles.</p></li><li><p>Support\nto insert image from a defined path.</p></li><li><p>Footer\nelements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size\nthe editor support.</p></li><li><p>Provide\nefficient public methods and client side events.</p></li><li><p>Keyboard\nnavigation support.</p></li></ol><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p>'
+        });
+        setTimeout(() => {
+            editorObj.refreshUI();
+            dummy = document.createElement('div');
+            dummy.style.height = '1000px';
+            document.body.appendChild(dummy);
+            done();
+        }, 200);
+    });
+    afterAll((done: DoneFn) => {
+        document.getElementById('materialTheme').remove();
+        dummy.remove();
+        destroy(editorObj);
+        done();
+    });
+    it('Dialog Position Testing', (done: DoneFn) => {
+        editorObj.focusIn();
+        editorObj.formatter.editorManager.nodeSelection.setCursorPoint(document, editorObj.inputElement.lastElementChild, 1);
+        editorObj.inputElement.lastElementChild.scrollIntoView();
+        const eventInit: KeyboardEventInit =  {
+            keyCode: 73,
+            key: 'I',
+            which: 73,
+            code: 'KeyI',
+            location: 0,
+            altKey: false,
+            ctrlKey: true,
+            metaKey: false,
+            shiftKey: true,
+            repeat: false
+        } as EventInit;
+        const imageDialogOpenDown = new KeyboardEvent('keydown', eventInit as EventInit);
+        editorObj.inputElement.dispatchEvent(imageDialogOpenDown);
+        const imageDialogOpenUp = new KeyboardEvent('keyup', eventInit as EventInit);
+        editorObj.inputElement.dispatchEvent(imageDialogOpenUp);
+        setTimeout(() => {
+            const dialog: HTMLElement = document.querySelector('.e-rte-img-dialog');
+            expect(parseInt(dialog.style.top)).toBeGreaterThan(120);
+            done();
+        }, 400);
+    });
+});

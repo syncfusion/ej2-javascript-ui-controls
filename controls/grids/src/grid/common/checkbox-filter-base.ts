@@ -478,6 +478,9 @@ export class CheckBoxFilterBase {
                 }
             }
             this.closeDialog();
+        } else if (e.target && (e.target as HTMLElement).firstChild &&
+            (e.target as HTMLElement).firstChild.textContent.toLowerCase() === this.getLocalizedLabel('CancelButton').toLowerCase()) {
+            this.closeDialog();
         } else if (!((<Element>e.target).tagName.toLowerCase() === 'input')) {
             this.clearFilter();
             this.closeDialog();

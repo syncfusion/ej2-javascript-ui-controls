@@ -2340,7 +2340,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             MoreOption: 'More...',
             NotEquals: 'Not Equals',
             AllValues: 'All Values',
-            conditionalFormating: 'Conditional Formatting',
+            conditionalFormatting: 'Conditional Formatting',
             apply: 'Apply',
             condition: 'Add Condition',
             formatLabel: 'Format',
@@ -2390,7 +2390,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             grid: 'Show table',
             toolbarFormatting: 'Conditional formatting',
             chart: 'Chart',
-            reportMsg: 'Please enter vaild report name!!!',
+            reportMsg: 'Please enter valid report name!!!',
             reportList: 'Report list',
             removeConfirm: 'Are you sure you want to delete this report?',
             emptyReport: 'No reports found!!',
@@ -2490,7 +2490,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             yes: 'Yes',
             no: 'No',
             numberFormatMenu: 'Number Formatting...',
-            conditionalFormatingMenu: 'Conditional Formatting...',
+            conditionalFormattingMenu: 'Conditional Formatting...',
             removeCalculatedField: 'Are you sure you want to delete this calculated field?',
             replaceConfirmBefore: 'A report named ',
             replaceConfirmAfter: ' already exists. Do you want to replace it?',
@@ -2916,17 +2916,19 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         {
                             isFormatAvail = true;
                         }
+                        const isDateField: boolean = isFormatAvail && (['date', 'dateTime', 'time'].indexOf(this.engineModule.formatFields[engine.memberName as string].type) > -1);
                         const valuesCollection: any = Object.keys(currentMembers).map((key: string) => currentMembers[key as string]);  // eslint-disable-line @typescript-eslint/no-explicit-any
                         for (let i: number = 0; i < valuesCollection.length; i++) {
-                            const formattedText: string = isFormatAvail ?
-                                this.engineModule.getFormattedValue(valuesCollection[i as number].Name, engine.memberName).formattedText :
-                                valuesCollection[i as number].Name;
+                            const memberName: string = valuesCollection[i as number].Name as string;
+                            const formattedValue: IAxisSet = isFormatAvail ?
+                                this.engineModule.getFormattedValue(memberName, engine.memberName) : { formattedText: memberName };
                             dateMembers.push({
-                                formattedText: formattedText,
-                                actualText: valuesCollection[i as number].Name
+                                formattedText: formattedValue.formattedText,
+                                actualText: isDateField ? formattedValue.dateText :  this.engineModule.fieldList[engine.memberName].type === 'number' ?
+                                    (!isNaN(Number(memberName)) ? Number(memberName) : memberName) : memberName
                             });
-                            formattedMembers[formattedText as string] = {};
-                            members[valuesCollection[i as number].Name] = {};
+                            formattedMembers[formattedValue.formattedText as string] = {};
+                            members[memberName as string] = {};
                         }
                         this.engineModule.fieldList[engine.memberName].dateMember = dateMembers;
                         this.engineModule.fieldList[engine.memberName].formattedMembers = formattedMembers;
@@ -3054,6 +3056,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             enableValueSorting: this.enableValueSorting,
             enablePaging: this.enablePaging,
             enableVirtualization: this.enableVirtualization,
+            allowDataCompression: this.allowDataCompression,
             enableDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this))
         };

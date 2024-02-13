@@ -26,7 +26,7 @@ import { completeAction, contentLoaded, beforeCheckboxRender, FilterCheckboxArgs
  */
 export class Filter {
     private parent: Spreadsheet;
-    private filterRange: Map<number, { useFilterRange: boolean, range: number[] }>;
+    private filterRange: Map<number, { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean }>;
     private filterCollection: Map<number, PredicateModel[]>;
     private filterBtn: HTMLElement;
 
@@ -216,10 +216,12 @@ export class Filter {
      */
     private initiateFilterUIHandler(
         args: { predicates?: PredicateModel[], range?: string, promise?: Promise<FilterEventArgs>, sIdx?: number, isCut?: boolean,
-            isInternal?: boolean, useFilterRange?: boolean }): void {
+            isInternal?: boolean, useFilterRange?: boolean, isOpen?: boolean, enableColumnHeaderFiltering?: boolean }): void {
         const predicates: PredicateModel[] = args ? args.predicates : null;
         let sheetIdx: number = args.sIdx;
-        if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
+        if (!sheetIdx && sheetIdx !== 0) {
+            sheetIdx = args.isOpen ? 0 : this.parent.activeSheetIndex;
+        }
         let deferred: Deferred;
         if (args.promise) {
             deferred = new Deferred(); args.promise = deferred.promise;
@@ -244,10 +246,10 @@ export class Filter {
         }
         let selectedRange: string = args.range || sheet.selectedRange;
         let eventArgs: { range: string, filterOptions?: FilterOptions, predicates?: PredicateModel[], previousPredicates?: PredicateModel[],
-            cancel: boolean, useFilterRange?: boolean, sheetIndex: number };
+            cancel: boolean, useFilterRange?: boolean, sheetIndex: number, enableColumnHeaderFiltering?: boolean };
         let actionArgs: { [key: string]: Object };
         if (!isInternal) {
-            eventArgs = { range: selectedRange, sheetIndex: sheetIdx, cancel: false };
+            eventArgs = { range: selectedRange, sheetIndex: sheetIdx, cancel: false, enableColumnHeaderFiltering: false };
             if (args.predicates) {
                 eventArgs.predicates = args.predicates;
                 eventArgs.previousPredicates = this.filterCollection.get(sheetIdx) && [].slice.call(this.filterCollection.get(sheetIdx));
@@ -263,6 +265,7 @@ export class Filter {
             }
             delete eventArgs.cancel;
             args.useFilterRange = eventArgs.useFilterRange;
+            args.enableColumnHeaderFiltering = eventArgs.enableColumnHeaderFiltering;
         }
         if (!args.range && (isInternal || selectedRange === eventArgs.range)) {
             let rangeIdx: number[] = getRangeIndexes(selectedRange);
@@ -278,13 +281,16 @@ export class Filter {
         }
         if (predicates) {
             if (predicates.length) {
-                const filterRange: { useFilterRange: boolean, range: number[] } = this.filterRange.get(sheetIdx);
+                const filterRange: { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx);
                 if (filterRange) {
                     args.useFilterRange = filterRange.useFilterRange;
+                    args.enableColumnHeaderFiltering = filterRange.enableColumnHeaderFiltering;
                 }
-                this.processRange(sheet, sheetIdx, selectedRange, true, args.useFilterRange);
+                this.processRange(sheet, sheetIdx, selectedRange, true, args.useFilterRange, args.enableColumnHeaderFiltering);
                 const range: number[] = this.filterRange.get(sheetIdx).range.slice();
-                range[0] = range[0] + 1; // to skip first row.
+                if (!args.enableColumnHeaderFiltering) {
+                    range[0] = range[0] + 1; // to skip first row.
+                }
                 if (!args.useFilterRange) {
                     range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
                 }
@@ -297,7 +303,7 @@ export class Filter {
                         this.filterSuccessHandler(
                             new DataManager(jsonData),
                             { action: 'filtering', filterCollection: predicates, field: predicates[0].field, sIdx: args.sIdx,
-                                isInternal: isInternal, prevPredicates: eventArgs && eventArgs.previousPredicates });
+                                isInternal: isInternal, isOpen: args.isOpen, prevPredicates: eventArgs && eventArgs.previousPredicates });
                         resolveFn();
                     });
                 return;
@@ -306,7 +312,7 @@ export class Filter {
                 resolveFn();
             }
         } else {
-            this.processRange(sheet, sheetIdx, selectedRange, false, args.useFilterRange);
+            this.processRange(sheet, sheetIdx, selectedRange, false, args.useFilterRange, args.enableColumnHeaderFiltering);
             resolveFn();
         }
         if (!isInternal) {
@@ -323,19 +329,27 @@ export class Filter {
      * @param {string} filterRange - Specify the filterRange.
      * @param {boolean} preventRefresh - To prevent refreshing the filter buttons.
      * @param {boolean} useFilterRange - Specifies whether to consider filtering range or used range during filering.
+     * @param {boolean} enableColumnHeaderFiltering - Specifies whether to consider first row during filtering.
      * @returns {void} - Processes the range if no filter applied.
      */
     private processRange(
-        sheet: SheetModel, sheetIdx: number, filterRange?: string, preventRefresh?: boolean, useFilterRange?: boolean): void {
+        sheet: SheetModel, sheetIdx: number, filterRange?: string, preventRefresh?: boolean, useFilterRange?: boolean,
+        enableColumnHeaderFiltering?: boolean): void {
         const range: number[] = getSwapRange(getIndexesFromAddress(filterRange || sheet.selectedRange));
         if (range[0] === range[2] && range[1] === range[3]) { //if selected range is a single cell
             range[0] = 0; range[1] = 0; range[2] = sheet.usedRange.rowIndex; range[3] = sheet.usedRange.colIndex;
         } else if (range[3] > sheet.usedRange.colIndex) {
             range[3] = sheet.usedRange.colIndex;
         }
-        this.filterRange.set(sheetIdx, { useFilterRange: useFilterRange, range: range });
+        const filterOption: { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean } = { useFilterRange: useFilterRange, range: range };
+        if (enableColumnHeaderFiltering) {
+            filterOption.enableColumnHeaderFiltering = enableColumnHeaderFiltering;
+        }
+        this.filterRange.set(sheetIdx, filterOption);
         this.filterCollection.set(sheetIdx, []);
-        if (!preventRefresh) { this.refreshFilterRange(range, false, sheetIdx); }
+        if (!preventRefresh) {
+            this.refreshFilterRange(range, false, sheetIdx);
+        }
     }
 
     /**
@@ -348,7 +362,9 @@ export class Filter {
      * @returns {void} - Removes all the filter related collections for the active sheet.
      */
     private removeFilter(sheetIdx: number, isCut?: boolean, preventRefresh?: boolean): void {
-        const range: number[] = this.filterRange.get(sheetIdx).range.slice();
+        const filterOption: { range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx);
+        const range: number[] = filterOption.range.slice();
+        const enableColumnHeaderFiltering: boolean = filterOption.enableColumnHeaderFiltering;
         const rangeAddr: string = getRangeAddress(range);
         let args: { [key: string]: Object };
         if (!isCut) {
@@ -364,7 +380,7 @@ export class Filter {
         }
         this.filterRange.delete(sheetIdx);
         this.filterCollection.delete(sheetIdx);
-        this.refreshFilterRange(range, true, sheetIdx);
+        this.refreshFilterRange(range, true, sheetIdx, enableColumnHeaderFiltering);
         if (this.parent.filterCollection) {
             let count: number = 0; let filterColl: FilterCollectionModel;
             for (let i: number = 0, len: number = this.parent.filterCollection.length; i < len; i++) {
@@ -393,11 +409,14 @@ export class Filter {
             this.filterRangeAlertHandler({ error: l10n.getConstant('FilterOutOfRangeError') });
             return;
         }
-        const cell: number[] = getRangeIndexes(sheet.activeCell);
+        const cell: number[] = getRangeIndexes(sheet.activeCell); let isNotFilterRange: boolean;
         if (!this.isFilterRange(sheetIdx, cell[0], cell[1])) {
+            isNotFilterRange = true;
             this.processRange(sheet, sheetIdx);
         }
-        const range: number[] = this.filterRange.get(sheetIdx).range.slice();
+        const filterOption: { range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx);
+        const range: number[] = filterOption.range.slice();
+        const filterRange: string = getRangeAddress(range);
         range[0] = range[0] + 1; // to skip first row.
         range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         range[1] = range[3] = cell[1];
@@ -409,6 +428,24 @@ export class Filter {
         }
         const predicates: PredicateModel[] = [{ field: field, operator: 'equal', type: this.getColumnType(sheet, cell[1], cell).type,
             matchCase: false, value: cellVal }];
+        let prevPredicates: PredicateModel[] = [].slice.call(this.filterCollection.get(sheetIdx));
+        if (!prevPredicates.length) {
+            prevPredicates = undefined;
+        }
+        const eventArgs: { range: string, predicates: PredicateModel[], previousPredicates: PredicateModel[], sheetIndex: number,
+            cancel: boolean, enableColumnHeaderFiltering?: boolean } = { range: filterRange, predicates: predicates,
+                previousPredicates: prevPredicates, sheetIndex: sheetIdx, cancel: false, enableColumnHeaderFiltering: false };
+        this.parent.notify(beginAction, { action: 'filter', eventArgs: eventArgs });
+        if (eventArgs.cancel) {
+            if (isNotFilterRange) {
+                this.removeFilter(sheetIdx, true);
+            }
+            return;
+        }
+        if (eventArgs.enableColumnHeaderFiltering) {
+            filterOption.enableColumnHeaderFiltering = eventArgs.enableColumnHeaderFiltering;
+            range[0]--;
+        }
         const addr: string = `${sheet.name}!${this.getPredicateRange(range, this.filterCollection.get(sheetIdx))}`;
         const fullAddr: string = getRangeAddress(range);
         getData(this.parent, addr, true, true, null, true, null, null, false, fullAddr).then((jsonData: { [key: string]: CellModel }[]) => {
@@ -429,39 +466,44 @@ export class Filter {
      */
     private renderFilterCellHandler(args: { td: HTMLElement, rowIndex: number, colIndex: number, sIdx?: number }): void {
         const sheetIdx: number = !isNullOrUndefined(args.sIdx) ? args.sIdx : this.parent.activeSheetIndex;
-        if (sheetIdx === this.parent.activeSheetIndex && this.isFilterCell(sheetIdx, args.rowIndex, args.colIndex)) {
-            if (!args.td) { return; }
-            let filterButton: HTMLElement = args.td.querySelector('.e-filter-icon');
-            if (filterButton) {
-                filterButton.className = 'e-btn-icon e-icons e-filter-icon' + this.getFilterSortClassName(args.colIndex, sheetIdx);
-            } else {
-                filterButton = this.filterBtn.cloneNode(true) as HTMLElement;
-                filterButton.firstElementChild.className += this.getFilterSortClassName(args.colIndex, sheetIdx);
-                args.td.insertBefore(filterButton, args.td.firstChild);
-            }
-        }
-    }
-
-    private getFilterSortClassName(colIdx: number, sheetIdx: number): string {
-        const field: string = getColumnHeaderText(colIdx + 1);
-        let className: string = '';
-        const predicates: PredicateModel[] = this.filterCollection.get(sheetIdx);
-        const sortCollection: SortCollectionModel[] = this.parent.sortCollection;
-        for (let i: number = 0; i < predicates.length; i++) {
-            if (predicates[i as number].field === field) {
-                className = ' e-filtered';
-                break;
-            }
-        }
-        if (sortCollection) {
-            for (let i: number = 0; i < sortCollection.length; i++) {
-                if (sortCollection[i as number].sheetIndex === sheetIdx && sortCollection[i as number].columnIndex === colIdx) {
-                    className += sortCollection[i as number].order === 'Ascending' ? ' e-sortasc-filter' : ' e-sortdesc-filter';
-                    break;
+        if (sheetIdx === this.parent.activeSheetIndex) {
+            const option: { range?: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx) &&
+                this.filterRange.get(sheetIdx);
+            const range: number[] = option && option.range;
+            if (range && (range[0] === args.rowIndex || option.enableColumnHeaderFiltering) && range[1] <= args.colIndex &&
+                range[3] >= args.colIndex) {
+                if (!args.td || args.td.classList.contains(option.enableColumnHeaderFiltering ? 'e-cell' : 'e-header-cell')) {
+                    return;
+                }
+                let filterButton: HTMLElement = args.td.querySelector('.e-filter-icon');
+                let filterSortCls: string = '';
+                const sortCollection: SortCollectionModel[] = this.parent.sortCollection;
+                const field: string = getColumnHeaderText(args.colIndex + 1);
+                const predicates: { field?: string }[] = this.filterCollection.get(sheetIdx);
+                for (let i: number = 0; i < predicates.length; i++) {
+                    if (predicates[i as number].field === field) {
+                        filterSortCls = ' e-filtered';
+                        break;
+                    }
+                }
+                if (sortCollection) {
+                    for (let i: number = 0; i < sortCollection.length; i++) {
+                        if (sortCollection[i as number].sheetIndex === sheetIdx &&
+                            sortCollection[i as number].columnIndex === args.colIndex) {
+                            filterSortCls += sortCollection[i as number].order === 'Ascending' ? ' e-sortasc-filter' : ' e-sortdesc-filter';
+                            break;
+                        }
+                    }
+                }
+                if (filterButton) {
+                    filterButton.className = `e-btn-icon e-icons e-filter-icon${filterSortCls}`;
+                } else {
+                    filterButton = this.filterBtn.cloneNode(true) as HTMLElement;
+                    filterButton.firstElementChild.className = `e-btn-icon e-icons e-filter-icon${filterSortCls}`;
+                    args.td.insertBefore(filterButton, args.td.firstChild);
                 }
             }
         }
-        return className;
     }
 
     /**
@@ -470,21 +512,41 @@ export class Filter {
      * @param {number[]} filterRange - Specify the filterRange.
      * @param {boolean} remove - Specify the bool value
      * @param {number} sIdx - Specify the index.
+     * @param {boolean} enableColumnHeaderFiltering - Specifies whether to consider first row during filtering.
      * @returns {void} - Refreshes the filter header range.
      */
-    private refreshFilterRange(filterRange?: number[], remove?: boolean, sIdx?: number): void {
+    private refreshFilterRange(filterRange?: number[], remove?: boolean, sIdx?: number, enableColumnHeaderFiltering?: boolean): void {
         let sheetIdx: number = sIdx;
-        if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
-        if (!filterRange && !this.filterRange.get(sheetIdx)) {
-            filterRange = [0, 0, 0, 0];
+        if (!sheetIdx && sheetIdx !== 0) {
+            sheetIdx = this.parent.activeSheetIndex;
         }
-        const range: number[] = filterRange || this.filterRange.get(sheetIdx).range.slice();
+        const filterOption: { range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange && this.filterRange.get(sheetIdx);
+        if (!filterOption) {
+            if (!filterRange) {
+                filterRange = [0, 0, 0, 0];
+            }
+        } else {
+            filterRange = filterRange || filterOption.range.slice();
+            enableColumnHeaderFiltering = filterOption.enableColumnHeaderFiltering;
+        }
+        const range: number[] = filterRange;
+        let cell: HTMLElement;
+        const frozenCol: number = this.parent.frozenColCount(getSheet(this.parent, sheetIdx));
         for (let index: number = range[1]; index <= range[3]; index++) {
-            const cell: HTMLElement = this.parent.getCell(range[0], index);
+            if (enableColumnHeaderFiltering) {
+                const table: HTMLTableElement = index < frozenCol ? this.parent.sheetModule.getSelectAllTable() :
+                    this.parent.getColHeaderTable();
+                const headerRow: HTMLTableRowElement = table && this.parent.getRow(0, table);
+                cell = headerRow && this.parent.getCell(0, index, headerRow);
+            } else {
+                cell = this.parent.getCell(range[0], index);
+            }
             if (remove) {
-                if (cell && cell.hasChildNodes()) {
-                    const element: Element = cell.querySelector('.e-filter-btn');
-                    if (element) { element.parentElement.removeChild(element); }
+                if (cell) {
+                    const filterBtn: Element = cell.querySelector('.e-filter-btn');
+                    if (filterBtn) {
+                        filterBtn.parentElement.removeChild(filterBtn);
+                    }
                 }
             } else {
                 this.renderFilterCellHandler({ td: cell, rowIndex: range[0], colIndex: index, sIdx: sheetIdx });
@@ -640,7 +702,7 @@ export class Filter {
             if (this.isPopupOpened()) {
                 this.closeDialog();
             }
-            this.openDialog(parentsUntil(target, 'e-cell') as HTMLElement);
+            this.openDialog((parentsUntil(target, 'e-cell') || parentsUntil(target, 'e-header-cell')) as HTMLElement);
         } else if (this.isPopupOpened()) {
             const offsetEle: Element = target.offsetParent;
             if (!target.classList.contains('e-searchinput') && !target.classList.contains('e-searchclear') && (offsetEle &&
@@ -1221,12 +1283,14 @@ export class Filter {
         const field: string = getColumnHeaderText(colIndex);
         this.parent.showSpinner();
         const sheetIdx: number = this.parent.activeSheetIndex;
-        const filterRange: { useFilterRange: boolean, range: number[] } = this.filterRange.get(sheetIdx);
+        const filterRange: { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx);
         const range: number[] = filterRange.range.slice();
         const sheet: SheetModel = this.parent.getActiveSheet();
         const filterCell: CellModel = getCell(range[0], colIndex - 1, sheet);
         const displayName: string = this.parent.getDisplayText(filterCell);
-        range[0] = range[0] + 1; // to skip first row.
+        if (!filterRange.enableColumnHeaderFiltering) {
+            range[0] = range[0] + 1; // to skip first row.
+        }
         if (!filterRange.useFilterRange) {
             range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         }
@@ -1406,9 +1470,11 @@ export class Filter {
         if (!sortOrder) { return; }
         const sheet: SheetModel = this.parent.getActiveSheet();
         const sheetIdx: number = this.parent.activeSheetIndex;
-        const filterRange: { useFilterRange: boolean, range: number[] } = this.filterRange.get(sheetIdx);
+        const filterRange: { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx);
         const range: number[] = filterRange.range.slice();
-        range[0] = range[0] + 1; // to skip first row.
+        if (!filterRange.enableColumnHeaderFiltering) {
+            range[0] = range[0] + 1; // to skip first row.
+        }
         if (!filterRange.useFilterRange) {
             range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         }
@@ -1448,9 +1514,11 @@ export class Filter {
      */
     private filterSuccessHandler(
         dataSource: DataManager, args: { action: string, filterCollection?: PredicateModel[], field: string, sIdx?: number,
-            isInternal?: boolean, isFilterByValue?: boolean, prevPredicates?: PredicateModel[] }): void {
+            isInternal?: boolean, isOpen?: boolean, isFilterByValue?: boolean, prevPredicates?: PredicateModel[] }): void {
         let sheetIdx: number = args.sIdx;
-        if (!sheetIdx && sheetIdx !== 0) { sheetIdx = this.parent.activeSheetIndex; }
+        if (!sheetIdx && sheetIdx !== 0) {
+            sheetIdx = args.isOpen ? 0 : this.parent.activeSheetIndex;
+        }
         let prevPredicates: PredicateModel[] = args.prevPredicates || [].slice.call(this.filterCollection.get(sheetIdx));
         if (args.isFilterByValue && !prevPredicates.length) { prevPredicates = undefined; }
         let predicates: PredicateModel[] = this.filterCollection.get(sheetIdx);
@@ -1476,7 +1544,7 @@ export class Filter {
             filterRange.range[2] = getSheet(this.parent as Workbook, sheetIdx).usedRange.rowIndex; //extend the range if filtered
         }
         this.applyFilter(
-            filterOptions, getRangeAddress(filterRange.range), sheetIdx, prevPredicates, false, args.isInternal);
+            filterOptions, getRangeAddress(filterRange.range), sheetIdx, prevPredicates, false, args.isInternal, args.isFilterByValue);
     }
 
     private updatePredicate(predicates: PredicateModel[], field: string): void {
@@ -1511,10 +1579,10 @@ export class Filter {
      */
     private applyFilter(
         filterOptions: FilterOptions, range: string, sheetIdx: number, prevPredicates?: PredicateModel[], refresh?: boolean,
-        isInternal?: boolean): void {
+        isInternal?: boolean, isFilterByValue?: boolean): void {
         const eventArgs: { range: string, predicates: PredicateModel[], previousPredicates: PredicateModel[], sheetIndex: number, cancel: boolean } = { range:
             range, predicates: [].slice.call(this.filterCollection.get(sheetIdx)), previousPredicates: prevPredicates, sheetIndex: sheetIdx, cancel: false };
-        if (!isInternal) {
+        if (!isInternal && !isFilterByValue) {
             this.parent.notify(beginAction, { action: 'filter', eventArgs: eventArgs });
             if (eventArgs.cancel) {
                 return;
@@ -1719,9 +1787,12 @@ export class Filter {
             const predicates: PredicateModel[] = this.filterCollection.get(sheetIdx);
             if (predicates && predicates.length) {
                 const sheet: SheetModel = getSheet(this.parent, sheetIdx);
-                const filterRange: { useFilterRange: boolean, range: number[] } = this.filterRange.get(this.parent.activeSheetIndex);
+                const filterRange: { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(
+                    sheetIdx);
                 const range: number[] = filterRange.range.slice();
-                range[0] = range[0] + 1;
+                if (!filterRange.enableColumnHeaderFiltering) {
+                    range[0] = range[0] + 1;
+                }
                 if (!filterRange.useFilterRange) {
                     range[2] = sheet.usedRange.rowIndex;
                 }
@@ -1747,9 +1818,11 @@ export class Filter {
      */
     private getFilterRangeHandler(args: FilterInfoArgs): void {
         const sheetIdx: number = args.sheetIdx;
-        if (this.filterRange && this.filterRange.has(sheetIdx)) {
+        const filterOption: { range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange && this.filterRange.get(sheetIdx);
+        if (filterOption) {
             args.hasFilter = true;
-            args.filterRange = this.filterRange.get(sheetIdx).range;
+            args.filterRange = filterOption.range;
+            args.enableColumnHeaderFiltering = filterOption.enableColumnHeaderFiltering;
         } else {
             args.hasFilter = false;
             args.filterRange = null;
@@ -1866,7 +1939,7 @@ export class Filter {
                     }
                 }
                 this.parent.notify(initiateFilterUI, { predicates: predicates.length ? predicates : undefined, range:
-                    filterCol.filterRange, sIdx: sIdx, isInternal: true });
+                    filterCol.filterRange, sIdx: sIdx, isInternal: true, isOpen: args.isOpen });
             }
             if (this.parent.sortCollection) {
                 this.parent.notify(sortImport, null);

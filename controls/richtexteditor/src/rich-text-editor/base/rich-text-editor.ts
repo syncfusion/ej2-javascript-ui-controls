@@ -2806,10 +2806,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.iframeSettings.resources) {
             const styleSrc: string[] = this.iframeSettings.resources.styles;
             const scriptSrc: string[] = this.iframeSettings.resources.scripts;
-            if (this.iframeSettings.resources.scripts.length > 0) {
+            if (!isNOU(this.iframeSettings.resources.scripts) && this.iframeSettings.resources.scripts.length > 0) {
                 this.InjectSheet(true, scriptSrc);
             }
-            if (this.iframeSettings.resources.styles.length > 0) {
+            if (!isNOU(this.iframeSettings.resources.styles) && this.iframeSettings.resources.styles.length > 0) {
                 this.InjectSheet(false, styleSrc);
             }
         }

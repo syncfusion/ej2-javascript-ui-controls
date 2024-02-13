@@ -4402,6 +4402,7 @@ export class ToolbarModule {
             step: step, width: Browser.isDevice ? '180px' : (type === 'straighten' ? '200px' : '300px'),
             cssClass: 'e-slider',
             change: (args: SliderChangeEventArgs): void => {
+                parent.notify('selection', { prop: 'setSliderActive', onPropertyChange: false, value: {bool: true }});
                 if (type === 'transparency') {
                     if (parent.activeObj.shape) {
                         let prevCropObj: CurrentObject; let prevObj: CurrentObject;
@@ -4449,6 +4450,7 @@ export class ToolbarModule {
                     parent.notify('selection', { prop: 'setSliding', value: { bool: false }});
                     parent.notify('draw', { prop: 'redrawDownScale' });
                 }
+                parent.notify('selection', { prop: 'setSliderActive', onPropertyChange: false, value: {bool: false }});
             }
         });
     }

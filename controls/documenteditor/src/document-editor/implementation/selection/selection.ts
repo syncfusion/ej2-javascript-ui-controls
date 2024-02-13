@@ -6550,7 +6550,7 @@ export class Selection {
                         const element: ElementBox = elementBoxCollection[i];
                         let elementIsRTL: boolean = false;
                         if (element === endElement) {
-                            right = this.getLeftInternal(line, element, endIndex);
+                            right = this.getLeftInternal(line, element, element.length);
                         } else {
                             const index: number = element instanceof TextElementBox ? (element as TextElementBox).length : 1;
                             right = this.getLeftInternal(line, element, index);
@@ -7289,8 +7289,11 @@ export class Selection {
                     left += elementBox.width + width;
                 }
             } else {
-                width = this.documentHelper.textHelper.getWidth((elementBox as TextElementBox).text.substr(0, index), (elementBox as TextElementBox).characterFormat, (elementBox as TextElementBox).scriptType);
-                (elementBox as TextElementBox).trimEndWidth = width;
+                if (index === elementBox.length && isRtlText && paraFormat.textAlignment === 'Justify') {
+                    width = elementBox.width;
+                } else {
+                    width = this.documentHelper.textHelper.getWidth((elementBox as TextElementBox).text.substr(0, index), (elementBox as TextElementBox).characterFormat, (elementBox as TextElementBox).scriptType);
+                }
                 if (isRtlText) {
                     left -= width;
                 } else {
@@ -10843,7 +10846,13 @@ export class Selection {
                 let offset: number = 0;
                 if (firstElement instanceof WCharacterFormat) {
                     let currentPara: ParagraphWidget = firstElement.ownerBase as ParagraphWidget;
-                    offset = currentPara.getLength();
+                    // Set the offset based on length of para - length of remaning lines except last line because we have added the remaning line length in getParagraphInfoInternal method.
+                    //when we have add para length to the offset, again added the length of remaning lines except last line in getParagraphInfoInternal method. so when perform undo, the offset is greater than para length + 1. in this case, we set the para length to start and end offset, so paramark doesn't comes to selection region (undo case for splitted para but paramark only tracked).
+                    if (currentPara.childWidgets.length > 1) {
+                        offset = this.getParagraphLength(currentPara) - this.getParagraphLength(currentPara, currentPara.lastChild as LineWidget);
+                    } else {
+                        offset = currentPara.getLength();
+                    }
                     startPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset);
                 } else {
                     offset = firstElement.line.getOffset(firstElement, 0);
@@ -10867,11 +10876,14 @@ export class Selection {
                     currentPara = splittedWidgets[splittedWidgets.length - 1] as ParagraphWidget;
                     if (currentPara.isEndsWithPageBreak || currentPara.isEndsWithColumnBreak) {
                         this.owner.trackChangesPane.isTrackingPageBreak = true;
-                        endPosition.setPositionParagraph(currentPara.nextRenderedWidget.childWidgets[0] as LineWidget, 0);
+                    }
+                    // Changed the condition to get last child of current paragraph instead of next para of current para if current para contain page break
+                    if (currentPara.childWidgets.length > 1) {
+                        offset = this.getParagraphLength(currentPara) - this.getParagraphLength(currentPara, currentPara.lastChild as LineWidget);
                     } else {
                         offset = currentPara.getLength();
-                        endPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset + 1);
                     }
+                    endPosition.setPositionParagraph(currentPara.lastChild as LineWidget, offset + 1);
                 } else {
                     offset = lastElement.line.getOffset(lastElement, 0) + lastElement.length;
                     if (this.isTOC()) {

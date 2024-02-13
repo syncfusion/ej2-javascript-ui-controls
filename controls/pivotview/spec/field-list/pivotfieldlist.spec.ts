@@ -291,12 +291,12 @@ describe('PivotFieldList spec', () => {
                     expect(checkEle.length).toBeGreaterThan(0);
                     expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
                     util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
                     done();
                 });
             });
             it('checked node check axis button', (done: Function) => {
                 setTimeout(() => {
+                    expect(fieldListObj.dataSourceSettings.rows.length).toBe(3);
                     let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                     let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
                     expect(pivotButtons.length).toBeGreaterThan(0);
@@ -311,12 +311,12 @@ describe('PivotFieldList spec', () => {
                     expect(checkEle.length).toBeGreaterThan(0);
                     expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
                     util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('false');
                     done();
                 });
             });
             it('un-checked node check axis button', (done: Function) => {
                 setTimeout(() => {
+                    expect(fieldListObj.dataSourceSettings.rows.length).toBe(2);
                     let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                     let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
                     expect(pivotButtons.length).toBeGreaterThan(0);
@@ -341,7 +341,7 @@ describe('PivotFieldList spec', () => {
                     expect(checkEle.length).toBeGreaterThan(0);
                     expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
                     util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                    expect(checkEle.length).toBe(2);
                     done();
                 });
             });

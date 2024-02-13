@@ -133,13 +133,13 @@ $tbar-bgr-btn-icon-font-size: 16px !default;
 $tbar-bgr-btn-focus-padding: 0 6px !default;
 
 $tbar-nrml-btn-border-radius: 4px !default;
-$tbar-nrml-btn-focus-padding: 0 1.5px !default;
+$tbar-nrml-btn-focus-padding: 1 2.5px !default;
 $tbar-nrml-btn-focus-outline: 0 !default;
 
 $tbar-btn-icons-focus-color: $grey-dark-font !default;
 $tbar-btn-text-focus-color: $grey-dark-font !default;
 $tbar-btn-focus-border-color: $tbar-focus-border-color !default;
-$tbar-btn-hover-border-size: $tbar-border-size !default;
+$tbar-btn-hover-border-size: $tbar-zero-value !default;
 $tbar-btn-hover-active-icons-color: $grey-dark-font !default;
 $tbar-btn-hover-active-text-color: $grey-dark-font !default;
 $tbar-btn-overlay-opacity: .5 !default;

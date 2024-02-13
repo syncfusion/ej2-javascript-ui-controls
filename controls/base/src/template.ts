@@ -125,7 +125,21 @@ function evalExp(str: string, nameSpace: string, helper?: Object, ignorePrefix?:
             str = str.replace(value, singleSpace);
         });
     }
-
+    if (exp.test(str)) {
+        let insideBraces: boolean = false;
+        let outputString: string = '';
+        for (let i: number = 0; i < str.length; i++) {
+            if (str[i + ''] === '$' && str[i + 1] === '{') {
+                insideBraces = true;
+            } else if (str[i + ''] === '}') {
+                insideBraces = false;
+            }
+            outputString += (str[i + ''] === '"' && !insideBraces) ? '\\"' : str[i + ''];
+        }
+        str = outputString;
+    } else {
+        str = str.replace(/\\?"/g, '\\"');
+    }
     return str.replace(LINES, '').replace(DBL_QUOTED_STR, '\'$1\'').replace(
 
         exp,

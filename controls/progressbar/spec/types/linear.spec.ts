@@ -363,7 +363,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 style = path.getAttribute('style');
-                expect(style ==='clip-path:url(#container_clippath)').toBe(true);
+                expect(style ==='clip-path: url("#container_clippath");').toBe(true);
             };
             progress.animation.enable = true;
             progress.isIndeterminate = false;
@@ -385,7 +385,7 @@ describe('ProgressBar Control', () => {
             loaded = (args: Object): void => {
                 path = document.getElementById('container_Linearprogress');
                 style = path.getAttribute('style');
-                expect(style ==='clip-path:url(#container_clippath)').toBe(true);
+                expect(style ==='clip-path: url("#container_clippath");').toBe(true);
             };
             progress.isIndeterminate = false;
             progress.loaded = loaded;

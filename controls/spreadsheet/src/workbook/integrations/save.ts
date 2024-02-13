@@ -57,6 +57,7 @@ export class WorkbookSave extends SaveWorker {
      */
     private addEventListener(): void {
         this.parent.on(events.beginSave, this.initiateSave, this);
+        this.parent.on('getStringifyObject', this.performStringifyAction, this);
     }
 
     /**
@@ -66,6 +67,7 @@ export class WorkbookSave extends SaveWorker {
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(events.beginSave, this.initiateSave);
+            this.parent.off('getStringifyObject', this.performStringifyAction);
         }
     }
 
@@ -290,6 +292,14 @@ export class WorkbookSave extends SaveWorker {
         formElem.submit();
         detach(formElem);
         this.parent.notify(events.saveCompleted, {});
+    }
+
+    private performStringifyAction(args: { sheet: SheetModel, skipProps: string[], model?: string }): void {
+        args.model = '{"jsonObject":{"Workbook":{"sheets":[';
+        for (let sheetIdx: number = 0, sheetCount: number = this.parent.sheets.length - 1; sheetIdx <= sheetCount; sheetIdx++) {
+            args.model += this.getStringifyObject(this.parent.sheets[sheetIdx as number], args.skipProps, sheetIdx) +
+                (sheetIdx < sheetCount ? ',' : ']}}}');
+        }
     }
 
     /**

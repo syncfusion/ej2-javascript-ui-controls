@@ -877,6 +877,43 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
         });
     });
 
+    describe('CR869647 - Changing page Size from second page is continuously triggering event', () => {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 30),
+                    allowPaging: true,
+                    pageSettings: { pageSizes: true, currentPage: 2 },
+                    columns: [
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 140 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                    ],
+                    actionBegin: actionBegin
+                }, done);
+        });
+
+        it('change page size action', function (done: Function) {
+            gridObj.pageSettings.pageSize = 5;
+            actionBegin = (args?: any): void => {
+                args.cancel = true;
+                done();
+            };
+            gridObj.actionBegin = actionBegin;
+        });
+
+        it ('check pagesize after cancel', () => {
+            expect(gridObj.pageSettings.pageSize).toBe(12);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionBegin = null;
+        });
+    });
+
     describe('Feature - EJ2-850006 - Implementation of pager dropdownlist in adaptive / mobile pager', () => {
         let gridObj: Grid;
         let actionBegin: () => void;

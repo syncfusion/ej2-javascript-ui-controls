@@ -104,7 +104,7 @@ export class BaseQuickToolbar {
             e.target.classList.contains('e-imgbreak')) ? false : true;
         let target: HTMLElement = !isNOU(imgWrapper) ? imgWrapper : e.target;
         addClass([this.toolbarElement], [classes.CLS_RM_WHITE_SPACE]);
-        const targetOffsetTop: number = target.offsetTop;
+        const targetOffsetTop: number = (target.classList.contains("e-rte-audio")) ? target.parentElement.offsetTop : target.offsetTop;
         const parentOffsetTop: number = window.pageYOffset + e.parentData.top;
         if ((targetOffsetTop - e.editTop) > e.popHeight) {
             y = parentOffsetTop + e.tBarElementHeight + (targetOffsetTop - e.editTop) - e.popHeight - 5;
@@ -115,7 +115,7 @@ export class BaseQuickToolbar {
         }
         target = isAligned ? e.target : target;
         if (target.offsetWidth > e.popWidth) {
-            x = (target.offsetWidth / 2) - (e.popWidth / 2) + e.parentData.left + target.offsetLeft;
+            x = (target.offsetWidth / 2) - (e.popWidth / 2) + e.parentData.left + ((target.classList.contains("e-rte-audio")) ? target.parentElement.offsetLeft : target.offsetLeft);
         } else {
             x = e.parentData.left + target.offsetLeft;
         }

@@ -8218,46 +8218,49 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
                             referenceArray = referenceValue;
                         }
                     }
-                    if (referenceArray) {
+                    if (referenceArray && (referenceArray[0] instanceof _PdfReference || typeof referenceArray[0] === 'number')) {
+                        const document: PdfDocument = this._crossReference._document;
+                        let index: number;
                         if (referenceArray[0] instanceof _PdfReference) {
-                            const document: PdfDocument = this._crossReference._document;
-                            const index: number = _getPageIndex(document, this._crossReference._fetch(referenceArray[0]));
-                            const page: PdfPage = document.getPage(index);
-                            if (page) {
-                                const mode: _PdfName = referenceArray[1];
-                                if (mode.name === 'FitBH' || mode.name === 'FitH') {
-                                    const top: number = referenceArray[2];
-                                    const topValue: number = (typeof top !== 'undefined' && top !== null) ? (page.size[1] - top) : 0;
-                                    this._destination = new PdfDestination(page, [0, topValue]);
-                                    if (typeof top === 'undefined' || top === null) {
-                                        this._destination._setValidation(false);
-                                    }
-                                } else if (mode.name === 'XYZ') {
-                                    const left: number = referenceArray[2];
-                                    const top: number = referenceArray[3];
-                                    const zoom: number = referenceArray[4];
-                                    const topValue: number = (typeof top !== 'undefined' && top !== null) ? (page.size[1] - top) : 0;
-                                    const leftValue: number = (typeof left !== 'undefined' && left !== null) ? left : 0;
-                                    this._destination = new PdfDestination(page, [leftValue, topValue]);
-                                    if (typeof zoom !== 'undefined' && zoom !== null) {
-                                        this._destination.zoom = zoom;
-                                    }
-                                    if ((typeof left !== 'undefined' && left !== null) || (typeof top !== 'undefined' && top !== null)
-                                        || (typeof zoom !== 'undefined' && zoom !== null)) {
-                                        this._destination._setValidation(false);
-                                    }
-                                } else if (mode.name === 'FitR') {
-                                    if (referenceArray.length === 6) {
-                                        const left: number = referenceArray[2];
-                                        const bottom: number = referenceArray[3];
-                                        const right: number = referenceArray[4];
-                                        const top: number = referenceArray[5];
-                                        this._destination = new PdfDestination(page, [left, bottom, right, top]);
-                                    }
-                                } else if (mode.name === 'Fit') {
-                                    this._destination = new PdfDestination(page);
-                                    this._destination.mode = PdfDestinationMode.fitToPage;
+                            index = _getPageIndex(document, this._crossReference._fetch(referenceArray[0]));
+                        } else {
+                            index = referenceArray[0];
+                        }
+                        const page: PdfPage = document.getPage(index);
+                        if (page) {
+                            const mode: _PdfName = referenceArray[1];
+                            if (mode.name === 'FitBH' || mode.name === 'FitH') {
+                                const top: number = referenceArray[2];
+                                const topValue: number = (typeof top !== 'undefined' && top !== null) ? (page.size[1] - top) : 0;
+                                this._destination = new PdfDestination(page, [0, topValue]);
+                                if (typeof top === 'undefined' || top === null) {
+                                    this._destination._setValidation(false);
                                 }
+                            } else if (mode.name === 'XYZ') {
+                                const left: number = referenceArray[2];
+                                const top: number = referenceArray[3];
+                                const zoom: number = referenceArray[4];
+                                const topValue: number = (typeof top !== 'undefined' && top !== null) ? (page.size[1] - top) : 0;
+                                const leftValue: number = (typeof left !== 'undefined' && left !== null) ? left : 0;
+                                this._destination = new PdfDestination(page, [leftValue, topValue]);
+                                if (typeof zoom !== 'undefined' && zoom !== null) {
+                                    this._destination.zoom = zoom;
+                                }
+                                if ((typeof left !== 'undefined' && left !== null) || (typeof top !== 'undefined' && top !== null)
+                                    || (typeof zoom !== 'undefined' && zoom !== null)) {
+                                    this._destination._setValidation(false);
+                                }
+                            } else if (mode.name === 'FitR') {
+                                if (referenceArray.length === 6) {
+                                    const left: number = referenceArray[2];
+                                    const bottom: number = referenceArray[3];
+                                    const right: number = referenceArray[4];
+                                    const top: number = referenceArray[5];
+                                    this._destination = new PdfDestination(page, [left, bottom, right, top]);
+                                }
+                            } else if (mode.name === 'Fit') {
+                                this._destination = new PdfDestination(page);
+                                this._destination.mode = PdfDestinationMode.fitToPage;
                             }
                         }
                     }

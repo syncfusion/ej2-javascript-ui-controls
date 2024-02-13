@@ -208,9 +208,6 @@ export class AggregateMenu {
             ],
             closeOnEscape: (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') ? false : true,
             target: this.parentElement,
-            overlayClick: () => {
-                this.removeDialog();
-            },
             close: this.removeDialog.bind(this),
             cssClass: this.parent.cssClass
         });

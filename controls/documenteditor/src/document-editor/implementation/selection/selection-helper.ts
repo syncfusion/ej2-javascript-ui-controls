@@ -845,6 +845,8 @@ export class TextPosition {
         if (start === end) {
             return true;
         }
+        start = start.replace(/S;/g, '');
+        end = end.replace(/S;/g, '');
         start = start.replace(/C;/g, '');
         end = end.replace(/C;/g, '');
         start = start.replace(/H;/g, '');

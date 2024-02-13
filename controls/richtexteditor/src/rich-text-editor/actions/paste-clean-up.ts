@@ -430,7 +430,9 @@ export class PasteCleanup {
         });
         popupObj.close();
         (imgElem as HTMLElement).style.opacity = '1';
-        uploadObj.destroy();
+        if (!uploadObj.isDestroyed) {
+            uploadObj.destroy();
+        }
         this.toolbarEnableDisable(false);
     }
     private refreshPopup(imageElement: HTMLElement, popupObj: Popup): void {

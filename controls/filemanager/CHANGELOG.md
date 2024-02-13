@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I553140` - The high risk vulnerability issue with 'unset-value' dependency in the FileManager component is resolved.
+
 ## 24.1.47 (2024-01-23)
 
 ### FileManager

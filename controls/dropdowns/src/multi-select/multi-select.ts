@@ -431,7 +431,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * @default null
      */
     @Property(null)
-    public text: string;
+    public text: string | null;
     /**
      * Selects the list item which maps the data `value` field in the component.
      * {% codeBlock src='multiselect/value/index.md' %}{% endcodeBlock %}
@@ -440,7 +440,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * @isGenericType true
      */
     @Property(null)
-    public value: number[] | string[] | boolean[];
+    public value: number[] | string[] | boolean[] | null;
     /**
      * Hides the selected item from the list item.
      *
@@ -948,6 +948,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private removelastSelection(e: KeyboardEventArgs): void {
+        const selectedElem: Element = <HTMLElement>this.chipCollectionWrapper.querySelector('span.' + CHIP_SELECTED);
+        if (selectedElem !== null) {
+            this.removeSelectedChip(e);
+            return;
+        }
         const elements: NodeListOf<Element> = <NodeListOf<HTMLElement>>
             this.chipCollectionWrapper.querySelectorAll('span.' + CHIP);
         const value: string = elements[elements.length - 1].getAttribute('data-value');
@@ -3111,7 +3116,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (delim) {
             this.updateWrapperText(this.delimiterWrapper, data);
             this.delimiterWrapper.setAttribute('id', getUniqueID('delim_val'));
-            this.inputElement.setAttribute('aria-labelledby', this.delimiterWrapper.id);
+            this.inputElement.setAttribute('aria-describedby', this.delimiterWrapper.id);
         }
         const targetEle: HTMLElement = e && e.target as HTMLElement;
         const isClearAll: boolean = (targetEle && targetEle.classList.contains('e-close-hooker')) ? true : null;
@@ -4066,7 +4071,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.hiddenElement.innerHTML = hiddenValue;
             this.updateWrapperText(this.delimiterWrapper, wrapperText);
             this.delimiterWrapper.setAttribute('id', getUniqueID('delim_val'));
-            this.inputElement.setAttribute('aria-labelledby', this.delimiterWrapper.id);
+            this.inputElement.setAttribute('aria-describedby', this.delimiterWrapper.id);
             this.setProperties({ text: text.toString() }, true);
             this.refreshInputHight();
             this.refreshPlaceHolder();
@@ -4579,7 +4584,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         }) as HTMLInputElement;
         if (this.mode === 'Default' || this.mode === 'Box') {
-            this.inputElement.setAttribute('aria-labelledby', this.chipCollectionWrapper.id);
+            this.inputElement.setAttribute('aria-describedby', this.chipCollectionWrapper.id);
         }
         if (this.element.tagName !== this.getNgDirective()) {
             this.element.style.display = 'none';

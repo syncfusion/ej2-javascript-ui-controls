@@ -425,21 +425,25 @@ export class PdfForm {
                     if (page && document) {
                         for (let i: number = 0; i < this._fieldCollection.length; i++) {
                             const field: PdfField = this._fieldCollection[Number.parseInt(i.toString(), 10)];
-                            const index: number = _getPageIndex(document, field.page._pageDictionary);
-                            if (fieldCollection.has(index)) {
-                                value = fieldCollection.get(index);
-                                value.push(field);
-                            } else {
-                                value = [];
-                                value.push(field);
-                                fieldCollection.set(index, value);
-                            }
-                            const page: PdfPage = document.getPage(index);
-                            if (!this._tabCollection.has(index)) {
-                                this._tabCollection.set(index, page.tabOrder);
-                            }
-                            if (setTabOrder) {
-                                page.tabOrder = this._tabCollection.get(index);
+                            if (field.page) {
+                                const index: number = _getPageIndex(document, field.page._pageDictionary);
+                                if (index >= 0) {
+                                    if (fieldCollection.has(index)) {
+                                        value = fieldCollection.get(index);
+                                        value.push(field);
+                                    } else {
+                                        value = [];
+                                        value.push(field);
+                                        fieldCollection.set(index, value);
+                                    }
+                                    const page: PdfPage = document.getPage(index);
+                                    if (!this._tabCollection.has(index)) {
+                                        this._tabCollection.set(index, page.tabOrder);
+                                    }
+                                    if (setTabOrder) {
+                                        page.tabOrder = this._tabCollection.get(index);
+                                    }
+                                }
                             }
                         }
                         let fieldsCount: number = 0;

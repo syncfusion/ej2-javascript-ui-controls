@@ -4565,7 +4565,7 @@ export class PdfViewerBase {
             if (!this.singleTapTimer) {
                 this.singleTapTimer = setTimeout(
                     () => {
-                        if (isRemoveFocus) {
+                        if (isRemoveFocus && (!isNullOrUndefined(this.pdfViewer.selectedItems) && !isNullOrUndefined(this.pdfViewer.selectedItems.annotations[0]))) {
                             this.pdfViewer.clearSelection(this.pdfViewer.selectedItems.annotations[0].pageIndex);
                             this.focusViewerContainer(true);
                         }
@@ -5719,7 +5719,9 @@ export class PdfViewerBase {
             annotData.push(collection[parseInt(l.toString(), 10)]);
             switch (type) {
                 case "textMarkup":
-                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.renderTextMarkupAnnotationsInPage(annotData, pageIndex, null, true);
+                    if (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule)) {
+                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.renderTextMarkupAnnotationsInPage(annotData, pageIndex, null, true);
+                    }
                     break;
                 case "shape_measure":
                     this.pdfViewer.annotationModule.renderAnnotations(pageIndex, null, annotData, null, null, null, true);
@@ -10282,7 +10284,9 @@ export class PdfViewerBase {
                                     if (annotation[parseInt(i.toString(), 10)].textMarkupAnnotation.length !== 0 || annotationData.length !==0) {
                                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotationData, i);
                                         for (let j: number = 0; j < annotationData.length; j++) {
-                                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.textMarkupAnnotationModule.updateTextMarkupAnnotationCollections(annotationOrderCollection[parseInt(index.toString(), 10)], i));
+                                            if (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule)) {
+                                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.textMarkupAnnotationModule.updateTextMarkupAnnotationCollections(annotationOrderCollection[parseInt(index.toString(), 10)], i));
+                                            }
                                         }
                                     }
                                     break;
@@ -10866,7 +10870,9 @@ export class PdfViewerBase {
         if (annotation.textMarkupAnnotation.length !== 0) {
             for (let s: number = 0; s < annotation.textMarkupAnnotation.length; s++) {
                 // eslint-disable-next-line max-len
-                this.pdfViewer.annotationModule.textMarkupAnnotationModule.saveImportedTextMarkupAnnotations(annotation.textMarkupAnnotation[parseInt(s.toString(), 10)], pageIndex);
+                if (!isNullOrUndefined(this.pdfViewer.annotationModule.textMarkupAnnotationModule)) {
+                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.saveImportedTextMarkupAnnotations(annotation.textMarkupAnnotation[parseInt(s.toString(), 10)], pageIndex);
+                }
             }
         }
         if (annotation.shapeAnnotation.length !== 0) {

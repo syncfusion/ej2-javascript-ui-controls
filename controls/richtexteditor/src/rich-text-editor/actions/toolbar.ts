@@ -623,7 +623,7 @@ export class Toolbar {
         } else if (Browser.isDevice || this.parent.inlineMode.enable) {
             this.isToolbar = true;
         }
-        if (isNOU(trg) && this.parent.toolbarSettings.type === ToolbarType.Expand) {
+        if (isNOU(trg) && this.parent.toolbarSettings.type === ToolbarType.Expand && this.parent.toolbarModule.getExpandTBarPopHeight() === 0) {
             removeClass([this.tbElement], [classes.CLS_EXPAND_OPEN]);
         }
     }

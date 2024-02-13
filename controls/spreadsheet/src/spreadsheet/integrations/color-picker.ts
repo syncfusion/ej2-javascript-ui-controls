@@ -126,8 +126,10 @@ export class ColorPicker {
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
     }
     private removeEventListener(): void {
-        this.parent.off(beforeRibbonCreate, this.render);
-        this.parent.off('destroyRibbonComponents', this.destroy);
-        this.parent.on(spreadsheetDestroyed, this.destroy, this);
+        if (!this.parent.isDestroyed) {
+            this.parent.off(beforeRibbonCreate, this.render);
+            this.parent.off('destroyRibbonComponents', this.destroy);
+            this.parent.off(spreadsheetDestroyed, this.destroy);
+        }
     }
 }

@@ -445,7 +445,7 @@ export class SelectTool extends ToolBase {
                         this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
                     } else if (args.info && args.info.ctrlKey && ((currentSource && currentSource.shapeAnnotationType === 'FreeText') || (currentAnnot && currentAnnot.shapeAnnotationType === 'FreeText'))) {
                         this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-                    } else if (isNullOrUndefined(object) && this.commandHandler.formDesignerModule && !((currentSource && currentSource.shapeAnnotationType === 'FreeText') || (currentAnnot && (currentAnnot.shapeAnnotationType === 'FreeText' || currentAnnot.shapeAnnotationType === 'Image' || currentAnnot.shapeAnnotationType === 'StickyNotes')))) {
+                    } else if (isNullOrUndefined(object) && (this.commandHandler.annotationModule && !isNullOrUndefined(this.commandHandler.annotation.textMarkupAnnotationModule) && isNullOrUndefined(this.commandHandler.annotation.textMarkupAnnotationModule.currentTextMarkupAnnotation)) && this.commandHandler.formDesignerModule && !((currentSource && currentSource.shapeAnnotationType === 'FreeText') || (currentAnnot && (currentAnnot.shapeAnnotationType === 'FreeText' || currentAnnot.shapeAnnotationType === 'Image' || currentAnnot.shapeAnnotationType === 'StickyNotes')))) {
                         this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
                     }
                     if (object) {

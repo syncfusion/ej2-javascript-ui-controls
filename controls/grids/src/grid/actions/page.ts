@@ -22,7 +22,8 @@ export class Page implements IAction {
     private isInitialLoad: boolean;
     private isInitialRender: boolean = true;
     private evtHandlers: { event: string, handler: Function }[];
-    private isCancel: boolean = false;
+    /** @hidden */
+    public isCancel: boolean = false;
 
     //Module declarations
     private parent: IGrid;
@@ -247,8 +248,8 @@ export class Page implements IAction {
         }
         if ((<{ cancel?: boolean }>args).cancel) {
             e.cancel = true;
-            this.pageSettings.currentPage = prevPage;
-            this.pagerObj.currentPage = prevPage;
+            this.parent.setProperties({ pageSettings: { currentPage: prevPage }}, true);
+            this.pagerObj.setProperties({ currentPage: prevPage }, true);
             this.isCancel = true;
             return;
         }

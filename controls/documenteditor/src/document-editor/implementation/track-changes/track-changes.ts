@@ -241,6 +241,8 @@ export class Revision {
                 this.owner.editorHistory.currentBaseHistoryInfo.action = 'ClearRevisions';
                 this.updateRevisionID();
                 this.removeRevisionFromPara(start, end);
+                // Set false to this because we retrived the revision based on above action (after this iteration we have changed the action basded the below property)
+                this.owner.trackChangesPane.isTrackingPageBreak = false;
             }
         } else if (!this.canSkipTableItems && (item instanceof WCharacterFormat) && (!removeChanges)) {
             this.owner.editorHistory.currentBaseHistoryInfo.action = 'ClearRevisions';
@@ -522,8 +524,9 @@ export class RevisionCollection {
         if (this.owner.trackChangesPane.revisions.indexOf(revision) !== -1) {
             let index: number = this.owner.trackChangesPane.revisions.indexOf(revision);
             let removeChild: boolean = !(this.owner.trackChangesPane.tableRevisions.containsKey(revision) && (this.owner.trackChangesPane.tableRevisions.get(revision))[(this.owner.trackChangesPane.tableRevisions.get(revision)).length -1] !== revision);
-            if (!isNullOrUndefined(this.owner.trackChangesPane.changesInfoDiv.childNodes[index + 1]) && removeChild) {
-                this.owner.trackChangesPane.changesInfoDiv.removeChild(this.owner.trackChangesPane.changesInfoDiv.childNodes[index + 1]);
+            let changesSingleView: ChangesSingleView = this.owner.trackChangesPane.changes.get(revision);
+            if (removeChild) {
+                this.owner.trackChangesPane.changesInfoDiv.removeChild(changesSingleView.outerSingleDiv);
             }
             this.owner.trackChangesPane.revisions.splice(index, 1);
             this.owner.trackChangesPane.changes.remove(revision);

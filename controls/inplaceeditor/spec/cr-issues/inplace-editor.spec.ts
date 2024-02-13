@@ -211,7 +211,7 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 compObj.keyDownStatus = true;
                 compObj.onInput();
                 compObj.keyUp(keyboardEventArgs);
-                expect(compObj.liCollections.length).toBe(1);
+                expect(compObj.liCollections.length).toBe(10);
                 done();
             }, 4500);
         });

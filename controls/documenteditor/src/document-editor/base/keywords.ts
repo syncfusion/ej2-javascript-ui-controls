@@ -296,6 +296,7 @@ export const cellsProperty: string[] = ['cells','c'];
 export const rowsProperty: string[] = ['rows','r'];
 export const descriptionProperty: string[] = ['description','desc'];
 export const wrapTextAroundProperty: string[] = ['wrapTextAround','wta'];
+export const isLegalStyleNumberingProperty: string[] = ['isLegalStyleNumbering','isLgl'];
 export const positioningProperty: string[] = ['positioning','p'];
 export const tableFormatProperty: string[] = ['tableFormat','tblpr'];
 export const allowOverlapProperty: string[] = ['allowOverlap','ao'];

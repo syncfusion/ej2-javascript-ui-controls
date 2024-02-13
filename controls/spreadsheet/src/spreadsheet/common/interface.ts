@@ -65,6 +65,7 @@ export interface FilterInfoArgs {
     filterRange?: number[];
     col?: number[];
     criteria?: string[];
+    enableColumnHeaderFiltering?: boolean;
 }
 
 /**

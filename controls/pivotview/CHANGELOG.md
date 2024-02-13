@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I542318` - When using the server-side engine, the pivot table will now be rendered properly when the value axis is set to "row" and subTotalsPosition is set to "Bottom".
+- `#I548199` - When using the server-side engine, the "SaveAs" toolbar option will now work properly in the pivot table with a CSV data source.
+- `#I548188` - Filter dialog members will now be properly sorted for date type fields in the pivot table.
+- `#I549549` - The number formatting dialog will not be closed unnecessarily when you click the overlay in the pivot table.
+- `#I548580` - When using the server-side engine, drill-through data for calculated field values in the pivot table will now be properly displayed.
+
 ## 24.2.4 (2024-02-06)
 
 ### PivotTable

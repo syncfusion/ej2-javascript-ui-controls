@@ -287,6 +287,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             if (this.element.hasAttribute('id')) {
                 this.element.removeAttribute('id');
             }
+            if (this.element.hasAttribute('name')) {
+                this.element.removeAttribute('name');
+            }
             this.element.classList.remove('e-control', 'e-maskedtextbox');
             this.element.classList.add('e-mask-container');
             this.element.appendChild(input);

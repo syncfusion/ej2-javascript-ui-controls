@@ -3763,21 +3763,24 @@ export class DocumentHelper {
                     if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex !== 0) {
                         let currentSectionIndex: number = page.sectionIndex;
                         let previousPage: Page = page.previousPage;
-                        if (currentSectionIndex !== previousPage.sectionIndex) {
+                        if (currentSectionIndex !== previousPage.sectionIndex && previousPage.bodyWidgets[previousPage.bodyWidgets.length - 1].sectionIndex !== currentSectionIndex) {
                             page.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
                             return this.getFieldText(fieldPattern, page.currentPageNum);
                         }
-                        if (previousPage.currentPageNum === 1) {
+                        if (previousPage.currentPageNum === 1 && currentSectionIndex !== previousPage.sectionIndex) {
                             previousPage.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
                         }
-                        page.currentPageNum = previousPage.currentPageNum + 1;
+                        if (!isNullOrUndefined(page.previousPage) && page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering && page.previousPage.bodyWidgets[page.previousPage.bodyWidgets.length - 1].sectionIndex !== page.sectionIndex) {
+                            page.currentPageNum = page.previousPage.currentPageNum + 1;
+                        } else {
+                            page.currentPageNum = page.index + 1;
+                        }
                         return this.getFieldText(fieldPattern, page.currentPageNum);
                     } else if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex === 0) {
                         page.currentPageNum = page.bodyWidgets[0].sectionFormat.pageStartingNumber + page.index;
                         return this.getFieldText(fieldPattern, page.currentPageNum);
                     }
                     page.currentPageNum = (!isNullOrUndefined(page.previousPage)) ? page.previousPage.currentPageNum + 1 : page.index + 1;
-                    page.currentPageNum = page.index + 1;
                     return this.getFieldText(fieldPattern, page.currentPageNum);
                 case 'numpages':
                     return this.getFieldText(fieldPattern, page.documentHelper.pages.length);

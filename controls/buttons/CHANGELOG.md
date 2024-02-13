@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### SpeedDial
+
+#### Bug Fixes
+
+- `FAB` and `SpeedDial` control `readme.md` file updated.
+
 ## 24.2.3 (2024-01-31)
 
 ### Switch

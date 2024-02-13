@@ -253,8 +253,8 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
             const fileMenu: HTMLElement = document.getElementById(`${this.element.id}_menu`);
             if (fileMenu) { (getComponent(fileMenu, 'menu') as Menu).destroy(); }
         }
-        this.toolbarObj.destroy();
-        this.tabObj.destroy();
+        if (this.toolbarObj) { this.toolbarObj.destroy(); }
+        if (this.tabObj) { this.tabObj.destroy(); }
         this.element.innerHTML = '';
         this.toolbarObj = null; this.tabObj = null;
         super.destroy();

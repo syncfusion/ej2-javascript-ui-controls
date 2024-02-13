@@ -164,7 +164,7 @@ export class Linear {
                     (progress.cornerRadius === 'Round4px' && ismaximum)
                 );
                 linearProgressGroup.appendChild(progress.clipPath);
-                linearProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
+                (<SVGPathElement>linearProgress).style.clipPath = 'url(#' + progress.element.id + '_clippath)';
                 this.animation.doLinearAnimation(clipPathLinear, progress, animationdelay, refresh ? previousWidth : 0);
             }
             if (progress.isIndeterminate) {
@@ -343,7 +343,7 @@ export class Linear {
                     clipPath, 1, null, false, (progress.progressThickness || progress.themeStyle.linearProgressThickness), true
                 );
                 linearLabelGroup.appendChild(clipPath);
-                linearlabel.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathLabel)');
+                (<SVGPathElement>linearlabel).style.clipPath = 'url(#' + progress.element.id + '_clippathLabel)';
                 this.animation.doLabelAnimation(linearlabel, (isProgressRefresh ? progress.previousLabelWidth : 0),
                                                 progressWidth - (isProgressRefresh ? progress.previousLabelWidth : 0),
                                                 progress, this.delay, textSize.width);

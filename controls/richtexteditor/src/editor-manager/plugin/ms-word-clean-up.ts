@@ -74,7 +74,6 @@ export class MsWordPaste {
         if (patern.test(tempHTMLContent) || patern2.test(tempHTMLContent) || patern3.test(tempHTMLContent) ||
             pattern4.test(tempHTMLContent)) {
             const source = this.findSource(elm);
-            this.imageConversion(elm, rtfData);
             tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
             this.addListClass(elm);
             listNodes = this.cleanUp(elm, listNodes);
@@ -82,6 +81,7 @@ export class MsWordPaste {
                 listNodes[0].parentElement.tagName !== 'OL') {
                 this.listConverter(listNodes);
             }
+            this.imageConversion(elm, rtfData);
             this.cleanList(elm, 'UL');
             this.cleanList(elm, 'OL');
             this.styleCorrection(elm, wordPasteStyleConfig);
@@ -293,6 +293,9 @@ export class MsWordPaste {
         const result: { [key: string]: string | boolean | number }[] = [];
         if (!isNOU(fullImg)) {
             for (let i: number = 0; i < fullImg.length; i++) {
+                if (fullImg[i as number].indexOf('fIsBullet') !== -1 && fullImg[i as number].indexOf('wzName') === -1){
+                    continue;
+                }
                 let isCroppedImage: boolean = false;
                 let goalWidth: number = 0;
                 let goalHeight: number = 0;
@@ -305,7 +308,7 @@ export class MsWordPaste {
                         imgType = 'image/png';
                     } else if (fullImg[i as number].indexOf('\\jpegblip') !== -1) {
                         imgType = 'image/jpeg';
-                    } else if (fullImg[i as number].indexOf('\\picprop') !== -1) {
+                    } else if (fullImg[i as number].indexOf('\\emfblip') !== -1) {
                         imgType = null;
                     } else {
                         continue;

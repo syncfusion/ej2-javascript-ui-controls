@@ -81,9 +81,6 @@ export class NumberFormatting implements IAction {
             closeOnEscape: true,
             cssClass: this.parent.cssClass,
             target: this.parent.element,
-            overlayClick: () => {
-                this.removeDialog();
-            },
             close: this.removeDialog.bind(this)
         });
         this.dialog.isStringTemplate = true;

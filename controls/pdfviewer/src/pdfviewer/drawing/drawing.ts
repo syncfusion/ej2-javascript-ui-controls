@@ -2526,6 +2526,7 @@ export class Drawing {
                     }
                 }
             }
+            this.pdfViewer.toolbarModule.annotationToolbarModule.updateFontSizeInIcon(node.fontSize);
             update = true;
             updateConnector = true;
         }

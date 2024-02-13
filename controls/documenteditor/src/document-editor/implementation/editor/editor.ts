@@ -3431,7 +3431,7 @@ export class Editor {
                         let rowWidget: TableRowWidget = (currentRange as WRowFormat).ownerBase;
                         let firstCell: TableCellWidget = rowWidget.childWidgets[0] as TableCellWidget;
                         let firstPara: ParagraphWidget = this.selection.getFirstParagraph(firstCell);
-                        if (firstPara.bodyWidget) {
+                        if (firstPara.bodyWidget && this.selection.start.paragraph.isInsideTable) {
                             let selection: Selection = this.documentHelper.selection;
                             this.updateEditPosition(firstCell, selection);
                             paraIndex = this.selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
@@ -6231,9 +6231,14 @@ export class Editor {
      * @private
      * @private {void}
      */
-    public insertTableInternal(table: TableWidget, newTable: TableWidget, moveRows: boolean): void {
+    public insertTableInternal(table: TableWidget, newTable: TableWidget, moveRows: boolean, skipRemoving?: boolean): void {
         //Gets the index of current table.
-        let insertIndex: number = table.getIndex();
+        let insertIndex: number = 0;
+        if (this.owner.editorHistory && (this.owner.editorHistory.isUndoing || this.owner.editorHistory.isRedoing)) {
+            insertIndex = table.index;
+        } else {
+            insertIndex = table.getIndex();
+        }
         if (moveRows) {
             //Moves the rows to table.
             for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++, index++) {
@@ -6244,13 +6249,21 @@ export class Editor {
                 i--;
             }
         }
+        let currentParagraph: ParagraphWidget = this.selection.start.paragraph;
+        if (isNullOrUndefined(table.containerWidget)) {
+            table.containerWidget = currentParagraph.containerWidget;
+        }
         let owner: Widget = table.containerWidget;
         //remove old table revisions if it is present.
         this.constructRevisionsForTable(table, false);
-        this.removeBlock(table, true);
+        if (!skipRemoving) {
+            this.removeBlock(table, true);
+        }
         this.removeRevisionFromTable(table);
         //Inserts table in the current table position.        
         let blockAdvCollection: IWidget[] = owner.childWidgets;
+        let curretBlock: BlockWidget = this.documentHelper.layout.checkAndGetBlock(owner, insertIndex);
+        insertIndex = owner.childWidgets.indexOf(curretBlock);
         blockAdvCollection.splice(insertIndex, 0, newTable);
         newTable.index = table.index;
         table.containerWidget = undefined;
@@ -6303,11 +6316,29 @@ export class Editor {
                     }
                 }
             } else {
-                this.removeDeletedCellRevision(rowWidget);
+                if (!isNullOrUndefined(this.owner.editorHistory) && (this.owner.editorHistory.isUndoing || this.owner.editorHistory.isRedoing)) {
+                    this.deleteRevision(rowWidget);
+                } else {
+                    this.removeDeletedCellRevision(rowWidget);
+                }
             }
         }
     }
-
+    private deleteRevision(row: TableRowWidget): void {
+        if (row.rowFormat.revisions.length > 0) {
+            for (let i = 0; i < row.rowFormat.revisions.length; i++) {
+                let currentRevision: Revision = row.rowFormat.revisions[i];
+                for (let j = 0; j < currentRevision.range.length; j++) {
+                    currentRevision.range.splice(j, 1);
+                    j--;
+                    this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
+                }
+                if (currentRevision.range.length === 0) {
+                    this.owner.revisions.remove(currentRevision);
+                }
+            }
+        }
+    }
     private constructRevisionsForBlock(paragraph: ParagraphWidget, canConstructRevision: boolean): void {
         for (let linIndex: number = 0; linIndex < paragraph.childWidgets.length; linIndex++) {
             let lineWidget: LineWidget = paragraph.childWidgets[linIndex] as LineWidget;
@@ -6341,10 +6372,27 @@ export class Editor {
         if (startoffset === paraWidget.getLength()) {
             skipElement = true;
         }
+        // Update the end offset if start and end both are same and both are positioned in the end of previous para of splitted para.
+        if (startoffset === endoffset && paraWidget.nextSplitWidget) {
+            endoffset += currentElement.length;
+        }
         let endElement: ElementBox = paraWidget.getInline(endoffset, 0).element;
-        if (endoffset > paraWidget.getLength()) {
+        // Set false if paraWidget contains nextSplitWidget because we shouldn't include paramark if current para contains nextSplitWidget.
+        if (!isNullOrUndefined(paraWidget.nextSplitWidget)) {
+            isParaMarkIncluded = false;
+        }
+        // Get the total length of previous splitted widgets of current para to include paramark because endoffset point out to the end of current. 
+        let lastIndex: number = 0;
+        while (paraWidget) {
+            if (!isNullOrUndefined(paraWidget)) {
+                lastIndex += paraWidget.getLength();
+            }
+            paraWidget = paraWidget.previousSplitWidget as ParagraphWidget;
+        }
+        if (endoffset > lastIndex) {
             isParaMarkIncluded = true;
         }
+
         if (!isNullOrUndefined(currentElement) && !isNullOrUndefined(endElement)) {
             if (!skipElement && currentElement === endElement) {
                 currentElement.removedIds.push(revisionId);
@@ -6411,7 +6459,10 @@ export class Editor {
         block.containerWidget = table.containerWidget;
         block.index = table.index;
         this.updateNextBlocksIndex(block, true);
-
+        // Insert the revision based on id when perform accept + undo in pagebreak case
+        if (block instanceof ParagraphWidget) {
+            this.constructRevisionsForBlock(block, true);
+        }
         this.documentHelper.layout.layoutBodyWidgetCollection(block.index, block.containerWidget as Widget, block, false);
         if (this.checkInsertPosition(selection)) {
             let paragraph: BlockWidget = undefined;
@@ -6822,14 +6873,16 @@ export class Editor {
      */
     public insertBlock(block: BlockWidget): void {
         let isRemoved: boolean = true;
+        let isSkipEmptyPara: boolean = false;
         let selection: Selection = this.selection;
         if (!selection.isEmpty) {
             isRemoved = this.removeSelectedContents(selection);
+            isSkipEmptyPara = true;
         }
         if (!isRemoved) {
             selection.selectContent(selection.start, false);
         }
-        this.insertBlockInternal(block);
+        this.insertBlockInternal(block, isSkipEmptyPara);
         if (this.checkInsertPosition(selection)) {
             let paragraph: BlockWidget = undefined;
             if (block instanceof ParagraphWidget) {
@@ -6842,9 +6895,8 @@ export class Editor {
         }
         this.fireContentChange();
     }
-    private insertBlockInternal(block: BlockWidget): void {
+    private insertBlockInternal(block: BlockWidget, isRemoved?: boolean): void {
         let selection: Selection = this.selection;
-        let isRemoved: boolean = true;
         let startPara: ParagraphWidget = this.selection.start.paragraph;
         let paraStart: boolean = this.selection.start.isAtParagraphStart;
         if (!selection.start.isAtParagraphStart) {
@@ -6882,9 +6934,14 @@ export class Editor {
         let blockIndex: number = selection.start.paragraph.index;
 
         if (!isNullOrUndefined(bodyWidget)) {
-            if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
-                if (!this.editorHistory.isUndoing && !this.editorHistory.isRedoing) {
+
+            if (!isNullOrUndefined(this.editorHistory)) {
+                if (!isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && !this.editorHistory.isUndoing && !this.editorHistory.isRedoing) {
                     this.editorHistory.currentBaseHistoryInfo.insertedNodes.push(block.clone());
+                }
+                // Added the condition to skip adding an empty paragraph when performing a redo if the document has an empty case.
+                if (this.editorHistory.isRedoing && isRemoved && bodyWidget.firstChild instanceof ParagraphWidget && bodyWidget.firstChild.isEmpty() && bodyWidget.firstChild === bodyWidget.lastChild && block instanceof ParagraphWidget && block.isEmpty()) {
+                    return;
                 }
             }
             let insertIndex: number = bodyWidget.childWidgets.indexOf(selection.start.paragraph);
@@ -12816,9 +12873,12 @@ export class Editor {
                             this.combineRevisionWithBlocks((paragraph.firstChild as LineWidget).children[0]);
                         }
                     }
-                    if (paragraph === end.paragraph && paragraph.containerWidget && !paragraph.isEmpty() && this.editorHistory.currentBaseHistoryInfo.action === 'Delete' && !this.isInsertingTOC) {
-                        let paraInfo: ParagraphInfo = this.selection.getParagraphInfo(end);
-                        this.selection.editPosition = this.selection.getHierarchicalIndex(paraInfo.paragraph, paraInfo.offset.toString());
+                    if (this.editorHistory.currentBaseHistoryInfo.action === 'Delete' && !this.isInsertingTOC) {
+                        // Changed the condition to update editposition if current para contains revision (deletion) and previous para contain revision (insertion) and both are selected case.
+                        if ((paragraph === end.paragraph && paragraph.containerWidget && !paragraph.isEmpty()) || (isNullOrUndefined(start.paragraph.containerWidget) && !isNullOrUndefined(end.paragraph.containerWidget) && !end.paragraph.isEmpty())) {
+                            let paraInfo: ParagraphInfo = this.selection.getParagraphInfo(end);
+                            this.selection.editPosition = this.selection.getHierarchicalIndex(paraInfo.paragraph, paraInfo.offset.toString());
+                        }                         
                     }
                     if (start.paragraph !== paragraph && !isNullOrUndefined(block)) {
                         this.delBlockContinue = true;
@@ -12836,7 +12896,16 @@ export class Editor {
                       }*/
                     newParagraph = this.checkAndInsertBlock(paragraph, start, end, editAction, prevParagraph);
                     this.removeRevisionForBlock(paragraph, undefined, false, true);
-                    this.addRemovedNodes(paragraph);
+                    // Added the condition to skip to add entair paragraph (with para mark) into history if the current widget has the last widget. 
+                    const isLastChild = (paragraph == this.getLastParaForBodywidgetCollection(paragraph));
+                    if (this.owner.enableTrackChanges && isLastChild && !paragraph.isInsideTable && !isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.removedNodes.length === 0) {
+                        for (let i: number = paragraph.childWidgets.length - 1; i > -1; i--) {
+                            let line: LineWidget = (paragraph.childWidgets[i]) as LineWidget;
+                            this.removeContent(line, 0, this.documentHelper.selection.getLineLength(line), undefined);
+                        }
+                    } else {
+                        this.addRemovedNodes(paragraph);
+                    }
                     if (!isNullOrUndefined(block) && !isStartParagraph && !paraReplace) {
                         this.delBlock = block;
                         let nextSection: BodyWidget = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
@@ -12994,6 +13063,12 @@ export class Editor {
                 newParagraph = new ParagraphWidget();
                 if (editAction === 1 && block instanceof ParagraphWidget && !isNullOrUndefined(block.paragraphFormat.baseStyle) && block.paragraphFormat.baseStyle.name === 'Normal') {
                     newParagraph.characterFormat.copyFormat(block.characterFormat);
+                    // Added the condition to remove removedIds when document contain single empty paragraph
+                    if (isNullOrUndefined(block.previousRenderedWidget) && newParagraph.characterFormat.removedIds.length !== 0) {
+                        while (newParagraph.characterFormat.removedIds.length > 0) {
+                            newParagraph.characterFormat.removedIds.splice(0, 1);
+                        }
+                    }
                     newParagraph.paragraphFormat.copyFormat(block.paragraphFormat);
                 }
                 newParagraph.index = block.index + 1;
@@ -13516,7 +13591,7 @@ export class Editor {
             }
         } else {
             this.deleteTableBlock(block as TableWidget, selection, start, end, editAction);
-            if (this.owner.enableTrackChanges) {
+            if (this.owner.enableTrackChanges && !this.skipTracking()) {
                 this.documentHelper.layout.reLayoutTable(block);
             }
         }
@@ -13581,7 +13656,13 @@ export class Editor {
         } else {
             //Selection end is outside table.
             let cell: TableCellWidget = selection.getContainerCell(cellAdv);
-            this.deleteContainer(cell, selection, start, end, editAction);
+            //Added the condition to remove the entire table when the selection contains a table with the above paragraph.
+            if (!isNullOrUndefined(this.editorHistory) && (this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
+                this.deleteTableBlock(cell.ownerTable, selection, start, end, editAction);
+                deletePreviousBlock = false;
+            } else {
+                this.deleteContainer(cell, selection, start, end, editAction);
+            }
         }
         if (deletePreviousBlock) {
             let sectionAdv: BodyWidget = previousBlock.bodyWidget instanceof BodyWidget ? previousBlock.bodyWidget : undefined;
@@ -13991,6 +14072,10 @@ export class Editor {
                     for (let i: number = 0; i < table.childWidgets.length; i++) {
                         this.trackRowDeletion(table.childWidgets[i] as TableRowWidget);
                     }
+                    // Added the condition to remove the entire table when the selection contains a table with the below paragraph.
+                    if (!isNullOrUndefined(this.editorHistory) && (this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
+                        this.removeBlock(table);
+                    }
                 } else {
                     this.deleteContent(table, selection, editAction);
                 }
@@ -14017,8 +14102,12 @@ export class Editor {
             let blockAdv: BlockWidget = table.previousRenderedWidget as BlockWidget;
             let sectionAdv: BodyWidget = table.bodyWidget instanceof BodyWidget ? table.bodyWidget : undefined;
             if (this.owner.enableTrackChanges) {
+                this.cloneTableToHistoryInfo(table);
                 for (let i: number = 0; i < table.childWidgets.length; i++) {
                     this.trackRowDeletion(table.childWidgets[i] as TableRowWidget);
+                }
+                if (!isNullOrUndefined(this.editorHistory) && (this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
+                    this.removeBlock(table);
                 }
 
             } else {
@@ -14093,6 +14182,7 @@ export class Editor {
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
             //Clones the entire table to preserve in history.
             let clonedTable: TableWidget = table.clone() as TableWidget;
+            clonedTable.index = table.index;
             //Preserves the cloned table in history info, for future undo operation.
             this.editorHistory.currentBaseHistoryInfo.removedNodes.push(clonedTable);
             //Sets the insert position in history info as current table.
@@ -14306,7 +14396,10 @@ export class Editor {
                     this.unLinkFieldCharacter(inline);
                     this.unlinkRangeFromRevision(inline, true);
                     this.addRemovedRevisionInfo(inline, undefined);
-                    this.addRemovedNodes(inline);
+                    // Added the condition to skip adding inner elements of the table to separate collection of history if the entire table is selected.
+                    if (!(!isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'RemoveRowTrack' && inline.paragraph.isInsideTable)) {
+                        this.addRemovedNodes(inline);
+                    }
                     if (inline instanceof EditRangeStartElementBox) {
                         this.removedEditRangeStartElements.push(inline);
                         if (inline.columnFirst != -1 && inline.columnLast != -1) {

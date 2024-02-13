@@ -653,13 +653,35 @@ export class ConnectorLineEdit {
             this.checkChildRecords(ganttRecord);
             this.parent.editModule.updateEditedTask(args.editEventArgs);
         } else if (args.validateMode.preserveLinkWithEditing) {
+            let connectedTaskId:any;
             if (this.parent.UpdateOffsetOnTaskbarEdit) {
                 this.calculateOffset(ganttRecord);
+                let taskId:any = ganttRecord.ganttProperties.taskId;
+                ganttRecord.ganttProperties.predecessor.forEach(predecessor => {
+                    if (taskId == predecessor.from) {
+                        connectedTaskId = predecessor.to
+                        return
+                    }
+                });
             }
             this.parent.editModule.updateEditedTask(args.editEventArgs);
+            this.processPredecessors(connectedTaskId)
         }
     }
-    
+    private processPredecessors(parentId: any): void {
+        if (parentId) {
+            const record = this.parent.getRecordByID(parentId);
+            this.calculateOffset (record);
+            if (record && record.ganttProperties && record.ganttProperties.predecessor) {
+                const predecessors = record.ganttProperties.predecessor;
+                predecessors.forEach(predecessor => {
+                    if (record.ganttProperties.taskId == predecessor.from) {
+                        this.processPredecessors(predecessor.to)
+                    }
+                });
+            }
+        }
+    }
     private checkChildRecords(ganttRecord: IGanttData): void {
         this.validationPredecessor = ganttRecord.ganttProperties.predecessor;
         if (!isNullOrUndefined(this.validationPredecessor)) {

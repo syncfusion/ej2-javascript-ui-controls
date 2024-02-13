@@ -1937,4 +1937,65 @@ describe('Aggregates Functionality testing', () => {
         });
     });
 
+    describe('EJ2-867939: Grid aggregate value does not update properly after filter and edit', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: new DataManager({
+                        json: [{OrderID: 1, Freight: 1}, {OrderID: 2, Freight: 1}],
+                    }),
+                    allowFiltering: true,
+                    filterSettings: {columns: [{ field: 'OrderID', matchCase: false, operator: 'equal', predicate: 'and', value: 2 }]},
+                    toolbar: ["Edit", "Cancel", "Update"],
+                    editSettings: {allowEditing: true},
+                    columns: [
+                      {
+                        field: 'OrderID',
+                        headerText: 'Order ID',
+                        textAlign: 'Right',
+                        width: 100,
+                        isPrimaryKey: true,
+                      },
+                      {
+                        field: 'Freight',
+                        type: 'number',
+                        headerText: 'Freight',
+                        textAlign: 'Right',
+                        width: 120,
+                        format: 'C2',
+                      },
+                    ],
+                    aggregates: [
+                      {
+                        columns: [
+                          {
+                            type: 'Sum',
+                            field: 'Freight',
+                            format: 'C2',
+                            footerTemplate: 'Sum: ${Sum}',
+                          },
+                        ],
+                      },
+                    ],
+                },
+                done
+            );
+        });
+        it('Start edit', () => {
+            grid.selectRow(0);
+            grid.startEdit();
+        });
+        it('Edit the Freight data', () => {
+            (grid as any).getContentTable().querySelector('.e-editedrow').querySelectorAll('input')[1].value = 2;
+            grid.endEdit();
+        });
+        it('Check the aggregate data', () => {
+            expect((grid as any).getFooterContentTable().querySelector('.e-templatecell').innerText).toBe('Sum: $2.00');
+        });
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
 });
