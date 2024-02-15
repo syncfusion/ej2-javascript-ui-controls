@@ -865,16 +865,16 @@ export class DropDownList extends DropDownBase implements IInput {
     protected focusOutAction(e?: MouseEvent | KeyboardEventArgs): void {
         this.isInteracted = false;
         this.focusOut(e);
-        this.onFocusOut();
+        this.onFocusOut(e);
     }
 
-    protected onFocusOut(): void {
+    protected onFocusOut(e?: MouseEvent | KeyboardEventArgs): void {
         if (!this.enabled) {
             return;
         }
         if (this.isSelected) {
             this.isSelectCustom = false;
-            this.onChangeEvent(null);
+            this.onChangeEvent(e);
         }
         this.floatLabelChange();
         this.dispatchEvent(this.hiddenElement as HTMLElement, 'change');
@@ -1612,7 +1612,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.hidePopup(e);
                 this.isInteracted = false;
                 if (!isActive) {
-                    this.onFocusOut();
+                    this.onFocusOut(e);
                     this.inputWrapper.container.classList.remove(dropDownListClasses.inputFocus);
                 }
             }

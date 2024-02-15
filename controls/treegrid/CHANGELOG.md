@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 24.2.5 (2024-02-13)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F50215` - Filtering not working on navigating to another page when all records are collapsed.
+- `#F50218` - Fixed the issue where the `RowSelecting` and `RowSelected` events were triggered twice when selecting a row using the keyboard down arrow.
+- `#F50385` - Fixed the misalignment issue with column header text when filtering and using the row drag and drop feature.
+- `#F50301` - Fixed an issue where the `AddRecord` method was not functioning correctly after reaching level 2.
+
+## 24.2.4 (2024-02-06)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I546807` - Fixed issue where filtering was not working when navigating to another page when all records were collapsed.
+
 ## 24.1.46 (2024-01-17)
 
 ### Tree Grid

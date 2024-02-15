@@ -692,10 +692,6 @@ export interface IToolsItemConfigs {
     value?: string
 }
 
-/**
- * @hidden
- * @deprecated
- */
 export interface IListDropDownModel extends DropDownItemModel {
     cssClass?: string
     command?: string
@@ -706,10 +702,6 @@ export interface IListDropDownModel extends DropDownItemModel {
     listImage?: string
 }
 
-/**
- * @hidden
- * @deprecated
- */
 export interface IDropDownItemModel extends DropDownItemModel {
     cssClass?: string
     command?: string

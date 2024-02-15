@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.6 (2024-02-15)
+
+### HeatMap
+
+#### Bug fixes
+
+- `#I542011` - Color will be set properly to the HeatMap cell when multiple objects are set to the palette for the same range.
+
 ## 24.1.41 (2023-12-18)
 
 ### HeatMap

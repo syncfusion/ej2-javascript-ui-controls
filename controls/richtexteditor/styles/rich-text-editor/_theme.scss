@@ -778,8 +778,7 @@
     }
 
     .e-richtexteditor .e-toolbar .e-tbar-btn {
-      border-bottom: 1px solid $transparent;
-      border-top: 1px solid $transparent;
+      border: 1px solid $transparent;
     }
 
     .e-richtexteditor .e-toolbar .e-tbar-btn:hover {
@@ -790,6 +789,14 @@
     .e-richtexteditor .e-toolbar.e-extended-toolbar .e-toolbar-extended .e-toolbar-item .e-tbar-btn:hover {
       background: $rte-tb-hover-bg-color;
       border: 1px solid $rte-quick-item-hover-border-color;
+    }
+
+    .e-richtexteditor .e-toolbar.e-extended-toolbar .e-toolbar-extended .e-toolbar-item .e-tbar-btn{
+      border: 1px solid $transparent;
+    }
+    
+    .e-richtexteditor .e-toolbar .e-toolbar-item .e-tbar-btn:focus {
+      border: 1px solid $transparent;
     }
   }
 

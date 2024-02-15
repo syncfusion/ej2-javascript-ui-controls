@@ -3795,9 +3795,9 @@ export class Annotation {
             pageString = eventTarget.id.split('_text_')[1] || eventTarget.id.split('_textLayer_')[1] || eventTarget.id.split('_annotationCanvas_')[1] || eventTarget.id.split('_pageDiv_')[1];
         }
         if (isNaN(pageString)) {
-            event = this.pdfViewerBase.annotationEvent;
-            if (event) {
-                eventTarget = event.target as HTMLElement;
+            event = this.pdfViewerBase.annotationEvent && this.pdfViewerBase.annotationEvent.target.id === eventTarget.id ? this.pdfViewerBase.annotationEvent.target.id : eventTarget.id;
+            eventTarget = event.target as HTMLElement;
+            if (eventTarget) {
                 // eslint-disable-next-line
                 pageString = eventTarget.id.split('_text_')[1] || eventTarget.id.split('_textLayer_')[1] || eventTarget.id.split('_annotationCanvas_')[1] || eventTarget.id.split('_pageDiv_')[1];
             }

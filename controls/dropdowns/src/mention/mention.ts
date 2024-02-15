@@ -1247,6 +1247,20 @@ export class Mention extends DropDownBase {
             range.collapse(false);
             rect = range.getBoundingClientRect().top === 0 ? (range.startContainer as any).getClientRects()[0] : range.getBoundingClientRect();
         }
+        let rectTop: number = rect.top;
+        let rectLeft: number = rect.left;
+        const iframes: NodeListOf<HTMLIFrameElement> = document.querySelectorAll<HTMLIFrameElement>('iframe');
+        if (iframes.length > 0) {
+            for (let i: number = 0; i < iframes.length; i++) {
+                // eslint-disable-next-line security/detect-object-injection
+                const iframe: HTMLIFrameElement = (iframes[i] as HTMLIFrameElement);
+                if ((iframe.contentDocument as Document).contains(element)) {
+                    const iframeRect: ClientRect = iframe.getBoundingClientRect();
+                    rectTop += iframeRect.top;
+                    rectLeft += iframeRect.left;
+                }
+            }
+        }
         const doc: HTMLElement = document.documentElement;
         const windowLeft: number = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
         const windowTop: number = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
@@ -1268,22 +1282,22 @@ export class Mention extends DropDownBase {
         }
         if (!this.isContentEditable(this.inputElement)) {
             coordinates = {
-                top: rect.top + windowTop + span.offsetTop + parseInt(computed.borderTopWidth, 10) +
+                top: rectTop + windowTop + span.offsetTop + parseInt(computed.borderTopWidth, 10) +
                     parseInt(computed.fontSize, 10) + 3 - (element as HTMLInputElement | HTMLTextAreaElement).scrollTop - (this.isCollided ? 10 : 0),
-                left: rect.left + windowLeft + span.offsetLeft + parseInt(computed.borderLeftWidth, 10)
+                left: rectLeft + windowLeft + span.offsetLeft + parseInt(computed.borderLeftWidth, 10)
             };
             document.body.removeChild(div);
         } else {
             if (this.collision && this.collision.length > 0 && this.collision.indexOf('right') > -1  && this.collision.indexOf('bottom') === -1) {
                 coordinates = {
-                    top: rect.top + windowTop + parseInt(getComputedStyle(this.inputElement).fontSize, 10),
-                    left: rect.left + windowLeft + width
+                    top: rectTop + windowTop + parseInt(getComputedStyle(this.inputElement).fontSize, 10),
+                    left: rectLeft + windowLeft + width
                 };
             }
             else {
                 coordinates = {
-                    top: rect.top + windowTop + parseInt(getComputedStyle(this.inputElement).fontSize, 10) - (this.isCollided ? 10 : 0),
-                    left: rect.left + windowLeft + width
+                    top: rectTop + windowTop + parseInt(getComputedStyle(this.inputElement).fontSize, 10) - (this.isCollided ? 10 : 0),
+                    left: rectLeft + windowLeft + width
                 };
             }
         }

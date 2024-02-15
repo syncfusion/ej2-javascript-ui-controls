@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 24.2.6 (2024-02-15)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I548067` - Now, the freetext annotation is able to be added to a specific page in the provided document.
+- `#I550522` - Now, the text search does not fail to highlight the last character on a page.
+
 ## 24.2.5 (2024-02-13)
 
 ### PDF Viewer

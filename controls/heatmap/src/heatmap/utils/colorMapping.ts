@@ -88,7 +88,6 @@ export class CellColor {
                     nextOffset = offset;
                     previousColor = this.heatMap.colorCollection[i as number].minColor;
                     nextColor =  this.heatMap.colorCollection[i as number].maxColor;
-                    break;
                 } else if (colorMapping[0].startValue !== this.heatMap.dataSourceMinValue && value < colorMapping[0].startValue) {
                     nextOffset = colorMapping[0].startValue;
                     previousOffset = this.heatMap.dataSourceMinValue;
@@ -125,7 +124,7 @@ export class CellColor {
         let percent: number = 0;
         const full: number = (nextOffset ) - previousOffset;
         percent = (value - previousOffset) / full;
-        percent = isNaN(percent) ? 0 : percent;
+        percent = isNaN(percent) || !isFinite(percent) ? 0 : percent;
 
         return this.getPercentageColor(percent, previousColor, nextColor);
     }
@@ -372,8 +371,7 @@ export class CellColor {
                             color = (this.heatMap.legendVisibilityByCellType && legendRange[y as number] &&
                                     !legendRange[y as number].visible) ?
                                 this.heatMap.themeStyle.toggledColor : this.heatMap.colorCollection[y as number].minColor;
-                            break;
-                        } else {
+                        }  else if (color === '') {
                             color = this.heatMap.paletteSettings.fillColor.minColor;
                         }
                     } else {

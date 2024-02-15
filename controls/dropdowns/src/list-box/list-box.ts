@@ -1835,7 +1835,6 @@ export class ListBox extends DropDownBase {
             if (tListBox.mainList.childElementCount !== tListBox.jsonData.length) {
                 tListBox.mainList = tListBox.ulElement;
             }
-            fListBox.updateMainList();
             const tJsonData: dataType[] = [].slice.call(tListBox.jsonData);
             tSortData = [].slice.call(tListBox.sortedData);
             this.selectNextList(elems, dataLiIdx, dataIdx, fListBox);

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 24.2.6 (2024-02-15)
+
+### ListBox
+
+- `#I548014` - Issue with "Reduce the time taken to move records in a dual listbox when using moveTo/moveFrom toolbar click" has been resolved.
+
+### Mention
+
+#### Bug Fixes
+
+-`#I528014`- Issue with 'change' event is triggered while filtering in Angular.
+
+- `#F186429` - Fixed an issue where the mention popup was not aligned properly when the mention target was set as `iframe`.
+
 ## 24.2.5 (2024-02-13)
 
 ### DropdownList
@@ -9,6 +23,8 @@
 #### Bug Fixes
 
 - `#F49655` - Fixed an issue where assigning null to a value, text and index property resulting in errors.
+
+- `#I546769` - Fixed an issue where the `isInteracted` property return false after selecting a value using focus out.
 
 ## 24.2.4 (2024-02-06)
 

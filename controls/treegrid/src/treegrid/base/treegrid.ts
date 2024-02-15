@@ -1680,8 +1680,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     }
                     summaryElement = this.findnextRowElement(parentTarget);
                     if (summaryElement !== null) {
-                        const rowIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
-                        this.selectRow(rowIndex);
                         const cellIndex: number = (<HTMLTableCellElement>e.target).cellIndex;
                         const row: Element = (<HTMLTableRowElement>summaryElement).children[parseInt(cellIndex.toString(), 10)];
                         addClass([row], 'e-focused');
@@ -1701,8 +1699,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     }
                     summaryElement = this.findPreviousRowElement(parentTarget);
                     if (summaryElement !== null) {
-                        const rIndex: number = (<HTMLTableRowElement>summaryElement).rowIndex;
-                        this.selectRow(rIndex);
                         const cIndex: number = (<HTMLTableCellElement>e.target).cellIndex;
                         const rows: Element = (<HTMLTableRowElement>summaryElement).children[parseInt(cIndex.toString(), 10)];
                         addClass([rows], 'e-focused');

@@ -1331,9 +1331,9 @@ export class ContentFocus implements IFocus {
             this.matrix.current[1] = this.matrix.matrix[current[0]].length;
         }
         let isHeaderFocus: boolean = false;
-        const row: Element = document.activeElement.parentElement;
+        const row: Element = parentsUntil(document.activeElement, 'e-row');
         if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
-            && row.classList.contains(literals.row)) {
+            && !isNullOrUndefined(row) && row.classList.contains(literals.row)) {
             const rowIndex: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
             isHeaderFocus = rowIndex > 0;
         }

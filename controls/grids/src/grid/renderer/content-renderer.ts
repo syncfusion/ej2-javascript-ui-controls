@@ -410,6 +410,7 @@ export class ContentRender implements IRenderer {
             for (let i: number = 0; i < this.parent.frozenRows; i++) {
                 // mhdrData[parseInt(i.toString(), 10)].cells.splice(0, this.parent.getFrozenColumns());
                 tr = row.render(mhdrData[parseInt(i.toString(), 10)], columns);
+                addFixedColumnBorder(tr);
                 hdrfrag.appendChild(tr);
             }
             args.virtualInfo.blockIndexes = bIndex;

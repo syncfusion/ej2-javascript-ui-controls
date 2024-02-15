@@ -314,7 +314,7 @@ describe('GridLayout', () => {
                 cellSpacing: [10, 10],
                 showGridLines: true,
                 panels: [{
-                    id: "one", sizeX: 2, sizeY: 1, row: 1, col: 0, header: "<div></div>"
+                    id: "one", sizeX: 2, sizeY: 1, row: 1, col: 0, header: "<div></div>", cssClass:"test"
                 },
                 {
                     id: "two", sizeX: 2, sizeY: 1, row: 0, col: 0, content: "<div>2</div>"
@@ -720,6 +720,22 @@ describe('GridLayout', () => {
                 allowResizing: true,
                 panels: [
                 ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.addPanel({ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, content: content });
+            expect(gridLayOut.element.children[0].offsetHeight).toBe(101);
+            expect(gridLayOut.element.offsetHeight).toBe(gridLayOut.element.children[0].offsetHeight);
+        });
+
+        it('addpanel with root element height with mediaquery null test case ', () => {
+            let content = generateTemplate('0');
+            gridLayOut = new DashboardLayout({
+                columns: 12,
+                cellAspectRatio: 1,
+                cellSpacing: [5, 5],
+                allowResizing: true,
+                panels: [
+                ], mediaQuery: null
             });
             gridLayOut.appendTo('#gridlayout');
             gridLayOut.addPanel({ "id": '0', "sizeX": 2, "sizeY": 1, "row": 0, "col": 0, content: content });

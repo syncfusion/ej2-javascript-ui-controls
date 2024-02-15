@@ -149,7 +149,9 @@ export class ExcelExport {
         }
         property = isNullOrUndefined(property) ? Object() : property;
         property.dataSource = new DataManager({json: <Object[]>dtSrc});
-        property.query = args['query'];
+        if (this.parent.aggregates.length > 0) {
+            property.query = args['query'];
+        }
         return property;
     }
     /**

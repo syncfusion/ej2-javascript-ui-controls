@@ -10,6 +10,9 @@
 
 - `#I545865` - Resolved the issue where the grid aggregate value was not updating correctly after filtering and editing.
 - `#I545552` - The Excel filter is not displaying the advanced filtering sub menu items when selecting number/text/date filtering options on mobile and tablet devices.
+- `#F186229` - The issue where the toolbar search text box couldn't be focused when the grid is rendered inside a dialog has been resolved.
+- `#I550243` - Fixed the problem of recursive triggering of the `actionBegin` event when changing the page size from the second page.
+- `#SF543888` - Fixed the issue where `groupSettings` were not updated properly when cancelling a group action using `args.cancel` in the `actionBegin` event.
 
 ## 24.2.4 (2024-02-06)
 

@@ -604,7 +604,7 @@ export interface RichTextEditorModel extends ComponentModel{
      *
      * @default
      * {
-     * default: '10',
+     * default: '10pt',
      * width: '35px',
      * items: [
      * { text: '8', value: '8pt' },

@@ -654,18 +654,21 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             if (Browser.isIE && !isWheel && check && !this.preventEvent && !this.parent.enableVirtualMaskRow) {
                 this.parent.showSpinner();
             }
+            this.prevInfo = this.prevInfo || this.vgenerator.getData();
             if (this.parent.enableVirtualMaskRow && !this.preventEvent) {
                 const firstOffSetKey: number = parseInt(this.offsetKeys[0], 10);
                 const lastOffSetKey: number = parseInt(this.offsetKeys[this.offsetKeys.length - 1], 10);
                 const blockIndex: number[] = this.currentInfo.blockIndexes;
+                const viewInfo: VirtualInfo = this.getInfoFromView(direction, current, e);
+                const disableShowMaskRow: boolean = this.prevInfo && current.axis === 'X'
+                    && this.prevInfo.columnIndexes.toString() === viewInfo.columnIndexes.toString();
                 if (!((blockIndex && blockIndex[0] === firstOffSetKey && direction === 'up') ||
-                    (blockIndex && blockIndex[blockIndex.length - 1] === lastOffSetKey && direction === 'down'))) {
+                    (blockIndex && blockIndex[blockIndex.length - 1] === lastOffSetKey && direction === 'down') || disableShowMaskRow)) {
                     setTimeout(() => {
                         this.parent.showMaskRow(current.axis);
                     }, 0);
                 }
             }
-            this.prevInfo = this.prevInfo || this.vgenerator.getData();
             const xAxis: boolean = current.axis === 'X'; const top: number = this.prevInfo.offsets ? this.prevInfo.offsets.top : null;
             const height: number = this.content.getBoundingClientRect().height;
             let x: number = this.getColumnOffset(xAxis ? this.vgenerator.getColumnIndexes()[0] - 1 : this.prevInfo.columnIndexes[0] - 1);
