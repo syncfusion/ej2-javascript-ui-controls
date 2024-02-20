@@ -3770,17 +3770,17 @@ export class DocumentHelper {
                         if (previousPage.currentPageNum === 1 && currentSectionIndex !== previousPage.sectionIndex) {
                             previousPage.currentPageNum = (page.bodyWidgets[0].sectionFormat.pageStartingNumber);
                         }
-                        if (!isNullOrUndefined(page.previousPage) && page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering && page.previousPage.bodyWidgets[page.previousPage.bodyWidgets.length - 1].sectionIndex !== page.sectionIndex) {
-                            page.currentPageNum = page.previousPage.currentPageNum + 1;
-                        } else {
-                            page.currentPageNum = page.index + 1;
-                        }
+                        page.currentPageNum = previousPage.currentPageNum + 1;
                         return this.getFieldText(fieldPattern, page.currentPageNum);
                     } else if (page.bodyWidgets[0].sectionFormat.restartPageNumbering && page.sectionIndex === 0) {
                         page.currentPageNum = page.bodyWidgets[0].sectionFormat.pageStartingNumber + page.index;
                         return this.getFieldText(fieldPattern, page.currentPageNum);
                     }
-                    page.currentPageNum = (!isNullOrUndefined(page.previousPage)) ? page.previousPage.currentPageNum + 1 : page.index + 1;
+                    if (!isNullOrUndefined(page.previousPage) && page.previousPage.bodyWidgets[0].sectionFormat.restartPageNumbering && page.previousPage.bodyWidgets[page.previousPage.bodyWidgets.length - 1].sectionIndex !== page.sectionIndex) {
+                        page.currentPageNum = page.previousPage.currentPageNum + 1;
+                    } else {
+                        page.currentPageNum = page.index + 1;
+                    }
                     return this.getFieldText(fieldPattern, page.currentPageNum);
                 case 'numpages':
                     return this.getFieldText(fieldPattern, page.documentHelper.pages.length);

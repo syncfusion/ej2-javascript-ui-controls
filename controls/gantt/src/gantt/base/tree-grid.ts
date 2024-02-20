@@ -437,7 +437,7 @@ export class GanttTreeGrid {
                 this.currentEditRow = {};
             }
         }
-        if (getValue('requestType', args) === 'filterafteropen') {
+        if (getValue('requestType', args) === 'filterAfterOpen') {
             this.parent.notify('actionComplete', args);
         }
         if (getValue('requestType', args) === 'searching') {

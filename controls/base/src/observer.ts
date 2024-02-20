@@ -195,7 +195,7 @@ export class Observer {
         let eventsArr: any = this.boundedEvents['notifyExternalChange'];
         if (eventsArr) {
             for (let i: number = 0; i < eventsArr.length; i++) {
-                let curContext: any = eventsArr[0].context;
+                let curContext: any = eventsArr[`${i}`].context;
                 if (curContext && curContext.detectFunction && curContext.randomId && !curContext.isRendered) {
                     this.off('notifyExternalChange', curContext.detectFunction, curContext.randomId);
                     i--;

@@ -1125,7 +1125,7 @@ export class HelperMethods {
      * @param {LineWidget} lineWidget  line widget to add the splitted text element box.
      * @returns {void}
      */
-    public static splitWordByMaxLength(textElementBox: TextElementBox, lineWidget: LineWidget): void {
+    public static splitWordByMaxLength(textElementBox: TextElementBox, lineWidget: LineWidget, isInitialParsing?: boolean): void {
         const text: string = textElementBox.text;
         let index: number = 0;
         const textLength: number = text.length;
@@ -1133,6 +1133,7 @@ export class HelperMethods {
         let splittedText: string = '';
         const characterFormat: WCharacterFormat = textElementBox.characterFormat;
         const revisions: Revision[] = textElementBox.revisions;
+        let spanIndex: number = lineWidget.children.indexOf(textElementBox);
         while (index < textLength) {
             let nextIndex: number = index + maxLength;
             if (nextIndex > textLength) {
@@ -1162,7 +1163,12 @@ export class HelperMethods {
                         }
                     }
                 }
-                lineWidget.children.push(splittedElement);
+                if (isInitialParsing) {
+                    lineWidget.children.push(splittedElement);
+                } else {
+                    lineWidget.children.splice(spanIndex + 1, 0, splittedElement);
+                    spanIndex++;
+                }
             }
             index = spaceIndex;
         }

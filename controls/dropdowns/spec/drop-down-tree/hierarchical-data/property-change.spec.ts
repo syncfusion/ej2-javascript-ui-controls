@@ -1015,7 +1015,7 @@ describe('DropDownTree control', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle[0].querySelector('.e-frame').dispatchEvent(e);
             var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -1063,7 +1063,7 @@ describe('DropDownTree control', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle[0].querySelector('.e-frame').dispatchEvent(e);
             var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -1130,7 +1130,7 @@ describe('DropDownTree control', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle[0].querySelector('.e-frame').dispatchEvent(e);
             var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -1189,7 +1189,7 @@ describe('DropDownTree control', () => {
             ddtreeObj.dataBind();
             expect(ddtreeObj.text).toBe('Australia');
             expect(ddtreeObj.value.length).toBe(1);
-            expect(ddtreeObj.tree.querySelector("[data-uid='1']").querySelector('.e-checkbox-wrapper').getAttribute('aria-checked')).toBe('true');
+            expect(ddtreeObj.tree.querySelector("[data-uid='1']").getAttribute('aria-checked')).toBe('true');
         });
 
         /**
@@ -1204,7 +1204,7 @@ describe('DropDownTree control', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle[2].querySelector('.e-frame').dispatchEvent(e);
             var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });

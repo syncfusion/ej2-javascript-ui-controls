@@ -179,6 +179,27 @@ describe('832431: Entire line gets removed while pressing enter key after pressi
     });
 });
 
+describe('870158: Pressing backspace inside the list', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    it('Pressing backspace key after pressing the shift enter inside the list with styles', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<ol><li>List node content</li><li>List node <span style="background-color: rgb(255, 255, 0);">content</span><br></li><li><span style="background-color: transparent;">List node content<br></span><span class="focusNode" style="background-color: transparent;">Shift enter pressed</span></li></ol>`,
+        });
+        let node: any = rteObj.inputElement.querySelector('.focusNode');
+        setCursorPoint(document, node.childNodes[0], 0);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<ol><li>List node content</li><li>List node <span style="background-color: rgb(255, 255, 0);">content</span><br></li><li><span style="background-color: transparent;">List node content<br></span><span class="focusNode" style="background-color: transparent;">Shift enter pressed</span></li></ol>`);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('840133: Backspace key not working properly when placed cursor in the element with br inside the 2 text nodes', () => {
     let rteObj: RichTextEditor;
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
@@ -475,7 +496,8 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
         keyBoardEvent.keyCode = 8;
         keyBoardEvent.code = 'Backspace';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).inputElement.childNodes[1].childElementCount).toBe(3);
+        expect((rteObj as any).inputElement.childNodes[1].childElementCount).toBe(4);
+        expect((rteObj as any).inputElement.innerHTML === `<p><b>Functional\n            Specifications/Requirements:</b></p><ol><li><p>Provide\n            the tool bar support, it’s also customizable.</p></li><li><p>Options\n            to get the HTML elements with styles.</p></li><li>Support\n            to insert image from a defined path.</li><li><p>Footer\n            elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol><p><br></p>`).toBe(true);
         done();
     });
     afterAll(() => {
@@ -6173,7 +6195,11 @@ describe('EJ2-46060: EJ2CORE-606: 8203 character not removed after start typing'
         rteObj = renderRTE({});
         rteObj.focusIn();
         (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+        rteObj.value = `<p><strong id='focusNode'>​r</strong></p>`;
+        rteObj.dataBind();
         expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerText.search(/\u200B/g) === 0).toBe(true);
+        let focusNode = document.getElementById('focusNode');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, focusNode.childNodes[0], focusNode.childNodes[0], 1, 1);
         dispatchKeyEvent(rteObj.element.querySelector('.e-content'), 'keypress', { 'key': 'a', 'keyCode': 65 });
         keyboardEventArgs.key = 'a';
         keyboardEventArgs.which = 65;
@@ -6182,7 +6208,7 @@ describe('EJ2-46060: EJ2CORE-606: 8203 character not removed after start typing'
         (<any>rteObj).keyUp(keyboardEventArgs);
         expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerText.search(/\u200B/g) === -1).toBe(true);
         expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerText === 'a').toBe(false);
-        expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerHTML).toBe('<p><strong></strong></p>');
+        expect((rteObj.element.querySelector('.e-content') as HTMLElement).innerHTML).toBe(`<p><strong id="focusNode">r</strong></p>`);
     });
     afterEach(() => {
         destroy(rteObj);
@@ -7139,6 +7165,107 @@ describe('865731 - Mention list not inserts in the cursor position into the Rich
         done();
     });
     afterAll(() => {
+        destroy(rteObj);
+    });
+});
+describe('850064 -  Quotation format not changed while changing the format', () => {
+    let rteObj: RichTextEditor;
+    beforeEach((done) => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Formats', 'OrderedList', 'UnorderedList']
+            },
+            value: `<ol><li>The Rich Text Editor (RTE) control is an easy to render in the
+            client side.</li></ol>`
+        });
+        done();
+    });
+    it('toggle option to list for blockquotes', (done: Function) => {
+        setCursorPoint(document, rteObj.inputElement.querySelector("li").childNodes[0] as Element, 0,);
+        let formatsDropDown: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_Formats');
+        formatsDropDown.click();
+        (document.querySelector('#' + rteObj.element.id + '_toolbar_Formats-popup').querySelector(".e-item.e-quote") as HTMLElement).click();
+        expect(rteObj.inputElement.querySelector("li").parentElement.parentElement.nodeName.toLowerCase() === 'blockquote').toBe(true);
+        formatsDropDown.click();
+        (document.querySelector('#' + rteObj.element.id + '_toolbar_Formats-popup').querySelector(".e-item.e-quote") as HTMLElement).click();
+        expect(rteObj.inputElement.querySelector("li").parentElement.parentElement.nodeName.toLowerCase() === 'blockquote').toBe(false);
+        done();
+    });
+    it('toggle option to paragraph for blockquotes', (done: Function) => {
+        rteObj.value = `<blockquote>The Rich Text Editor (RTE) control is an easy to render in the
+        client side.</blockquote>`;
+        rteObj.dataBind();
+        setCursorPoint(document, rteObj.inputElement.querySelector("blockquote").childNodes[0] as Element, 0,);
+        let formatsDropDown: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_Formats');
+        formatsDropDown.click();
+        (document.querySelector('#' + rteObj.element.id + '_toolbar_Formats-popup').querySelector(".e-item.e-quote") as HTMLElement).click();
+        expect(isNullOrUndefined(rteObj.inputElement.querySelector("blockquote"))).toBe(true);
+        done();
+    });
+    it('toggle option to paragraph for blockquotes', (done: Function) => {
+        rteObj.value = `<blockquote>The Rich Text Editor (RTE) control is an easy to render in the
+        client side.</blockquote>`;
+        rteObj.enterKey = 'DIV';
+        rteObj.dataBind();
+        setCursorPoint(document, rteObj.inputElement.querySelector("blockquote").childNodes[0] as Element, 0,);
+        let formatsDropDown: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_Formats');
+        formatsDropDown.click();
+        (document.querySelector('#' + rteObj.element.id + '_toolbar_Formats-popup').querySelector(".e-item.e-quote") as HTMLElement).click();
+        expect(isNullOrUndefined(rteObj.inputElement.querySelector("blockquote"))).toBe(true);
+        done();
+    });
+    it('revert from blockquotes while pressing enter key', (done: Function) => {
+        rteObj.value = `<blockquote><ol><li>The Rich Text Editor (RTE) control is an easy to render in the
+            client side.</li></ol><p><br></p><p><br></p></blockquote>`;
+        rteObj.dataBind();
+        setCursorPoint(document, rteObj.inputElement.querySelector("ol").nextSibling.nextSibling.childNodes[0] as Element, 0,);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        keyBoardEvent.code = 'Enter';
+        keyBoardEvent.action = 'enter';
+        keyBoardEvent.which = 13;
+        expect(!isNullOrUndefined(rteObj.inputElement.querySelector("blockquote").nextSibling) ).toBe(false);
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(!isNullOrUndefined(rteObj.inputElement.querySelector("blockquote").nextSibling) ).toBe(true);
+        done();
+    });
+    it('revert from blockquotes while pressing enter key while configuring zerowidthspace', (done: Function) => {
+        rteObj.value = `<blockquote><ol><li>testing</li></ol><p>&#8203;</p><p>&#8203;</p></blockquote>`;
+        rteObj.dataBind();
+        setCursorPoint(document, rteObj.inputElement.querySelector("ol").nextSibling.nextSibling.childNodes[0] as Element, 0,);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        keyBoardEvent.code = 'Enter';
+        keyBoardEvent.action = 'enter';
+        keyBoardEvent.which = 13;
+        expect(!isNullOrUndefined(rteObj.inputElement.querySelector("blockquote").nextSibling) ).toBe(false);
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(!isNullOrUndefined(rteObj.inputElement.querySelector("blockquote").nextSibling) ).toBe(true);
+        done();
+    });
+    it('dont revert from blockquotes while pressing enter key while configuring zerowidthspace', (done: Function) => {
+        rteObj.value = `<blockquote><ol><li>testing</li></ol><p>testing</p><p>testing</p></blockquote>`;
+        rteObj.dataBind();
+        setCursorPoint(document, rteObj.inputElement.querySelector("ol").nextSibling.nextSibling.childNodes[0] as Element, 0,);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        keyBoardEvent.code = 'Enter';
+        keyBoardEvent.action = 'enter';
+        keyBoardEvent.which = 13;
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(!isNullOrUndefined(rteObj.inputElement.querySelector("blockquote").nextSibling) ).toBe(false);
+        done();
+    });
+    it('revert from blockquotes while pressing enter key while configuring zerowidthspace', (done: Function) => {
+        rteObj.value = `<blockquote><ol><li>testing</li></ol><p>testing</p><p><br></p></blockquote>`;
+        rteObj.dataBind();
+        setCursorPoint(document, rteObj.inputElement.querySelector("ol").nextSibling.nextSibling.childNodes[0] as Element, 0,);
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        keyBoardEvent.code = 'Enter';
+        keyBoardEvent.action = 'enter';
+        keyBoardEvent.which = 13;
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(!isNullOrUndefined(rteObj.inputElement.querySelector("blockquote").nextSibling) ).toBe(false);
+        done();
+    });
+    afterEach(() => {
         destroy(rteObj);
     });
 });

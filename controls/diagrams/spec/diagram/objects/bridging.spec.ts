@@ -390,6 +390,54 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+    describe('Bridging With connector visibility false', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram3' });
+            document.body.appendChild(ele);
+
+            let connector1: ConnectorModel = {
+                id: 'connector1',
+                type: 'Straight',
+                sourcePoint: { x: 300, y: 80 },
+                targetPoint: { x: 400, y: 220 },
+                visible:false,
+                cornerRadius: 10
+            };
+            let connector2: ConnectorModel = {
+                id: 'connector2',
+                type: 'Straight',
+                targetPoint: { x: 500, y: 150 },
+                sourcePoint: { x: 200, y: 100 },
+                cornerRadius: 10
+            };
+            diagram = new Diagram({
+                width: 1000, height: 1000,
+                connectors: [connector1, connector2], constraints: DiagramConstraints.Default |DiagramConstraints.Bridging
+            });
+            diagram.appendTo('#diagram3');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking Bridging is enabled or not for the connector visibility false', (done: Function) => {
+            let element1: DiagramElement = diagram.connectors[1].wrapper.children[0];
+            console.log("Connector element"+(element1 as PathElement).data);
+            expect((element1 as PathElement).data == 'M200 100 L499.51 149.92').toBe(true);
+            done();
+        });
+    });
     describe('Connector segments not update properly', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

@@ -1057,5 +1057,60 @@ describe('Find & Replace ->', () => {
                 });
             });
         });
+        describe('EJ2-869788 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Handled infinite looping when using findAll() method in a single sheet', (done: Function) => {
+                setTimeout((): void => {
+                    const singleSheetValues: string[] = helper.invoke('findAll', ['10', "Workbook", false, true]);
+                    setTimeout((): void => {
+                        expect(singleSheetValues.length).toBe(7);
+                        expect(singleSheetValues[0]).toBe("Sheet1!D2");
+                        expect(singleSheetValues[1]).toBe("Sheet1!H2");
+                        expect(singleSheetValues[2]).toBe("Sheet1!E6");
+                        expect(singleSheetValues[3]).toBe("Sheet1!G6");
+                        expect(singleSheetValues[4]).toBe("Sheet1!E8");
+                        expect(singleSheetValues[5]).toBe("Sheet1!E9");
+                        expect(singleSheetValues[6]).toBe("Sheet1!E11");
+                        done();
+                    });
+                });
+            });
+            it('Handled infinite looping when using findAll() method in a multiple sheets', (done: Function) => {
+                setTimeout((): void => {
+                    helper.getElement('#' + helper.id + ' .e-add-sheet-tab').click();
+                    setTimeout((): void => {
+                        helper.getInstance().goTo('Sheet2!A1');
+                        setTimeout((): void => {
+                            helper.edit('A1', '10');
+                            helper.edit('B2', '10');
+                            helper.edit('C3', '10');
+                            helper.getInstance().goTo('Sheet1!A1');
+                            setTimeout((): void => {
+                                const multipleSheetValues: string[] = helper.invoke('findAll', ['10', "Workbook", false, true]);
+                                setTimeout((): void => {
+                                    expect(multipleSheetValues.length).toBe(10);
+                                    expect(multipleSheetValues[0]).toBe("Sheet1!D2");
+                                    expect(multipleSheetValues[1]).toBe("Sheet1!H2");
+                                    expect(multipleSheetValues[2]).toBe("Sheet1!E6");
+                                    expect(multipleSheetValues[3]).toBe("Sheet1!G6");
+                                    expect(multipleSheetValues[4]).toBe("Sheet1!E8");
+                                    expect(multipleSheetValues[5]).toBe("Sheet1!E9");
+                                    expect(multipleSheetValues[6]).toBe("Sheet1!E11");
+                                    expect(multipleSheetValues[7]).toBe("Sheet2!A1");
+                                    expect(multipleSheetValues[8]).toBe("Sheet2!B2");
+                                    expect(multipleSheetValues[9]).toBe("Sheet2!C3");
+                                    done();
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
     });
 });

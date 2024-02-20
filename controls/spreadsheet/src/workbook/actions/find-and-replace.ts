@@ -488,14 +488,14 @@ export class WorkbookFindAndReplace {
             if (rowIndex > endRow && columnIndex > endColumn) {
                 if (findAllArguments.mode === 'Workbook') {
                     startSheet++;
+                    if (startSheet > sheetLength - 1) {
+                        startSheet = 0;
+                    }
                     if (initialSheet === startSheet) {
                         if (count === 0) {
                             return;
                         }
                         return;
-                    }
-                    if (startSheet > sheetLength - 1) {
-                        startSheet = 0;
                     }
                     sheet = this.parent.sheets[startSheet as number];
                     if (sheet) {

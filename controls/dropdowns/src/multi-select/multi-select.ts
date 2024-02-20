@@ -99,6 +99,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private focusFirstListItem: boolean;
     private isCustomRendered: boolean;
     private isRemoteSelection: boolean;
+    private isSelectAllTarget: boolean;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -1229,7 +1230,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private openClick(e: KeyboardEventArgs): void {
-        if (!this.openOnClick && this.mode !== 'CheckBox') {
+        if (!this.openOnClick && this.mode !== 'CheckBox' && !this.isPopupOpen()) {
             if (this.targetElement() !== '') {
                 this.showPopup();
             } else {
@@ -2399,7 +2400,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.trigger('removed', eventArgs);
                     const targetEle: HTMLElement = eve && eve.currentTarget as HTMLElement;
                     const isSelectAll: boolean = (targetEle && targetEle.classList.contains('e-selectall-parent')) ? true : null;
-                    if (!this.changeOnBlur && !isClearAll && (eve && length && !isSelectAll)) {
+                    if (!this.changeOnBlur && !isClearAll && (eve && length && !isSelectAll && this.isSelectAllTarget)) {
                         this.updateValueState(eve, this.value, this.tempValues);
                     }
                     if (length) {
@@ -3070,6 +3071,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.backCommand = true;
         this.isCustomRendered = false;
         this.isRemoteSelection = false;
+        this.isSelectAllTarget = true;
     }
 
     private updateData(delimiterChar: string, e?: MouseEvent | KeyboardEventArgs): void {
@@ -3972,6 +3974,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 count = state ? this.maximumSelectionLength - (this.value ? this.value.length : 0) : this.maximumSelectionLength;
             }
             if (!beforeSelectArgs.preventSelectEvent) {
+                this.isSelectAllTarget = (length === index + 1);
                 while (index < length && index <= 50 && index < count) {
                     this.updateListSelection(li[index as number], event, length - index);
                     if (this.enableGroupCheckBox) {
@@ -3983,6 +3986,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     setTimeout(
                         (): void => {
                             while (index < length && index < count) {
+                                this.isSelectAllTarget = (length === index + 1);
                                 this.updateListSelection(li[index as number], event, length - index);
                                 if (this.enableGroupCheckBox) {
                                     this.findGroupStart(li[index as number]);
@@ -3995,6 +3999,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 this.isSelectAll = this.isSelectAll ? !this.isSelectAll : this.isSelectAll;
                             }
                             this.updateHiddenElement();
+                            if (this.popupWrapper && li[index - 1].classList.contains('e-item-focus')) {
+                                const selectAllParent = document.getElementsByClassName('e-selectall-parent')[0];
+                                if (selectAllParent && selectAllParent.classList.contains('e-item-focus')) {
+                                    li[index - 1].classList.remove('e-item-focus');
+                                }
+                            }
                         },
                         0
                     );
@@ -4092,7 +4102,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (this.mode === 'CheckBox') {
             this.updateDelimView();
-            if (!(isRemoveAll || this.isSelectAll)) {
+            if (!(isRemoveAll || this.isSelectAll) && this.isSelectAllTarget) {
                 this.updateDelimeter(this.delimiterChar, event);
             }
             this.refreshInputHight();

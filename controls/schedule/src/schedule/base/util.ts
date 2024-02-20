@@ -23,7 +23,7 @@ export function getElementHeightFromClass(container: Element, elementClass: stri
     el.style.visibility = 'hidden';
     el.style.position = 'absolute';
     container.appendChild(el);
-    height = el.getBoundingClientRect().height;
+    height = getElementHeight(el);
     remove(el);
     return height;
 }
@@ -41,7 +41,7 @@ export function getElementWidthFromClass(container: Element, elementClass: strin
     el.style.visibility = 'hidden';
     el.style.position = 'absolute';
     container.appendChild(el);
-    width = el.getBoundingClientRect().width;
+    width = getElementWidth(el);
     remove(el);
     return width;
 }
@@ -454,3 +454,34 @@ export function capitalizeFirstWord(inputString: string, type: string): string {
     }
     return inputString;
 }
+
+/**
+ * Method to get element cell width
+ *
+ * @param {HTMLElement} element Accepts the DOM element
+ * @returns {number} Returns the width of the given element
+ */
+export function getElementWidth(element: HTMLElement): number {
+    return document.body.style.transform.includes('scale') ? element.offsetWidth : element.getBoundingClientRect().width;
+}
+
+/**
+ * Method to get element cell Height
+ *
+ * @param {HTMLElement} element Accepts the DOM element
+ * @returns {number} Returns the Height of the given element
+ */
+export function getElementHeight(element: HTMLElement): number {
+    return document.body.style.transform.includes('scale') ? element.offsetHeight : element.getBoundingClientRect().height;
+}
+
+/**
+ * Method to get element cell Top
+ *
+ * @param {HTMLElement} element Accepts the DOM element
+ * @returns {number} Returns the top value of the given element
+ */
+export function getElementTop(element: HTMLElement): number {
+    return document.body.style.transform.includes('scale') ? element.offsetTop : element.getBoundingClientRect().top;
+}
+

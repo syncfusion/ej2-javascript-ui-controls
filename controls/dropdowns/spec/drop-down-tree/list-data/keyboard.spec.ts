@@ -222,7 +222,7 @@ describe('DropDown Tree control List datasource', () => {
             keyboardEventArgs.action = 'space';
             ddtreeObj.treeAction(keyboardEventArgs);
             ddtreeObj.treeObj.keyActionHandler(keyboardEventArgs);
-            expect(li[0].querySelector('.e-checkbox-wrapper').getAttribute('aria-checked')).toBe('true');
+            expect(li[0].getAttribute('aria-checked')).toBe('true');
             expect(ddtreeObj.text).toBe('Australia');
             ddtreeObj.onFocusOut();
         });
@@ -236,7 +236,7 @@ describe('DropDown Tree control List datasource', () => {
             keyboardEventArgs.currentTarget = ddtreeObj.popupObj.element.querySelector('.e-selectall-parent');
             keyboardEventArgs.action = 'space';
             ddtreeObj.checkAllAction(keyboardEventArgs);
-            expect(ddtreeObj.popupObj.element.querySelector('.e-selectall-parent').querySelector('.e-checkbox-wrapper').getAttribute('aria-checked')).toBe('true');
+            expect(ddtreeObj.popupObj.element.querySelector('.e-selectall-parent').getAttribute('aria-checked')).toBe('true');
             expect(ddtreeObj.value.length).toBe(24);
             keyboardEventArgs.action = 'shiftTab';
             ddtreeObj.treeAction(keyboardEventArgs);

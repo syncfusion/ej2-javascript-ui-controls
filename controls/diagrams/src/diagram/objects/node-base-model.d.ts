@@ -15,7 +15,7 @@ export interface NodeBaseModel {
     /**
      * Defines the visual order of the node/connector in DOM
      *
-     * @default -1
+     * @default Number.MIN_VALUE
      */
     zIndex?: number;
 

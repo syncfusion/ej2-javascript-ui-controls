@@ -1044,9 +1044,16 @@ export class DateProcessor {
     public convert(date: Date, timezone: string): Date {
         const fromOffset: number = date.getTimezoneOffset();
         const toOffset : number = this.offset(date, timezone);
-        date = new Date(date.getTime() + (fromOffset - toOffset) * 60000);
-        const toLocalOffset: number = date.getTimezoneOffset();
-        return new Date(date.getTime() + (toLocalOffset - fromOffset) * 60000);
+        if(fromOffset < 0) {
+            date = new Date(date.getTime() - (fromOffset - toOffset) / 60000);
+            const toLocalOffset: number = date.getTimezoneOffset();
+            return new Date(date.getTime() - (toLocalOffset - fromOffset) / 60000);
+        }
+        else {
+            date = new Date(date.getTime() + (fromOffset - toOffset) * 60000);
+            const toLocalOffset: number = date.getTimezoneOffset();
+            return new Date(date.getTime() + (toLocalOffset - fromOffset) * 60000);
+        }
     }
     /**
      * @param {string | Date} date .

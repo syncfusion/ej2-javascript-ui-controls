@@ -214,9 +214,12 @@ export class HtmlEditor {
         const range: Range = this.parent.getRange();
         // eslint-disable-next-line
         const regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
+        const isEmptyNode: boolean = range.startContainer === range.endContainer && range.startOffset === range.endOffset &&
+            range.startOffset === 1 && range.startContainer.textContent.length === 1 && range.startContainer.textContent.charCodeAt(0) == 8203 &&
+            range.startContainer.textContent.replace(regEx, '').length === 0;
         let pointer: number;
         let isRootParent: boolean = false;
-        if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey) {
+        if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey && !isEmptyNode) {
             pointer = range.startOffset;
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             range.startContainer.nodeName === '#text' ? range.startContainer.parentElement !== this.parent.inputElement ? range.startContainer.parentElement.classList.add('currentStartMark')
@@ -340,10 +343,15 @@ export class HtmlEditor {
                     (e.args as KeyboardEvent).preventDefault();
                     return;
                 } else {
-                    this.parent.notify(events.enterHandler, { args: (e.args as KeyboardEvent) });
+                    this.parent.notify(events.enterHandler, { args: e.args });
                     const newRange: Range = this.parent.getRange();
-                    if (!isNOU(newRange.startContainer) && newRange.startContainer === this.parent.inputElement.lastChild && newRange.startContainer.nodeName !== '#text' && this.parent.height !== 'auto') {
-                        (newRange.startContainer as Element).scrollIntoView({ block: "end", inline: "nearest" });
+                    if (!isNullOrUndefined(newRange.startContainer) && this.parent.height !== 'auto' && newRange.startContainer.nodeName !== '#text'
+                                && !this.parent.iframeSettings.enable && (newRange.startContainer as Element).getBoundingClientRect().bottom > this.parent.element.getBoundingClientRect().bottom) {
+                                    this.parent.element.querySelector('.e-rte-content').scrollTop +=  (newRange.startContainer as Element).getBoundingClientRect().bottom - this.parent.element.getBoundingClientRect().bottom;
+                    }
+                    else if(!isNullOrUndefined(newRange.startContainer) && this.parent.height === 'auto' && newRange.startContainer.nodeName !== '#text'
+                        && !this.parent.iframeSettings.enable && window.innerHeight < (newRange.startContainer as Element).getBoundingClientRect().top) {
+                        (newRange.startContainer as Element).scrollIntoView({ block: 'end', inline: 'nearest' });
                     }
                 }
             }
@@ -425,11 +433,13 @@ export class HtmlEditor {
         currentRange.startContainer.previousSibling.nodeName === 'SPAN') {
             isPreviousNotContentEditable = (currentRange.startContainer.previousSibling as HTMLElement).contentEditable === 'false' ? false : true;
         }
+        const checkNode: Node = currentRange.startContainer.nodeName === '#text' ? currentRange.startContainer.parentElement : currentRange.startContainer;
+        const isSelectedPositionNotStart: boolean = closest(currentRange.startContainer.nodeName === '#text' ? currentRange.startContainer.parentElement : currentRange.startContainer, 'li') ?
+        checkNode.nodeName !== 'li' && isNOU(checkNode.previousSibling) : true;
         if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Backspace' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 8 && currentRange.startOffset === 0 &&
             currentRange.endOffset === 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.textContent.length > 0 &&
             currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH' &&
-            isPreviousNotContentEditable) {
-            const checkNode: Node = currentRange.startContainer.nodeName === '#text' ? currentRange.startContainer.parentElement : currentRange.startContainer;
+            isPreviousNotContentEditable && isSelectedPositionNotStart) {
             if ((!this.parent.formatter.editorManager.domNode.isBlockNode(checkNode as Element) &&
                 !isNOU(checkNode.previousSibling) && checkNode.previousSibling.nodeName === 'BR') ||
                 (!isNOU(currentRange.startContainer.previousSibling) && currentRange.startContainer.previousSibling.nodeName === 'BR')) {
@@ -441,7 +451,8 @@ export class HtmlEditor {
                 if (liElement.previousElementSibling && liElement.previousElementSibling.childElementCount > 0) {
                     this.oldRangeElement = liElement.previousElementSibling.lastElementChild.nodeName === 'BR' ?
                         liElement.previousElementSibling : liElement.previousElementSibling.lastElementChild;
-                    if (!isNullOrUndefined(liElement.lastElementChild) && liElement.lastElementChild.nodeName !== 'BR') {
+                        if (!isNOU(liElement.lastElementChild) && liElement.lastElementChild.nodeName !== 'BR' &&
+                        isNOU(liElement.lastElementChild.previousSibling)) {
                         this.rangeElement = liElement.lastElementChild;
                         isLiElement = true;
                     } else {
@@ -449,12 +460,12 @@ export class HtmlEditor {
                     }
                 }
             } else if (this.rangeElement === this.parent.inputElement || this.rangeElement.tagName === 'TABLE' ||
-              (!isNullOrUndefined(this.rangeElement.previousElementSibling) && this.rangeElement.previousElementSibling.tagName === 'TABLE')) {
+              (!isNOU(this.rangeElement.previousElementSibling) && this.rangeElement.previousElementSibling.tagName === 'TABLE')) {
                 return;
             } else {
                 this.oldRangeElement = (this.rangeElement.previousElementSibling as HTMLElement);
             }
-            if (isNullOrUndefined(this.oldRangeElement)) {
+            if (isNOU(this.oldRangeElement)) {
                 return;
             } else {
                 if (this.oldRangeElement.tagName === 'OL' || this.oldRangeElement.tagName === 'UL') {
@@ -473,7 +484,7 @@ export class HtmlEditor {
                 if (this.oldRangeElement.querySelectorAll('BR').length === 1) {
                     detach(this.oldRangeElement.querySelector('BR'));
                 }
-                if (!isNullOrUndefined(this.rangeElement) && this.oldRangeElement !== this.rangeElement) {
+                if (!isNOU(this.rangeElement) && this.oldRangeElement !== this.rangeElement) {
                     while (this.rangeElement.firstChild) {
                         this.oldRangeElement.appendChild(this.rangeElement.childNodes[0]);
                     }
@@ -719,9 +730,11 @@ export class HtmlEditor {
         this.tooltipTargetEle = closest(args.originalEvent.target as Element, '[data-tooltip-id]');
         if (!isNOU(this.tooltipTargetEle) && this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {
             this.parent.notify(events.destroyTooltip, {args: event});
-            this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
-            this.tooltipTargetEle.removeAttribute('title');
-            EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
+            if(!this.tooltipTargetEle.closest('.e-rte-quick-popup')){
+                this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
+                this.tooltipTargetEle.removeAttribute('title');
+                EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
+            }
         }
         if (item.command !== 'FormatPainter') {
             if (closestElement && !closestElement.classList.contains('e-rte-inline-popup') && !closestElement.classList.contains('e-rte-text-popup')) {

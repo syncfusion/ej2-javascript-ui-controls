@@ -119,6 +119,7 @@ export class ThumbnailView {
             this.thumbnailRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail;
             this.thumbnailRequestHandler.responseType = 'json';
             if(proxy.thumbnailLimit > 0 && !isNullOrUndefined(proxy.pdfViewerBase.hashId)){
+                this.pdfViewerBase.requestCollection.push(this.thumbnailRequestHandler);
                 this.thumbnailRequestHandler.send(jsonObject);
             }
             // eslint-disable-next-line

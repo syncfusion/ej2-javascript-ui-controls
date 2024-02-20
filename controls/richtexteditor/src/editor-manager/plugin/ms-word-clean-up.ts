@@ -169,8 +169,9 @@ export class MsWordPaste {
                 imgElem[i as number].getAttribute('v:shapes').indexOf('Graphic') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('_x0000_s') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('_x0000_i') < 0) {
-                detach(imgElem[i as number]);
+                imgElem[i as number].classList.add('e-rte-image-unsupported');
             }
+            imgElem[i as number].removeAttribute('v:shapes');
         }
         imgElem = elm.querySelectorAll('img');
         const imgSrc: string[] = [];
@@ -200,6 +201,7 @@ export class MsWordPaste {
                     });
                 }
             }
+            imgElem = elm.querySelectorAll('img:not(.e-rte-image-unsupported');
             for (let i: number = 0; i < imgElem.length; i++) {
                 if (imgSrc[i as number].match(linkRegex)) {
                     imgElem[i as number].setAttribute('src', imgSrc[i as number]);
@@ -208,13 +210,17 @@ export class MsWordPaste {
                         imgElem[i as number].setAttribute('src', base64Src[i as number].base64Data as string);
                     } else {
                         imgElem[i as number].removeAttribute('src');
-                        imgElem[i as number].setAttribute('alt', 'Unsupported file format');
+                        imgElem[i as number].classList.add('e-rte-image-unsupported');
                     }
                     if (!isNOU(base64Src[i as number]) && base64Src[i as number].isCroppedImage as boolean) {
                         imgElem[i as number].classList.add('e-img-cropped');
                     }
                 }
                 imgElem[i as number].setAttribute('id', 'msWordImg-' + imgName[i as number]);
+            }
+            imgElem = elm.querySelectorAll('.e-rte-image-unsupported');
+            for (let i: number = 0; i < imgElem.length; i++) {
+                imgElem[i as number].removeAttribute('src');
             }
         }
     }
@@ -349,7 +355,7 @@ export class MsWordPaste {
     }
 
     private removeClassName(elm: HTMLElement): void {
-        const elmWithClass: NodeListOf<Element> = elm.querySelectorAll('*[class]:not(.e-img-cropped)');
+        const elmWithClass: NodeListOf<Element> = elm.querySelectorAll('*[class]:not(.e-img-cropped):not(.e-rte-image-unsupported)');
         for (let i: number = 0; i < elmWithClass.length; i++) {
             elmWithClass[i as number].removeAttribute('class');
         }

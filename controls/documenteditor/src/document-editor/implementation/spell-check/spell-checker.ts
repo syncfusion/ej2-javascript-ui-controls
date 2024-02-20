@@ -1064,13 +1064,16 @@ export class SpellChecker {
         const pattern: RegExp = this.documentHelper.owner.searchModule.textSearch.stringToRegex((isNullOrUndefined(currentText)) ? (errorElement as TextElementBox).text : currentText, 'CaseSensitive');
         this.textSearchResults.clearResults();
         const results: TextSearchResults = this.textSearchResults;
-        const textLineInfo: TextInLineInfo = this.documentHelper.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false);
+        const textLineInfo: TextInLineInfo = this.documentHelper.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false, undefined, undefined, undefined, undefined, undefined, true);
         const text: string = textLineInfo.fullText;
         const matches: RegExpExecArray[] = [];
         const spans: any = textLineInfo.elementsWithOffset;
         let matchObject: RegExpExecArray;
         // eslint-disable  no-cond-assign
         while (!isNullOrUndefined(matchObject = pattern.exec(text))) {
+            if (spans.containsKey(errorElement)) {
+                matchObject.index = spans.get(errorElement);
+            }
             matches.push(matchObject);
         }
         return { 'matches': matches, 'elementInfo': spans, 'textResults': results };

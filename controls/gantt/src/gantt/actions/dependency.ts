@@ -55,7 +55,7 @@ export class Dependency {
             for (let c: number = 0; c < predecessorVal.length; c++) {
                 const predecessorItem: object = predecessorVal[c as number];
                 const preValue: IPredecessor = {};
-                preValue.from = getValue('from', predecessorItem);
+                preValue.from = getValue('from', predecessorItem) ? getValue('from', predecessorItem) : predecessorVal[c as number];
                 preValue.to = getValue('to', predecessorItem) ? getValue('to', predecessorItem) : ganttProp.rowUniqueID;
                 preValue.type = getValue('type', predecessorItem) ? getValue('type', predecessorItem) : 'FS';
                 const offsetUnits: Record<string, unknown> = getValue('offset', predecessorItem);
@@ -148,6 +148,9 @@ export class Dependency {
 
         predecessor.split(',').forEach((el: string): void => {
             let isGUId: boolean = false
+            let firstPart: string;
+            let predecessorName: string;
+            let isAlpha: boolean = false;
             var regex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
             let elSplit: string[] = el.split('-');
             let id: string;
@@ -159,6 +162,26 @@ export class Dependency {
                 id = el.substring(0, 36);
                 if (regex.test(id)) {
                     isGUId = true;
+                }
+            }
+            if (el.includes('-')) {
+                if(el.includes('-') && el.includes('days')){
+                    predecessorName = el.slice(-9).toString();
+                }
+                if(el.includes('-') && el.includes('day')){
+                    predecessorName = el.slice(-8).toString();
+                }
+                else {
+                    predecessorName = el.slice(-2).toString();
+                }
+                if(el.includes('-') && /[A-Za-z]/.test(predecessorName)){
+                    const indexFS = el.indexOf(predecessorName);
+                    if (indexFS !== -1) {
+                        firstPart = el.substring(0, indexFS);
+                        if(firstPart.includes('-')){
+                            isAlpha = true;
+                        }
+                    }
                 }
             }
             if (isGUId) {
@@ -188,11 +211,16 @@ export class Dependency {
                 }
             }
             else {
-                values = el.split('+');
-                offsetValue = '+';
-                if (el.indexOf('-') >= 0) {
-                    values = el.split('-');
-                    offsetValue = '-';
+                if (isAlpha && firstPart.includes('-')) {
+                    values[0] = firstPart;
+                }
+                else {
+                    values = el.split('+');
+                    offsetValue = '+';
+                    if (el.indexOf('-') >= 0) {
+                        values = el.split('-');
+                        offsetValue = '-';
+                    }
                 }
             }
             match=[];
@@ -227,10 +255,22 @@ export class Dependency {
                     } else {
                         predecessorText = 'FS';
                     }
-                } else {
+                }
+                else if (el.includes('-') && /[A-Za-z]/.test(predecessorName) && firstPart.includes('-')) {
+                    const type: string = el.slice(-2).toString();
+                    type.toUpperCase();
+                    if (type === 'FS' || type === 'FF' || type === 'SF' || type === 'SS') {
+                        predecessorText = type;
+                    }
+                    else {
+                        predecessorText = 'FS';
+                    }
+                }
+                else {
                     predecessorText = 'FS';
                 }
-            } else {
+            }
+            else {
                 return; // exit current loop for invalid id (match[0])
             }
             const tempOffset: string = values.length > 1 ? offsetValue + '' + values[1] : '0';

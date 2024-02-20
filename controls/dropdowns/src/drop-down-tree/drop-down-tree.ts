@@ -2003,7 +2003,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.ensurePlaceHolder();
         ariaState = state === 'check' ? 'true' : 'false';
         if (!isNOU(ariaState)) {
-            wrapper.setAttribute('aria-checked', ariaState);
+            wrapper.parentElement.setAttribute('aria-checked', ariaState);
         }
     }
 
@@ -2770,7 +2770,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         if (this.showSelectAll && this.checkBoxElement) {
             const nodes: NodeList = this.treeObj.element.querySelectorAll('li');
-            const checkedNodes: NodeList = this.treeObj.element.querySelectorAll('li .e-checkbox-wrapper[aria-checked=true]');
+            const checkedNodes: NodeList = this.treeObj.element.querySelectorAll('li[aria-checked=true]');
             const wrap: HTMLElement = closest((this.checkBoxElement as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
             if (wrap && args.action === 'uncheck' && (args.isInteracted || checkedNodes.length === 0 || (!isNOU(args.data[0]) && args.data[0].isChecked === 'false'))) {
                 this.isReverseUpdate = true;

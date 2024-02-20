@@ -33,7 +33,7 @@ const DEVICE: string = 'e-device';
 const HEADER: string = 'e-header';
 const RTL: string = 'e-rtl';
 const CONTENT: string = 'e-content';
-const CONTENTTABLE: string = 'e-content-table';
+const CONTENTTABLE: string = 'e-calandar-content-table';
 const YEAR: string = 'e-year';
 const MONTH: string = 'e-month';
 const DECADE: string = 'e-decade';
@@ -825,19 +825,19 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.effect = '';
         switch (e.action) {
         case 'moveLeft':
-            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains('e-content-table')) {
+            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
                 this.keyboardNavigate(-1, view, e, this.max, this.min);
                 e.preventDefault();
             }
             break;
         case 'moveRight':
-            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains('e-content-table')) {
+            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
                 this.keyboardNavigate(1, view, e, this.max, this.min);
                 e.preventDefault();
             }
             break;
         case 'moveUp':
-            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains('e-content-table')) {
+            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
                 if (view === 0) {
                     this.keyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
                 } else {
@@ -847,7 +847,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
             break;
         case 'moveDown':
-            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains('e-content-table')) {
+            if(this.getModuleName() != 'daterangepicker' && !isNullOrUndefined((e.target as any)) && (e.target as any).classList.length > 0 && (e.target as any).classList.contains(CONTENTTABLE)) {
                 if (view === 0) {
                     this.keyboardNavigate(7, view, e, this.max, this.min);
                 } else {

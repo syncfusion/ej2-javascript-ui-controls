@@ -57,7 +57,14 @@ export class Formats {
             }
         }
     }
-
+    private getBlockParent(node: Node, endNode: Element): Node {
+        let currentParent: Node;
+        while (node != endNode) {
+            currentParent = node;
+            node = node.parentElement;
+        }
+        return currentParent
+    }
     private onKeyDown(e: IHtmlSubCommands): void {
         if (e.event.which === 13) {
             let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
@@ -67,6 +74,8 @@ export class Formats {
                 ? range.endContainer : range.endContainer.parentElement;
             const preElem: Element = closest(startCon, 'pre');
             const endPreElem: Element = closest(endCon, 'pre');
+            const blockquoteEle: Element = closest(startCon, 'blockquote');
+            const endBlockquoteEle: Element = closest(endCon, 'blockquote');
             const liParent: boolean = !isNOU(preElem) && !isNOU(preElem.parentElement) && preElem.parentElement.tagName === 'LI';
             if (liParent) {
                 return;
@@ -77,6 +86,17 @@ export class Formats {
                 this.removeCodeContent(range);
                 range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
                 this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, endCon as Element, 0);
+            }
+            if (e.event.which === 13 && ((!isNOU(blockquoteEle) && !isNOU(endBlockquoteEle)) || (!isNOU(blockquoteEle) && isNOU(endBlockquoteEle)))) {
+                let startParent: Node = this.getBlockParent(range.startContainer, blockquoteEle);
+                if ((startParent.textContent.charCodeAt(0) === 8203 &&
+                    startParent.textContent.length === 1) || startParent.textContent.length === 0) {
+                    if (isNOU(startParent.nextSibling) && ((startParent.previousSibling.textContent.charCodeAt(0) === 8203 &&
+                        startParent.previousSibling.textContent.length === 1) || startParent.previousSibling.textContent.length === 0)) {
+                        e.event.preventDefault();
+                        this.paraFocus(startParent.parentElement); //Revert from blockquotes while pressing enter key
+                    }
+                }
             }
             if (e.event.which === 13 && !isNOU(preElem) && !isNOU(endPreElem)) {
                 e.event.preventDefault();
@@ -295,7 +315,7 @@ export class Formats {
                 replaceHTML = parentNode.innerHTML;
             }
             if ((e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() &&
-                (e.subCommand.toLowerCase() !== 'pre' ||
+                (e.subCommand.toLowerCase() !== 'pre' && e.subCommand.toLowerCase() !== 'blockquote' ||
                 (!isNOU(e.exeValue) && e.exeValue.name === 'dropDownSelect'))) ||
                 isNOU(parentNode.parentNode) ||
                 (parentNode.tagName === 'TABLE' && e.subCommand.toLowerCase() === 'pre')) {
@@ -304,8 +324,21 @@ export class Formats {
             this.cleanFormats(parentNode, e.subCommand);
             const replaceNode: string = (e.subCommand.toLowerCase() === 'pre' &&  parentNode.tagName.toLowerCase() === 'pre') ?
                 'p' : e.subCommand;
-            const replaceTag: string = this.parent.domNode.createTagString(
-                replaceNode, parentNode as Element, replaceHTML.replace(/>\s+</g, '><'));
+             const isToggleBlockquoteList: boolean = e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() &&
+                e.subCommand.toLowerCase() === 'blockquote' && this.parent.domNode.isList((parentNode as HTMLElement).firstElementChild);
+
+            const isToggleBlockquote: boolean = e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase()
+                && e.subCommand.toLowerCase() === 'blockquote';
+
+            let replaceTag: string;
+            if (isToggleBlockquoteList) {
+                replaceTag = replaceHTML.replace(/>\s+</g, '><');
+            } else if (isToggleBlockquote) {
+                let tagWrap: string = (e.enterAction == 'BR' || e.enterAction == 'P') ? 'P' : e.enterAction;
+                replaceTag = this.parent.domNode.createTagString(tagWrap, parentNode, replaceHTML.replace(/>\s+</g, '><'));
+            } else {
+                replaceTag = this.parent.domNode.createTagString(replaceNode, parentNode, replaceHTML.replace(/>\s+</g, '><'));
+            }
             if (parentNode.tagName === 'LI') {
                 parentNode.innerHTML = '';
                 parentNode.insertAdjacentHTML('beforeend', replaceTag);

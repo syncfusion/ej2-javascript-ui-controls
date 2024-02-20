@@ -1,5 +1,5 @@
-import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexFromId, getSheetNameFromAddress } from '../index';
-import { getSingleSelectedRange, getCell, getSheetIndex, NumberFormatArgs, checkFormulaRef } from '../index';
+import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexFromId, getSheetNameFromAddress, ColumnModel } from '../index';
+import { getSingleSelectedRange, getCell, getSheetIndex, NumberFormatArgs, checkFormulaRef, ValidationModel } from '../index';
 import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, clearFormulaDependentCells, formulaInValidation } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
@@ -351,14 +351,38 @@ export class WorkbookFormula {
         const exp: string = '(?=[\'!])(?=[^"]*(?:"[^"]*"[^"]*)*$)';
         const regExp: RegExpConstructor = RegExp;
         const regx: RegExp = new regExp(pName.replace(escapeRegx, '\\$&') + exp, 'gi');
+        const renameValidationSheetRef: Function = (validation: ValidationModel): void => {
+            if (checkIsFormula(validation.value1) && validation.value1.toUpperCase().includes(uPName) && validation.value1.match(regx)) {
+                validation.value1 = validation.value1.replace(regx, name);
+            }
+            if (checkIsFormula(validation.value2) && validation.value2.toUpperCase().includes(uPName) && validation.value2.match(regx)) {
+                validation.value2 = validation.value2.replace(regx, name);
+            }
+        };
         this.sheetInfo.forEach((info: { visibleName: string }, index: number): void => {
             sheet = getSheet(this.parent, index);
-            for (let i: number = 0, rowLen: number = sheet.usedRange.rowIndex; i <= rowLen; i++) {
-                for (let j: number = 0, colLen: number = sheet.usedRange.colIndex; j <= colLen; j++) {
-                    cell = getCell(i, j, sheet, false, true);
-                    if (cell.formula && checkIsFormula(cell.formula) && cell.formula.toUpperCase().includes(uPName) &&
-                        cell.formula.match(regx)) {
-                        cell.formula = cell.formula.replace(regx, name);
+            if (sheet && sheet.rows && sheet.rows.length) {
+                for (let i: number = 0, rowLen: number = sheet.rows.length; i < rowLen; i++) {
+                    if (sheet.rows[i as number] && sheet.rows[i as number].cells) {
+                        for (let j: number = 0, cellsLen: number = sheet.rows[i as number].cells.length; j < cellsLen; j++) {
+                            cell = getCell(i, j, sheet, false, true);
+                            if (cell.formula && checkIsFormula(cell.formula) && cell.formula.toUpperCase().includes(uPName) &&
+                                cell.formula.match(regx)) {
+                                cell.formula = cell.formula.replace(regx, name);
+                            }
+                            if (cell.validation) {
+                                renameValidationSheetRef(cell.validation);
+                            }
+                        }
+                    }
+                }
+            }
+            if (sheet && sheet.columns && sheet.columns.length) {
+                let column: ColumnModel;
+                for (let i: number = 0, colsLen: number = sheet.columns.length; i < colsLen; i++) {
+                    column = sheet.columns[i as number];
+                    if (column && column.validation) {
+                        renameValidationSheetRef(column.validation);
                     }
                 }
             }

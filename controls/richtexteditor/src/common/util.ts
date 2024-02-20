@@ -87,7 +87,7 @@ export function updateTextNode(value: string, enterAction?: string): string {
                 tableElm[i as number].classList.add('e-rte-paste-table');
                 if (tableElm[i as number].classList.contains('e-rte-paste-word-table')) {
                     tableElm[i as number].classList.remove('e-rte-paste-word-table');
-                    continue; // Sking the removal of the border if the source is from word.
+                    continue; // Skiping the removal of the border if the source is from word.
                 } else if (tableElm[i as number].classList.contains('e-rte-paste-excel-table')) {
                     tableElm[i as number].classList.remove('e-rte-paste-excel-table');
                     if (tableElm[i as number].getAttribute('border') === '0') {
@@ -119,6 +119,9 @@ export function updateTextNode(value: string, enterAction?: string): string {
         }
         const imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');
         for (let i: number = 0; i < imageElm.length; i++) {
+            if ((imageElm[i as number] as HTMLImageElement).classList.contains('e-rte-image-unsupported')) {
+                continue; // Should not add the class if the image is Broken.
+            }
             if (!imageElm[i as number].classList.contains('e-rte-image')) {
                 imageElm[i as number].classList.add('e-rte-image');
             }

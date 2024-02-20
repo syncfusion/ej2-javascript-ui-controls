@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 24.2.6 (2024-02-15)
+## 24.2.7 (2024-02-20)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I553680` - Resolved the script error issue while click print button.
+- `#I542229` - Resolved the document layout issue in Blazor.
+- `#I548069` - Resolved the spell check squiggly lines render issue on print.
+- `#I546222` - Resolved the script error issue while applying table border.
+- `#I533544` - Resolved the table resize undo issue.
+- `#I526592` - Resolved the list numbering is not continuing issue.
+- `#I548595` - Resolved the text ordered incorrectly while typing in Blazor.
+
+## 24.2.5 (2024-02-13)
 
 ### DocumentEditor
 

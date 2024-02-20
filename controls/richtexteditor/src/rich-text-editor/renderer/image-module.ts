@@ -1033,7 +1033,7 @@ export class Image {
             this.checkBoxObj.createElement = this.parent.createElement;
             this.checkBoxObj.appendTo(linkTarget);
             let target: string = this.checkBoxObj.checked ? '_blank' : null;
-            let imageLabel = this.checkBoxObj.checked ? this.i10n.getConstant('ImageLinkAriaLabel') : null;
+            let imageLabel = this.checkBoxObj.checked ? this.i10n.getConstant('imageLinkAriaLabel') : null;
             const linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             const linkargs: IImageNotifyArgs = {
                 args: e.args,
@@ -1158,7 +1158,7 @@ export class Image {
             proxy.parent.formatter.process(
                 proxy.parent, e.args, e.args,
                 {
-                    url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, ariaLabel: proxy.checkBoxObj.checked ? this.i10n.getConstant('ImageLinkAriaLabel') : null, selectNode: e.selectNode,
+                    url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, ariaLabel: proxy.checkBoxObj.checked ? this.i10n.getConstant('imageLinkAriaLabel') : null, selectNode: e.selectNode,
                     subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
                 });
             proxy.dialogObj.hide({ returnValue: true } as Event);
@@ -1167,7 +1167,7 @@ export class Image {
         proxy.parent.formatter.process(
             proxy.parent, e.args, e.args,
             {
-                url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, ariaLabel: proxy.checkBoxObj.checked ? this.i10n.getConstant('ImageLinkAriaLabel') : null, selectNode: e.selectNode,
+                url: url, target: proxy.checkBoxObj.checked ? '_blank' : null, ariaLabel: proxy.checkBoxObj.checked ? this.i10n.getConstant('imageLinkAriaLabel') : null, selectNode: e.selectNode,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand, selection: e.selection
             });
         const captionEle: Element = closest(e.selectNode[0], '.e-img-caption');

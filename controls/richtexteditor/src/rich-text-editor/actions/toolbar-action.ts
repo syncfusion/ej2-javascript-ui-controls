@@ -51,7 +51,7 @@ export class ToolbarAction {
         if (args.item.command === 'Lists') {
             if ((args.originalEvent.target as HTMLElement).classList.contains('e-caret') &&
             ((args.originalEvent.target as HTMLElement).parentElement.classList.contains('e-rte-bulletformatlist-dropdown') || (args.originalEvent.target as HTMLElement).parentElement.classList.contains('e-rte-numberformatlist-dropdown'))) {
-                args.item.command = args.item.subCommand = null;
+                return;
             }
         }
         this.parent.notify(events.htmlToolbarClick, args);

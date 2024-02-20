@@ -2151,7 +2151,7 @@ xdescribe('DropDown Tree control Remote datasource', () => {
                 expect(chips[0].getAttribute("data-value")).toBe("01");
                 expect(chips[0].querySelector(".e-chipcontent").textContent).toBe("Music");
                 expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-                let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
                 var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 checkEle[1].querySelector('.e-frame').dispatchEvent(e);
                 var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -2236,7 +2236,7 @@ xdescribe('DropDown Tree control Remote datasource', () => {
                 var chipElement = ddtreeObj.element.parentElement.firstElementChild;
                 expect(chipElement.classList.contains('e-chips-wrapper')).toBe(false);
                 expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-                let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
                 var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 checkEle[1].querySelector('.e-frame').dispatchEvent(e);
                 var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -2322,7 +2322,7 @@ xdescribe('DropDown Tree control Remote datasource', () => {
                 expect(chips[0].getAttribute("data-value")).toBe("01");
                 expect(chips[0].querySelector(".e-chipcontent").textContent).toBe("Music");
                 expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-                let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
                 var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 checkEle[1].querySelector('.e-frame').dispatchEvent(e);
                 var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -2407,7 +2407,7 @@ xdescribe('DropDown Tree control Remote datasource', () => {
                 var chipElement = ddtreeObj.element.parentElement.firstElementChild;
                 expect(chipElement.classList.contains('e-chips-wrapper')).toBe(false);
                 expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
-                let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
                 var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 checkEle[1].querySelector('.e-frame').dispatchEvent(e);
                 var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });

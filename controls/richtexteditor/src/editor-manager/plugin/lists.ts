@@ -676,6 +676,9 @@ export class Lists {
             isNOU(item) && (nodes[i as number].parentNode as HTMLElement).style.listStyleType !== '') {
                 isRevert = false;
             }
+            if ((nodes[i as number].parentNode as Element).tagName === tagName && (nodes[i as number].parentNode as HTMLElement).style.listStyleType !== '') {
+                isRevert = true;
+            }
         }
         return isRevert;
     }
@@ -824,8 +827,18 @@ export class Lists {
                 if (CONSTANT.DEFAULT_TAG && 0 === element.querySelectorAll(CONSTANT.BLOCK_TAGS.join(', ')).length) {
                     const wrapperclass: string = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
                         ' class="' + className + ' e-rte-wrap-inner"';
+                    let parentElement = parentNode as HTMLElement;
+                    if(!isNOU(parentElement.style.listStyleType)){
+                        (parentNode as HTMLElement).style.removeProperty("list-style-type");
+                    }
+                    if (!isNOU(parentElement.style.listStyleImage)) {
+                        (parentNode as HTMLElement).style.removeProperty("list-style-image");
+                    }
+                    if (parentElement.style.length === 0) {
+                        parentNode.removeAttribute("style");
+                    }
                     const wrapper: string = '<' + CONSTANT.DEFAULT_TAG + wrapperclass +
-                        this.domNode.attributes(parentNode) + '></' + CONSTANT.DEFAULT_TAG + '>';
+                        this.domNode.attributes(parentElement) + '></' + CONSTANT.DEFAULT_TAG + '>';
                     if (e.enterAction !== 'BR') {
                         this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
                     }

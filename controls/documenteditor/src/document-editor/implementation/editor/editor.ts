@@ -227,6 +227,7 @@ export class Editor {
      * @private
      */
     public isXmlMapped: boolean = false;
+    private isAutoList: boolean = false;
     private combineLastBlock: boolean = false;
     /**
      * @private
@@ -3804,48 +3805,53 @@ export class Editor {
         let convertList: boolean = false;
         let currentParagraph: ParagraphWidget = selection.start.paragraph;
         let prevParagraph: ParagraphWidget = selection.getPreviousParagraphBlock(currentParagraph) as ParagraphWidget;
-        let isList: boolean = false;
         while (!isNullOrUndefined(prevParagraph) && prevParagraph instanceof ParagraphWidget) {
             if (prevParagraph.paragraphFormat.listFormat && prevParagraph.paragraphFormat.listFormat.listId !== -1) {
-                isList = true;
-                break;
+                const levelNumber: number = prevParagraph.paragraphFormat.listFormat.listLevelNumber;
+                convertList = this.isConvertList(text, prevParagraph);
+                if (convertList) {
+                    this.listLevelNumber = levelNumber;
+                    this.isAutoList = true;
+                    break;
+                }
             }
-            prevParagraph = selection.getPreviousParagraphBlock(prevParagraph) as ParagraphWidget;
+            prevParagraph = selection.getPreviousParagraphBlock(prevParagraph, true) as ParagraphWidget;
         }
-        if (isList) {
-            // TODO: Only first list level handled here, we need to handle for all listlevels
-            let listNumber: string = this.documentHelper.layout.getListNumber(prevParagraph.paragraphFormat.listFormat, true, 0);
-            let prevListText: string = listNumber.substring(0, listNumber.length - 1);
-            let currentListText: string = text.substring(0, text.length - 1);
-            //check if numberFormat equal
-            let inputString: number;
-            if (listNumber.substring(listNumber.length - 1) !== text.substring(text.length - 1)) {
-                convertList = false;
-            } else if (currentListText.match(/^[0-9]+$/) && prevListText.match(/^[0-9]+$/)) {
-                inputString = parseInt(currentListText, 10);
-                if (parseInt(prevListText, 10) === inputString || parseInt(prevListText, 10) + 1 === inputString
-                    || parseInt(prevListText, 10) + 2 === inputString) {
-                    convertList = true;
-                }
-            } else if (currentListText.match(/^[a-zA-Z]+$/) && prevListText.match(/^[a-zA-Z]+$/)) {
-                if (prevListText.charCodeAt(0) === text.charCodeAt(0) || prevListText.charCodeAt(0) + 1 === text.charCodeAt(0)
-                    || prevListText.charCodeAt(0) + 2 === text.charCodeAt(0)) {
-                    convertList = true;
-                } else if (currentListText.match(/^[MDCLXVImdclxvi]+$/) && prevListText.match(/^[MDCLXVImdclxvi]+$/)) {
-                    let prevListNumber: number = this.getNumber(prevListText.toUpperCase());
-                    let currentListNumber: number = this.getNumber(currentListText.toUpperCase());
-                    if (prevListNumber === currentListNumber || prevListNumber + 1 === currentListNumber
-                        || prevListNumber + 2 === currentListNumber) {
-                        convertList = true;
-                    }
-                }
-            }
-            if (convertList) {
-                previousList = this.documentHelper.getListById(prevParagraph.paragraphFormat.listFormat.listId);
-            }
-
+        if (convertList) {
+            previousList = this.documentHelper.getListById(prevParagraph.paragraphFormat.listFormat.listId);
         }
         return previousList;
+    }
+
+    private isConvertList(text: string, paragraph: ParagraphWidget): boolean {
+        let convertList: boolean = false;
+        let listNumber: string = this.documentHelper.layout.getListNumber(paragraph.paragraphFormat.listFormat, true);
+        let prevListText: string = listNumber.substring(0, listNumber.length - 1);
+        let currentListText: string = text.substring(0, text.length - 1);
+        //check if numberFormat equal
+        let inputString: number;
+        if (listNumber.substring(listNumber.length - 1) !== text.substring(text.length - 1)) {
+            convertList = false;
+        } else if (currentListText.match(/^[0-9]+$/) && prevListText.match(/^[0-9]+$/)) {
+            inputString = parseInt(currentListText, 10);
+            if (parseInt(prevListText, 10) === inputString || parseInt(prevListText, 10) + 1 === inputString
+                || parseInt(prevListText, 10) + 2 === inputString) {
+                convertList = true;
+            }
+        } else if (currentListText.match(/^[a-zA-Z]+$/) && prevListText.match(/^[a-zA-Z]+$/)) {
+            if (prevListText.charCodeAt(0) === text.charCodeAt(0) || prevListText.charCodeAt(0) + 1 === text.charCodeAt(0)
+                || prevListText.charCodeAt(0) + 2 === text.charCodeAt(0)) {
+                convertList = true;
+            } else if (currentListText.match(/^[MDCLXVImdclxvi]+$/) && prevListText.match(/^[MDCLXVImdclxvi]+$/)) {
+                let prevListNumber: number = this.getNumber(prevListText.toUpperCase());
+                let currentListNumber: number = this.getNumber(currentListText.toUpperCase());
+                if (prevListNumber === currentListNumber || prevListNumber + 1 === currentListNumber
+                    || prevListNumber + 2 === currentListNumber) {
+                    convertList = true;
+                }
+            }
+        }
+        return convertList;
     }
     private getNumber(roman: string): number {
         let conversion: object = { 'M': 1000, 'D': 500, 'C': 100, 'L': 50, 'X': 10, 'V': 5, 'I': 1 };
@@ -10792,7 +10798,14 @@ export class Editor {
         if (property === 'listFormat' && value instanceof WListFormat) {
             let listFormat: WListFormat = <WListFormat>value;
             if (!listFormat.hasValue('listLevelNumber')) {
-                listFormat.listLevelNumber = format.listFormat.listLevelNumber;
+                if (this.isAutoList) {
+                    listFormat.listLevelNumber = this.listLevelNumber;
+                    // reset the list level number to 0.
+                    this.listLevelNumber = 0;
+                    this.isAutoList = false;
+                } else {
+                    listFormat.listLevelNumber = format.listFormat.listLevelNumber;
+                }
             }
         }
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
@@ -18727,7 +18740,7 @@ export class Editor {
     private getAdjacentBottomBorderOnEmptyCells(nextRow: TableRowWidget, cell: TableCellWidget, isSingleCell?: boolean): TableCellWidget[] {
         const cells: TableCellWidget[] = [];
         if (cell.cellFormat.columnSpan > 1) {
-            for (let i: number = cell.columnIndex; i < cell.columnIndex + cell.cellFormat.columnSpan; i++) {
+            for (let i: number = cell.columnIndex; i < cell.columnIndex; i++) {
                 cells.push(nextRow.childWidgets[i] as TableCellWidget);
             }
         } else {

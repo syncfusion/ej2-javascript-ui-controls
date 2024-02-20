@@ -26,7 +26,7 @@ import { TextHelper } from './text-helper';
 
 // Check box character is rendered smaller when compared to MS Word
 // So, mutiplied the font side by below factor to render check box character large.
-const CHECK_BOX_FACTOR: number = 1.4;
+const CHECK_BOX_FACTOR: number = 1.35;
 
 /**
  * @private
@@ -4655,7 +4655,7 @@ export class Layout {
                     if (paragraphWidget.bodyWidget.page.footnoteWidget) {
                         this.layoutfootNote(paragraphWidget.bodyWidget.page.footnoteWidget);
                     }
-                    if (line.paragraph !== paragraphWidget) {
+                    if (line.paragraph !== paragraphWidget || (paragraphWidget.paragraphFormat.widowControl && this.isImagePresent(paragraphWidget))) {
                         if (paragraphWidget instanceof TableWidget) {
                             this.clearTableWidget(paragraphWidget, true, true, false);
                         }
@@ -4713,6 +4713,17 @@ export class Layout {
             this.viewer.clientActiveArea.height = this.viewer.clientActiveArea.bottom - this.endOverlapWidget.y;
             this.viewer.clientActiveArea.y = this.endOverlapWidget.y;
         }
+    }
+    private isImagePresent(paragraph: ParagraphWidget): boolean {
+        for (let i = 0; i < paragraph.childWidgets.length; i++) {
+            let line: LineWidget = paragraph.childWidgets[i] as LineWidget;
+            for (let j = 0; j < line.children.length; j++) {
+                if (line.children[j] instanceof ImageElementBox) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     private updateShapeBaseLocation(paragraphWidget: ParagraphWidget): void {
         if (paragraphWidget instanceof ParagraphWidget &&
@@ -5260,10 +5271,10 @@ export class Layout {
             }
         }
 
-    public getListNumber(listFormat: WListFormat, isAutoList?: boolean, listLevelNumber?: number): string {
+    public getListNumber(listFormat: WListFormat, isAutoList?: boolean): string {
         let list: WList = this.documentHelper.getListById(listFormat.listId);
-        let levelNumber: number = isNullOrUndefined(listLevelNumber) ? listFormat.listLevelNumber : listLevelNumber;
-        let listLevel: WListLevel = this.getListLevel(list, levelNumber);
+        let levelNumber: number = listFormat.listLevelNumber;
+        let listLevel: WListLevel = this.getListLevel(list, listFormat.listLevelNumber);
         let levelOverride: WLevelOverride = !isNullOrUndefined(list.levelOverrides) ? list.levelOverrides[levelNumber] as WLevelOverride : undefined;
         // If LevelOverride exists and have either override list level or StartAtOverride, then only list numbering will be restarted.
         if (!isNullOrUndefined(levelOverride) && this.documentHelper.renderedLevelOverrides.indexOf(levelOverride) === -1 && isNullOrUndefined(levelOverride.overrideListLevel)) {
@@ -9634,8 +9645,8 @@ export class Layout {
                     if (bodyWidget.sectionFormat.columns.length > 1) {
                         bodyWidget = this.getBodyWidget(bodyWidget, true);
                     }
-                    if (!isNullOrUndefined(bodyWidget.previousRenderedWidget) && bodyWidget.sectionFormat.breakCode === 'NoBreak'
-                        && (bodyWidget.previousRenderedWidget as BodyWidget).sectionFormat.breakCode == 'NewPage'
+                    if (!isNullOrUndefined(bodyWidget.previousRenderedWidget) && bodyWidget.sectionFormat.breakCode === 'NoBreak' 
+                        && (bodyWidget.previousRenderedWidget as BodyWidget).sectionFormat.breakCode == 'NewPage' 
                         && bodyWidget.page.index === (bodyWidget.previousRenderedWidget as BodyWidget).page.index) {
                         breakCode = (bodyWidget.previousRenderedWidget as BodyWidget).sectionFormat.breakCode;
                     }

@@ -1049,7 +1049,12 @@ export class BaseHistoryInfo {
         this.editorHistory.currentBaseHistoryInfo = this;
         if (this.action === 'RowResizing') {
             if (this.modifiedProperties[0] instanceof RowHistoryFormat) {
-                (this.modifiedProperties[0] as RowHistoryFormat).revertChanges(this.editorHistory.isRedoing, this.owner);
+                let prevRowHistoryFormat: RowHistoryFormat = this.modifiedProperties[0] as RowHistoryFormat;
+                let position: string = prevRowHistoryFormat.tableHierarchicalIndex;
+                let block: TableWidget = this.owner.editorModule.getBlock({ index: position }).node as TableWidget;
+                if (block instanceof TableWidget) {
+                    (this.modifiedProperties[0] as RowHistoryFormat).revertChanges(this.editorHistory.isRedoing, this.owner, block);
+                }
             }
         } else {
             if (this.modifiedProperties[0] instanceof TableHistoryInfo) {

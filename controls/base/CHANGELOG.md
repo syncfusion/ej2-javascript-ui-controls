@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.7 (2024-02-20)
+
+### Common
+
+#### Bug Fixes
+
+- `#I542405` - The issue with "component events remain after being destroyed through the template in the heap memory" has been resolved.
+
 ## 24.2.5 (2024-02-13)
 
 ### Common

@@ -2710,3 +2710,39 @@ describe('865043 - In toolbar settings, enable floating set to false the tooltip
         destroy(rteObj);
     });
 });
+
+describe('821312: Bullet list does not reverted after click on the bullet list icon', () => {
+    let rteObj: RichTextEditor;
+    beforeAll((done) => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['NumberFormatList', 'BulletFormatList'],
+            },
+            value: `<p class="pEle">Description</p>`
+        });
+        done();
+    });
+    it('Checking the bullet list revert after list type changed', (done: Function) => {
+        let toolbarItem = document.querySelectorAll('.e-rte-toolbar .e-toolbar-item')[1];
+        let dropdownBtn = toolbarItem.firstChild.childNodes[1];
+        let bulletListFristChild = toolbarItem.firstChild.firstChild.firstChild;
+        var mouseDownEvent = new MouseEvent('mousedown', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+        });
+        let pEle = document.querySelector('.pEle');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.firstChild, pEle.firstChild, 1, 3);
+        bulletListFristChild.dispatchEvent(mouseDownEvent);
+        (bulletListFristChild as HTMLElement).click();
+        dropdownBtn.dispatchEvent(mouseDownEvent);
+        (document.querySelector('.e-dropdown-popup [title="Circle"]') as HTMLElement).click();
+        bulletListFristChild.dispatchEvent(mouseDownEvent);
+        (bulletListFristChild as HTMLElement).click();
+        expect(rteObj.inputElement.innerHTML === `<p class="pele">Description</p>`).toBe(true);
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

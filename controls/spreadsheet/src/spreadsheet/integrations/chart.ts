@@ -5,7 +5,7 @@ import { Spreadsheet } from '../base/index';
 import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, Workbook, getSheet } from '../../workbook/index';
 import { initiateChart, ChartModel, getRangeIndexes, isNumber, LegendPosition, getSheetIndexFromAddress, DateFormatCheckArgs, checkDateFormat } from '../../workbook/common/index';
 import { Overlay, Dialog } from '../services/index';
-import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData, addDPRValue } from '../common/index';
+import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData, addDPRValue, refreshChartCellModel } from '../common/index';
 import { BeforeImageRefreshData, BeforeChartEventArgs, completeAction, clearChartBorder, focusBorder } from '../common/index';
 import { Chart, ColumnSeries, Category, ILoadedEventArgs, StackingColumnSeries, BarSeries, ChartSeriesType, AccumulationLabelPosition, IAxisLabelRenderEventArgs } from '@syncfusion/ej2-charts';
 import { AreaSeries, StackingAreaSeries, AccumulationChart, IAccLoadedEventArgs, Tooltip } from '@syncfusion/ej2-charts';
@@ -47,6 +47,7 @@ export class SpreadsheetChart {
     private addEventListener(): void {
         this.parent.on(initiateChart, this.initiateChartHandler, this);
         this.parent.on(refreshChartCellObj, this.refreshChartCellObj, this);
+        this.parent.on(refreshChartCellModel, this.refreshChartCellModel, this);
         this.parent.on(updateChart, this.updateChartHandler, this);
         this.parent.on(deleteChart, this.deleteChart, this);
         this.parent.on(clearChartBorder, this.clearBorder, this);
@@ -161,6 +162,26 @@ export class SpreadsheetChart {
             }
             chartComp.series = series;
             chartComp.refresh();
+        }
+    }
+
+    private refreshChartCellModel(args: {
+        prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[],
+        currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[]
+    }): void {
+        for (let i: number = 0, len: number = args.prevChartIndexes.length; i < len; i++) {
+            let chart: ChartModel = args.prevChartIndexes[i as number].chart;
+            let prevRowIdx: number = args.prevChartIndexes[i as number].chartRowIdx;
+            let prevColIdx: number = args.prevChartIndexes[i as number].chartColIdx;
+            let currentRowIdx: number = args.currentChartIndexes[i as number].chartRowIdx;
+            let currentColIdx: number = args.currentChartIndexes[i as number].chartColIdx;
+            const eventArgs: BeforeImageRefreshData = {
+                prevTop: chart.top, prevLeft: chart.left, prevRowIdx: prevRowIdx, prevColIdx: prevColIdx,
+                prevHeight: chart.height, prevWidth: chart.width, currentTop: chart.top, currentLeft: chart.left,
+                currentRowIdx: currentRowIdx, currentColIdx: currentColIdx, currentHeight: chart.height,
+                currentWidth: chart.width, id: chart.id, requestType: 'chartRefreshOnFilter'
+            };
+            this.parent.notify(refreshChartCellObj, eventArgs);
         }
     }
 
@@ -1444,6 +1465,7 @@ export class SpreadsheetChart {
         if (!this.parent.isDestroyed) {
             this.parent.off(initiateChart, this.initiateChartHandler);
             this.parent.off(refreshChartCellObj, this.refreshChartCellObj);
+            this.parent.off(refreshChartCellModel, this.refreshChartCellModel);
             this.parent.off(updateChart, this.updateChartHandler);
             this.parent.off(deleteChart, this.deleteChart);
             this.parent.off(clearChartBorder, this.clearBorder);

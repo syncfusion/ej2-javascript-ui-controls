@@ -41,6 +41,27 @@ export class SelectionCommands {
             const nodeCutter: NodeCutter = new NodeCutter();
             const isFormatted: IsFormatted = new IsFormatted();
             let range: Range = domSelection.getRange(docElement);
+            let currentAnchorNode: HTMLElement = range.startContainer.parentElement;
+            if (range.collapsed && !isNOU(currentAnchorNode) &&
+            currentAnchorNode.tagName === 'A' &&
+            (range.startOffset === currentAnchorNode.textContent.length || range.startOffset === 0)) {
+                const emptyTextNode: Node = document.createTextNode('');
+                if (range.startOffset === 0) {
+                    currentAnchorNode.parentNode.insertBefore(emptyTextNode, currentAnchorNode);
+                } else {
+                    if (!isNOU(currentAnchorNode.nextSibling)) {
+                        currentAnchorNode.parentElement.insertBefore(emptyTextNode, currentAnchorNode.nextSibling);
+                    } else {
+                        currentAnchorNode.parentNode.appendChild(emptyTextNode);
+                    }
+                }
+                // Set the range to the empty text node
+                const newRange: Range = docElement.createRange();
+                range.setStart(emptyTextNode, 0);
+                range.setEnd(emptyTextNode, 0);
+                range.collapse(true);
+                domSelection.setRange(docElement, newRange);
+            }
             if (Browser.userAgent.indexOf('Firefox') !== -1 && range.startContainer === range.endContainer && !isNOU(endNode) && range.startContainer === endNode) {
                 const startChildNodes: NodeListOf<Node> = range.startContainer.childNodes;
                 const startNode: Element = <Element>((startChildNodes[(range.startOffset > 0) ? (range.startOffset - 1) :
@@ -448,8 +469,11 @@ export class SelectionCommands {
                 }
                 let num: number = index;
                 let liChildContent : string = '';
-                while (num >= 0 && !isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' && liElement.textContent.replace('/\u200B/g', '').trim().includes(nodes[num as number].textContent.trim())) {
-                    liChildContent = ' ' + nodes[num as number].textContent.trim() + liChildContent ;
+                 /* eslint-disable security/detect-object-injection */
+                while (num >= 0 && !isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' && (liElement as Node).contains(nodes[num]) &&
+                    liElement.textContent.replace('/\u200B/g', '').trim().includes(nodes[num as number].textContent.trim())) {
+                    /* eslint-enable security/detect-object-injection */
+                    liChildContent = ' ' + nodes[num as number].textContent.trim() + liChildContent;
                     num--;
                 }
                 let isNestedList : boolean = false;
@@ -532,6 +556,23 @@ export class SelectionCommands {
                         while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
                             parentElement = parentElement.parentElement;
                             liElement = parentElement;
+                        }
+                        if (format === 'fontcolor') {
+                            const parentElem: HTMLElement = nodes[index as number].parentElement;
+                            if (!isNOU(parentElem) && parentElem.childNodes){
+                                for (let i: number = 0; i < parentElem.childNodes.length; i++) {
+                                    if (this.concatenateTextExcludingList(nodes, index) === nodes[index as number].textContent){
+                                        if (parentElem.tagName === 'LI'){
+                                            parentElem.style.color = value;
+                                        }
+                                    }
+                                    // eslint-disable-next-line
+                                    const childElement: HTMLElement = parentElem.childNodes[i] as HTMLElement;
+                                    if (childElement.tagName === 'OL' || childElement.tagName === 'UL') {
+                                        childElement.style.color = 'initial';
+                                    }
+                                }
+                            }
                         }
                         if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                             liElement.textContent.trim() === nodes[index as number].textContent.trim()) {
@@ -834,5 +875,17 @@ export class SelectionCommands {
                 parent = temp;
             }
         }
+    }
+    private static concatenateTextExcludingList(nodes: Node[], index: number): string {
+        let result: string = '';
+        const parentNode: HTMLElement = nodes[index as number].parentElement;
+        for (let i: number = 0; i < parentNode.childNodes.length; i++) {
+            // eslint-disable-next-line
+            const childNode: HTMLElement = parentNode.childNodes[i] as HTMLElement;
+            if ((childNode.nodeType === 3) || (childNode.nodeType === 1 && (childNode.tagName !== 'OL' && childNode.tagName !== 'UL'))) {
+                result += childNode.textContent;
+            }
+        }
+        return result;
     }
 }

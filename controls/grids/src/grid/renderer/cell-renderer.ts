@@ -28,7 +28,7 @@ export class CellRenderer implements ICellRenderer<Column> {
         this.formatter = locator.getService<IValueFormatter>('valueFormatter');
         this.parent = parent;
         this.element = this.parent.createElement('TD', { className: literals.rowCell, attrs: { role: 'gridcell', tabindex: '-1' } });
-        this.rowChkBox = this.parent.createElement('input', { className: 'e-checkselect', attrs: { 'type': 'checkbox' } });
+        this.rowChkBox = this.parent.createElement('input', { className: 'e-checkselect', attrs: { 'type': 'checkbox', 'aria-label': this.localizer.getConstant('SelectRow') } });
     }
     /**
      * Function to return the wrapper for the TD content

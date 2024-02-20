@@ -66,6 +66,7 @@ export class BookmarkView {
             this.renderBookmarksOnSuccess(data, proxy);
         }
         else{
+            this.pdfViewerBase.requestCollection.push(this.bookmarkRequestHandler);
             this.bookmarkRequestHandler.send(jsonObject);
             // eslint-disable-next-line
             this.bookmarkRequestHandler.onSuccess = function (result: any) {

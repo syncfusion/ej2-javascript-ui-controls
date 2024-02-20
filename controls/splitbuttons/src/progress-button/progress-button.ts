@@ -473,7 +473,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
         this.step = args.step;
         if ((progressTime - prevProgressTime) % (this.duration * args.step / 100) === 0 || percent === 100) {
             this.timerId = requestAnimationFrame(() => {
-                if (this.enableProgress) {
+                if (this.enableProgress && this.getProgress()) {
                     this.getProgress().style[isVertical ? 'height' : 'width'] = percent + '%';
                 }
                 this.element.setAttribute('aria-valuenow', percent.toString());
@@ -491,7 +491,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
             } else {
                 this.interval = window.setTimeout(() => {
                     this.progressTime = this.percent = 0;
-                    if (this.enableProgress) {
+                    if (this.enableProgress && this.getProgress()) {
                         this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
                     }
                     this.element.setAttribute('aria-valuenow', '0');
@@ -533,7 +533,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
             if (i > 100) {
                 i = 100;
             }
-            if (this.enableProgress) {
+            if (this.enableProgress && this.getProgress()) {
                 this.getProgress().style[isVertical ? 'height' : 'width'] = (this.percent < 100) ? (i + '%') : '100%';
             }
         }

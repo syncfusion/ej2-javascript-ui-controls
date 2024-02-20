@@ -1679,18 +1679,19 @@ export class ParagraphWidget extends BlockWidget {
                 if (!isField && elementBox instanceof TextElementBox && lineWidget.children[i + 1] instanceof TextElementBox) {
                     let currentTxtRange: TextElementBox = elementBox;
                     let nextTxtRange: TextElementBox = lineWidget.children[i + 1] as TextElementBox;
-
-                    if ((currentTxtRange.characterFormat.complexScript || currentTxtRange.characterFormat.bidi) && currentTxtRange.scriptType == nextTxtRange.scriptType &&
+                    // Bug 866413: Here skipped the Hewbrew script type rtl text combining, because facing element left margin issue.
+                    if (((currentTxtRange.characterFormat.complexScript && currentTxtRange.scriptType == nextTxtRange.scriptType) || (currentTxtRange.characterFormat.bidi && currentTxtRange.scriptType !== FontScriptType.Hebrew
+                        && currentTxtRange.characterRange == CharacterRangeType.RightToLeft && nextTxtRange.characterRange == CharacterRangeType.RightToLeft)) &&
                         currentTxtRange.text.length > 0 && nextTxtRange.text.length > 0 &&
                         !textHelper.isWordSplitChar(currentTxtRange.text[currentTxtRange.text.length - 1]) && !textHelper.isWordSplitChar(nextTxtRange.text[0])
-                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat) && currentTxtRange.characterFormat.revisions == nextTxtRange.characterFormat.revisions) {
+                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat) && this.compareRevisions(currentTxtRange.revisions, nextTxtRange.revisions)) {
                         currentTxtRange.text = currentTxtRange.text + nextTxtRange.text;
                         lineWidget.children.splice(i + 1, 1);
                         i--;
                     } else if (currentTxtRange.characterRange == CharacterRangeType.RightToLeft && nextTxtRange.characterRange == CharacterRangeType.RightToLeft &&
                         currentTxtRange.text.length > 0 && nextTxtRange.text.length > 0 &&
                         textHelper.isWordSplitChar(currentTxtRange.text[currentTxtRange.text.length - 1]) && textHelper.isWordSplitChar(nextTxtRange.text[0])
-                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat) && currentTxtRange.characterFormat.revisions == nextTxtRange.characterFormat.revisions) {
+                        && currentTxtRange.characterFormat.isEqualFormat(nextTxtRange.characterFormat) && this.compareRevisions(currentTxtRange.revisions, nextTxtRange.revisions)) {
                         currentTxtRange.text = currentTxtRange.text + nextTxtRange.text;
                         lineWidget.children.splice(i + 1, 1);
                         i--;
@@ -1698,6 +1699,18 @@ export class ParagraphWidget extends BlockWidget {
                 }
             }
         }
+    }
+
+    private compareRevisions(revisionA: Revision[], revisionB: Revision[]): boolean {
+        if (revisionA.length !== revisionB.length) {
+            return false;
+        }
+        for (let i: number = 0; i < revisionA.length; i++) {
+            if (revisionA[i] !== revisionB[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public clone(): ParagraphWidget {

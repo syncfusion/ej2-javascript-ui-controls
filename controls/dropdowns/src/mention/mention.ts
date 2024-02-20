@@ -1254,7 +1254,7 @@ export class Mention extends DropDownBase {
             for (let i: number = 0; i < iframes.length; i++) {
                 // eslint-disable-next-line security/detect-object-injection
                 const iframe: HTMLIFrameElement = (iframes[i] as HTMLIFrameElement);
-                if ((iframe.contentDocument as Document).contains(element)) {
+                if ((iframe.contentDocument as Document) && (iframe.contentDocument as Document).contains(element)) {
                     const iframeRect: ClientRect = iframe.getBoundingClientRect();
                     rectTop += iframeRect.top;
                     rectLeft += iframeRect.left;

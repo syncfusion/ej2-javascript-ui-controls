@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.7 (2024-02-20)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F50469` - Fixed issue where excel export after sorting led to missing expand icons in the excel file.
+
 ## 24.2.5 (2024-02-13)
 
 ### Tree Grid

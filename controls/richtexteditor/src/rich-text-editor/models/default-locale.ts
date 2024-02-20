@@ -200,6 +200,7 @@ export let defaultLocale: { [key: string]: string } = {
     'emojiPickerNoResultFound': 'No results found',
     'emojiPickerTrySomethingElse': 'Try something else',
     'linkAriaLabel': 'Open in new window',
+    'unsupportedImage': 'Unsupported file format'
 };
 
 export let toolsLocale: { [key: string]: string } = {
@@ -296,7 +297,7 @@ export let toolsLocale: { [key: string]: string } = {
     'emojiPickerTypeToFind': 'Type to find',
     'emojiPickerNoResultFound': 'No results found',
     'emojiPickerTrySomethingElse': 'Try something else',
-    'ImageLinkAriaLabel': 'Open in new window',
+    'imageLinkAriaLabel': 'Open in new window',
 };
 
 export let fontNameLocale : { [ket: string]: string }[] = [

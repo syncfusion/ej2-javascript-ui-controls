@@ -4168,7 +4168,7 @@ describe('MultiSelect', () => {
             (<any>multiObj).keyDownStatus = true;
             (<any>multiObj).onInput();
             (<any>multiObj).keyUp(keyboardEventArgs);
-            expect(document.body.contains((<any>multiObj).popupObj.element)).toBe(false);
+            expect(document.body.contains((<any>multiObj).popupObj.element)).toBe(true);
             multiObj.destroy();
         });
     });

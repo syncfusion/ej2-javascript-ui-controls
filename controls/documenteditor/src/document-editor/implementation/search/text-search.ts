@@ -92,14 +92,16 @@ export class TextSearch {
         return undefined;
     }
 
-    public getElementInfo(inlineElement: ElementBox, indexInInline: number, includeNextLine?: boolean, pattern?: RegExp, findOption?: FindOption, isFirstMatch?: boolean, results?: TextSearchResults, selectionEnd?: TextPosition): TextInLineInfo {
+    public getElementInfo(inlineElement: ElementBox, indexInInline: number, includeNextLine?: boolean, pattern?: RegExp, findOption?: FindOption, isFirstMatch?: boolean, results?: TextSearchResults, selectionEnd?: TextPosition, isSpellCheck?: boolean): TextInLineInfo {
         const inlines: ElementBox = inlineElement;
         let stringBuilder: string = '';
         const spans: Dictionary<TextElementBox, number> = new Dictionary<TextElementBox, number>();
         // eslint-disable  no-constant-condition
+        let previousElementCount: number = 0;
         do {
             if (inlineElement instanceof TextElementBox && (!isNullOrUndefined((inlineElement as TextElementBox).text) && (inlineElement as TextElementBox).text !== '')) {
-                spans.add(inlineElement as TextElementBox, stringBuilder.length);
+                spans.add(inlineElement as TextElementBox, isSpellCheck ? stringBuilder.length + previousElementCount: stringBuilder.length);
+                previousElementCount = 0;
                 // IndexInInline Handled specifically for simple find operation to start from starting point
                 if (inlineElement === inlines) {
                     stringBuilder = stringBuilder + ((inlineElement as TextElementBox).text.substring(indexInInline));
@@ -114,6 +116,9 @@ export class TextSearch {
                 }
             } else if (inlineElement instanceof ShapeElementBox && !isNullOrUndefined(inlineElement.textFrame) && (inlineElement.textFrame as TextFrame).childWidgets.length > 0) {
                 this.findInlineText(inlineElement.textFrame, pattern, findOption, isFirstMatch, results, selectionEnd);
+            }
+            if (!(inlineElement instanceof TextElementBox)) {
+                previousElementCount += inlineElement.length;
             }
             if (!isNullOrUndefined(inlineElement) && isNullOrUndefined(inlineElement.nextNode)) {
                 break;

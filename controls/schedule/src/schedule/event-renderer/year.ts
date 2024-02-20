@@ -79,7 +79,7 @@ export class YearEvent extends TimelineEvent {
 
     private timelineYearViewEvents(): void {
         const workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')');
-        this.cellWidth = this.parent.eventBase.getCellWidth(workCell);
+        this.cellWidth = util.getElementWidth(workCell);
         this.cellHeader = util.getOuterHeight(workCell.querySelector('.' + cls.DATE_HEADER_CLASS));
         const eventTable: Element = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
         this.eventHeight = util.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
@@ -167,7 +167,7 @@ export class YearEvent extends TimelineEvent {
                         this.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, monthStart, dayIndex);
                         if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
                             this.updateCellHeight(rowTd, availedHeight);
-                        }                        
+                        }
                         isSpannedCollection.push(eventData);
                     } else {
                         const moreIndex: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
@@ -228,7 +228,7 @@ export class YearEvent extends TimelineEvent {
         const contentTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
         const isVerticalScrollbarAvail: boolean = contentTable.offsetWidth > contentTable.clientWidth;
         const workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS);
-        this.cellWidth = workCell.getBoundingClientRect().width;
+        this.cellWidth = util.getElementWidth(workCell);
         this.cellHeader = 0;
         const eventTable: Element = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
         this.eventHeight = util.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
@@ -275,7 +275,7 @@ export class YearEvent extends TimelineEvent {
                 appWrapper.forEach((appWrap: HTMLElement, cellIndex: number) => {
                     const td: HTMLElement = row.querySelector(`td:nth-child(${cellIndex + 1})`);
                     const app: HTMLElement[] = [].slice.call(appWrap.children);
-                    const width: number = td.getBoundingClientRect().width;
+                    const width: number = util.getElementWidth(td);
                     const left: number = td.offsetLeft;
                     if (this.parent.enableRtl) {
                         const right: number = conTable.offsetWidth - left - td.offsetWidth;
@@ -565,7 +565,7 @@ export class YearEvent extends TimelineEvent {
                 (util.resetTime(appStart).getTime() >= dateStart) && (util.resetTime(appEnd).getTime() <= dateEnd)) {
                 appointmentsList.push(app);
             }
-            else if(this.parent.activeViewOptions.orientation === 'Vertical') {
+            else if (this.parent.activeViewOptions.orientation === 'Vertical') {
                 if (util.resetTime(appStart).getTime() >= dateStart && util.resetTime(appEnd).getTime() >= dateEnd) {
                     appointmentsList.push(app);
                 }

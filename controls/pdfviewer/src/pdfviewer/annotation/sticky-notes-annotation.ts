@@ -391,6 +391,7 @@ export class StickyNotesAnnotation {
             this.renderCommentsOnSuccess(data, proxy);
         }
         else{
+            this.pdfViewerBase.requestCollection.push(this.commentsRequestHandler);
             proxy.commentsRequestHandler.send(jsonObject);
         
         // eslint-disable-next-line

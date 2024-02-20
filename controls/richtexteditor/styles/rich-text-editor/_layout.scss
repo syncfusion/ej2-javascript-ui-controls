@@ -872,7 +872,9 @@
 
   .e-rte-image.e-imginline,
   .e-rte-audio.e-audio-inline,
-  .e-rte-video.e-video-inline  {
+  .e-rte-video.e-video-inline {
+    margin-left: 5px;
+    margin-right: 5px;
     display: inline-block;
     float: none;
     max-width: calc(100% - (2 * 5px));

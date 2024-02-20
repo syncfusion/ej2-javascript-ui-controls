@@ -864,6 +864,57 @@ describe('Detail template module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('EJ2-867924 - Refresh row element without collapsing detail row', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData.slice(0,3),
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple', mode: 'Row' },
+                    height: 500,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: "Batch", showConfirmDialog: false },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', isPrimaryKey: true, width: 75 },
+                        { field: 'FirstName', headerText: 'First Name', textAlign: 'Left', width: 100 },
+                        { field: 'Title', headerText: 'Title', textAlign: 'Left', width: 120 },
+                    ],
+                    childGrid: {
+                        dataSource: [],
+                        queryString: 'EmployeeID',
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 75 },
+                            { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                            { field: 'ShipCity', headerText: 'Ship City', textAlign: 'Left', width: 100 },
+                        ]
+                    },
+                }, done);
+        });
+        it('Expand row', () => {
+            (gridObj.getDataRows()[0].querySelector('.e-detailrowcollapse') as HTMLElement).click();
+            expect(gridObj.getContentTable().querySelectorAll('.e-detailrow').length).toBe(1);
+        });
+        it('close edit', (done: Function) => {
+            let cellSaved = (args?: any): void => {
+                gridObj.closeEdit();
+                expect(gridObj.getRowsObject()[2].index).toBe(1);
+                gridObj.cellSaved = null;
+                done();
+            };
+            gridObj.editCell(1, 'FirstName');
+            gridObj.cellSaved = cellSaved;
+            gridObj.saveCell();
+        });
+
+        afterAll(() => {
+            (gridObj.detailRowModule as any).destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
     describe('Code Coverage - Hierarchy Render testing', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {

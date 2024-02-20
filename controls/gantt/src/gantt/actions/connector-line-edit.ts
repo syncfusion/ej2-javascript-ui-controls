@@ -192,7 +192,10 @@ export class ConnectorLineEdit {
         let match: string[] = [];
         for (let j: number = 0; j < preArray.length; j++) {
             const strArray: string[] = [];
-            let isGUId: boolean = false
+            let firstPart: string;
+            let isAlpha: boolean = false;
+            let predecessorName: string;
+            let isGUId: boolean = false;
             var regex: RegExp = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
             let elSplit: string[] = preArray[j as number].split('-');
             let id: string;
@@ -204,6 +207,26 @@ export class ConnectorLineEdit {
                 id = preArray[j as number].substring(0, 36);
                 if (regex.test(id)) {
                     isGUId = true;
+                }
+            }
+            if (preArray[j as number].includes('-')) {
+                if (preArray[j as number].includes('-') && preArray[j as number].includes('days')) {
+                    predecessorName = preArray[j as number].slice(-9).toString();
+                }
+                if (preArray[j as number].includes('-') && preArray[j as number].includes('day')) {
+                    predecessorName = preArray[j as number].slice(-8).toString();
+                }
+                else {
+                    predecessorName = preArray[j as number].slice(-2).toString();
+                }
+                if (preArray[j as number].includes('-') && /[A-Za-z]/.test(predecessorName)) {
+                    var indexFS = preArray[j as number].indexOf(predecessorName);
+                    if (indexFS !== -1) {
+                        firstPart = preArray[j as number].substring(0, indexFS);
+                        if(firstPart.includes('-')){
+                            isAlpha = true;
+                        }
+                    }
                 }
             }
             if (isGUId) {
@@ -233,11 +256,16 @@ export class ConnectorLineEdit {
                 }
             }
             else {
-                values = preArray[j as number].split('+');
-                offsetValue = '+';
-                if (preArray[j as number].indexOf('-') >= 0) {
-                    values = preArray[j as number].split('-');
-                    offsetValue = '-';
+                if (isAlpha && firstPart.includes('-')) {
+                    values[0] = firstPart;
+                }
+                else{
+                    values = preArray[j as number].split('+');
+                    offsetValue = '+';
+                    if (preArray[j as number].indexOf('-') >= 0) {
+                        values = preArray[j as number].split('-');
+                        offsetValue = '-';
+                    }
                 }
             }
             if (!isNullOrUndefined(values[0])) {

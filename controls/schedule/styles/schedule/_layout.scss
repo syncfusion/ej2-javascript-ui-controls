@@ -210,6 +210,28 @@
       }
     }
 
+    @media screen and (max-width: 320px) {
+      .e-schedule-toolbar {
+        .e-toolbar-pop {
+          width: 100%;
+          
+          .e-toolbar-item .e-tbar-btn.e-btn {
+            padding-left: 7px;
+          }
+           
+          &.e-rtl {
+            .e-toolbar-item .e-tbar-btn.e-btn {
+              padding-right: 7px;
+            }
+          }
+        }
+
+        .e-tbar-btn .e-tbar-btn-text {
+          font-size: $schedule-device-font-size;
+        }
+      }
+    }
+
     .e-schedule-resource-toolbar {
       background: $schedule-tbar-default-bg;
       border-bottom: $schedule-tbar-border-bottom-size;
@@ -3103,7 +3125,24 @@
       }
     }
   }
+  
+  /*! schedule event window for smaller viewports*/
+  @media screen and (max-width: 320px) {
+    .e-schedule-dialog.e-popup.e-popup-open {
+      max-height: 350px;
+      min-width: 100%;
+    }
 
+    .e-schedule-dialog {
+      .e-all-day-container {
+        padding-bottom: 10px;
+      }
+
+      .e-all-day-time-zone-row {
+        display: block;
+      }
+    }
+  }
   .e-ddl.e-popup {
     .e-resource-template {
       display: flex;
@@ -3787,6 +3826,23 @@
     }
   }
 
+  /*! schedule quick popup for smaller viewports */
+  @media screen and (max-width: 320px) {
+    .e-quick-popup-wrapper {
+      min-width: 100%;
+
+      .e-popup-footer {
+        padding-left: 5px;
+      }
+
+      &.e-rtl {
+        .e-popup-footer {
+          padding-right: 5px;
+        }
+      }
+    }
+  }
+  
   .e-bigger .e-quick-popup-wrapper {
     .e-cell-popup .e-popup-content .e-popup-table .e-subject {
       font-size: 24px;

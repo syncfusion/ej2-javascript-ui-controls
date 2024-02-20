@@ -512,7 +512,7 @@ export class BatchEdit {
     private refreshRowIdx(): void {
         const gObj: IGrid = this.parent;
         const rows: Element[] = gObj.getAllDataRows(true);
-        const dataObjects: Row<Column>[]  = gObj.getRowsObject();
+        const dataObjects: Row<Column>[]  = gObj.getRowsObject().filter((row: Row<Column>) => !row.isDetailRow);
         for (let i: number = 0, j: number = 0, len: number = rows.length; i < len; i++) {
             if (rows[parseInt(i.toString(), 10)].classList.contains(literals.row) && !rows[parseInt(i.toString(), 10)].classList.contains('e-hiddenrow')) {
                 rows[parseInt(i.toString(), 10)].setAttribute(literals.dataRowIndex, j.toString());

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 24.2.7 (2024-02-20)
+
+### Grid
+
+#### Bug fixes
+
+- `#I547707` - Resolved a script error occurring when collapsing a grouped row along with `virtualization` while the grid is in edited state.
+- `#FB50079` - Fixed the issue where scrolling with the Up arrow in virtual scroll caused the focus to leave and enter the column header.
+- `#FB50364` - Fixed an accessibility issue with row checkboxes identified by the Accessibility Insights for Web tool.
+
 ## 24.2.5 (2024-02-13)
 
 ### Grid

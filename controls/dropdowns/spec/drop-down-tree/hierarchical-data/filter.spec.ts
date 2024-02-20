@@ -833,7 +833,7 @@ describe('Hierarchial data filter testing', () => {
             setTimeout(function () {
                 expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(4);
                 let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
-                let checkEle: Element = li[0].querySelector('.e-checkbox-wrapper');
+                let checkEle: Element = li[0];
                 let e: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 checkEle.querySelector('.e-frame').dispatchEvent(e);
                 e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -841,7 +841,7 @@ describe('Hierarchial data filter testing', () => {
                 e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
                 checkEle.querySelector('.e-frame').dispatchEvent(e);
                 expect(checkEle.getAttribute('aria-checked')).toBe('true');
-                checkEle = li[2].querySelector('.e-checkbox-wrapper');
+                checkEle = li[2];
                 e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 checkEle.querySelector('.e-frame').dispatchEvent(e);
                 e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -895,7 +895,7 @@ describe('Hierarchial data filter testing', () => {
                 expect(filterObj.element.getAttribute('aria-label')).toBe("filter");
                 expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(4);
                 let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
-                let checkEle: Element = li[0].querySelector('.e-checkbox-wrapper');
+                let checkEle: Element = li[0];
                 let e: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 checkEle.querySelector('.e-frame').dispatchEvent(e);
                 e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -903,7 +903,7 @@ describe('Hierarchial data filter testing', () => {
                 e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
                 checkEle.querySelector('.e-frame').dispatchEvent(e);
                 expect(checkEle.getAttribute('aria-checked')).toBe('true');
-                checkEle = li[2].querySelector('.e-checkbox-wrapper');
+                checkEle = li[2];
                 e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 checkEle.querySelector('.e-frame').dispatchEvent(e);
                 e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -914,7 +914,7 @@ describe('Hierarchial data filter testing', () => {
                 expect(ddtreeObj.value.length).toBe(2);
                 expect(ddtreeObj.value.indexOf('11') !== -1).toBe(true);
                 expect(ddtreeObj.value.indexOf('21') !== -1).toBe(true);
-                checkEle = li[2].querySelector('.e-checkbox-wrapper');
+                checkEle = li[2];
                 e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 checkEle.querySelector('.e-frame').dispatchEvent(e);
                 e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -1062,7 +1062,7 @@ describe('Hierarchial data filter testing', () => {
             expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
             expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
             let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
-            let checkEle: Element = li[0].querySelector('.e-checkbox-wrapper');
+            let checkEle: Element = li[0];
             let e: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle.querySelector('.e-frame').dispatchEvent(e);
             e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -1081,7 +1081,7 @@ describe('Hierarchial data filter testing', () => {
             setTimeout(function () {
                 expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(4);
                 let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
-                let checkEle: Element = li[0].querySelector('.e-checkbox-wrapper');
+                let checkEle: Element = li[0];
                 let e: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 checkEle.querySelector('.e-frame').dispatchEvent(e);
                 e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -1089,7 +1089,7 @@ describe('Hierarchial data filter testing', () => {
                 e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
                 checkEle.querySelector('.e-frame').dispatchEvent(e);
                 expect(checkEle.getAttribute('aria-checked')).toBe('true');
-                checkEle = li[2].querySelector('.e-checkbox-wrapper');
+                checkEle = li[2];
                 e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 checkEle.querySelector('.e-frame').dispatchEvent(e);
                 e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });

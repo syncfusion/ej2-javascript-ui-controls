@@ -38,7 +38,9 @@ export class DetailExpandCellRenderer extends CellRenderer implements ICellRende
                 href: '#', 'title': this.localizer.getConstant('Collapsed')
             } }));
         }
-
+        if (cell.isSelected) {
+            node.classList.add('e-selectionbackground', 'e-active');
+        }
         return node;
     }
 

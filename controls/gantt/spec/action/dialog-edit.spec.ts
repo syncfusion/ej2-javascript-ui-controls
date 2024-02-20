@@ -4495,3 +4495,73 @@ describe('validation in progress', () => {
         }
     });
 });
+describe('Edit baseline dates', function () {
+    let ganttObj: Gantt;
+    let bwData = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), duration: 0,
+                    Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+                },
+                {
+                    TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), duration: 4, Predecessor: '2',
+                    resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                        'From an engineer or company specializing in soil testing'
+                },
+                { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), duration: 0, Predecessor: '3', Progress: 30 },
+            ]
+        }
+    ];
+    beforeAll(function (done) {
+        ganttObj = createGantt({
+            dataSource: bwData,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'duration',
+                progress: 'Progress',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                { field: 'Duration', headerText: 'Duration' },
+                { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                { field: 'CustomColumn', headerText: 'CustomColumn' }
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            height: '550px',
+        }, done);
+    });
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('Checking taskdata duration value is string or number', () => {
+        let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+        triggerMouseEvent(add, 'click');
+        let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
+        triggerMouseEvent(save, 'click');
+        expect(ganttObj.currentViewData[0].taskData['duration']).toBe(1);
+    });
+});

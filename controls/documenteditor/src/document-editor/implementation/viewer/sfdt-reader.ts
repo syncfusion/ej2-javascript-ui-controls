@@ -1163,7 +1163,7 @@ export class SfdtReader {
                 }
                 if (textElement instanceof TextElementBox && textElement.text.length > 90) {
                     // Here, the text is split based on the maximum character length of 90.
-                    HelperMethods.splitWordByMaxLength(textElement, lineWidget);
+                    HelperMethods.splitWordByMaxLength(textElement, lineWidget, true);
                 }
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty(footnoteTypeProperty[this.keywordIndex])) {
@@ -1246,6 +1246,7 @@ export class SfdtReader {
                 let imgStr: string = this.documentHelper.getImageString(image);
                 if (!isNullOrUndefined(imgStr) && (HelperMethods.startsWith(imgStr, 'http://') || HelperMethods.startsWith(imgStr, 'https://'))) {
                     // Generate fall back image for URL images.
+                    image.element.crossOrigin = 'Anonymous';
                     this.viewer.documentHelper.getBase64(imgStr,image.width, image.height).then((imageUrlString: string) => {
                         this.viewer.documentHelper.images.get(parseInt(image.imageString))[1] =imageUrlString;
                     });

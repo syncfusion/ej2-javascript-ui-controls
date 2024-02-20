@@ -12,7 +12,7 @@ import { getCell, setChart, ApplyCFArgs, VisibleMergeIndexArgs, setVisibleMergeI
 import { setCFRule, setMerge, Workbook, setAutoFill, getautofillDDB, getRowsHeight, ChartModel, deleteModel } from '../../workbook/index';
 import { workbookFormulaOperation, DefineNameModel, getAddressInfo, getSheet, setCellFormat, updateCFModel } from '../../workbook/index';
 import { checkUniqueRange, applyCF, ActionEventArgs, skipHiddenIdx, isFilterHidden, ConditionalFormat } from '../../workbook/index';
-import { applyProtect, chartDesignTab, copy, cut, goToSheet, hideSheet, paste, performUndoRedo, refreshChartCellObj, removeHyperlink, removeWorkbookProtection, setProtectWorkbook, sheetNameUpdate, showSheet } from './event';
+import { applyProtect, chartDesignTab, copy, cut, getColIdxFromClientX, getRowIdxFromClientY, goToSheet, hideSheet, paste, performUndoRedo, refreshChartCellObj, removeHyperlink, removeWorkbookProtection, setProtectWorkbook, sheetNameUpdate, showSheet } from './event';
 import { keyCodes } from './constant';
 
 /**
@@ -2230,4 +2230,27 @@ export function getSheetProperties(context: Spreadsheet, keys?: string[]): strin
     const eventArgs: { skipProps: string[], model?: string } = { skipProps: skipProps };
     context.notify('getStringifyObject', eventArgs);
     return eventArgs.model;
+}
+
+/**
+ * Returns the row indexes and column indexes of the charts in the active sheet
+ * 
+ * @param {Spreadsheet} context - Specifies the Spreadsheet instance.
+ * @returns { {chart: ChartModel, chartRowIdx: number, chartColIdx: number}[] } - Returns the row indexes and column indexes of the charts in the active sheet
+ * @hidden
+ */
+
+export function getChartsIndexes(context?: Spreadsheet): { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] {
+    let chart: ChartModel; let chartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = [];
+    let sheetName: string = context.getActiveSheet().name;
+    for (let i: number = 0, len: number = context.chartColl.length; i < len; i++) {
+        chart = context.chartColl[i as number];
+        if (sheetName === getSheetNameFromAddress(chart.range)) {
+            let prevTop: { clientY: number, isImage?: boolean } = { clientY: chart.top, isImage: true };
+            let prevLeft: { clientX: number, isImage?: boolean } = { clientX: chart.left, isImage: true };
+            context.notify(getRowIdxFromClientY, prevTop); context.notify(getColIdxFromClientX, prevLeft);
+            chartIndexes.push({ chart: chart, chartRowIdx: prevTop.clientY, chartColIdx: prevLeft.clientX });
+        }
+    }
+    return chartIndexes;
 }

@@ -174,8 +174,8 @@ export class MonthEvent extends EventBase {
             });
         }
         const cellDetail: HTMLElement = this.workCells[this.parent.activeView.isTimelineView() ? 0 : this.workCells.length - 1];
-        this.cellWidth = this.parent.eventBase.getCellWidth(cellDetail);
-        this.cellHeight = cellDetail.getBoundingClientRect().height;
+        this.cellWidth = util.getElementWidth(cellDetail);
+        this.cellHeight = util.getElementHeight(cellDetail);
         this.dateRender = dateRender;
         const filteredDates: Date[] = this.getRenderedDates(dateRender);
         this.getSlotDates(workDays || this.parent.activeViewOptions.workDays);

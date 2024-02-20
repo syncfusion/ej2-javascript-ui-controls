@@ -1553,7 +1553,7 @@ export function deserialize(model: string|Object, diagram: Diagram): Object {
     if (dataObj.connectors) {
         for (let i: number = 0; i < dataObj.connectors.length; i++) {
             // EJ2-69816 - Added below code to empty the segment collection if connector type is bezier and allowSegmentsReset is true
-            if (dataObj.connectors[i].type === 'Bezier' && dataObj.connectors[i].segments.length > 0 && dataObj.connectors[i].bezierSettings.allowSegmentsReset) {
+            if (dataObj.connectors[i].type === 'Bezier' && dataObj.connectors[i].segments.length > 0 && dataObj.connectors[i].bezierSettings && dataObj.connectors[i].bezierSettings.allowSegmentsReset) {
                 dataObj.connectors[i].segments = [];
             }
         }
@@ -3000,7 +3000,7 @@ export let getPathOffset: Function = (anglePoints: PointModel[], connector: Conn
 export let checkPort: Function = (node: Node | Connector, element: DiagramElement): boolean => {
     if (node instanceof Node || node instanceof Connector) {
         for (let i: number = 0; i < node.ports.length; i++) {
-            if (node.ports[i].id === element.id.split('_')[1]) {
+            if (node.ports[i].id === element.id.split('_').splice(1).join('_')) {
                 return true;
             }
         }

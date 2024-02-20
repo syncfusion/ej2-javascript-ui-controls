@@ -112,7 +112,7 @@ export class InlineEdit {
             const allDayElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.ALLDAY_APPOINTMENT_CLASS));
             let allDayLevel: number = 0;
             if (allDayElements.length > 0) {
-                allDayLevel = Math.floor(this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS).getBoundingClientRect().height /
+                allDayLevel = Math.floor(util.getElementHeight(this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS)) /
                     allDayElements[0].offsetHeight) - 1;
             }
             verticalEvent.allDayLevel = allDayLevel;

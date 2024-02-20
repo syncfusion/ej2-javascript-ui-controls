@@ -204,4 +204,30 @@ describe('Custom Atrributes and html encode module', () => {
         });
     });
 
+    describe('868490: Accessibility issue with checkbox in Accessibility Insights for web tool.', () => {
+        let rows: HTMLTableRowElement;
+        let grid: Grid;
+        beforeAll((done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { type: 'checkbox', allowFiltering: false, allowSorting: false, width: '60' },
+                    { field: 'b'},
+                    { field: 'd', format: 'yMd' }
+                ],
+                dataSource: [{ data: { a: 1 }, b: 5, c: true, d: new Date() },
+                { data: { a: 2 }, b: 6, c: false, d: null }],
+                allowPaging: false
+            }, done);
+        });
+
+        it('check aria-label for check box cell', () => {
+            rows = ((grid.getContentTable() as any).tBodies[0]).rows[0] as HTMLTableRowElement;
+            expect(rows.cells[0].querySelector('input').getAttribute('aria-label').toString()).toBe('Select row');
+        });
+
+        afterAll(() => {
+            destroy(grid);
+        });
+    });
+
 });

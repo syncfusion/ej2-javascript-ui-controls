@@ -362,7 +362,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             this.parent.activeViewOptions.timeScale.interval;
     }
     private getWorkCellHeight(): number {
-        return parseFloat(this.element.querySelector('.' + cls.WORK_CELLS_CLASS).getBoundingClientRect().height.toFixed(2));
+        return parseFloat(util.getElementHeight(this.element.querySelector('.' + cls.WORK_CELLS_CLASS)).toFixed(2));
     }
     private getTdContent(date: Date, type: string, groupIndex?: number): HTMLElement[] {
         let cntEle: HTMLElement[];
@@ -767,8 +767,8 @@ export class VerticalView extends ViewBase implements IRenderer {
         const msStartHour: number = startHour.getTime();
         const msEndHour: number = endHour.getTime();
         if (msStartHour !== msEndHour) {
-            let milliSeconds: number = (startHour.getTimezoneOffset() !== endHour.getTimezoneOffset()) ?
-            (msEndHour - msStartHour) - 3600000 : (msEndHour - msStartHour);
+            const milliSeconds: number = (startHour.getTimezoneOffset() !== endHour.getTimezoneOffset()) ?
+                (msEndHour - msStartHour) - 3600000 : (msEndHour - msStartHour);
             length = Math.round(milliSeconds / msInterval);
         }
         if (!this.parent.activeViewOptions.timeScale.enable) {

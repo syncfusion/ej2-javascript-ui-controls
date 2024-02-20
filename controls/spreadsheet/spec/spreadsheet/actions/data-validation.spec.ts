@@ -1057,6 +1057,46 @@ describe('Data validation ->', () => {
                     });
             });
         });
+        describe('EJ2-867782 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{
+
+                    }, {
+                        rows: [
+                            { cells: [{ value: '1' }] }, { cells: [{ value: '2' }] }, { cells: [{ value: '3' }] },
+                            { cells: [{ value: '4' }] }, { cells: [{ value: '5' }] }, { cells: [{ value: '6' }] },
+                            { cells: [{ value: '7' }] }, { cells: [{ value: '8' }] }, { cells: [{ value: '9' }] }]
+                    },
+                    {
+
+                    }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Exception is raised after renaming the sheet in list data validation ->', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.activeSheetIndex = 0;
+                helper.invoke('addDataValidation', [{ type: 'List', value1: '=Sheet2!A1:A10' }, 'A1:A4']);
+                spreadsheet.activeSheetIndex = 1;
+                spreadsheet.dataBind();
+                helper.triggerMouseAction('dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'), helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
+                let editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+                setTimeout(() => {
+                    editorElem.click();
+                    editorElem.value = 'Hello';
+                    helper.triggerKeyNativeEvent(13, false, false, editorElem);
+                    expect(helper.getInstance().sheets[1].name).toBe('Hello');
+                    setTimeout(() => {
+                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0].validation)).toBe('{"type":"List","value1":"=Hello!A1:A10"}');
+                        done();
+                    });
+                });
+            });
+        });
+
         describe('I301019, I300657 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(

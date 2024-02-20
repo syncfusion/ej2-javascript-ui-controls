@@ -33,7 +33,8 @@ export class ConnectorBridging {
             let count: number = -1; const quads: ConnectorModel[] = diagram.connectors;
             for (let q: number = 0; q < quads.length; q++) {
                 const connector1: ConnectorModel = quads[parseInt(q.toString(), 10)];
-                if (conn && connector1 && conn.id !== connector1.id) {
+                //EJ2-868564- Bridging is enabled when connector visibility is set to False
+                if (conn && connector1 && conn.id !== connector1.id && connector1.visible) {
                     const points2: PointModel[] = this.getPoints(connector1 as Connector); const bounds1: Rect = Rect.toBounds(points2);
                     if (this.intersectsRect(bounds, bounds1)) {
                         const intersectPts: PointModel[] = this.intersect(points1, points2, false, bgedir, true);

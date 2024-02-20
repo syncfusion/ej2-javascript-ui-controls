@@ -3393,4 +3393,66 @@ describe('RTE CR issues', () => {
             Browser.userAgent =defaultUserAgent;
         });
     });
+    describe('870038 - Pasted image tag added inside the link tag in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><a class="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank" aria-label="Open in new window">link</a></p>`
+            });
+        });
+
+        it('image after the link', () => {
+            rteObj.executeCommand('insertImage', { url: 'https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png', cssClass: 'rte-img'});
+            expect(rteObj.inputElement.innerHTML).toBe('<p><a class="e-rte-anchor" href="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" title="https://www.grouptechedge.com/Reminders/TechEdgeServiceMaintenanceWindow521.ics" target="_blank" aria-label="Open in new window">link</a><img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image rte-img" width="auto" height="auto" style="min-width: 0px; min-height: 0px;"> </p>');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('870180: Copy pasted text to override an existing text pastes at wrong position in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p><span style="color: rgb(22, 22, 22); font-family: &quot;Segoe UI&quot;, SegoeUI, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">Executes Data Analysis Expressions (DAX) queries against the provided dataset. The dataset must reside in<span>&nbsp;</span></span><strong style=" font-weight: 600; color: rgb(22, 22, 22); font-family: &quot;Segoe UI&quot;, SegoeUI, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255);">My workspace</strong><span style="color: rgb(22, 22, 22); font-family: &quot;Segoe UI&quot;, SegoeUI, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;"><span>&nbsp;</span>or another workspace.</span></p><p style=" margin: 1rem 0px 0px; padding: 0px; color: rgb(22, 22, 22); font-family: &quot;Segoe UI&quot;, SegoeUI, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255);">DAX query errors will result in:</p><ul style=" margin: 16px 0px 16px 38px; padding: 0px; list-style: none; color: rgb(22, 22, 22); font-family: &quot;Segoe UI&quot;, SegoeUI, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255);"><li style=" margin: 0px; padding: 0px; list-style: none;">A response error, such as<span>&nbsp;</span><code style=" font-family: SFMono-Regular, Consolas, &quot;Liberation Mono&quot;, Menlo, Courier, monospace; font-size: 13.6px; direction: ltr; background-color: var(--theme-inline-code); border-radius: 3px; padding: 0.1em 0.2em;">DAX query failure</code>.</li><li style=" margin: 0px; padding: 0px; list-style: none;">A failure HTTP status code (400).</li></ul><p><br></p>`,
+                pasteCleanupSettings: {
+                    keepFormat: true,
+                }
+            });
+        });
+
+        it('copy and paste text', () => {
+            rteObj.focusIn();
+            const clipBoardData: string = `<html>\r\n<body>\r\n\x3C!--StartFragment--><span style="color: rgb(22, 22, 22); font-family: &quot;Segoe UI&quot;, SegoeUI, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">A query that requests more than one table, or more than the allowed number of table rows, will result in:</span>\x3C!--EndFragment-->\r\n</body>\r\n</html>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.firstChild, rteObj.inputElement.firstChild, 0, 3);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.contentModule.getEditPanel().dispatchEvent(pasteEvent);
+            expect((rteObj.inputElement.firstChild as HTMLElement).innerText === 'A query that requests more than one table, or more than the allowed number of table rows, will result in:').toBe(true);
+          });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('870485: Pressing Enter Key After Pasting an Image Removes the Image in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:106%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><span style="font-size:10.0pt;line-height:106%;">Afterwards, a new option\n"InsertLoremIpsum" will show in the "plugin" menu entry. A\nrestart may be required. &gt;&gt; screenshots<u><br clear="all">\n</u></span><span><img width="476" height="220" src="blob:http://127.0.0.1:5501/a004d4d0-4153-44c9-8ce9-5b1bb5bd25d0" v:shapes="Picture_x0020_1" id="msWordImg-clip_image001" class="e-rte-image e-imginline" style="opacity: 1;"> </span></p>`
+            });
+        });
+        it('img with enter key', () => {
+            rteObj.focusIn();
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelector('img'), 0);
+            keyBoardEvent.code = 'Enter';
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.which = 13;
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect(rteObj.inputElement.querySelector('img') !== null).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

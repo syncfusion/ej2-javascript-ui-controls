@@ -6896,6 +6896,20 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             const layer: LayerModel = this.commandHandler.getObjectLayer(connector.id);
             this.initConnectors(connector, layer);
         }
+        let originalZIndexTable:object = {};  // New variable to store original zIndex values
+        // Store original zIndex values
+        for (let i:number = 0; i < this.nodes.length; i++) {
+            let node = this.nodes[parseInt(i.toString(), 10)];
+            originalZIndexTable[node.id] = node.zIndex;
+        }
+        for (let j:number = 0; j < this.connectors.length; j++) {
+            let connector = this.connectors[parseInt(j.toString(), 10)];
+            originalZIndexTable[connector.id] = connector.zIndex;
+        }
+        const sortedNodeIds: string[] = Object.keys(originalZIndexTable).sort((a, b) => originalZIndexTable[`${a}`] - originalZIndexTable[`${b}`]);
+        for (let i:number = 0; i < this.layers.length; i++) {
+            (this.layers[parseInt(i.toString(), 10)] as Layer).zIndexTable  = sortedNodeIds;
+        }
         if (isBlazor() && canCloneObject) {
             for (const obj of this.nodes) {
                 updateNodeObject.push(cloneObject(obj, undefined, undefined, true));
@@ -7107,7 +7121,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private setZIndex(layer: LayerModel, obj: NodeModel | ConnectorModel): void {
         //should be changed
         const currentLayer: Layer = (layer as Layer);
-        if ((obj).zIndex === -1) {
+        if ((obj).zIndex === Number.MIN_VALUE) {
             while (currentLayer.zIndexTable[currentLayer.objectZIndex + 1]) {
                 (layer as Layer).objectZIndex++;
             }
@@ -7932,7 +7946,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         objects = objects.concat(this.nodes);
         objects = objects.concat(this.connectors);
         let type: string;
-        if (obj.zIndex !== -1) {
+        if (obj.zIndex !== Number.MIN_VALUE) {
             for (let i: number = 0; i < objects.length; i++) {
                 if (objects[parseInt(i.toString(), 10)].zIndex > obj.zIndex) {
                     if (obj.shape.type === 'HTML' || obj.shape.type === 'Native') {
@@ -11901,8 +11915,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                     this.findChild((newObj as Node), entryTable);
                                 }
                                 this.preventDiagramUpdate = true;
-                                if (newObj.zIndex !== -1) {
-                                    newObj.zIndex = -1;
+                                if (newObj.zIndex !== Number.MIN_VALUE) {
+                                    newObj.zIndex = Number.MIN_VALUE;
                                 }
                                 this.initObject(newObj as IElement, undefined, undefined, true);
                                 this.selectDragedNode(newObj, args, selectedSymbol);

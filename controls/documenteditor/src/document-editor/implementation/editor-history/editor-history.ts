@@ -224,7 +224,9 @@ export class EditorHistory {
             this.initializeHistory('RowResizing');
             if (!isNullOrUndefined(this.currentBaseHistoryInfo)) {
                 /* eslint-disable-next-line max-len */
-                this.currentBaseHistoryInfo.modifiedProperties.push(new RowHistoryFormat(startingPoint, (tableResize.currentResizingTable.childWidgets[tableResize.resizerPosition] as TableRowWidget).rowFormat));
+                tableResize.currentResizingTable = tableResize.currentResizingTable.combineWidget(this.viewer) as TableWidget;
+                this.currentBaseHistoryInfo.modifiedProperties.push(new RowHistoryFormat(tableResize.currentResizingTable, startingPoint, (tableResize.currentResizingTable.childWidgets[tableResize.resizerPosition] as TableRowWidget).rowFormat, this.owner));
+                this.documentHelper.layout.reLayoutTable(tableResize.currentResizingTable);
             }
         } else {
             this.initializeHistory('CellResizing');

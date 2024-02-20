@@ -1047,7 +1047,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const index: number = (this.parent.allowPaging && this.parent.enableColumnVirtualization) ?
             this.editedRowIndex % this.getBlockSize() : this.editedRowIndex - ((block - 1) * this.getBlockSize());
         if (this.parent.groupSettings.columns.length) {
-            this.getEditedRowObject().data = args.data;
+            const editRowObject: Row<Column> = this.getEditedRowObject();
+            if (editRowObject) {
+                editRowObject.data = args.data;
+            }
         } else {
             this.vgenerator.cache[parseInt(block.toString(), 10)][parseInt(index.toString(), 10)].data = args.data;
         }

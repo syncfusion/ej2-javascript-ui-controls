@@ -2297,4 +2297,58 @@ describe('Chart ->', () => {
             });
         });
     });
+    describe('EJ2-867926 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Handle Chart element positions and model values properly while filtering ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            setTimeout(() => {
+                helper.invoke('insertChart', [[{ type: 'Column', range: 'H5:H10' }]]);
+                expect(spreadsheet.sheets[0].rows[4].cells[7].chart.length).toBe(1);
+                spreadsheet.applyFilter();
+                spreadsheet.applyFilter([{ field: 'A', predicate: 'and', operator: 'notequal', value: 'Casual Shoes' }, { field: 'A', predicate: 'and', operator: 'notequal', value: 'Sports Shoes' }]);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[6].cells[7].chart.length).toBe(1);
+                    expect(spreadsheet.sheets[0].rows[4].cells[7].chart.length).toBe(0);
+                    helper.invoke('clearFilter');
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[4].cells[7].chart.length).toBe(1);
+                        expect(spreadsheet.sheets[0].rows[6].cells[7].chart.length).toBe(0);
+                        done();
+                    });
+                });
+            });
+        });
+        it('Handle Chart element positions and model values properly while hiding rows and columns ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[4].cells[7].chart.length).toBe(1);
+                helper.invoke('hideRow', [0, 1]);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[6].cells[7].chart.length).toBe(1);
+                    expect(spreadsheet.sheets[0].rows[4].cells[7].chart.length).toBe(0);
+                    helper.invoke('hideRow', [0, 1, false]);
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].rows[4].cells[7].chart.length).toBe(1);
+                        expect(spreadsheet.sheets[0].rows[6].cells[7].chart.length).toBe(0);
+                        helper.invoke('hideColumn', [2, 2]);
+                        setTimeout(() => {
+                            expect(spreadsheet.sheets[0].rows[4].cells[8].chart.length).toBe(1);
+                            expect(spreadsheet.sheets[0].rows[4].cells[7].chart.length).toBe(0);
+                            helper.invoke('hideColumn', [2, 2, false]);
+                            setTimeout(() => {
+                                expect(spreadsheet.sheets[0].rows[4].cells[7].chart.length).toBe(1);
+                                expect(spreadsheet.sheets[0].rows[4].cells[8].chart.length).toBe(0);
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
+    });
 });

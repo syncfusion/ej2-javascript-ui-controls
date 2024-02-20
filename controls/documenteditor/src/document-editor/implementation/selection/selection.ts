@@ -4475,7 +4475,7 @@ export class Selection {
      * @private
      * @returns {ParagraphWidget}
      */
-    public getPreviousParagraphBlock(block: BlockWidget): ParagraphWidget {
+    public getPreviousParagraphBlock(block: BlockWidget, isAutoList?: boolean): ParagraphWidget {
         if (block.previousRenderedWidget instanceof ParagraphWidget) {
             return block.previousRenderedWidget as ParagraphWidget;
         } else if (block.previousRenderedWidget instanceof TableWidget) {
@@ -4485,7 +4485,7 @@ export class Selection {
             return this.getPreviousParagraphCell((block.containerWidget)) as ParagraphWidget;
         } else if (block.containerWidget instanceof BodyWidget) {
             return this.getPreviousParagraph(block.containerWidget);
-        } else if (block.containerWidget instanceof HeaderFooterWidget && this.isMoveDownOrMoveUp) {
+        } else if (block.containerWidget instanceof HeaderFooterWidget && this.isMoveDownOrMoveUp && !isAutoList) {
             return this.getLastBlockInPreviousHeaderFooter(block);
         }
         return undefined;

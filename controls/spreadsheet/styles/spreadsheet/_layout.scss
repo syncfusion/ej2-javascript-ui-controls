@@ -638,7 +638,16 @@
           font-size: $header-cell-font-size;
           font-weight: $header-cell-font-weight;
           letter-spacing: 0;
+          position: relative;
           text-align: center;
+          white-space: pre;
+
+          & .e-filter-btn {
+            bottom: 5px;
+            margin-right: 0;
+            position: absolute;
+            right: 1px;
+          }
         }
       }
     }

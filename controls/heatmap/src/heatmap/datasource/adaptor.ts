@@ -405,12 +405,22 @@ export class Adaptor {
         tempSplitDataCollection: any, adaptordata: DataModel, labels: (string | number | Date)[],
         tempSplitData: string[], valueType: string): number | string {
         let value: number | string = -1;
+        const option: DateFormatOptions = {
+            skeleton: 'full',
+            type: 'dateTime'
+        };
+        const dateParser: Function = this.heatMap.intl.getDateParser(option);
+        const dateFormatter: Function = this.heatMap.intl.getDateFormat(option);
         this.tempSplitDataCollection = tempSplitDataCollection;
         for (let splitIndex: number = 0; splitIndex < tempSplitData.length; splitIndex++) {
             value = !isNullOrUndefined(labels) ? (!(valueType === 'DateTime') ?
-                labels.indexOf(this.tempSplitDataCollection[tempSplitData[splitIndex as number]]) :
+                labels.indexOf(this.tempSplitDataCollection[tempSplitData[splitIndex as number]]) : 
+                (typeof this.tempSplitDataCollection[tempSplitData[splitIndex as number]] === 'string' ? 
+                labels.map(Number).indexOf(Date.parse(dateParser(dateFormatter(new Date(
+                    DataUtil.parse.parseJson({ val: this.tempSplitDataCollection[tempSplitData[splitIndex as number]] }).val
+                ))))) :
                 // eslint-disable-next-line max-len
-                labels.map(Number).indexOf(+new Date(this.tempSplitDataCollection[tempSplitData[splitIndex as number]]).setHours(0, 0, 0, 0))) : null;
+                labels.map(Number).indexOf(+new Date(this.tempSplitDataCollection[tempSplitData[splitIndex as number]]).setHours(0, 0, 0, 0)))) : null;
             if (!isNullOrUndefined(this.tempSplitDataCollection)) {
                 this.tempSplitDataCollection = value !== -1 && !isNullOrUndefined(labels) ?
                     this.tempSplitDataCollection : this.tempSplitDataCollection[tempSplitData[splitIndex as number]];

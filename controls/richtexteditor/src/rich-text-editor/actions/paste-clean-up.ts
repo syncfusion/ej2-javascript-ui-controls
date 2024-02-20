@@ -5,7 +5,7 @@ import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend, addClass, removeClass } from '@syncfusion/ej2-base';
-import { getUniqueID, Browser } from '@syncfusion/ej2-base';
+import { getUniqueID, Browser, closest} from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
 import { CLS_RTE_IMAGE, CLS_IMGINLINE, CLS_IMGBREAK } from '../base/classes';
@@ -67,6 +67,7 @@ export class PasteCleanup {
         this.parent.on(events.pasteClean, this.pasteClean, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.docClick, this.docClick, this);
     }
 
     private destroy(): void {
@@ -79,6 +80,7 @@ export class PasteCleanup {
         this.parent.off(events.pasteClean, this.pasteClean);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
+        this.parent.off(events.docClick, this.docClick);
     }
 
     private pasteClean(e?: NotifyArgs): void {
@@ -153,6 +155,12 @@ export class PasteCleanup {
             this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
             const tempDivElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
             tempDivElem.innerHTML = value;
+            const unsupportedImg: NodeListOf<HTMLImageElement> = tempDivElem.querySelectorAll('.e-rte-image-unsupported');
+            for (let index: number = 0; index < unsupportedImg.length; index++) {
+                unsupportedImg[index as number].setAttribute('alt', this.i10n.getConstant('unsupportedImage'));
+                unsupportedImg[index as number].classList.remove('e-rte-image-unsupported');
+            }
+            value = tempDivElem.innerHTML;
             const isValueNotEmpty: boolean = tempDivElem.textContent !== '' || !isNOU(tempDivElem.querySelector('img')) ||
             !isNOU(tempDivElem.querySelector('table'));
             this.parent.notify(events.cleanupResizeElements, {
@@ -578,7 +586,7 @@ export class PasteCleanup {
             width: '300px',
             height: '265px',
             cssClass: CLS_RTE_DIALOG_MIN_HEIGHT,
-            isModal: true,
+            isModal: (Browser.isDevice as boolean),
             visible: false
         };
         this.dialogObj = this.dialogRenderObj.render(dialogModel);
@@ -633,11 +641,21 @@ export class PasteCleanup {
     }
 
     private destroyDialog(rteDialogWrapper: HTMLElement): void {
-        const rteDialogContainer: HTMLElement = this.parent.element.querySelector('.e-dlg-container');
+        const rteDialogContainer: HTMLElement = this.parent.element.querySelector('.e-rte-dialog-minheight');
         detach(rteDialogContainer);
         const rteDialogWrapperChildLength: number = rteDialogWrapper.children.length;
         for (let i: number = 0; i < rteDialogWrapperChildLength; i++) {
             detach(rteDialogWrapper.children[0]);
+        }
+    }
+
+    private docClick(e: { [key: string]: object }): void {
+        const target: HTMLElement = <HTMLElement>(e.args as MouseEvent).target;
+        if (target && target.classList && ((this.dialogObj && !closest(target, '[id=' + "'" + this.dialogObj.element.id + "'" + ']')))
+            && (!target.classList.contains('e-toolbar-item'))) {
+            if (this.dialogObj) {
+                this.dialogObj.hide();
+            }
         }
     }
 
@@ -721,7 +739,8 @@ export class PasteCleanup {
                 (returnArgs: IHtmlFormatterCallBack) => {
                     extend(args, { elements: returnArgs.elements, imageElements: returnArgs.imgElem }, true);
                     this.parent.formatter.onSuccess(this.parent, args);
-                    if (!isNOU(returnArgs.elements) && !isNOU(returnArgs.imgElem)) {
+                    if (!isNOU(returnArgs.elements) && !isNOU(returnArgs.imgElem) &&
+                    (returnArgs.imgElem as Element[]).length > 0) {
                         const pasteContent: Element[] = returnArgs.elements as Element[];
                         const imageContent: Element[] = returnArgs.imgElem as Element[];
                         const lastElementChild: Element | null = this.findLastElement(pasteContent[pasteContent.length - 1]);
@@ -788,6 +807,7 @@ export class PasteCleanup {
     }
 
     private addTableClass(element: HTMLElement, source?: string): HTMLElement {
+        source = isNOU(source) ? '' : source;
         const tableElement : NodeListOf<HTMLElement> = element.querySelectorAll('table');
         for (let i: number = 0; i < tableElement.length; i++) {
             if (!tableElement[i as number].classList.contains('e-rte-table') && (source === 'html' || source === '')){

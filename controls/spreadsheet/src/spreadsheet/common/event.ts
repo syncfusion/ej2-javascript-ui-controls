@@ -258,6 +258,8 @@ export const deleteChart: string = 'deleteChart';
 /** @hidden */
 export const refreshChartCellObj: string = 'refreshChartCellObj';
 /** @hidden */
+export const refreshChartCellModel: string = 'refreshChartCellModel';
+/** @hidden */
 export const refreshImagePosition: string = 'refreshImagePosition';
 /** @hidden */
 export const updateTableWidth: string = 'updateTableWidth';

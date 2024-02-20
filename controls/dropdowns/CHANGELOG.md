@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 24.2.7 (2024-02-20)
+
+### Mention
+
+#### Bug Fixes
+
+-`#I556815`- Fixed an issue where console error that occurred when using `iframe` along with mention.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I553564` - Fixed an issue where the Change Event was triggering multiple times when unCheck all items.
+
 ## 24.2.6 (2024-02-15)
 
 ### ListBox

@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 24.2.6 (2024-02-15)
+## 24.2.7 (2024-02-20)
+
+### ProgressButton
+
+- `#I554000` - Console error is thrown when clicking the progress button  has been resolved.
+
+## 24.2.5 (2024-02-13)
 
 ### SplitButton
 

@@ -120,10 +120,10 @@ export class HiloOpenCloseSeries extends ColumnBase {
 
             //region opentick
             direction += ('M' + ' ' + (rect.x) + ' ' + (open.y) + ' ' +
-                'L' + ' ' + (rect.x + rect.width / 2) + ' ' + (open.y) + ' ');
+                'L' + ' ' + (rect.x + rect.width / 2 + argsData.border.width / 2) + ' ' + (open.y) + ' ');
 
             //region closetick
-            direction += ('M' + ' ' + (rect.x + rect.width / 2) + ' ' + (close.y) + ' ' +
+            direction += ('M' + ' ' + (rect.x + rect.width / 2 - argsData.border.width / 2) + ' ' + (close.y) + ' ' +
                 'L' + ' ' + (rect.x + rect.width) + ' ' + (close.y) + ' ');
         }
 

@@ -246,12 +246,17 @@ export class InsertHtml {
                 if (isSingleNode) {
                     preNode.parentNode.replaceChild(fragment, preNode);
                 } else {
+                    const startContainerParent: Node = range.startContainer.parentNode;
+                    // Get the index of the start container among its siblings
+                    const startIndex: number = Array.prototype.indexOf.call(startContainerParent.childNodes, range.startContainer);
                     range.deleteContents();
+                    range.setStart(startContainerParent, startIndex);
+                    range.setEnd(startContainerParent, startIndex);
                     if (!isNOU(lasNode)) {
                         detach(lasNode);
                     }
                     // eslint-disable-next-line
-                    !isNOU(sibNode) ? sibNode.parentNode.appendChild(fragment) : editNode.appendChild(fragment);
+                    !isNOU(sibNode) ? (sibNode.parentNode === editNode ? sibNode.appendChild(fragment) : sibNode.parentNode.appendChild(fragment)) : range.insertNode(fragment);
                 }
             } else {
                 const tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
@@ -459,7 +464,15 @@ export class InsertHtml {
 
     private static imageFocus(node: Node, nodeSelection: NodeSelection, docElement: Document): void {
         const focusNode: Node = document.createTextNode(' ');
-        node.parentNode.insertBefore(focusNode, node.nextSibling);
+        if (node.parentNode && node.parentNode.nodeName === 'A') {
+            const anchorTag: Node = node.parentNode;
+            const parentNode: Node = anchorTag.parentNode;
+            parentNode.insertBefore(focusNode, anchorTag.nextSibling);
+            parentNode.insertBefore(node, focusNode);
+        }
+        else {
+            node.parentNode.insertBefore(focusNode, node.nextSibling);
+        }
         nodeSelection.setSelectionText(docElement, node.nextSibling, node.nextSibling, 0, 0);
     }
 

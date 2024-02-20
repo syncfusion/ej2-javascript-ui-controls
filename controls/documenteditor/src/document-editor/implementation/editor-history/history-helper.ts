@@ -95,20 +95,22 @@ export class ModifiedParagraphFormat {
 export class RowHistoryFormat {
     public startingPoint: Point;
     public rowFormat: WRowFormat;
-
+    public tableHierarchicalIndex: string;
     public rowHeightType: HeightType;
     public displacement: number;
-    public constructor(startingPoint: Point, rowFormat: WRowFormat) {
+    public constructor(table: TableWidget, startingPoint: Point, rowFormat: WRowFormat, owner: DocumentEditor) {
         this.startingPoint = startingPoint;
         this.rowFormat = rowFormat;
         this.rowHeightType = rowFormat.heightType;
+        this.tableHierarchicalIndex = owner.selection.getHierarchicalIndex(table, '0');
     }
-    public revertChanges(isRedo: boolean, owner: DocumentEditor): void {
+    public revertChanges(isRedo: boolean, owner: DocumentEditor, table: TableWidget): void {
         //backup current format values.
         const currentRowHeightType: HeightType = this.rowFormat.heightType;
         //Restore old values.
-        owner.editorModule.tableResize.updateRowHeight(this.rowFormat.ownerBase, isRedo ? this.displacement : (-this.displacement));
-        owner.documentHelper.layout.reLayoutTable(this.rowFormat.ownerBase.ownerTable);
+        let row: TableRowWidget = table.childWidgets[this.rowFormat.ownerBase.index] as TableRowWidget;
+        owner.editorModule.tableResize.updateRowHeight(row, isRedo ? this.displacement : (-this.displacement));
+        owner.documentHelper.layout.reLayoutTable(table);
         if (this.rowFormat.heightType !== this.rowHeightType) {
             this.rowFormat.heightType = this.rowHeightType;
         }

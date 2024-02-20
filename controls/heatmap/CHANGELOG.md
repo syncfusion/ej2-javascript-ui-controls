@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.7 (2024-02-20)
+
+### HeatMap
+
+#### Bug fixes
+
+- `#I549536` - The cell value will now be properly mapped for the data source representing minutes or hours in a day in the HeatMap.
+
 ## 24.2.6 (2024-02-15)
 
 ### HeatMap

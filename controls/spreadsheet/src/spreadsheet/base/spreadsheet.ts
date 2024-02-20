@@ -1064,7 +1064,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {string[]} - To Find All the Match values Address within Sheet or Workbook.
      */
     public findAll(value: string, mode?: string, isCSen?: boolean, isEMatch?: boolean, sheetIndex?: number): string[] {
-        mode = mode ? mode : 'Sheet'; sheetIndex = sheetIndex ? sheetIndex : this.activeSheetIndex;
+        mode = mode ? mode : 'Sheet'; sheetIndex = sheetIndex < this.sheets.length ? sheetIndex : this.activeSheetIndex;
         isCSen = isCSen ? isCSen : false; isEMatch = isEMatch ? isEMatch : false;
         const findCollection: string[] = [];
         const findAllArguments: FindAllArgs = {

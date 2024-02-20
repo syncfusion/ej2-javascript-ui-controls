@@ -1,8 +1,8 @@
 import { Spreadsheet } from '../base/index';
-import { spreadsheetDestroyed, IRowRenderer, HideShowEventArgs, ICellRenderer, CellRenderArgs } from '../common/index';
+import { spreadsheetDestroyed, IRowRenderer, HideShowEventArgs, ICellRenderer, CellRenderArgs, getChartsIndexes, refreshChartCellModel } from '../common/index';
 import { autoFit, virtualContentLoaded, completeAction, focus } from '../common/index';
 import { hiddenMerge, updateTableWidth, updateTranslate } from '../common/index';
-import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell, getSheet, ColumnModel, RowModel, getColumn, getRow } from '../../workbook/index';
+import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell, getSheet, ColumnModel, RowModel, getColumn, getRow, ChartModel } from '../../workbook/index';
 import { beginAction, getCellIndexes, applyCellFormat, CellFormatArgs, CellModel, MergeArgs, refreshChart } from '../../workbook/index';
 import { activeCellMergedRange, setMerge, ExtendedRowModel, getRowHeight, getRangeIndexes, hideShow } from '../../workbook/index';
 import { ActionEventArgs, skipHiddenIdx } from '../../workbook/index';
@@ -112,6 +112,8 @@ export class ShowHide {
         if (args.hide) {
             let content: HTMLTableElement; let rowHdr: HTMLTableElement; let row: HTMLTableRowElement;
             const updateBtmIdx: boolean = isFinite && args.endIndex === skipHiddenIdx(sheet, sheet.rowCount - 1, false);
+            let prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = [];
+            let currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = [];
             for (let i: number = args.startIndex; i <= args.endIndex; i++) {
                 if (isHiddenRow(sheet, i)) { continue; }
                 if (idx === undefined) {
@@ -126,7 +128,9 @@ export class ShowHide {
                 }
                 model = { hidden: true };
                 if (args.isFiltering) { model.isFiltered = true; }
+                if (!args.isFiltering) { prevChartIndexes = getChartsIndexes(this.parent); }
                 setRow(sheet, i, model);
+                if (!args.isFiltering) { currentChartIndexes = getChartsIndexes(this.parent); }
                 if (sheetIndex !== this.parent.activeSheetIndex) {
                     continue;
                 }
@@ -134,6 +138,7 @@ export class ShowHide {
                     height += getRowHeight(sheet, i, true, true);
                 }
                 this.refreshChart(i, 'rows');
+                if (!args.isFiltering) { this.refreshChartCellModel(prevChartIndexes, currentChartIndexes); }
                 row = content && content.rows[idx as number];
                 if (row) {
                     if (!merge) {
@@ -287,6 +292,7 @@ export class ShowHide {
                     }
                 }
             }
+            let prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
             for (let i: number = args.startIndex, len: number = args.endIndex; i <= len; i++) {
                 if (!isHiddenRow(sheet, i)) {
                     if (args.startIndex === args.endIndex) {
@@ -362,6 +368,8 @@ export class ShowHide {
                     }
                 }
             }
+            let currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
+            this.refreshChartCellModel(prevChartIndexes, currentChartIndexes);
             if (idx === undefined) {
                 return;
             }
@@ -463,8 +471,11 @@ export class ShowHide {
         let scrollable: boolean;
         for (let i: number = args.startIndex; i <= args.endIndex; i++) {
             if (args.hide ? isHiddenCol(sheet, i) : !isHiddenCol(sheet, i)) { continue; }
+            let prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
             setColumn(sheet, i, { hidden: args.hide });
+            let currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
             this.refreshChart(i, 'columns');
+            this.refreshChartCellModel(prevChartIndexes, currentChartIndexes);
             if (this.parent.scrollSettings.enableVirtualization && !args.freezePane && (i < viewportLeftIdx ||
                 i > this.parent.viewport.rightIndex)) {
                 if (i < viewportLeftIdx) {
@@ -782,6 +793,10 @@ export class ShowHide {
     private refreshChart(index: number, showHide: string): void {
         this.parent.notify(refreshChart, { rIdx: index, showHide: showHide });
     }
+    private refreshChartCellModel(prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[],
+        currentChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[]): void {
+        this.parent.notify(refreshChartCellModel, { prevChartIndexes, currentChartIndexes });
+    } 
     private addEventListener(): void {
         this.parent.on(hideShow, this.hideShow, this);
         this.parent.on(spreadsheetDestroyed, this.destroy, this);

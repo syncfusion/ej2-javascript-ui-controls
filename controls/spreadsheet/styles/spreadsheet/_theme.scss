@@ -25,6 +25,10 @@
       }
     }
 
+    & .e-ftrchk.e-chkfocus {
+      background-color: $filter-list-hover-bg-color;
+    }
+
     & .e-spreadsheet-function-dlg.e-dialog {
       & .e-dlg-content {
         & .e-category-content {

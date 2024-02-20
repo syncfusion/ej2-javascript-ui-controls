@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 24.2.7 (2024-02-20)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I549266` - The Hilo open-close chart data points shape is now rendering properly.
+
+### StockChart
+
+#### Bug Fixes
+
+- `#I554213` - The dropdown font style has now been changed according to the selected theme.
+
 ## 24.2.5 (2024-02-13)
 
 ### StockChart

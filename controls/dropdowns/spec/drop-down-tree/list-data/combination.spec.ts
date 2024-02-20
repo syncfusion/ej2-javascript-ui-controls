@@ -74,7 +74,7 @@ describe('DropDown Tree control List datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle[0].querySelector('.e-frame').dispatchEvent(e);
             var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -108,7 +108,7 @@ describe('DropDown Tree control List datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle[0].querySelector('.e-frame').dispatchEvent(e);
             var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -153,7 +153,7 @@ describe('DropDown Tree control List datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle[0].querySelector('.e-frame').dispatchEvent(e);
             var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -221,7 +221,7 @@ describe('DropDown Tree control List datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle[0].querySelector('.e-frame').dispatchEvent(e);
             var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -287,7 +287,7 @@ describe('DropDown Tree control List datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle[0].querySelector('.e-frame').dispatchEvent(e);
             var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -364,7 +364,7 @@ describe('DropDown Tree control List datasource', () => {
             ele.dispatchEvent(e);
             var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
-            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle[2].querySelector('.e-frame').dispatchEvent(e);
             var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
@@ -412,7 +412,7 @@ describe('DropDown Tree control List datasource', () => {
             }, '#ddtree');
             ddtreeObj.selectAll(true);
             ddtreeObj.showPopup();
-            expect(ddtreeObj.popupEle.querySelectorAll('.e-selectall-parent .e-checkbox-wrapper[aria-checked=true]').length === 1).toBe(true);
+            expect(ddtreeObj.popupEle.querySelectorAll('.e-selectall-parent[aria-checked=true]').length === 1).toBe(true);
             ddtreeObj.hidePopup();
             ddtreeObj.onFocusOut();
         });

@@ -1243,7 +1243,12 @@ export class TaskProcessor extends DateProcessor {
                     return ((this.getTimeDifference(sDate, eDate, true) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
                 }
                 else {
-                    return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * hour)) * this.parent.perDayWidth);
+                    if (ganttData.durationUnit === "day" && ganttData.duration < 1 && isNullOrUndefined(this.parent.taskFields.duration)) {
+                        return (ganttData.duration * this.parent.perDayWidth);
+                    }
+                    else {
+                        return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * hour)) * this.parent.perDayWidth);
+                    }
                 }
             }
         }
@@ -1254,6 +1259,7 @@ export class TaskProcessor extends DateProcessor {
                 }
                 if (this.getSecondsInDecimal(eDate) === this.parent.defaultEndTime) {
                     eDate.setHours(24);
+                    eDate.setHours(0, 0, 0, 0);
                 }
                 if (this.getSecondsInDecimal(eDate) === this.parent.defaultStartTime) {
                     eDate.setHours(0, 0, 0, 0);

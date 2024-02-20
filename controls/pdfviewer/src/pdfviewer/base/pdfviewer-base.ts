@@ -645,6 +645,11 @@ export class PdfViewerBase {
      * @private
      */
     // eslint-disable-next-line
+    public requestCollection: any[] = [];
+    /**
+     * @private
+     */
+    // eslint-disable-next-line
     public nonFillableFields: any = {};
     /**
      * @private
@@ -2210,6 +2215,13 @@ export class PdfViewerBase {
             // eslint-disable-next-line
             proxy.textLayer.characterBound = new Array();
             proxy.loadRequestHandler && proxy.loadRequestHandler.clear();
+            if (proxy.requestCollection) {
+                for (let i: number = 0; i < proxy.requestCollection.length; i++) {
+                    let request = proxy.requestCollection[parseInt(i.toString(), 10)];
+                    request.clear();
+                }
+                proxy.requestCollection = [];
+            }
             proxy.virtualLoadRequestHandler && proxy.virtualLoadRequestHandler.clear();
             proxy.pageRequestHandler && proxy.pageRequestHandler.clear();
             proxy.dowonloadRequestHandler && proxy.dowonloadRequestHandler.clear();
@@ -7280,6 +7292,7 @@ export class PdfViewerBase {
                                 proxy.pageRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderPages;
                                 proxy.pageRequestHandler.responseType = 'json';
                                 if(!isNullOrUndefined(proxy.hashId)){
+                                    this.requestCollection.push(this.pageRequestHandler);
                                     this.clientSideRendering ? '' : proxy.pageRequestHandler.send(jsonObject);
                                 }
                                 proxy.requestLists.push(proxy.documentId + '_' + pageIndex + '_' + x + '_' + y + '_' + zoomFactor);

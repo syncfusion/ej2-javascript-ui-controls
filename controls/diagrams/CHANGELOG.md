@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 24.2.6 (2024-02-15)
+## 24.2.7 (2024-02-20)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I549018` - Now, the bridging is not enabled while connector visibility is false.
+- `#I542327` - Now, the sendBackward and sendForward commands works fine.
+- `#I527474` - Now, drawing connector from source port to target port with port id underscore works fine.
+
+## 24.2.5 (2024-02-13)
 
 ### Diagram
 

@@ -277,7 +277,7 @@ export class DragAndDrop extends ActionBase {
         if (this.parent.quickPopup) {
             this.parent.quickPopup.quickPopupHide(true);
         }
-        if ((!isNullOrUndefined(e.target)) && (e.target as HTMLElement).classList &&(e.target as HTMLElement).classList.contains(cls.DISABLE_DATES)) {
+        if ((!isNullOrUndefined(e.target)) && (e.target as HTMLElement).classList && (e.target as HTMLElement).classList.contains(cls.DISABLE_DATES)) {
             return;
         }
         const eventObj: Record<string, any> = extend({}, this.actionObj.event, null, true) as Record<string, any>;
@@ -425,7 +425,7 @@ export class DragAndDrop extends ActionBase {
             this.timelineEventModule.cellWidth = this.actionObj.cellWidth;
             this.timelineEventModule.getSlotDates();
             this.actionObj.cellWidth = this.isHeaderRows ? this.timelineEventModule.cellWidth :
-                this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS).getBoundingClientRect().width;
+                util.getElementWidth(this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS));
             this.calculateTimelineTime(e);
         } else {
             if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineYear') {
@@ -1237,7 +1237,7 @@ export class DragAndDrop extends ActionBase {
             ~~(dragArea.querySelector('table').offsetHeight / trCollection.length) : this.actionObj.cellHeight;
         let rowIndex: number = Math.floor(Math.floor((this.actionObj.Y +
             (dragArea.scrollTop - translateY - (window.scrollY || window.pageYOffset))) -
-            dragArea.getBoundingClientRect().top) / rowHeight);
+            util.getElementTop(dragArea)) / rowHeight);
         rowIndex = (rowIndex < 0) ? 0 : (rowIndex > trCollection.length - 1) ? trCollection.length - 1 : rowIndex;
         this.actionObj.index = rowIndex;
         const eventContainer: Element = this.parent.element.querySelectorAll('.e-appointment-container:not(.e-hidden)').item(rowIndex);
@@ -1253,7 +1253,7 @@ export class DragAndDrop extends ActionBase {
         if (!isNullOrUndefined(this.parent.eventDragArea)) {
             return;
         }
-        let top: number = (<HTMLElement>trCollection[parseInt(rowIndex.toString(), 10)]).getBoundingClientRect().height * rowIndex;
+        let top: number = util.getElementHeight((<HTMLElement>trCollection[parseInt(rowIndex.toString(), 10)])) * rowIndex;
         if (this.parent.rowAutoHeight) {
             const cursorElement: HTMLElement = this.getCursorElement(e);
             if (cursorElement) {

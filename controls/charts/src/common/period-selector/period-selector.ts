@@ -217,7 +217,7 @@ export class PeriodSelector {
                         let element: HTMLElement = createElement('div', {
                             id: dateRangeId,
                             className: 'e-btn e-dropdown-btn e-flat',
-                            styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
+                            styles: 'font-size: 14px; font-weight: 500; text-transform: none '
                         });
                         element.innerText = selctorArgs.content;
                         datePickerElement.insertAdjacentElement('afterend', element);

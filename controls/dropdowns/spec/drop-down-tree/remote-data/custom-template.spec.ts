@@ -89,7 +89,7 @@ xdescribe('DropDownTree control remote datasource Custom Mode testing -', () => 
             var chips = chipElement.querySelectorAll('.e-chips');
             expect(chips.length).toBe(1);
             expect(chips[0].innerText).toBe("1 item(s) selected");
-            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             checkEle[1].querySelector('.e-frame').dispatchEvent(e);
             var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });

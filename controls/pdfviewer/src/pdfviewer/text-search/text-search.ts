@@ -954,7 +954,7 @@ export class TextSearch {
                     }
                 } else {
                     if (characterBounds[count - 1]) {
-                        width = (characterBounds[count - 1].X - left);
+                        width = (characterBounds[count - 1].X - left) + characterBounds[count - 1].Width;
                     }
                 }
             }

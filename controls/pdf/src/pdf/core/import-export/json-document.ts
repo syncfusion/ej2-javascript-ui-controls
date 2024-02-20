@@ -466,6 +466,13 @@ export class _JsonDocument extends _ExportHelper {
         case 'ca':
             this._writeAttributeString(key.toLowerCase(), primitive);
             break;
+        case 'CustomData':
+            if (primitive && primitive.length > 2 && primitive.startsWith('{') && primitive.endsWith('}')) {
+                this._table.set(key, primitive);
+            } else {
+                this._writeAttributeString(key, primitive);
+            }
+            break;
         default:
             this._writeAttributeString(key, primitive);
             break;
@@ -1095,7 +1102,7 @@ export class _JsonDocument extends _ExportHelper {
                 }
                 break;
             case 'customdata':
-                this._addString(dictionary, 'CustomData', value);
+                this._addString(dictionary, 'CustomData', typeof value === 'string' ? value : JSON.stringify(value));
                 break;
             case 'appearance':
                 this._addAppearanceData(dictionary, value);

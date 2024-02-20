@@ -33,7 +33,7 @@ export class TimelineEvent extends MonthEvent {
         this.eventContainers = [].slice.call(this.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
         const tr: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr'));
         this.dayLength = tr.length === 0 ? 0 : tr[0].children.length;
-        this.content = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
+        this.content = this.parent.element.querySelector('.' + cls.SCHEDULE_TABLE_CLASS + '.' + cls.CONTENT_TABLE_CLASS);
     }
 
     public getSlotDates(): void {
@@ -43,7 +43,7 @@ export class TimelineEvent extends MonthEvent {
             this.parent.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
             this.renderType = 'day';
             const workCell: HTMLTableCellElement = this.content.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLTableCellElement;
-            this.cellWidth = workCell.getBoundingClientRect().width / +(workCell.getAttribute('colspan') || 1);
+            this.cellWidth = util.getElementWidth(workCell) / +(workCell.getAttribute('colspan') || 1);
             this.slotsPerDay = 1;
         } else {
             this.slotsPerDay = (this.dayLength / this.dateRender.length);
@@ -195,14 +195,14 @@ export class TimelineEvent extends MonthEvent {
                 this.wireAppointmentEvents(appointmentElement, event);
                 if (this.parent.rowAutoHeight) {
                     const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-                    const conWidth: number = conWrap.getBoundingClientRect().width;
+                    const conWidth: number = util.getElementWidth(conWrap);
                     const isWithoutScroll: boolean = conWrap.offsetHeight === conWrap.clientHeight &&
                         conWrap.offsetWidth === conWrap.clientWidth;
                     this.renderEventElement(event, appointmentElement, cellTd);
                     const firstChild: HTMLElement = this.getFirstChild(resIndex);
                     this.updateCellHeight(firstChild, height);
                     if (isWithoutScroll &&
-                        (conWrap.offsetWidth > conWrap.clientWidth || conWidth !== conWrap.getBoundingClientRect().width)) {
+                        (conWrap.offsetWidth > conWrap.clientWidth || conWidth !== util.getElementWidth(conWrap))) {
                         this.adjustAppointments(conWidth);
                     }
                 } else {
@@ -325,7 +325,7 @@ export class TimelineEvent extends MonthEvent {
 
     private adjustAppointments(conWidth: number): void {
         const tr: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr');
-        const actualCellWidth: number = this.workCells[0].getBoundingClientRect().width;
+        const actualCellWidth: number = util.getElementWidth(this.workCells[0]);
         this.cellWidth = actualCellWidth / +(this.workCells[0].getAttribute('colspan') || 1);
         const currentPercentage: number = (actualCellWidth * tr.children.length) / (conWidth / 100);
         const apps: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));

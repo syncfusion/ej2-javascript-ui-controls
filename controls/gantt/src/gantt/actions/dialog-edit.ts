@@ -2656,7 +2656,7 @@ export class DialogEdit {
                         tasksData[fieldName as string] = false;
                     }
                 } else {
-                    if (fieldName === "Duration") {
+                    if (fieldName === this.parent.taskFields.duration) {
                         let numericValue: number = parseFloat(String(controlObj.value));;
                         tasksData[fieldName as string] = numericValue
                     }

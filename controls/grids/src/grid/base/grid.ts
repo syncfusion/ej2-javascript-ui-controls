@@ -2905,6 +2905,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             GroupCaption: ' is groupcaption cell',
             CheckBoxLabel: 'checkbox',
             SelectAllCheckbox: 'Select all checkbox',
+            SelectRow: 'Select row',
             autoFitAll: 'Autofit all columns',
             autoFit: 'Autofit this column',
             AutoFitAll: 'Autofit all columns',
@@ -3315,6 +3316,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
             maskTable.appendChild(maskTFoot);
         }
+        if (header && this.isFrozenGrid() && !this.enableColumnVirtualization) {
+            (this.getHeaderContent().querySelector('.' + literals.headerContent) as HTMLElement).style.position = 'relative';
+        }
         parentElement.insertBefore(maskTable, parentElement.firstChild);
         if (content && !(this.enableVirtualization && axisDirection)) {
             let minScrollTop: number = gridContentScrollHeight - maskTable.getBoundingClientRect().height;
@@ -3456,6 +3460,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (!isNullOrUndefined(this.contentModule)) {
             const gridContent: Element = this.getContent().firstChild as Element;
             EventHandler.remove(gridContent, 'scroll', this.translateMaskRow);
+        }
+        if (this.headerMaskTable && this.isFrozenGrid() && !this.enableColumnVirtualization) {
+            (this.getHeaderContent().querySelector('.' + literals.headerContent) as HTMLElement).style.position = '';
         }
         const maskTables: Element[] = [this.headerMaskTable,
             this.contentMaskTable, this.footerContentMaskTable];
@@ -7225,8 +7232,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 (ariaOwns)) !== (e.target as Element).getAttribute('aria-owns')))
             && !this.keyPress && this.isEdit && !Browser.isDevice) {
             if (this.editSettings.mode === 'Batch' && !((parentsUntil(relatedTarget, 'e-ddl') || parentsUntil(relatedTarget, 'e-ddt')) &&
-                parentsUntil(relatedTarget, 'e-input-group')) && (parentsUntil(relatedTarget, 'e-uploader')
-                || !(relatedTarget && isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group'))))) {
+                parentsUntil(relatedTarget, 'e-input-group') && parentsUntil(relatedTarget, 'e-grid'))
+                && (parentsUntil(relatedTarget, 'e-uploader') || !(relatedTarget
+                && isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group'))))) {
                 this.editModule.saveCell();
                 this.notify(events.editNextValCell, {});
             }

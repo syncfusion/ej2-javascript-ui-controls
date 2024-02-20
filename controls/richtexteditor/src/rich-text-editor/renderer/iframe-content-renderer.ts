@@ -31,6 +31,10 @@ const IFRAMEHEADER: string = `
                 .e-img-caption.e-caption-inline {display: inline-block;float: none;
                     margin: 5px auto;margin-left: 5px;margin-right: 5px;max-width: calc(100% - (2 * 5px));
                     position: relativetext-align: center;vertical-align: bottom;}
+                .e-rte-img-caption.e-imgcenter {display: contents; margin-left: auto; margin-right: auto;}
+                .e-rte-img-caption.e-imgright {display: contents; margin-left: auto; margin-right: 0;}
+                .e-rte-img-caption.e-imgleft {display: contents;margin-left: 0;margin-right: auto;}
+                .e-img-caption.e-rte-img-caption.e-imgbreak {display: contents;}
                 .e-img-inner {box-sizing: border-box;display: block;font-size: 16px;font-weight: initial;
                     margin: auto;opacity: .9;text-align: center;width: 100%;}
                 .e-img-wrap {display: inline-block;margin: auto;padding: 0;text-align: center;width: 100%;}

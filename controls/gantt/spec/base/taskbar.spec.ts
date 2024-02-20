@@ -1242,3 +1242,74 @@ describe('parent drag for custom task mode', () => {
         destroyGantt(ganttObj);
     });
 });
+describe('CR-869856: dayWorkingTime and TimeZone issue', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Project initiation',
+                    StartDate: new Date('02/04/2019 08:30:00'),
+                    EndDate: new Date('02/04/2019 15:00:00')
+                },
+                {
+                    TaskID: 2,
+                    TaskName: 'Project estimation',
+                    StartDate: new Date('02/04/2019 08:30:00'),
+                    EndDate: new Date('02/04/2019 17:30:00')
+                },
+                {
+                    TaskID: 3,
+                    TaskName: 'Project estimation2',
+                    StartDate: new Date('02/04/2019 08:00:00'),
+                    EndDate: new Date('02/04/2019 16:30:00')
+                }
+              ],
+              taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate'
+              },
+              dayWorkingTime: [
+                { from: 8.5, to: 13 },
+                { from: 14, to: 17.5 },
+              ],
+              timezone: "UTC",
+              timelineSettings: {
+                topTier: {
+                  unit: 'Week',
+                  format: 'MMM dd, y',
+                },
+                bottomTier: {
+                  unit: 'Day',
+                },
+              },
+              editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+              },
+              allowSelection: true,
+              gridLines: 'Both',
+              height: '450px',
+              highlightWeekends: true,
+              splitterSettings: {
+                columnIndex: 2,
+              },
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Checking Taskbar width timeZone API', () => {
+       expect(ganttObj.currentViewData[2].ganttProperties.width).toBe(28.875);
+       expect(ganttObj.currentViewData[1].ganttProperties.width).toBe(33);
+    });
+});

@@ -1190,6 +1190,42 @@ describe('Bold the content inside table in fire fox', () => {
     });
 });
 
+describe('862912 - Bold is not applied when using shortcut key (Ctrl+B)', () => {
+    let innervalue: string = `<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a id="firstLink" href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window">HTML markup</a> or <a href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window">markdown</a> of the content <a id="lastLink" href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window">HTML markup</a></p><p><b>Toolbar</b></p>`;
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let parentDiv: HTMLDivElement;
+
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+        parentDiv = document.getElementById('divElement') as HTMLDivElement;
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Bold is not applied when using shortcut key (Ctrl+B) at the end of the first link', () => {
+        let firstLink: Node = document.getElementById('firstLink');
+        domSelection.setSelectionText(document, firstLink.childNodes[0], firstLink.childNodes[0], 11, 11);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
+        expect(document.getElementById('firstLink').nextElementSibling.nodeName.toLowerCase()).toEqual('strong');
+    });
+    it('Bold is not applied when using shortcut key (Ctrl+B) at the end of the last link', () => {
+        let lastLink: Node = document.getElementById('lastLink');
+        domSelection.setSelectionText(document, lastLink.childNodes[0], lastLink.childNodes[0], 11, 11);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
+        expect(document.getElementById('lastLink').nextElementSibling.nodeName.toLowerCase()).toEqual('strong');
+    });
+    it('Bold is not applied when using shortcut key (Ctrl+B) at the start of the first link', () => {
+        let lastLink: Node = document.getElementById('lastLink');
+        domSelection.setSelectionText(document, lastLink.childNodes[0], lastLink.childNodes[0], 0, 0);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
+        expect(document.getElementById('lastLink').previousElementSibling.nodeName.toLowerCase()).toEqual('strong');
+    });
+});
+
 describe('EJ2-46060: bold remove testing', () => {    
     let innervalue: string = `<p><strong><br></strong></p>`;
     let domSelection: NodeSelection = new NodeSelection();
@@ -1535,5 +1571,47 @@ describe('Reverting font color to the list element.', () => {
         expect(liElementCollection[0].style.color).toEqual('rgb(255, 0, 0)');
         expect(liElementCollection[1].style.color).toEqual('rgb(255, 0, 0)');
         expect(liElementCollection[2].style.color).toEqual('rgb(255, 0, 0)');
+    });
+});
+
+describe('850066 - Font color does not applied not properly', () => {   
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    beforeEach(() => {
+        rteObj = renderRTE({
+            value: `<ol><li class="li1">FristLI<ol><li class="li2">SecondLI<ol><li class="li3">ThirdLI</li><li class="li4">FourthLI<ol><li class="li5">FIfthLI<ol><li class="li6">SixthLI</li></ol></li></ol></li></ol></li></ol></li></ol>`,
+            toolbarSettings: {
+                items: ['FontColor']
+            }
+        });
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    it('Test for font color for select all text node', () => {
+        const range: Range = document.createRange();
+        range.setStart(rteObj.element.querySelector('.li1').childNodes[0], 0);
+        range.setEnd(rteObj.element.querySelector('.li6').childNodes[0], 7);
+        domSelection.setRange(document, range);
+        // Apply font color
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(255, 0, 0)');
+        let fristLI: HTMLElement = rteObj.element.querySelector('.li1')
+        expect(fristLI.style.color === 'rgb(255, 0, 0)').toEqual(true);
+        let lastLI: HTMLElement = rteObj.element.querySelector('.li6')
+        expect(lastLI.style.color === 'rgb(255, 0, 0)').toEqual(true);
+    });
+    it('Test for font color for selected text node', () => {
+        const range: Range = document.createRange();
+        range.setStart(rteObj.element.querySelector('.li2').childNodes[0], 3);
+        range.setEnd(rteObj.element.querySelector('.li5').childNodes[0], 2);
+        domSelection.setRange(document, range);
+        // Apply font color
+        SelectionCommands.applyFormat(document, 'fontcolor', rteObj.element.querySelector('.e-content'), 'P', 'rgb(255, 0, 0)');
+        let fristLI: HTMLElement = rteObj.element.querySelector('.li1')
+        expect(fristLI.style.color === '').toEqual(true);
+        let thirdLI: HTMLElement = rteObj.element.querySelector('.li3')
+        expect(thirdLI.style.color === 'rgb(255, 0, 0)').toEqual(true);
+        let fourthLI: HTMLElement = rteObj.element.querySelector('.li4')
+        expect(fourthLI.style.color === 'rgb(255, 0, 0)').toEqual(true);
     });
 });

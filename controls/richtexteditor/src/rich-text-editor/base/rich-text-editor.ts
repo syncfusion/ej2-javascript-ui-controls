@@ -1950,6 +1950,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private keyUp(e: KeyboardEvent): void {
         if (this.editorMode === 'HTML') {
             const range: Range = this.getRange();
+            if (!isNOU(e) && !isNOU(e.code) && (e.code === 'Backspace' || e.code === 'Delete')) {
+                // To prevent the reformatting the content removed browser behavior.
+                const currentRange: Range = this.getRange();
+                const selection: Selection = this.iframeSettings.enable ? this.contentModule.getPanel().ownerDocument.getSelection() :
+                    this.contentModule.getDocument().getSelection();
+                if (selection.rangeCount > 0) {
+                    selection.removeAllRanges();
+                    selection.addRange(currentRange);
+                }
+            }
             if (Browser.userAgent.indexOf('Firefox') !== -1 && range.startContainer.nodeName === '#text' &&
                 range.startContainer.parentElement === this.inputElement && this.enterKey !== 'BR') {
                 const range: Range = this.getRange();

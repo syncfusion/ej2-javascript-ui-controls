@@ -72,7 +72,7 @@ xdescribe('filter remote data testing ', () => {
                 expect((ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame')[0].parentElement.parentElement as HTMLElement).innerText).toBe("Music");
                 expect((ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item .e-frame')[1].parentElement.parentElement as HTMLElement).innerText).toBe("Downloads");
                 let li: Element[] = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
-                let checkEle: Element = li[0].querySelector('.e-checkbox-wrapper');
+                let checkEle: Element = li[0];
                 let e: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 checkEle.querySelector('.e-frame').dispatchEvent(e);
                 e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });

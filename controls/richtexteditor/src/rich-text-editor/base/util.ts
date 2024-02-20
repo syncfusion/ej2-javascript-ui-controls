@@ -490,6 +490,9 @@ export function updateTextNode(value: string, rteObj?: IRichTextEditor): string 
         }
         const imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');
         for (let i: number = 0; i < imageElm.length; i++) {
+            if ((imageElm[i as number] as HTMLImageElement).classList.contains('e-rte-image-unsupported')) {
+                continue; // Should not add the class if the image is Broken.
+            }
             if (!imageElm[i as number].classList.contains(classes.CLS_RTE_IMAGE)) {
                 imageElm[i as number].classList.add(classes.CLS_RTE_IMAGE);
             }

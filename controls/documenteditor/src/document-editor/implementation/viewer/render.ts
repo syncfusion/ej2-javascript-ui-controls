@@ -1941,6 +1941,9 @@ export class Renderer {
 
 
     public renderWavyLine(elementBox: TextElementBox, left: number, top: number, underlineY: number, color: string, underline: Underline, baselineAlignment: BaselineAlignment, backgroundColor?: string): void {
+        if (this.isPrinting) {
+            return;
+        }
         if (elementBox.text.length > 1) {
             let renderedHeight: number = elementBox.height / (baselineAlignment === 'Normal' ? 1 : 1.5);
             let topMargin: number = elementBox.margin.top;

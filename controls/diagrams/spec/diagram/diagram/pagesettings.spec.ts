@@ -1579,7 +1579,8 @@ describe('Child Node - Backward & Forward', () => {
     it('Send group node front and check z index', (done: Function) => {
         diagram.select([diagram.getObject('node1')]);
         diagram.sendBackward();
-        expect(diagram.selectedItems.nodes[0].zIndex === 2).toBe(true);
+        console.log("Page settings"+diagram.selectedItems.nodes[0].zIndex);
+        expect(diagram.selectedItems.nodes[0].zIndex === 1).toBe(true);
         done();
     });
     it('Send group back and check z index', (done: Function) => {

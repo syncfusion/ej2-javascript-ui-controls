@@ -1410,8 +1410,9 @@ export function groupCaptionRowLeftRightPos(tr: Element, gObj: IGrid): void {
  * @hidden
  */
 export function ensureLastRow(row: Element, gridObj: IGrid): boolean {
-    const cntOffset: number = (gridObj.getContent().firstElementChild as HTMLElement).offsetHeight;
-    return row && row.getBoundingClientRect().top > cntOffset;
+    const content: HTMLElement = gridObj.getContent().firstElementChild as HTMLElement;
+    return row && (row.getBoundingClientRect().top - content.getBoundingClientRect().top +
+        gridObj.getRowHeight()) > content.offsetHeight;
 }
 
 /**

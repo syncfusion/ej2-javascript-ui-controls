@@ -1835,12 +1835,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (event.type === 'paste' && this.browserName !== 'msie' && this.browserName !== 'edge' && this.browserName !== 'safari') {
             this.element.files = event.clipboardData.files;
         }
-        if (item.length !== 1) {
+        if (item.length !== 1 && !this.multiple) {
             return;
         }
-        const pasteFile: DataTransferItem = [].slice.call(item)[0];
-        if ((pasteFile.kind === 'file') && pasteFile.type.match('^image/')) {
-            this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
+        for (let file:number = 0; file < item.length; file++){
+            const pasteFile: DataTransferItem = [].slice.call(item)[file as number];
+            if ((pasteFile.kind === 'file') || pasteFile.type.match('^image/')) {
+                this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
+            }
         }
     }
 
@@ -3092,6 +3094,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     /* istanbul ignore next */
                     (this.getLiElement(file)).classList.remove(RESTRICT_RETRY);
                 }
+            }
+            else if (!this.showFileList) {
+                this.checkActionComplete(true);
             }
         });
     }

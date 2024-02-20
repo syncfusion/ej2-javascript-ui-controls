@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 24.2.5 (2024-02-13)
+## 24.2.7 (2024-02-20)
 
-### SpeedDial
+### Button
 
 #### Bug Fixes
 
-- `FAB` and `SpeedDial` control `readme.md` file updated.
+- `#I551397` - The issue with "Tailwind theme when changing the primary text color in the button the text color is not changed" has been resolved.
 
 ## 24.2.3 (2024-01-31)
 

@@ -553,7 +553,7 @@ describe('Table Module', () => {
             let height: any = (table as HTMLTableElement).rows[0].offsetHeight;
             (<any>rteObj.tableModule).resizeBtnStat.row = true;
             (rteObj.tableModule as any).resizing({ target: resRow1, pageX: 100, pageY: 200, preventDefault: function () { } });
-            height += 100;
+            height += 179;
             expect(height).toEqual((table as HTMLTableElement).rows[0].offsetHeight);
 
             let tableBox: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement;

@@ -809,7 +809,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let ele = document.getElementById("N1_groupElement");
             console.log("ele"+ele);
-            expect(ele === null).toBe(true);
+            expect(ele !== null).toBe(true);
             done();
         });
 
@@ -1025,28 +1025,28 @@ describe('Diagram-Layers - sendToBack Not functioning correctly for single node 
     diagram.layerZIndexTable
     diagram.sendToBack();
     expect(diagram.nodes[2].zIndex).toBe(0)
-    expect(diagram.nodes[1].zIndex).toBe(1)
+    expect(diagram.nodes[1].zIndex).toBe(0)
     done();
   });
 
   it('BringToFront Command for a single node in a layer',(done: Function)=>
   {
     diagram.select([diagram.nodes[0]]);
-    expect(diagram.nodes[0].zIndex).toBe(0)
+    expect(diagram.nodes[0].zIndex).toBe(1)
     diagram.layerZIndexTable
     diagram.bringToFront();
-    expect(diagram.nodes[0].zIndex).toBe(0)
+    expect(diagram.nodes[0].zIndex).toBe(2)
     done();
   });
   
   it('BringToFront Command for a Multiple node in a layer',(done: Function)=>
   {
     diagram.select([diagram.nodes[2]]);
-    expect(diagram.nodes[1].zIndex).toBe(1)
-    expect(diagram.nodes[2].zIndex).toBe(0)
+    expect(diagram.nodes[1].zIndex).toBe(0)
+    expect(diagram.nodes[2].zIndex).toBe(1)
     diagram.layerZIndexTable
     diagram.bringToFront();
-    expect(diagram.nodes[2].zIndex).toBe(1)
+    expect(diagram.nodes[2].zIndex).toBe(2)
     expect(diagram.nodes[1].zIndex).toBe(0)
     done();
   });

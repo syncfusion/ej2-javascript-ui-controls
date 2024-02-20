@@ -549,7 +549,7 @@ export class TableCommand {
         const eleArray: HTMLElement[][] = elements;
         //eslint-disable-next-line
         if (min < (max = Math.min(max, eleArray[0].length - 1))) {
-            for (colIndex === min; colIndex <= max; colIndex++) {
+            for (colIndex = min; colIndex <= max; colIndex++) {
                 // eslint-disable-next-line
                 if (!(min < colIndex && eleArray[0][colIndex] === eleArray[0][colIndex - 1]) && 1 < (index =
                     Math.min(parseInt(eleArray[0][colIndex as number].getAttribute('colspan'), 10) || 1, max - min + 1)) &&

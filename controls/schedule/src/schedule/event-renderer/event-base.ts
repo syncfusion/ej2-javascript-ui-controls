@@ -1328,10 +1328,6 @@ export class EventBase {
         }
     }
 
-    public getCellWidth(element: HTMLElement): number {
-        return document.body.style.transform.includes('scale') ? parseFloat(window.getComputedStyle(element).width) : element.getBoundingClientRect().width;
-    }
-
     private unWireEvents(): void {
         const appElements: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
         for (const element of appElements) {
