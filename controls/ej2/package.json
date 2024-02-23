@@ -49,14 +49,13 @@
 		"@syncfusion/ej2-spreadsheet": "*",
 		"@syncfusion/ej2-svg-base": "*",
 		"@syncfusion/ej2-treegrid": "*",
-		"@syncfusion/ej2-treemap": "*",
+		"@syncfusion/ej2-treemap": "*"
+	},
+	"devDependencies": {
 		"@types/lodash": "4.14.159",
 		"@types/node": "18.11.11",
 		"sass": "1.51.0",
 		"tslib": "^1.8.0",
-		"typescript": "^3.8.2"
-	},
-	"devDependencies": {
 		"rollup": "^0.51.3",
 		"rollup-plugin-commonjs": "^8.2.6",
 		"rollup-plugin-node-resolve": "^3.0.0",
