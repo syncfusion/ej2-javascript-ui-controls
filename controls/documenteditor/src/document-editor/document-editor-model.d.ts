@@ -775,6 +775,13 @@ export interface ServerActionSettingsModel {
     spellCheck?: string;
 
     /**
+     * Specifies the spell check by page action of Document Editor.
+     *
+     * @default 'SpellCheckByPage'
+     */
+    spellCheckByPage?: string;
+
+    /**
      * Specifies the restrict editing encryption/decryption action of Document Editor.
      *
      * @default 'RestrictEditing'

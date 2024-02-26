@@ -844,6 +844,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.serverActionSettings.spellCheck) {
             this.documentEditor.serverActionSettings.spellCheck = HelperMethods.sanitizeString(this.serverActionSettings.spellCheck);
         }
+        if (this.serverActionSettings.spellCheckByPage) {
+            this.documentEditor.serverActionSettings.spellCheckByPage = HelperMethods.sanitizeString(this.serverActionSettings.spellCheckByPage);
+        }
         if (this.serverActionSettings.restrictEditing) {
             this.documentEditor.serverActionSettings.restrictEditing = HelperMethods.sanitizeString(this.serverActionSettings.restrictEditing);
         }

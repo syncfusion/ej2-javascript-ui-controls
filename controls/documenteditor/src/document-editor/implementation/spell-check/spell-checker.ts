@@ -950,8 +950,10 @@ export class SpellChecker {
             if (!isNullOrUndefined(this)) {
                 const httpRequest: XMLHttpRequest = new XMLHttpRequest();
 
-                let service: string = this.documentHelper.owner.serviceUrl + this.documentHelper.owner.serverActionSettings.spellCheck;
-                service = (isByPage) ? service + 'ByPage' : service;
+                let service: string = this.documentHelper.owner.serviceUrl;
+                service += (isByPage)
+                    ? this.documentHelper.owner.serverActionSettings.spellCheckByPage
+                    : this.documentHelper.owner.serverActionSettings.spellCheck;
                 httpRequest.open('POST', service, true);
                 httpRequest.setRequestHeader('Content-Type', 'application/json');
                 this.setCustomHeaders(httpRequest);

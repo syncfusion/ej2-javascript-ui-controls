@@ -838,7 +838,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Defines the settings of the DocumentEditor services
      */
-    @Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
+    @Property({ systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', spellCheckByPage: 'SpellCheckByPage', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
     public serverActionSettings: ServerActionSettingsModel;
     /**
      * Adds the custom headers to XMLHttpRequest.
