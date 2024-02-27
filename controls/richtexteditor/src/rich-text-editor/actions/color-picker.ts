@@ -192,6 +192,16 @@ export class ColorPickerInput {
         this.parent.on(events.destroyColorPicker, this.destroyColorPicker, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
+        this.parent.on(events.showColorPicker, this.showColorPicker, this);
+    }
+
+    private showColorPicker(e: { [key: string]: Object }) {
+        if (!isNullOrUndefined(this.fontColorPicker) && ((e as { [key: string]: Object }).toolbarClick === "fontcolor")) {
+            this.fontColorDropDown.toggle();
+        }
+        else if (!isNullOrUndefined(this.backgroundColorPicker) && ((e as { [key: string]: Object }).toolbarClick === "backgroundcolor")) {
+            this.backgroundColorDropDown.toggle();
+        }
     }
 
     private onPropertyChanged(model: { [key: string]: Object }): void {
@@ -263,6 +273,7 @@ export class ColorPickerInput {
         this.parent.off(events.destroyColorPicker, this.destroyColorPicker);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.bindCssClass, this.setCssClass);
+        this.parent.off(events.showColorPicker, this.showColorPicker);
     }
 
 }

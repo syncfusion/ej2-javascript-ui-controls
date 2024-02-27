@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 24.2.8 (2024-02-27)
+
+### GanttChart
+
+#### Bug Fixes
+
+- `#I555169` - The scrollbar into view taskbar not working properly issue has been fixed.
+- `#I556229` - Splitter View is not updating properly while using `setSplitterPosition` issue has been fixed.
+- `#I553873` - Taskbar not rendered properly when using hour format in `DST` issue has been fixed.
+- `#I548519` - Timeline start date changed after zooming action issue has been fixed.
+- `#I548491` - React Gantt crashes when updating parent and changing column from column chooser issue has been fixed.
+- `#I544198` - Delay in predecessor validation issue has been fixed.
+- `#I552622` - The enable immutable enabled sample expand icon hide when record add issue has been fixed.
+- `#I553420` - Editing resource allocation differed from initial rendering.
+- `#I555214` - Disabling all editing options leads to console error issue has been fixed.
+- `#I553748` - Editing the task name following the reset of the taskbar start date will lead to the taskbar rendering an incorrect date issue has been fixed.
+- `#I553710` - Dragging the task following the reset of the parent taskbar start date will lead to get duplicate taskbar issue has been fixed.
+
 ## 24.2.7 (2024-02-20)
 
 ### GanttChart

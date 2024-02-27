@@ -724,4 +724,80 @@ describe('Gantt connector line support', () => {
             triggerMouseEvent(save, 'click');  
         });
      });
+     describe('Bug - 871589 -Disabling all editing options leads to console errors', () => {
+        let ganttObj: Gantt;
+        let editingData = [
+            {
+                TaskID: 24,
+                TaskName: '[OPERATOR CRISTIAN] OEM Cristian PROYECTO CRISTIAN 2 SW_NOSW',
+                StartDate: '2024-02-09T05:00:00.000Z',
+                Progress: 0,
+                Duration: 1,
+                subtasks: [
+                    {
+                        TaskID: 33,
+                        TaskName: 'Homologation_Process',
+                        StartDate: '2024-02-09T05:00:00.000Z',
+                        Duration: 1,
+                        Progress: 0,
+                        subtasks: [
+                            {
+                                TaskID: 113,
+                                TaskName: 'Actividad 2',
+                                StartDate: '2024-02-09T05:00:00.000Z',
+                                Duration: 3,
+                                Predecessor: '',
+                                Progress: 0
+                            },
+                            {
+                                TaskID: 114,
+                                TaskName: 'Actividad 3',
+                                StartDate: '2024-02-12T05:00:00.000Z',
+                                Duration: 1,
+                                Predecessor: '113FS',
+                                Progress: 0,
+                                subtasks: [
+                                    {
+                                        TaskID: 104,
+                                        TaskName: 'Test Case 4',
+                                        StartDate: '2024-02-12T05:00:00.000Z',
+                                        Duration: 1,
+                                        Progress: 0,
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: editingData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        endDate: 'EndDate',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    editSettings: {
+                        allowAdding: false,
+                        allowEditing: false,
+                        allowDeleting: false,
+                        allowTaskbarEditing: false,
+                        showDeleteConfirmDialog: false,
+                    }
+                }, done);
+        });
+        it('Disabling all editing options leads to console errors.', () => {
+            expect(ganttObj.flatData[3].ganttProperties.predecessorsName).toBe('113FS');
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj);
+        });
+    });
 });

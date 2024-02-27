@@ -1448,6 +1448,9 @@ export class Annotation {
                             }
                         }
                     }
+                    if (!isNullOrUndefined(this.pdfViewerBase.navigationPane)) {
+                        this.pdfViewerBase.navigationPane.calculateCommentPanelWidth();
+                    }
                 }
             }
         }

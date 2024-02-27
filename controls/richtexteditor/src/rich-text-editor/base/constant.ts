@@ -760,6 +760,11 @@ export const documentClickClosedBy: string = 'documentClickClosedBy';
  * @hidden
  * @deprecated
  */
+export const showColorPicker: string = 'showColorPicker';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const blockEmptyNodes: string = `address:empty, article:empty, aside:empty, blockquote:empty,
  details:empty, dd:empty, div:empty, dl:empty, dt:empty, fieldset:empty, footer:empty,form:empty, h1:empty,
  h2:empty, h3:empty, h4:empty, h5:empty, h6:empty, header:empty, hgroup:empty, li:empty, main:empty, nav:empty,

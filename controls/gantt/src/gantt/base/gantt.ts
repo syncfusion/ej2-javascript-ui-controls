@@ -2958,7 +2958,7 @@ export class Gantt extends Component<HTMLElement>
                 this.treeGridModule.treeGridColumns = [];
                 this.treeGridModule.validateGanttColumns();
                 this.treeGrid.columns = this.treeGridModule.treeGridColumns;
-                (this.treeGrid.grid.columns as any) = this.treeGridModule.treeGridColumns;
+                this.treeGrid.refreshColumns();
                 this.chartRowsModule.initiateTemplates();
                 this.timelineModule.updateChartByNewTimeline();
                 break;
@@ -4022,6 +4022,19 @@ export class Gantt extends Component<HTMLElement>
         tempSplitterSettings[type as string] = value;
         const splitterPosition: string = this.splitterModule.calculateSplitterPosition(
             tempSplitterSettings);
+        switch (type) {
+        case 'view':
+            this.splitterSettings.view = tempSplitterSettings[type as string];
+            break;
+        case 'columnIndex':
+            this.splitterSettings.columnIndex = tempSplitterSettings[type as string];
+            break;
+        case 'position':
+            this.splitterSettings.position = tempSplitterSettings[type as string];
+            break;
+        default:
+            break;
+        }
         const pane1: HTMLElement = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[0] as HTMLElement;
         const pane2: HTMLElement = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[1] as HTMLElement;
         this.splitterModule.splitterPreviousPositionGrid = pane1.scrollWidth + 1 + 'px';

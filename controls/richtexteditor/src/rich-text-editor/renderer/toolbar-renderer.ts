@@ -136,6 +136,19 @@ export class ToolbarRenderer implements IRenderer {
                 addClass([listEle[1], listEle[2]], 'e-disabled');
             }
         }
+        if (this.parent.showTooltip) {
+            this.dropdownTooltip = new Tooltip({
+                target: '[aria-owns="'+ this.parent.getID() +'"].e-rte-elements [title]',
+                showTipPointer: true,
+                openDelay: 400,
+                opensOn: 'Hover',
+                beforeRender: this.tooltipBeforeRender.bind(this),
+                cssClass: this.parent.getCssClass(),
+                windowCollision: true,
+                position: 'BottomCenter'
+            });
+            this.dropdownTooltip.appendTo(args.element);
+        }
         this.parent.notify(events.selectionSave, args);
     }
 
@@ -181,19 +194,6 @@ export class ToolbarRenderer implements IRenderer {
                 position: 'BottomCenter'
             });
             this.tooltip.appendTo(args.target);
-        }
-        if (this.parent.showTooltip) {
-            this.dropdownTooltip = new Tooltip({
-                target: '[aria-owns="'+ this.parent.getID() +'"].e-rte-elements [title]',
-                showTipPointer: true,
-                openDelay: 400,
-                opensOn: 'Hover',
-                beforeRender: this.tooltipBeforeRender.bind(this),
-                cssClass: this.parent.getCssClass(),
-                windowCollision: true,
-                position: 'BottomCenter'
-            });
-            this.dropdownTooltip.appendTo(document.body);
         }
     }
 

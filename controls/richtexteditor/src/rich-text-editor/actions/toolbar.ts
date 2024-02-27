@@ -81,6 +81,9 @@ export class Toolbar {
             if ((e.target as Element).classList.contains('e-hor-nav')) {
                 this.adjustContentHeight(e.target as Element, true);
             }
+            if (!isNullOrUndefined(e.target as Element) && ((e.target as Element).classList.contains("e-rte-fontcolor-dropdown") || (e.target as Element).classList.contains("e-rte-backgroundcolor-dropdown"))) {
+                this.parent.notify(events.showColorPicker, { toolbarClick: (e.target as Element).classList.contains("e-rte-fontcolor-dropdown") ? "fontcolor" : "backgroundcolor" });
+            }
         }
     }
     private createToolbarElement(): void {

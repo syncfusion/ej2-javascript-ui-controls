@@ -18,6 +18,8 @@ export class Dependency {
     private parentPredecessors: IGanttData[] = [];
     private validatedParentIds: string[] = [];
     public isValidatedParentTaskID: string;
+    public validatedChildItems: IGanttData[];
+    private storeId:any = null;
     constructor(gantt: Gantt) {
         this.parent = gantt;
         this.dateValidateModule = this.parent.dateValidationModule;
@@ -493,7 +495,7 @@ export class Dependency {
                 }
                 if (flatData[count as number].hasChildRecords && this.parent.editModule && !this.parent.allowUnscheduledTasks
                     && this.parent.allowParentDependency) {
-                    this.parent.editModule['updateChildItems'](flatData[count as number]);
+                    this.updateChildItems(flatData[count as number]);
                 }
             }
         }
@@ -507,7 +509,7 @@ export class Dependency {
                 let item: IGanttData = this.parentPredecessors[i as number];
                 this.validatePredecessorDates(item);
                 if (item.ganttProperties.startDate) {
-                    this.parent.editModule['updateChildItems'](item);
+                    this.updateChildItems(item);
                 }
             }
         }
@@ -864,7 +866,17 @@ export class Dependency {
                     if (record) { this.validatePredecessor(record, undefined, 'successor'); }
                     continue;
                 }
-                if (record) { this.validatePredecessor(record, undefined, 'successor'); }
+                if (record) { 
+                    if (this.parent.editModule.isFirstCall) {
+                        this.storeId = JSON.parse(JSON.stringify(this.parent.ids));
+                        this.parent.editModule.isFirstCall = false
+                    }
+                    let index: any = (this.storeId && this.storeId.indexOf(record[this.parent.taskFields.id].toString()) !== -1) ? this.storeId.indexOf(record[this.parent.taskFields.id].toString()) : -1;
+                    if (index !== -1)  {
+                        this.storeId = this.storeId.slice(0, index).concat(this.storeId.slice(index + 1));
+                        this.validatePredecessor(record, undefined, 'successor'); 
+                    }
+                }
             }
             if (record && !record.hasChildRecords && record.parentItem && this.validatedParentIds.indexOf(record.parentItem.taskId) == -1) {
                 this.validatedParentIds.push(record.parentItem.taskId);
@@ -877,13 +889,13 @@ export class Dependency {
                 if (record && record.ganttProperties.taskId !== this.isValidatedParentTaskID && ganttProp) {
                     if ((taskBarModule.taskBarEditAction !== 'ParentDrag' && taskBarModule.taskBarEditAction!== 'ChildDrag')) {
                         if (!ganttProp.hasChildRecords && record.hasChildRecords) {
-                            this.parent.editModule['updateChildItems'](record);
+                            this.updateChildItems(record);
                             this.isValidatedParentTaskID = record.ganttProperties.taskId;
                         }
                     }
                     else if ((!record.hasChildRecords && taskBarModule.taskBarEditAction == 'ChildDrag') ||
                         (record.hasChildRecords && taskBarModule.taskBarEditAction == 'ParentDrag')) {
-                        this.parent.editModule['updateChildItems'](record);
+                        this.updateChildItems(record);
                         this.isValidatedParentTaskID = record.ganttProperties.taskId;
                     }
                     if (!ganttProp.hasChildRecords) {
@@ -891,12 +903,143 @@ export class Dependency {
                     }
                 }
                 else if (record && record.hasChildRecords && !ganttProp) {
-                    this.parent.editModule['updateChildItems'](record);
+                    this.updateChildItems(record);
                 }
             }
         }
     }
-
+    /**
+    *
+    * @param {IGanttData} ganttRecord .
+    * @returns {void} .
+    */
+    private updateChildItems(ganttRecord: IGanttData): void {
+        const previousData: IGanttData = this.parent.previousRecords[ganttRecord.uniqueID];
+        let previousStartDate: Date;
+        if (isNullOrUndefined(previousData) ||
+            (isNullOrUndefined(previousData) && !isNullOrUndefined(previousData.ganttProperties))) {
+            previousStartDate = new Date(ganttRecord.ganttProperties.startDate.getTime());
+        } else {
+            if (!isNullOrUndefined(previousData.ganttProperties.startDate)) {
+                previousStartDate = new Date(previousData.ganttProperties.startDate.getTime());
+            }
+        }
+        const currentStartDate: Date = ganttRecord.ganttProperties.startDate;
+        const childRecords: IGanttData[] = [];
+        let validStartDate: Date;
+        let validEndDate: Date;
+        let calcEndDate: Date;
+        let isRightMove: boolean;
+        let durationDiff: number;
+        this.getUpdatableChildRecords(ganttRecord, childRecords);
+        if (childRecords.length === 0) {
+            return;
+        }
+        if (!isNullOrUndefined(previousStartDate) && !isNullOrUndefined(currentStartDate) && previousStartDate.getTime() > currentStartDate.getTime()) {
+            validStartDate = this.parent.dateValidationModule.checkStartDate(currentStartDate);
+            validEndDate = this.parent.dateValidationModule.checkEndDate(previousStartDate, ganttRecord.ganttProperties);
+            isRightMove = false;
+        } else {
+            validStartDate = this.parent.dateValidationModule.checkStartDate(previousStartDate);
+            validEndDate = this.parent.dateValidationModule.checkEndDate(currentStartDate, ganttRecord.ganttProperties);
+            isRightMove = true;
+        }
+        //Get Duration
+        if (!isNullOrUndefined(validStartDate) && !isNullOrUndefined(validEndDate) && validStartDate.getTime() >= validEndDate.getTime()) {
+            durationDiff = 0;
+        } else {
+            durationDiff = this.parent.dateValidationModule.getDuration(validStartDate, validEndDate, 'minute', true, false);
+        }
+        for (let i: number = 0; i < childRecords.length; i++) {
+            if (childRecords[i as number].ganttProperties.isAutoSchedule) {
+                if (durationDiff > 0) {
+                    const startDate: Date = isScheduledTask(childRecords[i as number].ganttProperties) ?
+                        childRecords[i as number].ganttProperties.startDate : childRecords[i as number].ganttProperties.startDate ?
+                            childRecords[i as number].ganttProperties.startDate : childRecords[i as number].ganttProperties.endDate ?
+                                childRecords[i as number].ganttProperties.endDate : new Date(previousStartDate.toString());
+                    if (isRightMove) {
+                        calcEndDate = this.parent.dateValidationModule.getEndDate(
+                            this.parent.dateValidationModule.checkStartDate(
+                                startDate,
+                                childRecords[i as number].ganttProperties,
+                                childRecords[i as number].ganttProperties.isMilestone),
+                            durationDiff,
+                            'minute',
+                            childRecords[i as number].ganttProperties,
+                            false
+                        );
+                    } else {
+                        calcEndDate = this.parent.dateValidationModule.getStartDate(
+                            this.parent.dateValidationModule.checkEndDate(startDate, childRecords[i as number].ganttProperties),
+                            durationDiff,
+                            'minute',
+                            childRecords[i as number].ganttProperties);
+                    }
+                    this.calculateDateByRoundOffDuration(childRecords[i as number], calcEndDate);
+                    if (this.parent.isOnEdit && this.validatedChildItems.indexOf(childRecords[i as number]) === -1) {
+                        this.validatedChildItems.push(childRecords[i as number]);
+                    }
+                } else if (isNullOrUndefined(previousData)) {
+                    calcEndDate = previousStartDate;
+                    this.calculateDateByRoundOffDuration(childRecords[i as number], calcEndDate);
+                    if (this.parent.isOnEdit && this.validatedChildItems.indexOf(childRecords[i as number]) === -1) {
+                        this.validatedChildItems.push(childRecords[i as number]);
+                    }
+                }
+            }
+        }
+        if (childRecords.length) {
+            this.parent.dataOperation.updateParentItems(ganttRecord, true);
+        }
+    }
+    /**
+    * To get updated child records.
+    *
+    * @param {IGanttData} parentRecord .
+    * @param {IGanttData} childLists .
+    * @returns {void} .
+    */
+    private getUpdatableChildRecords(parentRecord: IGanttData, childLists: IGanttData[]): void {
+        const childRecords: IGanttData[] = parentRecord.childRecords;
+        for (let i: number = 0; i < childRecords.length; i++) {
+            if (childRecords[i as number].ganttProperties.isAutoSchedule) {
+                childLists.push(childRecords[i as number]);
+                if (childRecords[i as number].hasChildRecords) {
+                    this.getUpdatableChildRecords(childRecords[i as number], childLists);
+                }
+            }
+        }
+    }
+    /**
+    *
+    * @param {IGanttData} data .
+    * @param {Date} newStartDate .
+    * @returns {void} .
+    */
+    private calculateDateByRoundOffDuration(data: IGanttData, newStartDate: Date): void {
+        const ganttRecord: IGanttData = data;
+        const taskData: ITaskData = ganttRecord.ganttProperties;
+        const projectStartDate: Date = new Date(newStartDate.getTime());
+        if (!isNullOrUndefined(taskData.endDate) && isNullOrUndefined(taskData.startDate)) {
+            const endDate: Date = this.parent.dateValidationModule.checkStartDate(projectStartDate, taskData, null);
+            this.parent.setRecordValue(
+                'endDate',
+                this.parent.dateValidationModule.checkEndDate(endDate, ganttRecord.ganttProperties),
+                taskData,
+                true);
+        } else {
+            this.parent.setRecordValue(
+                'startDate',
+                this.parent.dateValidationModule.checkStartDate(projectStartDate, taskData, false),
+                taskData,
+                true);
+            if (!isNullOrUndefined(taskData.duration)) {
+                this.parent.dateValidationModule.calculateEndDate(ganttRecord);
+            }
+        }
+        this.parent.dataOperation.updateWidthLeft(data);
+        this.parent.dataOperation.updateTaskData(ganttRecord);
+    }
     /**
      * Method to get validate able predecessor alone from record
      *

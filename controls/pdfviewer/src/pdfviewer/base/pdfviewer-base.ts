@@ -2989,6 +2989,9 @@ export class PdfViewerBase {
         }
         if (this.pdfViewer.enableToolbar && this.pdfViewer.thumbnailViewModule) {
             proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.currentPageNumber - 1);
+            if (proxy.navigationPane.sideBarToolbar && proxy.navigationPane.sideBarContentContainer) {
+                proxy.navigationPane.sideBarContentContainer.style.height = proxy.viewerContainer.style.height;
+            }
         }
         if (proxy.pdfViewer.textSearchModule && (!Browser.isDevice || this.pdfViewer.enableDesktopMode)) {
             proxy.pdfViewer.textSearchModule.textSearchBoxOnResize();
@@ -3084,7 +3087,7 @@ export class PdfViewerBase {
             // eslint-disable-next-line
             let isIE: boolean = !!(document as any).documentMode;
             if (this.pdfViewer.textSelectionModule && !this.isClickedOnScrollBar(event, true) && !this.isTextSelectionDisabled) {
-                if (!isIE && target.className !== 'e-pdfviewer-formFields' && target.className !== 'e-pdfviewer-ListBox' && target.className !== 'e-pv-formfield-dropdown' && target.className !== 'e-pv-formfield-listbox' && target.className !== 'e-pv-formfield-input' && target.className !== 'e-pv-formfield-textarea') {
+                if (!isIE && target.className !== 'e-pdfviewer-formFields' && target.className !== 'e-pdfviewer-ListBox' && target.className.indexOf("e-pv-formfield-dropdown") === -1 && target.className !== 'e-pv-formfield-listbox' && target.className !== 'e-pv-formfield-input' && target.className !== 'e-pv-formfield-textarea') {
                     event.preventDefault();
                 }
                 if (target.className !== 'e-pv-droplet') {

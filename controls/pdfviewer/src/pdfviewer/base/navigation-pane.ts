@@ -1074,6 +1074,7 @@ export class NavigationPane {
                 proxy.pdfViewerBase.viewerContainer.style.width = viewerWidth + 'px';
                 proxy.pdfViewerBase.pageContainer.style.width = proxy.pdfViewerBase.viewerContainer.clientWidth + 'px';
                 proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.pdfViewerBase.currentPageNumber - 1);
+                proxy.pdfViewer.thumbnailViewModule.renderViewPortThumbnailImage();
                 proxy.pdfViewerBase.updateZoomValue();
                 if (!proxy.bookmarkButton.children[0].classList.contains('e-pv-bookmark-disable-icon')) {
                     proxy.pdfViewer.bookmarkViewModule.setBookmarkContentHeight();
@@ -1141,6 +1142,7 @@ export class NavigationPane {
             proxy.pdfViewerBase.updateZoomValue();
             if (proxy.pdfViewer.enableThumbnail) {
                 proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.pdfViewerBase.currentPageNumber - 1);
+                proxy.pdfViewer.thumbnailViewModule.renderViewPortThumbnailImage();
             }
         }
     }
@@ -1210,7 +1212,9 @@ export class NavigationPane {
                 proxy.setThumbnailSelectionIconTheme();
                 proxy.updateViewerContainerOnExpand();
                 proxy.isThumbnail = true;
-                (document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_image_' + (proxy.pdfViewerBase.currentPageNumber -1)) as any).focus();
+                if(!isNullOrUndefined((document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_image_' + (proxy.pdfViewerBase.currentPageNumber -1)) as any))) {
+                    (document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_image_' + (proxy.pdfViewerBase.currentPageNumber -1)) as any).focus();
+                }
             }
         }
         proxy.isBookmarkOpen = false;
@@ -1410,7 +1414,11 @@ export class NavigationPane {
      */
     public disableBookmarkButton(): void {
         if (this.sideBarContentContainer && this.bookmarkButton && this.bookmarkButton.children[0]) {
-            this.sideBarContentContainer.style.display = 'none';
+            // this.sideBarContentContainer.style.display = 'none';
+            let bookmarkContent: any = this.pdfViewer.element.querySelector('.e-pv-bookmark-view');
+            if (bookmarkContent) {
+                bookmarkContent.style.display = 'none';
+            }
             this.bookmarkButton.setAttribute('disabled', 'disabled');
             this.bookmarkButton.children[0].classList.add('e-pv-bookmark-disable-icon');
         }
@@ -1476,8 +1484,29 @@ export class NavigationPane {
         const viewerWidth: number = (proxy.pdfViewer.element.clientWidth - proxy.getViewerContainerLeft() - proxy.getViewerContainerRight());
         proxy.pdfViewerBase.viewerContainer.style.width = viewerWidth + 'px';
         proxy.pdfViewerBase.pageContainer.style.width = proxy.pdfViewerBase.viewerContainer.clientWidth + 'px';
+        proxy.calculateCommentPanelWidth();
         proxy.pdfViewerBase.updateZoomValue();
     };
+    /**
+     * @private
+     * @returns {void}
+     */
+    public calculateCommentPanelWidth(): void {
+        const commentTitleCollections: HTMLCollectionOf<HTMLElement> = document.getElementsByClassName("e-pv-comment-title") as HTMLCollectionOf<HTMLElement>;
+        const commentTitleMoreIconCollections: HTMLCollectionOf<HTMLElement> = document.getElementsByClassName("e-pv-more-options-button e-btn") as HTMLCollectionOf<HTMLElement>;
+        for (let i: number = 0; i < commentTitleCollections.length; i++) {
+            let commentTitleElement: HTMLElement = commentTitleCollections[parseInt(i.toString(), 10)];
+            let moreIconElement: HTMLElement = commentTitleMoreIconCollections[parseInt(i.toString(), 10)];
+            commentTitleElement.style.maxWidth = (commentTitleElement.parentElement.clientWidth - moreIconElement.clientWidth) + "px";
+        }
+        const replyTitleCollections: HTMLCollectionOf<HTMLElement> = document.getElementsByClassName("e-pv-reply-title") as HTMLCollectionOf<HTMLElement>;
+        const replyTitleMoreIconCollections: HTMLCollectionOf<HTMLElement> = document.getElementsByClassName("e-pv-more-options-button e-btn") as HTMLCollectionOf<HTMLElement>;
+        for (let j: number = 0; j < replyTitleCollections.length; j++) {
+            let replyTitleElement: HTMLElement = replyTitleCollections[parseInt(j.toString(), 10)];
+            let elementOfMoreIcon: HTMLElement = replyTitleMoreIconCollections[parseInt(j.toString(), 10)];
+            replyTitleElement.style.maxWidth = (replyTitleElement.parentElement.clientWidth - elementOfMoreIcon.clientWidth) + "px";
+        }
+    }
     /**
      * @param {MouseEvent} event - The event.
      * @returns {void}

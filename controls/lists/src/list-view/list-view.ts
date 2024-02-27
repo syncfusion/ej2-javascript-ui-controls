@@ -834,7 +834,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (args.item.classList.contains(classNames.hasChild)) {
             this.isNestedList = true;
         }
-        if (this.showCheckBox && this.isValidLI(args.item)) {
+        if (this.showCheckBox && args.item.classList.contains(classNames.listItem)) {
             let checkboxElement: Element;
             let fieldData: DataSource;
             // eslint-disable-next-line prefer-const
@@ -1889,6 +1889,23 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.setSelectLI(this.getLiFromObjOrElement(item));
             }
 
+        }
+    }
+
+    /**
+     * This method allows for deselecting a list item within the ListView. The item to be deselected can be specified by passing the element or field object.
+     *
+     * @param  {Fields | HTMLElement | Element} item - We can pass an element Object or Fields as an Object with ID and Text fields.
+     */
+    
+    public unselectItem(item?: Fields | HTMLElement | Element): void {
+        if (isNullOrUndefined(item)) {
+          this.removeSelect();
+        } else {
+          const li = this.getLiFromObjOrElement(item);
+          if (!isNullOrUndefined(li)) {
+            this.removeSelect(li);
+          }
         }
     }
 

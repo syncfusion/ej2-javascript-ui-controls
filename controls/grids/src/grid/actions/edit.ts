@@ -527,6 +527,9 @@ export class Edit implements IAction {
     }
 
     private dlgCancel(): void {
+        if (this.parent.pagerModule) {
+            this.parent.pagerModule.isForceCancel = false;
+        }
         this.parent.focusModule.clearIndicator();
         this.parent.focusModule.restoreFocus();
         this.dialogObj.hide();
@@ -547,6 +550,9 @@ export class Edit implements IAction {
         case this.l10n.getConstant('BatchSaveLostChanges'):
             if (this.parent.editSettings.mode === 'Batch') {
                 this.editModule.addCancelWhilePaging();
+            }
+            if (this.parent.pagerModule) {
+                this.parent.pagerModule.isForceCancel = false;
             }
             this.executeAction();
             break;

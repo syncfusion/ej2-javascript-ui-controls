@@ -18,7 +18,8 @@ export class Page implements IAction {
     //Internal variables
     private element: HTMLElement;
     private pageSettings: PageSettingsModel;
-    private isForceCancel: boolean;
+    /** @hidden */
+    public isForceCancel: boolean;
     private isInitialLoad: boolean;
     private isInitialRender: boolean = true;
     private evtHandlers: { event: string, handler: Function }[];
@@ -219,8 +220,12 @@ export class Page implements IAction {
             if (!this.isForceCancel) {
                 if (!isNullOrUndefined(e.newProp) && !isNullOrUndefined(e.newProp.pageSize)) {
                     gObj.notify(events.preventBatch, { instance: this, handler: this.setPageSize, arg1: e.newProp.pageSize });
-                    this.pagerObj.pageSize = e.oldProp.pageSize;
-                    gObj.pageSettings.pageSize = e.newProp.pageSize;
+                    this.pagerObj.setProperties({ pageSize: e.oldProp.pageSize }, true);
+                    gObj.setProperties({ pageSettings: { pageSize: e.oldProp.pageSize } }, true);
+                    this.pagerObj.setProperties({
+                        currentPage: gObj.pageSettings.currentPage === this.pagerObj.currentPage ?
+                            this.pagerObj.previousPageNo : gObj.pageSettings.currentPage
+                    }, true);
                 } else if (e.currentPage) {
                     gObj.notify(events.preventBatch, { instance: this, handler: this.goToPage, arg1: e.currentPage });
                     this.pagerObj.currentPage = gObj.pageSettings.currentPage === this.pagerObj.currentPage ?

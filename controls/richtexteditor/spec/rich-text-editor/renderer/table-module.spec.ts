@@ -553,7 +553,7 @@ describe('Table Module', () => {
             let height: any = (table as HTMLTableElement).rows[0].offsetHeight;
             (<any>rteObj.tableModule).resizeBtnStat.row = true;
             (rteObj.tableModule as any).resizing({ target: resRow1, pageX: 100, pageY: 200, preventDefault: function () { } });
-            height += 179;
+            height += 100;
             expect(height).toEqual((table as HTMLTableElement).rows[0].offsetHeight);
 
             let tableBox: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement;
@@ -5621,7 +5621,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             document.activeElement.dispatchEvent(enterKeyDownEvent);
             document.activeElement.dispatchEvent(enterKeyUpEvent);
             setTimeout(() => {
-                expect(editor.inputElement.querySelector('.e-table-box')).not.toBe(null);
+                expect(editor.inputElement.querySelector('.e-table-box')).toBe(null);
                 done();
             }, 200);
         });

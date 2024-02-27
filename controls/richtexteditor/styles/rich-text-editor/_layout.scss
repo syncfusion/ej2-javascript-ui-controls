@@ -1483,6 +1483,17 @@
     .e-rte-quick-toolbar {
       min-height: 48px;
 
+      .e-toolbar-items .e-rte-backgroundcolor-dropdown {
+        .e-rte-color-content,
+        .e-caret {
+          height: $rte-big-dropdown-btn-color-content-height;
+
+          &:hover {
+            height: $rte-big-dropdown-btn-color-content-height;
+          }
+        }
+      }
+
       .e-toolbar-items:not(.e-tbar-pos) {
         margin: $rte-big-quick-toolbar-items-margin;
         min-height: 48px;

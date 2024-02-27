@@ -4109,6 +4109,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                         record = <ITreeData>this.grid.getCurrentViewRecords()[row.rowIndex];
                     }
                 }
+                else if (this.rowTemplate) {
+                    record = <ITreeData>this.grid.getCurrentViewRecords()[row.rowIndex];
+                }
                 else {
                     record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('data-rowindex'), 10)];
                 }

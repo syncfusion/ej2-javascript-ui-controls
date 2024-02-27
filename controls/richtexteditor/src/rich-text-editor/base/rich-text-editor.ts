@@ -2061,8 +2061,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 clientX: touch.clientX, clientY: touch.clientY }
         });
         if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
-            (this.editorMode === 'Markdown' && (this.inputElement as HTMLTextAreaElement).value.length !== 0)) || (e.target && ((e.target as HTMLElement).nodeName === 'VIDEO'
-            || (e.target as HTMLElement).querySelectorAll('.' + classes.CLS_VIDEOWRAP).length > 0) || (e.target && (e.target as HTMLElement).nodeName !== 'BR' &&
+            (this.editorMode === 'Markdown' && (this.inputElement as HTMLTextAreaElement).value.length !== 0)) ||
+            (e.target && !isNOU(closest((e.target as HTMLElement), 'table'))) ||
+            (e.target && ((e.target as HTMLElement).nodeName === 'VIDEO' ||
+            (e.target as HTMLElement).querySelectorAll('.' + classes.CLS_VIDEOWRAP).length > 0) ||
+            (e.target && (e.target as HTMLElement).nodeName !== 'BR' &&
             ((e.target as HTMLElement).classList.contains(classes.CLS_AUDIOWRAP) ||
             (e.target as HTMLElement).classList.contains(classes.CLS_CLICKELEM) ||
             (e.target as HTMLElement).classList.contains(classes.CLS_VID_CLICK_ELEM))))) {
@@ -2931,7 +2934,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         // eslint-disable-next-line
         const imgPadding: number = 12
         const imgResizeBorder: number = 2;
-        const editEle: HTMLElement = this.contentModule.getEditPanel() as HTMLElement;
+        let editEle: HTMLElement = this.contentModule.getEditPanel() as HTMLElement;
+        if (this.editorMode === "HTML" && !isNOU(this.formatter.editorManager.nodeSelection) && !isNOU(this.formatter.editorManager.nodeSelection.range)) {
+            const currentRange : Range = this.formatter.editorManager.nodeSelection.range;
+            if(currentRange.startContainer.nodeType !== 3 && (currentRange.startContainer as HTMLElement).closest &&
+            !isNOU((currentRange.startContainer as HTMLElement).closest('TD'))) {
+                editEle = currentRange.startContainer as HTMLElement;
+            }
+        }
         const eleStyle: CSSStyleDeclaration = window.getComputedStyle(editEle);
         const editEleMaxWidth: number = editEle.offsetWidth - (imgPadding + imgResizeBorder +
                 parseFloat(eleStyle.paddingLeft.split('px')[0]) + parseFloat(eleStyle.paddingRight.split('px')[0]) +
@@ -3384,7 +3394,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private blurHandler(e: FocusEvent): void {
         let trg: Element = e.relatedTarget as Element;
         if (trg) {
-            const rteElement: Element = closest(trg, '.' + classes.CLS_RTE);
+            let rteElement: Element = closest(trg, '.' + classes.CLS_RTE);
+            if (!rteElement && this.iframeSettings.enable)
+            {
+                const iframeElement: HTMLIFrameElement = this.element.querySelector('#' + this.getID() + '_rte-view');
+                if(iframeElement && iframeElement.contentWindow.document.body.contains(trg))
+                {
+                    rteElement = closest(iframeElement, '.' + classes.CLS_RTE);
+                }
+            }
             if (rteElement && rteElement === this.element) {
                 this.isBlur = false;
                 if (trg === this.getToolbarElement()) {

@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 24.2.7 (2024-02-20)
+## 24.2.8 (2024-02-27)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I555926` - When using the Nextjs project, the pivot table will now render properly in the production environment.
+- `#F186589` - The Pivot Table will now be properly rendered when connecting an OLAP cube with no named set.
+
+## 24.2.5 (2024-02-13)
 
 ### PivotTable
 

@@ -126,6 +126,7 @@ export class SpellCheckDialog {
             this.removeErrors();
             this.parent.spellChecker.checkForNextError();
             hideSpinner(this.documentHelper.dialog.element);
+            this.selectedText = undefined;
         }
     };
     /**
@@ -159,6 +160,7 @@ export class SpellCheckDialog {
             this.parent.spellChecker.checkForNextError();
             this.documentHelper.hideDialog();
             hideSpinner(this.documentHelper.dialog.element);
+            this.selectedText = undefined;
         }
     };
     /**
@@ -332,5 +334,6 @@ export class SpellCheckDialog {
             this.suggestionListView.destroy();
             this.suggestionListView = undefined;
         }
+        this.selectedText = undefined;
     }
 }

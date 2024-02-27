@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.8 (2024-02-27)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I549187` - An issue with the virtual scroll with `rowAutoHeight` has been resolved.
+
 ## 24.2.4 (2024-02-06)
 
 ### Schedule

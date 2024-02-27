@@ -173,6 +173,8 @@
         }
 
         .e-toolbar-items {
+          height: $schedule-tbar-bgr-size;
+          
           &.e-tbar-pos {
             height: $schedule-tbar-bgr-size;
             min-height: $schedule-tbar-bgr-size;

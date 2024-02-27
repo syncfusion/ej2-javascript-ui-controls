@@ -1,4 +1,4 @@
-import { KeyboardEvents, compile, Property, EventHandler, Animation, AnimationModel, KeyboardEventArgs, formatUnit, append, attributes } from '@syncfusion/ej2-base';
+import { compile, Property, EventHandler, Animation, AnimationModel, KeyboardEventArgs, formatUnit, append, attributes } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, detach, Event, EmitType, Complex, addClass, removeClass, closest, isUndefined, getValue, NotifyPropertyChanges, Browser } from '@syncfusion/ej2-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { FieldSettings, FilteringEventArgs, FilterType } from '../drop-down-base/drop-down-base';
@@ -46,7 +46,6 @@ export class Mention extends DropDownBase {
     private previousSelectedLI: HTMLElement;
     private previousItemData: { [key: string]: Object } | string | number | boolean;
     private activeIndex: number;
-    private keyConfigure: { [key: string]: string };
     private isFiltered: boolean;
     private beforePopupOpen: boolean;
     private listHeight: string;
@@ -451,21 +450,6 @@ export class Mention extends DropDownBase {
         this.isPopupOpen = false;
         this.isCollided = false;
         this.lineBreak = false;
-        this.keyConfigure = {
-            tab: 'tab',
-            enter: '13',
-            escape: '27',
-            end: '35',
-            home: '36',
-            down: '40',
-            up: '38',
-            pageUp: '33',
-            pageDown: '34',
-            open: 'alt+40',
-            close: 'shift+tab',
-            hide: 'alt+38',
-            space: '32'
-        };
     }
 
     /**
@@ -516,10 +500,7 @@ export class Mention extends DropDownBase {
 
     private bindCommonEvent(): void {
         if (!Browser.isDevice) {
-            this.keyboardModule = new KeyboardEvents(
-                this.inputElement, {
-                    keyAction: this.keyActionHandler.bind(this), keyConfigs: this.keyConfigure, eventName: 'keydown'
-                });
+            this.inputElement.addEventListener('keydown', this.keyDownHandler.bind(this), true);
         }
     }
 
@@ -577,6 +558,26 @@ export class Mention extends DropDownBase {
             if (!isNullOrUndefined(this.spinnerTemplate)) {
                 this.setSpinnerTemplate();
             }
+        }
+    }
+
+    private keyDownHandler(e: KeyboardEventArgs): void {
+        let isKeyAction: boolean = true;
+        switch (e.keyCode) {
+            case 38: e.action = e.altKey ? 'hide' : 'up'; break;
+            case 40: e.action = e.altKey ? 'open' : 'down'; break;
+            case 33: e.action = 'pageUp'; break;
+            case 34: e.action = 'pageDown'; break;
+            case 36: e.action = 'home'; break;
+            case 35: e.action = 'end'; break;
+            case 9: e.action = e.shiftKey ? 'close' : 'tab'; break;
+            case 27: e.action = 'escape'; break;
+            case 32: e.action = 'space'; break;
+            case 13: e.action = 'enter'; break;
+            default: isKeyAction = false; break;
+        }
+        if (isKeyAction) {
+            this.keyActionHandler(e);
         }
     }
 
@@ -658,7 +659,7 @@ export class Mention extends DropDownBase {
 
     private unBindCommonEvent(): void {
         if (!Browser.isDevice) {
-            this.keyboardModule.destroy();
+            this.inputElement.removeEventListener('keydown', this.keyDownHandler.bind(this), true);
         }
     }
 
@@ -1332,7 +1333,7 @@ export class Mention extends DropDownBase {
      * @returns {void}
      */
     private wireListEvents(): void {
-        EventHandler.add(this.list, 'click', this.onMouseClick, this);
+        EventHandler.add(this.list, 'mousedown', this.onMouseClick, this);
         EventHandler.add(this.list, 'mouseover', this.onMouseOver, this);
         EventHandler.add(this.list, 'mouseout', this.onMouseLeave, this);
     }
@@ -1343,7 +1344,7 @@ export class Mention extends DropDownBase {
      * @returns {void}
      */
     private unWireListEvents(): void {
-        EventHandler.remove(this.list, 'click', this.onMouseClick);
+        EventHandler.remove(this.list, 'mousedown', this.onMouseClick);
         EventHandler.remove(this.list, 'mouseover', this.onMouseOver);
         EventHandler.remove(this.list, 'mouseout', this.onMouseLeave);
     }
@@ -1359,6 +1360,7 @@ export class Mention extends DropDownBase {
         const delay: number = 100;
         this.closePopup(delay, e);
         this.inputElement.focus();
+        e.preventDefault();
     }
 
     private updateSelectedItem(

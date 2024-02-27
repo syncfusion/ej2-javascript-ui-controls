@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.8 (2024-02-27)
+
+### Mention
+
+#### Bug Fixes
+
+- `#I539496` - Fixed an issue where the mentioned value was not being updated to the target element when using mouse interaction.
+
 ## 24.2.7 (2024-02-20)
 
 ### Mention

@@ -127,9 +127,13 @@ export class Render {
                 }
                 if (args.requestType === 'grouping') {
                     // Remove the dropped column name from groupsettings.columns if args.cancel is true                
-                    const index: number = this.parent.groupSettings.columns.indexOf((args as GroupEventArgs).columnName);
+                    const index = gObj.groupSettings.columns.indexOf((args as GroupEventArgs).columnName);
                     if (index !== -1) {
-                        this.parent.groupSettings.columns.splice(index, 1);
+                        gObj.setProperties({ groupSettings: { Columns: gObj.groupSettings.columns.splice(index, 1) } }, true);
+                        gObj.setProperties({ sortSettings: { Columns: gObj.sortSettings.columns.splice(index, 1) } }, true);
+                        const column: Column = gObj.getColumnByField((args as GroupEventArgs).columnName);
+                        const headerCell: Element = gObj.getColumnHeaderByField(column.field);
+                        column.visible = (!isNullOrUndefined(headerCell) && !headerCell.classList.contains('e-hide'));
                     }
                 }
                 return;

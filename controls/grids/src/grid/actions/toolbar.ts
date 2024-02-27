@@ -660,7 +660,7 @@ export class Toolbar {
             this.sIcon = this.searchElement.parentElement.querySelector('.e-sicon');
             if (this.searchElement.value.length && !isNullOrUndefined(this.sIcon)) {
                 this.sIcon.classList.add('e-clear-icon');
-                this.sIcon.setAttribute('title', 'Clear');
+                this.sIcon.setAttribute('title', this.l10n.getConstant('ClearButton'));
                 this.sIcon.style.cursor = 'pointer';
             }
             else {
@@ -684,7 +684,7 @@ export class Toolbar {
 
     private wireEvent(): void {
         if (this.searchElement) {
-            this.searchBoxObj = new SearchBox(this.searchElement);
+            this.searchBoxObj = new SearchBox(this.searchElement, this.serviceLocator);
             EventHandler.add(this.searchElement, 'keyup', this.keyUpHandler, this);
             this.searchBoxObj.wireEvent();
         }

@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 24.2.8 (2024-02-27)
+
+### Grid
+
+#### Bug fixes
+
+- `#I550034` - Resolved an issue where printing is not work properly in grid with aggregation and grouping.
+- `#I536128` - Horizontal scrollbar appear when set column width to `auto` issue has been resolved.
+- `#I555494` - Fixed an issue where the `EllipsisWithTooltip` feature does not work correctly.
+- `#I552236` - The issue of encountering a script error when editing a grid with virtual scrolling and a column without a field name has been fixed.
+
 ## 24.2.7 (2024-02-20)
 
 ### Grid
@@ -11,6 +22,9 @@
 - `#I547707` - Resolved a script error occurring when collapsing a grouped row along with `virtualization` while the grid is in edited state.
 - `#FB50079` - Fixed the issue where scrolling with the Up arrow in virtual scroll caused the focus to leave and enter the column header.
 - `#FB50364` - Fixed an accessibility issue with row checkboxes identified by the Accessibility Insights for Web tool.
+- `#I549898` - Fixed the issue where the shimmer loader was visible outside of the grid.
+- `#I525457` - Resolved the issue where navigation through the down arrow key suddenly changed its position to the bottom of the table.
+- `#I547895` - Fixed the issue where the save action was not performed when clicking outside the dropdown.
 
 ## 24.2.5 (2024-02-13)
 

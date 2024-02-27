@@ -119,7 +119,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     public enableValueSorting: boolean = false;
     /** @hidden */
     public guid: string;
-    private request: XMLHttpRequest = new XMLHttpRequest();
+    private request: XMLHttpRequest = typeof window !== 'undefined' ? new XMLHttpRequest() : null;
     private savedDataSourceSettings: DataSourceSettingsModel;
     private remoteData: string[][] | IDataSet[] = [];
     /** @hidden */
@@ -1566,8 +1566,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pivot.pivotGridModule.notify(events.uiUpdate, pivot);
                 hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
             }
-            if (this.isPopupView && pivot.pivotGridModule &&
-                pivot.pivotGridModule.allowDeferLayoutUpdate && !pivot.isRequiredUpdate) {
+            if ((this.isPopupView && pivot.pivotGridModule && pivot.pivotGridModule.allowDeferLayoutUpdate && !pivot.isRequiredUpdate) ||
+                !isNullOrUndefined(pivot.pivotGridModule)) {
                 hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
                 pivot.pivotGridModule.hideWaitingPopup();
             }

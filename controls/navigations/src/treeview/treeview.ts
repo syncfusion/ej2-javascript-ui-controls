@@ -2977,7 +2977,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private nodeSelectAction(li: Element, e: MouseEvent | KeyboardEventArgs, eventArgs: NodeSelectEventArgs, multiSelect?: boolean) : void{
-        if (!this.allowMultiSelection || (!multiSelect && (!e || (e && !e.ctrlKey)))) {
+        if (!this.allowMultiSelection || (!multiSelect && (!e || (e && !(e.ctrlKey || e.metaKey))))) {
             this.removeSelectAll();
         }
         if (this.allowMultiSelection && e && e.shiftKey) {

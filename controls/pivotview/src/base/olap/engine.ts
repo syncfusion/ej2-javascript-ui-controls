@@ -122,6 +122,8 @@ export class OlapEngine {
     private customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
     private formatRegex: RegExp = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;   /* eslint-enable security/detect-unsafe-regex */
     private clonedValTuple: Element[] = [];
+    private clonedColumnTuple: Element[] = [];
+    private clonedRowTuple: Element[] = [];
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /** @hidden */
@@ -152,6 +154,8 @@ export class OlapEngine {
     public namedSetsPosition: { [key: string]: { [key: number]: string } } = {};
     /** @hidden */
     public errorInfo: string | Error;
+    /** @hidden */
+    public measureIndex: number;
     private colDepth: number = 0;
     private totalCollection: ITotCollection[] = [];
     private parentObjCollection: IParentObjCollection = {};
@@ -229,6 +233,7 @@ export class OlapEngine {
             this.fieldListObj = {};
             this.setNamedSetsPosition();
             if (!(this.savedFieldList && this.savedFieldListData)) {
+                this.getCubes(dataSourceSettings);
                 this.getFieldList(dataSourceSettings);
             } else {
                 this.updateFieldlist(true);
@@ -275,11 +280,7 @@ export class OlapEngine {
     }
     public scrollPage(): void {
         if (this.olapVirtualization) {
-            const columnTuples: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 0 ?
-                [].slice.call(this.xmlaCellSet[0].querySelectorAll('Axis[name|="Axis0"] Tuple')) : [];
-            const rowTuples: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 0 ?
-                [].slice.call(this.xmlaCellSet[0].querySelectorAll('Axis[name|="Axis1"] Tuple')) : [];
-            const virtualScrollingData: VirtualScrollingData = this.getVirtualScrollingData(columnTuples, rowTuples);
+            const virtualScrollingData: VirtualScrollingData = this.getVirtualScrollingData(this.clonedColumnTuple, this.clonedRowTuple);
             if (virtualScrollingData.isCalculated) {
                 this.pivotValues = [];
                 this.clearEngineProperties();
@@ -383,7 +384,7 @@ export class OlapEngine {
                             totalsCollection[totalsCollection.length] = tuplesCollection[i - offset];
                             indexCollection[indexCollection.length] = i - offset;
                         }
-                        i = axisDepth > 1 ? i - axisDepth : i;
+                        i = axisDepth > 1 ? i - (axisDepth - 1) : i;
                     } else {
                         totalsCollection[totalsCollection.length] = tuplesCollection[i as number];
                         indexCollection[indexCollection.length] = i;
@@ -452,8 +453,6 @@ export class OlapEngine {
         let valCollection: Element[] = this.xmlaCellSet && this.xmlaCellSet.length > 1 ?
             [].slice.call(this.xmlaCellSet[1].querySelectorAll('Cell')) : [];
         if (this.olapVirtualization && !isNullOrUndefined(this.pageSettings)) {
-            this.columnCount = columnTuples.length;
-            this.rowCount = rowTuples.length;
             if (columnTuples.length * rowTuples.length !== valCollection.length) {
                 const valueCollection: Element[] = [];
                 for (let colPos: number = 0; colPos < valCollection.length; colPos++) {
@@ -464,11 +463,97 @@ export class OlapEngine {
                 valCollection = valueCollection;
             }
             this.clonedValTuple = valCollection;
-            const virtualScrollingData: VirtualScrollingData = this.getVirtualScrollingData(columnTuples, rowTuples);
+            let drillInfo: { [key: string]: string[]; } = this.getDrillInfo('columns');
+            let columnData: { tupColls: Element[]; indexColls: number[]; } = this.getActualTuples(columnTuples, drillInfo);
+            drillInfo = this.getDrillInfo('rows');
+            let rowData: { tupColls: Element[]; indexColls: number[]; } = this.getActualTuples(
+                rowTuples, drillInfo, columnData.indexColls, columnTuples.length
+            );
+            this.clonedColumnTuple = columnData.tupColls;
+            this.clonedRowTuple = rowData.tupColls;
+            this.columnCount = this.clonedColumnTuple.length;
+            this.rowCount = this.clonedRowTuple.length;
+            columnData = rowData = undefined;
+            const virtualScrollingData: VirtualScrollingData = this.getVirtualScrollingData(this.clonedColumnTuple, this.clonedRowTuple);
             this.performEngine(virtualScrollingData.columnTuple, virtualScrollingData.rowTuple, virtualScrollingData.valueTuple);
         } else {
             this.performEngine(columnTuples, rowTuples, valCollection);
         }
+    }
+    private getDrillInfo(axis: string): { [key: string]: string[] } {
+        const drilledMembers: { [key: string]: string[] } = {};
+        let fieldColls: string[] = [];
+        if (axis === 'columns') {
+            fieldColls  = this.dataSourceSettings.columns.map((field: IFieldOptions) => field.name);
+        } else if (axis === 'rows') {
+            fieldColls  = this.dataSourceSettings.rows.map((field: IFieldOptions) => field.name);
+        }
+        if (fieldColls.length > 0) {
+            for (let i: number = 0, j: number = this.drilledMembers.length; i < j; i++) {
+                const drilledMember: IDrillOptions = this.drilledMembers[i as number];
+                const index: number = fieldColls.indexOf(drilledMember.name);
+                if (index > -1) {
+                    if (!drilledMembers[index as number]) {
+                        drilledMembers[index as number] = [];
+                    }
+                    drilledMembers[index as number] = drilledMembers[index as number].concat(drilledMember.items);
+                }
+            }
+        }
+        return drilledMembers;
+    }
+    private getActualTuples(
+        tuplesColl: Element[], drillInfo: { [key: string]: string[] }, indexCollection?: number[], deapth?: number
+    ): { tupColls: Element[]; indexColls: number[]; } {
+        const tupColls: Element[] = [];
+        const indexColls: number[] = [];
+        let valueCollection: Element[] = [];
+        if (tuplesColl.length > 0) {
+            for(let i: number = 0, j: number = tuplesColl.length; i < j; i++) {
+                const tuples: Element = tuplesColl[i as number];
+                let isAddElement: boolean = true;
+                let isGrandSum: boolean = false;
+                let isSum: boolean = false;
+                const memTypeColl: HTMLCollectionOf<Element> = tuples.getElementsByTagName('MEMBER_TYPE');
+                const uNameColl: HTMLCollectionOf<Element> = tuples.getElementsByTagName('UName');
+                for (let k: number = 0, l: number = memTypeColl.length; k < l; k++) {
+                    const memType: number = Number(memTypeColl[k as number].textContent);
+                    const uName: string = uNameColl[k as number].textContent;
+                    if (isSum && memType < 2) {
+                        isAddElement = false;
+                    } else if (memType === 2) {
+                        isGrandSum = true;
+                    } else if (isGrandSum && memType < 2) {
+                        isAddElement = false;
+                    }
+                    if (drillInfo[k as number] && drillInfo[k as number].indexOf(uName) > -1) {
+                        isSum = true;
+                    }
+                    if (!isAddElement) {
+                        break;
+                    }
+                }
+                if (isAddElement) {
+                    tupColls[tupColls.length] = tuples;
+                    if (indexCollection) {
+                        const rowColls: Element[] = this.clonedValTuple.slice(i * deapth, (i * deapth) + deapth);
+                        valueCollection = valueCollection.concat(indexCollection.map((index: number) => rowColls[index as number]));
+                    } else {
+                        indexColls[indexColls.length] = i;
+                    }
+                }
+            }
+        } else if (indexCollection) {
+            const rowColls: Element[] = this.clonedValTuple.slice(0, deapth);
+            valueCollection = valueCollection.concat(indexCollection.map((index: number) => rowColls[index as number]));
+        }
+        if (valueCollection.length > 0) {
+            this.clonedValTuple = valueCollection;
+        }
+        return {
+            tupColls: tupColls,
+            indexColls: indexColls
+        };
     }
     private clearEngineProperties(): void {
         this.pivotValues = [];
@@ -484,9 +569,9 @@ export class OlapEngine {
     }
     private performEngine(columnTuples: Element[], rowTuples: Element[], valCollection: Element[]): void {
         this.totalCollection = [];
+        const measureInfo: IMeasureInfo = this.getMeasureInfo();
         if (this.drilledMembers.length > 0) {
             // let st1: number = new Date().getTime();
-            const measureInfo: IMeasureInfo = this.getMeasureInfo();
             let orderedInfo: IOrderedInfo;
             orderedInfo = this.frameMeasureOrder(measureInfo, 'column', columnTuples, valCollection, columnTuples.length);
             columnTuples = orderedInfo.orderedHeaderTuples;
@@ -501,15 +586,14 @@ export class OlapEngine {
             this.updateTupCollection(this.customArgs.drillInfo.axis === 'row' ? rowTuples.length : columnTuples.length);
         }
         if (this.customArgs.action === 'down' ? this.customArgs.drillInfo.axis === 'column' : true) {
-            this.olapValueAxis = isNullOrUndefined(this.getValueAxis(undefined, undefined)) ? 'column' : 'row';
             this.frameColumnHeader(columnTuples);
-            if (!this.isPaging) {
+            if (!this.isPaging && !this.olapVirtualization) {
                 this.performColumnSorting();
             }
         }
         if (this.customArgs.action === 'down' ? this.customArgs.drillInfo.axis === 'row' : true) {
             this.frameRowHeader(rowTuples);
-            if (!this.isPaging) {
+            if (!this.isPaging && !this.olapVirtualization) {
                 this.performRowSorting();
             }
         }
@@ -764,9 +848,9 @@ export class OlapEngine {
                                     memberType: Number(typeColl[memPos as number]),
                                     isDrilled: (this.fieldList[member.getAttribute('Hierarchy')] &&
                                         this.fieldList[member.getAttribute('Hierarchy')].isHierarchy &&
-                                        !this.isAttributeDrill(member.getAttribute('Hierarchy'),
-                                                               this.tupRowInfo[tupPos as number].drillInfo, 'rows')) ? true :
-                                        this.tupRowInfo[tupPos as number].drillInfo[memPos as number].isDrilled,
+                                        !this.isAttributeDrill(
+                                            member.getAttribute('Hierarchy'), this.tupRowInfo[tupPos as number].drillInfo, 'rows'
+                                        )) ? true : this.tupRowInfo[tupPos as number].drillInfo[memPos as number].isDrilled,
                                     parentUniqueName: member.querySelector('PARENT_UNIQUE_NAME') ?
                                         member.querySelector('PARENT_UNIQUE_NAME').textContent : undefined,
                                     levelUniqueName: member.querySelector('LName').textContent,
@@ -774,6 +858,9 @@ export class OlapEngine {
                                     isNamedSet: isNamedSet,
                                     valueSort: { levelName: '', axis: member.getAttribute('Hierarchy') }
                                 }];
+                                if (this.olapVirtualization && (pivotValues[position as number] as IAxisSet[])[0].type === 'header') {
+                                    delete (pivotValues[position as number] as IAxisSet[])[0].type;
+                                }
                                 prevParent = typeColl[memPos as number] !== '3' ? (pivotValues[position as number] as IAxisSet[])[0] : prevParent;
                                 if (!prevParent) {
                                     rowMembers.push(member.querySelector('Caption').textContent);
@@ -916,17 +1003,6 @@ export class OlapEngine {
             this.onDemandDrillEngine = pivotValues;
         }
         return gTotals;
-    }
-    private getValueAxis(valueAxis: string, valueIndex: number): string {
-        this.olapValueAxis = valueAxis; this.olapRowValueIndex = valueIndex;
-        for (let i: number = 0; i < this.dataSourceSettings.rows.length; i++) {
-            if (this.dataSourceSettings.rows[i as number].name === '[Measures]') {
-                this.olapValueAxis = 'row';
-                this.olapRowValueIndex = i;
-                break;
-            }
-        }
-        return this.olapValueAxis;
     }
     private frameGrandTotalAxisSet(
         gTotals: IAxisSet[], actualText: string | number, formattedText: string,
@@ -1277,6 +1353,11 @@ export class OlapEngine {
                 members, maxLevel, (tupPos + newTupPosition),
                 this.tupColumnInfo, this.showColumnSubTotals, this.hideColumnTotalsObject, 'column');
             tupPos++;
+        }
+        if (this.olapVirtualization) {
+            maxLevel = maxLevel.slice(0, maxLevel.length - 1).map(
+                (level: number) => level === 0 ? 1 : level
+            ).concat(maxLevel.slice(maxLevel.length - 1));
         }
         if (tuples.length > 0) {
             const members: NodeListOf<Element> = tuples[0].querySelectorAll('Member');
@@ -2348,6 +2429,13 @@ export class OlapEngine {
         const spanCollection: { [key: number]: { [key: number]: number } } = {};
         let rowPos: number = this.rowStartPos - 1;
         const colMeasureCount: number = Object.keys(this.colMeasures).length;
+        let measurePosition: number = this.tupColumnInfo[0] ? this.tupColumnInfo[0].measurePosition : -1;
+        for (let i: number = rowPos; i > -1; i--) {
+            if (this.pivotValues[i as number][1].memberType === 3) {
+                measurePosition = i;
+                break;
+            }
+        }
         while (rowPos > -1) {
             spanCollection[rowPos as number] = {};
             let colPos: number = (this.pivotValues[rowPos as number] as IAxisSet[]).length - 1;
@@ -2373,7 +2461,7 @@ export class OlapEngine {
                     if (currCell.memberType === 2) {
                         if (isSubTot ? nextColCell.type === 'sum' : true) {
                             currCell.colSpan = (nextColCell.colSpan + 1) >
-                                (tupColInfo.measurePosition > rowPos ? colMeasureCount : 0) ? 1 : (nextColCell.colSpan + 1);
+                                (measurePosition > rowPos ? colMeasureCount : 0) ? 1 : (nextColCell.colSpan + 1);
                         } else {
                             currCell.colSpan = 1;
                         }
@@ -2603,6 +2691,8 @@ export class OlapEngine {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private getMeasureInfo(): IMeasureInfo {
+        this.olapValueAxis = undefined;
+        this.olapRowValueIndex = undefined;
         let mAxis: string = 'column';
         let mIndex: number;
         const values: string[] = [];
@@ -2612,11 +2702,14 @@ export class OlapEngine {
         if (values.length > 1) {
             if (this.isMeasureAvail) {
                 let isAvail: boolean = false;
+                let fieldCount: number = 0;
                 for (let i: number = 0, cnt: number = this.rows.length; i < cnt; i++) {
                     if (this.rows[i as number].name.toLowerCase() === '[measures]') {
                         mAxis = 'row';
                         mIndex = i;
                         isAvail = true;
+                        fieldCount = this.dataSourceSettings.rows.length;
+                        this.olapRowValueIndex = mIndex;
                         break;
                     }
                 }
@@ -2626,10 +2719,13 @@ export class OlapEngine {
                             mAxis = 'column';
                             mIndex = i;
                             isAvail = true;
+                            fieldCount = this.dataSourceSettings.columns.length;
                             break;
                         }
                     }
                 }
+                this.olapValueAxis = mAxis;
+                this.measureIndex = mIndex === fieldCount - 1 ? -1 : mIndex;
             } else {
                 mAxis = this.valueAxis;
                 mIndex = mAxis === 'row' ? this.rows.length - 1 : this.columns.length - 1;
@@ -3013,6 +3109,34 @@ export class OlapEngine {
         let cnt: number = formats.length;
         while (cnt--) {
             this.formatFields[formats[cnt as number].name] = formats[cnt as number];
+        }
+    }
+    private getCubes(dataSourceSettings: IDataOptions): void {
+        const connectionString: ConnectionInfo = this.getConnectionInfo(dataSourceSettings.url,
+            dataSourceSettings.localeIdentifier.toString()); // eslint-disable-next-line no-useless-escape
+        const soapMessage: string = '<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Header/><Body>' +
+                    '<Discover xmlns="urn:schemas-microsoft-com:xml-analysis"><RequestType>MDSCHEMA_CUBES</RequestType>' +
+                        '<Restrictions><RestrictionList><CATALOG_NAME>' + dataSourceSettings.catalog +
+            '</CATALOG_NAME></RestrictionList></Restrictions><Properties><PropertyList><Catalog>' + dataSourceSettings.catalog +
+            '</Catalog> <LocaleIdentifier>' + connectionString.LCID + '</LocaleIdentifier>' + (dataSourceSettings.roles ? '<Roles>' + dataSourceSettings.roles + '</Roles>' : '') + '</PropertyList></Properties>' +
+                    '</Discover></Body></Envelope>';
+        this.doAjaxPost('POST', connectionString.url, soapMessage, this.validateCube.bind(this), { dataSourceSettings: dataSourceSettings, action: 'getCubes' });
+        if (this.errorInfo) {
+            throw this.errorInfo;
+        }
+    }
+    private validateCube(xmlDoc: Document, request: Ajax, customArgs: FieldData): void {
+        const fields: HTMLElement[] = [].slice.call(xmlDoc.querySelectorAll('row'));
+        let isCubeExist: boolean = false;
+        for (const field of fields) {
+            const cubeName: string = field.querySelector('CUBE_NAME').textContent;
+            if (cubeName === customArgs.dataSourceSettings.cube) {
+                isCubeExist = true;
+                break;
+            }
+        }
+        if (!isCubeExist && fields.length > 0) {
+            this.errorInfo = 'Invalid cube name ' + this.dataSourceSettings.cube;
         }
     }
     private getFieldList(dataSourceSettings: IDataOptions): void {
@@ -4166,9 +4290,6 @@ export class OlapEngine {
                             } else {
                                 this.errorInfo = body.querySelector('return').querySelector('Error').getAttribute('Description');
                             }
-                        } else if (!body.querySelector('DiscoverResponse').querySelector('return').querySelector('row')) {
-                            // For cube
-                            this.errorInfo = 'Invalid cube name ' + this.dataSourceSettings.cube;
                         }
                     }
                     success(xmlDoc, request, customArgs);

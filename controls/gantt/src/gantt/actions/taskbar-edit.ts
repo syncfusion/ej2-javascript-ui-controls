@@ -748,7 +748,12 @@ export class TaskbarEdit extends DateProcessor {
             event.preventDefault();
             if (!isNullOrUndefined(this.taskbarElement) && !isNullOrUndefined(this.editElement) && (this.taskBarEditAction !== "ConnectorPointRightDrag" && this.taskBarEditAction !== "ConnectorPointLeftDrag") && !(this.parent.viewType === 'ResourceView' && this.currentData.hasChildRecords)) {
                 const currentElement: HTMLElement = this.editElement.parentElement;
-                currentElement.style.setProperty("position", "absolute");
+                if (this.parent.enableTimelineVirtualization && this.parent.timelineModule.wholeTimelineWidth > this.parent.element.offsetWidth * 3){
+                    currentElement.style.setProperty("position", "relative");
+                }
+                else{
+                    currentElement.style.setProperty("position", "absolute");    
+                }
                 if ((this.taskBarEditAction === 'ChildDrag' || this.taskBarEditAction === 'LeftResizing') && !isNullOrUndefined(this.currentIndex) && !isNullOrUndefined(this.currentIndex) ? Number(this.currentIndex) === 0 : false) {
                     (this.taskbarElement.childNodes[0].childNodes[0] as HTMLLIElement).style.setProperty("top", currentElement.parentElement.offsetTop + "px");
                     if (this.parent.allowTaskbarDragAndDrop && this.taskBarEditAction !== 'LeftResizing' && this.taskBarEditAction !== 'RightResizing' && this.taskBarEditAction !== 'ProgressResizing') {
@@ -766,8 +771,14 @@ export class TaskbarEdit extends DateProcessor {
                     }
                 }
                 if (this.taskBarEditAction !== 'ProgressResizing') {
-                    const rootElement = this.parent.ganttChartModule.chartBodyContainer.querySelectorAll(".e-chart-rows-container")
-                    rootElement[0].appendChild(this.taskbarResizer)
+                    if(this.parent.enableTimelineVirtualization && this.parent.timelineModule.wholeTimelineWidth > this.parent.element.offsetWidth * 3){
+                        var rootElement = this.parent.ganttChartModule.chartBodyContainer.querySelectorAll(".e-chart-scroll-container");
+                        rootElement[0].appendChild(this.taskbarResizer);
+                    }
+                    else{
+                        var rootElement = this.parent.ganttChartModule.chartBodyContainer.querySelectorAll(".e-chart-rows-container");
+                        rootElement[0].appendChild(this.taskbarResizer);
+                    }
                 }
             }
             if (this.parent.allowTaskbarDragAndDrop && (this.taskBarEditAction === "ChildDrag" || this.taskBarEditAction === "ParentDrag" ||
@@ -1909,7 +1920,12 @@ export class TaskbarEdit extends DateProcessor {
                 currentElement.style.position = null;
             }
             else {
-                currentElement.style.setProperty("position", "absolute");
+                if (this.parent.enableTimelineVirtualization && this.parent.timelineModule.wholeTimelineWidth > this.parent.element.offsetWidth * 3){
+                    currentElement.style.setProperty("position", "relative");
+                }
+                else{
+                    currentElement.style.setProperty("position", "absolute");    
+                }
             }
         }
         const item: ITaskData = this.taskBarEditRecord.ganttProperties;

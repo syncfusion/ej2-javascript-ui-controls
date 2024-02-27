@@ -132,11 +132,12 @@ export class PivotEngine {
     private isValueHasAdvancedAggregate: boolean = false;
     private rawIndexObject: INumberIndex = {};
     private valueSortHeaderText: string;
-    private valueAxisFields: IValueFields = {};
     private showSubTotalsAtTop: boolean;
     private showSubTotalsAtBottom: boolean;
     private reformAxisCount: number = 0;
     private isEditing: boolean = false;
+    /** @hidden */
+    public valueAxisFields: IValueFields = {};
     /** @hidden */
     public data: IDataSet[] | string[][] = [];
     /** @hidden */
@@ -3835,8 +3836,7 @@ export class PivotEngine {
         vlt: number, level: number, rTotal: IAxisSet, cTotal: IAxisSet): void {
         const isValueAxis: boolean = reformAxis[tnum as number].type ? reformAxis[tnum as number].type === 'value' &&
             (reformAxis[tnum as number].valueSort.levelName as string) !== reformAxis[tnum as number].actualText : false;
-        if ((reformAxis[tnum as number].hasChild && reformAxis[tnum as number].isDrilled) &&
-            reformAxis[tnum as number].members.length > 0) {
+        if (reformAxis[tnum as number].hasChild && reformAxis[tnum as number].members.length > 0) {
             let parentIndexes: number[] = [];
             const subTotal: IAxisSet = PivotUtil.frameHeaderWithKeys(reformAxis[tnum as number]);
             if (reformAxis[tnum as number].members[0].type === 'value') {

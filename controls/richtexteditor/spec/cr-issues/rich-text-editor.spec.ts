@@ -3455,4 +3455,25 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+    describe('870298: Numbered list not removed when we delete the entire list using backspace key in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        it('Checking the backspace on list', (done: Function) => {
+            rteObj = renderRTE({
+                value: '<ol><li id="firstli">list1</li><li>list2</li><li>list3</li><li id="lastli">list4</li></ol>',
+            });
+            let startNode: any = (rteObj as any).inputElement.querySelector('#firstli');
+            let endNode: any = (rteObj as any).inputElement.querySelector('#lastli');
+            let sel = new NodeSelection().setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 5);
+            (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((rteObj as any).inputElement.querySelectorAll('ol').length).toBe(0);
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

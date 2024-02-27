@@ -491,4 +491,43 @@ describe("EJ2-16252: 'FontColor and BackgroundColor' - Default value set", () =>
         expect(selectPalette).not.toBeNull();
         expect(selectPalette.style.backgroundColor === 'rgb(0, 102, 102)').not.toBeNull();
     });
+
+    describe('854808 - Not able to open the Font and Background popup while pressing enter key ', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ["FontColor", "BackgroundColor"]
+                },
+            });
+        });
+
+        it('The font dropdown is open when you click the enter key.', () => {
+            rteObj.focusIn();
+            (rteObj.element.querySelectorAll(".e-toolbar-item")[0] as any).focus();
+            keyBoardEvent.ctrlKey = false;
+            keyBoardEvent.shiftKey = false;
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.target = rteObj.element.querySelector(".e-toolbar-item .e-rte-fontcolor-dropdown");
+            (rteObj.toolbarModule as any).toolBarKeyDown(keyBoardEvent);
+            rteObj.dataBind();
+            expect(document.querySelector(".e-dropdown-popup.e-rte-fontcolor-dropdown") != null).toBe(true);
+        });
+
+        it('The background dropdown is open when you click the enter key.', () => {
+            rteObj.focusIn();
+            (rteObj.element.querySelectorAll(".e-toolbar-item")[1] as any).focus();
+            keyBoardEvent.ctrlKey = false;
+            keyBoardEvent.shiftKey = false;
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.target = rteObj.element.querySelector(".e-toolbar-item .e-rte-backgroundcolor-dropdown");
+            (rteObj.toolbarModule as any).toolBarKeyDown(keyBoardEvent);
+            rteObj.dataBind();
+            expect(document.querySelector(".e-dropdown-popup.e-rte-backgroundcolor-dropdown") != null).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

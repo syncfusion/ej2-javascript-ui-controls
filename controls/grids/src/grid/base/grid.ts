@@ -5423,7 +5423,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 if (isNullOrUndefined(col.width) && (col.freeze === 'Left' || col.freeze === 'Right' || col.freeze === 'Fixed' || col.isFrozen)) {
                     col.width = Math.max(200, col.minWidth ? parseFloat(col.minWidth.toString()) : 0);
                 }
-                if (col.width === 'auto') {
+                if (col.width === 'auto' && (col.freeze === 'Left' || col.freeze === 'Right' || col.freeze === 'Fixed' || col.isFrozen)) {
                     let tWidth: number = 0;
                     if (isAutoWidth) {
                         gcol.filter((cols: Column) => {
@@ -6977,9 +6977,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             const tagName: string = (e.target as Element).tagName;
             const elemNames: string[] = ['A', 'BUTTON', 'INPUT'];
             if (element && e.type !== 'mouseout' && !(Browser.isDevice && elemNames.indexOf(tagName) !== -1)) {
-                if (element.getAttribute('data-tooltip-id')) {
-                    return;
-                }
                 if (this.getTooltipStatus(element)) {
                     const col: Column = this.getColumns()[parseInt(element.getAttribute(literals.dataColIndex), 10)] as Column;
                     const domSetter: string = col.disableHtmlEncode ? 'innerText' : 'innerHTML';
@@ -7083,7 +7080,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 eventName: 'keydown'
             });
         EventHandler.add(this.getContent().firstElementChild, 'scroll', this.scrollHandler, this);
-        EventHandler.add(this.element, 'mousemove', this.mouseMoveHandler, this);
+        EventHandler.add(this.element, 'mouseover', this.mouseMoveHandler, this);
         EventHandler.add(this.element, 'mouseout', this.mouseMoveHandler, this);
         EventHandler.add(this.getContent(), 'touchstart', this.tapEvent, this);
         EventHandler.add(document.body, 'keydown', this.keyDownHandler, this);
@@ -7101,7 +7098,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
         EventHandler.remove(this.element, 'dblclick', this.dblClickHandler);
         EventHandler.remove(this.getContent().firstElementChild, 'scroll', this.scrollHandler);
-        EventHandler.remove(this.element, 'mousemove', this.mouseMoveHandler);
+        EventHandler.remove(this.element, 'mouseover', this.mouseMoveHandler);
         EventHandler.remove(this.element, 'mouseout', this.mouseMoveHandler);
         EventHandler.remove(this.element, 'keydown', this.keyPressHandler);
         EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
@@ -7231,10 +7228,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             (!isNullOrUndefined(ariaOwns) &&
                 (ariaOwns)) !== (e.target as Element).getAttribute('aria-owns')))
             && !this.keyPress && this.isEdit && !Browser.isDevice) {
-            if (this.editSettings.mode === 'Batch' && !((parentsUntil(relatedTarget, 'e-ddl') || parentsUntil(relatedTarget, 'e-ddt')) &&
-                parentsUntil(relatedTarget, 'e-input-group') && parentsUntil(relatedTarget, 'e-grid'))
-                && (parentsUntil(relatedTarget, 'e-uploader') || !(relatedTarget
-                && isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group'))))) {
+            if (this.editSettings.mode === 'Batch' && !(((parentsUntil(relatedTarget, 'e-ddl') || parentsUntil(relatedTarget, 'e-ddt')) &&
+                parentsUntil(relatedTarget, 'e-multi-select-list-wrapper')) && parentsUntil(relatedTarget, 'e-input-group'))
+                && (parentsUntil(relatedTarget, 'e-uploader') || !(relatedTarget &&
+                isNullOrUndefined(parentsUntil(relatedTarget, 'e-input-group'))))) {
                 this.editModule.saveCell();
                 this.notify(events.editNextValCell, {});
             }

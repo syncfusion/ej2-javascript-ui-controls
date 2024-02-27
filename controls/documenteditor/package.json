@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-documenteditor",
-	"version": "24.2.5",
+	"version": "24.2.7",
 	"description": "Feature-rich document editor control with built-in support for context menu, options pane and dialogs.",
 	"keywords": [
 		"ej2",
@@ -30,6 +30,7 @@
 		"@syncfusion/ej2-splitbuttons": "*"
 	},
 	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.1",
 		"@types/chai": "^3.4.28",
 		"@types/jasmine": "2.8.9",
 		"@types/jasmine-ajax": "^3.1.27",

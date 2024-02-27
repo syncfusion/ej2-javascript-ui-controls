@@ -1958,8 +1958,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             }
         }
         else {
-            ypos = this.accBaseModule.center.y - (centerLabelSize.height * labelCollection.length / 2) +
-            ((centerLabelSize.height + padding) / 2);
+            ypos = labelCollection.length > 1 ? (this.accBaseModule.center.y - (centerLabelSize.height * labelCollection.length / 2) +
+            ((centerLabelSize.height + padding) / 2)) : (this.accBaseModule.center.y + (centerLabelSize.height) / 4);
         }
         const options: TextOption = new TextOption(
             this.element.id + '_centerLabel',

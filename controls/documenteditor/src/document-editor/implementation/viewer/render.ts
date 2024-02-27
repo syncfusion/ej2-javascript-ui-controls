@@ -362,7 +362,12 @@ export class Renderer {
         }
         /* eslint-enable */
         let isClipped: boolean = false;
-        if (!(this.viewer instanceof WebLayoutViewer) && bodyWidget.sectionFormat.columns.length > 1) {
+
+        let nextColumnBody: BodyWidget;
+        if (!isNullOrUndefined(bodyWidget.nextRenderedWidget) && bodyWidget.columnIndex + 1 === (bodyWidget.nextRenderedWidget as BodyWidget).columnIndex) {
+            nextColumnBody = bodyWidget.nextRenderedWidget  as BodyWidget;
+        }
+        if (!(this.viewer instanceof WebLayoutViewer) && bodyWidget.sectionFormat.columns.length > 1 && !isNullOrUndefined(nextColumnBody)) {
             let colIndex: number = page.bodyWidgets.indexOf(bodyWidget);
             let xPos: number;
             let width: number;
@@ -1248,7 +1253,8 @@ export class Renderer {
                 left += elementBox.padding.left;
                 this.renderImageElementBox(elementBox, left, top, underlineY);
             } else if (elementBox instanceof ShapeElementBox) {
-                let shapeLeft: number = this.getScaledValue(left, 1);
+                let shapeLeftMargin: number = elementBox.margin.left;
+                let shapeLeft: number = this.getScaledValue(left + shapeLeftMargin, 1);
                 let shapeTop: number = this.getScaledValue(top, 2);
                 this.renderShapeElementBox(elementBox, shapeLeft, shapeTop, page);
             } else {

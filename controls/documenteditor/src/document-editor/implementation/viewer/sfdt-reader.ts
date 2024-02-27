@@ -695,19 +695,21 @@ export class SfdtReader {
                         }
                         styleObj = this.documentHelper.styles.findByName(styleName, 'Paragraph');
                         if (!isNullOrUndefined(styleObj)) {
-                            if (this.isPaste && styles && isParaHasStyleName) {
-                                for (let j = 0; j < styles.length; j++) {
-                                    if (styles[j][nameProperty[this.keywordIndex]] === styleName) {
-                                        var fontColor = styles[j][characterFormatProperty[this.keywordIndex]];
-                                        if (isNullOrUndefined(fontColor) || fontColor[fontColorProperty[this.keywordIndex]] !== (styleObj as WCharacterStyle).characterFormat.fontColor) {
-                                            const charFormat: WCharacterFormat = new WCharacterFormat();
-                                            this.parseCharacterFormat(this.keywordIndex, styles[j][characterFormatProperty[this.keywordIndex]], charFormat);
-                                            (styleObj as WCharacterStyle).characterFormat.copyFormat(charFormat);
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
+                            // The below lines are disabled because they cause a break for this task: 870732 
+                            
+                            // if (this.isPaste && styles && isParaHasStyleName) {
+                            //     for (let j = 0; j < styles.length; j++) {
+                            //         if (styles[j][nameProperty[this.keywordIndex]] === styleName) {
+                            //             var fontColor = styles[j][characterFormatProperty[this.keywordIndex]];
+                            //             if (isNullOrUndefined(fontColor) || fontColor[fontColorProperty[this.keywordIndex]] !== (styleObj as WCharacterStyle).characterFormat.fontColor) {
+                            //                 const charFormat: WCharacterFormat = new WCharacterFormat();
+                            //                 this.parseCharacterFormat(this.keywordIndex, styles[j][characterFormatProperty[this.keywordIndex]], charFormat);
+                            //                 (styleObj as WCharacterStyle).characterFormat.copyFormat(charFormat);
+                            //                 break;
+                            //             }
+                            //         }
+                            //     }
+                            // }
                             paragraph.paragraphFormat.applyStyle(styleObj as WStyle);
                         }
                         blocks.push(paragraph);

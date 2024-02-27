@@ -212,7 +212,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
              ? parentsUntil((e.target as HTMLElement), 'e-menu-item') : parentsUntil((e.target as HTMLElement), 'e-ftrchk');
             this.excelSetFocus(target, focusClass);
         }
-        else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        else if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey) {
             e.preventDefault();
             const focusableElements: HTMLElement[] = Array.from(this.dlg.querySelectorAll(
                 'input, button, [tabindex]:not([tabindex="-1"]), .e-menu-item:not(.e-disabled):not(.e-separator)'

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.8 (2024-02-27)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- The script error thrown while parsing the PDF document has been resolved.
+
 ## 24.2.7 (2024-02-20)
 
 ### PDF Parser

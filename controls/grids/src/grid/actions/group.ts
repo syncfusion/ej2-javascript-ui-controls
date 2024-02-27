@@ -336,13 +336,13 @@ export class Group implements IAction {
             ['altDownArrow', 'altUpArrow', 'ctrlDownArrow', 'ctrlUpArrow', 'enter'].indexOf(e.action) === -1)) {
             return;
         }
-        e.preventDefault();
         switch (e.action) {
         case 'altDownArrow':
         case 'altUpArrow':
             // eslint-disable-next-line no-case-declarations
             const selected: number[] = gObj.allowSelection ? gObj.getSelectedRowIndexes() : [];
             if (selected.length) {
+                e.preventDefault();
                 const rows: HTMLCollection = gObj.getContentTable().querySelector( literals.tbody).children;
                 const dataRow: HTMLTableRowElement = gObj.getDataRows()[selected[selected.length - 1]] as HTMLTableRowElement;
                 let grpRow: Element;
@@ -357,18 +357,22 @@ export class Group implements IAction {
             }
             break;
         case 'ctrlDownArrow':
+            e.preventDefault();
             this.expandAll();
             break;
         case 'ctrlUpArrow':
+            e.preventDefault();
             this.collapseAll();
             break;
         case 'enter':
             if ((e.target as Element).classList.contains('e-groupsort')) {
                 this.groupSortFocus = true;
+                e.preventDefault();
                 this.applySortFromTarget(e.target as Element);
                 break;
             } else if ((e.target as Element).classList.contains('e-ungroupbutton')) {
                 this.groupCancelFocus = true;
+                e.preventDefault();
                 this.unGroupFromTarget(e.target as Element);
                 break;
             }
@@ -386,6 +390,7 @@ export class Group implements IAction {
             if (!row) { break; }
             if (element.children.length && (element.children[0].classList.contains('e-icon-grightarrow') ||
              element.children[0].classList.contains('e-icon-gdownarrow'))) {
+                e.preventDefault();
                 this.expandCollapseRows(row);
             }
             break;
@@ -393,6 +398,7 @@ export class Group implements IAction {
             // eslint-disable-next-line no-case-declarations
             const elem: HTMLElement = gObj.focusModule.currentInfo.element;
             if (elem && elem.classList.contains('e-headercell')) {
+                e.preventDefault();
                 const column: Column = gObj.getColumnByUid(elem.firstElementChild.getAttribute('e-mappinguid'));
                 if (column.field && gObj.groupSettings.columns.indexOf(column.field) < 0) {
                     this.groupColumn(column.field);
@@ -1041,7 +1047,7 @@ export class Group implements IAction {
             firstContentCellIndex = findCellIndex(focusModule.active.matrix.matrix, firstContentCellIndex, true);
         }
         focusModule.active.matrix.current = firstContentCellIndex;
-        focusModule.active.getTable().rows[focusModule.active.matrix.current[0]].cells[focusModule.active.matrix.current[1]].focus();
+        focusModule.focus();
         //Todo:  rtl
     }
 

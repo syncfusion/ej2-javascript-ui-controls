@@ -4565,3 +4565,158 @@ describe('Edit baseline dates', function () {
         expect(ganttObj.currentViewData[0].taskData['duration']).toBe(1);
     });
 });
+describe('Bug-870350: Editing resource allocation differed from initial rendering.', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Project initiation',
+                    StartDate: new Date('03/29/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        {
+                            TaskID: 220,
+                            TaskName: 'w0 - 50/75',
+                            StartDate: new Date('03/29/2019'),
+                            Duration: 1,
+                            Progress: 30,
+                            work: 0,
+                            schedulingType: 'FixedDuration',
+                            resources: [
+                                { resourceId: 1, unit: 50 },
+                                { resourceId: 2, unit: 75 },
+                            ],
+                        },
+                        {
+                            TaskID: 221,
+                            TaskName: 'w10 - 50/75',
+                            StartDate: new Date('03/29/2019'),
+                            Duration: 1,
+                            Progress: 30,
+                            work: 10,
+                            schedulingType: 'FixedDuration',
+                            resources: [
+                                { resourceId: 1, unit: 50 },
+                                { resourceId: 2, unit: 75 },
+                            ],
+                        },
+                        {
+                            TaskID: 222,
+                            TaskName: 'w10 - 50/75',
+                            StartDate: new Date('03/29/2019'),
+                            Duration: 1,
+                            Progress: 30,
+                            work: 10,
+                            schedulingType: 'FixedDuration',
+                            resources: [
+                                { resourceId: 1, unit: 0 },
+                                { resourceId: 2, unit: 150 },
+                            ],
+                        },
+                    ],
+                },
+            ],
+            resources: [
+                { resourceId: 1, resourceName: 'Martin Tamer' },
+                { resourceId: 2, resourceName: 'Rose Fuller' },
+                { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                { resourceId: 4, resourceName: 'Fuller King' },
+                { resourceId: 5, resourceName: 'Davolio Fuller' },
+                { resourceId: 6, resourceName: 'Van Jack' },
+                { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                { resourceId: 8, resourceName: 'Jack Davolio' },
+                { resourceId: 9, resourceName: 'Tamer Vinet' },
+                { resourceId: 10, resourceName: 'Vinet Fuller' },
+                { resourceId: 11, resourceName: 'Bergs Anton' },
+                { resourceId: 12, resourceName: 'Construction Supervisor' },
+            ],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                work: 'work', 
+                child: 'subtasks',
+                type: 'schedulingType',
+              },
+            
+              editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+              },
+              resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'unit',
+              },
+              workUnit: 'Hour',
+              toolbar: [
+                'Add',
+                'Edit',
+                'Update',
+                'Delete',
+                'Cancel',
+                'ExpandAll',
+                'CollapseAll',
+              ],
+              allowSelection: true,
+              height: '450px',
+              treeColumnIndex: 1,
+              highlightWeekends: true,
+              columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '100' },
+                { field: 'resources', headerText: 'Resources', width: '200' },
+                { field: 'work', width: '100' },
+                { field: 'Duration', width: '100' },
+                //{ field: 'schedulingType', headerText: 'Sched Type', width: '100' },
+                { field: 'taskType', headerText: 'Task Type', width: '100' },
+              ],
+              editDialogFields: [
+                {
+                  type: 'General',
+                  headerText: 'General',
+                  fields: [
+                    'TaskID',
+                    'TaskName',
+                    'StartDate',
+                    'Duration',
+                    'Progress',
+                    'Predecessor',
+                    'work',
+                    'schedulingType',
+                  ],
+                },
+                { type: 'Dependency' },
+                { type: 'Resources' },
+                { type: 'Custom' },
+              ],
+              labelSettings: {
+                rightLabel: 'resources',
+              },
+              splitterSettings: {
+                columnIndex: 5,
+              },
+              taskType: 'FixedDuration',
+              projectStartDate: new Date('03/28/2019'),
+              projectEndDate: new Date('07/28/2019'),
+          
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Editing resource allocation differed from initial rendering.', () => {
+        expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(10);
+    });
+});

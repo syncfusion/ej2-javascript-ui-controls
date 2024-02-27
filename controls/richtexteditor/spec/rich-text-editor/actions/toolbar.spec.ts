@@ -230,8 +230,8 @@ const toolbarFocusShortCutEvent = new KeyboardEvent('keydown', {
         numberFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_NumberFormatList-popup .e-item');
         items[0].click();
-        expect(pEle.style.listStyleType === 'none').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'OL').toBe(true);
+        expect(pEle.style.listStyleType === '').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'P').toBe(true);
         done();
     });
     it(' Check the numberFormatList items 7', (done) => {
@@ -315,8 +315,8 @@ const toolbarFocusShortCutEvent = new KeyboardEvent('keydown', {
         bulletFormatList.click();
         let items: any = document.querySelectorAll('#' + controlId + '_toolbar_BulletFormatList-popup .e-item');
         items[0].click();
-        expect(pEle.style.listStyleType === 'none').toBe(true);
-        expect(rteObj.element.querySelector('#rte').tagName === 'UL').toBe(true);
+        expect(pEle.style.listStyleType === '').toBe(true);
+        expect(rteObj.element.querySelector('#rte').tagName === 'P').toBe(true);
         done();
     });
     afterEach(() => {

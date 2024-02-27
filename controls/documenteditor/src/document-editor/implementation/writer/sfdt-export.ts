@@ -1365,6 +1365,9 @@ export class SfdtExport {
         for (let i: number = startIndex; i <= endIndex; i++) {
             let child: LineWidget = paragraph.childWidgets[i] as LineWidget;
             if (this.endLine === child || (lineIndex === i && offset !== 0)) {
+                if (this.endLine === child && paragraph.paragraphFormat.bidi && this.startLine !== this.endLine) {
+                    this.endOffset = child.getEndOffset();
+                }
                 this.writeLine(child, (this.startLine !== this.endLine && child !== this.startLine) ? 0 : offset, inlines);
             } else {
                 this.writeInlines(paragraph, child, inlines);

@@ -895,15 +895,17 @@ export class Magnification {
         lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
         higherPageValue = (higherPageValue < this.pdfViewerBase.pageCount) ? higherPageValue : (this.pdfViewerBase.pageCount - 1);
         for (let i: number = lowerPageValue; i <= higherPageValue; i++) {
-            const canvas: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + i);
-            let width: number = this.pdfViewerBase.pageSize[i].width * this.zoomFactor;
-            let height: number = this.pdfViewerBase.pageSize[i].height * this.zoomFactor;
-            if (canvas && !this.pdfViewer.restrictZoomRequest) {
-                // eslint-disable-next-line max-len
-                this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), width, height, i, 'none');
-            } else if (!this.pdfViewer.restrictZoomRequest) {
-                // eslint-disable-next-line max-len
-                this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), width, height, i, 'none');
+            if(this.pdfViewerBase.pageSize[i]) {
+                const canvas: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + i);
+                let width: number = this.pdfViewerBase.pageSize[i].width * this.zoomFactor;
+                let height: number = this.pdfViewerBase.pageSize[i].height * this.zoomFactor;
+                if (canvas && !this.pdfViewer.restrictZoomRequest) {
+                    // eslint-disable-next-line max-len
+                    this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), width, height, i, 'none');
+                } else if (!this.pdfViewer.restrictZoomRequest) {
+                    // eslint-disable-next-line max-len
+                    this.pdfViewerBase.renderPageCanvas(this.pdfViewerBase.getElement('_pageDiv_' + i), width, height, i, 'none');
+                }
             }
         }
         this.isRerenderCanvasCreated = true;

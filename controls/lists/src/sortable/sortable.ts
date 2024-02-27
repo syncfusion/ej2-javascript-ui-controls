@@ -187,7 +187,7 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
         let newInst: Sortable = this.getSortableInstance(e.target); let target: HTMLElement = this.getSortableElement(e.target, newInst);
         if ((this.isValidTarget(target, newInst) || e.target.className.indexOf('e-list-group-item') > -1) && (this.curTarget !== target ||
             !isNullOrUndefined(newInst.placeHolder)) && (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true)) {
-            if (e.target.className.indexOf('e-list-group-item') > -1) {
+            if (e.target.classList.contains('e-list-group-item')) {
                 target = e.target;
             }
             this.curTarget = target;

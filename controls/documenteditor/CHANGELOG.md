@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 24.2.8 (2024-02-27)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I549317` - Resolved the layouting issue when opening attached document.
+- `#I541401` - Resolved the indentation rendering issue.
+- `#I546320` - Resolved the spell checker suggestions not replacing issue.
+- `#I543922` - Resolved the layouting issue when line spacing type is exactly.
+- `#I545234` - Resolved the spell check issues in blazor.
+- `#I555335` - Resolved the character format applying issue when pasting sfdt content.
+- `#I529782` - Resolved the overlapping issue while opening the attached document.
+- `#I524548` - Resolved the font family issue in table of content.
+- `#I547495` - Resolved the column content missing issue.
+- `#I547296` - Resolved the Arabic content copy pasting issue.
+
 ## 24.2.7 (2024-02-20)
 
 ### DocumentEditor

@@ -1485,6 +1485,8 @@ export class StickyNotesAnnotation {
         } else {
             annotationAuthor = author;
         }
+        // eslint-disable-next-line
+        annotationAuthor = annotationAuthor.replace(/(\r\n|\n|\r)/gm, "");
         commentTypeSpan.style.padding = 8 + 'px';
         commentTypeSpan.style.cssFloat = 'left';
         commentTitleContainer.appendChild(commentTypeSpan);
@@ -1519,6 +1521,12 @@ export class StickyNotesAnnotation {
             this.createCommentContextMenu();
         }
         this.isCreateContextMenu = true;
+        if (commentsTitle.parentElement && commentsTitle.parentElement.clientWidth != 0) {
+            commentsTitle.style.maxWidth = (commentsTitle.parentElement.clientWidth - moreOptionsButton.clientWidth) + "px";
+        }
+        else {
+            commentsTitle.style.maxWidth = '237px';
+        }
         commentTitleContainer.addEventListener('dblclick', this.openTextEditor.bind(this));
         moreOptionsButton.addEventListener('mouseup', this.moreOptionsClick.bind(this));
         return annotationType;
@@ -1530,6 +1538,7 @@ export class StickyNotesAnnotation {
         const replyTitleContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replyTitleConatiner_' + this.commentsCount + '_' + this.commentsreplyCount, className: 'e-pv-reply-title-container' });
         // eslint-disable-next-line max-len
         const replyTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replyTitle_' + this.commentsCount + '_' + this.commentsreplyCount, className: 'e-pv-reply-title' });
+        annotationAuthor = annotationAuthor.replace(/(\r\n|\n|\r)/gm,"");
         if (!modifiedDate) {
             replyTitle.textContent = annotationAuthor + ' - ' + this.setModifiedDate();
         } else {
@@ -1549,6 +1558,13 @@ export class StickyNotesAnnotation {
         moreButtonSpan.style.opacity = '0.87';
         replyTitleContainer.appendChild(moreButton);
         commentsDivElement.appendChild(replyTitleContainer);
+        const parentCommentDiv: NodeListOf<Element> = document.querySelectorAll('[class="e-pv-comment-title"]');
+        const moreactionIcon: NodeListOf<Element> = document.querySelectorAll('[class="e-pv-more-options-button e-btn"]');
+        if (parentCommentDiv[0] && moreactionIcon[0] && parentCommentDiv[0].parentElement && parentCommentDiv[0].parentElement.clientWidth != 0) {
+            replyTitle.style.maxWidth = (parentCommentDiv[0].parentElement.clientWidth - (moreactionIcon[0] as HTMLElement).clientWidth) + "px";
+        } else {
+            replyTitle.style.maxWidth = '237px';
+        }
         replyTitleContainer.addEventListener('dblclick', this.openTextEditor.bind(this));
         moreButton.addEventListener('mouseup', this.moreOptionsClick.bind(this));
     }

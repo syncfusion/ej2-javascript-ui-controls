@@ -435,7 +435,7 @@ export class ColumnChooser implements IAction {
         this.innerDiv = this.parent.createElement('div', { className: 'e-innerdiv e-cc' });
         searchDiv.appendChild(ccsearchele);
         searchDiv.appendChild(ccsearchicon);
-        this.searchBoxObj = new SearchBox(ccsearchele);
+        this.searchBoxObj = new SearchBox(ccsearchele, this.serviceLocator);
         const innerDivContent: HTMLElement | string[] | string = this.refreshCheckboxList(this.parent.getColumns() as Column[]);
         this.innerDiv.appendChild((innerDivContent as Element));
         conDiv.appendChild(this.innerDiv);
@@ -499,6 +499,7 @@ export class ColumnChooser implements IAction {
     public resetColumnState(): void {
         this.showColumn = [];
         this.hideColumn = [];
+        this.changedColumns = [];
         this.hideDialog();
     }
 

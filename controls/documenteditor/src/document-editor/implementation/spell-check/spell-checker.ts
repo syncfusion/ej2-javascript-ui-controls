@@ -1071,7 +1071,7 @@ export class SpellChecker {
         let matchObject: RegExpExecArray;
         // eslint-disable  no-cond-assign
         while (!isNullOrUndefined(matchObject = pattern.exec(text))) {
-            if (spans.containsKey(errorElement)) {
+            if (spans.containsKey(errorElement) && this.manageSpecialCharacters((errorElement as TextElementBox).text, undefined, true) === (errorElement as TextElementBox).text) {
                 matchObject.index = spans.get(errorElement);
             }
             matches.push(matchObject);

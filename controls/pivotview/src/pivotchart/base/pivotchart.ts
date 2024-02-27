@@ -362,9 +362,9 @@ export class PivotChart {
                                 ((firstRowCell.memberType === 3 && prevMemberCell) ?
                                     (fieldPos === this.measurePos ? (prevMemberCell.isDrilled && prevMemberCell.hasChild) : true) :
                                     (firstRowCell.isDrilled && firstRowCell.hasChild)) : true)
-                                : (((firstRowCell.type === 'value' && prevMemberCell) ?
-                                    prevMemberCell.members.length > 0 && prevMemberCell.isDrilled : firstRowCell.members.length > 0
-                                    && firstRowCell.isDrilled) || !measureAllow)) {
+                                : (((firstRowCell.type === 'value' && prevMemberCell) ? !isNullOrUndefined(prevMemberCell.members) &&
+                                    prevMemberCell.members.length > 0 && prevMemberCell.isDrilled :
+                                    firstRowCell.members.length > 0 && firstRowCell.isDrilled) || !measureAllow)) {
                                 break;
                             }
                             if (this.parent.dataType === 'olap' && cell.isSum === true && this.parent.dataSourceSettings.valueAxis === 'row') {

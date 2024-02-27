@@ -3111,12 +3111,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             (getComponent(element[i as number], 'dropdown-btn') as DropDownButton).destroy();
             detach(element[i as number]);
         }
-        popupElement = document.querySelectorAll('.qb-dropdownlist') as NodeListOf<HTMLElement>;
-        if (popupElement) {
-            for( i = 0; i < popupElement.length; i++) {
-                popupElement[i as number].remove();
-            }
-        }
         tooltip = this.element.querySelectorAll('.e-rule-filter .e-control.e-tooltip') as NodeListOf<HTMLElement>;
         for (i = 0; i < tooltip.length; i++) {
             (getComponent(tooltip[i as number], 'tooltip') as Tooltip).destroy();
@@ -3153,6 +3147,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.element.innerHTML = '';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).portals && (this as any).portals.length) { this.clearQBTemplate(); }
+        popupElement = document.querySelectorAll('.qb-dropdownlist') as NodeListOf<HTMLElement>;
+        if (popupElement) {
+            for( i = 0; i < popupElement.length; i++) {
+                popupElement[i as number].remove();
+            }
+        }
         classList(this.element, [], ['e-rtl', 'e-responsive', 'e-device']);
         this.isDestroy = false;
     }

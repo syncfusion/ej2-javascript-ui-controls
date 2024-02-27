@@ -95,7 +95,7 @@ export let defaultLocale: { [key: string]: string } = {
     'browse': 'Browse',
     'imageUrl': 'http://example.com/image.png',
     'audioUrl': 'http://example.com/audio.mp3',
-    'videoUrl': 'http://example.com/video.mp3',
+    'videoUrl': 'http://example.com/video.mp4',
     'webUrl': 'Web URL',
     'embedUrl': 'Embed Code',
     'imageCaption': 'Caption',

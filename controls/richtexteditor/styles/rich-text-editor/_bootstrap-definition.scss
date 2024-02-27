@@ -27,7 +27,7 @@ $rte-big-quick-item-line-height: normal !default;
 $rte-quick-item-line-height: 20px !default;
 $rte-quick-item-active-bg: rgba($grey-base, .12) !default;
 $rte-quick-item-active-font-color: $base-font !default;
-$rte-quick-item-border: $rte-border-size solid transparent !default;
+$rte-quick-item-border: 0 solid transparent !default;
 $rte-quick-item-hover-border-color: $grey-8c !default;
 $rte-quick-item-active-border-color: $grey-8c !default;
 $rte-content-padding: 16px !default;
@@ -65,11 +65,11 @@ $rte-big-tb-items-margin-left: 3px !default;
 $rte-tb-items-margin-left: 6px !default;
 $rte-big-tb-items-padding-left: 3px !default;
 $rte-tb-items-padding-left: 6px !default;
-$rte-big-active-tb-item-btn-padding: 0 6px !default;
-$rte-active-tb-item-btn-padding: 0 1.5px !default;
+$rte-big-active-tb-item-btn-padding: 0 7px !default;
+$rte-active-tb-item-btn-padding: 0 2.5px !default;
 $rte-tb-item-active-bg: rgba($grey-base, .12) !default;
 $rte-tb-active-font-color: $base-font !default;
-$rte-tb-item-active-border: $rte-border-size $rte-border-type $grey-8c !default;
+$rte-tb-item-active-border: 0 !default;
 $rte-expand-tb-border-bottom: $rte-border-size $rte-border-type rgb(250, 250, 250) !default;
 $rte-color-picker-active-bg: inherit !default;
 $rte-drop-btn-active-bg: $grey-e6 !default;
@@ -87,7 +87,7 @@ $rte-split-btn-span-active-bg: $grey-e6 !default;
 $rte-split-btn-bar-bg: $grey-ad !default;
 $rte-split-btn-active-bar-bg: $grey-ad !default;
 $rte-split-btn-bar-size: 0 !default;
-$rte-split-btn-active-border: 1px solid $grey-ad !default;
+$rte-split-btn-active-border: 0 solid $grey-ad !default;
 $rte-split-btn-active-color-icon-line-height: 30px !default;
 $rte-big-split-btn-active-color-icon-line-height: 34px !default;
 $rte-formatlists-dropdown-line-height: 20px;
@@ -114,15 +114,15 @@ $rte-font-name-btn-min-width: 67px !default;
 $rte-font-size-btn-min-width: 36px !default;
 $rte-drop-btn-padding-left: 9px !default;
 $rte-drop-btn-padding-right: 3.5px !default;
-$rte-drop-btn-action-padding-left: 8px !default;
-$rte-drop-btn-action-padding-right: 2.5px !default;
+$rte-drop-btn-action-padding-left: 9px !default;
+$rte-drop-btn-action-padding-right: 3.5px !default;
 $rte-big-drop-btn-padding-left: 12px !default;
 $rte-big-drop-btn-padding-right: 7px !default;
-$rte-big-drop-btn-action-padding-left: 11px !default;
-$rte-big-drop-btn-action-padding-right: 6px !default;
+$rte-big-drop-btn-action-padding-left: 12px !default;
+$rte-big-drop-btn-action-padding-right: 7px !default;
 $rte-ext-tbar-overlay-icons-color: $base-font !default;
 $rte-colorpicker-parent-padding: 1px !default;
-$rte-colorpicker-parent-padding-hover: 0 !default;
+$rte-colorpicker-parent-padding-hover: 1px !default;
 $rte-colorpicker-parent-padding-active-hover: 1px !default;
 $rte-overlay-color: #383838 !default;
 $rte-dropdown-btn-color-content-height: 30px !default;
@@ -178,7 +178,7 @@ $rte-resize-handler-height: 15px;
 $rte-resize-handler-position: 0;
 $rte-default-character-count-opacity: .54;
 
-$rte-big-color-list-span-common-padding-left-right: 0;
+$rte-big-color-list-span-common-padding-left-right: 1px;
 $rte-placeholder-padding: 16px !default;
 
 $rte-img-dlg-max-height: 426px !default;
@@ -267,9 +267,9 @@ $rte-format-painter-cursor: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiI
       &.e-extended-toolbar .e-toolbar-items .e-toolbar-item {
         & .e-rte-dropdown-btn.e-active.e-tbar-btn {
           background: $rte-dropdown-active-bg;
-          border: $rte-dropdown-active-border;
-          padding-left: 8px;
-          padding-right: 2.5px;
+          border: 0;
+          padding-left: 9px;
+          padding-right: 3.5px;
         }
       }
     }

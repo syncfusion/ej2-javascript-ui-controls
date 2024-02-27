@@ -6,6 +6,8 @@ import { baselineData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
 import { ISplitterResizedEventArgs } from '../../src/gantt/base/interface';
+import { EmitType } from '@syncfusion/ej2-base';
+import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 
 describe('Gantt splitter support', () => {
     describe('Gantt splitter action', () => {
@@ -144,7 +146,40 @@ describe('Gantt splitter support', () => {
             expect(ganttObj.splitterModule.splitterObject.paneSettings[0].size).toBe('50%');
         });
     });
+    describe('bug-871577-updating spliter position', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: baselineData,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children'
+                },
+                projectStartDate: new Date('10/15/2017'),
+                projectEndDate: new Date('12/30/2017'),
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('bug-871577-updating spliter position', () => {
+            let splitterView = ganttObj.splitterSettings.view;
+            splitterView = 'Grid';
+            ganttObj.setSplitterPosition(splitterView, 'view');
+            ganttObj.dataBind();
+            expect(ganttObj.splitterSettings.view).toBe('Grid');
+        });
+    });
 });
+
 
 
 describe('Schedule mode', () => {

@@ -1300,6 +1300,44 @@ describe('Grouping module => ', () => {
         });
     });
 
+    describe('MT-870619 - After grouping the column, the focus is not working properly => ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0,5),
+                    columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'ShipCountry', headerText: 'Ship Country' }],
+                    allowGrouping: true,
+                    allowPaging: true,
+                    allowSorting: true
+                }, done);
+        });
+        it('Single column group testing', (done: Function) => {
+            actionComplete = (args?: Object): void => {
+                expect(gridObj.element.querySelector('.e-gdiagonaldown').classList.contains('e-focus')).toBeTruthy();
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.groupModule.groupColumn('ShipCountry');
+        });
+        it('clear Grouping', (done: Function) => {
+            actionComplete = () => {
+                expect(gridObj.groupSettings.columns.length).toBe(0);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.groupModule.ungroupColumn('ShipCountry');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
+
     describe('Grouping functionalites with empty grid => ', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {

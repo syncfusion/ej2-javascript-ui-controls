@@ -1,4 +1,4 @@
-import { EventHandler, getValue, KeyboardEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { L10n, EventHandler, getValue, KeyboardEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { addClass, removeClass, extend, Browser } from '@syncfusion/ej2-base';
 import { IGrid, IFocus, FocusInfo, FocusedContainer, IIndex, CellFocusArgs, SwapInfo, GroupEventArgs } from '../base/interface';
 import { CellType } from '../base/enum';
@@ -8,6 +8,7 @@ import { Cell } from '../models/cell';
 import { Column } from '../models/column';
 import { NotifyArgs, EJ2Intance } from '../base/interface';
 import { RowModelGenerator } from './row-model-generator';
+import { ServiceLocator } from '../services/service-locator';
 import { parentsUntil, addRemoveEventListener, findCellIndex } from '../base/util';
 import * as literals from '../base/string-literals';
 import { Grid } from '../base/grid';
@@ -1562,9 +1563,12 @@ export class HeaderFocus extends ContentFocus implements IFocus {
 /** @hidden */
 export class SearchBox {
     public searchBox: HTMLElement;
-
-    constructor(searchBox: HTMLElement) {
+    private l10n: L10n;
+    protected serviceLocator: ServiceLocator;
+    constructor(searchBox: HTMLElement, serviceLocator?: ServiceLocator) {
         this.searchBox = searchBox;
+        this.serviceLocator = serviceLocator;
+        this.l10n = this.serviceLocator.getService<L10n>('localization');
     }
 
     public searchFocus(args: { target: HTMLInputElement }): void {
@@ -1572,7 +1576,7 @@ export class SearchBox {
         if (args.target.classList.contains('e-input') && args.target.classList.contains('e-search') && args.target.value){
             const sIcon: HTMLElement = args.target.parentElement.querySelector('.e-sicon');
             sIcon.classList.add('e-clear-icon');
-            sIcon.setAttribute('title', 'Clear');
+            sIcon.setAttribute('title', this.l10n.getConstant('ClearButton'));
             (sIcon).style.cursor = 'pointer';
         }
     }

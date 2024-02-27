@@ -949,11 +949,13 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                 this.refresh();
             }
             else {
-                if (oldProp.pageSize && this.pageSize !== oldProp.pageSize) {
-                    this.isCancel = true;
+                this.isCancel = true;
+                if (oldProp && oldProp.pageSize) {
                     this.setProperties({ pageSize: oldProp.pageSize }, true);
-                    this.pagerdropdownModule.setDropDownValue('value', oldProp.pageSize);
-                    this.pagerdropdownModule['dropDownListObject'].text = oldProp.pageSize + '';
+                    if (this.pagerdropdownModule) {
+                        this.pagerdropdownModule.setDropDownValue('value', oldProp.pageSize);
+                        this.pagerdropdownModule['dropDownListObject'].text = oldProp.pageSize + '';
+                    }
                 }
             }
         }

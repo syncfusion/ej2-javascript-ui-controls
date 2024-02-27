@@ -681,12 +681,14 @@ export class TaskProcessor extends DateProcessor {
                 work = parseFloat(work.toFixed(2));
             }
         }
-        if (ganttData.childRecords.length > 0 && this.parent.isOnEdit) {
-            let childCompletedWorks: number = 0
-            for (let i: number = 0; i < ganttData.childRecords.length; i++) {
-                childCompletedWorks += ganttData.childRecords[i as number].ganttProperties.work;
+        if (ganttData.childRecords) {
+            if (ganttData.childRecords.length > 0 && this.parent.isOnEdit) {
+                let childCompletedWorks: number = 0
+                for (let i: number = 0; i < ganttData.childRecords.length; i++) {
+                    childCompletedWorks += ganttData.childRecords[i as number].ganttProperties.work;
+                }
+                work += childCompletedWorks;
             }
-            work += childCompletedWorks;
         }
         this.parent.setRecordValue('work', work, ganttData.ganttProperties, true);
         if (!isNullOrUndefined(this.parent.taskFields.work)) {
@@ -892,7 +894,7 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue('work', work, ganttProperties, true);
                 switch (tType) {
                 case 'FixedDuration':
-                    this.updateUnitWithWork(ganttData);
+                    this.updateWorkWithDuration(ganttData)
                     break;
                 case 'FixedWork':
                     this.updateUnitWithWork(ganttData);
@@ -1300,14 +1302,18 @@ export class TaskProcessor extends DateProcessor {
             this.parent.ganttChartModule.scrollObject['isSetScrollLeft'])) && !isFromTimelineVirtulization) {
             isValid = false;
         }
-        if (this.parent.enableTimelineVirtualization && isValid && !this.parent.timelineModule['performedTimeSpanAction']) {
+        if (!this.parent.editModule && this.parent.enableTimelineVirtualization && isValid && !this.parent.timelineModule['performedTimeSpanAction']) {
            leftValueForStartDate = (this.parent.enableTimelineVirtualization && this.parent.ganttChartModule.scrollObject.element.scrollLeft != 0)
                 ? this.parent.ganttChartModule.scrollObject.getTimelineLeft() : null;
         }
-        const timelineStartDate: Date = (this.parent.enableTimelineVirtualization && !isNullOrUndefined(leftValueForStartDate))
+        const timelineStartDate: Date = (!this.parent.editModule && this.parent.enableTimelineVirtualization && !isNullOrUndefined(leftValueForStartDate))
                 ? new Date((this.parent.timelineModule['dateByLeftValue'](leftValueForStartDate)).toString()) : new Date(this.parent.timelineModule.timelineStartDate);
         if (timelineStartDate) {
-            return (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+            let leftValue: number =  (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+            if(this.parent.isInDst(timelineStartDate) && !this.parent.isInDst(startDate) && (this.parent.timelineModule.topTier == 'Hour' || this.parent.timelineModule.bottomTier == 'Hour')) {
+                leftValue = leftValue - this.parent.timelineSettings.timelineUnitSize;
+            }
+            return leftValue;
         } else {
             return 0;
         }

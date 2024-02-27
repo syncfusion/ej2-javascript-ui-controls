@@ -110,7 +110,14 @@ export class Selection {
             if (this.parent.enableTimelineVirtualization) {
                 this.parent['isRowSelected'] = true;
             }
-            this.parent.ganttChartModule.updateScrollLeft(getValue('data.ganttProperties.left', args));
+            if(args.data && !isNullOrUndefined(args.data['length'])){
+                for (let i: number = 0; i < args.data['length']; i++){
+                    this.parent.ganttChartModule.updateScrollLeft(args.data[i as number].ganttProperties.left);
+                }
+            }
+            else{
+                this.parent.ganttChartModule.updateScrollLeft(getValue('data.ganttProperties.left', args));
+            }
         }
         args.target = this.actualTarget as Element;
         if (!isNullOrUndefined(args.foreignKeyData) && Object.keys(args.foreignKeyData).length === 0) {

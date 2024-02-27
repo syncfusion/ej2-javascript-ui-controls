@@ -278,9 +278,9 @@ export class BaseQuickToolbar {
                     parentData: parent.getBoundingClientRect(),
                     tBarElementHeight: tBarHeight
                 };
-                if (target.tagName === 'IMG' || target.tagName === 'AUDIO' || target.tagName === 'VIDEO' || target.tagName === 'IFRAME' || (target.classList &&
+                if ((target.tagName === 'IMG' || target.tagName === 'AUDIO' || target.tagName === 'VIDEO' || target.tagName === 'IFRAME' || (target.classList &&
                     (target.classList.contains(classes.CLS_AUDIOWRAP) || target.classList.contains(classes.CLS_CLICKELEM) ||
-                    target.classList.contains(classes.CLS_VID_CLICK_ELEM)))) {
+                    target.classList.contains(classes.CLS_VID_CLICK_ELEM)))) && (x == beforeQuickToolbarArgs.positionX || y == beforeQuickToolbarArgs.positionY)) {
                     this.setPosition(showPopupData);
                 }
                 if (!this.parent.inlineMode.enable) {

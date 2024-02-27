@@ -125,3 +125,38 @@ console.log('selection at end of bookmark');
         expect(editor.selection.bookmarks.length).toBe(0);
     });
 });
+
+describe('Allcaps property testing', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection); editor.enableEditorHistory = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('AllCaps property value Testing', () => {
+        console.log('AllCaps property value Testing');
+        editor.openBlank();
+        editor.editorModule.insertText('Syncfusion');
+        editor.selection.selectAll();
+        editor.editor.changeCase('Uppercase');
+        expect(editor.selection.characterFormat.allCaps).toBe(true);
+        editor.selection.selectAll();
+        editor.editor.changeCase('Lowercase');
+        expect(editor.selection.characterFormat.allCaps).toBe(false);
+    });
+});

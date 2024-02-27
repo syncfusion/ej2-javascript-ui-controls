@@ -158,9 +158,11 @@ export class VirtualScroll implements IAction {
         const inputs: HTMLInputElement[] = [].slice.call(form.getElementsByClassName('e-field'));
         for (let i: number = 0, len: number = inputs.length; i < len; i++) {
             const col: Column = getColumnModelByUid(this.parent, inputs[parseInt(i.toString(), 10)].getAttribute('e-mappinguid'));
-            let value: string =  getValue(col.field, editedData);
-            value = isNullOrUndefined(value) ? '' : value;
-            inputs[parseInt(i.toString(), 10)].value = value;
+            if (col.field) {
+                let value: string = getValue(col.field, editedData);
+                value = isNullOrUndefined(value) ? '' : value;
+                inputs[parseInt(i.toString(), 10)].value = value;
+            }
         }
     }
 

@@ -216,7 +216,7 @@ export class PeriodSelector {
                         datePickerElement.style.display = 'none';
                         let element: HTMLElement = createElement('div', {
                             id: dateRangeId,
-                            className: 'e-btn e-dropdown-btn e-flat',
+                            className: 'e-control e-btn e-dropdown-btn e-flat',
                             styles: 'font-size: 14px; font-weight: 500; text-transform: none '
                         });
                         element.innerText = selctorArgs.content;

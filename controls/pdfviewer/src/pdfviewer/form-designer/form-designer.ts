@@ -83,6 +83,7 @@ export class FormDesigner {
     private isInitialField: boolean = false;
     private isSetFormFieldMode: boolean = false;
     private isAddFormFieldProgrammatically: boolean = false;
+    private isAddFormFieldUi: boolean = false;
     private increasedSize: number = 5;
     private defaultZoomValue: number = 1;
     private signatureFieldPropertyChanged: any =
@@ -1525,7 +1526,12 @@ export class FormDesigner {
             this.updateDropdownListProperties(drawingObject, option);
             select.appendChild(option);
         }
-        select.selectedIndex = !isNullOrUndefined((drawingObject as any).selectedIndex) ? (drawingObject as any).selectedIndex : 0;
+        if (isNullOrUndefined((drawingObject as any).selectedIndex) || (drawingObject as any).selectedIndex.length === 0) {
+            select.selectedIndex = -1;
+        }
+        else {
+            select.selectedIndex = !isNullOrUndefined((drawingObject as any).selectedIndex) ? (drawingObject as any).selectedIndex : 0;
+        }
         element.appendChild(select);
         if (!isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip != "") {
             this.setToolTip(drawingObject.tooltip, element.firstElementChild);
@@ -2348,6 +2354,7 @@ export class FormDesigner {
         if (this.pdfViewer.selectedItems && !isNullOrUndefined((this.pdfViewer.selectedItems as any).annotations) && (this.pdfViewer.selectedItems as any).annotations.length > 0 && this.pdfViewerBase.activeElements && !isNullOrUndefined(this.pdfViewerBase.activeElements.activePageID)) {
             this.pdfViewer.clearSelection(this.pdfViewerBase.activeElements.activePageID);
         }
+        this.isAddFormFieldUi = true;
         switch (formFieldType) {
             case 'Textbox':
                 this.activateTextboxElement(formFieldType);
@@ -3441,10 +3448,15 @@ export class FormDesigner {
      * @private
     */
     public setFormFieldIndex(): number {
-        if (this.pdfViewer.formFieldCollection.length > 0) {
-            let lastFormField: any = this.pdfViewer.formFieldCollection[this.pdfViewer.formFieldCollection.length - 1];
+        if (this.pdfViewer.formFieldCollections.length > 0) {
+            let lastFormField: any = this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.length - 1];
             let lastFormFieldIndex: any = lastFormField ? parseInt(lastFormField.name.match(/\d+/)) : null;
-            this.formFieldIndex = isNaN(lastFormFieldIndex) ? this.formFieldIndex + 1 : lastFormFieldIndex + 1;
+            if (this.isAddFormFieldUi) {
+                this.formFieldIndex = this.formFieldIndex > this.pdfViewer.formFieldCollections.length ? lastFormFieldIndex + 1 : this.pdfViewer.formFieldCollections.length + 1;
+            }
+            else {
+                this.formFieldIndex = isNaN(lastFormFieldIndex) ? this.formFieldIndex + 1 : lastFormFieldIndex + 1;
+            }
         } else {
             this.formFieldIndex++;
         }  

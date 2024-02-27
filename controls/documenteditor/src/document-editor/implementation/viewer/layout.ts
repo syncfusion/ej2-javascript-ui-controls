@@ -417,7 +417,7 @@ export class Layout {
                 block.calculateGrid();
             }
             if (!isNullOrUndefined(block)) {
-                this.viewer.updateClientAreaForBlock(block, true, undefined, true);
+                this.viewer.updateClientAreaForBlock(block, true, undefined, true, true);
                 let bodyIndex: number = block.containerWidget.indexInOwner;
                 nextBlock = this.layoutBlock(block, index);
                 index = 0;
@@ -2246,7 +2246,7 @@ export class Layout {
         if (this.viewer instanceof PageLayoutViewer &&
             ((element instanceof ShapeElementBox && element.textWrappingStyle === 'Inline') || !(element instanceof ShapeElementBox))
             && this.viewer.clientActiveArea.height < element.height && this.viewer.clientActiveArea.y !== this.viewer.clientArea.y) {
-            if ((element instanceof TextElementBox && element.text !== '\f' && element.text !== String.fromCharCode(14)) || !(element instanceof TextElementBox)) {
+            if ((element instanceof TextElementBox && (element.text !== '\f' && element.text !== String.fromCharCode(14) || (element.text === '\f' && paragraph.isPageBreak() && this.documentHelper.compatibilityMode === 'Word2013'))) || !(element instanceof TextElementBox)) {
                 //let bodyIndex: number = line.paragraph.containerWidget.indexInOwner;
                 this.moveToNextPage(this.viewer, line);
                 // if (bodyIndex !== line.paragraph.containerWidget.indexInOwner) {
@@ -2423,6 +2423,9 @@ export class Layout {
         // if (element.indexInOwner === 0 && element.line.isFirstLine()) {
         //     wrapDiff -= HelperMethods.convertPointToPixel(element.line.paragraph.paragraphFormat.firstLineIndent);
         // }
+        if (element.line.isFirstLine() && this.getFirstElement(element.line) === element && wrapDiff > 0) {
+            wrapDiff += HelperMethods.convertPointToPixel(element.line.paragraph.paragraphFormat.firstLineIndent);
+        }
         element.padding.left = wrapDiff > 0 ? wrapDiff : 0;
         if (previousWidth !== this.viewer.clientActiveArea.width) {
             let wrapPos: WrapPosition = new WrapPosition(this.viewer.clientActiveArea.x, this.viewer.clientActiveArea.width);
@@ -2454,6 +2457,15 @@ export class Layout {
                 this.isYPositionUpdated = false;
             }
         }
+    }
+    private getFirstElement(line: LineWidget): ElementBox {
+        for (let j = 0; j < line.children.length; j++) {
+            let element: ElementBox = line.children[j];
+            if (!(element instanceof ShapeBase && (element as ShapeBase).textWrappingStyle !== 'Inline')) {
+                return element;
+            }
+        }
+        return undefined;
     }
 
     private updateWrapPosition(wrapPos: WrapPosition): void {
@@ -2492,6 +2504,33 @@ export class Layout {
             && Math.round(rect.y) < Math.round((textWrappingBounds.y + textWrappingBounds.height))
             && !(allowOverlap && (isTextRangeInTextBox || ((elementBox instanceof ImageElementBox)
                 && elementBox.textWrappingStyle !== 'Inline' && elementBox.allowOverlap))));
+    }
+    private isNeedToWrapForTopAndBottom(currWidgetOwnerPara: ParagraphWidget, elementBox: ElementBox, wrapOwnerIndex: number, wrapItemIndex: number, textWrappingStyle: TextWrappingStyle, textWrappingBounds: Rect, allowOverlap: boolean, wrapCollectionIndex: number, floatingEntity: TableWidget | ShapeBase, isTextRangeInTextBox: boolean, rect: Rect, width: number, height: number) {
+        if (currWidgetOwnerPara.isInsideTable && textWrappingStyle === "TopAndBottom" && !(floatingEntity instanceof TableWidget)) {
+            let floatingItemOwnerPara: ParagraphWidget = floatingEntity.paragraph;
+
+            if (!isNullOrUndefined(floatingItemOwnerPara) && !isNullOrUndefined(floatingItemOwnerPara.associatedCell)) {
+                let isLayoutInCell = floatingItemOwnerPara.isInsideTable;
+                let floatingItemOwnerCell: TableCellWidget = floatingItemOwnerPara.associatedCell
+                let currParaOwnerCell: TableCellWidget = currWidgetOwnerPara.associatedCell;
+
+                if ((!isNullOrUndefined(floatingItemOwnerCell) && !isNullOrUndefined(currParaOwnerCell) && floatingItemOwnerCell !== currParaOwnerCell)
+                    || (!isLayoutInCell && this.documentHelper.compatibilityMode !== "Word2013"))
+                    return false;
+            }
+        }
+
+        return ( wrapOwnerIndex !== wrapCollectionIndex
+            && wrapItemIndex !== wrapCollectionIndex
+            && textWrappingStyle === "TopAndBottom"
+            && ((rect.y >= textWrappingBounds.y
+                && rect.y < (textWrappingBounds.bottom))
+                || ((rect.y + height > textWrappingBounds.y
+                || this.isTextFitBelow(textWrappingBounds, rect.y + height, floatingEntity))
+                && (rect.y + height < (textWrappingBounds.bottom)))
+                || (rect.y < textWrappingBounds.y && rect.y + height > textWrappingBounds.bottom && textWrappingBounds.height > 0))
+            && !(allowOverlap && (isTextRangeInTextBox || ((elementBox instanceof ImageElementBox)
+            && elementBox.textWrappingStyle !== 'Inline' && elementBox.allowOverlap))));
     }
     private isNeedToWrapForSquareTightAndThroughForTable(container: BlockContainer, table: TableWidget, wrapIndex: number, wrapItemIndex: number, wrappingStyle: TextWrappingStyle, textWrappingBounds: Rect, allowOverlap: boolean, wrapCollectionIndex: number, floatingElemnt: ShapeBase | TableWidget, isInTextBox: boolean, rect: Rect, width: number, height: number): boolean {
         return (container.floatingElements.length > 0 && wrapIndex !== wrapCollectionIndex
@@ -2996,6 +3035,32 @@ export class Layout {
                         if (textWrappingType !== 'Both') {
                             this.isWrapText = false;
                         }
+                    } else if (this.isNeedToWrapForTopAndBottom(ownerPara, elementBox, -1, -1, textWrappingStyle, textWrappingBounds,
+                        allowOverlap, 1, floatingItem, false, rect, elementBox.width, elementBox.height)) {
+                        // if ((textWrappingStyle === TextWrappingStyle.Tight || textWrappingStyle === TextWrappingStyle.Through)
+                        //     && !(this.getBaseEntity(layouter.floatingItems[i].floatingEntity) instanceof HeaderFooter)
+                        //     && !layouter.floatingItems[i].isDoesNotDenotesRectangle) {
+                        //     //Gets the exact tight and throught floatting item's bottom position.
+                        //     let floattingItemBottomPosition = this.getFloattingItemBottom(layouter.floatingItems[i].floatingEntity, textWrappingBounds.bottom);
+                        //     textWrappingBounds = this.getBottomPositionForTightAndThrough(floattingItemBottomPosition, textWrappingBounds, ownerPara, rect.y, size.height);
+                        // }
+                        //Updates top margin of the paragraph when paragraph mark not wrap based on the floating table.
+                        let topMarginValue: number = 0;
+                        // topMarginValue = this.getTopMarginValueForFloatingTable(ownerPara,
+                        //     layouter.floatingItems[i].floatingEntity, rect.y);
+                        //previous floating item y position.
+                        let prevY = rect.y;
+                        rect.y = textWrappingBounds.bottom + topMarginValue;
+                        this.isYPositionUpdated = true;
+                        //Updating the rectangle height by reducing the previous floating item's y from the current floating item's bottom.
+                        rect.height = rect.height - (textWrappingBounds.bottom - prevY + topMarginValue);
+                        //Update the before spacing value once sets the floating item bottom position as paragraph y position
+                        if (rect.y !== yposition && elementBox instanceof TextElementBox && !(floatingItem instanceof TableWidget)
+                            && elementBox.line.isFirstLine()) {
+                            rect.y += elementBox.margin.top;
+                            yposition = rect.y;
+                        }
+                        this.viewer.updateClientAreaForTextWrap(rect);
                     }
                 }
             }
@@ -3829,6 +3894,9 @@ export class Layout {
         if (paragraph.paragraphFormat.textAlignment === 'Justify' && element instanceof TextElementBox) {
             this.splitTextElementWordByWord(element as TextElementBox);
         }
+        if (element instanceof ImageElementBox) {
+            element.line.skipClipImage = !element.isInlineImage;
+        }
     }
 
     private splitElementForClientArea(paragraph: ParagraphWidget, element: ElementBox): void {
@@ -4166,8 +4234,8 @@ export class Layout {
         }
         // Gets line spacing.
         lineSpacing = this.getLineSpacing(paragraph, height);
-        if (paraFormat.lineSpacingType === 'Exactly'
-            && lineSpacing < maxDescent + this.maxBaseline) {
+        if (line.skipClipImage && paraFormat.lineSpacingType === 'Exactly'
+            && lineSpacing < maxDescent + this.maxBaseline || lineSpacing < 0) {
             lineSpacing = maxDescent + this.maxBaseline;
         }
         let subWidth: number = 0;
@@ -4326,10 +4394,16 @@ export class Layout {
                 maxElementTopMargin = elementBox.margin.top;
             }
             if (elementBox instanceof ShapeElementBox && elementBox.textWrappingStyle === "Inline") {
-                if (i !== 0) {
-                    elementBox.x += children[0].margin.left;
+                if (i !== 0 || elementBox.margin.left > 0) {
+                    let elementLeftMargin: number = children[0].margin.left;
+                    elementBox.x += elementLeftMargin;
                     for (let i: number = 0; i < elementBox.textFrame.childWidgets.length; i++) {
-                        (elementBox.textFrame.childWidgets[i] as Widget).x += children[0].margin.left;
+                        let widget: BlockWidget = elementBox.textFrame.childWidgets[i] as BlockWidget;
+                        if (widget instanceof TableWidget) {
+                            widget.updateChildWidgetLeft(widget.x + elementLeftMargin, true);
+                        } else {
+                            (widget as Widget).x += elementLeftMargin;
+                        }
                     }
                 }
                 this.updateShapeYPosition(elementBox);
@@ -8675,7 +8749,7 @@ export class Layout {
                 if ((this.viewer.owner.isDocumentLoaded) && this.viewer.owner.editorModule) {
                     this.viewer.owner.editorModule.updateWholeListItems(currentParagraph);
                 }
-                this.viewer.updateClientAreaForBlock(curretBlock, true);
+                this.viewer.updateClientAreaForBlock(curretBlock, true, undefined, false, true);
                 this.isRelayout = true;
                 this.documentHelper.layout.layoutBlock(curretBlock, 0);
                 this.isRelayout = false;
@@ -8753,6 +8827,9 @@ export class Layout {
         if (this.isFieldCode && !this.checkTableHasField(table)) {
             table.isFieldCodeBlock = true;
             return table;
+        }
+        if (!isNullOrUndefined(table.previousWidget) && this.viewer.clientActiveArea.height < 0 && !table.wrapTextAround) {
+            this.moveBlocksToNextPage(table.previousWidget as BlockWidget, false);
         }
         table.isBidiTable = table.bidi;
         if (!table.isGridUpdated) {
@@ -9610,7 +9687,7 @@ export class Layout {
                 }
                 //Check whether this widget is moved to previous container widget.
                 prevWidget = widget;
-                viewer.updateClientAreaForBlock(widget, true);
+                viewer.updateClientAreaForBlock(widget, true, undefined, false, true);
                 if (widget.isEmpty() && !isNullOrUndefined(widget.paragraphFormat) &&
                     (widget.paragraphFormat.textAlignment === 'Center' || widget.paragraphFormat.textAlignment === 'Right'
                         || (widget.paragraphFormat.textAlignment === 'Justify' && widget.paragraphFormat.bidi))
@@ -10050,7 +10127,7 @@ export class Layout {
 
     private shiftWidgetsForTable(table: TableWidget, viewer: LayoutViewer): void {
         this.updateContainerForTable(table, viewer);
-        this.viewer.updateClientAreaForBlock(table, true);
+        this.viewer.updateClientAreaForBlock(table, true, undefined, false, true);
         const tempClientAreaX: number = this.viewer.clientArea.x;
         if (this.documentHelper.compatibilityMode !== 'Word2013' && !table.isInsideTable) {
             this.viewer.clientActiveArea.x = this.viewer.clientActiveArea.x -

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 24.2.8 (2024-02-27)
+
+### Chart
+
+#### Bug Fixes
+
+- `#T553171` - Now the center label is aligned properly when increasing the font size.
+- `#I548552` - The y-axis now dynamically changes based on the current visible points when zooming.
+
 ## 24.2.7 (2024-02-20)
 
 ### Chart

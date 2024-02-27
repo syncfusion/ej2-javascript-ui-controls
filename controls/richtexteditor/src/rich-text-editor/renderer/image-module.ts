@@ -1,4 +1,4 @@
-import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, Ajax, formatUnit } from '@syncfusion/ej2-base';
+import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, Ajax, formatUnit, MouseEventArgs } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import {
     IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, ImageSuccessEventArgs,
@@ -275,6 +275,7 @@ export class Image {
                     }
                 });
             }
+            EventHandler.add(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing, this);
             EventHandler.add(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd, this);
         }
     }
@@ -327,7 +328,6 @@ export class Image {
         this.imgResizePos(e, this.imgResizeDiv);
         this.resizeImgDupPos(e);
         this.contentModule.getEditPanel().appendChild(this.imgResizeDiv);
-        EventHandler.add(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing, this);
     }
 
     private getPointX(e: PointerEvent | TouchEvent): number {
@@ -673,7 +673,9 @@ export class Image {
             }
         }
         if (originalEvent.ctrlKey && (originalEvent.keyCode === 89 || originalEvent.keyCode === 90)) {
-            this.undoStack({ subCommand: (originalEvent.keyCode === 90 ? 'undo' : 'redo') });
+            if (this.parent.editorMode !== 'Markdown') {
+                this.undoStack({ subCommand: (originalEvent.keyCode === 90 ? 'undo' : 'redo') });
+            }
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
             if (selectNodeEle && selectNodeEle[0].nodeName === 'IMG' && selectNodeEle.length < 1) {
@@ -1191,7 +1193,30 @@ export class Image {
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
-        e.selection.restore();
+        let restoreStartElement: Node = e.selection.range.startContainer;
+        if (e.selection.range.startContainer.nodeName === 'SPAN' &&
+            (restoreStartElement as HTMLElement).classList.contains('e-img-wrap') && 
+            (restoreStartElement as HTMLElement).parentElement.classList.contains('e-img-caption') ) {
+            restoreStartElement = (restoreStartElement as HTMLElement).parentElement;
+            if (!isNOU(restoreStartElement.previousSibling)) {
+                let lastNode: Node = restoreStartElement.previousSibling;
+                while (lastNode.nodeName !== '#text' && lastNode.nodeName !== 'BR') {
+                    lastNode = lastNode.lastChild;
+                }
+                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                    this.contentModule.getDocument(), lastNode as Element,
+                    lastNode.nodeName !== 'BR' ? lastNode.textContent.length : 0);
+            } else if (!isNOU(restoreStartElement.nextSibling)) {
+                let firstNode: Node = restoreStartElement.nextSibling;
+                while (firstNode.nodeName !== '#text' && firstNode.nodeName !== 'BR') {
+                    firstNode = firstNode.firstChild;
+                }
+                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                    this.contentModule.getDocument(), firstNode as Element, 0);
+            }
+        } else {
+            e.selection.restore();
+        }
         if (this.contentModule.getEditPanel().querySelector('.e-img-resize')) {
             this.removeResizeEle();
         }
@@ -1404,7 +1429,7 @@ export class Image {
             animationSettings: { effect: 'None' },
             close: (event: { [key: string]: object }) => {
                 if (this.isImgUploaded) {
-                    this.uploadObj.removing();
+                    this.uploadObj.remove();
                 }
                 this.parent.isBlur = false;
                 if (event && (event.event as { [key: string]: string }).returnValue) {
@@ -1469,9 +1494,6 @@ export class Image {
     private cancelDialog(e: MouseEvent): void {
         this.parent.isBlur = false;
         this.dialogObj.hide({ returnValue: true } as Event);
-        if (this.isImgUploaded) {
-            this.uploadObj.removing();
-        }
     }
 
     private onDocumentClick(e: MouseEvent): void {

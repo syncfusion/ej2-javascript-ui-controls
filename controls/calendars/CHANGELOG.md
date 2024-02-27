@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 24.2.8 (2024-02-27)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I554330` -  Fixed an issue where the selected value was not being updated when invalid text  was entered into the input field.
+
+- `#I553168` -  Fixed an issue where setting presets with a specific time would initially work, but changing the preset would reset the time.
+
 ## 24.2.5 (2024-02-13)
 
 ### DatePicker

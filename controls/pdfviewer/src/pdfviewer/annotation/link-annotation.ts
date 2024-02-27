@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { PdfViewer, PdfViewerBase } from '../index';
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LineTool, PolygonDrawingTool } from '../drawing/tools';
 import { findObjectsUnderMouse } from '../drawing/action';
 
@@ -215,7 +215,9 @@ export class LinkAnnotation {
                     };
                 }
                 const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
-                pageDiv.appendChild(aTag);
+                if(!isNullOrUndefined(pageDiv)) {
+                    pageDiv.appendChild(aTag);
+                }
             }
         }
     }

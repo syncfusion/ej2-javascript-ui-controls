@@ -256,7 +256,6 @@ export class DateRangePicker extends CalendarBase {
     protected touchRangeModule: Touch;
     protected touchRangeStart: boolean;
     protected iconRangeRight: string;
-    private isKeyPressed: boolean = false;
 
     /**
      * Gets or sets the start and end date of the Calendar.
@@ -1061,7 +1060,6 @@ export class DateRangePicker extends CalendarBase {
         EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
         EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
         EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-        EventHandler.add(this.inputElement, 'keyup', this.keyupHandler, this);
         if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
         }
@@ -1089,7 +1087,6 @@ export class DateRangePicker extends CalendarBase {
         EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
         EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
         EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-        EventHandler.remove(this.inputElement, 'keyup', this.keyupHandler);
         if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
         }
@@ -1347,8 +1344,8 @@ export class DateRangePicker extends CalendarBase {
             const startDate: Date = this.presetsItem[i as number].start as Date;
             const endDate: Date = this.presetsItem[i as number].end as Date;
             if (this.startValue && this.endValue) {
-                if ((+new Date(startDate.setHours(0, 0, 0, 0)) === +new Date(this.startValue.setHours(0, 0, 0, 0))) &&
-                    (+new Date(endDate.setHours(0, 0, 0, 0)) === +new Date(this.endValue.setHours(0, 0, 0, 0)))) {
+                if(startDate.getDate() == this.startValue.getDate() && startDate.getMonth() == this.startValue.getMonth() && startDate.getFullYear() == this.startValue.getFullYear()
+                && endDate.getDate() == this.endValue.getDate() && endDate.getMonth() == this.endValue.getMonth() && endDate.getFullYear() == this.endValue.getFullYear()) {
                     this.activeIndex = i;
                     this.isCustomRange = false;
                 }
@@ -3247,9 +3244,6 @@ export class DateRangePicker extends CalendarBase {
             this.startButton.element.classList.add(ACTIVE);
         }
     }
-    private keyupHandler(e: KeyboardEventArgs): void {
-        this.isKeyPressed = (this.inputElement.value !== this.previousEleValue) ? true : false;
-    }
     private applyFunction(eve?: MouseEvent | KeyboardEventArgs): void {
         let isValueChanged: boolean = false;
         if (eve.type !== 'touchstart') {
@@ -3272,13 +3266,15 @@ export class DateRangePicker extends CalendarBase {
             eve.preventDefault();
         }
         if (!isNullOrUndefined(this.startValue) && !isNullOrUndefined(this.endValue)) {
+            if (!(this.previousStartValue && this.previousEndValue && this.startValue.getDate() == this.previousStartValue.getDate() && this.startValue.getMonth() == this.previousStartValue.getMonth() &&
+                this.startValue.getFullYear() == this.previousStartValue.getFullYear()
+                && this.endValue.getDate() == this.previousEndValue.getDate() && this.endValue.getMonth() == this.previousEndValue.getMonth()
+                && this.endValue.getFullYear() == this.previousEndValue.getFullYear())) {
+                Input.setValue(this.rangeArgs(eve).text, this.inputElement, this.floatLabelType, this.showClearButton);
+            }
             this.previousStartValue = new Date(+this.startValue);
             this.previousEndValue = new Date(+this.endValue);
             this.previousEleValue = this.inputElement.value;
-            if(!this.isKeyPressed){
-                Input.setValue(this.rangeArgs(eve).text, this.inputElement, this.floatLabelType, this.showClearButton);
-            }
-            this.isKeyPressed = false;
             if (+this.initStartDate !== +this.startValue || +this.initEndDate !== +this.endValue) {
                 isValueChanged = true;
             }

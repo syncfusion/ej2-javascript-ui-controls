@@ -499,6 +499,36 @@ export class WCharacterFormat {
         }
     }
 
+    public isEqualTocFormat(format: WCharacterFormat): boolean {
+        return (this.fontFamily === format.fontFamily
+            && this.bold === format.bold
+            && this.italic === format.italic
+            && this.strikethrough === format.strikethrough
+            && this.highlightColor === format.highlightColor
+            && this.fontFamilyAscii === format.fontFamilyAscii
+            && this.fontFamilyFarEast === format.fontFamilyFarEast
+            && this.fontFamilyNonFarEast === format.fontFamilyNonFarEast);
+    }
+    public copyTocFormat(format: WCharacterFormat): void {
+        if (!isNullOrUndefined(format.bold)) {
+            this.bold = format.bold;
+        }
+        if (!isNullOrUndefined(format.italic)) {
+            this.italic = format.italic;
+        }
+        if (!isNullOrUndefined(format.strikethrough)) {
+            this.strikethrough = format.strikethrough;
+        }
+        if (!isNullOrUndefined(format.highlightColor)) {
+            this.highlightColor = format.highlightColor;
+        }
+        if (!isNullOrUndefined(format.fontFamily)) {
+            this.fontFamily = format.fontFamily;
+            this.fontFamilyAscii = format.fontFamily;
+            this.fontFamilyFarEast = format.fontFamily;
+            this.fontFamilyNonFarEast = format.fontFamily;
+        }
+    }
     public updateUniqueCharacterFormat(format: WCharacterFormat): void {
         let hash: Dictionary<number, object> = undefined;
         if (this.uniqueCharacterFormat) {

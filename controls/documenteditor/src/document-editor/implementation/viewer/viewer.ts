@@ -4828,7 +4828,7 @@ export abstract class LayoutViewer {
         widget.y = area.y;
         widget.width = area.width;
     }
-    public updateClientAreaForBlock(block: BlockWidget, beforeLayout: boolean, tableCollection?: TableWidget[], updateYPosition?: boolean): void {
+    public updateClientAreaForBlock(block: BlockWidget, beforeLayout: boolean, tableCollection?: TableWidget[], updateYPosition?: boolean, updateXPosition?: boolean): void {
         let leftIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).leftIndent);
         let rightIndent: number = HelperMethods.convertPointToPixel((block as BlockWidget).rightIndent);
         let bidi: boolean = block.bidi;
@@ -4890,6 +4890,13 @@ export abstract class LayoutViewer {
                 this.clientActiveArea.width = this.clientArea.width = width;
                 if(updateYPosition){
                     this.updateParagraphYPositionBasedonTextWrap(block as ParagraphWidget, new Rect(this.clientActiveArea.x, this.clientActiveArea.y, this.clientActiveArea.width, this.clientActiveArea.height));
+                }
+                if (updateXPosition) {
+                    if (block instanceof ParagraphWidget) {
+                        this.updateParagraphXPositionBasedOnTextWrap(block as ParagraphWidget);
+                    } else {
+                        this.updateTableXPositionBasedOnTextWrap(block as TableWidget);
+                    }
                 }
             }
         } else {
@@ -5088,6 +5095,365 @@ export abstract class LayoutViewer {
                 // }
             }
         }
+    }
+    private updateParagraphXPositionBasedOnTextWrap(block: BlockWidget): void {
+        // #region textwrap
+        let yValue: number = 0;
+        let isFirstItem: boolean = false;
+        let isWord2013: boolean = this.documentHelper.compatibilityMode === 'Word2013';
+        let bodyWidget: BlockContainer = block.containerWidget as BlockContainer;
+        let clientLayoutArea: Rect = this.clientActiveArea;
+        // if (!(m_lcOperator as Layouter).IsLayoutingHeaderFooter &&
+        //     (m_lcOperator as Layouter).WrappingDifference === Number.MIN_VALUE &&
+        //     Math.round(yPosition, 2) === Math.round((m_lcOperator as Layouter).PageTopMargin, 2)) {
+        //     yValue = yPosition;
+        //     isFirstItem = true;
+        // }
+        if (this instanceof PageLayoutViewer && !isNullOrUndefined(bodyWidget) && block instanceof ParagraphWidget && !isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.headerWidget)) {
+            let floatingItems: (ShapeBase | TableWidget)[] = bodyWidget.page.headerWidget.floatingElements;
+            if (floatingItems.length > 0 &&
+                (!block.isInHeaderFooter || block.isInsideTable ||
+                    isWord2013) &&
+                !(block.containerWidget instanceof FootNoteWidget) && !(block.bodyWidget instanceof TextFrame)) {
+
+                // const clientLayoutArea: RectangleF = (m_lcOperator as Layouter).ClientLayoutArea;
+                // clientLayoutArea.X = xPosition;
+                // clientLayoutArea.Y = yPosition;
+                //let cellPadings: number = 0;
+                let paragraph: ParagraphWidget = block as ParagraphWidget;
+                //if (paragraph.isInsideTable) {
+                    //const cellLayoutInfo: CellLayoutInfo = ((paragraph.GetOwnerEntity() as WTableCell) as IWidget).LayoutInfo as CellLayoutInfo;
+                    //cellPadings = cellLayoutInfo.Paddings.Left + cellLayoutInfo.Paddings.Right;
+                // }
+
+                // let defMinWidth: number = minimumWidthRequired - cellPadings;
+                // const size: SizeF = (paragraph as IWidget).LayoutInfo.Size;
+
+                for (let i: number = 0; i < floatingItems.length; i++) {
+                    let floatingItem: ShapeBase | TableWidget = floatingItems[i];
+                    // if (paragraph.IsInCell && floatingItems[i].allowOverlap &&
+                    //     (paragraph.associatedCell.ownerRow.ownerTable.tableFormat.positioning.allowOverlap) {
+                        if (paragraph.isInsideTable) {
+                            if (floatingItem instanceof TableWidget && !floatingItem.isInsideTable) {
+                                continue;
+                            }
+                        }
+                    // }
+
+                    let textWrappingBounds: Rect = (this as LayoutViewer).getTextWrappingBound(floatingItem);
+                    let textWrappingStyle: TextWrappingStyle = floatingItem instanceof TableWidget ? 'Square' : floatingItem.textWrappingStyle;
+                    let textWrappingType: string = floatingItem instanceof TableWidget ? 'Both' : floatingItem.textWrappingType;
+                    //let ownerBody: BodyWidget = undefined;
+                    //As per Microsoft Word behavior, when floating item and paragraph in cell means,
+                    //then, wrap the bounds for the items in same cell only.                 
+                    //Skip, if it is in different cell.
+                    // let ownerBody: BodyWidget = undefined
+                    // if (!this.isInSameTextBody(paragraph, floatingItem, ownerBody) &&
+                    //     paragraph.isInsideTable && bodyWidget instanceof TableCellWidget) {
+                    //     continue;
+                    // }
+
+                    // if (this.IsInFrame((m_lcOperator as Layouter).FloatingItems[i].FloatingEntity as WParagraph) &&
+                    //     this.IsOwnerCellInFrame(paragraph)) {
+                    //     continue;
+                    // }
+
+                    // if (paragraph.ParagraphFormat.Bidi &&
+                    //     (this.IsInSameTextBody(paragraph, (m_lcOperator as Layouter).FloatingItems[i], ownerBody) &&
+                    //         paragraph.IsInCell && ownerBody instanceof WTableCell)) {
+                    //     this.ModifyXPositionForRTLLayouting(i, textWrappingBounds, (m_layoutArea as any).ClientArea);
+                    // } else if (paragraph.ParagraphFormat.Bidi) {
+                    //     this.ModifyXPositionForRTLLayouting(i, textWrappingBounds, (m_lcOperator as Layouter).ClientLayoutArea);
+                    // }
+
+                    let minimumWidthRequired: number = 24;
+
+                    // if (textWrappingStyle === TextWrappingStyle.Tight || textWrappingStyle === TextWrappingStyle.Through) {
+                    //     minimumWidthRequired = paragraph.Document.Settings.CompatibilityMode === CompatibilityMode.Word2013 ?
+                    //         DEF_MIN_WIDTH_2013_TIGHTANDTHROW : DEF_MIN_WIDTH_TIGHTANDTHROW;
+                    // }
+
+                    // minimumWidthRequired -= cellPadings;
+                    // defMinWidth = minimumWidthRequired;
+
+                    // if (textWrappingStyle === TextWrappingStyle.Tight || textWrappingStyle === TextWrappingStyle.Through &&
+                    //     (m_lcOperator as Layouter).FloatingItems[i].IsDoesNotDenotesRectangle) {
+                    //     const temp: RectangleF = this.AdjustTightAndThroughBounds(
+                    //         (m_lcOperator as Layouter).FloatingItems[i], clientLayoutArea, size.Height);
+
+                    //     if (temp.X !== 0) {
+                    //         textWrappingBounds = temp;
+                    //         defMinWidth = size.Width;
+                    //     }
+                    // }
+
+                    if (!paragraph.isInsideTable &&
+                        (!(clientLayoutArea.x > textWrappingBounds.right + minimumWidthRequired ||
+                            clientLayoutArea.right < textWrappingBounds.x - minimumWidthRequired))) {
+
+                        if (floatingItems.length > 0 &&
+                            (clientLayoutArea.y + paragraph.height > textWrappingBounds.y && clientLayoutArea.y < textWrappingBounds.bottom) &&
+                            textWrappingStyle !== "Inline" &&
+                            textWrappingStyle !== "TopAndBottom" &&
+                            textWrappingStyle !== "InFrontOfText" &&
+                            textWrappingStyle !== "Behind") {
+
+                            const rightIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.rightIndent);
+                            if (paragraph.paragraphFormat.textAlignment != "Left" && (clientLayoutArea.x < textWrappingBounds.x && clientLayoutArea.x + paragraph.width > textWrappingBounds.x)) {
+                                paragraph.x = clientLayoutArea.x;
+                            } else if (clientLayoutArea.x >= textWrappingBounds.x && clientLayoutArea.x < textWrappingBounds.right && !paragraph.paragraphFormat.bidi) {
+                                clientLayoutArea.width = clientLayoutArea.width - (textWrappingBounds.right - clientLayoutArea.x) - rightIndent;
+
+                                if (clientLayoutArea.width < minimumWidthRequired) {
+                                    clientLayoutArea.width = this.clientActiveArea.right - textWrappingBounds.right - rightIndent;
+
+                                    if (clientLayoutArea.width < minimumWidthRequired) {
+                                        paragraph.x = clientLayoutArea.x;
+                                        clientLayoutArea.width = clientLayoutArea.width;
+                                        clientLayoutArea.height = textWrappingBounds.bottom - clientLayoutArea.x;
+                                        clientLayoutArea.y = textWrappingBounds.bottom;
+                                    } else {
+                                        clientLayoutArea.x = textWrappingBounds.right;
+                                    }
+                                } else if (this.documentHelper.compatibilityMode === "Word2007" ||
+                                    clientLayoutArea.y <= textWrappingBounds.bottom) {
+
+                                    // if (this.IsNeedToUpdateParagraphYPosition(clientLayoutArea.Y, textWrappingStyle,
+                                    //     paragraph, clientLayoutArea.Y + size.Height + paragraph.ParagraphFormat.AfterSpacing, textWrappingBounds.Bottom)) {
+                                    //     paragraph.x = clientLayoutArea.x;
+                                    //     clientLayoutArea.width = clientLayoutArea.width;
+                                    //     clientLayoutArea.y = textWrappingBounds.bottom;
+                                    //     clientLayoutArea.height = clientLayoutArea.height -
+                                    //         (textWrappingBounds.bottom - clientLayoutArea.y);
+                                    //     this.updateBoundsBasedOnTextWrap(textWrappingBounds.bottom);
+                                    // } else {
+                                        //const paraInfo: ParagraphLayoutInfo = paragraph.m_layoutInfo as ParagraphLayoutInfo;
+                                        const leftIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent);
+                                        const firstLineIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
+
+                                        if (leftIndent + firstLineIndent + clientLayoutArea.x < textWrappingBounds.right) {
+                                            //paragraph.x = textWrappingBounds.right;
+                                            clientLayoutArea.x = textWrappingBounds.right;
+
+                                            if (isWord2013) {
+                                                //this.documentHelper.layout.IsXpositionUpated = true;
+                                            }
+                                        }
+                                    // }
+                                }
+                            } 
+                            else if ((textWrappingBounds.x - minimumWidthRequired > clientLayoutArea.x && clientLayoutArea.right > textWrappingBounds.x) ||
+                                (clientLayoutArea.x > textWrappingBounds.x && clientLayoutArea.x > textWrappingBounds.right)) {
+                                paragraph.x = clientLayoutArea.x;
+                            } 
+                            // else if (clientLayoutArea.x > textWrappingBounds.x - minimumWidthRequired && clientLayoutArea.x < textWrappingBounds.right) {
+                            //     const width: number = clientLayoutArea.width + (clientLayoutArea.x - textWrappingBounds.right);
+
+                            //     if (width < minimumWidthRequired) {
+                            //         clientLayoutArea.y = textWrappingBounds.bottom;
+                            //     } else {
+                            //         paragraph.x = textWrappingBounds.right;
+                            //     }
+                            // } 
+                            // else if (this.IsNeedToUpdateParagraphYPosition(clientLayoutArea.Y, textWrappingStyle,
+                            //     paragraph, clientLayoutArea.Y + size.Height + paragraph.ParagraphFormat.AfterSpacing, textWrappingBounds.Bottom)) {
+                            //     (paragraph.m_layoutInfo as ParagraphLayoutInfo).XPosition = clientLayoutArea.X;
+                            //     clientLayoutArea.Width = (m_lcOperator as Layouter).ClientLayoutArea.Width;
+                            //     clientLayoutArea.Y = textWrappingBounds.Bottom;
+                            //     clientLayoutArea.Height = (m_lcOperator as Layouter).ClientLayoutArea.Height -
+                            //         (textWrappingBounds.Bottom - (m_lcOperator as Layouter).ClientLayoutArea.Y);
+                            //     (m_layoutArea as any).UpdateBoundsBasedOnTextWrap(textWrappingBounds.Bottom);
+                            // }
+                        }
+                    }
+
+                    //this.ResetXPositionForRTLLayouting(i, textWrappingBounds, floatingItemXPosition);
+                }
+            }
+
+            // if (m_widget instanceof WParagraph) {
+            //     const sortYPosition: FloatingItem[] = (m_lcOperator as Layouter).FloatingItems.slice(0);
+            //     FloatingItem.SortFloatingItems(sortYPosition, SortPosition.Y);
+            //     this.UpdateXYPositionBasedOnAdjacentFloatingItems(sortYPosition, clientLayoutArea, size,
+            //         m_widget as WParagraph, false);
+            // }
+
+            // if (isFirstItem && yValue < yPosition) {
+            //     (m_lcOperator as Layouter).WrappingDifference = yPosition - (m_lcOperator as Layouter).PageTopMargin;
+            // }
+        }
+    }
+    private updateTableXPositionBasedOnTextWrap(block: TableWidget): void {
+        // Get the first row width
+        let firstRowWidth: number = HelperMethods.convertPointToPixel((block.childWidgets[0] as TableRowWidget).getFirstRowWidth());
+        let bodyWidget: BlockContainer = block.bodyWidget as BlockContainer;
+        if (this instanceof PageLayoutViewer && !isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.headerWidget)) {
+            let floatingItems: (ShapeBase | TableWidget)[] = bodyWidget.page.headerWidget.floatingElements;
+            // textwrap
+            // Update Layout area based on text wrap and ignore the yposition update while 
+            // wrapping bounds already added to the collection
+            if (floatingItems.length > 0 && (!block.isInHeaderFooter || !block.isInsideTable || this.documentHelper.compatibilityMode === 'Word2013')
+            && !(block.containerWidget instanceof TextFrame)) {
+                let rect: Rect = this.clientActiveArea;
+                //let wrapItemIndex: number = -1;
+                // sort the list items based on y position,
+                // Call Sort on the list. This will use the  
+                // default comparer, which is the Compare method  
+                // implemented on FloatingItem.
+                //FloatingItem.sortFloatingItems(this.m_lcOperator.floatingItems, SortPosition.Y);
+                for (let i = 0; i < floatingItems.length; i++) {
+                    let floatingItem: ShapeBase | TableWidget = floatingItems[i];
+                    let textWrappingBounds: Rect = (this as LayoutViewer).getTextWrappingBound(floatingItem);
+                    let textWrappingStyle: TextWrappingStyle = floatingItem instanceof TableWidget ? 'Square' : floatingItem.textWrappingStyle;
+                    let allowOverlap: boolean = floatingItem instanceof TableWidget ? floatingItem.positioning.allowOverlap : floatingItem.allowOverlap;
+                    // if (this.isAdjustTightAndThroughBounds(textWrappingStyle, i)) {
+                    //     let temp: RectangleF = this.adjustTightAndThroughBounds(this.m_lcOperator.floatingItems[i], rect, size.height);
+                    //     textWrappingBounds = temp;
+                    // }
+                    // let ownerBody: WTextBody = null;
+                    // // As per Microsoft Word behavior, when floating item and table in cell means,
+                    // // then, wrap the bounds for the items in same cell only.                 
+                    // // Skip, if it is in different cell.
+                    // if (!this.isInSameTextBody(this.m_table, this.m_lcOperator.floatingItems[i], ownerBody)
+                    //     && this.m_table.isInCell && ownerBody instanceof WTableCell)
+                    //     continue;
+
+                    // // Skip if the current table is in different frame
+                    // if (this.isInFrame(this.m_lcOperator.floatingItems[i].floatingEntity as WParagraph) && this.m_table.isFrame)
+                    //     continue;
+                    // // Adjusts the text wrapping bounds based on distance from text values when floating table intersects with another floating item.
+                    // textWrappingBounds = this.adjustTextWrappingBounds(this.m_lcOperator.floatingItems[i], clientLayoutArea, size,
+                    //     wrapItemIndex, i, rect, textWrappingBounds, textWrappingStyle, allowOverlap);
+                    let minimumWidthRequired: number = 24;
+                    let paragarph: ParagraphWidget = this.documentHelper.getFirstParagraphInFirstCell(block);
+                    let height: number = this.documentHelper.textHelper.getParagraphMarkSize(paragarph.characterFormat).Height;
+                    let rowHeight: number = block.childWidgets[0] instanceof TableRowWidget ? (block.childWidgets[0] as TableRowWidget).height : 0;
+                    if (rowHeight > height) {
+                        height = rowHeight;
+                    }
+                    let width: number = HelperMethods.convertPointToPixel(block.getTableClientWidth(block.getContainerWidth()));
+                    if (!(this.clientArea.x > textWrappingBounds.right + minimumWidthRequired || this.clientArea.right < textWrappingBounds.x - minimumWidthRequired)) {
+                        if (this.isFloatingItemIntersect(block, rect, textWrappingBounds, textWrappingStyle, allowOverlap, height, width)) {
+                            if (rect.x >= textWrappingBounds.x && rect.x < textWrappingBounds.right) {
+                                rect.width = rect.width - (textWrappingBounds.right - rect.x);
+                                //checks minimum width
+                                if (rect.width < minimumWidthRequired || (rect.width < firstRowWidth && firstRowWidth > 0)) {
+                                    rect.width = this.clientActiveArea.right - textWrappingBounds.right;
+                                    //Check if the client active area width is lesser than table width to update the y position
+                                    if (rect.width < minimumWidthRequired || ((rect.width < firstRowWidth && firstRowWidth > 0) &&
+                                        this.clientArea.right <= firstRowWidth + textWrappingBounds.right)) {
+                                        //When the table y position is lesser than the text wrapping bottom position then 
+                                        //difference of these two should be subtracted from the table client height instead of the floating item height.
+                                        let remainingHeightOfFloatingItem = (textWrappingBounds.bottom > rect.y) ? textWrappingBounds.bottom - rect.y : 0;
+                                        rect.y = textWrappingBounds.bottom;
+                                        rect.width = this.clientArea.width;
+                                        rect.height = rect.height - remainingHeightOfFloatingItem;
+                                        this.updateClientAreaForTextWrap(rect);
+                                    } else {
+                                        rect.x = textWrappingBounds.right;
+                                        // if (textWrappingStyle == TextWrappingStyle.Through
+                                        //     && this.m_lcOperator.floatingItems[i].isDoesNotDenotesRectangle) {
+                                        //     textWrappingBounds = this.adjustTightAndThroughBounds(this.m_lcOperator.floatingItems[i], rect, size.height);
+                                        //     if (textWrappingBounds.x != 0)
+                                        //         rect.width = textWrappingBounds.x - rect.x;
+                                        // }
+                                        this.updateClientAreaForTextWrap(rect);
+                                    }
+                                } else {
+                                    rect.x = textWrappingBounds.right;
+                                    // if (textWrappingStyle == TextWrappingStyle.Through
+                                    //     && this.m_lcOperator.floatingItems[i].isDoesNotDenotesRectangle) {
+                                    //     textWrappingBounds = this.adjustTightAndThroughBounds(this.m_lcOperator.floatingItems[i], rect, size.height);
+                                    //     if (textWrappingBounds.x != 0)
+                                    //         rect.width = textWrappingBounds.x - rect.x;
+                                    // }
+                                    this.updateClientAreaForTextWrap(rect);
+                                }
+                            }
+                            // else if ((rect.right - textWrappingBounds.right) > 0
+                            //     && (rect.right - textWrappingBounds.right) < rect.width
+                            //     && (rect.y >= textWrappingBounds.y
+                            //         || (rect.y + size.height) >= textWrappingBounds.y)) {
+                            //     //If the table is intersect with  another floating item from the top ,then we need to consider distance from text with respect to relative margin position.
+                            //     if (rect.x < textWrappingBounds.x && rect.right > textWrappingBounds.x) {
+                            //         if (this.m_table.tableFormat.positioning.horizPositionAbs == HorizontalPosition.Left)
+                            //             rect.x += this.m_table.tableFormat.positioning.distanceFromLeft;
+                            //         else if (this.m_table.tableFormat.positioning.horizPositionAbs == HorizontalPosition.Right)
+                            //             rect.x -= this.m_table.tableFormat.positioning.distanceFromRight;
+                            //     }
+                            //     //When the table y position is lesser than the text wrapping bottom position then 
+                            //     //difference of these two should be subtracted from the table client height instead of the floating item height.
+                            //     let remainingHeightOfFloatingItem = (textWrappingBounds.bottom > rect.y) ? textWrappingBounds.bottom - rect.y : 0;
+                            //     rect.y = textWrappingBounds.bottom;
+                            //     rect.height = rect.height - remainingHeightOfFloatingItem;
+                            //     this.createLayoutArea(rect);
+                            // }
+                            // else if (textWrappingBounds.x > rect.x && rect.right > textWrappingBounds.x) {
+                            //     rect.width = textWrappingBounds.x - rect.x;
+                            //     //checks minimum width
+                            //     if (rect.width < DEF_MIN_WIDTH || (rect.width < firstRowWidth && firstRowWidth > 0)) {
+                            //         rect.width = this.m_layoutArea.clientActiveArea.right - textWrappingBounds.right;
+                            //         if (rect.width < DEF_MIN_WIDTH || (rect.width < firstRowWidth && firstRowWidth > 0)) {
+                            //             //Check if the client active area width is greater than table width to update the x position
+                            //             if (this.m_layoutArea.clientArea.right < this.m_lcOperator.clientLayoutArea.right
+                            //                 && textWrappingBounds.right < this.m_lcOperator.clientLayoutArea.right
+                            //                 && this.m_lcOperator.clientLayoutArea.right - textWrappingBounds.right > DEF_MIN_WIDTH
+                            //                 && Math.round(this.m_layoutArea.clientActiveArea.width, 2) > Math.round(firstRowWidth, 2)) {
+                            //                 rect.width = this.m_lcOperator.clientLayoutArea.right - textWrappingBounds.right;
+                            //                 rect.x = textWrappingBounds.right;
+                            //                 if (textWrappingStyle == TextWrappingStyle.Through
+                            //                     && this.m_lcOperator.floatingItems[i].isDoesNotDenotesRectangle) {
+                            //                     textWrappingBounds = this.adjustTightAndThroughBounds(this.m_lcOperator.floatingItems[i], rect, size.height);
+                            //                     if (textWrappingBounds.x != 0)
+                            //                         rect.width = textWrappingBounds.x - rect.x;
+                            //                 }
+                            //             }
+                            //             else {
+                            //                 //When the table y position is lesser than the text wrapping bottom position then 
+                            //                 //difference of these two should be subtracted from the table client height instead of the floating item height.
+                            //                 let remainingHeightOfFloatingItem = (textWrappingBounds.bottom > rect.y) ? textWrappingBounds.bottom - rect.y : 0;
+                            //                 rect.y = textWrappingBounds.bottom;
+                            //                 rect.height = rect.height - remainingHeightOfFloatingItem;
+                            //             }
+                            //             this.createLayoutArea(rect);
+                            //         }
+                            //     }
+                            //     else
+                            //         this.createLayoutArea(rect);
+                            // }
+                            // else if (rect.x > textWrappingBounds.x && rect.x > textWrappingBounds.right) {
+                            //     rect.width = this.m_layoutArea.clientArea.width;
+                            //     this.createLayoutArea(rect);
+                            // }
+                            // else if (rect.x > textWrappingBounds.x && rect.x < textWrappingBounds.right) {
+                            //     rect.width = rect.width - (textWrappingBounds.right - rect.x);
+                            //     rect.x = textWrappingBounds.right;
+                            //     if (textWrappingStyle == TextWrappingStyle.Through
+                            //         && this.m_lcOperator.floatingItems[i].isDoesNotDenotesRectangle) {
+                            //         textWrappingBounds = this.adjustTightAndThroughBounds(this.m_lcOperator.floatingItems[i], rect, size.height);
+                            //         if (textWrappingBounds.x != 0)
+                            //             rect.width = textWrappingBounds.x - rect.x;
+                            //     }
+                            //     this.createLayoutArea(rect);
+                            // }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private isFloatingItemIntersect(table: TableWidget, rect: Rect, textWrappingBounds: Rect, textWrappingStyle: TextWrappingStyle, allowOverlap: boolean, height: number, width: number): boolean {
+        return ((Math.round(rect.y + height) >= Math.round(textWrappingBounds.y)
+            && Math.round(rect.y) < Math.round(textWrappingBounds.bottom))
+            //Checks whether the bottom of the table intersects with floating item.
+            || Math.round(rect.y + height) <= Math.round(textWrappingBounds.bottom)
+            && Math.round(rect.y + height) >= Math.round(textWrappingBounds.y))
+            && textWrappingStyle !== "Inline"
+            && textWrappingStyle !== "TopAndBottom"
+            && textWrappingStyle !== "InFrontOfText"
+            && textWrappingStyle !== "Behind"
+            && !(allowOverlap && (table.tableFormat !== null && table.wrapTextAround && table.positioning.allowOverlap));
     }
     private getIntersectingItemBounds(floatingElements: (ShapeBase | TableWidget)[], intersectedfloatingItem: ShapeBase | TableWidget, yPosition: number): Rect {
         let floatingItem: ShapeBase | TableWidget = this.getMinBottomFloatingItem(floatingElements, this.getIntersectingFloatingItems(floatingElements, intersectedfloatingItem, yPosition));

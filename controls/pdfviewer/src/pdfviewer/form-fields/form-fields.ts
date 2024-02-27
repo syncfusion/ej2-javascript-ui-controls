@@ -974,6 +974,9 @@ export class FormFields {
     public updateFormFields(event: MouseEvent): void {
         // eslint-disable-next-line
         let currentTarget: any = event.target;
+        if (this.pdfViewerBase.isDeviceiOS && currentTarget.type === 'checkbox') {
+            currentTarget.focus();
+        }
         if (currentTarget.className === 'e-pdfviewer-ListBox') {
             currentTarget = currentTarget.parentElement;
             this.updateDataInSession(currentTarget);
@@ -1593,7 +1596,7 @@ export class FormFields {
                     if(target.disabled) {
                         currentData.IsReadonly = true;
                     }
-                    currentData.IsRequired = target.Required ? target.Required : false;
+                    currentData.IsRequired = target.Required ? target.Required : (target.required ? target.required : false); 
                     currentData.ToolTip = target.tooltip ? target.tooltip : "";
                     this.updateFormFieldsCollection(currentData);
                     filterArrayLength--;

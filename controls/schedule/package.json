@@ -19,6 +19,7 @@
 		"@syncfusion/ej2-popups": "*"
 	},
 	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.1",
 		"@types/chai": "^3.4.28",
 		"@types/es6-promise": "0.0.28",
 		"@types/jasmine": "2.8.9",

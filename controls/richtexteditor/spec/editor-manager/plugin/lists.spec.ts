@@ -1726,6 +1726,37 @@ describe ('left indent testing', () => {
             });
         });
 
+        describe('872830 - Space key press cursor position test ', () => {
+            let elem: HTMLElement;
+            let innerValue: string = `<div id="content-edit"><p>RTE Content</p><p class="selectNode">1.</p><div>`;
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node', innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            afterEach(() => {
+                detach(elem);
+            });
+            it(' Space key press cursor position test', () => {
+                startNode = editNode.querySelector('.selectNode');
+                startNode = startNode.childNodes[0] as HTMLElement;
+                setCursorPoint(startNode, 2);
+                editNode.focus();
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.selectnode').parentElement.tagName).toBe('OL');
+                expect(editNode.querySelector('.selectnode').parentElement.childNodes[0].childNodes[0].nodeName).toBe('BR');
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+
         describe('- Space key press testing', () => {
             let elem: HTMLElement;
             let innerValue: string = `<div id="content-edit"><p>one node</p><p class='space-two-node'>1.two node</p><p><br></p>

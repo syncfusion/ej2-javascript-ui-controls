@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
-## 24.2.5 (2024-02-13)
+## 24.2.8 (2024-02-27)
 
 ### QueryBuilder
 
 #### Bug Fixes
 
 - `#I534039` - Issue with `drop-down list popup` remains stick in the screen after close has been fixed.
+
+## 24.2.5 (2024-02-13)
 
 ### QueryBuilder
 

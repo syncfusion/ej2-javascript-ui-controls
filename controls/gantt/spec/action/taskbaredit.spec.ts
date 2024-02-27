@@ -4515,3 +4515,73 @@ describe('Incorrect offset update while dragging taskbar', () => {
         expect(ganttObj.currentViewData[5].ganttProperties.predecessor[0].offset).toBe(5);
     });
 });
+describe('Slow update multiple connector lines', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    { TaskID: 2, TaskName: 'Defining the product and its usage', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                    { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2,6+3days", },
+                    { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+                    { TaskID: 5, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "4", Progress: 30 },
+                    { TaskID: 6, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "5", Progress: 30 },
+                ],
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                includeWeekend: true,
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 2000);
+    });
+    it('Checking updated value', () => {
+        ganttObj.dataBind();
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#'+ganttObj.element.id+ 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/22/2019');
+    });
+});

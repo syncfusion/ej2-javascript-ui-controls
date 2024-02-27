@@ -122,10 +122,7 @@ export class Zoom {
             this.isZoomed = true;
             chart.disableTrackTooltip = true;
             chart.svgObject.setAttribute('cursor', 'crosshair');
-            if (this.zooming.mode === 'X') {
-                rect.height = areaBounds.height;
-                rect.y = areaBounds.y;
-            } else if (this.zooming.mode === 'Y') {
+            if (this.zooming.mode === 'Y') {
                 rect.width = areaBounds.width;
                 rect.x = areaBounds.x;
             }
@@ -206,9 +203,6 @@ export class Zoom {
             translateX = chart.mouseX - chart.mouseDownX;
             translateY = chart.mouseY - chart.mouseDownY;
             switch (this.zooming.mode) {
-            case 'X':
-                translateY = 0;
-                break;
             case 'Y':
                 translateX = 0;
                 break;
@@ -258,7 +252,7 @@ export class Zoom {
             if (axis.orientation === 'Horizontal' && mode !== 'Y') {
                 layout.drawXAxisLabels(axis, index, null,  (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect));
             }
-            if (axis.orientation === 'Vertical' && mode !== 'X') {
+            if (axis.orientation === 'Vertical') {
                 layout.drawYAxisLabels(axis, index, null, (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect));
             }
         });
@@ -286,11 +280,9 @@ export class Zoom {
                     argsData.currentZoomFactor *= (zoomRect.width / bounds.width);
                 }
             } else {
-                if (mode !== 'X') {
-                    argsData.currentZoomPosition += (1 - Math.abs((zoomRect.height + (zoomRect.y - bounds.y)) / (bounds.height)))
-                                                    * axis.zoomFactor;
-                    argsData.currentZoomFactor  *= (zoomRect.height / bounds.height);
-                }
+                argsData.currentZoomPosition += (1 - Math.abs((zoomRect.height + (zoomRect.y - bounds.y)) / (bounds.height)))
+                    * axis.zoomFactor;
+                argsData.currentZoomFactor *= (zoomRect.height / bounds.height);
             }
             if (parseFloat(argsData.currentZoomFactor.toFixed(3)) <= 0.001) {
                 argsData.currentZoomFactor = argsData.previousZoomFactor;
@@ -386,7 +378,7 @@ export class Zoom {
                 currentZoomPosition: axis.zoomPosition, currentVisibleRange: null,
                 previousVisibleRange: axis.visibleRange
             };
-            if ((axis.orientation === 'Vertical' && mode !== 'X') ||
+            if ((axis.orientation === 'Vertical') ||
                 (axis.orientation === 'Horizontal' && mode !== 'Y')) {
                 cumulative = Math.max(Math.max(1 / minMax(axis.zoomFactor, 0, 1), 1) + (0.25 * direction), 1);
                 cumulative = (cumulative > 50000000000) ? 50000000000 : cumulative;
@@ -475,10 +467,8 @@ export class Zoom {
         if (!isNaN(scaleX - scaleX) && !isNaN(scaleY - scaleY)) {
             switch (this.zooming.mode) {
             case 'XY':
-                this.setTransform(translateXValue, translateYValue, scaleX, scaleY, chart, true);
-                break;
             case 'X':
-                this.setTransform(translateXValue, 0, scaleX, 1, chart, true);
+                this.setTransform(translateXValue, translateYValue, scaleX, scaleY, chart, true);
                 break;
             case 'Y':
                 this.setTransform(0, translateYValue, 1, scaleY, chart, true);
@@ -508,7 +498,7 @@ export class Zoom {
         for (let index: number = 0; index < chart.axisCollections.length; index++) {
             const axis: Axis = chart.axisCollections[index as number];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
-                (axis.orientation === 'Vertical' && mode !== 'X')) {
+                (axis.orientation === 'Vertical')) {
                 currentZF = axis.zoomFactor;
                 currentZP = axis.zoomPosition;
                 argsData = {

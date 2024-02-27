@@ -27,11 +27,11 @@ import { CriticalPath } from '..';
  */
 export class Edit {
     private parent: Gantt;
-    public validatedChildItems: IGanttData[];
     private isFromDeleteMethod: boolean = false;
     private targetedRecords: IGanttData[] = [];
     private isNewRecordAdded: boolean = false;
     private isValidatedEditedRecord: boolean = false;
+    public isFirstCall:boolean;
     /**
      * @private
      */
@@ -67,7 +67,7 @@ export class Edit {
     public isResourceTaskDeleted: boolean = false;
     constructor(parent?: Gantt) {
         this.parent = parent;
-        this.validatedChildItems = [];
+        this.parent.predecessorModule.validatedChildItems = [];
         if (this.parent.editSettings.allowEditing && this.parent.editSettings.mode === 'Auto') {
             this.cellEditModule = new CellEdit(this.parent);
         }
@@ -881,8 +881,8 @@ export class Edit {
         }
         if (this.parent.isConnectorLineUpdate && this.parent.autoCalculateDateScheduling) {
             /* validating predecessor for updated child items */
-            for (let i: number = 0; i < this.validatedChildItems.length; i++) {
-                const child: IGanttData = this.validatedChildItems[i as number];
+            for (let i: number = 0; i < this.parent.predecessorModule.validatedChildItems.length; i++) {
+                const child: IGanttData = this.parent.predecessorModule.validatedChildItems[i as number];
                 if (child.ganttProperties.predecessor && child.ganttProperties.predecessor.length > 0) {
                     this.parent.editedTaskBarItem = child;
                     this.parent.predecessorModule.validatePredecessor(child, [], '');
@@ -896,6 +896,7 @@ export class Edit {
                     this.parent.editedTaskBarItem = ganttRecord;
                 }
                 if (!this.isValidatedEditedRecord) {
+                   this.isFirstCall = true;
                    this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
                 }
                 this.isValidatedEditedRecord = false;
@@ -903,7 +904,7 @@ export class Edit {
             }
             if (this.parent.allowParentDependency && ganttRecord.hasChildRecords && this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate &&
                 (args.action === "DrawConnectorLine")) {
-                this.updateChildItems(ganttRecord);
+                this.parent.predecessorModule['updateChildItems'](ganttRecord);
             }
             this.updateParentItemOnEditing();
             this.parent.dataOperation.updateParentItems(ganttRecord, true);
@@ -916,6 +917,7 @@ export class Edit {
             let parentData: IGanttData = this.parent.getRecordByID(ganttRecord.parentItem.taskId);
             if (!isNullOrUndefined(parentData)) {
                 if (!parentData.ganttProperties.predecessorsName) {
+                    this.isFirstCall = true;
                     this.parent.predecessorModule.validatePredecessor(parentData, [], '');
                     this.updateParentItemOnEditing();
                     this.parent.ganttChartModule.reRenderConnectorLines()
@@ -947,7 +949,7 @@ export class Edit {
     public updateParentChildRecord(data: IGanttData): void {
         const ganttRecord: IGanttData = data;
         if (ganttRecord.hasChildRecords && this.taskbarMoved && (ganttRecord[this.parent.taskFields.manual] === false || this.parent.taskMode === 'Auto') && (!isNullOrUndefined(this.parent.editModule.cellEditModule) && !this.parent.editModule.cellEditModule.isResourceCellEdited)) {
-            this.updateChildItems(ganttRecord);
+            this.parent.predecessorModule['updateChildItems'](ganttRecord);
         }
         if (!isNullOrUndefined(this.parent.editModule.cellEditModule)) {
             this.parent.editModule.cellEditModule.isResourceCellEdited = false;
@@ -996,37 +998,6 @@ export class Edit {
                 data[this.parent.taskFields.manual], data);
             this.parent.dataOperation.updateWidthLeft(data);
         }
-    }
-
-    /**
-     *
-     * @param {IGanttData} data .
-     * @param {Date} newStartDate .
-     * @returns {void} .
-     */
-    private calculateDateByRoundOffDuration(data: IGanttData, newStartDate: Date): void {
-        const ganttRecord: IGanttData = data;
-        const taskData: ITaskData = ganttRecord.ganttProperties;
-        const projectStartDate: Date = new Date(newStartDate.getTime());
-        if (!isNullOrUndefined(taskData.endDate) && isNullOrUndefined(taskData.startDate)) {
-            const endDate: Date = this.parent.dateValidationModule.checkStartDate(projectStartDate, taskData, null);
-            this.parent.setRecordValue(
-                'endDate',
-                this.parent.dateValidationModule.checkEndDate(endDate, ganttRecord.ganttProperties),
-                taskData,
-                true);
-        } else {
-            this.parent.setRecordValue(
-                'startDate',
-                this.parent.dateValidationModule.checkStartDate(projectStartDate, taskData, false),
-                taskData,
-                true);
-            if (!isNullOrUndefined(taskData.duration)) {
-                this.parent.dateValidationModule.calculateEndDate(ganttRecord);
-            }
-        }
-        this.parent.dataOperation.updateWidthLeft(data);
-        this.parent.dataOperation.updateTaskData(ganttRecord);
     }
 
     /**
@@ -1146,115 +1117,6 @@ export class Edit {
     // eslint-disable-next-line
     private updateScheduleDatesOnEditing(args: ITaskbarEditedEventArgs): void {
         //..
-    }
-
-    /**
-     *
-     * @param {IGanttData} ganttRecord .
-     * @returns {void} .
-     */
-    private updateChildItems(ganttRecord: IGanttData): void {
-        const previousData: IGanttData = this.parent.previousRecords[ganttRecord.uniqueID];
-        let previousStartDate: Date;
-        if (isNullOrUndefined(previousData) ||
-            (isNullOrUndefined(previousData) && !isNullOrUndefined(previousData.ganttProperties))) {
-            previousStartDate = new Date(ganttRecord.ganttProperties.startDate.getTime());
-        } else {
-            if(!isNullOrUndefined(previousData.ganttProperties.startDate)){
-            previousStartDate = new Date(previousData.ganttProperties.startDate.getTime());
-        }}
-        const currentStartDate: Date = ganttRecord.ganttProperties.startDate;
-        const childRecords: IGanttData[] = [];
-        let validStartDate: Date;
-        let validEndDate: Date;
-        let calcEndDate: Date;
-        let isRightMove: boolean;
-        let durationDiff: number;
-        this.getUpdatableChildRecords(ganttRecord, childRecords);
-        if (childRecords.length === 0) {
-            return;
-        }
-        if (!isNullOrUndefined(previousStartDate)&& !isNullOrUndefined(currentStartDate)&& previousStartDate.getTime() > currentStartDate.getTime()) {
-            validStartDate = this.parent.dateValidationModule.checkStartDate(currentStartDate);
-            validEndDate = this.parent.dateValidationModule.checkEndDate(previousStartDate, ganttRecord.ganttProperties);
-            isRightMove = false;
-        } else {
-            validStartDate = this.parent.dateValidationModule.checkStartDate(previousStartDate);
-            validEndDate = this.parent.dateValidationModule.checkEndDate(currentStartDate, ganttRecord.ganttProperties);
-            isRightMove = true;
-        }
-        //Get Duration
-        if (!isNullOrUndefined(validStartDate)&&!isNullOrUndefined(validEndDate)&&validStartDate.getTime() >= validEndDate.getTime()) {
-            durationDiff = 0;
-        } else {
-            durationDiff = this.parent.dateValidationModule.getDuration(validStartDate, validEndDate, 'minute', true, false);
-        }
-        for (let i: number = 0; i < childRecords.length; i++) {
-            if (childRecords[i as number].ganttProperties.isAutoSchedule) {
-                if (durationDiff > 0) {
-                    const startDate: Date = isScheduledTask(childRecords[i as number].ganttProperties) ?
-                        childRecords[i as number].ganttProperties.startDate : childRecords[i as number].ganttProperties.startDate ?
-                            childRecords[i as number].ganttProperties.startDate : childRecords[i as number].ganttProperties.endDate ?
-                                childRecords[i as number].ganttProperties.endDate : new Date(previousStartDate.toString());
-                    if (isRightMove) {
-                        calcEndDate = this.parent.dateValidationModule.getEndDate(
-                            this.parent.dateValidationModule.checkStartDate(
-                                startDate,
-                                childRecords[i as number].ganttProperties,
-                                childRecords[i as number].ganttProperties.isMilestone),
-                            durationDiff,
-                            'minute',
-                            childRecords[i as number].ganttProperties,
-                            false
-                        );
-                    } else {
-                        calcEndDate = this.parent.dateValidationModule.getStartDate(
-                            this.parent.dateValidationModule.checkEndDate(startDate, childRecords[i as number].ganttProperties),
-                            durationDiff,
-                            'minute',
-                            childRecords[i as number].ganttProperties);
-                    }
-                    this.calculateDateByRoundOffDuration(childRecords[i as number], calcEndDate);
-                    if (this.parent.isOnEdit && this.validatedChildItems.indexOf(childRecords[i as number]) === -1) {
-                        this.validatedChildItems.push(childRecords[i as number]);
-                    }
-                } else if (isNullOrUndefined(previousData)) {
-                    calcEndDate = previousStartDate;
-                    const initialData: IGanttData = this.parent.initialLoadData[childRecords[i as number].index] as IGanttData;
-                    if (this.parent.isLoad) {
-                        this.calculateDateByRoundOffDuration(initialData, calcEndDate);
-                    }
-                    else {
-                        this.calculateDateByRoundOffDuration(childRecords[i as number], calcEndDate);
-                    }
-                    if (this.parent.isOnEdit && this.validatedChildItems.indexOf(childRecords[i as number]) === -1) {
-                        this.validatedChildItems.push(childRecords[i as number]);
-                    }
-                }
-            }
-        }
-        if (childRecords.length) {
-            this.parent.dataOperation.updateParentItems(ganttRecord, true);
-        }
-    }
-
-    /**
-     * To get updated child records.
-     *
-     * @param {IGanttData} parentRecord .
-     * @param {IGanttData} childLists .
-     * @returns {void} .
-     */
-    private getUpdatableChildRecords(parentRecord: IGanttData, childLists: IGanttData[]): void {
-        const childRecords: IGanttData[] = parentRecord.childRecords;
-        for (let i: number = 0; i < childRecords.length; i++) {
-            if (childRecords[i as number].ganttProperties.isAutoSchedule) {
-                childLists.push(childRecords[i as number]);
-                if (childRecords[i as number].hasChildRecords) {
-                    this.getUpdatableChildRecords(childRecords[i as number], childLists);
-                }
-            }
-        }
     }
 
     /**
@@ -1776,7 +1638,7 @@ export class Edit {
         this.resetValidateArgs();
         this.parent.editedTaskBarItem = null;
         this.parent.isOnEdit = false;
-        this.validatedChildItems = [];
+        this.parent.predecessorModule.validatedChildItems = [];
         this.parent.isConnectorLineUpdate = false;
         this.parent.editedTaskBarItem = null;
         this.taskbarMoved = false;
@@ -3641,6 +3503,7 @@ export class Edit {
             for (let k: number = 0; k < this.updateParentRecords.length; k++) {
                 this.parent.dataOperation.updateParentItems(this.updateParentRecords[k as number]);
             }
+            this.isFirstCall = true;
             this.parent.editedRecords.forEach(record => {
                 this.parent.predecessorModule.validatePredecessor(record, [], '');
             });

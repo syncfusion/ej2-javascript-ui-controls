@@ -65,6 +65,7 @@ export class Render {
     private maxMeasurePos: number = 0;
     private hierarchyCount: number = 0;
     private actualText: string = '';
+    private drilledLevelInfo: { [key: string]: boolean } = {};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private timeOutObj: any;
     /** Constructor for render module
@@ -1115,7 +1116,23 @@ export class Render {
                     const levelPosition: number = levelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length -
                         (memberPos ? memberPos - 1 : memberPos);
                     let level: number = levelPosition ? (levelPosition - 1) : 0;
-                    level = cell.isSum ? level - 1 : level;
+                    if (this.parent.dataSourceSettings.subTotalsPosition === 'Bottom' && !isNullOrUndefined(levelName)) {
+                        const cellLevelName: string = !cell.isSum ? levelName : cell.type === 'value' ?
+                            levelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter + (
+                                this.parent.engineModule.valueAxisFields[cell.actualText].caption ?
+                                    this.parent.engineModule.valueAxisFields[cell.actualText].caption :
+                                    this.parent.engineModule.valueAxisFields[cell.actualText].name))[0] : '';
+                        if (cell.isSum && (cell.type === 'value' ? this.drilledLevelInfo[cellLevelName as string] : true)) {
+                            level = level - 1;
+                        } else if (!cell.isSum) {
+                            if (cellLevelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length === 1) {
+                                this.drilledLevelInfo = {};
+                            }
+                            if (cell.members.length > 0) {
+                                this.drilledLevelInfo[cellLevelName as string] = cell.isDrilled;
+                            }
+                        }
+                    }
                     do {
                         if (level > 0) {
                             tCell.appendChild(createElement('span', {
@@ -1306,7 +1323,10 @@ export class Render {
             }
         } else {
             const hierarchyName: string = cell.hierarchy;
-            const levelName: string = cell.memberType === 3 ? (this.measurePos + '.' + cell.levelUniqueName) : cell.levelUniqueName;
+            const actualLevelName: string = cell.valueSort ? cell.valueSort.levelName.toString() : '';
+            const levelPosition: number = cell.level === -1 ? this.measurePos :
+                actualLevelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length - 1;
+            const levelName: string = cell.memberType === 3 ? (levelPosition + '.' + cell.levelUniqueName) : cell.levelUniqueName;
             const hasChild: boolean = cell.hasChild;
             let isSubTotalCell: boolean = false;
             if (cell.isSum && cell.memberType === 3) {
@@ -2129,20 +2149,20 @@ export class Render {
             // if (this.actualText !== cell.actualText && cell.colSpan > 1 && cell.level > -1) {
             //     ((args as any).gridCell as any).colSpan = (args.cell as any).colSpan = cell.colSpan > -1 ? cell.colSpan : 1;
             // }
-            rowSpan = cell.rowSpan > -1 ? cell.rowSpan : 1;
+            rowSpan = cell.rowSpan > 0 ? cell.rowSpan : 1;
             if ((args as any).name === 'excelHeaderQueryCellInfo') {
-                if (cell.rowSpan > -1) {
+                if (cell.rowSpan > 0) {
                     rowSpan = cell.rowSpan;
                 } else if (!isNullOrUndefined(cell.type) && cell.level !== 0) {
-                    rowSpan = -1;
-                    (args.cell as any).rowSpan = -1;
+                    rowSpan = 1;
+                    (args.cell as any).rowSpan = 1;
                 }
             }
             this.actualText = cell.actualText as string;
         } else {
             rowSpan = Object.keys(this.engine.headerContent).length;
         }
-        if ((args.cell as any).rowSpan !== rowSpan && rowSpan > -1) {
+        if ((args.cell as any).rowSpan !== rowSpan && rowSpan > 0) {
             (args.cell as any).rowSpan = rowSpan;
         }
         return args;

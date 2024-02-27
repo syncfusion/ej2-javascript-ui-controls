@@ -1018,9 +1018,12 @@ export class PivotUtil {
      */
     public static renderOlapEngine(pivot: PivotView | PivotFieldList, customProperties?: IOlapCustomProperties): void {
         try {
-            pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties ? customProperties :
-                (pivot as PivotFieldList).frameCustomProperties(pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList), // eslint-disable-next-line
-                    pivot.onHeadersSort ? (pivot as any).getHeaderSortInfo.bind(pivot) : undefined);
+            pivot.olapEngineModule.renderEngine(
+                pivot.dataSourceSettings as IDataOptions, customProperties ? customProperties :
+                (pivot as PivotFieldList).frameCustomProperties(pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList),
+                pivot.onHeadersSort ? (pivot as any).getHeaderSortInfo.bind(pivot) : undefined // eslint-disable-line @typescript-eslint/no-explicit-any
+            );
+            pivot.setProperties({ dataSourceSettings: { valueIndex: pivot.olapEngineModule.measureIndex } }, true);
         } catch (exception) {
             pivot.actionObj.actionName = 'engineFormation';
             if (pivot.olapEngineModule.errorInfo) {

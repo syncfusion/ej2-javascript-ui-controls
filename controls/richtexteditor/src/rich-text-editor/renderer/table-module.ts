@@ -50,7 +50,6 @@ export class Table {
     private helper: HTMLElement;
     private dialogRenderObj: DialogRenderer;
     private currentColumnResize: string = '';
-    private currentMarginLeft: number = 0;
     private previousTableElement: HTMLElement;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -686,7 +685,7 @@ export class Table {
 
     private tableResizeEleCreation(table: HTMLTableElement, e: MouseEvent): void {
         this.parent.preventDefaultResize(e);
-        const columns: HTMLCollectionOf<Element> = table.rows[this.calMaxCol(table)].cells;
+        const columns: HTMLTableDataCellElement[] = this.calMaxCol(this.curTable);
         const rows: Element[] = [];
         for (let i: number = 0; i < table.rows.length; i++) {
             for (let j: number = 0; j < table.rows[i as number].cells.length; j++) {
@@ -818,6 +817,7 @@ export class Table {
         if (target.classList.contains(classes.CLS_TB_COL_RES) ||
             target.classList.contains(classes.CLS_TB_ROW_RES) ||
             target.classList.contains(classes.CLS_TB_BOX_RES)) {
+            this.resetResizeHelper(this.curTable);
             e.preventDefault();
             this.parent.preventDefaultResize(e as PointerEvent);
             removeClass(this.curTable.querySelectorAll('td,th'), classes.CLS_TABLE_SEL);
@@ -828,9 +828,10 @@ export class Table {
             this.hideTableQuickToolbar();
             if (target.classList.contains(classes.CLS_TB_COL_RES)) {
                 this.resizeBtnStat.column = true;
-                if (parseInt(target.getAttribute('data-col'), 10) === this.curTable.rows[this.calMaxCol(this.curTable)].cells.length) {
+                if (parseInt(target.getAttribute('data-col'), 10) === this.calMaxCol(this.curTable).length) {
                     this.currentColumnResize = 'last';
-                    this.columnEle = this.curTable.rows[this.calMaxCol(this.curTable)].cells[parseInt(target.getAttribute('data-col'), 10) - 1] as HTMLTableDataCellElement;
+                    this.colIndex = parseInt(target.getAttribute('data-col'), 10) - 1;
+                    this.columnEle = this.calMaxCol(this.curTable)[this.colIndex] as HTMLTableDataCellElement;
                 } else {
                     if (parseInt(target.getAttribute('data-col'), 10) === 0) {
                         this.currentColumnResize = 'first';
@@ -875,9 +876,9 @@ export class Table {
                             }
                         }
                     }
-                    this.columnEle = this.curTable.rows[this.calMaxCol(this.curTable)].cells[parseInt(target.getAttribute('data-col'), 10)] as HTMLTableDataCellElement;
+                    this.colIndex = parseInt(target.getAttribute('data-col'), 10);
+                    this.columnEle = this.calMaxCol(this.curTable)[this.colIndex] as HTMLTableDataCellElement;
                 }
-                this.colIndex = this.columnEle.cellIndex;
                 this.moveEle = e.target as HTMLElement;
                 this.appendHelper();
             }
@@ -966,16 +967,33 @@ export class Table {
         }
     }
 
-    private calMaxCol(element: HTMLTableElement): number {
-        let max: number = 0;
-        let maxRowIndex: number;
-        for (let i: number = 0; i < element.rows.length; i++) {
-            if (max < element.rows[i as number].cells.length) {
-                maxRowIndex = i;
-                max = element.rows[i as number].cells.length;
+    private calMaxCol(curTable: HTMLTableElement): HTMLTableDataCellElement[] {
+        const cellColl: HTMLCollectionOf<HTMLTableDataCellElement> = curTable.rows[0].cells;
+        let cellCount: number = 0;
+        for (let cell: number = 0; cell < cellColl.length; cell++) {
+            cellCount = cellCount + cellColl[cell as number].colSpan;
+        }
+        const cells: HTMLTableDataCellElement[] = new Array(cellCount);
+        const rowSpanCells: Map<string, HTMLTableDataCellElement> = new Map();
+        for (let i: number = 0; i < curTable.rows.length; i++) {
+            let currentColIndex: number = 0;
+            for (let k: number = 0; k < curTable.rows[i as number].cells.length; k++) {
+                for (let l: number = 1; l < curTable.rows[i as number].cells[k as number].rowSpan; l++) {
+                    const key: string = `${i + l}${currentColIndex}`;
+                    rowSpanCells.set(key, curTable.rows[i as number].cells[k as number]);
+                }
+                const cellIndex: number = this.getCellIndex(rowSpanCells, i, k);
+                if (cellIndex > currentColIndex) {
+                    currentColIndex = cellIndex;
+                }
+                const width: number = curTable.rows[i as number].cells[k as number].offsetWidth;
+                if (!cells[currentColIndex as number] || width < cells[currentColIndex as number].offsetWidth) {
+                    cells[currentColIndex as number] = curTable.rows[i as number].cells[k as number];
+                }
+                currentColIndex += 1 + curTable.rows[i as number].cells[k as number].colSpan - 1;
             }
         }
-        return maxRowIndex;
+        return cells;
     }
 
     private resizing(e: PointerEvent | TouchEvent): void {
@@ -1011,7 +1029,6 @@ export class Table {
                 }
                 if (this.resizeBtnStat.column) {
                     const colGroup: NodeListOf<HTMLTableColElement> = this.curTable.querySelectorAll('colgroup > col');
-                    const cellRow: number = this.curTable.rows[0].cells[0].nodeName === 'TH' ? 1 : 0;
                     let currentTableWidth: number;
                     if (this.curTable.style.width !== '' && this.curTable.style.width.includes('%')){
                         currentTableWidth =  parseFloat(this.curTable.style.width.split('%')[0]);
@@ -1019,7 +1036,8 @@ export class Table {
                     else {
                         currentTableWidth =  this.getCurrentTableWidth(this.curTable.offsetWidth, this.parent.inputElement.offsetWidth);
                     }
-                    const currentColumnCellWidth: number = parseFloat((this.curTable.rows[cellRow as number].cells[this.colIndex >= this.curTable.rows[cellRow as number].cells.length ? this.curTable.rows[cellRow as number].cells.length - 1 : this.colIndex] as HTMLElement).style.width.split('%')[0]);
+                    const currentCol: HTMLTableDataCellElement = this.calMaxCol(this.curTable)[this.colIndex];
+                    let currentColResizableWidth: number = this.getCurrentColWidth(currentCol, tableWidth);
                     if (this.currentColumnResize === 'first') {
                         mouseX = mouseX - 0.75; //This was done for to make the gripper and the table first/last column will be close.
                         this.removeResizeElement();
@@ -1028,17 +1046,28 @@ export class Table {
                             this.curTable.style.maxWidth = maxiumWidth + 'px';
                         }
                         // Below the value '100' is the 100% width of the parent element.
-                        if (((mouseX !== 0 && 5 < currentColumnCellWidth) || mouseX < 0) && currentTableWidth <= 100 &&
+                        if (((mouseX !== 0 && 5 < currentColResizableWidth) || mouseX < 0) && currentTableWidth <= 100 &&
                             this.convertPixelToPercentage(tableWidth - mouseX, widthCompare) <= 100) {
-                            const firstColumnsCell: HTMLElement[] =  this.findFirstLastColCells(this.curTable, true);
+                            const firstColumnsCell: HTMLTableDataCellElement[] =  this.findFirstLastColCells(this.curTable, true);
                             this.curTable.style.width = this.convertPixelToPercentage(tableWidth - mouseX, widthCompare) > 100 ? (100 + '%') :
                                 (this.convertPixelToPercentage(tableWidth - mouseX, widthCompare) + '%');
                             const differenceWidth: number = currentTableWidth - this.convertPixelToPercentage(
                                 tableWidth - mouseX, widthCompare);
-                            this.currentMarginLeft = this.currentMarginLeft + differenceWidth;
-                            this.curTable.style.marginLeft = 'calc(' + (this.curTable.style.width === '100%' ? 0 : this.currentMarginLeft) + '%)';
+                            let preMarginLeft: number = 0;
+                            if (!isNullOrUndefined(this.curTable.style.marginLeft) && this.curTable.style.marginLeft !== '')
+                            {
+                                const regex: RegExp = /[-+]?\d*\.\d+|\d+/;
+                                const value: RegExpMatchArray | null = this.curTable.style.marginLeft.match(regex);
+                                if (!isNullOrUndefined(value))
+                                {
+                                    preMarginLeft = parseFloat(value[0]);
+                                }
+                            }
+                            const currentMarginLeft: number = preMarginLeft + differenceWidth;
+                            this.curTable.style.marginLeft = 'calc(' + (this.curTable.style.width === '100%' ? 0 : currentMarginLeft) + '%)';
                             for (let i: number = 0; i < firstColumnsCell.length; i++) {
-                                (this.curTable.rows[i as number].cells[this.colIndex] as HTMLTableDataCellElement).style.width = (currentColumnCellWidth - differenceWidth) + '%';
+                                const currentColumnCellWidth: number = this.getCurrentColWidth(firstColumnsCell[i as number], tableWidth);
+                                (firstColumnsCell[i as number] as HTMLTableDataCellElement).style.width = (currentColumnCellWidth - differenceWidth) + '%';
                             }
                         }
                     } else if (this.currentColumnResize === 'last') {
@@ -1049,17 +1078,15 @@ export class Table {
                             this.curTable.style.maxWidth = maxiumWidth + 'px';
                         }
                         // Below the value '100' is the 100% width of the parent element.
-                        if (((mouseX !== 0 && 5 < currentColumnCellWidth) || mouseX > 0) &&
+                        if (((mouseX !== 0 && 5 < currentColResizableWidth) || mouseX > 0) &&
                             currentTableWidth <= 100 && this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) <= 100) {
-                            const lastColumnsCell: HTMLElement[] = this.findFirstLastColCells(this.curTable, false);
+                            const lastColumnsCell: HTMLTableDataCellElement[] = this.findFirstLastColCells(this.curTable, false);
                             this.curTable.style.width = this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) > 100 ? (100 + '%') : (this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) + '%');
                             const differenceWidth: number = currentTableWidth - this.convertPixelToPercentage(
                                 tableWidth + mouseX, widthCompare);
                             for (let i: number = 0; i < lastColumnsCell.length; i++) {
-                                if (this.curTable.rows[i as number].cells[this.colIndex]) {
-                                    (this.curTable.rows[i as number].cells[this.curTable.rows[i as number].cells.length === this.colIndex ?
-                                        this.colIndex - 1 : this.colIndex] as HTMLTableDataCellElement).style.width = (currentColumnCellWidth - differenceWidth) + '%';
-                                }
+                                const currentColumnCellWidth: number = this.getCurrentColWidth(lastColumnsCell[i as number], tableWidth);
+                                (lastColumnsCell[i as number] as HTMLTableDataCellElement).style.width = (currentColumnCellWidth - differenceWidth) + '%';
                             }
                         }
                     } else {
@@ -1083,7 +1110,7 @@ export class Table {
                             tableTrElementPixel[i as number] = (parseFloat(currentTableTrElement[i as number].clientHeight.toString()));
                         }
                     }
-                    this.curTable.style.height = (parseFloat(this.curTable.clientHeight.toString()) + mouseY) + 'px';
+                    this.curTable.style.height = (parseFloat(this.curTable.clientHeight.toString()) + ((mouseY > 0) ? 0 : mouseY)) + 'px';
                     for (let i:number = 0; i < currentTableTrElement.length; i++) {
                         if (this.rowEle === currentTableTrElement[i as number]) {
                             (currentTableTrElement[i as number] as HTMLElement).style.height = (parseFloat(currentTableTrElement[i as number].clientHeight.toString()) + mouseY) + 'px';
@@ -1118,19 +1145,38 @@ export class Table {
         });
     }
 
+    private getCurrentColWidth(col: HTMLTableCellElement, tableWidth: number): number {
+        let currentColWidth: number = 0;
+        if (col.style.width !== '' && col.style.width.includes('%')){
+            currentColWidth =  parseFloat(col.style.width.split('%')[0]);
+        }
+        else {
+            currentColWidth = this.convertPixelToPercentage(col.offsetWidth, tableWidth);
+        }
+        return currentColWidth;
+    }
+
     private getCurrentTableWidth(tableWidth: number, parentWidth: number): number {
         let currentTableWidth: number = 0;
         currentTableWidth = tableWidth / parentWidth * 100;
         return currentTableWidth;
     }
 
-    private findFirstLastColCells(table: HTMLElement, isFirst: boolean): HTMLElement[] {
-        const resultColumns: HTMLElement[] = [];
-        const rows: NodeListOf<HTMLElement> = table.querySelectorAll('tr');
+    private findFirstLastColCells(table: HTMLTableElement, isFirst: boolean): HTMLTableDataCellElement[] {
+        const resultColumns: HTMLTableDataCellElement[] = [];
+        const rows: HTMLCollectionOf<HTMLTableRowElement> = (table as HTMLTableElement).rows;
+        const rowSpanCellIndexs: string [] = new Array();
         for (let i : number = 0; i < rows.length; i++) {
-            if (rows[i as number].closest('table') === table) {
-                const columns: NodeListOf<Element> = rows[i as number].querySelectorAll('th, td');
-                resultColumns.push(isFirst ? (columns[0] as HTMLElement) : (columns[columns.length - 1] as HTMLElement));
+            const cellIndex: number = isFirst ? 0 : rows[i as number].cells.length - 1;
+            const column: HTMLTableCellElement = rows[i as number].cells[cellIndex as number];
+            for (let rowSpan: number = 1; rowSpan < column.rowSpan; rowSpan++)
+            {
+                const key: string =`${i + rowSpan}-${cellIndex}`;
+                rowSpanCellIndexs.push(key);
+            }
+            const spannedCellKey: string = `${i}-${cellIndex}`;
+            if (rowSpanCellIndexs.length === 0 || (isFirst && rowSpanCellIndexs.indexOf(spannedCellKey) === -1) || (!isFirst && rowSpanCellIndexs.indexOf(spannedCellKey) === -1 && rowSpanCellIndexs.every((key: string) => key.split('-')[0] !== i.toString()))) {
+                resultColumns.push(column);
             }
         }
         return resultColumns;
@@ -1156,22 +1202,7 @@ export class Table {
         if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) {
             detach(this.helper); this.helper = null;
         }
-        const colHelper: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-table-rhelper.e-column-helper');
-        Array.from(colHelper).forEach((element: Element) => {
-            if (element.parentNode) {
-                element.parentNode.removeChild(element);
-            }
-        });
-        for (let i: number = 0; i < this.curTable.rows.length; i++) {
-            for (let k: number = 0; k < this.curTable.rows[i as number].cells.length; k++) {
-                const width: string = this.convertPixelToPercentage(this.curTable.rows[i as number].cells[k as number].offsetWidth, parseInt(getComputedStyle(this.curTable).width, 10)) + '%';
-                this.curTable.rows[i as number].cells[k as number].style.width = width;
-            }
-        }
-        const colGroup: HTMLElement | null  = this.curTable.querySelector('colgroup');
-        if (colGroup) {
-            this.curTable.removeChild(colGroup);
-        }
+        this.resetResizeHelper(this.curTable);
         this.pageX = null;
         this.pageY = null;
         this.moveEle = null;
@@ -1187,6 +1218,31 @@ export class Table {
         const args: ResizeArgs = { event: e, requestType: 'table' };
         this.parent.trigger(events.resizeStop, args);
         this.parent.formatter.saveData();
+    }
+
+    private resetResizeHelper(curTable: HTMLTableElement): void {
+        const colHelper: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-table-rhelper.e-column-helper');
+        Array.from(colHelper).forEach((element: Element) => {
+            if (element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        });
+        const rowHelper: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-table-rhelper.e-row-helper');
+        Array.from(rowHelper).forEach((element: Element) => {
+            if (element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        });
+        const colGroup: HTMLElement | null  = curTable.querySelector('colgroup');
+        if (colGroup) {
+            for (let i: number = 0; i < curTable.rows.length; i++) {
+                for (let k: number = 0; k < curTable.rows[i as number].cells.length; k++) {
+                    const width: string = this.convertPixelToPercentage(curTable.rows[i as number].cells[k as number].offsetWidth, parseInt(getComputedStyle(curTable).width, 10)) + '%';
+                    curTable.rows[i as number].cells[k as number].style.width = width;
+                }
+            }
+            curTable.removeChild(colGroup);
+        }
     }
 
     private resizeBtnInit(): { [key: string]: boolean } {
@@ -1299,6 +1355,7 @@ export class Table {
         if (!isNOU(this.parent.cssClass)) {
             addClass([this.popupObj.element], this.parent.getCssClass());
         }
+        btnEle.focus();
         this.popupObj.refreshPosition(target);
     }
 
@@ -1636,10 +1693,17 @@ export class Table {
     private afterKeyDown(e: KeyboardEventArgs): void {
         if (this.curTable) {
             setTimeout(() => {
-                const mouseOverEvent = document.createEvent('MouseEvents');
-                mouseOverEvent.initEvent('mouseover', true, true);
-                this.curTable.dispatchEvent(mouseOverEvent);
+                this.updateResizeIconPosition();
             }, 1);
+        }
+    }
+
+    private updateResizeIconPosition(): void {
+        const tableReBox: HTMLElement = this.parent.contentModule.getEditPanel().querySelector('.e-table-box')
+        if (!isNOU(tableReBox)) {
+            const tablePosition: OffsetPosition = this.calcPos(this.curTable);
+            tableReBox.style.cssText = 'top: ' + (tablePosition.top + parseInt(getComputedStyle(this.curTable).height, 10) - 4) +
+            'px; left:' + (tablePosition.left + parseInt(getComputedStyle(this.curTable).width, 10) - 4) + 'px;';
         }
     }
 }

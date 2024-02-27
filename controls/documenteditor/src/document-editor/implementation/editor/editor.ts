@@ -9528,6 +9528,7 @@ export class Editor {
      * @private
      */
     public changeCase(property: string): void {
+        this.selection.characterFormat.allCaps = (property === "Uppercase") ? true : false;        
         if (this.selection.isEmpty || ((this.owner.isReadOnlyMode || this.restrictFormatting) && !this.selection.isInlineFormFillMode())) {
             return;
         }
@@ -19754,7 +19755,7 @@ export class Editor {
         if (text !== '') {
             // inserts hyperlink
             if (tocSettings.includeHyperlink && (bookmarkName !== undefined)) {
-                fieldBegin = this.insertTocHyperlink(tocLine, bookmarkName, text);
+                fieldBegin = this.insertTocHyperlink(tocLine, bookmarkName, text, widget);
             } else {
                 const span: TextElementBox = new TextElementBox();
                 span.text = text;
@@ -19789,13 +19790,23 @@ export class Editor {
         }
     }
 
-    private insertTocHyperlink(lineWidget: LineWidget, bookmarkName: string, text: string): FieldElementBox {
+    private insertTocHyperlink(lineWidget: LineWidget, bookmarkName: string, text: string, widget?: ParagraphWidget): FieldElementBox {
         const fieldCode: string = ' HYPERLINK \\l \"' + bookmarkName + '\" ';
         const fieldBegin: FieldElementBox = this.createTocFieldElement(lineWidget, fieldCode, true);
 
         //text element.
         const span: TextElementBox = new TextElementBox();
         span.text = text;
+
+        // retrieve the TOC character format
+        let styleName = widget.paragraphFormat.baseStyle.name;
+        let curBaseSytle: Object = this.documentHelper.styles.findByName(styleName, 'Paragraph');
+        if ((curBaseSytle as WParagraphStyle).characterFormat.isEqualTocFormat(widget.characterFormat)) {
+            let noramlStyle: Object = this.documentHelper.styles.findByName('Normal', 'Paragraph');
+            span.characterFormat.copyTocFormat((noramlStyle as WParagraphStyle).characterFormat);
+        } else {
+            span.characterFormat.copyTocFormat(widget.characterFormat);
+        }
         span.line = lineWidget;
         lineWidget.children.push(span);
         return fieldBegin;

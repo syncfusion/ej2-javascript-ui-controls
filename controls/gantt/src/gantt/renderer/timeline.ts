@@ -132,10 +132,8 @@ export class Timeline {
             this.parent.dateValidationModule.calculateProjectDates();
         }
         if (!isNullOrUndefined(this.parent.zoomingProjectStartDate)) {
-            this.parent.cloneProjectStartDate = this.parent.cloneProjectStartDate.getTime() < this.parent.zoomingProjectStartDate.getTime()
-                ? this.parent.cloneProjectStartDate : this.parent.zoomingProjectStartDate;
-            this.parent.cloneProjectEndDate = this.parent.cloneProjectEndDate.getTime() > this.parent.zoomingProjectEndDate.getTime()
-                ? this.parent.cloneProjectEndDate : this.parent.zoomingProjectEndDate;
+            this.parent.cloneProjectStartDate = this.parent.zoomingProjectStartDate;
+            this.parent.cloneProjectEndDate = this.parent.zoomingProjectEndDate;
         }
         this.parent.zoomingProjectStartDate = null;
         this.parent.zoomingProjectEndDate = null;

@@ -2591,11 +2591,11 @@ export class TableWidget extends BlockWidget {
         return value < 100 ? value : 100; // The value should be lesser than or equal to 100%;
     }
 
-    public updateChildWidgetLeft(left: number): void {
+    public updateChildWidgetLeft(left: number, updateLeftIndent?: boolean): void {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let rowWidget: TableRowWidget = this.childWidgets[i] as TableRowWidget;
             rowWidget.x = left;
-            rowWidget.updateChildWidgetLeft(left);
+            rowWidget.updateChildWidgetLeft(left, updateLeftIndent);
         }
     }
 
@@ -3176,6 +3176,16 @@ export class TableRowWidget extends BlockWidget {
     /**
      * @private
      */
+    public getFirstRowWidth(): number {
+        let width: number = 0;
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+            width += (this.childWidgets[i] as TableCellWidget).getCellWidth(this.ownerTable);
+        }
+        return width;
+    }
+    /**
+     * @private
+     */
     public getCellWidget(columnIndex: number, columnSpan: number): TableCellWidget {
         let tableHolder: WTableHolder = this.ownerTable.tableHolder;
         let index: number = tableHolder.getValidColumnIndex(columnIndex);
@@ -3297,7 +3307,7 @@ export class TableRowWidget extends BlockWidget {
      * @param left 
      * @private
      */
-    public updateChildWidgetLeft(left: number): void {
+    public updateChildWidgetLeft(left: number, updateLeftIndent?: boolean): void {
         // TODO: Cell spacing calculation.
         let spacing: number = 0;
         if (this.ownerTable.tableFormat.cellSpacing > 0) {
@@ -3307,7 +3317,7 @@ export class TableRowWidget extends BlockWidget {
             let cellWidget: TableCellWidget = this.childWidgets[i] as TableCellWidget;
             left += spacing + cellWidget.margin.left;
             cellWidget.x = left;
-            cellWidget.updateChildWidgetLeft(cellWidget.x);
+            cellWidget.updateChildWidgetLeft(cellWidget.x, updateLeftIndent);
             left += cellWidget.width + cellWidget.margin.right;
         }
     }
@@ -4197,12 +4207,16 @@ export class TableCellWidget extends BlockWidget {
     /**
      * @private
      */
-    public updateChildWidgetLeft(left: number): void {
+    public updateChildWidgetLeft(left: number, updateLeftIndent?: boolean): void {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
-            (this.childWidgets[i] as Widget).x = left;
-            if (this.childWidgets[i] instanceof TableWidget) {
-                let tableWidget: TableWidget = this.childWidgets[i] as TableWidget;
-                tableWidget.updateChildWidgetLeft(left);
+            let widget: Widget = this.childWidgets[i] as Widget;
+            widget.x = left;
+            if (updateLeftIndent && widget instanceof ParagraphWidget) {
+                widget.x = left + HelperMethods.convertPointToPixel(widget.leftIndent);
+            }
+            if (widget instanceof TableWidget) {
+                let tableWidget: TableWidget = widget as TableWidget;
+                tableWidget.updateChildWidgetLeft(left, updateLeftIndent);
                 if (tableWidget.isBidiTable) {
                     let clientArea: Rect = new Rect(tableWidget.x, tableWidget.y, tableWidget.width, tableWidget.height);
                     tableWidget.shiftWidgetsForRtlTable(clientArea, tableWidget);
@@ -4349,6 +4363,10 @@ export class LineWidget implements IWidget {
      * @private
      */
     public maxBaseLine: number = 0;
+     /**
+     * @private
+     */
+    public skipClipImage: boolean = false;
     /**
      * Rendered elements contains reordered element for RTL layout 
      */
@@ -8774,6 +8792,9 @@ export class CommentCharacterElementBox extends ElementBox {
         let comment: CommentCharacterElementBox = new CommentCharacterElementBox(this.commentType);
         comment.commentId = this.commentId;
         comment.commentType = this.commentType;
+        if (!isNullOrUndefined(this.commentInternal)) {
+            comment.commentInternal = this.commentInternal.clone() as CommentElementBox;
+        }
         return comment;
     }
     constructor(type: number) {

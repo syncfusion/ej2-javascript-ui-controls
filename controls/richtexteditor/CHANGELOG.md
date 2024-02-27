@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 24.2.8 (2024-02-27)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F186601` - Now, the `e-control` class name is removed properly from the body element in the Rich Text Editor.
+
+- `#I553157` - Now the numbered and bulleted list is removed properly when deleting the entire list using the backspace key in RichTextEditor.
+
+- `#I553375` - Now, the bullet or number list works properly when we try to remove a single line from the list in the RichTextEditor.
+
 ## 24.2.7 (2024-02-20)
 
 ### RichTextEditor
