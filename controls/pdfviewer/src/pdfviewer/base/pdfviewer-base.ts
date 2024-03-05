@@ -7114,10 +7114,10 @@ export class PdfViewerBase {
             let thumbnailImageElement: HTMLImageElement;
             let imageSource: string;
             let object = new Object();
-            if ((this.isMinimumZoom && document.getElementById(this.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + pageIndex))) {
+            thumbnailImageElement = document.getElementById(this.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + pageIndex) as HTMLImageElement;
+            if (this.isMinimumZoom && thumbnailImageElement.children[0] as HTMLImageElement && !isNullOrUndefined((thumbnailImageElement.children[0] as HTMLImageElement).src) && (thumbnailImageElement.children[0] as HTMLImageElement).src !== "") {
                 this.renderThumbnailImages = true;
-                thumbnailImageElement = document.getElementById(this.pdfViewer.element.id + '_thumbnail_Selection_Ring_' + pageIndex).children[0] as HTMLImageElement;
-                imageSource = thumbnailImageElement.src;
+                imageSource = (thumbnailImageElement.children[0] as HTMLImageElement).src;
             } else {
                 this.renderThumbnailImages = false;
             }

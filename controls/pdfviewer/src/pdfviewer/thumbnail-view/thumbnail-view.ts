@@ -17,12 +17,17 @@ export class ThumbnailView {
     private thumbnailThreshold: number = 50;
     private thumbnailTopMargin: number = 10;
     private thumbnailTop = 8;
+    private isRendered: boolean = false;
     private list: any[] = [];
     /**
      * @private
      */
     public thumbnailPageSize: any[] = [];
     private thumbnailRequestHandler: AjaxHandler;
+    /**
+     * @private
+     */
+    public isThubmnailOpen: boolean = false;
     /**
      * @private
      */
@@ -100,16 +105,36 @@ export class ThumbnailView {
             proxy.renderThumbnailEmptyPage(i);
         }
         if (proxy.pdfViewer.isThumbnailViewOpen) {
-            proxy.pdfViewerBase.navigationPane.isThumbnailOpen = true; // eslint-disable-next-line max-len
+            this.isThubmnailOpen = true;
+            // eslint-disable-next-line max-len
             proxy.pdfViewerBase.navigationPane.sideBarTitle.textContent = proxy.pdfViewer.localeObj.getConstant('Page Thumbnails');
             document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view').style.display = 'flex';
             let bookmarkContent: any = proxy.pdfViewer.element.querySelector('.e-pv-bookmark-view');
             if (bookmarkContent) {
                 bookmarkContent.style.display = 'none';
             }
-            proxy.pdfViewerBase.navigationPane.setThumbnailSelectionIconTheme();
             proxy.pdfViewerBase.navigationPane.updateViewerContainerOnExpand();
+            this.isThubmnailOpen = false;
             proxy.pdfViewerBase.navigationPane.isBookmarkOpen = false;
+        }
+        this.createRequestForThumbnailImages();
+    }
+
+    private isThumbnailViewOpen(): void {
+        const proxy: ThumbnailView = this;
+        if (proxy.pdfViewer.isThumbnailViewOpen) {
+            proxy.pdfViewerBase.navigationPane.setThumbnailSelectionIconTheme();
+            proxy.pdfViewerBase.navigationPane.isThumbnailOpen = true; // eslint-disable-next-line max-len
+            this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'block';
+            if (this.pdfViewer.enableRtl) {
+                proxy.pdfViewerBase.viewerContainer.style.right = this.pdfViewerBase.navigationPane.getViewerContainerLeft() + 'px';
+            }
+            else {
+                proxy.pdfViewerBase.viewerContainer.style.left = this.pdfViewerBase.navigationPane.getViewerContainerLeft() + 'px';
+            }
+            proxy.pdfViewerBase.viewerContainer.style.width = (proxy.pdfViewer.element.clientWidth - this.pdfViewerBase.navigationPane.getViewerContainerLeft() - this.pdfViewerBase.navigationPane.getViewerContainerRight()) + 'px';
+            proxy.pdfViewerBase.pageContainer.style.width = proxy.pdfViewerBase.viewerContainer.clientWidth + 'px';
+            proxy.pdfViewerBase.updateZoomValue();
         }
     }
 
@@ -209,8 +234,9 @@ export class ThumbnailView {
         // eslint-disable-next-line max-len
         this.list.push(proxy.startIndex);
         // eslint-disable-next-line max-len
-        if(proxy.startIndex >= 100)
+        if (this.pdfViewerBase.pageSize.length === this.pdfViewerBase.pageCount && !this.isRendered) {
             this.renderDiv();
+        }
         proxy.thumbnailLimit = proxy.startIndex + proxy.thumbnailThreshold < proxy.pdfViewer.pageCount ? proxy.startIndex + proxy.thumbnailThreshold : proxy.pdfViewer.pageCount;
         if (!this.pdfViewerBase.clientSideRendering) {
             let digitalSignaturePresent: boolean = false;
@@ -264,6 +290,7 @@ export class ThumbnailView {
                     });
                 }
             }
+            this.isThumbnailViewOpen();
         }
     }
 
@@ -310,15 +337,17 @@ export class ThumbnailView {
         }
     }
 
-    private renderDiv(): void {
-        if (this.pdfViewerBase.pageSize.length === this.pdfViewerBase.pageCount) {
+    private renderDiv(data?: any): void {
+        // eslint-disable-next-line
+        if ((this.pdfViewerBase.pageSize.length === this.pdfViewerBase.pageCount || !isNullOrUndefined(data)) && !this.isRendered) {
             for (let i: number = 100; i < this.pdfViewer.pageCount; i++) {
                 let thumbnail: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_thumbnail_' + i);
                 let pageLink: HTMLAnchorElement = document.getElementById('page_' + i) as HTMLAnchorElement;
                 let thumbnailPageNumber: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_thumbnail_pagenumber_' + i);
                 let currentPageImage: any = this.getThumbnailImageElement(i);
                 let height: number = 180;
-                if (this.pdfViewerBase.pageSize[i] && (this.pdfViewerBase.pageSize[i].height < this.pdfViewerBase.pageSize[i].width)) {
+                // eslint-disable-next-line
+                if ((this.pdfViewerBase.pageSize[i] && (this.pdfViewerBase.pageSize[i].height < this.pdfViewerBase.pageSize[i].width)) || (data && (data.pageRotation[i] === 1 || data.pageRotation[i] === 3))) {
                     currentPageImage.style.height = '86px';
                     currentPageImage.style.width = '126px';
                     thumbnail.style.height = '100px';
@@ -333,6 +362,7 @@ export class ThumbnailView {
                 let thumbnailSize: any = {height: height, top:  this.thumbnailTop};
                 this.thumbnailPageSize[i] =  thumbnailSize;
             }
+            this.isRendered = true;
         }
     }
 
@@ -348,7 +378,8 @@ export class ThumbnailView {
                 const thumbnailDiv: HTMLElement = thumbnailChild.children[0] as HTMLElement;
                 let offsetTop: number;
                 if (shouldScroll) {
-                    if (this.pdfViewerBase.pageSize) {
+                    // eslint-disable-next-line
+                    if (this.pdfViewerBase.pageSize.length === this.pdfViewerBase.pageCount && !this.isRendered) {
                         this.renderDiv();
                     }
                     if (thumbnailDiv.offsetTop <= 0) {
@@ -441,20 +472,19 @@ export class ThumbnailView {
         if (this.thumbnailView && data) {
             this.pdfViewerBase.clientSideRendering ? this.renderClientThumbnailImage(data) : this.renderServerThumbnailImage(data);
         }
-        this.pdfViewerBase.navigationPane.enableThumbnailButton();
         this.thumbnailLimit = this.determineThumbnailsRequest(!isNullOrUndefined(pageNumber) ? pageNumber : this.thumbnailLimit);
         if (this.thumbnailLimit !== this.pdfViewerBase.pageCount && this.thumbnailView) {
             // eslint-disable-next-line
             let isIE: boolean = !!(document as any).documentMode;
             if (!isIE) {
-                Promise.all([this.createRequestForThumbnail()]);
+                Promise.all([this.createRequestForThumbnailImages()]);
             } else {
-                this.createRequestForThumbnail();
+                this.createRequestForThumbnailImages();
             }
         }
     }
 
-    private createRequestForThumbnail(): Promise<any> {
+    private createRequestForThumbnailImages(): Promise<any> {
         const proxy: ThumbnailView = this;
         // eslint-disable-next-line
         let isIE: boolean = !!(document as any).documentMode;
@@ -479,6 +509,7 @@ export class ThumbnailView {
         for (let i: number = startPage; i < endPage; i++) {
             this.thumbnailImageRender(i, data);
         }
+        this.isThumbnailViewOpen();
     }
 
     // eslint-disable-next-line
@@ -489,9 +520,9 @@ export class ThumbnailView {
 
     // eslint-disable-next-line
     private thumbnailImageRender(pageIndex: number, data: any) {
-        if (this.pdfViewer.isThumbnailViewOpen) {
-            // eslint-disable-next-line max-len
-            this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'block';
+        // eslint-disable-next-line max-len
+        if (!isNullOrUndefined(data.pageRotation) && Object.keys(data.pageRotation).length > 0 && !this.isRendered) {
+            this.renderDiv(data);
         }
         // eslint-disable-next-line max-len
         let thumbnail: HTMLElement =  document.getElementById(this.pdfViewer.element.id + '_thumbnail_' + pageIndex);
@@ -510,6 +541,10 @@ export class ThumbnailView {
             pageLink.style.marginRight = '41px';
             thumbnail.style.marginLeft = '-5px';
             thumbnail.style.marginRight = '0px';            
+        }
+        if(pageIndex === 0) {
+            this.pdfViewerBase.navigationPane.enableThumbnailButton();
+            this.isThumbnailViewOpen();
         }
     }
 
@@ -663,6 +698,7 @@ export class ThumbnailView {
         this.list = [];
         this.thumbnailPageSize = [];
         this.thumbnailTop = 0;
+        this.isRendered = false;
         if (this.pdfViewerBase.navigationPane) {
             if (this.pdfViewerBase.navigationPane.sideBarContentContainer) {
                 this.pdfViewerBase.navigationPane.sideBarContentContainer.style.display = 'block';

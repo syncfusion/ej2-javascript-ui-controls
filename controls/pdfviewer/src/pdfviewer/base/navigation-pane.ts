@@ -1128,7 +1128,13 @@ export class NavigationPane {
         let proxy: NavigationPane = null;
         proxy = this;
         if (proxy.sideBarContentContainer) {
-            proxy.sideBarContentContainer.style.display = 'block';
+            // eslint-disable-next-line max-len
+            if(!isNullOrUndefined(this.pdfViewer.thumbnailViewModule) && !this.pdfViewer.thumbnailViewModule.isThubmnailOpen) {
+                proxy.sideBarContentContainer.style.display = 'block';
+            }
+            if (proxy.pdfViewer.isBookmarkPanelOpen || this.isBookmarkOpen) {
+                proxy.sideBarContentContainer.style.display = 'block';
+            }
             if (this.pdfViewer.enableRtl) {
                 // eslint-disable-next-line max-len
                 proxy.pdfViewerBase.viewerContainer.style.right = proxy.getViewerContainerLeft() + 'px';
