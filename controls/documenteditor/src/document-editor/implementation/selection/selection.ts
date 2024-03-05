@@ -9652,8 +9652,9 @@ export class Selection {
         if (isNullOrUndefined(this.owner.sfdtExportModule)) {
             return;
         }
-
+        this.owner.editor.isCopying = true;
         this.copyToClipboard(this.getHtmlContent());
+        this.owner.editor.isCopying = false;
         if (isCut && this.owner.editorModule) {
             this.owner.editorModule.handleCut(this);
         }

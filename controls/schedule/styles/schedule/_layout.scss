@@ -2725,7 +2725,7 @@
         .e-toolbar-item {
           min-height: $schedule-tbar-bgr-items-size;
 
-          &:not(.e-separator) {
+          &:not(.e-separator):not(.e-spacer) {
             min-width: $schedule-tbar-bgr-item-size;
           }
 

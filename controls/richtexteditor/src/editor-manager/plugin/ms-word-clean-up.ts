@@ -1,7 +1,7 @@
 import { EditorManager } from '../base/editor-manager';
 import * as EVENTS from '../../common/constant';
 import { NotifyArgs } from '../../rich-text-editor/base/interface';
-import { createElement, isNullOrUndefined as isNOU, detach, addClass } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined as isNOU, detach, addClass, Browser } from '@syncfusion/ej2-base';
 import { PASTE_SOURCE } from '../base/constant';
 /**
  * PasteCleanup for MsWord content
@@ -66,6 +66,7 @@ export class MsWordPaste {
         const elm: HTMLElement = createElement('p') as HTMLElement;
         elm.setAttribute('id', 'MSWord-Content');
         elm.innerHTML = tempHTMLContent;
+        this.addDoubleBr(elm);
         const patern: RegExp = /class='?Mso|style='[^ ]*\bmso-/i;
         const patern2: RegExp = /class="?Mso|style="[^ ]*\bmso-/i;
         const patern3: RegExp =
@@ -98,6 +99,27 @@ export class MsWordPaste {
             e.callBack(elm.innerHTML, this.cropImageDimensions, source);
         } else {
             e.callBack(elm.innerHTML);
+        }
+    }
+
+    private addDoubleBr(elm: HTMLElement) {
+        const newline: HTMLElement = elm.querySelector('.Apple-interchange-newline');
+        if (!isNOU(newline) && Browser.userAgent.indexOf('Chrome') !== -1 && newline.parentElement.nodeName === 'P' && elm !== newline.parentElement) {
+            for (let i = 0; i < elm.childNodes.length; i++) {
+                // eslint-disable-next-line
+                const node = elm.childNodes[i];
+                if (node.nodeType === Node.COMMENT_NODE && node.nodeValue.includes('StartFragment')) {
+                    const newElement: HTMLElement = document.createElement('p');
+                    newElement.innerHTML = '<br>';
+                    const cssText: string = newline.parentElement.style.cssText;
+                    const currentStyle: string = newElement.getAttribute('style') || '';
+                    const newStyle: string = currentStyle + cssText;
+                    newElement.setAttribute('style', newStyle);
+                    elm.insertBefore(newElement, node.nextSibling);
+                    detach(newline);
+                    break;
+                }
+            }
         }
     }
 

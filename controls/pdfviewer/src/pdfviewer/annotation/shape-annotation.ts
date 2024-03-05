@@ -679,7 +679,12 @@ export class ShapeAnnotation {
                         const strokeColorString: string = pageAnnotationObject.annotations[z].strokeColor;
                         pageAnnotationObject.annotations[z].strokeColor = JSON.stringify(this.getRgbCode(strokeColorString));
                         const fillColorString: string = pageAnnotationObject.annotations[z].fillColor;
-                        pageAnnotationObject.annotations[z].fillColor = JSON.stringify(this.getRgbCode(fillColorString));
+                        if (!isNullOrUndefined(fillColorString)) {
+                            pageAnnotationObject.annotations[z].fillColor = JSON.stringify(this.getRgbCode(fillColorString));
+                        }
+                        else {
+                            pageAnnotationObject.annotations[z].fillColor = 'transparent';
+                        }
                         // eslint-disable-next-line max-len
                         pageAnnotationObject.annotations[z].vertexPoints = JSON.stringify(this.pdfViewer.annotation.getVertexPoints(pageAnnotationObject.annotations[z].vertexPoints, pageAnnotationObject.pageIndex));
                         if (pageAnnotationObject.annotations[z].rectangleDifference !== null) {

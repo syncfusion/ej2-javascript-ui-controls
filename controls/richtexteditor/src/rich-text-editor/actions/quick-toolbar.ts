@@ -180,7 +180,7 @@ export class QuickToolbar {
      * @deprecated
      */
     public showInlineQTBar(x: number, y: number, target: HTMLElement): void {
-        if (isNOU(this.parent) || this.parent.readonly || target.tagName.toLowerCase() === 'img') {
+        if (isNOU(this.parent) || this.parent.readonly || target.tagName.toLowerCase() === 'img' || this.inlineQTBar.element.querySelector('.e-rte-color-content')) {
             return;
         }
         this.inlineQTBar.showPopup(x, y, target);

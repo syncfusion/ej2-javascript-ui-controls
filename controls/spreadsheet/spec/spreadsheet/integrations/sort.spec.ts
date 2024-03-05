@@ -634,8 +634,8 @@ describe('Spreadsheet sorting module ->', () => {
                 expect(helper.getInstance().sheets[0].columns[3].hidden).toBeTruthy();
                 helper.invoke('selectRange', ['C1']);
                 expect(helper.invoke('getCell', [1, 2]).textContent).toBe('11:34:32 AM');
-                expect(helper.invoke('getCell', [2, 2]).textContent).toBe('05:56:32 AM');
-                expect(helper.invoke('getCell', [3, 2]).textContent).toBe('03:32:44 AM');
+                expect(helper.invoke('getCell', [2, 2]).textContent).toBe('5:56:32 AM');
+                expect(helper.invoke('getCell', [3, 2]).textContent).toBe('3:32:44 AM');
                 helper.getElement('#' + helper.id + '_sorting').click();
                 helper.getElement('#' + helper.id + '_sorting-popup').querySelector('.e-item').click();
                 setTimeout(() => {
@@ -888,6 +888,155 @@ describe('Spreadsheet sorting module ->', () => {
                         expect(performance.now() - startTime).toBeLessThan(6000);
                         expect(helper.invoke('getCell', [1, 0]).textContent).toBe('ANATR');
                         expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('ANATR');
+                        done();
+                    });
+                });
+            });
+        });
+        describe('EJ2-870477 - Checking Filter Indication Icon for Sorting in the Filter Header->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Apply filter and sort ascending using public sort method', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.applyFilter();
+                spreadsheet.sort({ sortDescriptors: [{ order: 'Ascending', field: 'B' }] });
+                setTimeout(() => {
+                    setTimeout(() => {
+                        let td: Element = helper.invoke('getCell', [0, 1]);
+                        expect(td.children[0].children[0].classList).toContain('e-sortasc-filter');
+                        done();
+                    });
+                });
+            });
+            it('Undo & redo -> Using filter with public method sort ascending->', (done: Function) => {
+                let td: Element = helper.invoke('getCell', [0, 1]);
+                expect(td.children[0].children[0].classList).toContain('e-sortasc-filter');
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(td.children[0].children[0].classList).toContain('e-filter-icon');
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(td.children[0].children[0].classList).toContain('e-sortasc-filter');
+                        done();
+                    });
+                });
+            });
+            it('Filter with sort descending using public sort method', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.sort({ sortDescriptors: [{ order: 'Descending', field: 'C' }] });
+                setTimeout(() => {
+                    setTimeout(() => {
+                        let td: Element = helper.invoke('getCell', [0, 2]);
+                        expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                        done();
+                    });
+                });
+            });
+            it('Undo & redo -> Using filter with public method sort descending->', (done: Function) => {
+                let td: Element = helper.invoke('getCell', [0, 2]);
+                expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(td.children[0].children[0].classList).toContain('e-filter-icon');
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                        done();
+                    });
+                });
+            });
+            it('Apply filter and sort ascending using ribbon items ->', (done: Function) => {
+                helper.invoke('selectRange', ['D1']);
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(1)');
+                setTimeout(() => {
+                    let td: Element = helper.invoke('getCell', [0, 3]);
+                    expect(td.children[0].children[0].classList).toContain('e-sortasc-filter');
+                    done();
+                }, 200);
+            });
+            it('Undo & redo -> Using filter with ribbon items sort ascending->', (done: Function) => {
+                let td: Element = helper.invoke('getCell', [0, 3]);
+                expect(td.children[0].children[0].classList).toContain('e-sortasc-filter');
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(td.children[0].children[0].classList).toContain('e-filter-icon');
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(td.children[0].children[0].classList).toContain('e-sortasc-filter');
+                        done();
+                    });
+                });
+            });
+            it('Filter with sort descending using ribbon items ->', (done: Function) => {
+                helper.invoke('selectRange', ['E1']);
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(2)');
+                setTimeout(() => {
+                    let td: Element = helper.invoke('getCell', [0, 4]);
+                    expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                    done();
+                }, 200);
+            });
+            it('Undo & redo -> Using filter with ribbon items sort descending->', (done: Function) => {
+                let td: Element = helper.invoke('getCell', [0, 4]);
+                expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(td.children[0].children[0].classList).toContain('e-filter-icon');
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                        done();
+                    });
+                });
+            });
+            it('Apply filter and sort ascending using context menu items ->', (done: Function) => {
+                helper.invoke('selectRange', ['F6']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(0, 0, [7, 1], false, false);
+                setTimeout(() => {
+                    let td: Element = helper.invoke('getCell', [0, 5]);
+                    expect(td.children[0].children[0].classList).toContain('e-sortasc-filter');
+                    done();
+                }, 200);
+            });
+            it('Undo & redo -> Using filter with context menu sort ascending->', (done: Function) => {
+                let td: Element = helper.invoke('getCell', [0, 5]);
+                expect(td.children[0].children[0].classList).toContain('e-sortasc-filter');
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(td.children[0].children[0].classList).toContain('e-filter-icon');
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(td.children[0].children[0].classList).toContain('e-sortasc-filter');
+                        done();
+                    });
+                });
+            });
+            it('Filter with sort descending using context menu items ->', (done: Function) => {
+                helper.invoke('selectRange', ['G2']);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(0, 0, [7, 2], false, false);
+                setTimeout(() => {
+                    let td: Element = helper.invoke('getCell', [0, 6]);
+                    expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                    done();
+                }, 200);
+            });
+            it('Undo & redo -> Using filter with context menu sort descending->', (done: Function) => {
+                let td: Element = helper.invoke('getCell', [0, 6]);
+                expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(td.children[0].children[0].classList).toContain('e-filter-icon');
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(td.children[0].children[0].classList).toContain('e-sortdesc-filter');
                         done();
                     });
                 });

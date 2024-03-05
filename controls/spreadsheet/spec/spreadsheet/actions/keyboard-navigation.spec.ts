@@ -637,7 +637,7 @@ describe('Spreadsheet cell navigation module ->', () => {
             focus(spreadsheet.element);
             helper.setAnimationToNone(`#${helper.id}_contextmenu`);
             helper.triggerKeyNativeEvent(121, false, true);
-            expect(document.activeElement.textContent).toBe('02/14/2014');
+            expect(document.activeElement.textContent).toBe('2/14/2014');
             navigateMenuItemAndSelect(1, 0, [1]);
             setTimeout(() => {
                 expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();

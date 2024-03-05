@@ -108,6 +108,7 @@ export class Layout {
     private isFieldCode: boolean = false;
     private isRtlFieldCode: boolean = false;
     private isRTLLayout: boolean = false;
+    private isSkipFirstLineIndent: boolean = false;
     public currentCell: TableCellWidget = undefined;
     public isFootnoteContentChanged: boolean = false;
     public isEndnoteContentChanged: boolean = false;
@@ -182,7 +183,7 @@ export class Layout {
                 return false;
             }
         }
-        if (nextOrPrevSibling instanceof ParagraphWidget && currentParagraph.paragraphFormat.baseStyle === nextOrPrevSibling.paragraphFormat.baseStyle) {
+        if (nextOrPrevSibling instanceof ParagraphWidget && currentParagraph.paragraphFormat.baseStyle === nextOrPrevSibling.paragraphFormat.baseStyle && (currentParagraph.isInsideTable ? !this.documentHelper.allowSpaceOfSameStyleInTable : true)) {
             if(currentParagraph.paragraphFormat.listFormat.listId >= 0 && nextOrPrevSibling.paragraphFormat.listFormat.listId >= 0){
                 if(!currentParagraph.paragraphFormat.contextualSpacing){
                     if(isAfterSpacing && currentParagraph.paragraphFormat.spaceAfterAuto){
@@ -309,6 +310,7 @@ export class Layout {
         this.isFieldCode = undefined;
         this.footnoteHeight = undefined;
         this.isMultiColumnDoc = undefined;
+        this.isSkipFirstLineIndent = undefined;
         this.isIFfield = undefined;
     }
 
@@ -2423,9 +2425,10 @@ export class Layout {
         // if (element.indexInOwner === 0 && element.line.isFirstLine()) {
         //     wrapDiff -= HelperMethods.convertPointToPixel(element.line.paragraph.paragraphFormat.firstLineIndent);
         // }
-        if (element.line.isFirstLine() && this.getFirstElement(element.line) === element && wrapDiff > 0) {
+        if (element.line.isFirstLine() && this.getFirstElement(element.line) === element && wrapDiff > 0 && !this.isSkipFirstLineIndent) {
             wrapDiff += HelperMethods.convertPointToPixel(element.line.paragraph.paragraphFormat.firstLineIndent);
         }
+        this.isSkipFirstLineIndent = false;
         element.padding.left = wrapDiff > 0 ? wrapDiff : 0;
         if (previousWidth !== this.viewer.clientActiveArea.width) {
             let wrapPos: WrapPosition = new WrapPosition(this.viewer.clientActiveArea.x, this.viewer.clientActiveArea.width);
@@ -2904,6 +2907,7 @@ export class Layout {
                                 let xposition: number = rect.x;
                                 rect.x = textWrappingBounds.right + (isnewline ? listLeftIndent : 0) + firstLineIndent;
                                 rect.width = this.viewer.clientArea.right - textWrappingBounds.right - (isnewline ? listLeftIndent : 0) - firstLineIndent;
+                                this.isSkipFirstLineIndent = true;
 
                                 //When there is no space to fit the content in right, then update the y position.
                                 if (textWrappingStyle === 'Square' && rect.width < 0 && elementBox.width > 0) {
@@ -3918,7 +3922,7 @@ export class Layout {
     private splitByWord(lineWidget: LineWidget, paragraph: ParagraphWidget, elementBox: TextElementBox, text: string, width: number, characterFormat: WCharacterFormat): void {
         let index: number = this.getSplitIndexByWord(this.viewer.clientActiveArea.width, text, width, characterFormat, elementBox.scriptType);
         if (index > 0 && index < elementBox.length) {
-            const indexOf: number = lineWidget.children.indexOf(elementBox);
+            let indexOf: number = lineWidget.children.indexOf(elementBox);
             //const lineIndex: number = paragraph.childWidgets.indexOf(lineWidget);
             const splittedElementBox: TextElementBox = new TextElementBox();
             text = text.substring(index);
@@ -3934,6 +3938,11 @@ export class Layout {
             splittedElementBox.characterRange = elementBox.characterRange;
             //splittedElementBox.revisions = splittedElementBox.revisions;
             elementBox.text = elementBox.text.substr(0, index);
+            if (elementBox.text !== ' ' && HelperMethods.endsWith(elementBox.text) && characterFormat.bidi 
+                && elementBox.characterRange === CharacterRangeType.RightToLeft && !this.isWrapText) {
+                const textElement: TextElementBox = this.spitTextElementByWhitespace(elementBox, characterFormat);
+                indexOf = lineWidget.children.indexOf(textElement);
+            }
             elementBox.width = this.documentHelper.textHelper.getWidth(elementBox.text, elementBox.characterFormat, elementBox.scriptType);
             elementBox.trimEndWidth = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(elementBox.text), elementBox.characterFormat, elementBox.scriptType);
             if (elementBox.revisions.length > 0) {
@@ -3949,6 +3958,28 @@ export class Layout {
                 lineWidget.children.splice(indexOf, 1);
             }
         }
+    }
+    private spitTextElementByWhitespace(textElement: TextElementBox, format: WCharacterFormat): TextElementBox {
+        const lineWidget: LineWidget = textElement.line;
+        const indexOf: number = lineWidget.children.indexOf(textElement);
+        let text: string = textElement.text;
+        const elementBox: TextElementBox = new TextElementBox();
+        let index = text.length - 1;
+        textElement.text = text.substring(0, index);
+        elementBox.text = text.substring(index);
+        elementBox.characterFormat.copyFormat(textElement.characterFormat);
+        elementBox.line = lineWidget;
+        elementBox.characterRange = CharacterRangeType.WordSplit;
+        elementBox.scriptType = FontScriptType.English;
+        elementBox.height = textElement.height;
+        elementBox.baselineOffset = textElement.baselineOffset;
+        elementBox.width = this.documentHelper.textHelper.getWidth(elementBox.text, format, elementBox.scriptType);
+        lineWidget.children.splice(indexOf + 1, 0, elementBox);
+        if (textElement.revisions.length > 0) {
+            this.updateRevisionForSplittedElement(textElement, elementBox, index > 0, true);
+            elementBox.isMarkedForRevision = textElement.isMarkedForRevision;
+        }
+        return elementBox;
     }
 
     private splitErrorCollection(elementBox: TextElementBox, splittedBox: TextElementBox): void {
@@ -4083,8 +4114,6 @@ export class Layout {
                     splittedElement.text = splittedText;
                     splittedElement.characterFormat.copyFormat(textElement.characterFormat);
                     splittedElement.line = lineWidget;
-                    splittedElement.width = this.documentHelper.textHelper.getWidth(splittedElement.text, format, splittedElement.scriptType);
-                    splittedElement.trimEndWidth = splittedElement.width;
                     splittedElement.height = textElement.height;
                     splittedElement.baselineOffset = textElement.baselineOffset;
                     splittedElement.characterRange = textElement.characterRange;
@@ -4093,6 +4122,12 @@ export class Layout {
                         this.updateRevisionForSplittedElement(textElement, splittedElement, index > 0, true);
                         splittedElement.isMarkedForRevision = textElement.isMarkedForRevision;
                     }
+                    if (splittedElement.text !== ' ' && HelperMethods.endsWith(splittedElement.text) && format.bidi && splittedElement.characterRange === CharacterRangeType.RightToLeft) {
+                        const elementBox: TextElementBox = this.spitTextElementByWhitespace(splittedElement, format);
+                        indexOf = lineWidget.children.indexOf(elementBox);
+                    }
+                    splittedElement.width = this.documentHelper.textHelper.getWidth(splittedElement.text, format, splittedElement.scriptType);
+                    splittedElement.trimEndWidth = splittedElement.width;
                     textElement.text = text;
                     textElement.width = this.documentHelper.textHelper.getWidth(textElement.text, textElement.characterFormat, textElement.scriptType);
                     textElement.trimEndWidth = textElement.width;
@@ -4234,8 +4269,9 @@ export class Layout {
         }
         // Gets line spacing.
         lineSpacing = this.getLineSpacing(paragraph, height);
-        if (line.skipClipImage && paraFormat.lineSpacingType === 'Exactly'
-            && lineSpacing < maxDescent + this.maxBaseline || lineSpacing < 0) {
+
+        if (paraFormat.lineSpacingType === 'Exactly'
+            && lineSpacing < maxDescent + this.maxBaseline) {
             lineSpacing = maxDescent + this.maxBaseline;
         }
         let subWidth: number = 0;
@@ -12073,7 +12109,7 @@ export class Layout {
                 // }
                 indentY = paragraph.y + vertPosition + space;
                 if (shape.textWrappingStyle == "Square") {
-                    indentY = indentY >= 0 ? indentY : paragraph.associatedCell.y;
+                    indentY = indentY <= paragraph.associatedCell.y ? paragraph.associatedCell.y : indentY;
                 }
                 break;
             default:

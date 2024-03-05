@@ -795,7 +795,8 @@ export class InfiniteScroll implements IAction {
                         100);
                 }
             } else {
-                this.parent.pageSettings.currentPage = this.maxPage;
+                this.parent.pageSettings.currentPage = this.parent.groupSettings.enableLazyLoading
+                    && this.parent.groupSettings.columns.length && initBlocks >= this.maxPage ? 1 : this.maxPage;
             }
         }
     }

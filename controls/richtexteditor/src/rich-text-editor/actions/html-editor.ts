@@ -450,9 +450,9 @@ export class HtmlEditor {
                 const liElement: HTMLElement = (this.getRangeLiNode(currentRange.startContainer) as HTMLElement);
                 if (liElement.previousElementSibling && liElement.previousElementSibling.childElementCount > 0) {
                     this.oldRangeElement = liElement.previousElementSibling.lastElementChild.nodeName === 'BR' ?
-                        liElement.previousElementSibling : liElement.previousElementSibling.lastElementChild;
-                        if (!isNOU(liElement.lastElementChild) && liElement.lastElementChild.nodeName !== 'BR' &&
-                        isNOU(liElement.lastElementChild.previousSibling)) {
+                        liElement.previousElementSibling : liElement.previousElementSibling.lastChild as HTMLElement;
+                    if (!isNOU(liElement.lastElementChild) && liElement.lastElementChild.nodeName !== 'BR' &&
+                    isNOU(liElement.lastElementChild.previousSibling) && liElement.lastChild.nodeName !== "#text") {
                         this.rangeElement = liElement.lastElementChild;
                         isLiElement = true;
                     } else {
@@ -473,7 +473,7 @@ export class HtmlEditor {
                         ? this.oldRangeElement.lastElementChild.lastElementChild :
                         this.oldRangeElement.lastElementChild;
                 }
-                let lastNode: Node = this.oldRangeElement.lastChild;
+                let lastNode: Node = this.oldRangeElement.lastChild ? this.oldRangeElement.lastChild : this.oldRangeElement;
                 while (lastNode.nodeType !== 3 && lastNode.nodeName !== '#text' &&
                     lastNode.nodeName !== 'BR') {
                     lastNode = lastNode.lastChild;
@@ -481,12 +481,17 @@ export class HtmlEditor {
                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(this.parent.contentModule.getDocument(),
                     // eslint-disable-next-line
                     lastNode as Element, lastNode.textContent.length);
-                if (this.oldRangeElement.querySelectorAll('BR').length === 1) {
+                if (this.oldRangeElement.nodeName !== '#text' && this.oldRangeElement.querySelectorAll('BR').length === 1) {
                     detach(this.oldRangeElement.querySelector('BR'));
                 }
                 if (!isNOU(this.rangeElement) && this.oldRangeElement !== this.rangeElement) {
                     while (this.rangeElement.firstChild) {
-                        this.oldRangeElement.appendChild(this.rangeElement.childNodes[0]);
+                        if (this.oldRangeElement.nodeName === '#text') {
+                            this.oldRangeElement.parentElement.appendChild(this.rangeElement.childNodes[0]);
+                        }
+                        else {
+                            this.oldRangeElement.appendChild(this.rangeElement.childNodes[0]);
+                        }
                     }
                     // eslint-disable-next-line
                     !isLiElement ? detach(this.rangeElement) : detach(this.rangeElement.parentElement);

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.9 (2024-03-05)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an exception encountered while importing annotations from JSON file with custom data.
+
 ## 24.2.8 (2024-02-27)
 
 ### PDF Parser

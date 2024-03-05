@@ -4,7 +4,7 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclarat
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { detach, select, closest, setStyleAttribute, EventHandler, getComponent } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement } from '../common/index';
+import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement, updateSortCollection } from '../common/index';
 import { performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage, removeHyperlink } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
@@ -21,7 +21,7 @@ import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectEvent
 import { Dialog, ActionEvents, Overlay } from '../services/index';
 import { ServiceLocator } from '../../workbook/services/index';
 import { SheetModel, getColumnsWidth, getSheetIndex, WorkbookHyperlink, HyperlinkModel, DefineNameModel } from './../../workbook/index';
-import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, getCellAddress, getColumnHeaderText } from './../../workbook/common/index';
+import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, getCellAddress, getColumnHeaderText, SortCollectionModel  } from './../../workbook/common/index';
 import { BeforeCellFormatArgs, afterHyperlinkCreate, getColIndex, CellStyleModel, setLinkModel } from './../../workbook/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, WorkbookInsert, WorkbookDelete, WorkbookMerge } from './../../workbook/index';
 import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate, DataSourceChangedEventArgs } from './../../workbook/index';
@@ -2092,7 +2092,17 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public sort(sortOptions?: SortOptions, range?: string): Promise<SortEventArgs> {
         if (!this.allowSorting) { return Promise.reject(); }
-        return super.sort(sortOptions, range).then((args: SortEventArgs) => {
+        let prevSort: SortCollectionModel[] = [];
+        if (this.sortCollection) {
+            for (let i: number = this.sortCollection.length - 1; i >= 0; i--) {
+                if (this.sortCollection[i as number] && this.sortCollection[i as number].sheetIndex === this.activeSheetIndex) {
+                    prevSort.push(this.sortCollection[i as number]);
+                    this.sortCollection.splice(i, 1);
+                }
+            }
+        }
+        this.notify(updateSortCollection, { sortOptions: sortOptions });
+        return super.sort(sortOptions, range, prevSort).then((args: SortEventArgs) => {
             this.notify(sortComplete, args);
             return Promise.resolve(args);
         });

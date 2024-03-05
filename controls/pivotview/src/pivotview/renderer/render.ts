@@ -1128,7 +1128,7 @@ export class Render {
                             if (cellLevelName.split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).length === 1) {
                                 this.drilledLevelInfo = {};
                             }
-                            if (cell.members.length > 0) {
+                            if (cell.members && cell.members.length > 0) {
                                 this.drilledLevelInfo[cellLevelName as string] = cell.isDrilled;
                             }
                         }

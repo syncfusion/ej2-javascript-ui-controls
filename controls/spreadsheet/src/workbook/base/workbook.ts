@@ -1267,7 +1267,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {string} range - address of the data range.
      * @returns {Promise<SortEventArgs>} - Sorts the range of cells in the active Spreadsheet.
      */
-    public sort(sortOptions?: SortOptions, range?: string): Promise<SortEventArgs> {
+    public sort(sortOptions?: SortOptions, range?: string, previousSort?: SortCollectionModel[]): Promise<SortEventArgs> {
         if (!this.allowSorting) { return Promise.reject(); }
         const eventArgs: BeforeSortEventArgs = {
             range: range || this.getActiveSheet().selectedRange,
@@ -1276,7 +1276,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         };
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const promise: Promise<SortEventArgs> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
-        const sortArgs: { [key: string]: BeforeSortEventArgs | Promise<SortEventArgs> } = { args: eventArgs, promise: promise };
+        const sortArgs: { [key: string]: BeforeSortEventArgs | Promise<SortEventArgs> | SortCollectionModel[] } = { args: eventArgs, promise: promise, previousSort: previousSort };
         this.notify(events.initiateSort, sortArgs);
         return sortArgs.promise as Promise<SortEventArgs>;
     }

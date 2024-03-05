@@ -2013,7 +2013,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             symbolContainer.children[0].width = width;
             symbolContainer.children[0].height = height;
             this.bpmnModule.updateBPMN(
-                { width: width, height: height } as Node,
+                { width: (symbol as Node).width * sw, height: (symbol as Node).height * sh } as Node,
                 symbol as Node, symbol as Node, null);
             symbol.wrapper = wrapper;
         } else {

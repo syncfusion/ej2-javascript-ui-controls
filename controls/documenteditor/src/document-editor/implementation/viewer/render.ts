@@ -1710,6 +1710,10 @@ export class Renderer {
             text = this.inverseCharacter(text);
         }
         let scaleFactor: number = format.scaling < 100 ? 1 : format.scaling / 100;
+        if (characterRange === CharacterRangeType.RightToLeft && !HelperMethods.startsWith(text, ' ')) {
+            this.pageContext.direction = 'rtl';
+            left += elementBox.width;
+        }
         if (this.documentHelper.owner.documentEditorSettings.showHiddenMarks && !this.isPrinting) {
             if ((elementBox instanceof TabElementBox || elementBox instanceof TextElementBox) && elementBox.text === "\t") {
                 this.tabMark(elementBox, format, left, top, leftMargin, topMargin);
@@ -1728,6 +1732,10 @@ export class Renderer {
             this.pageContext.scale(scaleFactor, 1);
             this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1)/(scaleFactor), this.getScaledValue(top + topMargin, 2), scaledWidth);
             this.pageContext.restore();
+        }
+        if (characterRange === CharacterRangeType.RightToLeft && !HelperMethods.startsWith(text, ' ')) {
+            this.pageContext.direction = 'ltr';
+            left -= elementBox.width;
         }
         if (this.documentHelper.owner.isSpellCheck) {
             if (((this.documentHelper.owner.isSpellCheck && !this.spellChecker.removeUnderline) && (this.documentHelper.triggerSpellCheck || elementBox.canTrigger) && elementBox.text !== ' ' && !this.documentHelper.isScrollHandler && (isNullOrUndefined(elementBox.previousNode) || !(elementBox.previousNode instanceof FieldElementBox))

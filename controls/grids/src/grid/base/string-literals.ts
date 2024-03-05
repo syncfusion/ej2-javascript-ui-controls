@@ -126,3 +126,6 @@ export const tab: FocusKeys = 'tab';
 
 /** @hidden */
 export const shiftTab: FocusKeys = 'shiftTab';
+
+/** @hidden */
+export const initialFrozenColumnIndex: string = 'initialFrozenColumnIndex';

@@ -1638,6 +1638,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (this.fieldMode === 'Default') {
                 dropDownObj = getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input') as HTMLElement, 'dropdownlist');
                 this.selectedColumn = (dropDownObj as DropDownList).getDataByValue(dropDownObj.value as string) as ColumnsModel;
+                if (this.selectedColumn.columns) {
+                    dropDownObj = getComponent(closest(element, '.e-rule-container').querySelector('.e-rule-sub-filter .e-dropdownlist') as HTMLElement, 'dropdownlist');
+                    this.selectedColumn = this.getColumn(dropDownObj.value as string) as ColumnsModel;
+                }
             } else {
                 dropDownObj = getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input') as HTMLElement, 'dropdowntree');
                 this.selectedColumn = this.getColumn(dropDownObj.value[0]) as ColumnsModel;
@@ -3791,6 +3795,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             rule.rules.splice(index, 1);
             if (!(rule.rules[0] && rule.rules[0].rules)) {
                 this.disableRuleCondition(groupElem, rule);
+            }
+            const tooltipElem: NodeListOf<Element> = this.element.querySelectorAll('.e-tooltip');
+            for (let i: number = 0; i < tooltipElem.length; i++) {
+                (getComponent(tooltipElem[i as number] as HTMLElement, 'tooltip') as Tooltip).refresh(tooltipElem[i as number] as HTMLElement);
             }
             if (!this.isImportRules) {
                 this.trigger('change', args);

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.9 (2024-03-05)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I542318` - When using the server-side engine, the pivot table will now be rendered properly when the value axis is set to "row" and subTotalsPosition is set to "Bottom".
+
 ## 24.2.8 (2024-02-27)
 
 ### PivotTable

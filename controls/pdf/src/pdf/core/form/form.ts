@@ -426,7 +426,7 @@ export class PdfForm {
                         for (let i: number = 0; i < this._fieldCollection.length; i++) {
                             const field: PdfField = this._fieldCollection[Number.parseInt(i.toString(), 10)];
                             if (field.page) {
-                                const index: number = _getPageIndex(document, field.page._pageDictionary);
+                                const index: number = _getPageIndex(document, this._sortItemByPageIndex(field, true)._pageDictionary);
                                 if (index >= 0) {
                                     if (fieldCollection.has(index)) {
                                         value = fieldCollection.get(index);
@@ -449,16 +449,18 @@ export class PdfForm {
                         let fieldsCount: number = 0;
                         fieldCollection.forEach((value: PdfField[], key: number) => {
                             this._tabOrder = this._tabCollection.get(key);
-                            const fields: PdfField[] = value;
-                            fields.sort((pdfField1: object, pdfField2: object) => {
-                                return this._compareFields(pdfField1, pdfField2);
-                            });
-                            for (let j: number = 0; j < fields.length; j++) {
-                                const fieldIndex: number = this._fieldCollection.indexOf(fields[Number.parseInt(j.toString(), 10)]);
-                                if (fieldIndex !== -1 && fieldIndex !== fieldsCount + j) {
-                                    const field: PdfField = this._fieldCollection[Number.parseInt(fieldIndex.toString(), 10)];
-                                    this._fieldCollection.splice(fieldIndex, 1);
-                                    this._fieldCollection.splice(fieldsCount + j, 0, field);
+                            if (this._tabOrder !== PdfFormFieldsTabOrder.structure) {
+                                const fields: PdfField[] = value;
+                                fields.sort((pdfField1: object, pdfField2: object) => {
+                                    return this._compareFields(pdfField1, pdfField2);
+                                });
+                                for (let j: number = 0; j < fields.length; j++) {
+                                    const fieldIndex: number = this._fieldCollection.indexOf(fields[Number.parseInt(j.toString(), 10)]);
+                                    if (fieldIndex !== -1 && fieldIndex !== fieldsCount + j) {
+                                        const field: PdfField = this._fieldCollection[Number.parseInt(fieldIndex.toString(), 10)];
+                                        this._fieldCollection.splice(fieldIndex, 1);
+                                        this._fieldCollection.splice(fieldsCount + j, 0, field);
+                                    }
                                 }
                             }
                             fieldsCount += value.length;
@@ -686,10 +688,22 @@ export class PdfForm {
         const page1: PdfPage = field1.page;
         const page2: PdfPage = field2.page;
         if (page1 && page1 instanceof PdfPage && page2 && page2 instanceof PdfPage) {
-            const page1Index: number = page1._pageIndex;
-            const page2Index: number = page2._pageIndex;
-            const rectangle1: number[] = this._getRectangle(field1._dictionary);
-            const rectangle2: number[] = this._getRectangle(field2._dictionary);
+            const page1Index: number = this._sortItemByPageIndex(field1, false)._pageIndex;
+            const page2Index: number = this._sortItemByPageIndex(field2, false)._pageIndex;
+            let rectangle1: number[];
+            if (field1._dictionary.has('Kids')) {
+                rectangle1 = this._getItemRectangle(field1);
+            } else {
+                rectangle1 = this._getRectangle(field1._dictionary);
+            }
+            let rectangle2: number[];
+            if (field2._dictionary.has('Kids')) {
+                rectangle2 = this._getItemRectangle(field2);
+            } else {
+                rectangle2 = this._getRectangle(field2._dictionary);
+            }
+            const firstHeight: number = rectangle1[3] - rectangle1[1];
+            const secondHeight: number = rectangle2[3] - rectangle2[1];
             if (rectangle1 && rectangle1.length >= 2 && rectangle2 && rectangle2.length >= 2) {
                 const x1: number = rectangle1[0];
                 const y1: number = rectangle1[1];
@@ -700,6 +714,13 @@ export class PdfForm {
                     index = page1Index - page2Index;
                     if (this._tabOrder === PdfFormFieldsTabOrder.row) {
                         xdiff = this._compare(y2, y1);
+                        if (xdiff !== 0) {
+                            let isValid: boolean = xdiff === -1 && y1 > y2 && (y1 - firstHeight / 2) < y2;
+                            isValid = isValid || (xdiff === 1 && y2 > y1 && (y2 - secondHeight / 2) < y1);
+                            if (isValid) {
+                                xdiff = 0;
+                            }
+                        }
                         if (index !== 0) {
                             result = index;
                         } else if (xdiff !== 0) {
@@ -735,26 +756,30 @@ export class PdfForm {
         return result;
     }
     _getRectangle(dictionary: _PdfDictionary): number[] {
+        let rect: number[];
         if (dictionary.has('Rect')) {
-            const rect: number[] = dictionary.get('Rect');
-            if (rect) {
-                return rect;
-            }
-        } else {
-            if (dictionary.has('Kids')) {
-                const kidsArray: _PdfReference[] = dictionary.get('Kids');
-                if (kidsArray) {
-                    if (kidsArray.length > 1) {
-                        kidsArray.sort((x: _PdfReference, y: _PdfReference) => {
-                            return this._compareKidsElement(x, y);
-                        });
+            rect = dictionary.getArray('Rect');
+        }
+        return rect;
+    }
+    _getItemRectangle(field: PdfField): number[] {
+        let result: number[];
+        const dictionary: _PdfDictionary = field._dictionary;
+        if (dictionary.has('Kids')) {
+            const kids: _PdfDictionary[] = dictionary.getArray('Kids');
+            if (kids && kids.length >= 1) {
+                if (kids.length === 1) {
+                    result = this._getRectangle(kids[0]);
+                } else {
+                    if (field && field.itemsCount > 1) {
+                        result = this._getRectangle(field.itemAt(0)._dictionary);
+                    } else {
+                        result = this._getRectangle(kids[0]);
                     }
-                    const dictionary: _PdfDictionary = this._crossReference._fetch(kidsArray[0]);
-                    return this._getRectangle(dictionary);
                 }
             }
         }
-        return null;
+        return result;
     }
     _compare(x: number, y: number): number {
         if (x > y) {
@@ -770,6 +795,7 @@ export class PdfForm {
         const yDictionary: _PdfDictionary = this._crossReference._fetch(y);
         const xRect: number[] = this._getRectangle(xDictionary);
         const yRect: number[] = this._getRectangle(yDictionary);
+        let result: number;
         if (xRect && xRect.length >= 2 && yRect && yRect.length >= 2) {
             const x1: number = xRect[0];
             const y1: number = xRect[1];
@@ -777,7 +803,6 @@ export class PdfForm {
             const y2: number = yRect[1];
             if (typeof x1 === 'number' && typeof x2 === 'number' &&
                 typeof y1 === 'number' && typeof y2 === 'number') {
-                let result: number = 0;
                 let xdiff: number;
                 if (this._tabOrder === PdfFormFieldsTabOrder.row) {
                     xdiff = this._compare(y2, y1);
@@ -793,11 +818,84 @@ export class PdfForm {
                     } else {
                         result = this._compare(y2, y1);
                     }
+                } else {
+                    result = 0;
                 }
                 return result;
             }
         }
-        return null;
+        return result;
+    }
+    _sortItemByPageIndex(field: PdfField, hasPageTabOrder: boolean): PdfPage {
+        let page: PdfPage = field.page;
+        const tabOrder: PdfFormFieldsTabOrder = this._tabOrder;
+        this._tabOrder = hasPageTabOrder ? field.page.tabOrder : tabOrder;
+        this._sortFieldItems(field);
+        if (field._isLoaded && field._kidsCount > 1) {
+            page = field.itemAt(0).page;
+        }
+        this._tabOrder = tabOrder;
+        if (typeof page === 'undefined') {
+            page = field.page;
+        }
+        return page;
+    }
+    _sortFieldItems(field: PdfField): void {
+        if (field._isLoaded && (field instanceof PdfTextBoxField ||
+            field instanceof PdfListBoxField ||
+            field instanceof PdfCheckBoxField ||
+            field instanceof PdfRadioButtonListField)) {
+            const collection: any[] = field._parseItems(); // eslint-disable-line
+            collection.sort((item1: any, item2: any) => { // eslint-disable-line
+                return this._compareFieldItem(item1, item2);
+            });
+            field._parsedItems.clear();
+            for (let i: number = 0; i < collection.length; i++) {
+                field._parsedItems.set(i, collection[Number.parseInt(i.toString(), 10)]);
+            }
+        }
+    }
+    _compareFieldItem(item1: any, item2: any): number { // eslint-disable-line
+        let result: number = 0;
+        if (typeof item1 !== 'undefined' && typeof item2 !== 'undefined') {
+            const page1: PdfPage = item1.page;
+            const page2: PdfPage = item2.page;
+            const array1: number[] = this._getRectangle(item1._dictionary);
+            const array2: number[] = this._getRectangle(item2._dictionary);
+            if (array1 && array2) {
+                const x1: number = array1[0];
+                const y1: number = array1[1];
+                const x2: number = array2[0];
+                const y2: number = array2[1];
+                let xdiff: number;
+                if (this._tabOrder === PdfFormFieldsTabOrder.row) {
+                    xdiff = this._compare(page1._pageIndex, page2._pageIndex);
+                    if (xdiff !== 0) {
+                        result = xdiff;
+                    } else {
+                        xdiff = this._compare(y2, y1);
+                        if (xdiff !== 0) {
+                            result = xdiff;
+                        } else {
+                            result = this._compare(x1, x2);
+                        }
+                    }
+                } else if (this._tabOrder === PdfFormFieldsTabOrder.column) {
+                    xdiff = this._compare(page1._pageIndex, page2._pageIndex);
+                    if (xdiff !== 0) {
+                        result = xdiff;
+                    } else {
+                        xdiff = this._compare(x1, x2);
+                        if (xdiff !== 0) {
+                            result = xdiff;
+                        } else {
+                            result = this._compare(y2, y1);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
     _clear(): void {
         this._fields = [];

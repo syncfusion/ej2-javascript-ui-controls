@@ -14,7 +14,6 @@ describe('TreeGrid Row module', () => {
         return;
     }
   });
-
     describe('gridLines', () => {
         let gridObj: TreeGrid;
         let rows: Element[];

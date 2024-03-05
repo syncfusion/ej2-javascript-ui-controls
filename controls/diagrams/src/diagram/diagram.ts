@@ -5441,8 +5441,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public clear(): void {
         this.clearObjects();
-    }
-
+        this.clearLayers();
+    };
+    //Bug 872106: Layer object in diagram doesnot removed in clear method
+    private clearLayers(){
+        const layerCount = this.layers.length;
+        for (let i: number = layerCount - 1; i >= 0; i--) {
+            this.removeLayer(this.layers[parseInt(i.toString(), 10)].id);
+        }
+        //Create default layer
+        const defaultLayer: LayerModel = {
+            id: 'default_layer', visible: true, lock: false, objects: [], zIndex: 0,
+            objectZIndex: -1, zIndexTable: {}
+        } as Layer;
+        this.commandHandler.addLayer(defaultLayer, null, true);
+        this.setActiveLayer(this.layers[this.layers.length - 1].id);
+    };
     private clearObjects(collection?: (NodeModel | ConnectorModel)[]): void {
         let objects: (NodeModel | ConnectorModel)[] = [];
         if (!collection) {
@@ -6896,20 +6910,29 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             const layer: LayerModel = this.commandHandler.getObjectLayer(connector.id);
             this.initConnectors(connector, layer);
         }
-        let originalZIndexTable:object = {};  // New variable to store original zIndex values
-        // Store original zIndex values
-        for (let i:number = 0; i < this.nodes.length; i++) {
-            let node = this.nodes[parseInt(i.toString(), 10)];
-            originalZIndexTable[node.id] = node.zIndex;
+        //EJ2-867308 - sendBackward and moveForward not working as intended
+        //The zindex values for nodes and connectors are set correctly in zindextable based on the order of it
+        let originalZIndexTable: object = {};  // New variable to store original zIndex values
+        // Store original zIndex values for visible nodes
+        for (let i = 0; i < this.layers.length; i++) {
+            let layer = this.layers[parseInt(i.toString(), 10)] as Layer;
+            if (layer.visible) {
+                const zIndexValues: string[] = Object.keys(layer.zIndexTable).map(key => layer.zIndexTable[`${key}`]);
+                for (let j = 0; j < zIndexValues.length; j++) {
+                    let nodeId:string = zIndexValues[parseInt(j.toString(), 10)];
+                    let element:NodeModel|ConnectorModel = this.nameTable[`${nodeId}`];
+                    if (element) {
+                        originalZIndexTable[element.id] = element.zIndex;
+                    }
+                }
+            }
         }
-        for (let j:number = 0; j < this.connectors.length; j++) {
-            let connector = this.connectors[parseInt(j.toString(), 10)];
-            originalZIndexTable[connector.id] = connector.zIndex;
-        }
+        // Sort nodes and connectors based on zIndex
         const sortedNodeIds: string[] = Object.keys(originalZIndexTable).sort((a, b) => originalZIndexTable[`${a}`] - originalZIndexTable[`${b}`]);
         for (let i:number = 0; i < this.layers.length; i++) {
             (this.layers[parseInt(i.toString(), 10)] as Layer).zIndexTable  = sortedNodeIds;
         }
+
         if (isBlazor() && canCloneObject) {
             for (const obj of this.nodes) {
                 updateNodeObject.push(cloneObject(obj, undefined, undefined, true));

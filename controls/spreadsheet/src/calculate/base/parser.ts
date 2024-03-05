@@ -360,7 +360,7 @@ export class Parser {
                     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
                     if (!isNullOrUndefined(this.parent.parentObject as any)) {
                         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                        s = ((this.parent.parentObject as any).getActiveSheet().name + this.sheetToken + text).toUpperCase();
+                        s = (this.parent.parentObject as any).getActiveSheet().name + this.sheetToken + text.toUpperCase();
                     } else {
                         s = sheet.sheetNameToToken.get(key).toUpperCase();
                     }

@@ -25,6 +25,7 @@ export interface RowModel {
      *
      * @default 20
      * @asptype double
+     * @aspDefaultValue 20.0
      */
     height?: number;
 

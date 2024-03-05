@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 24.2.9 (2024-03-05)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F50979` - Fixed issue where the action complete with `args.requestType` Cancel was not being passed when performing a cell edit action.
+
+## 24.2.8 (2024-02-27)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F50621` - Resolved an issue where a script error was being thrown when performing `ExpandAll` and `CollapseAll` actions in row template.
+
 ## 24.2.7 (2024-02-20)
 
 ### Tree Grid

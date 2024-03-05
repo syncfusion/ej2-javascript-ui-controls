@@ -140,7 +140,14 @@ export class Timeline {
         const currentZoomingLevel: number = this.checkCurrentZoomingLevel();
         this.isZoomIn = isZoomIn;
         this.isZooming = true;
-        let currentLevel: number = isZoomIn ? currentZoomingLevel + 1 : currentZoomingLevel - 1;
+        let currentLevel: number;
+        let level: number = isZoomIn ? currentZoomingLevel + 1 : currentZoomingLevel - 1;
+        const foundLevel = this.parent.zoomingLevels.find(tempLevel => tempLevel.level === level);
+        if (foundLevel) {
+            currentLevel = level;
+        } else {
+            currentLevel = currentZoomingLevel;
+        } 
         if (this.parent.toolbarModule) {
             if (isZoomIn) {
                 if (currentLevel === this.parent.zoomingLevels[this.parent.zoomingLevels.length - 1].level) {

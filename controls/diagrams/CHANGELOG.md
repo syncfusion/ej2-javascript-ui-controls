@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
+## 24.2.9 (2024-03-05)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I557035` - Now, the layers object gets cleared when we call clear method.
+
 ## 24.2.8 (2024-02-27)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I555649` - Now, the scaling of the BPMN symbols with description is properly rendered.
+
+## 24.2.7 (2024-02-20)
 
 ### Diagram
 

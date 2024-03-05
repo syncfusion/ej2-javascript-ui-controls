@@ -3907,3 +3907,50 @@ describe('Coverage Improvement', () => {
         actionComplete = null;
     });
 });
+
+describe('EJ2- 871212 - grid’s edit type datepicker with enable mask for date field not applied', () => {
+    let gridObj: Grid;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                allowSorting: true,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal'},
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 120, defaultValue: ''
+                    },
+                    {
+                        field: 'CustomerID', headerText: 'Customer ID',
+                        validationRules: { required: true }, width: 140, defaultValue: ''
+                    },
+                    {
+                        field: 'Freight', headerText: 'Freight', textAlign: 'Right',
+                        width: 120, format: 'C2', validationRules: { required: true }
+                    },
+                    {
+                        field: 'OrderDate', headerText: 'Order Date', editType: 'datepickeredit',
+                        format: 'dd/MM/yyyy', type: 'date',  width: 170, edit: { params:  {enableMask: true, format:'dd/MM/yyyy'}}, validationRules: { date: [true, 'Enter valid date'] }
+                    },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', width: 150, defaultValue: ''
+                    }
+                ],
+            }, done);
+    });
+
+    it('Check the datepicker column has proper masked value or not', () => {
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        expect((gridObj.element.querySelectorAll('.e-addedrow td')[4].querySelector('.e-datepicker') as HTMLInputElement).value).toBe("day/month/year");
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+        actionComplete = null;
+    });
+});

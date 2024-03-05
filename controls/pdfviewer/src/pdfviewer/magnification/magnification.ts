@@ -761,7 +761,7 @@ export class Magnification {
             if (this.pdfViewerBase.textLayer) {
                 const textLayers: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
                 for (let i: number = 0; i < textLayers.length; i++) {
-                    (textLayers[i] as HTMLElement).style.display = 'block';
+                    (textLayers[i] as HTMLElement).style.display = 'none';
                 }
             }
             if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
@@ -791,6 +791,12 @@ export class Magnification {
                 () => {
                     this.pdfViewerBase.pageViewScrollChanged(this.reRenderPageNumber);
                 }, 300);
+            if (this.pdfViewerBase.textLayer) {
+                let textLayers: any = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
+                for (let i: number = 0; i < textLayers.length; i++) {
+                    textLayers[i].style.display = 'block';
+                }
+            }
         }
     }
 

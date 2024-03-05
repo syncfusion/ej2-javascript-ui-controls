@@ -2,11 +2,11 @@ import { Spreadsheet } from '../base/index';
 import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
-import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus, getUpdateUsingRaf } from '../common/index';
+import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus, getUpdateUsingRaf, updateSortCollection } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
 import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, applyProtect } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale, removeHyperlink } from '../common/index';
-import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel} from '../../workbook/common/index';
+import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel, SortCollectionModel } from '../../workbook/common/index';
 import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndex, moveSheet, duplicateSheet, hideShow } from '../../workbook/index';
 import { toggleProtect } from '../common/index';
 
@@ -75,6 +75,15 @@ export class ContextMenu {
     private selectHandler(args: MenuEventArgs): void {
         const selectArgs: MenuSelectEventArgs = extend({ cancel: false }, args) as MenuSelectEventArgs;
         this.parent.trigger('contextMenuItemSelect', selectArgs); const id: string = this.parent.element.id + '_cmenu';
+        let prevSort: SortCollectionModel[] = [];
+        if ((id + '_ascending' || id + '_descending') && this.parent.sortCollection) {
+            for (let i: number = this.parent.sortCollection.length - 1; i >= 0; i--) {
+                if (this.parent.sortCollection[i as number] && this.parent.sortCollection[i as number].sheetIndex === this.parent.activeSheetIndex) {
+                    prevSort.push(this.parent.sortCollection[i as number]);
+                    this.parent.sortCollection.splice(i, 1);
+                }
+            }
+        }
         let field: string;
         if (!selectArgs.cancel) {
             let indexes: number[];
@@ -121,10 +130,12 @@ export class ContextMenu {
                 focus(this.parent.element);
                 break;
             case id + '_ascending':
-                this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: 'Ascending' } } });
+                this.parent.notify(updateSortCollection,{ sortOptions: { sortDescriptors: { order: 'Ascending' } } });
+                this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: 'Ascending' } }, previousSort: prevSort });
                 break;
             case id + '_descending':
-                this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: 'Descending' } } });
+                this.parent.notify(updateSortCollection, { sortOptions: { sortDescriptors: { order: 'Descending' } } });
+                this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: 'Descending' } }, previousSort: prevSort });
                 break;
             case id + '_customsort':
                 this.parent.notify(initiateCustomSort, null);

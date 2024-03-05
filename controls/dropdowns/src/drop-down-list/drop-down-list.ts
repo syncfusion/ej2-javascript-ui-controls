@@ -2819,6 +2819,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.getFocusElement();
                 this.checkCollision(popupEle);
                 if (Browser.isDevice) {
+                    if ((parseInt(this.popupWidth.toString(), 10) > window.outerWidth) && !(this.getModuleName() === 'dropdownlist' && this.allowFiltering)) {
+                        this.popupObj.element.classList.add('e-wide-popup');
+                    }
                     this.popupObj.element.classList.add(dropDownListClasses.device);
                     if (this.getModuleName() === 'dropdownlist' || (this.getModuleName() === 'combobox'
                         && !this.allowFiltering && this.isDropDownClick)) {
@@ -3337,6 +3340,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
             }
         });
+        if (Browser.isDevice && !eventArgs.cancel && this.popupObj.element.classList.contains('e-wide-popup')) {
+            this.popupObj.element.classList.remove('e-wide-popup');
+        }
         if((this as any).isReact && this.isFiltering() && this.itemTemplate != null){
             (this as any).actionCompleteData.ulElement = this.ulElement.cloneNode(true);
         }

@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 24.2.9 (2024-03-05)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I870831` - Issue with "formula calculation with defined name does not work as expected when adding the defined name using public method" has been resolved.
+
+## 24.2.8 (2024-02-27)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I870021` - Issue with "`cellEditing` event is not triggered when you focus the cell and press the backspace key" has been resolved.
+
+- `#I870519` - Issue with "cell values are updated directly from the data source before being converted to formatted values" has been resolved.
+
 ## 24.2.4 (2024-02-06)
 
 ### Spreadsheet

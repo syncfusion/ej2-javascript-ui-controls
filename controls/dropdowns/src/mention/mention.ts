@@ -694,7 +694,7 @@ export class Mention extends DropDownBase {
             (this.range.startContainer as HTMLElement).previousElementSibling && (this.range.startContainer as HTMLElement).previousElementSibling.tagName !== 'BR' && this.range.startContainer.textContent.split('').length > 0 &&
             (rangetextContent.length === 1 || rangetextContent[rangetextContent.length - 2].indexOf('') === -1 ||
             this.range.startContainer.nodeType === 1))) {
-            if (this.allowSpaces && currentRange && currentRange.trim() !== '' && charRegex.test(currentRange) && currentRange.indexOf(this.mentionChar) !== -1
+            if (this.isPopupOpen && this.allowSpaces && currentRange && currentRange.trim() !== '' && charRegex.test(currentRange) && currentRange.indexOf(this.mentionChar) !== -1
                 && !this.isMatchedText() && (currentRange.length > 1 && currentRange.replace(/\u00A0/g, ' ').charAt(currentRange.length - 2) !== ' ') &&
                 (this.list && this.list.querySelectorAll('ul').length > 0)) {
                 this.queryString = currentRange.substring(currentRange.lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ');
@@ -1195,6 +1195,9 @@ export class Mention extends DropDownBase {
             this.popupObj.element.removeAttribute('style');
             this.popupObj.element.removeAttribute('aria-disabled');
         }
+        if (this.list.classList.contains('e-nodata')) {
+            this.list = null;
+        }
     }
 
     private onDocumentClick(e: MouseEvent): void {
@@ -1306,6 +1309,7 @@ export class Mention extends DropDownBase {
     }
 
     private initValue(): void {
+        this.isDataFetched = false;
         this.renderList();
         if (this.dataSource instanceof DataManager) {
             this.initRemoteRender = true;

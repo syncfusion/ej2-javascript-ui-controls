@@ -400,9 +400,11 @@ export class ConditionalFormatting {
         } else {
             updateFn = (): void => {
                 if (valueObj[`${val}`]) {
-                    if (!dupValueObj[`${val}`]) {
-                        dupValueObj[`${val}`] = true;
-                        (<string[]>result).push(val);
+                    if (val !== "") {
+                        if (!dupValueObj[`${val}`]) {
+                            dupValueObj[`${val}`] = true;
+                            (<string[]>result).push(val);
+                        }
                     }
                 } else {
                     valueObj[`${val}`] = true;

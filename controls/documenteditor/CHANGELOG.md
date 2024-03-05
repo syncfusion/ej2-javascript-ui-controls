@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 24.2.9 (2024-03-05)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I555058` - Resolved the shape position issue in the attached document.
+- `#I546422` - Resolved the presence of additional spacing in the Arabic document.
+- `#I544048` - Resolved the before spacing issue.
+- `#I547781` - Resolved the show revisions API not working properly issue.
+- `#I540605`, `I527154` - Resolved the copy pasting issue in blazor.
+
 ## 24.2.8 (2024-02-27)
 
 ### DocumentEditor

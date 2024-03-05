@@ -1,9 +1,9 @@
 /* eslint-disable no-useless-escape */
-import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent, duplicateSheetOption, focus, getChartsIndexes, refreshChartCellModel } from '../index';
+import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, refreshFilterRange,  initiateFilterUI, FilterInfoArgs, getStartEvent, duplicateSheetOption, focus, getChartsIndexes, refreshChartCellModel, updateSortCollection } from '../index';
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs } from '../index';
 import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort } from '../index';
 import { filterRangeAlert, getFilteredCollection, beforeDelete, sheetsDestroyed, initiateFilter, duplicateSheetFilterHandler } from '../../workbook/common/event';
-import { FilterCollectionModel, getRangeIndexes, getCellAddress, updateFilter, ColumnModel, beforeInsert, parseLocaleNumber, ChartModel } from '../../workbook/index';
+import { FilterCollectionModel, getRangeIndexes, getCellAddress, updateFilter, ColumnModel, beforeInsert, parseLocaleNumber, ChartModel, SortOptions, SortDescriptor  } from '../../workbook/index';
 import { getIndexesFromAddress, getSwapRange, getColumnHeaderText, CellModel, getDataRange, isCustomDateTime } from '../../workbook/index';
 import { getData, Workbook, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet, inRange } from '../../workbook/index';
 import { SheetModel, sortImport, clear, getColIndex, SortCollectionModel, setRow, ExtendedRowModel, hideShow } from '../../workbook/index';
@@ -62,6 +62,8 @@ export class Filter {
         this.parent.on(initiateFilterUI, this.initiateFilterUIHandler, this);
         this.parent.on(mouseDown, this.filterMouseDownHandler, this);
         this.parent.on(renderFilterCell, this.renderFilterCellHandler, this);
+        this.parent.on(refreshFilterRange, this.refreshFilterRange, this);
+        this.parent.on(updateSortCollection, this.updateSortCollectionHandler, this);
         this.parent.on(beforeFltrcMenuOpen, this.beforeFilterMenuOpenHandler, this);
         this.parent.on(filterCmenuSelect, this.closeDialog, this);
         this.parent.on(reapplyFilter, this.reapplyFilterHandler, this);
@@ -91,6 +93,8 @@ export class Filter {
             this.parent.off(initiateFilterUI, this.initiateFilterUIHandler);
             this.parent.off(mouseDown, this.filterMouseDownHandler);
             this.parent.off(renderFilterCell, this.renderFilterCellHandler);
+            this.parent.off(refreshFilterRange, this.refreshFilterRange);
+            this.parent.off(updateSortCollection, this.updateSortCollectionHandler);
             this.parent.off(beforeFltrcMenuOpen, this.beforeFilterMenuOpenHandler);
             this.parent.off(filterCmenuSelect, this.closeDialog);
             this.parent.off(reapplyFilter, this.reapplyFilterHandler);
@@ -1479,17 +1483,16 @@ export class Filter {
             range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
         }
         this.parent.sortCollection = this.parent.sortCollection ? this.parent.sortCollection : [];
-        let prevSort: SortCollectionModel;
-        for (let i: number = 0; i < this.parent.sortCollection.length; i++) {
+        let prevSort: SortCollectionModel[] = [];
+        for (let i: number = this.parent.sortCollection.length - 1; i >= 0; i--) {
             if (this.parent.sortCollection[i as number] && this.parent.sortCollection[i as number].sheetIndex === sheetIdx) {
-                prevSort = this.parent.sortCollection[i as number];
+                prevSort.push(this.parent.sortCollection[i as number]);
                 this.parent.sortCollection.splice(i, 1);
             }
         }
         this.parent.sortCollection.push(
             { sortRange: getRangeAddress(range), columnIndex: getIndexesFromAddress(sheet.activeCell)[1], order: sortOrder,
                 sheetIndex: sheetIdx });
-        if (!prevSort) { prevSort = { order: '' }; }
         this.parent.notify(
             applySort, { sortOptions: { sortDescriptors: { order: sortOrder }, containsHeader: false }, previousSort: prevSort, range:
             getRangeAddress(range) });
@@ -2164,6 +2167,36 @@ export class Filter {
         }
         if (this.filterRange.has(args.sheetIndex)) {
             this.filterRange.set(args.newSheetIndex, this.filterRange.get(args.sheetIndex));
+        }
+    }
+
+    private updateSortCollectionHandler(args: { sortOptions?: SortOptions }): void {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const sheetIdx: number = this.parent.activeSheetIndex;
+        const filterRange: { useFilterRange: boolean, range: number[], enableColumnHeaderFiltering?: boolean } = this.filterRange.get(sheetIdx);
+        if (filterRange) {
+            const range: number[] = filterRange.range.slice();
+            if (!filterRange.enableColumnHeaderFiltering) {
+                range[0] = range[0] + 1; // to skip first row.
+            }
+            if (!filterRange.useFilterRange) {
+                range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
+            }
+            let sortDescriptors: SortDescriptor | SortDescriptor[] = args.sortOptions.sortDescriptors;
+            this.parent.sortCollection = this.parent.sortCollection ? this.parent.sortCollection : [];
+            if (Array.isArray(sortDescriptors)) {
+                for (let i: number = 0; i < sortDescriptors.length; i++) {
+                    this.parent.sortCollection.push({
+                        sortRange: getRangeAddress(range), columnIndex: getColIndex(sortDescriptors[i as number].field),
+                        order: sortDescriptors[i as number].order, sheetIndex: sheetIdx
+                    });
+                }
+            } else {
+                this.parent.sortCollection.push({
+                    sortRange: getRangeAddress(range), columnIndex: getIndexesFromAddress(sheet.activeCell)[1],
+                    order: sortDescriptors.order, sheetIndex: sheetIdx
+                });
+            }
         }
     }
 }

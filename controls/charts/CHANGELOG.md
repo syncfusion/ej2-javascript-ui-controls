@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 24.2.9 (2024-03-05)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I558392` - Now the line color of the Pareto chart is stable when toggling the legend.
+- `#I558247` - Now sorting is working in the Pareto chart.
+- `#I557017` - Now the column is rendered properly when a corner radius is used.
+
 ## 24.2.8 (2024-02-27)
 
 ### Chart

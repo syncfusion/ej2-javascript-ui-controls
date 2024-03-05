@@ -3476,4 +3476,65 @@ describe('RTE CR issues', () => {
             destroy(rteObj);
         });
     });
+    describe('870298: Numbered list not removed when we delete the entire list using backspace key in RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        it('Checking the backspace on list', (done: Function) => {
+            rteObj = renderRTE({
+                value: `<ol style=" margin-bottom: 1em; margin-top: 1em; font-size: 16.8px; line-height: 1.1; margin-left: 0px; padding-left: 2em; color: rgb(0, 0, 0); font-family: &quot;Times New Roman&quot;, Georgia, &quot;SBL Greek&quot;, serif; font-style: normal; font-weight: 400; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(247, 247, 249);"><li style=" font-size: 0.95em; line-height: 1.1; margin-left: 0.75em; margin-top: 1em; margin-bottom: 1em;"><em>Report One</em>: an internal proposal written in Memo format</li><li style=" font-size: 0.95em; line-height: 1.1; margin-left: 0.75em; margin-top: 0.5em; margin-bottom: 1em;"><em>Report Two</em>: an internal proposal written in Short Report format</li><li style=" font-size: 0.95em; line-height: 1.1; margin-left: 0.75em; margin-top: 0.5em; margin-bottom: 1em;"><em>Report Three</em>: A comparative recommendation report written for an external client in Long Report format.</li></ol>`,
+            });
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document, rteObj.inputElement.querySelectorAll('li')[2].querySelector('em'), 0);
+            (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect(rteObj.inputElement.querySelectorAll('li').length).toBe(2);
+            expect(rteObj.inputElement.querySelectorAll('li')[1].innerText).toBe('Report Two: an internal proposal written in Short Report formatReport Three: A comparative recommendation report written for an external client in Long Report format.');
+            done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('869646: Script error throws when pasting some content into the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: 'keydown',
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ''
+          };
+        const data: string = '<html>\r\n<body>\r\n\x3C!--StartFragment--><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><br class="Apple-interchange-newline"><br></p><p style="margin: 0px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">test</p>\x3C!--EndFragment-->\r\n</body>\r\n</html>';
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value:`<p><br></p><p><br></p><p>test</p>`,
+                pasteCleanupSettings: {
+                    keepFormat: true,
+                }
+            });
+        });
+
+        it('copy and paste text', (done) => {
+            rteObj.dataBind();
+            keyBoardEvent.clipboardData = {
+                getData: () => {
+                    return data;
+                },
+                items: []
+            };
+            setTimeout(function () {
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.firstChild, rteObj.inputElement.lastChild.childNodes[0], 0, 4);
+                rteObj.onPaste(keyBoardEvent);
+                done();
+            }, 400);
+            expect(rteObj.inputElement.querySelectorAll('p').length === 3).toBe(true);
+          });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

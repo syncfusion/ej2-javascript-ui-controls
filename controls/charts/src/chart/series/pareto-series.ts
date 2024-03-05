@@ -28,7 +28,7 @@ export class ParetoSeries extends ColumnBase {
         targetSeries.category = 'Pareto';
         series.index = targetSeries.index + chart.series.length;
         series.type = 'Line';
-        series.interior = series.paretoOptions.fill ? series.paretoOptions.fill : colors[series.index % count];
+        series.interior = series.fill = series.paretoOptions.fill ? series.paretoOptions.fill : colors[series.index % count];
         series.width = series.paretoOptions.width;
         series.dashArray = series.paretoOptions.dashArray;
         series.marker = series.paretoOptions.marker;

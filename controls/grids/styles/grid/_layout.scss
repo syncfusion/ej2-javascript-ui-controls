@@ -1271,6 +1271,8 @@
           }
 
           & .e-responsive-right {
+            width: calc(100% - 50px);
+
             & .e-search-wrapper {
               & .e-input-group::before,
               & .e-input-group::after {

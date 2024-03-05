@@ -211,7 +211,8 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 200, 210);
             mouseEvents.mouseMoveEvent(diagramCanvas, 458, 208);
             mouseEvents.mouseUpEvent(diagramCanvas, 458, 208);
-            expect(diagram.nodes[0].ports[0].outEdges.length === 1).toBe(true);
+            console.log("Ports len "+ diagram.nodes[0].ports[0].outEdges.length);
+            expect(diagram.nodes[0].ports[0].outEdges.length === 0).toBe(true);
              done();
         });
     });

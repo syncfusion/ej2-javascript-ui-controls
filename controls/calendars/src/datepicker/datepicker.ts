@@ -1296,7 +1296,8 @@ export class DatePicker extends Calendar implements IInput {
         }
         if ((this.getModuleName() === 'datetimepicker')) {
             if (this.checkDateValue(this.globalize.parseDate(this.inputElement.value, dateOptions))) {
-                date = this.globalize.parseDate(this.inputElement.value.toLocaleUpperCase(), dateOptions);
+                const modifiedValue: string = this.inputElement.value.replace(/(am|pm|Am|aM|pM|Pm)/g, (match) => match.toLocaleUpperCase());
+                date = this.globalize.parseDate(modifiedValue, dateOptions);
             } else {
                 if (this.calendarMode === 'Gregorian') {
                     formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd' };

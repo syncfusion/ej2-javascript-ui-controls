@@ -182,11 +182,15 @@ export class Resize implements IAction {
         const tableWidth: number = (headerTable as HTMLElement).offsetWidth;
         const contentwidth: number = (gObj.getContent().scrollWidth);
         if (contentwidth > tableWidth) {
-            headerTable.classList.add('e-tableborder');
-            contentTable.classList.add('e-tableborder');
+            if (!isNullOrUndefined(contentTable.querySelector('.e-emptyrow'))) {
+                addClass([headerTable], ['e-tableborder']);
+                removeClass([contentTable], ['e-tableborder']);
+            }
+            else {
+                addClass([headerTable, contentTable], ['e-tableborder']);
+            }
         } else {
-            headerTable.classList.remove('e-tableborder');
-            contentTable.classList.remove('e-tableborder');
+            removeClass([headerTable, contentTable], ['e-tableborder']);
         }
         if (!isNullOrUndefined(footerTable)) {
             footerTable.classList.add('e-tableborder');
@@ -889,7 +893,13 @@ export class Resize implements IAction {
         const tableWidth: number = (headerTable as HTMLElement).offsetWidth;
         const contentwidth: number = (gObj.getContent().scrollWidth);
         if (contentwidth > tableWidth) {
-            addClass([headerTable, contentTable], ['e-tableborder']);
+            if (!isNullOrUndefined(contentTable.querySelector('.e-emptyrow'))) {
+                addClass([headerTable], ['e-tableborder']);
+                removeClass([contentTable], ['e-tableborder']);
+            }
+            else {
+                addClass([headerTable, contentTable], ['e-tableborder']);
+            }
         } else {
             removeClass([headerTable, contentTable], ['e-tableborder']);
         }

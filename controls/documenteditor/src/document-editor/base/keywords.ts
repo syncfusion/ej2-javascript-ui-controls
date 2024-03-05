@@ -19,6 +19,7 @@ export const saltValueProperty: string[] = ['saltValue','sv'];
 export const cryptProviderTypeProperty: string[] = ['cryptProviderType','cpt'];
 export const cryptAlgorithmClassProperty: string[] = ['cryptAlgorithmClass','cac'];
 export const cryptAlgorithmTypeProperty: string[] = ['cryptAlgorithmType','cat'];
+export const isCreatedUsingHtmlSpanTagProperty: string[] = ['isCreatedUsingHtmlSpanTag','ishst'];
 export const cryptAlgorithmSidProperty: string[] = ['cryptAlgorithmSid','cas'];
 export const cryptSpinCountProperty: string[] = ['cryptSpinCount','csc'];
 export const doNotUseHTMLParagraphAutoSpacingProperty: string[] = ['dontUseHTMLParagraphAutoSpacing','dhtml'];

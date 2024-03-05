@@ -1315,3 +1315,57 @@ describe('update rows method', () => {
     });
   });
 });
+
+describe('Bug 871546: Action Complete with args.requestType Cancel not passed on performing cell Edit action', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        height: 400,
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: 'Cell',
+          newRowPosition: 'Below'
+
+        },
+        toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+        columns: [
+          {
+            field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right',
+            validationRules: { required: true, number: true }, width: 90
+          },
+          { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220, validationRules: { required: true } },
+          {
+            field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130, editType: 'datepickeredit',
+            format: 'yMd', validationRules: { date: true }
+          },
+          {
+            field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 140, editType: 'numericedit',
+            validationRules: { number: true, min: 0 }, edit: { params: { format: 'n' } }
+          }
+        ],
+      },
+      done
+    );
+  });
+  it('action complete with cell edit action', (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args['requestType'] === 'cancel') {
+        expect(args.requestType === 'cancel').toBe(true);
+      }
+      done();
+    };
+    gridObj.actionComplete = actionComplete;
+    gridObj.editCell(2, 'taskName');
+    gridObj.closeEdit();
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

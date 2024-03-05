@@ -1116,7 +1116,6 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
                     processInternalData(extend([], this.currentViewData, null, true) as Object[], this);
             }
             if (this.category === 'Pareto') {
-                this.currentViewData = sort(extend([], this.currentViewData, null, true) as Object[], [this.yName], true);
                 if (this.type === 'Line') {
                     this.currentViewData = this.chart.paretoSeriesModule.performCumulativeCalculation(
                         this.currentViewData, this);

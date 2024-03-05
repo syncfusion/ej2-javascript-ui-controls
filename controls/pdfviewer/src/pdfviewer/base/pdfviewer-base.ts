@@ -5887,10 +5887,12 @@ export class PdfViewerBase {
 
     private orderPageDivElements(pageDiv: HTMLElement, pageIndex: number): void {
         const nextElement: HTMLElement = this.getElement('_pageDiv_' + (pageIndex + 1));
-        if (nextElement) {
-            this.pageContainer.insertBefore(pageDiv, nextElement);
-        } else {
-            this.pageContainer.appendChild(pageDiv);
+        if (this.pageContainer && pageDiv) {
+            if (nextElement) {
+                this.pageContainer.insertBefore(pageDiv, nextElement);
+            } else {
+                this.pageContainer.appendChild(pageDiv);
+            }
         }
     }
     /**
@@ -9389,12 +9391,19 @@ export class PdfViewerBase {
                 signObject = this.pdfViewer.selectedItems.annotations[0];
             }
             if (signObject) {
+                let signatureData: string = '';
                 this.signatureAdded = true;
                 this.signatureModule.storeSignatureData(signObject.pageIndex, signObject);
                 // eslint-disable-next-line
                 let bounds: any = { left: signObject.bounds.x, top: signObject.bounds.y, width: signObject.bounds.width, height: signObject.bounds.height };
+                if (this.signatureModule.signaturetype === 'Draw') {
+                    signatureData = this.signatureModule.saveImageString;
+                }
+                else {
+                    signatureData = signObject.data;
+                }
                 // eslint-disable-next-line max-len
-                this.pdfViewer.fireSignatureAdd(signObject.pageIndex, signObject.signatureName, signObject.shapeAnnotationType as AnnotationType, bounds, signObject.opacity, signObject.strokeColor, signObject.thickness, this.signatureModule.saveImageString);
+                this.pdfViewer.fireSignatureAdd(signObject.pageIndex, signObject.signatureName, signObject.shapeAnnotationType as AnnotationType, bounds, signObject.opacity, signObject.strokeColor, signObject.thickness, signatureData);
             }
             this.isNewSignatureAdded = false;
         }

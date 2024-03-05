@@ -1118,6 +1118,10 @@ export class ParagraphWidget extends BlockWidget {
     public isChangeDetected: boolean = false;
     /**
      * @private
+     */
+    public isCreatedUsingHtmlSpanTag: boolean = undefined;
+    /**
+     * @private
      * The clientX having previous left value of empty paragraph
      */
      public clientX: number = undefined;

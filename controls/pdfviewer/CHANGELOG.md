@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 24.2.9 (2024-03-05)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I547297` - Now, the data property was updated properly in the `addSignature` event.
+- `I556216` - Now, the download was working properly for the provided document.
+
 ## 24.2.8 (2024-02-27)
 
 ### PDF Viewer
@@ -11,6 +20,9 @@
 - `#I550956` - Now, the comments do not overlap when the author name has more characters.
 - `#I549538` - Now, the selected value and index of the dropdown are updated correctly for dropdown lists that are not selected.
 - `#I553949` - Now, the check box appearance is properly displayed on iOS devices.
+- `#I558011` - Now, the form fields are rendered properly after pinch zooming in mobile mode.
+- `#I553568` - Now, the `ValidateFormFields` event is triggered properly, even though the form designer module was not injected.
+- `#I545417` - Now, dynamically show and hide the text search pane is working properly.
 
 ## 24.2.7 (2024-02-20)
 

@@ -4363,11 +4363,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.expandCollapseAll('collapse');
     }
     private expandCollapseAll(action: string): void {
-        const rows: HTMLTableRowElement[] = this.getRows().filter((e: HTMLTableRowElement) => {
-            return e.querySelector('.e-treegrid' + (action  === 'expand' ? 'collapse' : 'expand'));
-        });
-        if (!rows.length && this.getRows().length) {
-            rows.push(this.getRows()[0]);
+        let rows: HTMLTableRowElement[]
+        if (this.rowTemplate) {
+            rows = [].slice.call(this.grid.getContentTable().querySelectorAll('tr')).filter((e: HTMLTableRowElement) => {
+                return e.querySelector('.e-treegrid' + (action === 'expand' ? 'collapse' : 'expand'));
+            });
+        } else {
+            rows = this.getRows().filter((e: HTMLTableRowElement) => {
+                return e.querySelector('.e-treegrid' + (action === 'expand' ? 'collapse' : 'expand'));
+            });
         }
         this.isExpandAll = true;
         this.isCollapseAll = true;

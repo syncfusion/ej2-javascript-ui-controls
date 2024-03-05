@@ -406,11 +406,11 @@ export class Edit {
 
     private refreshEditor(
         value: string, refreshFormulaBar?: boolean, refreshEditorElem?: boolean, isAppend?: boolean,
-        trigEvent: boolean = true): void {
+        trigEvent: boolean = true, prevCellValue?:string): void {
         if (isAppend) {
             value = this.editCellData.value = this.editCellData.value + value;
         } else {
-            this.editCellData.value = value;
+            this.editCellData.value = prevCellValue ? prevCellValue : value;
         }
         const editorElem: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
         if (refreshEditorElem && editorElem) {
@@ -831,12 +831,14 @@ export class Edit {
                 } else {
                     this.editCellData.value = value;
                 }
+                let prevCellValue: string;
                 if (this.isNewValueEdit) {
+                    prevCellValue = value;
                     value = '';
                 } else {
                     this.isNewValueEdit = true;
                 }
-                if (!isUndefined(value)) { this.refreshEditor(value, false, true, false, false); }
+                if (!isUndefined(value)) { this.refreshEditor(value, false, true, false, false, prevCellValue); }
                 if (refreshCurPos) { this.setCursorPosition(); }
             });
         });

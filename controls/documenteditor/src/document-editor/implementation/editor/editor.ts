@@ -108,6 +108,10 @@ export class Editor {
      */
     public isFootNoteInsert: boolean = false;
     /**
+    * @private
+    */
+    public isCopying: boolean = false;
+    /**
      * @private
      */
     public isTableInsert: boolean = false;
@@ -419,6 +423,7 @@ export class Editor {
                 const section: BodyWidget = new BodyWidget();
                 section.sectionFormat = new WSectionFormat(section);
                 section.childWidgets.push(paragraph);
+                paragraph.isCreatedUsingHtmlSpanTag = true;
                 this.pasteContentsInternal([section], false);
             }
         this.isInsertField = false;
@@ -4825,6 +4830,17 @@ export class Editor {
                 // When copy content from MS Word, the clipboard html content already have same namespace which cause duplicate namespace
                 // Here, removed the duplicate namespace.
                 result = result.replace('xmlns="http://www.w3.org/1999/xhtml"', '');
+                const substringToRemove: string = '<span>iscreatedusinghtmlspantag</span>';
+                if (result.indexOf(substringToRemove) !== -1) {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(result, 'text/html');
+                    const paragraphs = doc.querySelectorAll('.iscreatedusinghtmlspantag');
+                    const lastPElement = doc.querySelector('body > p:last-child');
+                    if (paragraphs.length > 0 && lastPElement && lastPElement === paragraphs[paragraphs.length - 1]) {
+                        paragraphs[paragraphs.length - 1].remove();
+                        result = doc.documentElement.outerHTML;
+                    }
+                }
                 this.pasteAjax(result, '.html');
             } else if (textContent !== null && textContent !== '') {
                 this.selection.currentPasteAction = 'TextOnly';
@@ -6124,7 +6140,11 @@ export class Editor {
                     let insertFormat: WCharacterFormat = this.copyInsertFormat(this.selection.start.paragraph.characterFormat, false);
                     widget.characterFormat.mergeFormat(insertFormat);
                 }
-                if (j === widgets.length - 1 && widget instanceof ParagraphWidget
+                let isPara: boolean = widget instanceof ParagraphWidget && (
+                    this.owner.enableLocalPaste? 
+                        isNullOrUndefined((widget as ParagraphWidget).isCreatedUsingHtmlSpanTag)? false: !(widget as ParagraphWidget).isCreatedUsingHtmlSpanTag
+                        : (widget as ParagraphWidget).isCreatedUsingHtmlSpanTag);
+                if (widget instanceof ParagraphWidget && isPara
                     && (!isNullOrUndefined(widget.paragraphFormat.listFormat)
                         && isNullOrUndefined(widget.paragraphFormat.listFormat.list)
                         && widget.paragraphFormat.listFormat.listId === -1)) {
@@ -17955,6 +17975,7 @@ export class Editor {
         const bodyWidget: BodyWidget = new BodyWidget();
         bodyWidget.sectionFormat = new WSectionFormat(bodyWidget);
         bodyWidget.childWidgets.push(paragraph);
+        paragraph.isCreatedUsingHtmlSpanTag = true;
         this.pasteContentsInternal([bodyWidget], false);
     }
     /**
@@ -19314,6 +19335,7 @@ export class Editor {
         this.documentHelper = undefined;
         this.editRangeID = undefined;
         this.isCellFormatApplied = undefined;
+        this.isCopying = undefined;
     }
     /**
      * Updates the table of contents.

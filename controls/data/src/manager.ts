@@ -647,7 +647,7 @@ export class DataManager {
 
     private successFunc(record: string | Object, request: Fetch): void {
         if (this.isGraphQLAdaptor(this.adaptor)) {
-            const data: Object = JSON.parse(record as string);
+            const data: Object = typeof record === 'object' ? record : JSON.parse(record as string);
             // tslint:disable-next-line:no-string-literal
             if (!isNullOrUndefined(data['errors'])) {
                 // tslint:disable-next-line:no-string-literal

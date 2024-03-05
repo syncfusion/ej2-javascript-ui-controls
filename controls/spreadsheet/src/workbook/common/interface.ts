@@ -1,4 +1,4 @@
-import { CellStyleModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel } from './class-model';
+import { CellStyleModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel, SortCollectionModel } from './class-model';
 import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, ClearType, DataBar, ColorScale, IconSet } from './index';
 import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRangeModel, TopBottom, HighlightCell } from '../index';
 import { CFColor, Workbook, PdfPageOrientation } from '../index';
@@ -218,6 +218,7 @@ export interface SortDescriptor {
 export interface SortEventArgs {
     range?: string;
     sortOptions?: SortOptions;
+    previousSort?: SortCollectionModel | SortCollectionModel[];
 }
 
 /**

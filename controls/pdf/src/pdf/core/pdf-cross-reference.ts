@@ -76,7 +76,7 @@ export class _PdfCrossReference {
         try {
             root = trailerDictionary.get('Root');
         }
-        catch(e) {
+        catch (e) {
             throw new BaseException('Invalid cross reference', 'XRefParseException');
         }
         if (root) {

@@ -937,6 +937,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private dataToBeUpdated: BatchChanges;
     private componentRefresh: Function = Component.prototype.refresh;
     private isChangeDataSourceCall = false;
+    private mergedColumns: boolean = false;
     /** @hidden */
     public recordsCount: number;
     /** @hidden */
@@ -3051,6 +3052,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         this.getMediaColumns();
         setColumnIndex(this.columns as Column[]);
+        if (this.isFrozenGrid() && !this.mergedColumns) {
+            this.setInitialFrozenColumnIndex(this.columns as Column[]);
+        }
         this.checkLockColumns(this.columns as Column[]);
         this.getColumns();
         this.processModel();
@@ -3068,6 +3072,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (this.refreshing) {
             this.trigger('created');
+        }
+    }
+
+    private setInitialFrozenColumnIndex(columns: Column[]): void {
+        for (let i: number = 0; i < columns.length; i++) {
+            const column: Column = columns[parseInt(i.toString(), 10)];
+            column[`${literals.initialFrozenColumnIndex}`] = column.index;
+            if (column.columns) {
+                this.setInitialFrozenColumnIndex(column.columns as Column[]);
+            }
         }
     }
 
@@ -6648,7 +6662,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
             if ((percentageWidth && tableWidth < 100)
                 || (!percentageWidth && tableWidth < contentTable.parentElement.clientWidth)) {
-                addClass([headerTable, contentTable], ['e-tableborder']);
+                if (!isNullOrUndefined(contentTable.querySelector('.e-emptyrow'))) {
+                    addClass([headerTable], ['e-tableborder']);
+                    removeClass([contentTable], ['e-tableborder']);
+                }
+                else {
+                    addClass([headerTable, contentTable], ['e-tableborder']);
+                }
             }
             const tableWidthUnitFormat: string = tableWidth.toString() + unit;
             headerTable.style.setProperty('width', tableWidthUnitFormat);
@@ -7268,8 +7288,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             for (const key of keys) {
                 if ((typeof this[`${key}`] === 'object') && !isNullOrUndefined(this[`${key}`])) {
                     if (Array.isArray(this[`${key}`]) && key === 'columns') {
+                        this.setFrozenCount();
                         setColumnIndex(<Column[]>this[`${key}`]);
                         this.mergeColumns(<Column[]>dataObj[`${key}`], <Column[]>this[`${key}`]);
+                        this.mergedColumns = true;
                         this[`${key}`] = dataObj[`${key}`];
                     } else {
                         extend(this[`${key}`], dataObj[`${key}`]);
@@ -7284,9 +7306,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private mergeColumns(storedColumn: Column[], columns: Column[]): void {
         const storedColumns: Column[] = (<Column[]>storedColumn);
+        const isFrozenGrid: boolean = this.isFrozenGrid();
         for (let i: number = 0; i < storedColumns.length; i++) {
-            const localCol: Column = columns.filter((tCol: Column) => tCol.index === storedColumns[parseInt(i.toString(), 10)].index)[0];
+            let localCol: Column = columns.filter((tCol: Column) => isFrozenGrid ?
+                tCol.index === storedColumns[parseInt(i.toString(), 10)][`${literals.initialFrozenColumnIndex}`] :
+                tCol.index === storedColumns[parseInt(i.toString(), 10)].index)[0];
             if (!isNullOrUndefined(localCol)) {
+                if (isFrozenGrid) {
+                    localCol = <Column>extend({}, localCol, {}, true);
+                    localCol.freeze = storedColumns[parseInt(i.toString(), 10)].freeze;
+                }
                 if (localCol.columns && localCol.columns.length) {
                     this.mergeColumns(<Column[]>storedColumns[parseInt(i.toString(), 10)].columns, <Column[]>localCol.columns);
                     storedColumns[parseInt(i.toString(), 10)] = <Column>extend(

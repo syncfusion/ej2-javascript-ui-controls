@@ -1342,12 +1342,14 @@ export function resetColspanGroupCaption(gObj: IGrid, idx: number): number {
     }
     colspan += (gObj.groupSettings.columns.length - idx);
     width += (30 * (gObj.groupSettings.columns.length - idx));
+    const gridWidth: number = (gObj.width === 'auto' ? gObj.element.offsetWidth : parseInt(gObj.width.toString(), 10)) -
+        getScrollWidth(gObj);
     for (let i: number = 0; i < cols.length; i++) {
         if (cols[parseInt(i.toString(), 10)].visible) {
             width += parseInt(cols[parseInt(i.toString(), 10)].width.toString(), 10);
             colspan++;
         }
-        if (width > (parseInt(gObj.width.toString(), 10) - getScrollWidth(gObj))) {
+        if (width > gridWidth) {
             colspan--;
             break;
         }
@@ -1961,7 +1963,7 @@ export function setDisplayValue(tr: Object, idx: number, displayVal: string, row
             if (tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)].classList.contains('e-hide')) {
                 removeClass([tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)]], ['e-hide']);
             }
-            if (isContent && parent.isRowDragable()) {
+            if ((isContent && parent.isRowDragable()) || (parent && parent.isDetail())) {
                 const index: number = idx + 1;
                 rows[trs[parseInt(i.toString(), 10)]].cells[parseInt(index.toString(), 10)].visible = displayVal === '' ? true : false;
             } else {

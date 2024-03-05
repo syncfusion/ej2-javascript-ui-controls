@@ -214,7 +214,12 @@ export class InsertHtml {
             CONSTANT.TABLE_BLOCK_TAGS.indexOf((closestParentNode as Element).tagName.toLocaleLowerCase()) !== -1))
             || (node.nodeName.toLowerCase() === 'table' && closestParentNode &&
                 CONSTANT.TABLE_BLOCK_TAGS.indexOf((closestParentNode as Element).tagName.toLocaleLowerCase()) === -1))) {
-            preNode = nodeCutter.GetSpliceNode(range, closestParentNode as HTMLElement);
+            if (isCollapsed) {
+                preNode = nodeCutter.SplitNode(range, closestParentNode as HTMLElement, true);
+            }
+            else {
+                preNode = nodeCutter.SplitNode(range, closestParentNode as HTMLElement, false);
+            }
             sibNode = isNOU(preNode.previousSibling) ? preNode.parentNode.previousSibling : preNode.previousSibling;
             if (nodes.length === 1) {
                 nodeSelection.setSelectionContents(docElement, preNode);
@@ -290,6 +295,9 @@ export class InsertHtml {
                 let isFirstTextNode: boolean = true;
                 let isPreviousInlineElem: boolean; let paraElm: HTMLElement; let previousParent: HTMLElement;
                 if (!this.contentsDeleted) {
+                    if (!isCollapsed && range.startContainer.parentElement.textContent.length === 0 && range.startContainer.nodeName === 'BR' && range.startContainer.parentElement.nodeName === 'P') {
+                        editNode.removeChild(range.startContainer.parentElement);
+                    }
                     range.deleteContents();
                 }
                 while (node.firstChild) {

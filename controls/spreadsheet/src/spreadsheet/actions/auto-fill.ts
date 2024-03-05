@@ -500,6 +500,7 @@ export class AutoFill {
         } = { dataRange: args.dataRange, fillRange: args.fillRange, fillType: args.fillType, direction: args.direction,
             selectedRange: selRange };
         this.parent.notify(completeAction, { eventArgs: autoFillArgs, action: 'autofill' });
+        this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
         if (this.parent.showAggregate) {
             this.parent.notify(showAggregate, {});
         }

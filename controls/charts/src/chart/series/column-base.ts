@@ -472,7 +472,7 @@ export class ColumnBase {
         } else {
             direction = this.calculateRoundedRectPath(
                 rect, series.cornerRadius.topLeft, series.cornerRadius.topRight, series.cornerRadius.bottomLeft,
-                series.cornerRadius.bottomRight);
+                series.cornerRadius.bottomRight, chart.requireInvertedAxis);
         }
         const name: string = series.category === 'Indicator' ? chart.element.id + '_Indicator_' + series.index + '_' + series.name +
             '_Point_' + point.index : chart.element.id + '_Series_' + series.index + '_Point_' + point.index;
@@ -613,8 +613,13 @@ export class ColumnBase {
      */
     private calculateRoundedRectPath(
         rect: Rect, topLeft: number, topRight: number,
-        bottomLeft: number, bottomRight: number
+        bottomLeft: number, bottomRight: number, inverted: boolean = false
     ): string {
+        const halfValue: number = inverted ? rect.width / 2 : rect.height / 2;
+        topLeft = Math.min(topLeft, halfValue);
+        topRight = Math.min(topRight, halfValue);
+        bottomLeft = Math.min(bottomLeft, halfValue);
+        bottomRight = Math.min(bottomRight, halfValue);
         return 'M' + ' ' + rect.x + ' ' + (topLeft + rect.y) +
             ' Q ' + rect.x + ' ' + rect.y + ' ' + (rect.x + topLeft) + ' ' +
             rect.y + ' ' + 'L' + ' ' + (rect.x + rect.width - topRight) + ' ' + rect.y +

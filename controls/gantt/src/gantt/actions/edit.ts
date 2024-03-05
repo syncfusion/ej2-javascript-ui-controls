@@ -2462,7 +2462,7 @@ export class Edit {
             const fromRecord: IGanttData = this.parent.getRecordByID(predecessorCollection[count as number].from);
             const toRecord: IGanttData = this.parent.getRecordByID(predecessorCollection[count as number].to)
             validPredecessor = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
-            if (!validPredecessor) {
+            if (!validPredecessor || !this.parent.allowParentDependency) {
                 if (predecessorCollection[count as number].to === parentRecordTaskData.rowUniqueID.toString()) {
                     childRecord = this.parent.getRecordByID(predecessorCollection[count as number].from);
                     predecessorIndex = getIndex(predecessorCollection[count as number], 'from', childRecord.ganttProperties.predecessor, 'to');
@@ -2487,7 +2487,7 @@ export class Edit {
                 }
             }
         }
-        if (!validPredecessor) {
+        if (!validPredecessor || !this.parent.allowParentDependency) {
             this.parent.setRecordValue('predecessor', updatedPredecessor, parentRecord.ganttProperties, true);
             this.parent.setRecordValue('predecessorsName', '', parentRecord.ganttProperties, true);
         }
@@ -2733,14 +2733,16 @@ export class Edit {
         }
         for (let i: number = 0; i < this.parent.modifiedRecords.length; i++) {
             const originalData: IGanttData = this.parent.modifiedRecords[i as number];
-            let treeIndex: number = this.parent.allowRowDragAndDrop ? 1 : 0;
+            let treeIndex: number = this.parent.rowDragAndDropModule && this.parent.allowRowDragAndDrop ? 1 : 0;
             const uniqueTaskID: string = this.parent.taskFields.id;
             let originalIndex: number = this.parent.currentViewData.findIndex((data: IGanttData) => {
                 return (data[uniqueTaskID as string] === originalData[uniqueTaskID as string]);
             });
             if (this.parent.treeGrid.getRows()[originalIndex as number]) {
+                const row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
+                    this.parent.treeGrid.grid.getDataRows()[originalIndex as number].getAttribute('data-uid'));
                 this.parent.treeGrid.renderModule.cellRender({
-                    data: originalData, cell: this.parent.treeGrid.getRows()[originalIndex as number].cells[this.parent.treeColumnIndex + treeIndex],
+                    data: row.data, cell: this.parent.treeGrid.getRows()[originalIndex as number].cells[this.parent.treeColumnIndex + treeIndex],
                     column: this.parent.treeGrid.grid.getColumns()[this.parent.treeColumnIndex],
                     requestType: 'rowDragAndDrop'
                 });

@@ -155,6 +155,7 @@ export class WorkbookNumberFormat {
                     cell.value = args.value = dateEventArgs.updatedVal;
                     if (cell.format && cell.format !== 'General') {
                         args.format = cell.format;
+                        args.type = getTypeFromFormat(args.format);
                     } else {
                         cell.format = args.format = getFormatFromType(dateEventArgs.isDate ? 'ShortDate' : 'Time');
                     }

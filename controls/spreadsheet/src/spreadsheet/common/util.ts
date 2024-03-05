@@ -2126,7 +2126,7 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
         }
     }
     if ((cfRule.length || cfRefreshAll) && uiRefresh) {
-        context.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true });
+        context.notify(applyCF, <ApplyCFArgs>{ cfModel: !cfRefreshAll && cfRule, refreshAll: cfRefreshAll, isAction: true, isEdit: true});
     }
 }
 

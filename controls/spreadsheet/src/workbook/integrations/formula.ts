@@ -386,6 +386,16 @@ export class WorkbookFormula {
                     }
                 }
             }
+            const definedNames: DefineNameModel[] = this.parent.definedNames;
+            for (let i: number = 0; i < definedNames.length; i++) {
+                if (checkIsFormula(definedNames[i as number].refersTo) && definedNames[i as number].refersTo.includes(pName) && definedNames[i as number].refersTo.match(regx)) {
+                    definedNames[i as number].refersTo = definedNames[i as number].refersTo.replace(regx, name);
+                    if (definedNames[i as number].scope.includes(pName)) {
+                        definedNames[i as number].scope = name;
+                    }
+                }
+            }
+            this.calculateInstance.updateNamedRange(pName, name);
             if (info.visibleName === pName) { info.visibleName = name; }
         });
     }
@@ -893,7 +903,7 @@ export class WorkbookFormula {
             let calcName: string = name;
             if (scope) {
                 const sheetIdx: number = getSheetIndex(this.parent, scope);
-                if (sheetIdx) {
+                if (sheetIdx > -1) {
                     calcName = getSheetName(this.parent, sheetIdx) + '!' + name;
                 }
             }

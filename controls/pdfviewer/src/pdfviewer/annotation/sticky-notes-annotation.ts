@@ -1922,7 +1922,7 @@ export class StickyNotesAnnotation {
     private commentsDivClickEvent(event: any): void {
         // eslint-disable-next-line
         let annotation: any = this.findAnnotationObject(event.currentTarget.parentElement.id);
-        let isLocked : boolean = (annotation.annotationSettings.isLock || annotation.isLock);
+        let isLocked: boolean = !isNullOrUndefined(annotation) ? (annotation.annotationSettings.isLock || annotation.isLock) : false;
         if (!isLocked) {
             let isCommentsSelect: boolean = false;
             if (event.clientX === 0 && event.clientY === 0) {

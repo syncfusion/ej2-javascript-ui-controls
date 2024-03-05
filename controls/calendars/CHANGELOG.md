@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.9 (2024-03-05)
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#FB50296` - Fixed an issue where the date format `MMM/YYYY` was displaying the wrong date value in languages other than English.
+
 ## 24.2.8 (2024-02-27)
 
 ### DateRangePicker

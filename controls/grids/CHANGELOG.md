@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 24.2.9 (2024-03-05)
+
+### Grid
+
+#### Bug fixes
+
+- `#I546749`, `#I551015` - The issue in column reordering with frozen column and `enablePersistence` has been resolved.
+- `#I545290` - Resolved the script error in the lazy load grouping with infinite scrolling.
+- `#I553601` - Fixed the issue where the grid's edit type as `datepicker` with enable mask for date column was not being applied.
+- `#I553142` - Edited Cells are misalignment when show/hide the `childGrid` issue has been resolved.
+- `#FB51346` - Resolved an issue where the column width auto is not working properly with the freeze and resize features.
+
 ## 24.2.8 (2024-02-27)
 
 ### Grid

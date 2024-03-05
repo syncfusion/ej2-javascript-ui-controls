@@ -1,4 +1,4 @@
-import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs } from '../index';
+import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange, DialogBeforeOpenEventArgs, refreshFilterRange } from '../index';
 import { applySort, completeAction, focus, FilterInfoArgs, getUpdateUsingRaf, isDiscontinuousRange, isImported } from '../index';
 import { sortComplete, beforeSort, getFormattedCellObject, sortImport, workbookFormulaOperation } from '../../workbook/common/event';
 import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, inRange, SortCollectionModel, getSheet, getSheetIndex } from '../../workbook/index';
@@ -603,5 +603,6 @@ export class Sort {
             this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: range });
         }
         this.parent.hideSpinner();
+        this.parent.notify(refreshFilterRange, null);
     }
 }

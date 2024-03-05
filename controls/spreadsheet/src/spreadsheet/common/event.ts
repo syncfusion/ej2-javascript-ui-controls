@@ -154,6 +154,10 @@ export const initiateFilterUI: string = 'initiateFilterUI';
 /** @hidden */
 export const renderFilterCell: string = 'renderFilterCell';
 /** @hidden */
+export const refreshFilterRange: string = 'refreshFilterRange';
+/** @hidden */
+export const updateSortCollection: string = 'updateSortCollection';
+/** @hidden */
 export const reapplyFilter: string = 'reapplyFilter';
 /** @hidden */
 export const filterByCellValue: string = 'filterByCellValue';

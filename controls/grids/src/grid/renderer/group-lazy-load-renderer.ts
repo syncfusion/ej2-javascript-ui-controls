@@ -1144,6 +1144,13 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             e.args['prevPage'] !== e.args['currentPage']) {
             this.groupCache[parseInt(page.toString(), 10)] = this.initialGroupCaptions[parseInt(page.toString(), 10)] = this.groupCache[e.args['prevPage']]
                 .concat(extend([], e.data) as Row<Column>[]);
+            const groupCacheKeys: string[] = Object.keys(this.groupCache);
+            for (let i: number = 0; i < groupCacheKeys.length; i++) {
+                if (e.args['currentPage'] !== parseInt(groupCacheKeys[parseInt(i.toString(), 10)], 10)) {
+                    delete this.groupCache[`${groupCacheKeys[parseInt(i.toString(), 10)]}`];
+                    delete this.initialGroupCaptions[`${groupCacheKeys[parseInt(i.toString(), 10)]}`];
+                }
+            }
         }
         else {
             this.groupCache[parseInt(page.toString(), 10)] =

@@ -3042,7 +3042,10 @@ export class CommandHandler {
     private moveSBObject = function (targetId: string):void {
         if (targetId) {
             this.moveBackUndoNode(targetId);
-            this.updateNativeNodeIndex(targetId);
+            let node:NodeModel = this.diagram.getObject(targetId);
+            if(node.shape.type == "Native" || node.shape.type == "HTML" ){
+                this.updateNativeNodeIndex(targetId);
+            }
         }
     };
     private moveBackUndoNode = function(targetId: string):void {
@@ -3090,7 +3093,10 @@ export class CommandHandler {
     private moveFBObject = function (targetId: string):void {
         if (targetId) {
             this.moveForwardUndoNode(targetId);
-            this.updateNativeNodeIndex(targetId);
+            let node:NodeModel = this.diagram.getObject(targetId);
+            if(node.shape.type == "Native" || node.shape.type == "HTML" ){
+                this.updateNativeNodeIndex(targetId);
+            }
         }
     };
     private moveForwardUndoNode = function(targetID: string):void {
@@ -3218,9 +3224,28 @@ export class CommandHandler {
                         }
                     }
                 }
+                const changedNodeZIndexesArray:(NodeModel | ConnectorModel)[] = [];
+                Object.keys(this.changedNodeZIndexes).forEach((nodeId: string) => {
+                    const originalZIndex = originalNameTable[`${nodeId}`] ? originalNameTable[`${nodeId}`].zIndex : null;
+                    const changedZIndex = this.changedNodeZIndexes[`${nodeId}`];
+                    //By comparing with changedNodeZIndexes to store the changed elements in undo
+                    if (originalZIndex !== changedZIndex) {
+                        const node = cloneObject(originalNameTable[`${nodeId}`]);
+                        changedNodeZIndexesArray.push(node);
+                    }
+
+                });
+                undoObject.nodes.splice(0, undoObject.nodes.length);
+                changedNodeZIndexesArray.forEach((node: Node|Connector) => {
+                    const clonedNode = cloneObject(node);
+                    undoObject.nodes.push(clonedNode);
+                });
                 if (this.diagram.mode === 'SVG') {
                     let nodeIdToUpdate:string = intersectArray[intersectArray.length - 1].id;
-                    this.moveForwardSvgNode(nodeId);
+                    let element:NodeModel |ConnectorModel =intersectArray[intersectArray.length - 1];
+                    if (element && !(element.shape.type === 'HTML' || element.shape.type === 'Native')){
+                        this.moveForwardSvgNode(nodeId);
+                    }
                     this.updateNativeNodeIndex(nodeIdToUpdate, nodeId);
                 } else {
                     this.diagram.refreshCanvasLayers();
@@ -3434,7 +3459,10 @@ export class CommandHandler {
                 });
                 if (this.diagram.mode === 'SVG') {
                     let nodeIdToUpdate:string  = intersectArray[intersectArray.length - 1].id;
-                    this.moveBackSvgNode(objectId);
+                    let element:NodeModel |ConnectorModel =intersectArray[intersectArray.length - 1];
+                    if (element && !(element.shape.type === 'HTML' || element.shape.type === 'Native')){
+                        this.moveBackSvgNode(objectId);
+                    }
                     const node: NodeModel = this.diagram.nameTable[`${nodeIdToUpdate}`];
                     if (node.children && node.children.length > 0) {
                         this.updateNativeNodeIndex(objectId);

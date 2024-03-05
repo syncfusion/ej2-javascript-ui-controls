@@ -2359,7 +2359,7 @@ export class TaskProcessor extends DateProcessor {
         let deleteUpdate: boolean = false;
         const ganttProp: ITaskData = parentData.ganttProperties;
         if (this.parent.autoCalculateDateScheduling || this.parent.viewType === "ResourceView") {
-            if (parentData.childRecords.length > 0) {
+            if (parentData.childRecords && parentData.childRecords.length > 0) {
                 const previousStartDate: Date = ganttProp.isAutoSchedule ? ganttProp.startDate : ganttProp.autoStartDate;
                 const previousEndDate: Date = ganttProp.isAutoSchedule ? ganttProp.endDate :
                     ganttProp.autoEndDate;

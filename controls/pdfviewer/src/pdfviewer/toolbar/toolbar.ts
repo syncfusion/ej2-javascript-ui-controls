@@ -1077,7 +1077,7 @@ export class Toolbar {
                     this.toolItems.push({ type: 'Separator', align: 'Left', cssClass: 'e-pv-comment-separator-container' });
                     break;
                 case 7:
-                    this.itemsIndexArray.push({item: 'SubmitForm', startIndex: this.toolItems.length, endIndex: this.toolItems.length + 1});
+                    this.itemsIndexArray.push({item: 'SubmitForm', startIndex: this.toolItems.length, endIndex: this.toolItems.length});
                     this.toolItems.push({ template: submitButton, cssClass: 'e-pv-submit', align: 'Left' });
                     break;
                 case 8:

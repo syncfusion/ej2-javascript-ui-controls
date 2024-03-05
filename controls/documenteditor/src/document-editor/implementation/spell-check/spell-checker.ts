@@ -1064,7 +1064,7 @@ export class SpellChecker {
         const pattern: RegExp = this.documentHelper.owner.searchModule.textSearch.stringToRegex((isNullOrUndefined(currentText)) ? (errorElement as TextElementBox).text : currentText, 'CaseSensitive');
         this.textSearchResults.clearResults();
         const results: TextSearchResults = this.textSearchResults;
-        const textLineInfo: TextInLineInfo = this.documentHelper.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false, undefined, undefined, undefined, undefined, undefined, true);
+        const textLineInfo: TextInLineInfo = this.documentHelper.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false, pattern, undefined, undefined, undefined, undefined, true);
         const text: string = textLineInfo.fullText;
         const matches: RegExpExecArray[] = [];
         const spans: any = textLineInfo.elementsWithOffset;

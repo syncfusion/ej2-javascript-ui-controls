@@ -186,7 +186,7 @@ export class PdfGanttTaskbarCollection {
         progressFormat.alignment = PdfTextAlignment.Right;
         let isLabelString: boolean = false;
         let updatedWidth: number;
-        if (!isNullOrUndefined(this.taskLabel) && (/^[a-zA-Z]/.test(this.taskLabel))) {
+        if (!isNullOrUndefined(this.taskLabel) && (/^[a-zA-Z0-9]/.test(this.taskLabel))) {
             isLabelString = true;
             progressFormat.alignment = PdfTextAlignment.Left;
         }

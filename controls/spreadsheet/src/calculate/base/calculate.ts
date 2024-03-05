@@ -770,8 +770,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public addNamedRange(name: string, range: string): boolean {
         const sheetScopeName: string[] = name.split(this.sheetToken);
         if (sheetScopeName.length > 1) {
-            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
-            if (!family.parentObjectToToken.get(sheetScopeName[0])) {
+            const sheetId: (Object | Calculate) = (this.getSheetId(this.grid)).toString();
+            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(sheetId);
+            if (!family.parentObjectToToken.get(sheetId)) {
                 return false;
             }
             name = sheetScopeName[0] + this.sheetToken + sheetScopeName[1].toUpperCase();
@@ -780,6 +781,26 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         this.namedRanges.set(name, range);
         return true;
+    }
+
+    /**
+     * updates the named range collection.
+     *
+     * @param {string} pName - previous name of the sheet.
+     * @param {string} name -  current name of the sheet.
+     */
+    public updateNamedRange(pName: string, name: string): void {
+        const updatedRange: Map<string, string> = new Map<string, string>();
+        this.namedRanges.forEach((value: string, key: string) => {
+            let updatedKey = key;
+            if (key.includes(pName)) {
+                let range: string[] = key.split("!");
+                range[0] = name;
+                updatedKey = range.join("!");
+            }
+            updatedRange.set(updatedKey, value);
+        });
+        this.namedRanges = updatedRange;
     }
 
     /**

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 24.2.9 (2024-03-05)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I870175` - Issue with `getSqlFromRules` method is not return custom value when changing boolean type column value in default complex data binding. has been fixed.
+- `#I556563` - Issue with QueryBuilder validation message position wrong issue while deleting the rule has been fixed.
+
 ## 24.2.8 (2024-02-27)
 
 ### QueryBuilder

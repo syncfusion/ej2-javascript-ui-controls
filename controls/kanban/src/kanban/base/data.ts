@@ -230,6 +230,7 @@ export class Data {
         if (this.initload) {
             this.parent.resetTemplates();
             this.parent.layoutModule.refreshHeaders();
+            this.parent.layoutModule.refreshCards();
             this.parent.renderTemplates();
         }
         this.initload = true;

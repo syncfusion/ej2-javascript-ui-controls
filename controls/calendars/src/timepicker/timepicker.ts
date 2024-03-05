@@ -2490,10 +2490,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }
         }
         removeClass([this.inputWrapper.container], [FOCUS]);
-        const blurArguments: BlurEventArgs = {
-            model: this
-        };
-        this.trigger('blur', blurArguments);
         if (this.getText() !== this.inputElement.value) {
             this.updateValue((this.inputElement).value, e);
         } else if (this.inputElement.value.trim().length === 0) {
@@ -2505,6 +2501,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (this.inputElement.value === '') {
             this.invalidValueString = null;
         }
+        const blurArguments: BlurEventArgs = {
+            model: this
+        };
+        this.trigger('blur', blurArguments);
 
     }
     /**

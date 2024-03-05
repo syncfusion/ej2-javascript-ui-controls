@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-querybuilder",
-	"version": "24.2.5",
+	"version": "24.2.8",
 	"description": "Essential JS 2 QueryBuilder",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -16,6 +16,7 @@
 		"@syncfusion/ej2-splitbuttons": "*"
 	},
 	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.1",
 		"@types/chai": "^3.4.28",
 		"@types/es6-promise": "0.0.28",
 		"@types/jasmine": "2.8.9",

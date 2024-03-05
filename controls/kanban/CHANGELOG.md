@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 24.2.9 (2024-03-05)
+
+### Kanban
+
+#### Bug Fixes
+
+`#I525892` - Now, the card template works properly upon drag-and-drop action in Kanban with remote data.
+
 ## 24.1.47 (2024-01-23)
 
 ### Kanban

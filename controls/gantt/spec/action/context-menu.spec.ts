@@ -1951,4 +1951,73 @@ describe('Context-', () => {
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.endDate, 'M/d/yyyy')).toBe('4/10/2019');
         });
     });
+    describe('CR - 872834 : The context menu using "add child" for any task, dependency line validation is not working properly', () => {
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: editingData,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency:'Predecessor',
+                        child: 'subtasks'
+                    },
+                    enableContextMenu: true,
+                    editSettings: {
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true,
+                        allowAdding: true,
+                    },
+                    toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                    allowSelection: true,
+                    gridLines: "Both",
+                    showColumnMenu: false,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        taskLabel: 'Progress'
+                    },
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    allowParentDependency : false,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
+            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+            setTimeout(done, 500);
+        });
+        it('Add record - Child', () => {
+            let e: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Child' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+            expect(ganttObj.currentViewData[1].ganttProperties.predecessor.length).toBe(0);
+        });
+    });
 });

@@ -102,7 +102,10 @@ export class Signature {
     private signfont: string;
     private signHeight: string;
     private signWidth: string;
-    private signaturetype: string;
+    /**
+     * @private
+     */
+    public signaturetype: string;
     private tabObj: Tab;
     private isSaveSignature: boolean = false;
     private isSaveInitial: boolean = false;
@@ -2256,6 +2259,7 @@ export class Signature {
     public renderSignature(left: number, top: number): void {
         let annot: PdfAnnotationBaseModel;
         // eslint-disable-next-line
+        let signatureData: string = '';
         let currentAnnotation: any = this.pdfViewerBase.currentSignatureAnnot;
         const annotationName: string = this.pdfViewer.annotation.createGUID();
         if (currentAnnotation) {
@@ -2288,7 +2292,14 @@ export class Signature {
             this.pdfViewerBase.signatureAdded = true;
             // eslint-disable-next-line max-len
             this.storeSignatureData(currentAnnotation.pageIndex, annot);
-            this.pdfViewer.fireSignatureAdd(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType, currentAnnotation.bounds, currentAnnotation.opacity, currentAnnotation.strokeColor, currentAnnotation.thickness, currentAnnotation.data);
+            if (this.signaturetype === 'Draw') {
+                signatureData = this.saveImageString;
+            }
+            else {
+                signatureData = currentAnnotation.data;
+            }
+            // eslint-disable-next-line max-len    
+            this.pdfViewer.fireSignatureAdd(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType, currentAnnotation.bounds, currentAnnotation.opacity, currentAnnotation.strokeColor, currentAnnotation.thickness, signatureData);
             this.pdfViewerBase.currentSignatureAnnot = null;
             this.pdfViewerBase.signatureCount++;
         }

@@ -2006,6 +2006,13 @@ export abstract class PdfField {
         this._textAlignment = value;
         this._stringFormat = new PdfStringFormat(value, PdfVerticalAlignment.middle);
     }
+    _parseItems(): PdfWidgetAnnotation[] {
+        const collection: PdfWidgetAnnotation[] = [];
+        for (let i: number = 0; i < this.itemsCount; i++) {
+            collection.push(this.itemAt(i));
+        }
+        return collection;
+    }
 }
 /**
  * `PdfTextBoxField` class represents the text box field objects.

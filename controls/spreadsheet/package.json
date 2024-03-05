@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-spreadsheet",
-	"version": "24.2.7",
+	"version": "24.2.8",
 	"description": "Feature-rich JavaScript Spreadsheet (Excel) control with built-in support for selection, editing, formatting, importing and exporting to Excel",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -15,6 +15,7 @@
 		"@syncfusion/ej2-navigations": "*"
 	},
 	"devDependencies": {
+		"@syncfusion/ej2-staging": "^1.0.1",
 		"@types/chai": "^3.4.28",
 		"@types/jasmine": "2.8.9",
 		"@types/jasmine-ajax": "^3.1.27",

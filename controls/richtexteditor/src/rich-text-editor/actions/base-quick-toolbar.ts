@@ -237,6 +237,9 @@ export class BaseQuickToolbar {
                     this.parent.disableToolbarItem(this.parent.toolbarSettings.items as string[]);
                     this.parent.enableToolbarItem(['Undo', 'Redo']);
                 }
+                else {
+                    this.parent.enableToolbarItem(this.parent.toolbarSettings.items as string[]);
+                }
                 append([this.element], document.body);
                 if (this.parent.showTooltip) {
                     this.tooltip  = new Tooltip({
