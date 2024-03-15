@@ -2,35 +2,13 @@
 
 ## [Unreleased]
 
-## 24.2.9 (2024-03-06)
-
-### ListView
-
-- `#I553202` - Included a new method `unselectItem` for deselecting the items instead of using `selectItem` method with empty arguments.
-
-## 24.2.4 (2024-02-06)
-
-### ListView
-
-#### Bug Fixes
-
-- `#I549283` - The list item checkbox removal instead of disabling in the ListView component has been resolved.
-
-## 24.1.46 (2024-01-17)
+## 25.1.35 (2024-03-15)
 
 ### ListBox
 
 #### Bug Fixes
 
 - Issue with "Script error thrown in list box while dragging the `svg` element" has been resolved.
-
-### ListView
-
-#### Bug fixes
-
-- `#I531520` - The ListView component's title not decoded properly same as in node text has been resolved.
-
-## 24.1.41 (2023-12-18)
 
 ### ListView
 

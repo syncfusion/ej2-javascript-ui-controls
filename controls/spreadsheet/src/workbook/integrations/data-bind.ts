@@ -1,8 +1,8 @@
 import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncfusion/ej2-data';
 import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, isFilterHidden } from '../base/index';
-import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFormat, dataSourceChanged, isNumber } from '../common/index';
-import { ExtendedSheet, ExtendedRange, DateFormatCheckArgs, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
-import { triggerDataChange, UsedRangeModel, getFormattedCellObject, NumberFormatArgs, getAutoDetectFormatParser } from '../index';
+import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, dataSourceChanged } from '../common/index';
+import { ExtendedSheet, ExtendedRange, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
+import { triggerDataChange, UsedRangeModel, getAutoDetectFormatParser } from '../index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**

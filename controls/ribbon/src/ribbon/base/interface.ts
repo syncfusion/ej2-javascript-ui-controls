@@ -1,5 +1,5 @@
 import { BaseEventArgs } from '@syncfusion/ej2-base';
-import { RibbonCollectionModel, RibbonGroupButtonItemModel, RibbonGroupModel, RibbonItemModel, RibbonTooltipModel } from '../models';
+import { RibbonCollectionModel, RibbonGalleryItemModel, RibbonGroupButtonItemModel, RibbonGroupModel, RibbonItemModel, RibbonTooltipModel } from '../models';
 
 /**
  * Defines the layout types of ribbon.
@@ -106,6 +106,10 @@ export enum RibbonItemType {
      */
     GroupButton = 'GroupButton',
     /**
+     * Renders the gallery as ribbon item.
+     */
+    Gallery = 'Gallery',
+    /**
      * Renders the template content as ribbon item.
      */
     Template = 'Template'
@@ -145,6 +149,10 @@ export interface TabSelectingEventArgs extends BaseEventArgs {
      * Defines the index of the selected tab.
      */
     selectedIndex: number;
+    /**
+     * Defines whether the tab is a contextual tab.
+     */
+    isContextual: boolean;
 }
 
 /**
@@ -159,6 +167,10 @@ export interface TabSelectedEventArgs extends BaseEventArgs {
      *  Defines the index of the selected tab.
      */
     selectedIndex: number;
+    /**
+     * Defines whether the tab is a contextual tab.
+     */
+    isContextual: boolean;
 }
 
 /**
@@ -231,6 +243,112 @@ export interface OverflowPopupEventArgs extends BaseEventArgs {
     cancel?: boolean;
 }
 
+/**
+ * Event triggers when the gallery popup open / close.
+ */
+export interface GalleryPopupEventArgs extends BaseEventArgs {
+    /**
+     *  Defines whether to cancel the gallery popup open or close.
+     */
+    cancel: boolean;
+    /**
+     *  Provides the original event.
+     */
+    event: Event;
+    /**
+     *  Specifies name of the event.
+     */
+    name: string;
+}
+
+/**
+ * Event triggers when a user hovers over a gallery item.
+ */
+export interface GalleryHoverEventArgs extends BaseEventArgs {
+    /**
+     *  Provides the original event.
+     */
+    event: Event;
+    /**
+     *  Specifies name of the event.
+     */
+    name: string;
+    /**
+     *  Provides gallery item.
+     */
+    item: RibbonGalleryItemModel;
+}
+
+/**
+ * Event triggers before rendering each gallery item.
+ */
+export interface GalleryItemEventArgs extends BaseEventArgs {
+    /**
+     *  Specifies name of the event.
+     */
+    name: string;
+    /**
+     *  Provides gallery item.
+     */
+    item: RibbonGalleryItemModel;
+}
+
+/**
+ * Event triggers before selecting gallery item.
+ */
+export interface GalleryBeforeSelectEventArgs extends BaseEventArgs {
+    /**
+     *  Provides the previous selected gallery item.
+     */
+    previousItem: RibbonGalleryItemModel;
+    /**
+     *  Provides the current selecting gallery item.
+     */
+    currentItem: RibbonGalleryItemModel;
+    /**
+     *  Defines whether to cancel the selecting event or not.
+     */
+    cancel: boolean;
+    /**
+     *  Specifies name of the event.
+     */
+    name: string;
+    /**
+     *  Provides whether the change is triggered by user interaction.
+     */
+    isInteracted: boolean;
+    /**
+     *  Provides the original event.
+     */
+    event: Event;
+}
+
+/**
+ * Event triggers after selected gallery item.
+ */
+export interface GallerySelectEventArgs extends BaseEventArgs {
+    /**
+     *  Provides the previous selected gallery item.
+     */
+    previousItem: RibbonGalleryItemModel;
+    /**
+     *  Provides the current selected gallery item.
+     */
+    currentItem: RibbonGalleryItemModel;
+    /**
+     *  Specifies name of the event.
+     */
+    name: string;
+    /**
+     *  Provides whether the change is triggered by user interaction.
+     */
+    isInteracted: boolean;
+    /**
+     *  Provides the original event.
+     */
+    event: Event;
+}
+
 /** @hidden */
 export interface itemProps {
     item?: RibbonItemModel;
@@ -274,4 +392,3 @@ export interface ribbonTooltipData {
     id: string,
     data: RibbonTooltipModel
 }
-

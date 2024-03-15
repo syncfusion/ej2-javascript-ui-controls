@@ -874,7 +874,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
 
     private createItems(): void {
         this.focusedIndex = -1;
-        const ul: HTMLElement = this.popupEle.querySelector('.' + SDUL);
+        const ul = this.popupEle.querySelector('.' + SDUL) as HTMLElement;
         for (let index: number = 0; index < this.items.length; index++) {
             const item: SpeedDialItemModel = this.items[parseInt(index.toString(), 10)];
             const li: HTMLElement = this.createElement('li', {
@@ -1234,18 +1234,18 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         this.setRadialCorner();
         const range: RadialSettingsModel = this.getActualRange();
         this.isClock = range.direction === 'Clockwise';
-        const offset: string = formatUnit(range.offset);
+        const offset: string = formatUnit(range.offset as string | number);
         const li: HTMLElement[] = selectAll('.' + SDLI, this.popupEle);
         this.popupEle.style.setProperty(SDRADICALOFFSET, offset);
         this.popupEle.style.setProperty(SDRADICALMINHEIGHT, li[0].offsetHeight + 'px');
         this.popupEle.style.setProperty(SDRADICALMINWIDTH, li[0].offsetWidth + 'px');
-        const availableAngle: number = Math.abs(range.endAngle - range.startAngle);
+        const availableAngle: number = Math.abs((range.endAngle as number) - (range.startAngle as number));
         //Start and end will be same for Middle Center position, hence available angle will 0 or 360.
         const gaps: number = ((availableAngle === 360) || (availableAngle === 0)) ? li.length : li.length - 1;
         const perAngle: number = availableAngle / gaps;
         for (let i: number = 0; i < li.length; i++) {
             const ele: HTMLElement = li[parseInt(i.toString(), 10)];
-            let angle: number = this.isClock ? (range.startAngle + (perAngle * i)) : (range.startAngle - (perAngle * i));
+            let angle: number = this.isClock ? ((range.startAngle as number) + (perAngle * i)) : ((range.startAngle as number) - (perAngle * i));
             angle = angle % 360; // removing the Zerp crossing changes.
             ele.style.setProperty(SDRADICALANGLE, angle + 'deg');
         }
@@ -1263,9 +1263,9 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     // 0,360 is at right, 90 is at Bottom, 180 is at left, 270 is at top
     private getActualRange(): RadialSettingsModel {
         const range: RadialSettingsModel = { offset: this.radialSettings.offset };
-        let start: number = this.radialSettings.startAngle;
-        let end: number = this.radialSettings.endAngle;
-        let isClockwise: boolean;
+        let start = this.radialSettings.startAngle as number;
+        let end = this.radialSettings.endAngle as number;
+        let isClockwise: boolean = false;
         switch (this.position) {
         case 'TopLeft':
         case 'TopRight':
@@ -1379,7 +1379,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     }
     private hidePopupEle(e?: Event): void {
         if (!this.popupEle || !this.isMenuOpen) { return; }
-        const eventArgs: SpeedDialBeforeOpenCloseEventArgs = { element: this.popupEle, event: e, cancel: false };
+        const eventArgs: SpeedDialBeforeOpenCloseEventArgs = { element: this.popupEle, event: e as Event, cancel: false };
         this.trigger('beforeClose', eventArgs, (args: SpeedDialBeforeOpenCloseEventArgs) => {
             if (args.cancel) { return; }
             if (this.animation.effect !== 'None') {
@@ -1388,7 +1388,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
                     timingFunction: 'easeOut'
                 };
                 const eleArray: HTMLElement[] = this.popupTemplate ? [this.popupEle.firstElementChild as HTMLElement] : selectAll('.' + SDLI, this.popupEle);
-                const timeOutInterval: number = this.animation.duration / (eleArray.length + 1);
+                const timeOutInterval: number = this.animation.duration as number / (eleArray.length + 1);
                 closeAnimation.duration = 2 * timeOutInterval;
                 /* To keep the animation smooth, start the animation of the second element when animation first element is half completed */
                 const animateElement: Function = (curIndex: number): void => {
@@ -1435,7 +1435,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     }
     private showPopupEle(e?: Event): void {
         if (!this.popupEle || this.isMenuOpen) { return; }
-        const eventArgs: SpeedDialBeforeOpenCloseEventArgs = { element: this.popupEle, event: e, cancel: false };
+        const eventArgs: SpeedDialBeforeOpenCloseEventArgs = { element: this.popupEle, event: e as Event, cancel: false };
         this.trigger('beforeOpen', eventArgs, (args: SpeedDialBeforeOpenCloseEventArgs) => {
             if (args.cancel) { return; }
             if (this.animation.effect !== 'None' || (animationMode === 'Enable' && this.animation.effect === 'None')) {
@@ -1450,7 +1450,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
                     timingFunction: 'easeIn'
                 };
                 const eleArray: HTMLElement[] = this.popupTemplate ? [this.popupEle.firstElementChild as HTMLElement] : selectAll('.' + SDLI, this.popupEle);
-                const timeOutInterval: number = this.animation.duration / (eleArray.length + 1);
+                const timeOutInterval: number = this.animation.duration as number / (eleArray.length + 1);
                 openAnimation.duration = 2 * timeOutInterval;
                 /* To keep the animation smooth, start the animation of the second element when animation first element is half completed */
                 const animateElement: Function = (curIndex: number): void => {
@@ -1502,7 +1502,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
     private removeOverlayEle(): void {
         if (!this.overlayEle) { return; }
         remove(this.overlayEle);
-        this.overlayEle = undefined;
+        (this.overlayEle as HTMLElement | undefined) = undefined;
     }
 
     private updatePopupItems(): void {
@@ -1583,13 +1583,13 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         if (isRippleEnabled) {
             this.removeRippleEffect();
         }
-        this.removeRippleEffect = null;
+        (this.removeRippleEffect as Function | null) = null;
         this.keyboardModule.destroy();
         this.popupKeyboardModule.destroy();
         this.documentKeyboardModule.destroy();
-        this.keyboardModule = null;
-        this.popupKeyboardModule = null;
-        this.documentKeyboardModule = null;
+        (this.keyboardModule as KeyboardEvents | null) = null;
+        (this.popupKeyboardModule as KeyboardEvents | null) = null;
+        (this.documentKeyboardModule as KeyboardEvents | null) = null;
         EventHandler.remove(this.popupEle, 'click', this.popupClick);
         EventHandler.remove(this.popupEle, 'mouseleave', this.popupMouseLeaveHandle);
     }
@@ -1603,11 +1603,11 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
         if (this.popupEle) {
             this.unwirePopupEvents();
             remove(this.popupEle);
-            this.popupEle = undefined;
+            (this.popupEle as HTMLElement | undefined) = undefined;
         }
         this.removeOverlayEle();
         this.fab.destroy();
-        this.fab = undefined;
+        (this.fab as Fab | undefined) = undefined;
     }
 
     /**
@@ -1618,7 +1618,7 @@ export class SpeedDial extends Component<HTMLButtonElement> implements INotifyPr
      * @returns {void}
      * @private
      */
-    public onPropertyChanged(newProp: SpeedDialModel, oldProp?: SpeedDialModel): void {
+    public onPropertyChanged(newProp: SpeedDialModel, oldProp: SpeedDialModel): void {
         const fabProplist: string[] = ['content', 'cssClass', 'disabled', 'enablePersistence', 'enableRtl', 'iconPosition', 'position', 'target', 'template', 'title', 'visible', 'isPrimary'];
         const fabModel: Object = extend({}, newProp);
         for (const prop of Object.keys(fabModel)) {

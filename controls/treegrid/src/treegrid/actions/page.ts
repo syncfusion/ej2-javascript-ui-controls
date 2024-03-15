@@ -181,7 +181,7 @@ export class Page {
             const parents: ITreeData[] = dm.executeLocal(new Query().where(expanded));
             let visualData: ITreeData[];
             if (isFilterChildHierarchy(this.parent) && (pageingDetails.actionArgs.action !== 'collapse' &&
-                pageingDetails.actionArgs.action !== 'expand')) {
+                pageingDetails.actionArgs.action !== 'expand')){
                 visualData = parents;
             } else {
                 visualData = parents.filter((e: ITreeData) => {

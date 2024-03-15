@@ -124,7 +124,7 @@ export class ImageProperties {
             this.applyImageHeight(); this.isHeightApply = false;
         });
         this.textArea.addEventListener('blur', (): void => {
-            if (this.documentEditor.selection.imageFormat.alternateText != (this.textArea as HTMLInputElement).value) {
+            if (this.documentEditor.selectionModule.imageFormat.alternateText != (this.textArea as HTMLInputElement).value) {
             this.applyImageAlternativeText();
             }
         });
@@ -133,7 +133,7 @@ export class ImageProperties {
         let altText: string = SanitizeHtmlHelper.sanitize((this.textArea as HTMLInputElement).value);
         if(!isNullOrUndefined(altText))
         {
-            this.documentEditor.selection.imageFormat.applyImageAlternativeText(altText);
+            this.documentEditor.selectionModule.imageFormat.applyImageAlternativeText(altText);
         }    
     }
     private onImageWidth(e: KeyboardEventArgs): void {
@@ -161,18 +161,18 @@ export class ImageProperties {
                 height = this.heightNumericBox.max;
             }
             if (!(width === null || height === null)) {
-                this.documentEditor.selection.imageFormat.resize(width, height);
+                this.documentEditor.selectionModule.imageFormat.resize(width, height);
             }
         } else if (this.isMaintainAspectRatio) {
             let width: number = this.widthNumericBox.value;
             if (width > this.widthNumericBox.max) {
                 width = this.widthNumericBox.max;
             }
-            const ratio: number = width / this.documentEditor.selection.imageFormat.width;
+            const ratio: number = width / this.documentEditor.selectionModule.imageFormat.width;
             const height: number = this.heightNumericBox.value * ratio;
             this.heightNumericBox.value = height;
             if (!(width === null || height === null)) {
-                this.documentEditor.selection.imageFormat.resize(width, height);
+                this.documentEditor.selectionModule.imageFormat.resize(width, height);
             }
         }
     }
@@ -181,15 +181,15 @@ export class ImageProperties {
             const width: number = this.widthNumericBox.value;
             const height: number = this.heightNumericBox.value;
             if (!(width === null || height === null)) {
-                this.documentEditor.selection.imageFormat.resize(width, height);
+                this.documentEditor.selectionModule.imageFormat.resize(width, height);
             }
         } else if (this.isMaintainAspectRatio) {
             const height: number = this.heightNumericBox.value;
-            const ratio: number = height / this.documentEditor.selection.imageFormat.height;
+            const ratio: number = height / this.documentEditor.selectionModule.imageFormat.height;
             const width: number = this.widthNumericBox.value * ratio;
             this.widthNumericBox.value = width;
             if (!(width === null || height === null)) {
-                this.documentEditor.selection.imageFormat.resize(width, height);
+                this.documentEditor.selectionModule.imageFormat.resize(width, height);
             }
         }
     }
@@ -211,15 +211,15 @@ export class ImageProperties {
         this.documentEditor.resize();
     }
     public updateImageProperties(): void {
-        this.widthNumericBox.value = this.documentEditor.selection.imageFormat.width;
-        this.heightNumericBox.value = this.documentEditor.selection.imageFormat.height;
-        if(isNullOrUndefined(this.documentEditor.selection.imageFormat.alternateText))
+        this.widthNumericBox.value = this.documentEditor.selectionModule.imageFormat.width;
+        this.heightNumericBox.value = this.documentEditor.selectionModule.imageFormat.height;
+        if(isNullOrUndefined(this.documentEditor.selectionModule.imageFormat.alternateText))
         {
             (this.textArea as HTMLInputElement).value = "";  
         }
         else
         {
-            (this.textArea as HTMLInputElement).value = this.documentEditor.selection.imageFormat.alternateText;  
+            (this.textArea as HTMLInputElement).value = this.documentEditor.selectionModule.imageFormat.alternateText;  
         }  
     }
     public destroy(): void {

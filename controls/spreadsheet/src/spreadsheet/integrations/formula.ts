@@ -23,6 +23,7 @@ export class Formula {
     private isSubFormula: boolean = false;
 
     public autocompleteInstance: AutoComplete;
+    private acInputElement: HTMLInputElement;
 
     /**
      * Constructor for formula module in Spreadsheet.
@@ -58,9 +59,11 @@ export class Formula {
             this.autocompleteInstance.destroy();
             if (this.autocompleteInstance.element) {
                 this.autocompleteInstance.element.remove();
+                this.autocompleteInstance.element = null;
             }
         }
         this.autocompleteInstance = null;
+        if (this.acInputElement) { this.acInputElement.remove(); this.acInputElement = null; }
         this.parent = null;
     }
 
@@ -159,6 +162,7 @@ export class Formula {
             };
             this.autocompleteInstance = new AutoComplete(autoCompleteOptions, acElem);
             this.autocompleteInstance.createElement = this.parent.createElement;
+            this.acInputElement = acElem;
         }
     }
 
@@ -186,7 +190,7 @@ export class Formula {
         let updatedFormulaValue: string = '=' + e.itemData.value + '(';
         if (this.isSubFormula) {
             const editValue: string = this.getEditingValue();
-            let parseIndex: number = editValue.lastIndexOf(this.getArgumentSeparator());
+            let parseIndex: number = editValue.lastIndexOf(this.parent.listSeparator);
             if (parseIndex > -1) {
                 updatedFormulaValue = editValue.slice(0, parseIndex + 1);
             } else {
@@ -333,7 +337,7 @@ export class Formula {
         if (formula) {
             const bracketIndex: number = formula.lastIndexOf('(');
             formula = formula.substr(bracketIndex + 1);
-            const fSplit: string[] = formula.split(this.getArgumentSeparator());
+            const fSplit: string[] = formula.split(this.parent.listSeparator);
             if (fSplit.length === 1) {
                 suggestValue = fSplit[0];
                 this.isSubFormula = bracketIndex > -1;
@@ -376,12 +380,6 @@ export class Formula {
         eventArg['ctrlKey'] = false;
         /* eslint-enable @typescript-eslint/dot-notation */
         autoCompleteElem.dispatchEvent(eventArg);
-    }
-
-    private getArgumentSeparator(): string {
-        const eventArgs: { action: string, argumentSeparator: string } = { action: 'getArgumentSeparator', argumentSeparator: '' };
-        this.parent.notify(workbookFormulaOperation, eventArgs);
-        return eventArgs.argumentSeparator;
     }
 
     private getNames(sheetName?: string): DefineNameModel[] {

@@ -4,7 +4,7 @@ import { _PdfBaseStream, _PdfContentStream } from './../base-stream';
 import { _floatToString, _addProcSet, _reverseMapBlendMode, _mapBlendMode, _getNewGuidString, _getBezierArc, _numberToString, _bytesToString, _stringToUnicodeArray } from './../utils';
 import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
-import { PdfFont, PdfTrueTypeFont } from './../fonts/pdf-standard-font';
+import { PdfFont, PdfStandardFont, PdfTrueTypeFont } from './../fonts/pdf-standard-font';
 import { _PdfStringLayouter, _PdfStringLayoutResult, _LineInfo, _LineType, _StringTokenizer } from './../fonts/string-layouter';
 import { PdfTextAlignment, _PdfGraphicsUnit, PdfTextDirection, PdfSubSuperScript, PdfBlendMode, PdfLineJoin, PdfLineCap, PdfDashStyle, PdfFillMode } from './../enumerator';
 import { PdfStringFormat, PdfVerticalAlignment } from './../fonts/pdf-string-format';
@@ -13,7 +13,7 @@ import { _PdfPath, _PathPointType } from './pdf-path';
 import { _UnicodeTrueTypeFont } from '../fonts/unicode-true-type-font';
 import { _TrueTypeReader } from './../fonts/ttf-reader';
 import { _RtlRenderer } from './../graphics/rightToLeft/text-renderer';
-import { PdfImage} from './images/pdf-image';
+import { PdfImage } from './images/pdf-image';
 /**
  * Represents a graphics from a PDF page.
  * ```typescript
@@ -61,6 +61,15 @@ export class PdfGraphics {
     _isTemplateGraphics: boolean;
     _state: PdfGraphicsState;
     _pendingResource: any[] = []; // eslint-disable-line
+    /**
+     * Initializes a new instance of the `PdfGraphics` class.
+     *
+     * @param {number[]} size The graphics client size.
+     * @param {_PdfContentStream} content Content stream.
+     * @param {_PdfCrossReference} xref Cross reference.
+     * @param {PdfPage | PdfTemplate} source Source object of the graphics.
+     * @private
+     */
     constructor(size: number[], content: _PdfContentStream, xref: _PdfCrossReference, source: PdfPage | PdfTemplate) {
         this._hasResourceReference = false;
         if (source instanceof PdfPage) {
@@ -87,6 +96,27 @@ export class PdfGraphics {
         this._size = size;
         _addProcSet('PDF', this._resourceObject);
         this._initialize();
+    }
+    /**
+     * Gets the size of the canvas reduced by margins and page templates (Read only).
+     *
+     * @returns {number[]} The width and height of the client area as number array.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access first page
+     * let page: PdfPage = document.getPage(0);
+     * // Gets the graphics client size.
+     * let size: number[] = page.graphics.clientSize;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get clientSize(): number[] {
+        return [this._clipBounds[2], this._clipBounds[3]];
     }
     get _matrix(): _PdfTransformationMatrix {
         if (typeof this._m === 'undefined') {
@@ -652,12 +682,193 @@ export class PdfGraphics {
             _addProcSet('Text', this._resourceObject);
         }
     }
+    /**
+     * Draw the PDF template onto the page graphics.
+     *
+     * @param {PdfTemplate} template PDF template.
+     * @param {{x: number, y: number, width: number, height: number}} bounds Bounds.
+     * @param {number} bounds.x value.
+     * @param {number} bounds.y value.
+     * @param {number} bounds.width value.
+     * @param {number} bounds.height value.
+     * @returns {void} Nothing.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Access first page
+     * let page: PdfPage = document.getPage(0);
+     * // Get the first annotation of the page
+     * let annotation: PdfRubberStampAnnotation = page.annotations.at(0) as PdfRubberStampAnnotation;
+     * // Gets the appearance template of the annotation.
+     * let template: PdfTemplate = annotation.createTemplate();
+     * // Gets the graphics of the PDF page
+     * let graphics: PdfGraphics = page.graphics;
+     * //Draw image on the page graphics.
+     * graphics.drawTemplate(template, 10, 20, template.size[0], template.size[1]);
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    drawTemplate(template: PdfTemplate, bounds: {x: number, y: number, width: number, height: number}): void {
+        if (typeof template !== 'undefined') {
+            if (template._isExported) {
+                if (this._crossReference) {
+                    template._crossReference = this._crossReference;
+                    template._importStream(true);
+                } else {
+                    template._importStream(false);
+                    this._pendingResource.push(template);
+                }
+            }
+            const scaleX: number = (template && template._size[0] > 0) ? bounds.width / template._size[0] : 1;
+            const scaleY: number = (template && template._size[1] > 0) ? bounds.height / template._size[1] : 1;
+            const needScale: boolean = !(scaleX === 1 && scaleY === 1);
+            let cropBox: number[];
+            let mediaBox: number[];
+            if (this._page) {
+                cropBox = this._page.cropBox;
+                mediaBox = this._page.mediaBox;
+                if (this._page._pageDictionary.has('CropBox') && this._page._pageDictionary.has('MediaBox')) {
+                    if (cropBox[0] > 0 && cropBox[1] > 0 && mediaBox[0] < 0 && mediaBox[1] < 0) {
+                        this.translateTransform(cropBox[0], -cropBox[1]);
+                        bounds.x = -cropBox[0];
+                        bounds.y = cropBox[1];
+                    }
+                }
+            }
+            const state: PdfGraphicsState = this.save();
+            let matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
+            if (this._page) {
+                const needTransform: boolean = (this._page._pageDictionary.has('CropBox') &&
+                    this._page._pageDictionary.has('MediaBox') && cropBox && mediaBox &&
+                    cropBox[0] === mediaBox[0] && cropBox[1] === mediaBox[1] && cropBox[2] === mediaBox[2] && cropBox[3] === mediaBox[3]) ||
+                    (this._page._pageDictionary.has('MediaBox') && mediaBox && mediaBox[3] === 0);
+                matrix._translate(bounds.x, -(bounds.y + ((this._page._origin[0] >= 0 || needTransform) ? bounds.height : 0)));
+            } else {
+                matrix._translate(bounds.x, -(bounds.y + bounds.height));
+            }
+            if (needScale) {
+                if (template._isAnnotationTemplate && template._needScale) {
+                    let scaleApplied: boolean = false;
+                    if (template._content && template._content.dictionary) {
+                        const dictionary: _PdfDictionary = template._content.dictionary;
+                        if (dictionary.has('Matrix') && dictionary.has('BBox')) {
+                            const templateMatrix: number[] = dictionary.getArray('Matrix');
+                            const templateBox: number[] = dictionary.getArray('BBox');
+                            if (templateMatrix && templateBox && templateMatrix.length > 5 && templateBox.length > 3) {
+                                const templateScaleX: number = Number.parseFloat(_numberToString(-templateMatrix[1]));
+                                const templateScaleY: number = Number.parseFloat(_numberToString(templateMatrix[2]));
+                                const roundScaleX: number = Number.parseFloat(_numberToString(scaleX));
+                                const roundScaleY: number = Number.parseFloat(_numberToString(scaleY));
+                                if (roundScaleX === templateScaleX &&
+                                    roundScaleY === templateScaleY &&
+                                    templateBox[2] === template._size[0] &&
+                                    templateBox[3] === template._size[1]) {
+                                    matrix = new _PdfTransformationMatrix();
+                                    matrix._translate(bounds.x - templateMatrix[4], bounds.y + templateMatrix[5]);
+                                    matrix._scale(1, 1);
+                                    scaleApplied = true;
+                                }
+                            }
+                        }
+                    }
+                    if (!scaleApplied) {
+                        matrix._scale(scaleX, scaleY);
+                    }
+                } else {
+                    matrix._scale(scaleX, scaleY);
+                }
+            }
+            this._sw._modifyCtm(matrix);
+            let sourceDictionary: _PdfDictionary;
+            let isReference: boolean = false;
+            let keyName: _PdfName;
+            let isNew: boolean = true;
+            let ref: _PdfReference;
+            if (this._resourceObject.has('XObject')) {
+                const obj: any = this._resourceObject.getRaw('XObject'); // eslint-disable-line
+                if (obj instanceof _PdfReference) {
+                    isReference = true;
+                    sourceDictionary = this._crossReference._fetch(obj);
+                } else if (obj instanceof _PdfDictionary) {
+                    sourceDictionary = obj;
+                }
+                if (sourceDictionary) {
+                    isNew = false;
+                    this._resources.forEach((value: _PdfName, key: _PdfReference) => {
+                        if (key && key instanceof _PdfReference) {
+                            const base: _PdfBaseStream = this._crossReference._fetch(key);
+                            if (base && template && base === template._content) {
+                                keyName = value;
+                                ref = key;
+                            }
+                        }
+                    });
+                }
+            }
+            if (isNew) {
+                sourceDictionary = new _PdfDictionary(this._crossReference);
+                this._resourceObject.update('XObject', sourceDictionary);
+            }
+            if (typeof keyName === 'undefined') {
+                keyName = _PdfName.get(_getNewGuidString());
+                if (template && template._content.reference) {
+                    ref = template._content.reference;
+                } else if (this._crossReference) {
+                    ref = this._crossReference._getNextReference();
+                } else {
+                    this._pendingResource.push({'resource': template._content, 'key': keyName, 'source': sourceDictionary});
+                }
+                if (ref && this._crossReference) {
+                    if (!this._crossReference._cacheMap.has(ref) && template && template._content) {
+                        this._crossReference._cacheMap.set(ref, template._content);
+                    }
+                    sourceDictionary.update(keyName.name, ref);
+                    this._resources.set(ref, keyName);
+                }
+                this._resourceObject._updated = true;
+            }
+            if (isReference) {
+                this._resourceObject._updated = true;
+            }
+            if (this._hasResourceReference) {
+                this._source._updated = true;
+            }
+            this._sw._executeObject(keyName);
+            this.restore(state);
+            _addProcSet('ImageB', this._resourceObject);
+            _addProcSet('ImageC', this._resourceObject);
+            _addProcSet('ImageI', this._resourceObject);
+            _addProcSet('Text', this._resourceObject);
+        }
+    }
     _processResources(crossReference: _PdfCrossReference): void {
+        this._crossReference = crossReference;
         if (this._pendingResource.length > 0) {
             for (let i: number = 0; i < this._pendingResource.length; i++) {
                 const entry: any = this._pendingResource[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
-                if (entry.resource instanceof PdfImage) {
+                if (entry instanceof PdfTemplate) {
+                    entry._crossReference = crossReference;
+                    entry._updatePendingResource(crossReference);
+                } else if (entry.resource instanceof _PdfBaseStream) {
+                    let reference: _PdfReference;
+                    if (entry.resource._reference) {
+                        reference = entry.resource._reference;
+                    } else {
+                        reference = crossReference._getNextReference();
+                        entry.resource._reference = reference;
+                    }
+                    if (!crossReference._cacheMap.has(reference) && entry.resource) {
+                        crossReference._cacheMap.set(reference, entry.resource);
+                    }
+                    entry.source.update(entry.key.name, reference);
+                    this._resources.set(reference, entry.key);
+                } else if (entry.resource instanceof PdfImage) {
                     this._updateImageResource(entry.resource, entry.key, entry.source, crossReference);
+                } else if (entry.resource instanceof PdfFont) {
+                    this._updateFontResource(entry.resource, entry.key, entry.source, crossReference);
                 }
                 this._source.update('Resources', this._resourceObject);
                 this._source._updated = true;
@@ -666,142 +877,57 @@ export class PdfGraphics {
         }
     }
     _updateImageResource(image: PdfImage, keyName: _PdfName, source: _PdfDictionary, crossReference: _PdfCrossReference): void {
-        let ref: _PdfReference;
+        let reference: _PdfReference;
         if (image._reference) {
-            ref = image._reference;
+            reference = image._reference;
         } else {
-            ref = crossReference._getNextReference();
-            image._reference = ref;
+            reference = crossReference._getNextReference();
+            image._reference = reference;
         }
-        if (!crossReference._cacheMap.has(ref)) {
+        if (!crossReference._cacheMap.has(reference)) {
             if (image && image._imageStream && image._imageStream.dictionary) {
-                crossReference._cacheMap.set(ref, image._imageStream);
+                crossReference._cacheMap.set(reference, image._imageStream);
                 image._imageStream.dictionary._updated = true;
+                if (image._maskStream && image._maskStream.dictionary) {
+                    let ref: _PdfReference;
+                    if (image._maskReference) {
+                        ref = image._maskReference;
+                    } else {
+                        ref = crossReference._getNextReference();
+                        image._maskReference = ref;
+                    }
+                    crossReference._cacheMap.set(ref, image._maskStream);
+                    image._maskStream.dictionary._updated = true;
+                    image._imageStream.dictionary.set('SMask', ref);
+                }
             }
         }
-        source.update(keyName.name, ref);
-        this._resources.set(ref, keyName);
+        source.update(keyName.name, reference);
+        this._resources.set(reference, keyName);
         this._resourceObject._updated = true;
     }
-    _drawTemplate(template: PdfTemplate, bounds: {x: number, y: number, width: number, height: number}): void {
-        const scaleX: number = (template && template._size[0] > 0) ? bounds.width / template._size[0] : 1;
-        const scaleY: number = (template && template._size[1] > 0) ? bounds.height / template._size[1] : 1;
-        const needScale: boolean = !(scaleX === 1 && scaleY === 1);
-        let cropBox: number[];
-        let mediaBox: number[];
-        if (this._page) {
-            cropBox = this._page.cropBox;
-            mediaBox = this._page.mediaBox;
-            if (this._page._pageDictionary.has('CropBox') && this._page._pageDictionary.has('MediaBox')) {
-                if (cropBox[0] > 0 && cropBox[1] > 0 && mediaBox[0] < 0 && mediaBox[1] < 0) {
-                    this.translateTransform(cropBox[0], -cropBox[1]);
-                    bounds.x = -cropBox[0];
-                    bounds.y = cropBox[1];
-                }
-            }
-        }
-        const state: PdfGraphicsState = this.save();
-        let matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
-        if (this._page) {
-            const needTransform: boolean = (this._page._pageDictionary.has('CropBox') &&
-                this._page._pageDictionary.has('MediaBox') && cropBox && mediaBox &&
-                cropBox[0] === mediaBox[0] && cropBox[1] === mediaBox[1] && cropBox[2] === mediaBox[2] && cropBox[3] === mediaBox[3]) ||
-                (this._page._pageDictionary.has('MediaBox') && mediaBox && mediaBox[3] === 0);
-            matrix._translate(bounds.x, -(bounds.y + ((this._page._origin[0] >= 0 || needTransform) ? bounds.height : 0)));
+    _updateFontResource(font: PdfFont, keyName: _PdfName, source: _PdfDictionary, crossReference: _PdfCrossReference): void {
+        let reference: _PdfReference;
+        if (font._reference) {
+            reference = font._reference;
         } else {
-            matrix._translate(bounds.x, -(bounds.y + bounds.height));
+            reference = crossReference._getNextReference();
+            font._reference = reference;
         }
-        if (needScale) {
-            if (template._isAnnotationTemplate && template._needScale) {
-                let scaleApplied: boolean = false;
-                if (template._content && template._content.dictionary) {
-                    const dictionary: _PdfDictionary = template._content.dictionary;
-                    if (dictionary.has('Matrix') && dictionary.has('BBox')) {
-                        const templateMatrix: number[] = dictionary.getArray('Matrix');
-                        const templateBox: number[] = dictionary.getArray('BBox');
-                        if (templateMatrix && templateBox && templateMatrix.length > 5 && templateBox.length > 3) {
-                            const templateScaleX: number = Number.parseFloat(_numberToString(-templateMatrix[1]));
-                            const templateScaleY: number = Number.parseFloat(_numberToString(templateMatrix[2]));
-                            const roundScaleX: number = Number.parseFloat(_numberToString(scaleX));
-                            const roundScaleY: number = Number.parseFloat(_numberToString(scaleY));
-                            if (roundScaleX === templateScaleX &&
-                                roundScaleY === templateScaleY &&
-                                templateBox[2] === template._size[0] &&
-                                templateBox[3] === template._size[1]) {
-                                matrix = new _PdfTransformationMatrix();
-                                matrix._translate(bounds.x - templateMatrix[4], bounds.y + templateMatrix[5]);
-                                matrix._scale(1, 1);
-                                scaleApplied = true;
-                            }
-                        }
-                    }
+        if (!crossReference._cacheMap.has(reference)) {
+            if (font._dictionary) {
+                crossReference._cacheMap.set(reference, font._dictionary);
+                source.update(keyName.name, reference);
+                this._resources.set(reference, keyName);
+            } else if (font instanceof PdfTrueTypeFont) {
+                const internal: _UnicodeTrueTypeFont = font._fontInternal;
+                if (internal && internal._fontDictionary) {
+                    crossReference._cacheMap.set(reference, internal._fontDictionary);
                 }
-                if (!scaleApplied) {
-                    matrix._scale(scaleX, scaleY);
-                }
-            } else {
-                matrix._scale(scaleX, scaleY);
+                source.update(keyName.name, reference);
+                this._resources.set(reference, keyName);
             }
         }
-        this._sw._modifyCtm(matrix);
-        let sourceDictionary: _PdfDictionary;
-        let isReference: boolean = false;
-        let keyName: _PdfName;
-        let isNew: boolean = true;
-        let ref: _PdfReference;
-        if (this._resourceObject.has('XObject')) {
-            const obj: any = this._resourceObject.getRaw('XObject'); // eslint-disable-line
-            if (obj instanceof _PdfReference) {
-                isReference = true;
-                sourceDictionary = this._crossReference._fetch(obj);
-            } else if (obj instanceof _PdfDictionary) {
-                sourceDictionary = obj;
-            }
-            if (sourceDictionary) {
-                isNew = false;
-                this._resources.forEach((value: _PdfName, key: _PdfReference) => {
-                    if (key && key instanceof _PdfReference) {
-                        const base: _PdfBaseStream = this._crossReference._fetch(key);
-                        if (base && template && base === template._content) {
-                            keyName = value;
-                            ref = key;
-                        }
-                    }
-                });
-            }
-        }
-        if (isNew) {
-            sourceDictionary = new _PdfDictionary(this._crossReference);
-            this._resourceObject.update('XObject', sourceDictionary);
-        }
-        if (typeof keyName === 'undefined') {
-            keyName = _PdfName.get(_getNewGuidString());
-            if (template && template._content.reference) {
-                ref = template._content.reference;
-            } else {
-                ref = this._crossReference._getNextReference();
-            }
-            if (!this._crossReference._cacheMap.has(ref)) {
-                if (template && template._content) {
-                    this._crossReference._cacheMap.set(ref, template._content);
-                }
-            }
-            sourceDictionary.update(keyName.name, ref);
-            this._resources.set(ref, keyName);
-            this._resourceObject._updated = true;
-        }
-        if (isReference) {
-            this._resourceObject._updated = true;
-        }
-        if (this._hasResourceReference) {
-            this._source._updated = true;
-        }
-        this._sw._executeObject(keyName);
-        this.restore(state);
-        _addProcSet('ImageB', this._resourceObject);
-        _addProcSet('ImageC', this._resourceObject);
-        _addProcSet('ImageI', this._resourceObject);
-        _addProcSet('Text', this._resourceObject);
     }
     _drawPath(path: _PdfPath, pen?: PdfPen, brush?: PdfBrush): void {
         if (pen || brush) {
@@ -1022,53 +1148,75 @@ export class PdfGraphics {
     _fontControl(font: PdfFont, format: PdfStringFormat): void {
         const size: number = font._metrics._getSize(format);
         this._currentFont = font;
-        let fontDict: _PdfDictionary;
+        let sourceDictionary: _PdfDictionary;
         let isReference: boolean = false;
         let keyName: _PdfName;
         let isNew: boolean = true;
         let ref: _PdfReference;
+        let hasResource: boolean = false;
         if (this._resourceObject.has('Font')) {
             const obj: any = this._resourceObject.getRaw('Font'); // eslint-disable-line
             if (obj !== null && typeof obj !== 'undefined') {
                 if (obj instanceof _PdfReference) {
                     isReference = true;
-                    fontDict = this._crossReference._fetch(obj);
+                    sourceDictionary = this._crossReference._fetch(obj);
                 } else if (obj instanceof _PdfDictionary) {
-                    fontDict = obj;
+                    sourceDictionary = obj;
                 }
             }
-            if (typeof fontDict !== 'undefined' && fontDict !== null) {
+            if (typeof sourceDictionary !== 'undefined' && sourceDictionary !== null) {
                 isNew = false;
                 this._resources.forEach((value: _PdfName, key: _PdfReference) => {
-                    if (key !== null && typeof key !== 'undefined') {
-                        const dictionary: _PdfDictionary = this._crossReference._fetch(key);
-                        if (dictionary && dictionary === font._dictionary) {
-                            keyName = value;
-                            ref = key;
+                    if (this._crossReference) {
+                        if (key !== null && typeof key !== 'undefined') {
+                            const dictionary: _PdfDictionary = this._crossReference._fetch(key);
+                            if (dictionary && ((font instanceof PdfStandardFont && dictionary === font._dictionary) ||
+                                (font instanceof PdfTrueTypeFont && dictionary === font._fontInternal._fontDictionary))) {
+                                keyName = value;
+                                ref = key;
+                                hasResource = true;
+                            }
                         }
+                    } else if (font._reference && font._reference === key) {
+                        keyName = value;
+                        ref = key;
+                        hasResource = true;
                     }
                 });
             }
         }
         if (isNew) {
-            fontDict = new _PdfDictionary(this._crossReference);
-            this._resourceObject.update('Font', fontDict);
+            sourceDictionary = new _PdfDictionary(this._crossReference);
+            this._resourceObject.update('Font', sourceDictionary);
         }
         if (typeof keyName === 'undefined') {
             keyName = _PdfName.get(_getNewGuidString());
             if (!ref) {
-                ref = this._crossReference._getNextReference();
-            }
-            if (font._dictionary) {
-                this._crossReference._cacheMap.set(ref, font._dictionary);
-                fontDict.update(keyName.name, ref);
-                this._resources.set(ref, keyName);
-            } else if (font instanceof PdfTrueTypeFont) {
-                const internal: _UnicodeTrueTypeFont = font._fontInternal;
-                if (internal && internal._fontDictionary) {
-                    this._crossReference._cacheMap.set(ref, internal._fontDictionary);
+                if (font._reference) {
+                    ref = font._reference;
+                    sourceDictionary.update(keyName.name, ref);
+                } else if (this._crossReference) {
+                    ref = this._crossReference._getNextReference();
+                } else {
+                    this._pendingResource.push({'resource': font, 'key': keyName, 'source': sourceDictionary});
                 }
-                fontDict.update(keyName.name, ref);
+            }
+            if (ref && this._crossReference) {
+                if (!font._reference) {
+                    font._reference = ref;
+                }
+                if (font._dictionary) {
+                    this._crossReference._cacheMap.set(ref, font._dictionary);
+                    sourceDictionary.update(keyName.name, ref);
+                } else if (font instanceof PdfTrueTypeFont) {
+                    const internal: _UnicodeTrueTypeFont = font._fontInternal;
+                    if (internal && internal._fontDictionary) {
+                        this._crossReference._cacheMap.set(ref, internal._fontDictionary);
+                    }
+                    sourceDictionary.update(keyName.name, ref);
+                }
+            }
+            if (!hasResource) {
                 this._resources.set(ref, keyName);
             }
         }
@@ -1182,7 +1330,7 @@ export class PdfGraphics {
     }
     _applyStringSettings(font: PdfFont, pen: PdfPen, brush: PdfBrush, format: PdfStringFormat): void {
         let tm: _TextRenderingMode = _TextRenderingMode.fill;
-        if (pen != null && brush != null) {
+        if (pen !== null && brush !== null) {
             tm = _TextRenderingMode.fillStroke;
         } else if (pen) {
             tm = _TextRenderingMode.stroke;
@@ -1296,7 +1444,7 @@ export class PdfGraphics {
                     format.paragraphIndent = 0;
                 }
                 let spaceWidth: number = font._getCharacterWidth(_StringTokenizer._whiteSpace, format) + wordSpacing;
-                const characterSpacing: number = (format != null) ? format.characterSpacing : 0;
+                const characterSpacing: number = (format !== null) ? format.characterSpacing : 0;
                 const wordSpace: number = (format !== null && typeof format !== 'undefined' && wordSpacing === 0) ? format.wordSpacing : 0;
                 spaceWidth += characterSpacing + wordSpace;
                 for (let i: number = 0; i < blocks.length; i++) {
@@ -1917,6 +2065,15 @@ export class PdfGraphics {
         }
         input._scale(x, y);
         return input;
+    }
+    _clipTranslateMargins(clipBounds: number[]): void {
+        this._clipBounds = clipBounds;
+        this._sw._writeComment('Clip margins.');
+        this._sw._appendRectangle(clipBounds[0], clipBounds[1], clipBounds[2], clipBounds[3]);
+        this._sw._closePath();
+        this._sw._clipPath(false);
+        this._sw._writeComment('Translate co-ordinate system.');
+        this.translateTransform(clipBounds[0], clipBounds[1]);
     }
 }
 export class _PdfTransformationMatrix {

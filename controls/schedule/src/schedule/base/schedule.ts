@@ -3051,9 +3051,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @function setResourceCollections
      * @param {ResourcesModel[]} resourceCol Accepts the resource collections in ResourcesModel type
+     * @param {boolean} isEventDataRefresh Accepts the boolean to refresh the appointment data source from remote or local
      * @returns {void}
      */
-    public setResourceCollections(resourceCol: ResourcesModel[]): void {
+    public setResourceCollections(resourceCol: ResourcesModel[], isEventDataRefresh: boolean = true): void {
+        if (!isEventDataRefresh && this.uiStateValues) {
+            this.uiStateValues.isPreventEventRefresh = true;
+        }
         this.setProperties({ resources: resourceCol }, false);
     }
 
@@ -3179,6 +3183,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.iCalendarExportModule) {
             this.iCalendarExportModule.initializeCalendarExport(fileName, customData);
         } else {
+            console.warn('[WARNING] :: Module "ICalendarExport" is not available in Schedule component!' +
+                ' You either misspelled the module name or forgot to load it.');
             throw Error('Inject ICalendarExport module');
         }
     }
@@ -3195,6 +3201,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.iCalendarImportModule) {
             this.iCalendarImportModule.initializeCalendarImport(fileContent);
         } else {
+            console.warn('[WARNING] :: Module "ICalendarImport" is not available in Schedule component!' +
+                ' You either misspelled the module name or forgot to load it.');
             throw Error('Inject ICalendarImport module');
         }
     }
@@ -3242,6 +3250,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.excelExportModule) {
             this.excelExportModule.initializeExcelExport(excelExportOptions);
         } else {
+            console.warn('[WARNING] :: Module "ExcelExport" is not available in Schedule component!' +
+                ' You either misspelled the module name or forgot to load it.');
             throw Error('Inject ExcelExport module');
         }
     }
@@ -3258,6 +3268,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.printModule) {
             this.printModule.print(printOptions);
         } else {
+            console.warn('[WARNING] :: Module "Print" is not available in Schedule component!' +
+                ' You either misspelled the module name or forgot to load it.');
             throw Error('Inject Print module');
         }
     }
@@ -3551,6 +3563,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * To check whether the given time range slots are available for event creation or already occupied by other events.
+     * This method currently focuses on validating appointments within the current view date range.
+     * However, it does not extend this availability check to recurrence occurrences outside of the current date range.
      *
      * @function isSlotAvailable
      * @param {Date | Object} startTime Denotes the start time of the slot.

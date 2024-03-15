@@ -188,14 +188,14 @@ describe('Button', () => {
         });
 
         it('Enable Html Sanitizer testing', () => {
-            button = new Button({ content: 'Button<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: true }, '#button');
+            button = new Button({ content: 'Button<style>body{background:rgb(0, 0, 255)}</style>' }, '#button');
             const htmlele: Element = document.body;
             expect(button.content).toEqual('Button<style>body{background:rgb(0, 0, 255)}</style>');
             expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
         });
 
         it('Enable Html Sanitizer disabled testing', () => {
-            button = new Button({ content: '<style>body{background:rgb(0, 0, 255)}</style>' }, '#button');
+            button = new Button({ content: '<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: false }, '#button');
             const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         });

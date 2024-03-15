@@ -14,6 +14,7 @@ import { PdfFontFamily, PdfStandardFont, PdfFont, PdfFontStyle, PdfTrueTypeFont 
 import { PdfAppearance } from './../annotations/pdf-appearance';
 import { _PdfPath } from './../graphics/pdf-path';
 import { PdfAnnotationCollection } from '../annotations/annotation-collection';
+import { PdfFieldActions } from '../pdf-action';
 /**
  * `PdfField` class represents the base class for form field objects.
  * ```typescript
@@ -1895,17 +1896,17 @@ export abstract class PdfField {
             const graphics: PdfGraphics = page.graphics;
             graphics.save();
             if (page.rotation === PdfRotationAngle.angle90) {
-                graphics.translateTransform(graphics._size[0], graphics._size[1]);
+                graphics.translateTransform(graphics._size[1], 0);
                 graphics.rotateTransform(90);
             } else if (page.rotation === PdfRotationAngle.angle180) {
                 graphics.translateTransform(graphics._size[0], graphics._size[1]);
                 graphics.rotateTransform(-180);
             } else if (page.rotation === PdfRotationAngle.angle270) {
-                graphics.translateTransform(graphics._size[0], graphics._size[1]);
+                graphics.translateTransform(0, graphics._size[0]);
                 graphics.rotateTransform(270);
             }
             graphics._sw._setTextRenderingMode(_TextRenderingMode.fill);
-            graphics._drawTemplate(template, bounds);
+            graphics.drawTemplate(template, bounds);
             graphics.restore();
         }
     }
@@ -2835,7 +2836,7 @@ export class PdfTextBoxField extends PdfField {
                         graphics.rotateTransform(270);
                     }
                     bounds = {x: source.bounds.x, y: source.bounds.y, width: template._size[0], height: template._size[1]};
-                    graphics._drawTemplate(template, bounds);
+                    graphics.drawTemplate(template, bounds);
                     graphics.restore();
                 }
                 source._dictionary._updated = false;
@@ -3101,6 +3102,7 @@ export class PdfTextBoxField extends PdfField {
 export class PdfButtonField extends PdfField {
     _text: string;
     _appearance: PdfAppearance;
+    _actions: PdfFieldActions;
     /**
      * Represents a button field of the PDF document.
      *
@@ -3116,7 +3118,7 @@ export class PdfButtonField extends PdfField {
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
-     * // Gets the first page of the document
+     * // Get the first page of the document
      * let page: PdfPage = document.getPage(0);
      * // Access the PDF form
      * let form: PdfForm = document.form;
@@ -3136,6 +3138,30 @@ export class PdfButtonField extends PdfField {
         if (page && name && bounds) {
             this._initialize(page, name, bounds);
         }
+    }
+    /**
+     * Gets the actions of the field. [Read-Only]
+     *
+     * @returns {PdfFieldActions} The actions.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access button field
+     * let field: PdfButtonField = document.form.fieldAt(0) as PdfButtonField;
+     * // Get the action value from button field
+     * let action: PdfAction = field.actions.mouseEnter;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    get actions(): PdfFieldActions {
+        if (!this._actions) {
+            this._actions = new PdfFieldActions(this);
+        }
+        return this._actions;
     }
     /**
      * Gets value of the text box field.
@@ -3538,7 +3564,7 @@ export class PdfButtonField extends PdfField {
                         graphics.rotateTransform(270);
                     }
                     bounds = {x: source.bounds.x, y: source.bounds.y, width: template._size[0], height: template._size[1]};
-                    graphics._drawTemplate(template, bounds);
+                    graphics.drawTemplate(template, bounds);
                     graphics.restore();
                 }
                 source._dictionary._updated = false;
@@ -4075,7 +4101,7 @@ export class PdfCheckBoxField extends PdfField {
                                 if (this._setAppearance || this._form._setAppearance || !item._dictionary.has('AP')) {
                                     template = this._createAppearance(item, state);
                                 } else {
-                                    template = _getStateTemplate(state, this);
+                                    template = _getStateTemplate(state, item);
                                 }
                                 this._drawTemplate(template, item._getPage(), item.bounds);
                             } else if (this._setAppearance || this._form._setAppearance || !item._isLoaded) {
@@ -4649,7 +4675,7 @@ export class PdfRadioButtonListField extends PdfField {
                             if (this._setAppearance || this._form._setAppearance || !item._dictionary.has('AP')) {
                                 template = this._createAppearance(item, state);
                             } else {
-                                template = _getStateTemplate(state, this);
+                                template = _getStateTemplate(state, item);
                             }
                             this._drawTemplate(template, item._getPage(), item.bounds);
                         } else if (this._setAppearance || this._form._setAppearance || !item._isLoaded) {
@@ -6909,21 +6935,22 @@ export class PdfSignatureField extends PdfField {
                         const graphics: PdfGraphics = page.graphics;
                         const state: PdfGraphicsState = graphics.save();
                         if (page.rotation !== PdfRotationAngle.angle0) {
-                            graphics._drawTemplate(template, this._calculateTemplateBounds(bounds, page, template, graphics));
+                            graphics.drawTemplate(template, this._calculateTemplateBounds(bounds, page, template, graphics));
                         } else {
-                            graphics._drawTemplate(template, bounds);
+                            graphics.drawTemplate(template, bounds);
                         }
                         graphics.restore(state);
                     }
                 }
             }
         } else if (signatureTemplate && page) {
+            template = signatureTemplate;
             const graphics: PdfGraphics = page.graphics;
             const state: PdfGraphicsState = graphics.save();
             if (page.rotation !== PdfRotationAngle.angle0) {
-                graphics._drawTemplate(template, this._calculateTemplateBounds(bounds, page, template, graphics));
+                graphics.drawTemplate(template, this._calculateTemplateBounds(bounds, page, template, graphics));
             } else {
-                graphics._drawTemplate(template, bounds);
+                graphics.drawTemplate(template, bounds);
             }
             graphics.restore(state);
         }

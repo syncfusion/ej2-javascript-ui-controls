@@ -137,6 +137,23 @@ export class CellEdit {
      * @private
      */
     public initiateCellEdit(args: object, editedObj: object): void {
+        let isValid: boolean = true;
+        if (args['name'] == 'actionComplete' && args['previousData'] == args['data'][args['column'].field]) {
+            isValid = false;
+        }
+        if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent']('Edit')) {
+            if (isValid) {
+                if (this.parent.undoRedoModule['redoEnabled']) {
+                    this.parent.undoRedoModule['disableRedo']();
+                }
+                this.parent.undoRedoModule['createUndoCollection']();
+                let action: Object = {};
+                action['action'] = 'CellEditing';
+                action['editedColumn'] = args['column'].field;
+                action['modifiedRecords'] = [];
+                this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] = action;
+            }
+        }
         const column: ColumnModel = getValue('column', args);
         const data: IGanttData = getValue('data', args);
         const editedArgs: ITaskbarEditedEventArgs = {};
@@ -566,6 +583,9 @@ export class CellEdit {
      */
     private workEdited(editedArgs: ITaskbarEditedEventArgs): void {
         const ganttProb: ITaskData = editedArgs.data.ganttProperties;
+        if(editedArgs.data[this.parent.taskFields.work] < 0) {
+            editedArgs.data[this.parent.taskFields.work] = 0;
+        }
         const workValue: number = editedArgs.data[this.parent.taskFields.work];
         this.parent.setRecordValue('work', workValue, ganttProb, true);
         this.parent.editModule.updateResourceRelatedFields(editedArgs.data, 'work');

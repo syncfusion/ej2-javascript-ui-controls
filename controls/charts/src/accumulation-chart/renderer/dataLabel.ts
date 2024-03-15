@@ -803,7 +803,7 @@ export class AccumulationDataLabel extends AccumulationBase {
                         point.transform = rotate;
                         dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(
                             id + 'shape_' + point.index, point.argsData.color, point.argsData.border, 1,
-                            point.labelRegion, dataLabel.rx, dataLabel.ry, rotate));
+                            point.labelRegion, dataLabel.rx, dataLabel.ry, rotate, series.dataLabel.border.dashArray));
                         appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null,
                                            false, false, null, this.accumulation.duration);
                         textElement(

@@ -2,12 +2,10 @@
  * Gantt Splitter spec
  */
 import { Gantt } from '../../src/index';
-import { baselineData } from '../base/data-source.spec';
+import { baselineData, projectData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
 import { ISplitterResizedEventArgs } from '../../src/gantt/base/interface';
-import { EmitType } from '@syncfusion/ej2-base';
-import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 
 describe('Gantt splitter support', () => {
     describe('Gantt splitter action', () => {
@@ -113,6 +111,68 @@ describe('Gantt splitter support', () => {
             expect(ganttObj.splitterModule.splitterObject['properties']['separatorSize']).toBe(4);
         });
     });
+    describe('Splitter setting columnIndex when column is not visible', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: [{
+                        taskID: 1,
+                        taskName: 'Project schedule',
+                        startDate: new Date('02/08/2019'),
+                        endDate: new Date('03/15/2019')
+                    }],
+                    taskFields: {
+                        id: 'taskID',
+                        name: 'taskName',
+                        startDate: 'startDate',
+                        endDate: 'endDate',
+                        duration: 'duration',
+                        progress: 'progress',
+                        dependency: 'predecessor',
+                        child: 'subtasks',
+                    },
+                    height: '503px',
+                    highlightWeekends: true,
+                    gridLines: "Both",
+                    projectStartDate: new Date('02/03/2019'),
+                    projectEndDate: new Date('03/23/2019'),
+                    timelineSettings: {
+                        topTier: {
+                            format: 'MMM dd, yyyy',
+                            unit: 'Week',
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                        }
+                    },
+                    splitterSettings: {
+                        columnIndex: 1
+                    },
+                    treeColumnIndex: 1,
+                    labelSettings: {
+                        rightLabel: 'taskName',
+                    },
+                    columns: [
+                        { field: 'taskID', visible: false },
+                        { field: 'taskName', headerText: 'Name', width: 400 },
+                        { field: 'StartDate', headerText: 'Start Date', type: 'date', format: 'yMd' },
+                        { field: 'endDate', headerText: 'End Date', type: 'date', format: 'yMd' },
+                        { field: 'duration', headerText: 'Duration' },
+                        { field: 'predecessor', headerText: 'Dependency' },
+                        { field: 'progress', headerText: 'Progress' }
+                    ]
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Column index position column visible is set to false', () => {
+            expect((document.getElementsByClassName('e-split-bar')[0] as HTMLElement).style.order).toBe('1');
+        });
+    });
     describe('Schedule mode', () => {
         let ganttObj: Gantt;
 
@@ -179,7 +239,6 @@ describe('Gantt splitter support', () => {
         });
     });
 });
-
 
 
 describe('Schedule mode', () => {

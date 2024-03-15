@@ -104,7 +104,9 @@ export const detailLists: {[key: string]: ItemDetails} = {
         type: 'primary_column_missing',
         logType: 'warn',
         check(args: Object, parent: IGrid): CheckOptions {
-            return { success: parent.getColumns().filter((column: Column) => column.isPrimaryKey).length === 0 };
+            return { success: parent.enableColumnVirtualization
+                ? parent.getPrimaryKeyFieldNames().length === 0
+                : parent.getColumns().filter((column: Column) => column.isPrimaryKey).length === 0 };
         },
         generateMessage(): string {
             return WARNING + ': PRIMARY KEY MISSING\n' + 'Editing is enabled but primary key column is not specified.\n' +
@@ -372,7 +374,8 @@ export const detailLists: {[key: string]: ItemDetails} = {
         type: 'frozen_rows_columns',
         logType: 'error',
         check(args: string, parent: IGrid): CheckOptions {
-            return { success: parent.getColumns().length <= parent.frozenColumns || parent.frozenRows >= parent.currentViewData.length};
+            return { success: parent.getColumns().length <= parent.frozenColumns
+                || (parent.currentViewData.length && parent.frozenRows >= parent.currentViewData.length) };
         },
         generateMessage(args: Object, parent: IGrid): string {
             return ERROR + `: OUT OF RANGE ERROR-\n ${parent.getColumns().length <= parent.frozenColumns ? 'FROZEN COLUMNS,' : ''}` +

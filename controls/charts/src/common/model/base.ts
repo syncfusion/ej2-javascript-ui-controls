@@ -94,7 +94,7 @@ export class titleBorder extends ChildProperty<titleBorder> {
 }
 
 /**
- * Configures the title settings in chart and 3D chart.
+ * Configures the title settings in chart.
  */
 export class titleSettings extends ChildProperty<titleSettings> {
 
@@ -336,6 +336,14 @@ export class Border extends ChildProperty<Border> {
 
     @Property(1)
     public width: number;
+    	
+    /**
+     * Sets the length of dashes in the stroke of border.
+     *
+     * @default ''
+     */
+    @Property('')
+    public dashArray: string;
 
 }
 /**

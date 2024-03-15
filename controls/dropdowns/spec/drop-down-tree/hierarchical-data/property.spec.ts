@@ -590,7 +590,8 @@ describe('DropDown Tree control hierarchical datasource', () => {
             expect(ddtreeObj.value.length).toBe(2)
         });
         it('for allowMultiSelection', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, allowMultiSelection: true, mode: 'Default', treeSettings: { loadOnDemand: true } }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" },
+            allowMultiSelection: true, mode: 'Default', treeSettings: { loadOnDemand: true }, destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -657,7 +658,8 @@ describe('DropDown Tree control hierarchical datasource', () => {
          * mode
          */
         it('for Delimiter mode with allowMultiSelection', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, treeSettings: { loadOnDemand: true }, allowMultiSelection: true, mode: 'Delimiter' }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" },
+            treeSettings: { loadOnDemand: true }, allowMultiSelection: true, mode: 'Delimiter', destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -701,7 +703,8 @@ describe('DropDown Tree control hierarchical datasource', () => {
             expect(document.querySelector('.e-popup').classList.contains('e-popup-close')).toBe(true);
         });
         it('for Box mode with allowMultiSelection', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, treeSettings: { loadOnDemand: true }, allowMultiSelection: true, mode: 'Box' }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" },
+            treeSettings: { loadOnDemand: true }, allowMultiSelection: true, mode: 'Box', destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -814,7 +817,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
         });
 
         it('for showCheckBox with Default mode', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, showCheckBox: true }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, showCheckBox: true, destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -880,7 +883,8 @@ describe('DropDown Tree control hierarchical datasource', () => {
          * mode
          */
         it('for Delimiter mode with showCheckBox', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, showCheckBox: true, mode: 'Delimiter' }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" },
+            showCheckBox: true, mode: 'Delimiter', destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);
@@ -927,7 +931,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
         });
 
         it('for Box mode with showCheckBox', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, showCheckBox: true, mode: 'Box' }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, showCheckBox: true, mode: 'Box', destroyPopupOnHide: false }, '#ddtree');
             let ele = ddtreeObj.element;
             var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
             ele.dispatchEvent(e);

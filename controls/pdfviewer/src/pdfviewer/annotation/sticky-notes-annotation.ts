@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { StickyNotesSettings } from './../pdfviewer';
 import { PdfViewerBase, PdfViewer, IPageAnnotations, AjaxHandler, AllowedInteraction, IPoint } from '../index';
-import { createElement, Browser, Internationalization, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, Browser, Internationalization, isBlazor, isNullOrUndefined, SanitizeHtmlHelper} from '@syncfusion/ej2-base';
 import { Accordion, BeforeOpenCloseMenuEventArgs, ContextMenu as Context, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { InPlaceEditor } from '@syncfusion/ej2-inplace-editor';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
@@ -236,7 +236,8 @@ export class StickyNotesAnnotation {
     public getSettings(annotation: any): any {
         let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
         if (annotation.AnnotationSelectorSettings) {
-            selector = annotation.AnnotationSelectorSettings;
+            // eslint-disable-next-line max-len
+            selector = typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
         } else if (this.pdfViewer.stickyNotesSettings.annotationSelectorSettings) {
             selector = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings;
         }
@@ -1096,7 +1097,10 @@ export class StickyNotesAnnotation {
         // eslint-disable-next-line
         this.getButtonState(commentObj, newCommentDiv);
         if (args.valueEle) {
-            if (args.value != null && args.value !== "") {
+            if(this.pdfViewer.enableHtmlSanitizer && args.value){
+                args.value = SanitizeHtmlHelper.sanitize(args.value);
+            }
+            if (args.value != null && args.value !== '' && args.value !== ' '){
                 // eslint-disable-next-line max-len
                 if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
                     this.modifyTextProperty(args.value, args.prevValue, args.valueEle.parentNode.parentNode.parentNode.parentNode.id);
@@ -1142,6 +1146,9 @@ export class StickyNotesAnnotation {
         // eslint-disable-next-line
         let lastElement: any;
         let commentValue: string;
+        if(this.pdfViewer.enableHtmlSanitizer && args.value){
+            args.value = SanitizeHtmlHelper.sanitize(args.value);
+        }
         if (comment.name && args.value !== '') {
             commentsContainer = args.valueEle.parentElement.parentElement.parentElement;
             lastElement = args.valueEle.parentElement.parentElement;
@@ -1486,7 +1493,7 @@ export class StickyNotesAnnotation {
             annotationAuthor = author;
         }
         // eslint-disable-next-line
-        annotationAuthor = annotationAuthor.replace(/(\r\n|\n|\r)/gm, "");
+        annotationAuthor = annotationAuthor.replace(/(\r\n|\n|\r)/gm,"");
         commentTypeSpan.style.padding = 8 + 'px';
         commentTypeSpan.style.cssFloat = 'left';
         commentTitleContainer.appendChild(commentTypeSpan);

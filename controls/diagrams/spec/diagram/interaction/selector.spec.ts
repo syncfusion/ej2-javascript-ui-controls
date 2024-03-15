@@ -1104,6 +1104,47 @@ describe('Diagram Control', () => {
         
     });
 });
+describe('Custom style for Multiple Selection of nodes and connectors', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram99' });
+        document.body.appendChild(ele);
+
+        let node: NodeModel = { id: 'node1', width: 100, height: 100, rotateAngle: 45, offsetX: 100, offsetY: 100 };
+        let connector3: ConnectorModel = {
+            id: 'connector3',
+            type: 'Orthogonal',
+            sourcePoint: { x: 500, y: 500 },
+            targetPoint: { x: 600, y: 600 }
+        };
+        let node2: NodeModel = { id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 300 };
+        diagram = new Diagram({ width: 1000, height: 1000, nodes: [node, node2], connectors: [connector3] });
+        diagram.appendTo('#diagram99');
+        diagram.selectAll();
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking multiple selection for nodes and connectors', (done: Function) => {
+        let elements= document.getElementsByClassName("e-diagram-first-selection-indicator");
+        expect(elements.length === 1).toBe(true);
+        done();
+    });
+    it('Checking multiple selection for nodes and connectors', (done: Function) => {
+        let elements= document.getElementsByClassName("e-diagram-selection-indicator");
+        expect(elements.length === 3).toBe(true);
+        done();
+    });
+});
 // describe('834641-Support to unselect the diagram element that is already selected ', () => {
 //     let diagram: Diagram;
 //     let ele: HTMLElement;

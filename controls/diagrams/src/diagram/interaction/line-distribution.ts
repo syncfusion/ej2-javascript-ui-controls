@@ -372,14 +372,14 @@ export class LineDistribution {
                         graph[parseInt(i.toString(), 10)].value.sort((a, b) => {
                             const connectorA = diagram.nameTable[`${a.id}`];
                             const connectorB = diagram.nameTable[`${b.id}`];
-                            
+
                             return connectorA.targetPoint.y - connectorB.targetPoint.y;
                         });
                     }else if(diagram.layout.orientation === 'TopToBottom' || diagram.layout.orientation === 'BottomToTop'){
                         graph[parseInt(i.toString(), 10)].value.sort((a, b) => {
                             const connectorA = diagram.nameTable[`${a.id}`];
                             const connectorB = diagram.nameTable[`${b.id}`];
-                            
+
                             return connectorA.targetPoint.x - connectorB.targetPoint.x;
                         });
                     }
@@ -387,7 +387,6 @@ export class LineDistribution {
             }
         }
     };
-
     private inflate(rect: Rect, x: number, y: number): Rect {
         rect.x -= x;
         rect.y -= y;

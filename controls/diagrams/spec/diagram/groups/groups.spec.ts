@@ -1129,25 +1129,25 @@ describe('Group', () => {
     describe('Resize handle not rendered properly issue', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
-    
+
         beforeAll(() => {
-    
+
             ele = createElement('div', { id: 'diagrampivot' });
             document.body.appendChild(ele);
-    
+
             let nodes: NodeModel[] = [
                 {
                     id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }],
                     pivot: { x: 0, y: 0 }
                 },
                 { id: 'group', children: ['node1'], pivot: { x: 0, y: 0 }},
-                
+
             ];
             diagram = new Diagram({
                 width: '900px', height: '500px', nodes: nodes,
             });
             diagram.appendTo('#diagrampivot');
-    
+
         });
         afterAll(() => {
             diagram.destroy();
@@ -2034,6 +2034,58 @@ describe('Checking performance for dragging the group node', () => {
     });
 });
 
+describe('Ungrouping nodes with Id underscore', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let scroller: DiagramScroller;
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_group' });
+        document.body.appendChild(ele);
+        
+        var nodes = [
+            {
+                id: 'transaction_com', width: 50, height: 50, offsetX: 100,
+                offsetY: 100,
+            },
+            {
+                id: 'node2', width: 50, height: 50, offsetX: 300,
+                offsetY: 100,
+            },
+        ];
+
+        diagram = new Diagram({
+            width: '800px', height: '500px',nodes: nodes,
+            getNodeDefaults: function (node:any) {
+                if(node.width==undefined){
+                    node.width = 150
+                }
+                node.style = { fill: '#357BD2', strokeColor: 'white' };
+            },
+        });
+        diagram.appendTo('#diagram_group');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Ungrouping nodes with underscore in Id', (done: Function) => {
+       diagram.selectAll();
+       diagram.group();
+       expect(diagram.nodes.length === 3).toBe(true);
+       expect(function() {diagram.unGroup()}).not.toThrow();
+       expect(diagram.nodes.length === 2).toBe(true);  
+       done();
+    });
+});
+
 describe('UnGroup Issue - EJ2-66928',()=>{
     describe('checks Ungrouping Performing Correctly and Grouping Ports are Removed ', () => {
         let diagram: Diagram;
@@ -2346,7 +2398,7 @@ describe('Copy Paste the child node of group outside the group', () => {
         diagram.paste();
         expect((diagram.selectedItems.nodes[0] as any).parentId ==="").toBe(true); done();
     });
-   });
+});
    describe('Provide support to delete child from group', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -2501,11 +2553,11 @@ describe('867606-Perform Grouping on the existing group', () => {
                 offsetY: 150
             },
             { id: 'group', children: ['node1', 'node2'], rotateAngle: 45 },
-            
+
         ];
         let connectors: any = [
             { id: 'connector1', sourcePoint: { x: 300, y: 100 }, targetPoint: { x: 300, y: 200 }}
-            
+
         ]
         diagram = new Diagram({
             width: '500px', height: '600px', nodes: nodes, connectors: connectors

@@ -1362,7 +1362,7 @@ export class SelectionParagraphFormat {
             case 'widowControl':
                 return this.widowControl;
             case 'outlineLevel':
-                    return this.outlineLevel;
+                return this.outlineLevel;
             default:
                 return undefined;
         }
@@ -1381,9 +1381,9 @@ export class SelectionParagraphFormat {
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
             const editorModule: Editor = this.selection.owner.editorModule;
             if (propertyName === 'lineSpacing' || propertyName === 'lineSpacingType') {
-                const editorHistory: EditorHistory = this.selection.owner.editorHistory;
+                const editorHistory: EditorHistory = this.selection.owner.editorHistoryModule;
                 if (!(editorHistory && (editorHistory.isUndoing || editorHistory.isRedoing)) && this.validateLineSpacing()) {
-                    this.selection.owner.editorHistory.initComplexHistory(this.selection, 'LineSpacing');
+                    this.selection.owner.editorHistoryModule.initComplexHistory(this.selection, 'LineSpacing');
                     if (propertyName === 'lineSpacing') {
                         this.lineSpacingTypeIn = 'Multiple';
                         const value: Object = this.getPropertyValue('lineSpacingType');
@@ -1394,7 +1394,7 @@ export class SelectionParagraphFormat {
                         this.lineSpacingIn = 12;
                         editorModule.onApplyParagraphFormat('lineSpacing', this.getPropertyValue('lineSpacing'), false, false);
                     }
-                    this.selection.owner.editorHistory.updateComplexHistory();
+                    this.selection.owner.editorHistoryModule.updateComplexHistory();
                     return;
                 }
             }
@@ -1643,7 +1643,7 @@ export class SelectionParagraphFormat {
         const currentAbstractList: WAbstractList = listAdv ? this.documentHelper.getAbstractListById(listAdv.abstractListId) : undefined;
         if (!isNullOrUndefined(list) && !isNullOrUndefined(listAdv)
             && !isNullOrUndefined(currentAbstractList) && listAdv.sourceListId === list.listId) {
-            const history: EditorHistory = this.documentHelper.owner.editorHistory;
+            const history: EditorHistory = this.documentHelper.owner.editorHistoryModule;
             const listLevel: WListLevel = this.documentHelper.layout.getListLevel(list, 1);
             this.selection.owner.isLayoutEnabled = false;
             this.documentHelper.owner.editorModule.setOffsetValue(this.selection);

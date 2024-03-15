@@ -129,7 +129,7 @@ export class Search {
         if (this.owner.enableTrackChanges && this.documentHelper.selection.start.currentWidget) {
             let inline: ElementBox = undefined;
             /* eslint-disable-next-line max-len */
-            const inlineElement: ElementInfo = (this.documentHelper.selection.end.currentWidget as LineWidget).getInline(this.owner.selection.start.offset, 0);
+            const inlineElement: ElementInfo = (this.documentHelper.selection.end.currentWidget as LineWidget).getInline(this.owner.selectionModule.start.offset, 0);
             inline = inlineElement.element as ElementBox;
             if (inline.revisions.length > 0) {
                 this.isRepalceTracking = true;
@@ -171,14 +171,14 @@ export class Search {
         }
         const textToFind: string = this.textSearchResults.currentSearchResult.text;
         const pattern: RegExp = this.viewer.owner.searchModule.textSearch.stringToRegex(textToFind, findOptions);
-        let index: string = this.owner.selection.end.getHierarchicalIndexInternal();
+        let index: string = this.owner.selectionModule.end.getHierarchicalIndexInternal();
         let result: TextSearchResult = this.viewer.owner.searchModule.textSearch.findNext(pattern, findOptions, index);
         if (!isNullOrUndefined(result)) {
             this.navigate(result);
             this.textSearchResults.addResult();
             this.textSearchResults.innerList[0] = result;
             this.replace(textToReplace, result, this.textSearchResults);
-            index = this.owner.selection.end.getHierarchicalIndexInternal();
+            index = this.owner.selectionModule.end.getHierarchicalIndexInternal();
             result = this.textSearch.findNext(textToFind, findOptions, index);
             if (result) {
                 this.textSearchResults.addResult();
@@ -200,8 +200,8 @@ export class Search {
         if (isNullOrUndefined(this.viewer.owner) || this.viewer.owner.isReadOnlyMode || isNullOrUndefined(results)) {
             return 0;
         }
-        if (this.owner.editorHistory) {
-            this.owner.editorHistory.initComplexHistory(this.owner.selection, 'ReplaceAll');
+        if (this.owner.editorHistoryModule) {
+            this.owner.editorHistoryModule.initComplexHistory(this.owner.selectionModule, 'ReplaceAll');
         }
         const count: number = results.length;
         this.viewer.owner.isLayoutEnabled = false;
@@ -231,8 +231,8 @@ export class Search {
                 //this.documentHelper.layout.updateHeaderFooterToParent(this.documentHelper.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
             //}
         }
-        if (this.owner.editorHistory && !isNullOrUndefined(this.owner.editorHistory.currentHistoryInfo)) {
-            this.owner.editorHistory.updateComplexHistory();
+        if (this.owner.editorHistoryModule && !isNullOrUndefined(this.owner.editorHistoryModule.currentHistoryInfo)) {
+            this.owner.editorHistoryModule.updateComplexHistory();
         } else {
             this.owner.editorModule.updateComplexWithoutHistory(2);
         }
@@ -274,9 +274,9 @@ export class Search {
         if (textSearchResult) {
             const start: TextPosition = textSearchResult.start;
             const end: TextPosition = textSearchResult.end;
-            if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.selection) && !isNullOrUndefined(start) &&
+            if (!isNullOrUndefined(this.owner) && !isNullOrUndefined(this.owner.selectionModule) && !isNullOrUndefined(start) &&
                 !isNullOrUndefined(end) && !isNullOrUndefined(start.paragraph) && !isNullOrUndefined(end.paragraph)) {
-                this.owner.selection.selectRange(start, end);
+                this.owner.selectionModule.selectRange(start, end);
                 this.documentHelper.updateFocus();
             }
         }
@@ -414,7 +414,7 @@ export class Search {
 
     private createHighlightBorder(lineWidget: LineWidget, width: number, left: number, top: number): void {
         let findHighLight: SearchWidgetInfo = this.addSearchHighlightBorder(lineWidget);
-        let page: Page = this.viewer.owner.selection.getPage(lineWidget.paragraph);
+        let page: Page = this.viewer.owner.selectionModule.getPage(lineWidget.paragraph);
         let pageTop: number = page.boundingRectangle.y;
         let pageLeft: number = page.boundingRectangle.x;
         findHighLight.left = Math.ceil(left);
@@ -533,7 +533,7 @@ export class Search {
             let prefix: string = '';
             let lastIndex: number = 0;
             if (inline instanceof FieldElementBox) {
-                let elementInfo: ElementInfo = this.owner.selection.getRenderedInline(inline as FieldElementBox, startIndex);
+                let elementInfo: ElementInfo = this.owner.selectionModule.getRenderedInline(inline as FieldElementBox, startIndex);
                 if (elementInfo.element.nextNode instanceof TextElementBox) {
                     inline = elementInfo.element.nextNode;
                     startIndex = elementInfo.index;
@@ -542,7 +542,7 @@ export class Search {
                     startIndex = elementInfo.index;
                 }
             }
-            let boxObj: ElementInfo = this.owner.selection.getElementBoxInternal(inline, startIndex);
+            let boxObj: ElementInfo = this.owner.selectionModule.getElementBoxInternal(inline, startIndex);
             let box: ElementBox = boxObj.element;
             startIndex = boxObj.index;
             if (box != null) {
@@ -573,7 +573,7 @@ export class Search {
             //Checks prefix element box is empty
             if (boxObj != null) {
                 // Gets the element box using endIndex of the text and set as suffix
-                boxObj = this.owner.selection.getElementBoxInternal(endInline, endIndex);
+                boxObj = this.owner.selectionModule.getElementBoxInternal(endInline, endIndex);
                 box = boxObj.element;
                 endIndex = boxObj.index;
             }

@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path='../combo-box/combo-box-model.d.ts'/>
-import { Property, EventHandler, KeyboardEventArgs, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
+import { Property, EventHandler, KeyboardEventArgs, isNullOrUndefined, detach, getValue } from '@syncfusion/ej2-base';
 import { Event, EmitType, Complex } from '@syncfusion/ej2-base';
 import { removeClass, attributes, NotifyPropertyChanges } from '@syncfusion/ej2-base';
 import { dropDownListClasses } from '../drop-down-list/drop-down-list';
@@ -160,6 +160,7 @@ export class AutoComplete extends ComboBox {
      * Not applicable to this component.
      *
      * @default null
+     * @aspType double
      * @private
      * @deprecated
      */
@@ -215,6 +216,7 @@ export class AutoComplete extends ComboBox {
      * Not applicable to this component.
      *
      * @default null
+     * @aspType string
      * @private
      * @deprecated
      */
@@ -250,8 +252,9 @@ export class AutoComplete extends ComboBox {
 
     protected getQuery(query: Query): Query {
         const filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
-        const filterType: string = (this.queryString === '' && !isNullOrUndefined(this.value)) ? 'equal' : this.filterType;
-        const queryString: string = (this.queryString === '' && !isNullOrUndefined(this.value)) ? this.value as string : this.queryString;
+        let value: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
+        const filterType: string = (this.queryString === '' && !isNullOrUndefined(value)) ? 'equal' : this.filterType;
+        const queryString: string = (this.queryString === '' && !isNullOrUndefined(value)) ? value as string : this.queryString;
         if (this.isFiltered) {
             return filterQuery;
         }
@@ -276,9 +279,48 @@ export class AutoComplete extends ComboBox {
             filterQuery.take(this.suggestionCount);
         }
         if (this.enableVirtualization && (!(this.dataSource instanceof DataManager) || (this.dataSource instanceof DataManager && this.virtualGroupDataSource))) {
+            let queryTakeValue = 0;
+            let querySkipValue = 0;
+            if(this.query && this.query.queries.length > 0){
+                for (let queryElements: number = 0; queryElements < this.query.queries.length; queryElements++) {
+                    if (this.query.queries[queryElements as number].fn === 'onSkip') {
+                        querySkipValue = this.query.queries[queryElements as number].e.nos;
+                    }
+                    if (this.query.queries[queryElements as number].fn === 'onTake') {
+                        queryTakeValue = takeValue <= this.query.queries[queryElements as number].e.nos ? this.query.queries[queryElements as number].e.nos : takeValue;
+                    }
+                }
+            }
+            let skipExists = false;
+            let takeExists = false;
+            if (filterQuery && filterQuery.queries.length > 0) {
+                for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
+                    if (filterQuery.queries[queryElements as number].fn === 'onSkip') {   
+                        skipExists = true;
+                    }
+                    if (filterQuery.queries[queryElements as number].fn === 'onTake') {
+                        takeExists = true;
+                        filterQuery.queries[queryElements as number].e.nos = filterQuery.queries[queryElements as number].e.nos <= queryTakeValue  ? queryTakeValue : filterQuery.queries[queryElements as number].e.nos;
+                    }
+                }
+            }
             var takeValue = this.getTakeValue();
-            filterQuery.skip(this.virtualItemStartIndex);
-            filterQuery.take(takeValue);
+            if(!skipExists){
+                if(querySkipValue > 0 && this.virtualItemStartIndex <= querySkipValue){
+                    filterQuery.skip(querySkipValue);
+                }
+                else{
+                    filterQuery.skip(this.virtualItemStartIndex);
+                }
+            }
+            if(!takeExists){
+                if(queryTakeValue > 0 && takeValue <= queryTakeValue){
+                    filterQuery.take(queryTakeValue);
+                }
+                else{
+                    filterQuery.take(takeValue);
+                }
+            }
             filterQuery.requiresCount();
         }
         return filterQuery;
@@ -286,6 +328,7 @@ export class AutoComplete extends ComboBox {
     protected searchLists(e: KeyboardEventArgs | MouseEvent): void {
         this.isTyped = true;
         this.isDataFetched = this.isSelectCustom = false;
+        this.firstItem = this.dataSource && (this.dataSource as any).length > 0 ? (this.dataSource as any)[0] : null;
         this.checkAndResetCache();
         if (isNullOrUndefined(this.list)) {
             super.renderList(e, true);
@@ -492,6 +535,10 @@ export class AutoComplete extends ComboBox {
     protected setInputValue(newProp?: any, oldProp?: any): void {
         let oldValue = oldProp && oldProp.text ? oldProp.text : oldProp ? oldProp.value : oldProp;
         let value = newProp && newProp.text ? newProp.text : newProp && newProp.value ? newProp.value : this.value;
+        if(this.allowObjectBinding){
+            oldValue = !isNullOrUndefined(oldValue) ? getValue((this.fields.value) ? this.fields.value : '', oldValue) : oldValue;
+            value = !isNullOrUndefined(value) ? getValue((this.fields.value) ? this.fields.value : '', value) : value;
+        }
         if (value && this.typedString === '' && !this.allowCustom && !(this.dataSource instanceof DataManager)) {
              let checkFields_1: string = this.typeOfData(this.dataSource).typeof === 'string' ? '' : this.fields.value;
              const listLength: number = this.getItems().length;
@@ -500,7 +547,7 @@ export class AutoComplete extends ComboBox {
              new DataManager(this.dataSource).executeQuery(query.where(new Predicate(checkFields_1, 'equal', value)))
                  .then(function (e: Object) {
                  if ((e as ResultData).result.length > 0) {
-                     _this.value = checkFields_1 !== '' ? (e as ResultData).result[0][_this.fields.value].toString() : (e as ResultData).result[0].toString();
+                     _this.value = checkFields_1 !== '' ? _this.allowObjectBinding ? (e as ResultData).result[0] : (e as ResultData).result[0][_this.fields.value].toString() : (e as ResultData).result[0].toString();
                      _this.addItem((e as ResultData).result, listLength);
                      _this.updateValues();
                  }

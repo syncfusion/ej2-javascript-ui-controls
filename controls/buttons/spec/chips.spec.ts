@@ -733,7 +733,10 @@ describe('Chips', () => {
             it('Find method - should not work', () => {
                 chips = new ChipList({ text: 'chip content' }, '#chip');
                 let resultantdata: ChipDataArgs = chips.find(0);
-                expect(resultantdata).toBe(undefined);
+                expect(resultantdata.text).toBe('');
+                expect(resultantdata.index).toBe(-1);
+                expect(resultantdata.element).toBe(chips.element);
+                expect(resultantdata.data).toBe('');
             });
 
             it('select & getSelectedChips method - should not work', () => {
@@ -892,7 +895,10 @@ describe('Chips', () => {
                 expect(resultantData.text).toBe('chip2');
                 //wrong data
                 resultantData = chips.find(8);
-                expect(resultantData).toBe(undefined);
+                expect(resultantData.text).toBe('');
+                expect(resultantData.index).toBe(-1);
+                expect(resultantData.element).toBe(chips.element);
+                expect(resultantData.data).toBe('');
             });
 
             it('Find method using htmlElement', () => {
@@ -916,7 +922,10 @@ describe('Chips', () => {
                 expect(resultantData.text).toBe('');
                 //wrong data
                 resultantData = chips.find(8);
-                expect(resultantData).toBe(undefined);
+                expect(resultantData.text).toBe('');
+                expect(resultantData.index).toBe(-1);
+                expect(resultantData.element).toBe(chips.element);
+                expect(resultantData.data).toBe('');
             });
 
             it('select & getSelectedChips method using index [Single selection]', () => {

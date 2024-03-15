@@ -8,14 +8,24 @@
 
 ## [Unreleased]
 
-## 24.2.9 (2024-03-06)
+## 25.1.35 (2024-03-15)
+
+### Maps
+
+#### New Features
+
+- `#I544447` - Maps will display data labels with improved performance when multiple layers are set.
+- `#I524572` - The threshold limit for rendering the markers and marker clusters has now been increased, with improved performance to a decent extent. Nearly 6,000 markers can now be rendered and clustered, with enhanced rendering, zooming, and panning functionalities.
+- The tooltip and its template can now be displayed over the polygon shapes in the Maps. Tooltip templates can include custom items such as images, text, and HTML elements.
+
+## 24.2.4 (2024-02-06)
 
 ### Maps
 
 #### Bug Fixes
 
-- `#545401`, `#547542` - Markers will be rendered properly in the correct location when they are added dynamically by clicking over a custom shape map.
-- `#545484` - Exceptions will no longer be thrown when the markers are dragged at the maximum zoom level.
+- `#I545401`, `#I547542` - Markers will be rendered properly in the correct location when they are added dynamically by clicking over a custom shape map.
+- `#I545484` - Exceptions will no longer be thrown when the markers are dragged at the maximum zoom level.
 
 ## 24.1.47 (2024-01-23)
 
@@ -76,7 +86,7 @@
 
 #### New Features
 
-- An animated transition will now occur on the initial rendering of data labels and not during any dynamic updates.
+- An animation transition will now occur when the data labels are first rendered.
 
 #### Bug Fixes
 
@@ -448,7 +458,7 @@
 #### Bug Fixes
 
 - `#I240833` - Some labels disappear when you change "colorMapping" and refresh the map issue has been fixed.
-- `I240804` - The issue with dynamically updating the zoom factor has been fixed
+- `I240804` - The issue with dynamically updating the zoom factor has been fixed.
 - `I241873` - The issue with zooming the map component with a single click has been fixed
 
 ## 17.2.35 (2019-07-17)

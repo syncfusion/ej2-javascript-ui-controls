@@ -300,10 +300,13 @@ export class HeaderRender implements IRenderer {
         const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '0.25px', role: 'presentation' } });
         const findHeaderRow: { thead: Element, rows: Row<Column>[] } = this.createHeaderContent(tableName);
         const thead: Element = findHeaderRow.thead;
-        const tbody: Element = this.parent.createElement( literals.tbody, { className: this.parent.frozenRows ? '' : 'e-hide', attrs: { role: 'rowgroup' } });
+        const tbody: Element = this.parent.createElement( literals.tbody, { className: this.parent.frozenRows ||
+            ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) && this.parent.editSettings.showAddNewRow) ? '' :
+            'e-hide', attrs: { role: 'rowgroup' } });
         this.caption = this.parent.createElement('caption', { innerHTML: this.parent.element.id + '_header_table', className: 'e-hide' });
         const colGroup: Element = this.parent.createElement(literals.colGroup);
-        const rowBody: Element = this.parent.createElement('tr', { attrs: { role: 'row' } });
+        const rowBody: Element = this.parent.createElement('tr', { attrs: { role: 'row' }, className: (this.parent.enableVirtualization ||
+            this.parent.enableInfiniteScrolling) && this.parent.editSettings.showAddNewRow ? 'e-hide' : '' });
         let bodyCell: Element;
         const rows: Row<Column>[] = this.rows = findHeaderRow.rows;
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
@@ -568,8 +571,15 @@ export class HeaderRender implements IRenderer {
             idx = gObj.getNormalizedColumnIndex(column.uid);
             displayVal = column.visible ? '' : 'none';
             setStyleAttribute(<HTMLElement>this.getColGroup().children[parseInt(idx.toString(), 10)], { 'display': displayVal });
+            if (gObj.editSettings.showAddNewRow && gObj.element.querySelector('.e-addedrow')) {
+                setStyleAttribute(<HTMLElement>gObj.element.querySelector('.e-addedrow').querySelector('colgroup').childNodes[
+                    parseInt(idx.toString(), 10)], { 'display': displayVal });
+            }
         }
         this.refreshUI();
+        if (this.parent.editSettings.showAddNewRow) {
+            this.parent.isAddNewRow = true;
+        }
     }
 
 
@@ -590,6 +600,11 @@ export class HeaderRender implements IRenderer {
         const tableName: freezeTable = undefined;
         if (table) {
             remove(table);
+            if (this.parent.editSettings.showAddNewRow && !this.parent.isAddNewRow && table.querySelector('.e-addedrow') &&
+                (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
+                (table.querySelector('.e-addedrow')).classList.add('e-addrow-removed')
+                this.parent.isAddNewRow = true;
+            }
             table.removeChild(table.firstChild);
             table.removeChild(table.childNodes[0]);
             const colGroup: Element = this.parent.createElement(literals.colGroup);

@@ -1,6 +1,6 @@
 import { PageRenderer, FormFieldsBase, AnnotationRenderer, PdfRenderedFields, SignatureBase, BookmarkStyles, BookmarkDestination, BookmarkBase, AnnotBounds } from './index';
 import { Browser, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DataFormat, PdfAnnotationExportSettings, PdfBookmark, PdfBookmarkBase, PdfDocument, PdfPage, PdfRotationAngle, PdfTextStyle, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfDestination, PdfPermissionFlag,PdfFormFieldExportSettings,_bytesToString, _encode } from '@syncfusion/ej2-pdf';
+import { DataFormat, PdfAnnotationExportSettings, PdfBookmark, PdfBookmarkBase, PdfDocument, PdfPage, PdfRotationAngle, PdfTextStyle, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfDestination, PdfPermissionFlag,PdfFormFieldExportSettings,_bytesToString, _encode, PdfPageSettings } from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase } from '../index';
 import { Rect, Size } from '@syncfusion/ej2-drawings';
 
@@ -103,6 +103,7 @@ export class PdfRenderer {
     private digitialByteArray: Uint8Array;
     private loadedBase64String: string;
     private password: string;
+    private isDummyInserted: boolean = false;
 
 
     /**
@@ -283,7 +284,10 @@ export class PdfRenderer {
         return pageSizes;
     }
 
-    private getPageSize(pageNumber: number): Size {
+    /**
+     * @private
+     */
+    public getPageSize(pageNumber: number): Size {
         const page: PdfPage = this.loadedDocument.getPage(pageNumber);
         const size: number[] = page.size;
         const rotation : PdfRotationAngle = page.rotation % 4;
@@ -308,11 +312,18 @@ export class PdfRenderer {
      */
     public getDocumentAsBase64(jsonObject: { [key: string]: string }): string {
         const base64string: string = null;
+        this.loadedDocument = new PdfDocument(this.loadedBase64String, this.password);
         if (jsonObject.hasOwnProperty('digitalSignatureDocumentEdited') && !jsonObject.digitalSignatureDocumentEdited) {
-            this.loadedDocument = new PdfDocument(this.loadedBase64String, this.password);
             return "data:application/pdf;base64," + _encode(this.loadedDocument.save());
         }
         else {
+            this.deletePdfPages(jsonObject);
+            this.insertPdfPages(jsonObject);
+            this.rotatePages(jsonObject);
+            if (this.isDummyInserted) {
+                this.loadedDocument.removePage(this.loadedDocument.pageCount - 1);
+                this.isDummyInserted = false;
+            }
             const annotationRenderer: AnnotationRenderer = new AnnotationRenderer(this.pdfViewer, this.pdfViewerBase);
             const formfields: FormFieldsBase = new FormFieldsBase(this.pdfViewer, this.pdfViewerBase);
             const signatureModule: SignatureBase = new SignatureBase(this.pdfViewer, this.pdfViewerBase);
@@ -322,6 +333,83 @@ export class PdfRenderer {
             return "data:application/pdf;base64," + _encode(this.loadedDocument.save());
         }
     }
+
+    private rotatePages(jsonObject: { [key: string]: string }): void {
+        if (jsonObject.hasOwnProperty('organizePages')) {
+            let organizePages: any = JSON.parse(jsonObject.organizePages);
+            for (let i: number = 0; i < organizePages.length; i++) {
+                let pageNumber: number = organizePages[parseInt(i.toString(), 10)].pageIndex;
+                let currentPageNumber: number = organizePages[parseInt(i.toString(), 10)].currentPageIndex;
+                let isDeleted: boolean = organizePages[parseInt(i.toString(), 10)].isDeleted;
+                let isInserted: boolean = organizePages[parseInt(i.toString(), 10)].isInserted;
+                let rotation: number = organizePages[parseInt(i.toString(), 10)].rotateAngle;
+                if (!isNullOrUndefined(currentPageNumber) && !isNullOrUndefined(rotation) && !isDeleted && !isInserted && pageNumber !== -1) {
+                    let page: PdfPage = this.loadedDocument.getPage(currentPageNumber);
+                    page.rotation = this.getPdfRotationAngle(rotation);
+                }
+            }
+        }
+    }
+    private insertPdfPages(jsonObject: { [key: string]: string }): void {
+        if (jsonObject.hasOwnProperty('organizePages')) {
+            let organizePages: any = JSON.parse(jsonObject.organizePages);
+            for (let i: number = 0; i < organizePages.length; i++) {
+                let pageNumber: number = organizePages[parseInt(i.toString(), 10)].pageIndex;
+                let currentPageNumber: number = organizePages[parseInt(i.toString(), 10)].currentPageIndex;
+                let isDeleted: boolean = organizePages[parseInt(i.toString(), 10)].isDeleted;
+                let isInserted: boolean = organizePages[parseInt(i.toString(), 10)].isInserted;
+                let pageSize: number[];
+                if(!isNullOrUndefined(organizePages[parseInt(i.toString(), 10)].pageSize)){
+                    pageSize = [this.convertPixelToPoint(organizePages[parseInt(i.toString(), 10)].pageSize.width), this.convertPixelToPoint(organizePages[parseInt(i.toString(), 10)].pageSize.height)];
+                }
+                if (!isNullOrUndefined(currentPageNumber) && !isDeleted && isInserted && pageNumber === -1) {
+                    let rotation: number = organizePages[parseInt(i.toString(), 10)].rotateAngle;
+                    let pageSettings: PdfPageSettings = new PdfPageSettings();
+                    pageSettings.rotation = this.getPdfRotationAngle(rotation);
+                    if(!isNullOrUndefined(pageSize)){
+                        pageSettings.size = pageSize;
+                    }
+                    this.loadedDocument.addPage(currentPageNumber, pageSettings);
+                }
+            }
+        }
+    }
+    private deletePdfPages(jsonObject: { [key: string]: string }): void {
+        if (jsonObject.hasOwnProperty('organizePages')) {
+            let organizePages: any = JSON.parse(jsonObject.organizePages);
+            let deleteCount = 0;
+            const initialPageCount: number = this.loadedDocument.pageCount;
+            for (let i: number = 0; i < organizePages.length; i++) {
+                let pageNumber: number = organizePages[parseInt(i.toString(), 10)].pageIndex;
+                let isDeleted: boolean = organizePages[parseInt(i.toString(), 10)].isDeleted;
+                let isInserted: boolean = organizePages[parseInt(i.toString(), 10)].isInserted;
+                if (!isNullOrUndefined(pageNumber) && isDeleted && !isInserted) {
+                    if (deleteCount + 1 === initialPageCount) {
+                        this.loadedDocument.addPage();
+                        this.isDummyInserted = true;
+                    }
+                    this.loadedDocument.removePage(pageNumber - deleteCount);
+                    deleteCount++;
+                }
+            }
+        }
+    }
+
+    private getPdfRotationAngle(rotation: number): PdfRotationAngle {
+        switch (rotation) {
+            case 0:
+                return PdfRotationAngle.angle0;
+            case 90:
+                return PdfRotationAngle.angle90;
+            case 180:
+                return PdfRotationAngle.angle180;
+            case 270:
+                return PdfRotationAngle.angle270;
+            default:
+                return PdfRotationAngle.angle0;
+        }
+    }
+
     /**
      * @private
      */

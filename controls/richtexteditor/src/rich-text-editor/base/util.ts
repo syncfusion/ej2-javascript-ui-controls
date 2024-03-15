@@ -269,7 +269,11 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                         break; }
                     case 'bulletFormatList':
                     case 'numberFormatList': {
-                        removeClass([e.tbElements[j as number]], [classes.CLS_ACTIVE]); }
+                        if (value !== '') {
+                            addClass([e.tbElements[j as number]], [classes.CLS_ACTIVE]);
+                        } else {
+                            removeClass([e.tbElements[j as number]], [classes.CLS_ACTIVE]);
+                        } }
                     }
                 }
             }
@@ -497,7 +501,8 @@ export function updateTextNode(value: string, rteObj?: IRichTextEditor): string 
                 imageElm[i as number].classList.add(classes.CLS_RTE_IMAGE);
             }
             if (!(imageElm[i as number].classList.contains(classes.CLS_IMGINLINE) ||
-            imageElm[i as number].classList.contains(classes.CLS_IMGBREAK))) {
+                imageElm[i as number].classList.contains(classes.CLS_IMGBREAK)) &&
+                !(imageElm[i as number].classList.contains('e-imgleft') || imageElm[i as number].classList.contains('e-imgright') || imageElm[i as number].classList.contains('e-imgcenter'))) {
                 imageElm[i as number].classList.add(classes.CLS_IMGINLINE);
             }
         }

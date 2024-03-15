@@ -277,7 +277,7 @@ export class _PdfStringLayoutResult {
         return this._layoutLines;
     }
     get _empty(): boolean {
-        return (this._layoutLines == null || this._layoutLines.length === 0);
+        return (this._layoutLines === null || this._layoutLines.length === 0);
     }
     get _lineCount(): number {
         return (!this._empty) ? this._layoutLines.length : 0;

@@ -286,7 +286,7 @@ export class Parser {
                     }
                 } else if ((this.parent.isDigit(formula[i as number]) || formula[i as number] === this.parent.rightBracket ||
                     this.parent.storedData.has(formula[i as number].toUpperCase())) && (isNullOrUndefined(formula[i + 1]) ||
-                    this.indexOfAny(formula[i + 1], arithemeticArr)) > -1) {
+                    this.indexOfAny(formula[i + 1], arithemeticArr) > -1)) {
                     op = isNullOrUndefined(formula[i + 1]) ? this.emptyStr : formula[i + 1];
                     op = op === '&' && formula[i + 2] !== '-' ? '' : op; // for the cases 5&3=>53 and 5&-3=>5-3.
                     form = formula[i - 1] === '-' ? form + formula[i - 1] + formula[i as number] + op : form + formula[i as number] + op;
@@ -309,8 +309,9 @@ export class Parser {
                     === this.parent.getParseArgumentSeparator() || (formula[i as number] === '%' && this.parent.isDigit(formula[i - 1]))) {
                     form = form + formula[i as number];
                     i = i + 1;
-                } else if (formula[i as number] === this.parent.tic || formula[i as number] === ' ' || formula[i as number] === '.' ||
-                    formula[i as number] === this.sheetToken || formula[i as number] === '$'|| formula[i as number] === '_') {
+                } else if (formula[i as number] === this.parent.tic || formula[i as number] === ' ' || formula[i as number] ===
+                    this.parent.getParseDecimalSeparator() || formula[i as number] === this.sheetToken || formula[i as number] === '$' ||
+                    formula[i as number] === '_') {
                     form = form + formula[i as number];
                     i = i + 1;
                 } else {
@@ -536,13 +537,14 @@ export class Parser {
                     text = newText;
                 }
                 i = this.indexOfAny(text, operators);
+                const decimalSep: string = this.parent.getParseDecimalSeparator();
                 while (i > -1) {
                     let left: string = '';
                     let right: string = '';
                     let leftIndex: number = 0;
                     let rightIndex: number = 0;
                     let isLeftBool: boolean = false;
-                    let arithOp: string[] = ['*', '+', '-', '/', 'w', '=', '<', '>'];
+                    const arithOp: string[] = ['*', '+', '-', '/', 'w', '=', '<', '>'];
                     const isNotOperator: boolean = text[i as number] === this.charNOTop;
                     let j: number = 0;
                     if (!isNotOperator) {
@@ -581,13 +583,13 @@ export class Parser {
                         } else {
                             let period: boolean = false;
                             while (j > -1 && (this.parent.isDigit(text[j as number]) ||
-                                (!period && (text[j as number] === this.parent.getParseDecimalSeparator() || text[j as number] === '%')))) {
+                                (!period && (text[j as number] === decimalSep || text[j as number] === '%')))) {
                                 if (!this.parent.isDigit(text[j as number]) && text[j as number] !== '%') {
                                     period = true;
                                 }
                                 j = j - 1;
                             }
-                            if (j > -1 && period && text[j as number] === this.parent.getParseDecimalSeparator()) {
+                            if (j > -1 && period && text[j as number] === decimalSep) {
                                 /* eslint-disable-next-line */
                                 throw new FormulaError(this.parent.formulaErrorStrings[FormulasErrorsStrings.number_contains_2_decimal_points]);
                             }
@@ -704,12 +706,12 @@ export class Parser {
                                 right = 'u' + right;
                             }
                             rightIndex = k + 1;
-                        } else if (this.parent.isDigit(text[j as number]) || text[j as number] === this.parent.getParseDecimalSeparator()) {
-                            let period: boolean = (text[j as number] === this.parent.getParseDecimalSeparator());
+                        } else if (this.parent.isDigit(text[j as number]) || text[j as number] === decimalSep) {
+                            let period: boolean = (text[j as number] === decimalSep);
                             j = j + 1;
                             /* eslint-disable-next-line */
-                            while (j < text.length && (this.parent.isDigit(text[j]) || (!period && text[j] === this.parent.getParseDecimalSeparator()))) {
-                                if (text[j as number] === this.parent.getParseDecimalSeparator()) {
+                            while (j < text.length && (this.parent.isDigit(text[j]) || (!period && text[j] === decimalSep))) {
+                                if (text[j as number] === decimalSep) {
                                     period = true;
                                 }
                                 j = j + 1;
@@ -717,7 +719,7 @@ export class Parser {
                             if (j < text.length && text[j as number] === '%') {
                                 j += 1;
                             }
-                            if (period && j < text.length && text[j as number] === this.parent.getParseDecimalSeparator()) {
+                            if (period && j < text.length && text[j as number] === decimalSep) {
                                 throw this.parent.formulaErrorStrings[FormulasErrorsStrings.number_contains_2_decimal_points];
                             }
                             right = 'n' + this.parent.substring(text, i + 1, j - i - 1);
@@ -734,9 +736,9 @@ export class Parser {
                             let jTemp: number = 0;
                             let inbracket: boolean = false;
                             while (j < text.length && (this.parent.isUpperChar(text[j as number]) || text[j as number] === '_'
-                                || text[j as number] === '.' || text[j as number] === '[' || text[j as number] === ']' ||
+                                || text[j as number] === decimalSep || text[j as number] === '[' || text[j as number] === ']' ||
                                 text[j as number] === '#' || text[j as number] === ' ' || text[j as number] === '%' || text[j as number] ===
-                                this.parent.getParseDecimalSeparator() && inbracket)) {
+                                decimalSep && inbracket)) {
                                 if (j !== text.length - 1 && text[j as number] === '[' && text[j + 1] === '[') {
                                     inbracket = true;
                                 }
@@ -837,7 +839,8 @@ export class Parser {
                                 isCharacter = false;
                                 break;
                             }
-                            if (this.parent.isChar(text[k as number]) || this.parent.isDigit(text[k as number]) || text[k as number] === this.sheetToken) {
+                            if (this.parent.isChar(text[k as number]) || this.parent.isDigit(text[k as number]) || text[k as number] ===
+                                this.sheetToken) {
                                 checkLetter = this.parent.isUpperChar(text[k as number]);
                             } else {
                                 isCharacter = false;

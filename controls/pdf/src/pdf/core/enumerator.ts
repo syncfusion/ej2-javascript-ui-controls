@@ -1667,3 +1667,9 @@ export enum PdfTextStyle {
      */
     bold = 2
 }
+export enum _PdfColorSpace {
+    rgb,
+    cmyk,
+    grayScale,
+    indexed
+}

@@ -546,7 +546,7 @@ export class TextMarkupAnnotation {
             if (annotations) {
                 let distinctAnnotations: any = [];
                 for (let i: any = 0; i < annotations.length; i++) {
-                    let duplicateFound:boolean = false;
+                    let duplicateFound: boolean = false;
                     for (let j: any = 0; j < distinctAnnotations.length; j++) {
                         if (
                             annotations[i].AnnotName === distinctAnnotations[j].AnnotName &&
@@ -609,8 +609,8 @@ export class TextMarkupAnnotation {
                             annotationObject.textMarkupEndIndex = annotation.textMarkupEndIndex;
                         }
                         if (isNullOrUndefined(annotation.TextMarkupContent) && isNullOrUndefined(annotation.textMarkupContent)) {
-                            let markedBounds : any = annotation.Bounds[0];
-                            let storedData : any = this.pdfViewerBase.getStoredData(pageNumber, true);
+                            let markedBounds: any = annotation.Bounds;
+                            let storedData: any = this.pdfViewerBase.getStoredData(pageNumber, true);
                             if (isNullOrUndefined(storedData)) {
                                 this.pdfViewerBase.requestForTextExtraction(pageNumber, annotationObject);
                             }
@@ -687,7 +687,8 @@ export class TextMarkupAnnotation {
     public getSettings(annotation: any): any {
         let selector: AnnotationSelectorSettingsModel;
         if (annotation.AnnotationSelectorSettings) {
-            selector = annotation.AnnotationSelectorSettings;
+            // eslint-disable-next-line max-len
+            selector = typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
         } else {
             selector = this.getSelector(annotation.TextMarkupAnnotationType);
         }
@@ -1733,6 +1734,8 @@ export class TextMarkupAnnotation {
                         pageAnnotations[i].opacity = value;
                     } else if (property === 'AnnotationSettings') {
                         pageAnnotations[i].annotationSettings = { isLock: value };
+                    } else if (property === 'AnnotationSelectorSettings') {
+                        pageAnnotations[i].annotationSelectorSettings = value;
                     }
                     pageAnnotations[i].modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                     this.currentAnnotationIndex = i;
@@ -3013,20 +3016,11 @@ export class TextMarkupAnnotation {
         if (annotation.IsLocked) {
             annotation.AnnotationSettings.isLock = annotation.IsLocked;
         }
-        if (annotation.TextMarkupAnnotationType === "Highlight") {
-            annotation.AnnotationSelectorSettings = annotation.annotSelectorSettings ? annotation.annotSelectorSettings : this.pdfViewer.highlightSettings.annotationSelectorSettings;
-        }
-        else if (annotation.TextMarkupAnnotationType === "Underline") {
-            annotation.AnnotationSelectorSettings = annotation.annotSelectorSettings ? annotation.annotSelectorSettings : this.pdfViewer.underlineSettings.annotationSelectorSettings;
-        }
-        else {
-            annotation.AnnotationSelectorSettings = annotation.annotSelectorSettings ? annotation.annotSelectorSettings : this.pdfViewer.strikethroughSettings.annotationSelectorSettings;
-        }       
         annotationObject = {
             // eslint-disable-next-line max-len
             textMarkupAnnotationType: annotation.TextMarkupAnnotationType, allowedInteractions: annotation.allowedInteractions, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
             annotationId: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber, isMultiSelect: annotation.IsMultiSelect, annotNameCollection: annotation.AnnotNameCollection, annotpageNumbers: annotation.AnnotpageNumbers, customData: this.pdfViewer.annotation.getCustomData(annotation),
-            annotationSettings : annotation.AnnotationSettings, isLocked: annotation.IsLocked,isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock, annotationSelectorSettings: annotation.AnnotationSelectorSettings
+            annotationSettings : annotation.AnnotationSettings, isLocked: annotation.IsLocked,isPrint: annotation.IsPrint, isCommentLock: annotation.IsCommentLock
         };
         return annotationObject;
     }

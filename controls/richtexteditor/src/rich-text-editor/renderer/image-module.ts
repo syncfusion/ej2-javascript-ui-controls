@@ -1,4 +1,4 @@
-import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, Ajax, formatUnit, MouseEventArgs } from '@syncfusion/ej2-base';
+import { addClass, detach, EventHandler, L10n, KeyboardEventArgs, select, Ajax, formatUnit, MouseEventArgs } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import {
     IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, ImageSuccessEventArgs,
@@ -18,6 +18,8 @@ import { RenderType } from '../base/enum';
 import { dispatchEvent, parseHtml, hasClass, convertToBlob } from '../base/util';
 import { DialogRenderer } from './dialog-renderer';
 import { isIDevice } from '../../common/util';
+import { imageResizeFactor } from '../../common/config';
+import { IImageResizeFactor } from '../../common/interface';
 /**
  * `Image` module is used to handle image actions.
  */
@@ -48,7 +50,6 @@ export class Image {
     private isAllowedTypes: boolean = true;
     private pageX: number = null;
     private pageY: number = null;
-    private mouseX: number = null;
     private dialogRenderObj: DialogRenderer;
     private deletedImg: Node[] = [];
     private changedWidthValue: string;
@@ -56,6 +57,8 @@ export class Image {
     private inputWidthValue: string;
     private inputHeightValue: string;
     private removingImgName: string;
+    private currentResizeHandler: string;
+    private aspectRatio: number;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -127,7 +130,7 @@ export class Image {
         dropElement.removeEventListener('dragstart', this.dragStart.bind(this), true);
         dropElement.removeEventListener('dragenter', this.dragEnter.bind(this), true);
         dropElement.removeEventListener('dragover', this.dragOver.bind(this), true);
-        if (!isNullOrUndefined(this.contentModule)) {
+        if (!isNOU(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
             if (this.parent.insertImageSettings.resize) {
@@ -141,7 +144,7 @@ export class Image {
 
     private updateCss(currentObj: CheckBox | TextBox | Uploader | Dialog, e: ICssClassArgs) : void {
         if (currentObj && e.cssClass) {
-            if (isNullOrUndefined(e.oldCssClass)) {
+            if (isNOU(e.oldCssClass)) {
                 currentObj.setProperties({ cssClass: (currentObj.cssClass + ' ' + e.cssClass).trim() });
             } else {
                 currentObj.setProperties({ cssClass: (currentObj.cssClass.replace(e.oldCssClass, '').trim() + ' ' + e.cssClass).trim() });
@@ -152,7 +155,7 @@ export class Image {
     // eslint-disable-next-line @typescript-eslint/tslint/config
     private setCssClass(e: ICssClassArgs) {
         if (this.popupObj && e.cssClass) {
-            if (isNullOrUndefined(e.oldCssClass)) {
+            if (isNOU(e.oldCssClass)) {
                 addClass([this.popupObj.element], e.cssClass);
             } else {
                 removeClass([this.popupObj.element], e.oldCssClass);
@@ -217,11 +220,6 @@ export class Image {
         }
         const args: ResizeArgs = { event: e, requestType: 'images' };
         this.parent.trigger(events.resizeStop, args);
-        /* eslint-disable */
-        let pageX: number = this.getPointX(e);
-        let pageY: number = (this.parent.iframeSettings.enable) ? window.pageYOffset +
-            this.parent.element.getBoundingClientRect().top + (e as PointerEvent).clientY : (e as PointerEvent).pageY;
-        /* eslint-enable */
         this.parent.formatter.editorManager.observer.on(events.checkUndo, this.undoStack, this);
         this.parent.formatter.saveData();
     }
@@ -252,17 +250,15 @@ export class Image {
             if (this.quickToolObj) {
                 this.quickToolObj.imageQTBar.hidePopup();
             }
-            if ((target as HTMLElement).classList.contains('e-rte-topLeft')) {
-                this.resizeBtnStat.topLeft = true;
-            }
-            if ((target as HTMLElement).classList.contains('e-rte-topRight')) {
-                this.resizeBtnStat.topRight = true;
-            }
-            if ((target as HTMLElement).classList.contains('e-rte-botLeft')) {
-                this.resizeBtnStat.botLeft = true;
-            }
-            if ((target as HTMLElement).classList.contains('e-rte-botRight')) {
-                this.resizeBtnStat.botRight = true;
+            const handlers: string[] = ['topLeft', 'topRight', 'botLeft', 'botRight'];
+            for (let i: number = 0; i < handlers.length; i++) {
+                const handler: string = handlers[i as number];
+                if ((target as HTMLElement).classList.contains('e-rte-' + handler)) {
+                    this.resizeBtnStat[handler as string] = true;
+                    this.currentResizeHandler = handler;
+                    this.aspectRatio = this.findAspectRatio(this.imgEle);
+                    break; // Exit the loop once a match is found
+                }
             }
             if (Browser.isDevice && this.contentModule.getEditPanel().contains(this.imgResizeDiv) &&
                 !this.imgResizeDiv.classList.contains('e-mob-span')) {
@@ -394,78 +390,77 @@ export class Image {
             };
         }
     }
-    private setAspectRatio(img: HTMLImageElement, expectedX: number, expectedY: number, e: ResizeArgs): void {
-        if (isNullOrUndefined(img.width)) {
+    private setAspectRatio(img: HTMLImageElement, expectedX: number, expectedY: number): void {
+        if (isNOU(img.width)) {
             return;
         }
-        // eslint-disable-next-line security/detect-unsafe-regex
-        const width: number = img.style.width !== '' ? img.style.width.match(/^\d+(\.\d*)?%$/g) ? parseFloat(img.style.width) :
-            parseInt(img.style.width, 10) : img.width;
-        const height: number = img.style.height !== '' ? parseInt(img.style.height, 10) : img.height;
-        if (width > height) {
-            img.style.minWidth = this.parent.insertImageSettings.minWidth === 0 ? '20px' : formatUnit(this.parent.insertImageSettings.minWidth);
-            if (this.parent.insertImageSettings.resizeByPercent) {
-                if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
-                    const original : number = img.offsetWidth + this.mouseX;
-                    const finalWidthByPerc : number = (original / img.offsetWidth) * (parseFloat(img.style.width).toString() === 'NaN' ?  (img.offsetWidth / (parseFloat(getComputedStyle( this.parent.element).width)) * 100) : parseFloat(img.style.width));
-                    img.style.width = ((finalWidthByPerc > 3) ? finalWidthByPerc : 3) + '%';
+        const width: number = img.width;
+        const height: number = img.height;
+        const sameHeightWidth: boolean = (width === height);
+        const factor: string = this.parent.insertImageSettings.resizeByPercent ? '%' : 'px';
+        const emptyStyleDimension: boolean = (img.style.width === '' && img.style.height === '');
+        if (!sameHeightWidth && !emptyStyleDimension) {
+            if (img.style.width !== '' && img.style.height !== '') {
+                if (this.parent.insertImageSettings.resizeByPercent) {
+                    this.setImageWidth(img, expectedX, factor);
+                    this.removeImageHeight(img);
                 } else {
-                    img.style.width = this.pixToPerc((width / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
+                    this.setImageWidth(img, expectedX, factor);
+                    this.setImageHeight(img, expectedY, factor);
                 }
-                img.style.height = null;
-                img.removeAttribute('height');
-            } else if (img.style.width === '' && img.style.height !== '') {
-                img.style.height = expectedY + 'px';
-            } else if (img.style.width !== '' && img.style.height === '') {
-                const currentWidth: number = ((width / height * expectedY) + width / height) <
-                    (this.parent.inputElement.getBoundingClientRect().right - 32) ?
-                    ((width / height * expectedY) + width / height) : (this.parent.inputElement.getBoundingClientRect().right - 32);
-                img.style.width = currentWidth.toString() + 'px';
-                img.style.height = expectedY + 'px';
             } else if (img.style.width !== '') {
-                const currentWidth: number = (width / height * expectedY) < (this.parent.inputElement.getBoundingClientRect().right - 32) ?
-                    (width / height * expectedY) : (this.parent.inputElement.getBoundingClientRect().right - 32);
-                img.style.width = currentWidth + 'px';
-                img.style.height = expectedY + 'px';
-            } else {
-                if (this.parent.iframeSettings.enable){
-                    img.setAttribute('width', (img.width + this.mouseX).toString());
-                }
-                else {
-                    const currentWidth: number = img.offsetWidth === 0 ? img.width + this.mouseX + parseInt(img.style.outlineWidth.split('p')[0], 10) : img.offsetWidth + this.mouseX;
-                    img.setAttribute('width', (currentWidth).toString());
-                }
-            }
-        } else if (height > width) {
-            if (this.parent.insertImageSettings.resizeByPercent) {
-                if (parseInt('' + img.getBoundingClientRect().width + '', 10) !== 0 && parseInt('' + width + '', 10) !== 0) {
-                    const original : number  = img.offsetWidth + this.mouseX;
-                    const finalWidthByPerc : number = (original / img.offsetWidth) * (parseFloat(img.style.width).toString() === 'NaN' ?
-                        (img.offsetWidth / (parseFloat(getComputedStyle( this.parent.element).width)) * 100) :
-                        parseFloat(img.style.width));
-                    img.style.width = ((finalWidthByPerc > 3) ? finalWidthByPerc : 3) + '%';
+                if (this.parent.insertImageSettings.resizeByPercent) {
+                    this.setImageWidth(img, expectedX, factor);
+                    this.removeImageHeight(img);
                 } else {
-                    img.style.width = this.pixToPerc((expectedX / height * expectedY), (img.previousElementSibling || img.parentElement)) + '%';
+                    this.setImageWidth(img, expectedX, factor);
                 }
-                img.style.height = null;
-                img.removeAttribute('height');
-            } else if (img.style.width !== '') {
-                img.style.width = expectedX + 'px';
-                img.style.height = (height / width * expectedX) + 'px';
-            } else {
-                img.setAttribute('width', this.resizeBtnStat.botRight ? (this.getPointX(e.event as PointerEvent) - img.getBoundingClientRect().left).toString() : expectedX.toString());
+            } else if (img.style.height !== '') {
+                if (this.parent.insertImageSettings.resizeByPercent) {
+                    this.setImageWidth(img, expectedX, factor);
+                    this.removeImageHeight(img);
+                } else {
+                    this.setImageHeight(img, expectedY, factor);
+                }
             }
         } else {
+            this.setImageWidth(img, expectedX, factor);
             if (this.parent.insertImageSettings.resizeByPercent) {
-                img.style.width = this.pixToPerc(expectedX, (img.previousElementSibling || img.parentElement)) + '%';
-                img.style.height = null;
-                img.removeAttribute('height');
+                this.removeImageHeight(img);
             } else {
-                img.style.width = ((expectedX >= 15) ? expectedX : 15) + 'px';
-                img.style.height = ((expectedX >= 15) ? expectedX : 15) + 'px';
+                this.setImageHeight(img, expectedY, factor);
             }
         }
     }
+
+    private setImageWidth(img: HTMLImageElement, value: number, suffix: string): void {
+        img.style.width = this.getImageDimension(value, img) + suffix;
+        if (!this.parent.insertImageSettings.resizeByPercent) {
+            img.setAttribute('width', value.toString());
+        }
+    }
+
+    private setImageHeight(img: HTMLImageElement, value: number, suffix: string): void {
+        img.style.height = this.getImageDimension(value, img) + suffix;
+        if (!this.parent.insertImageSettings.resizeByPercent) {
+            img.setAttribute('height', value.toString());
+        }
+    }
+
+    private removeImageHeight(img: HTMLImageElement): void {
+        img.style.height = '';
+        img.removeAttribute('height');
+    }
+
+    private getImageDimension(value: number, img: HTMLImageElement): number {
+        if (this.parent.insertImageSettings.resizeByPercent) {
+            const rootElem: Element = img.parentElement || img.previousElementSibling;
+            return this.pixToPerc(value, rootElem);
+        } else {
+            return value;
+        }
+    }
+
     private pixToPerc(expected: number, parentEle: Element): number {
         return expected / parseFloat(getComputedStyle(parentEle).width) * 100;
     }
@@ -486,7 +481,7 @@ export class Image {
                     return;
                 }
                 this.imgEle.parentElement.style.cursor = 'pointer';
-                this.setAspectRatio(this.imgEle, parseInt(width, 10), parseInt(height, 10), args);
+                this.setAspectRatio(this.imgEle, parseInt(width, 10), parseInt(height, 10));
                 this.resizeImgDupPos(this.imgEle);
                 this.imgResizePos(this.imgEle, this.imgResizeDiv);
             }
@@ -494,31 +489,37 @@ export class Image {
     }
     private resizing(e: PointerEvent | TouchEvent): void {
         if (!this.parent) { this.cancelResizeAction(); return; }
-        if (this.imgEle.offsetWidth >= this.parent.getInsertImgMaxWidth()) {
-            this.imgEle.style.maxHeight = this.imgEle.offsetHeight + 'px';
-        } else if (isNOU(this.parent.insertImageSettings.maxHeight)) {
-            this.imgEle.style.maxHeight = '';
+        if (this.resizeBtnStat.botRight || this.resizeBtnStat.botLeft || this.resizeBtnStat.topRight || this.resizeBtnStat.topLeft) {
+            const pageX: number = this.getPointX(e);
+            const pageY: number = this.getPointY(e);
+            const resizeFactor: number[] = this.getResizeFactor(this.currentResizeHandler);
+            const diffX: number = (pageX - this.pageX);
+            const diffY: number = (pageY - this.pageY);
+            const currentWidth: number  = this.imgEle.clientWidth;
+            const currentHeight: number = this.imgEle.clientHeight;
+            let width: number = diffX * resizeFactor[0] + currentWidth;
+            let height: number = diffY * resizeFactor[1] + currentHeight;
+            width = (width < 16) ? 16 : width;
+            height = (height < 16) ? 16 : height;
+            if (Math.abs(diffX) >  Math.abs(diffY)) {
+                height = Math.round(width / this.aspectRatio);
+                width = Math.round(height * this.aspectRatio);
+            } else {
+                width = Math.round(height * this.aspectRatio);
+                height = Math.round(width / this.aspectRatio);
+            }
+            this.pageX = pageX;
+            this.pageY = pageY;
+            this.imgDupMouseMove(width + 'px', height + 'px', e);
         }
-        this.imgEle.style.maxWidth = (closest(this.imgEle, 'ol,ul') != null ? (this.parent.getInsertImgMaxWidth() as number) - parseInt((getComputedStyle(closest(this.imgEle, 'ol,ul')).paddingLeft), 0) : this.parent.getInsertImgMaxWidth()) + 'px';
-        const pageX: number = this.getPointX(e);
-        const pageY: number = this.getPointY(e);
-        const mouseX: number = (this.resizeBtnStat.botLeft || this.resizeBtnStat.topLeft) ? -(pageX - this.pageX) : (pageX - this.pageX);
-        const mouseY: number = (this.resizeBtnStat.botLeft || this.resizeBtnStat.topLeft) ? -(pageY - this.pageY) : (pageY - this.pageY);
-        const width: number = parseInt(this.imgDupPos.width as string, 10) + mouseX;
-        const height: number = parseInt(this.imgDupPos.height as string, 10) + mouseY;
-        this.mouseX = mouseX;
-        this.pageX = pageX;
-        this.pageY = pageY;
-        if (this.resizeBtnStat.botRight) {
-            this.imgDupMouseMove(width + 'px', height + 'px', e);
-        } else if (this.resizeBtnStat.botLeft) {
-            this.imgDupMouseMove(width + 'px', height + 'px', e);
-        } else if (this.resizeBtnStat.topRight) {
-            this.imgDupMouseMove(width + 'px', height + 'px', e);
-        } else if (this.resizeBtnStat.topLeft) {
-            this.imgDupMouseMove(width + 'px', height + 'px', e);
-        }
+    }
 
+    private getResizeFactor(value: string): number[] {
+        return imageResizeFactor[value as keyof IImageResizeFactor];
+    }
+
+    private findAspectRatio(image: HTMLImageElement): number {
+        return image.clientWidth / image.clientHeight;
     }
 
     private cancelResizeAction(): void {
@@ -530,6 +531,8 @@ export class Image {
             this.imgResizeDiv = null;
             this.pageX = null;
             this.pageY = null;
+            this.currentResizeHandler = null;
+            this.aspectRatio = null;
         }
     }
     private resizeImgDupPos(e: HTMLImageElement): void {
@@ -541,6 +544,8 @@ export class Image {
     }
 
     private resizeBtnInit(): { [key: string]: boolean } {
+        this.aspectRatio = null;
+        this.currentResizeHandler = null;
         return this.resizeBtnStat = { botLeft: false, botRight: false, topRight: false, topLeft: false };
     }
     private onToolbarAction(args: NotifyArgs): void {
@@ -616,7 +621,7 @@ export class Image {
             });
         if (this.quickToolObj && document.body.contains(this.quickToolObj.imageQTBar.element)) {
             this.quickToolObj.imageQTBar.hidePopup();
-            if (!isNullOrUndefined(e.selectParent as Node[])) {
+            if (!isNOU(e.selectParent as Node[])) {
                 removeClass([e.selectParent[0] as HTMLElement], 'e-img-focus');
             }
         }
@@ -655,7 +660,7 @@ export class Image {
                 this.checkImageDel(range);
             }
         }
-        if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) &&
+        if (!isNOU(this.parent.formatter.editorManager.nodeSelection) &&
             originalEvent.code !== 'KeyK') {
             range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             selectNodeEle = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
@@ -679,7 +684,7 @@ export class Image {
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
             if (selectNodeEle && selectNodeEle[0].nodeName === 'IMG' && selectNodeEle.length < 1) {
-                if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
+                if (!isNOU(this.parent.formatter.editorManager.nodeSelection))
                 {save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
                 originalEvent.preventDefault();
                 const event: IImageNotifyArgs = {
@@ -700,7 +705,7 @@ export class Image {
         }
         switch (originalEvent.action) {
         case 'escape':
-            if (!isNullOrUndefined(this.dialogObj)) {
+            if (!isNOU(this.dialogObj)) {
                 this.dialogObj.close();
             }
             break;
@@ -732,19 +737,19 @@ export class Image {
                     } else if ((range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_IMGBREAK)) {
                         detach((range.startContainer as HTMLElement).querySelector('.' + classes.CLS_CAPTION + '.' + classes.CLS_IMGBREAK));
                     } else if ((range.startContainer as HTMLElement).classList.contains('e-img-wrap') && closest((range.startContainer as HTMLElement), '.' + classes.CLS_CAPTION)) {
-                        const parentElem = (range.startContainer as HTMLElement).parentElement.parentElement;
+                        const parentElem: HTMLElement = (range.startContainer as HTMLElement).parentElement.parentElement;
                         detach(closest((range.startContainer as HTMLElement), '.' + classes.CLS_CAPTION));
                         if (parentElem && parentElem.textContent.trim() === '') {
                             const brElem: HTMLElement = this.parent.createElement('br');
                             brElem.classList.add('e-rte-image-remove-focus');
-                            parentElem.appendChild(brElem); 
+                            parentElem.appendChild(brElem);
                         }
                     }
                 }
             }
             break;
         case 'insert-image':
-            if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
+            if (!isNOU(this.parent.formatter.editorManager.nodeSelection))
             {save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
             this.openDialog(true, originalEvent, save, selectNodeEle, selectParentEle);
             originalEvent.preventDefault();
@@ -899,8 +904,8 @@ export class Image {
     }
 
     private showImageQuickToolbar(e: IShowPopupArgs): void {
-        if (e.type !== 'Images' || isNullOrUndefined(this.parent.quickToolbarModule)
-            || isNullOrUndefined(this.parent.quickToolbarModule.imageQTBar) || isNullOrUndefined(e.args)) {
+        if (e.type !== 'Images' || isNOU(this.parent.quickToolbarModule)
+            || isNOU(this.parent.quickToolbarModule.imageQTBar) || isNOU(e.args)) {
             return;
         }
         this.quickToolObj = this.parent.quickToolbarModule;
@@ -935,7 +940,7 @@ export class Image {
     }
 
     private hideImageQuickToolbar(): void {
-        if (!isNullOrUndefined(this.contentModule.getEditPanel().querySelector('.e-img-focus'))) {
+        if (!isNOU(this.contentModule.getEditPanel().querySelector('.e-img-focus'))) {
             removeClass([this.contentModule.getEditPanel().querySelector('.e-img-focus')], 'e-img-focus');
             if (this.quickToolObj && this.quickToolObj.imageQTBar && document.body.contains(this.quickToolObj.imageQTBar.element)) {
                 this.quickToolObj.imageQTBar.hidePopup();
@@ -951,7 +956,7 @@ export class Image {
         const args: MouseEvent = e.args as MouseEvent;
         const showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
-            if ((showOnRightClick && args.which === 1) && !isNullOrUndefined((args.target as HTMLElement)) &&
+            if ((showOnRightClick && args.which === 1) && !isNOU((args.target as HTMLElement)) &&
                 (args.target as HTMLElement).tagName === 'IMG') {
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.setSelectionContents(
@@ -1009,7 +1014,7 @@ export class Image {
             return;
         }
         this.imagDialog(e);
-        if (!isNullOrUndefined(this.dialogObj)) {
+        if (!isNOU(this.dialogObj)) {
             const linkWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-linkwrap' + this.parent.getCssClass(true) });
             const linkUrl: string = this.i10n.getConstant('linkurl');
             const content: string = '<div class="e-rte-field' + this.parent.getCssClass(true) + '">' +
@@ -1035,7 +1040,7 @@ export class Image {
             this.checkBoxObj.createElement = this.parent.createElement;
             this.checkBoxObj.appendTo(linkTarget);
             let target: string = this.checkBoxObj.checked ? '_blank' : null;
-            let imageLabel = this.checkBoxObj.checked ? this.i10n.getConstant('imageLinkAriaLabel') : null;
+            const imageLabel: string | null  = this.checkBoxObj.checked ? this.i10n.getConstant('imageLinkAriaLabel') : null;
             const linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             const linkargs: IImageNotifyArgs = {
                 args: e.args,
@@ -1043,7 +1048,6 @@ export class Image {
                 selectNode: e.selectNode, selectParent: e.selectParent, link: inputLink, target: target, ariaLabel: imageLabel
             };
             this.dialogObj.setProperties({
-                height: 'inherit',
                 width: '290px',
                 header: this.parent.localeObj.getConstant('imageInsertLinkHeader'),
                 content: linkWrap,
@@ -1061,7 +1065,7 @@ export class Image {
             if (!isNOU(this.parent.cssClass)) {
                 this.dialogObj.setProperties({ cssClass: this.parent.cssClass });
             }
-            if (!isNullOrUndefined(inputDetails)) {
+            if (!isNOU(inputDetails)) {
                 (inputLink as HTMLInputElement).value = inputDetails.url;
                 // eslint-disable-next-line
                 (inputDetails.target) ? this.checkBoxObj.checked = true : this.checkBoxObj.checked = false;
@@ -1078,7 +1082,7 @@ export class Image {
         }
         this.imagDialog(e);
         const altText: string = this.i10n.getConstant('altText');
-        if (!isNullOrUndefined(this.dialogObj)) {
+        if (!isNOU(this.dialogObj)) {
             const altWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-altwrap' + this.parent.getCssClass(true) });
             const altHeader: string = this.i10n.getConstant('alternateHeader');
             const linkUpdate: string = this.i10n.getConstant('dialogUpdate');
@@ -1096,7 +1100,7 @@ export class Image {
                 alt: inputAlt
             };
             this.dialogObj.setProperties({
-                height: 'inherit', width: '290px', header: altHeader, content: altWrap,
+                width: '290px', header: altHeader, content: altWrap,
                 buttons: [{
                     // eslint-disable-next-line
                     click: (e: MouseEvent) => {
@@ -1117,7 +1121,7 @@ export class Image {
     }
 
     private insertAlt(e: IImageNotifyArgs): void {
-        if (!isNullOrUndefined(e.alt)) {
+        if (!isNOU(e.alt)) {
             e.selection.restore();
             if (this.parent.formatter.getUndoRedoStack().length === 0) {
                 this.parent.formatter.saveData();
@@ -1232,7 +1236,7 @@ export class Image {
             this.quickToolObj.imageQTBar.hidePopup();
         }
         this.cancelResizeAction();
-        if (isNullOrUndefined(keyCode)) {
+        if (isNOU(keyCode)) {
             this.parent.trigger(events.afterImageDelete, args);
         }
     }
@@ -1281,7 +1285,7 @@ export class Image {
         addClass([selectNode], 'e-rte-image');
         const subCommand: string = ((e.args as ClickEventArgs).item) ?
             ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand : 'Caption';
-        if (!isNullOrUndefined(closest(selectNode, '.' + classes.CLS_CAPTION))) {
+        if (!isNOU(closest(selectNode, '.' + classes.CLS_CAPTION))) {
             detach(closest(selectNode, '.' + classes.CLS_CAPTION));
             if (Browser.isIE) {
                 (this.contentModule.getEditPanel() as HTMLElement).focus();
@@ -1343,13 +1347,13 @@ export class Image {
             return;
         }
         this.imagDialog(e);
-        if (!isNullOrUndefined(this.dialogObj)) {
+        if (!isNOU(this.dialogObj)) {
             const imgSizeHeader: string = this.i10n.getConstant('imageSizeHeader');
             const linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             const dialogContent: HTMLElement = this.imgsizeInput(e);
             const selectObj: IImageNotifyArgs = { args: e.args, selfImage: this, selection: e.selection, selectNode: e.selectNode };
             this.dialogObj.setProperties({
-                height: (Browser.isDevice) ? '300px' : 'inherit', width: '290px', header: imgSizeHeader, content: dialogContent,
+                width: '290px', header: imgSizeHeader, content: dialogContent,
                 buttons: [{
                     // eslint-disable-next-line
                     click: (e: MouseEvent) => {
@@ -1447,7 +1451,7 @@ export class Image {
             }
         };
         const dialogContent: HTMLElement = this.parent.createElement('div', { className: 'e-img-content' + this.parent.getCssClass(true) });
-        if ((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
+        if ((!isNOU(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
             || this.parent.editorMode === 'HTML') {
             dialogContent.appendChild(this.imgUpload(e));
         }
@@ -1469,7 +1473,7 @@ export class Image {
         this.dialogObj = this.dialogRenderObj.render(dialogModel);
         this.dialogObj.createElement = this.parent.createElement;
         this.dialogObj.appendTo(imgDialog);
-        if (isNullOrUndefined(this.dialogObj)) { return; }
+        if (isNOU(this.dialogObj)) { return; }
         if (e.selectNode && e.selectNode[0].nodeName === 'IMG' && (e.name === 'insertImage')) {
             this.dialogObj.element.querySelector('.e-insertImage').textContent = this.parent.localeObj.getConstant('dialogUpdate');
         }
@@ -1477,7 +1481,7 @@ export class Image {
         if (this.quickToolObj) {
             if (this.quickToolObj.imageQTBar && document.body.contains(this.quickToolObj.imageQTBar.element)) {
                 this.quickToolObj.imageQTBar.hidePopup();
-                if (!isNullOrUndefined(e.selectParent as Node[])) {
+                if (!isNOU(e.selectParent as Node[])) {
                     removeClass([e.selectParent[0] as HTMLElement], 'e-img-focus');
                 }
             }
@@ -1505,7 +1509,7 @@ export class Image {
         if (target.nodeName !== '#document') {
             this.parent.currentTarget = <HTMLElement>e.target;
         }
-        if (!isNullOrUndefined(this.dialogObj) && ((
+        if (!isNOU(this.dialogObj) && ((
             // eslint-disable-next-line
             !closest(target, '[id=' + "'" + this.dialogObj.element.id + "'" + ']') && this.parent.toolbarSettings.enable && this.parent.getToolbarElement() &&
             !this.parent.getToolbarElement().contains(e.target as Node)) ||
@@ -1542,7 +1546,6 @@ export class Image {
             for (let i: number = 0; i < items.length; i++) {
                 removeClass([items[i as number]], 'e-img-focus');
                 removeClass([items[i as number]], 'e-resize');
-                items[i as number].style.maxWidth = '';
             }
         }
     }
@@ -1559,7 +1562,6 @@ export class Image {
         }
     }
 
-    // eslint-disable-next-line
     private imageUrlPopup(e: IImageNotifyArgs): HTMLElement {
         const imgUrl: HTMLElement = this.parent.createElement('div', { className: 'imgUrl' + this.parent.getCssClass(true) });
         const placeUrl: string = this.i10n.getConstant('imageUrl');
@@ -1595,7 +1597,7 @@ export class Image {
         if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
             proxy.parent.formatter.saveData();
         }
-        if (!isNullOrUndefined(proxy.uploadUrl) && proxy.uploadUrl.url !== '') {
+        if (!isNOU(proxy.uploadUrl) && proxy.uploadUrl.url !== '') {
             proxy.uploadUrl.cssClass = (proxy.parent.insertImageSettings.display === 'inline' ?
                 classes.CLS_IMGINLINE : classes.CLS_IMGBREAK);
             proxy.dialogObj.hide({ returnValue: false } as Event);
@@ -1608,7 +1610,7 @@ export class Image {
                 proxy.removeResizeEle();
             }
         } else if (url !== '') {
-            if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
+            if (proxy.parent.editorMode === 'HTML' && isNOU(
                 closest(
                     // eslint-disable-next-line
                     (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '[id=' + "'" + proxy.contentModule.getPanel().id + "'" + ']'))) {
@@ -1619,7 +1621,7 @@ export class Image {
                 (this as IImageNotifyArgs).selectParent = proxy.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
             }
             const regex: RegExp = /[\w-]+.(jpg|png|jpeg|gif)/g;
-            const matchUrl: string = (!isNullOrUndefined(url.match(regex)) && proxy.parent.editorMode === 'HTML') ? url.match(regex)[0] : '';
+            const matchUrl: string = (!isNOU(url.match(regex)) && proxy.parent.editorMode === 'HTML') ? url.match(regex)[0] : '';
             const value: IImageCommandsArgs = {
                 cssClass: (proxy.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
                 url: url, selection: (this as IImageNotifyArgs).selection, altText: matchUrl,
@@ -1643,12 +1645,18 @@ export class Image {
         const imgHeight: string = this.i10n.getConstant('imageHeight');
         const imgWidth: string = this.i10n.getConstant('imageWidth');
         const imgSizeWrap: HTMLElement = this.parent.createElement('div', { className: 'e-img-sizewrap' + this.parent.getCssClass(true) });
-        const widthVal: string = isNullOrUndefined(this.changedWidthValue) && (selectNode.style.width.toString() === 'auto' ||
-                selectNode.style.width !== '') ? selectNode.style.width : !isNullOrUndefined(this.changedWidthValue) ?
+        let widthVal: string = isNOU(this.changedWidthValue) && (selectNode.style.width.toString() === 'auto' ||
+                selectNode.style.width !== '') ? selectNode.style.width : !isNOU(this.changedWidthValue) ?
                 this.changedWidthValue : (parseInt(selectNode.getClientRects()[0].width.toString(), 10)).toString();
-        const heightVal: string = isNullOrUndefined(this.changedHeightValue) && (selectNode.style.height.toString() === 'auto' ||
-            selectNode.style.height !== '') ? selectNode.style.height : !isNullOrUndefined(this.changedHeightValue) ?
+        let heightVal: string = isNOU(this.changedHeightValue) && (selectNode.style.height.toString() === 'auto' ||
+            selectNode.style.height !== '') ? selectNode.style.height : !isNOU(this.changedHeightValue) ?
                 this.changedHeightValue : (parseInt(selectNode.getClientRects()[0].height.toString(), 10)).toString();
+        if (selectNode.style.width === '') {
+            widthVal = 'auto';
+        }
+        if (selectNode.style.height === '') {
+            heightVal = 'auto';
+        }
         this.changedWidthValue = null;
         this.changedHeightValue = null;
         const content: string = '<div class="e-rte-label' + this.parent.getCssClass(true) + '"><label>' + imgWidth +
@@ -1718,10 +1726,10 @@ export class Image {
 
     private insertImage(e: IImageNotifyArgs): void {
         this.imagDialog(e);
-        if (!isNullOrUndefined(this.dialogObj)) {
+        if (!isNOU(this.dialogObj)) {
             this.dialogObj.element.style.maxHeight = 'inherit';
             const dialogContent: HTMLElement = this.dialogObj.element.querySelector('.e-img-content');
-            if (((!isNullOrUndefined(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
+            if (((!isNOU(this.parent.insertImageSettings.path) && this.parent.editorMode === 'Markdown')
                 || this.parent.editorMode === 'HTML')) {
                 (document.getElementById(this.rteID + '_insertImage') as HTMLElement).focus();
             } else {
@@ -1736,7 +1744,7 @@ export class Image {
         // eslint-disable-next-line
         const proxy: this = this;
         const iframe: boolean = proxy.parent.iframeSettings.enable;
-        if (proxy.parent.editorMode === 'HTML' && (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '[id='
+        if (proxy.parent.editorMode === 'HTML' && (!iframe && isNOU(closest(e.selection.range.startContainer.parentNode, '[id='
         // eslint-disable-next-line
         + "'" + this.parent.contentModule.getPanel().id + "'" + ']'))
             || (iframe && !hasClass(e.selection.range.startContainer.parentNode.ownerDocument.querySelector('body'), 'e-lib')))) {
@@ -1784,8 +1792,9 @@ export class Image {
                 filesData = e.filesData;
                 this.parent.trigger(events.imageSelected, selectArgs, (selectArgs: SelectedEventArgs) => {
                     if (!selectArgs.cancel) {
-                        this.checkExtension(selectArgs.filesData[0]); altText = selectArgs.filesData[0].name;
-                        if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertImageSettings.path)) {
+                        this.checkExtension(selectArgs.filesData[0]);
+                        altText = selectArgs.filesData[0].name.replace(/\.[a-zA-Z0-9]+$/, '');
+                        if (this.parent.editorMode === 'HTML' && isNOU(this.parent.insertImageSettings.path)) {
                             const reader: FileReader = new FileReader();
                             // eslint-disable-next-line
                             reader.addEventListener('load', (e: MouseEvent) => {
@@ -1804,8 +1813,8 @@ export class Image {
                                     }
                                 };
                                 proxy.inputUrl.setAttribute('disabled', 'true');
-                                if (isNullOrUndefined(proxy.parent.insertImageSettings.saveUrl) && this.isAllowedTypes
-                                    && !isNullOrUndefined(this.dialogObj)) {
+                                if (isNOU(proxy.parent.insertImageSettings.saveUrl) && this.isAllowedTypes
+                                    && !isNOU(this.dialogObj)) {
                                     (this.dialogObj.getButtons(0) as Button).element.removeAttribute('disabled');
                                 }
                             });
@@ -1824,7 +1833,7 @@ export class Image {
             },
             success: (e: Object) => {
                 this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
-                    if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
+                    if (!isNOU(this.parent.insertImageSettings.path)) {
                         const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
                         // eslint-disable-next-line
                         const value: IImageCommandsArgs = { url: url, selection: save };
@@ -1840,7 +1849,7 @@ export class Image {
                         };
                         proxy.inputUrl.setAttribute('disabled', 'true');
                     }
-                    if ((e as ProgressEventArgs).operation === 'upload' && !isNullOrUndefined(this.dialogObj)) {
+                    if ((e as ProgressEventArgs).operation === 'upload' && !isNOU(this.dialogObj)) {
                         (this.dialogObj.getButtons(0) as Button).element.removeAttribute('disabled');
                     }
                 });
@@ -2155,10 +2164,10 @@ export class Image {
                     isUploading = true;
                     this.parent.trigger(events.imageUploading, e, (imageUploadingArgs: UploadingEventArgs) => {
                         if (imageUploadingArgs.cancel) {
-                            if (!isNullOrUndefined(imageElement)) {
+                            if (!isNOU(imageElement)) {
                                 detach(imageElement);
                             }
-                            if (!isNullOrUndefined(this.popupObj.element)) {
+                            if (!isNOU(this.popupObj.element)) {
                                 detach(this.popupObj.element);
                             }
                         } else {
@@ -2253,7 +2262,7 @@ export class Image {
         imageElement.classList.add(classes.CLS_IMG_FOCUS);
         e.element = imageElement;
         this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
-            if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
+            if (!isNOU(this.parent.insertImageSettings.path)) {
                 const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
                 (imageElement as HTMLImageElement).src = url;
                 imageElement.setAttribute('alt', (e as MetaData).file.name);
@@ -2268,7 +2277,7 @@ export class Image {
     }
 
     private imagePaste(args: NotifyArgs): void {
-        if (args.text.length === 0 && !isNullOrUndefined((args as NotifyArgs).file)) {
+        if (args.text.length === 0 && !isNOU((args as NotifyArgs).file)) {
             // eslint-disable-next-line
             const proxy: Image = this;
             const reader: FileReader = new FileReader();
@@ -2277,7 +2286,7 @@ export class Image {
             reader.addEventListener('load', (e: MouseEvent) => {
                 const url: IImageCommandsArgs = {
                     cssClass: (proxy.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
-                    url: this.parent.insertImageSettings.saveFormat === 'Base64' || !isNullOrUndefined(args.callBack) ?
+                    url: this.parent.insertImageSettings.saveFormat === 'Base64' || !isNOU(args.callBack) ?
                         reader.result as string : URL.createObjectURL(convertToBlob(reader.result as string)),
                     width: {
                         width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
@@ -2288,7 +2297,7 @@ export class Image {
                         maxHeight: proxy.parent.insertImageSettings.maxHeight
                     }
                 };
-                if (!isNullOrUndefined(args.callBack)) {
+                if (!isNOU(args.callBack)) {
                     args.callBack(url);
                     return;
                 } else {

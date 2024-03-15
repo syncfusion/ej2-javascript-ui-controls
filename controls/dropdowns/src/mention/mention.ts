@@ -62,6 +62,8 @@ export class Mention extends DropDownBase {
     private isTyped: boolean;
     private didPopupOpenByTypingInitialChar: boolean;
     private isUpDownKey: boolean;
+    private isRTE: boolean;
+    private keyEventName: string;
 
     // Mention Options
 
@@ -450,6 +452,8 @@ export class Mention extends DropDownBase {
         this.isPopupOpen = false;
         this.isCollided = false;
         this.lineBreak = false;
+        this.isRTE = false;
+        this.keyEventName = 'mousedown';
     }
 
     /**
@@ -500,7 +504,7 @@ export class Mention extends DropDownBase {
 
     private bindCommonEvent(): void {
         if (!Browser.isDevice) {
-            this.inputElement.addEventListener('keydown', this.keyDownHandler.bind(this), true);
+            this.inputElement.addEventListener('keydown', this.keyDownHandler.bind(this), !this.isRTE);
         }
     }
 
@@ -534,7 +538,10 @@ export class Mention extends DropDownBase {
                 return parentElement.querySelector('.e-content') as HTMLElement;
             }
         }
-
+        if (targetElement && targetElement.parentElement && targetElement.parentElement.classList.contains('e-rte-content')) {
+            this.isRTE = true;
+            this.keyEventName = 'click';
+        }
         return targetElement;
     }
 
@@ -659,7 +666,7 @@ export class Mention extends DropDownBase {
 
     private unBindCommonEvent(): void {
         if (!Browser.isDevice) {
-            this.inputElement.removeEventListener('keydown', this.keyDownHandler.bind(this), true);
+            this.inputElement.removeEventListener('keydown', this.keyDownHandler.bind(this), !this.isRTE);
         }
     }
 
@@ -671,20 +678,20 @@ export class Mention extends DropDownBase {
         }
         this.isTyped = e.code !== 'Enter' && e.code !== 'Space' && e.code !== 'ArrowDown' && e.code !== 'ArrowUp' ? true : false;
         const isRteImage: boolean = document.activeElement.parentElement && document.activeElement.parentElement.querySelector('.e-rte-image') ? true : false;
-        if (document.activeElement != this.inputElement && !isRteImage) {
+        if (document.activeElement != this.inputElement && isRteImage) {
             this.inputElement.focus(); }
         if (this.isContentEditable(this.inputElement)) {
             this.range = this.getCurrentRange();
             rangetextContent = this.range.startContainer.textContent.split('');
         }
         let currentRange: string = this.getTextRange();
-	let lastWordRange: string = this.getLastLetter(currentRange);
-	const lastTwoLetters: string = this.mentionChar.toString() + this.mentionChar.toString();
+	    let lastWordRange: string = this.getLastLetter(currentRange);
+        const lastTwoLetters: string = this.mentionChar.toString() + this.mentionChar.toString();
         // eslint-disable-next-line security/detect-non-literal-regexp
         const Regex: RegExp = new RegExp(this.mentionChar.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
         const charRegex: RegExp = new RegExp('[a-zA-Z]', 'g');
         if (e.key === 'Shift' || e.keyCode === 37 || e.keyCode === 39) { return; }
-	if (this.beforePopupOpen && this.isPopupOpen && lastWordRange == lastTwoLetters ) {
+        if (this.beforePopupOpen && this.isPopupOpen && lastWordRange == lastTwoLetters) {
             this.hidePopup();
             return;
         }
@@ -696,7 +703,7 @@ export class Mention extends DropDownBase {
             this.range.startContainer.nodeType === 1))) {
             if (this.isPopupOpen && this.allowSpaces && currentRange && currentRange.trim() !== '' && charRegex.test(currentRange) && currentRange.indexOf(this.mentionChar) !== -1
                 && !this.isMatchedText() && (currentRange.length > 1 && currentRange.replace(/\u00A0/g, ' ').charAt(currentRange.length - 2) !== ' ') &&
-                (this.list && this.list.querySelectorAll('ul').length > 0)) {
+                (this.list && this.list.querySelectorAll('ul').length > 0) && e.code !== 'Enter') {
                 this.queryString = currentRange.substring(currentRange.lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ');
                 this.searchLists(e);
             } else if (this.isPopupOpen && (!this.allowSpaces || !lastWordRange) && (e.code !== 'ArrowDown' && e.code !== 'ArrowUp')) {
@@ -1337,7 +1344,7 @@ export class Mention extends DropDownBase {
      * @returns {void}
      */
     private wireListEvents(): void {
-        EventHandler.add(this.list, 'mousedown', this.onMouseClick, this);
+        EventHandler.add(this.list, this.keyEventName, this.onMouseClick, this);
         EventHandler.add(this.list, 'mouseover', this.onMouseOver, this);
         EventHandler.add(this.list, 'mouseout', this.onMouseLeave, this);
     }
@@ -1348,7 +1355,7 @@ export class Mention extends DropDownBase {
      * @returns {void}
      */
     private unWireListEvents(): void {
-        EventHandler.remove(this.list, 'mousedown', this.onMouseClick);
+        EventHandler.remove(this.list, this.keyEventName, this.onMouseClick);
         EventHandler.remove(this.list, 'mouseover', this.onMouseOver);
         EventHandler.remove(this.list, 'mouseout', this.onMouseLeave);
     }
@@ -1364,7 +1371,9 @@ export class Mention extends DropDownBase {
         const delay: number = 100;
         this.closePopup(delay, e);
         this.inputElement.focus();
-        e.preventDefault();
+        if (!this.isRTE) {
+            e.preventDefault();
+        }
     }
 
     private updateSelectedItem(
@@ -1609,7 +1618,7 @@ export class Mention extends DropDownBase {
                 selection.addRange(range);
             }
             if (this.isPopupOpen) { this.hidePopup(); }
-            //New event to update the RichTextEditor value, when a mention item is selected using mouse click action. 
+            //New event to update the RichTextEditor value, when a mention item is selected using mouse click action.
             if (!isNullOrUndefined((e as PointerEvent).pointerType) && (e as PointerEvent).pointerType === 'mouse') {
                 const event: Event = new CustomEvent('content-changed', { detail: { click: true } });
                 this.inputElement.dispatchEvent(event);

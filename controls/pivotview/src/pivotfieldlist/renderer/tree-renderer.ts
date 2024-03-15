@@ -66,27 +66,6 @@ export class TreeViewRenderer implements IAction {
                 attrs: { title: this.parent.localeObj.getConstant('allFields') }
             });
             treeHeader.innerText = this.parent.localeObj.getConstant('allFields');
-            const searchWrapper: HTMLElement = createElement('div', {
-                id: this.parent.element.id + '_SearchDiv', attrs: { 'tabindex': '-1' },
-                className: cls.FIELD_LIST_SEARCH_CLASS
-            });
-            const searchInput: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
-            searchWrapper.appendChild(searchInput);
-            this.fieldSearch = new TextBox({
-                placeholder: this.parent.localeObj.getConstant('search'),
-                enableRtl: this.parent.enableRtl,
-                locale: this.parent.locale,
-                cssClass: cls.FIELD_LIST_SEARCH_INPUT_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
-                input: this.textChange.bind(this),
-                showClearButton: true
-            });
-            this.fieldSearch.isStringTemplate = true;
-            this.fieldSearch.appendTo(searchInput);
-            this.fieldSearch.addIcon('append', cls.FIELD_LIST_SEARCH_ICON_CLASS + ' ' + cls.ICON);
-            const promptDiv: HTMLElement = createElement('div', {
-                className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE
-            });
-            promptDiv.innerText = this.parent.localeObj.getConstant('noMatches');
             const treeOuterDiv: HTMLElement = createElement('div', {
                 className: cls.FIELD_LIST_TREE_OUTER_DIV_CLASS + ' ' + cls.TREE_CONTAINER
             });
@@ -99,6 +78,27 @@ export class TreeViewRenderer implements IAction {
             fieldTable.appendChild(fieldHeaderWrappper);
             this.updateSortElements(fieldHeaderWrappper);
             if (this.parent.enableFieldSearching) {
+                const searchWrapper: HTMLElement = createElement('div', {
+                    id: this.parent.element.id + '_SearchDiv', attrs: { 'tabindex': '-1' },
+                    className: cls.FIELD_LIST_SEARCH_CLASS
+                });
+                const searchInput: HTMLInputElement = createElement('input', { attrs: { 'type': 'text' } }) as HTMLInputElement;
+                searchWrapper.appendChild(searchInput);
+                this.fieldSearch = new TextBox({
+                    placeholder: this.parent.localeObj.getConstant('search'),
+                    enableRtl: this.parent.enableRtl,
+                    locale: this.parent.locale,
+                    cssClass: cls.FIELD_LIST_SEARCH_INPUT_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
+                    input: this.textChange.bind(this),
+                    showClearButton: true
+                });
+                this.fieldSearch.isStringTemplate = true;
+                this.fieldSearch.appendTo(searchInput);
+                this.fieldSearch.addIcon('append', cls.FIELD_LIST_SEARCH_ICON_CLASS + ' ' + cls.ICON);
+                const promptDiv: HTMLElement = createElement('div', {
+                    className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE
+                });
+                promptDiv.innerText = this.parent.localeObj.getConstant('noMatches');
                 fieldTable.appendChild(searchWrapper);
                 fieldTable.appendChild(promptDiv);
             }
@@ -143,12 +143,12 @@ export class TreeViewRenderer implements IAction {
     private renderTreeView(): void {
         this.fieldTable = new TreeView({
             fields: { dataSource: this.getTreeData(), id: 'id', text: 'caption', isChecked: 'isSelected', parentID: 'pid', iconCss: 'spriteCssClass' },
-            nodeChecked: this.nodeStateChange.bind(this),
+            nodeClicked: this.nodeStateChange.bind(this),
+            keyPress: this.nodeStateChange.bind(this),
             cssClass: cls.FIELD_LIST_TREE_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
             showCheckBox: true,
             allowDragAndDrop: true,
             sortOrder: 'None',
-            autoCheck: false,
             loadOnDemand: this.parent.dataType === 'olap' ? false : true,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
@@ -378,14 +378,14 @@ export class TreeViewRenderer implements IAction {
         this.fieldTable = new TreeView({
             fields: { dataSource: treeData, id: 'id', text: 'caption', isChecked: 'isSelected', parentID: 'pid', iconCss: 'spriteCssClass' },
             showCheckBox: true,
-            autoCheck: false,
             loadOnDemand: this.parent.dataType === 'olap' ? false : true,
             sortOrder: this.parent.dataType === 'olap' ? 'None' : 'Ascending',
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             enableHtmlSanitizer: this.parent.enableHtmlSanitizer,
             cssClass: this.parent.cssClass,
-            nodeChecked: this.addNode.bind(this),
+            nodeClicked: this.addNode.bind(this),
+            keyPress: this.addNode.bind(this),
             drawNode: this.updateTreeNode.bind(this),
             nodeExpanding: this.updateNodeIcon.bind(this),
             nodeCollapsed: this.updateNodeIcon.bind(this),
@@ -516,8 +516,8 @@ export class TreeViewRenderer implements IAction {
         const list: { [key: string]: Object } = this.parent.pivotFieldList;
         const selectedNode: { [key: string]: Object } = list[fieldName as string] as { [key: string]: Object };
         this.parent.pivotCommon.dataSourceUpdate.control = this.parent.getModuleName() === 'pivotview' ? this.parent :
-            (this.parent.isPopupView && (this.parent as PivotFieldList).pivotGridModule ?
-                (this.parent as PivotFieldList).pivotGridModule : this.parent);
+            (this.parent.isPopupView && (this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule
+                : this.parent);
         if (this.parent.pivotCommon.nodeStateModified.onStateModified(args, fieldName)) {
             if (this.parent.allowDeferLayoutUpdate) {
                 selectedNode.isSelected = true;
@@ -575,74 +575,82 @@ export class TreeViewRenderer implements IAction {
         return buttonElement;
     }
     private nodeStateChange(args: NodeCheckEventArgs): void {
-        if (!args.isInteracted) {
-            return;
+        const id: string = args.node.getAttribute('data-uid');
+        if (this.parent.pivotCommon.filterDialog.dialogPopUp) {
+            this.parent.pivotCommon.filterDialog.dialogPopUp.close();
         }
-        const node: HTMLElement = closest(args.node, '.' + cls.TEXT_CONTENT_CLASS) as HTMLElement;
-        if (!isNullOrUndefined(node)) {
-            const li: HTMLElement = closest(node, 'li') as HTMLElement;
-            const id: string = li.getAttribute('data-uid');
-            if (this.parent.pivotCommon.filterDialog.dialogPopUp) {
-                this.parent.pivotCommon.filterDialog.dialogPopUp.close();
-            }
-            const list: { [key: string]: Object } = this.parent.pivotFieldList;
-            const selectedNode: { [key: string]: Object } = list[id as string] as { [key: string]: Object };
-            const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(id, this.parent);
-            const control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
-            const parentNode: Element = node.closest('.' + cls.FIELD_TREE_PARENT);
-            if (args.action === 'check') {
-                const eventdrop: FieldDropEventArgs = {
-                    fieldName: id, dropField: fieldInfo.fieldItem,
-                    dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
-                    dropAxis: (selectedNode.type === 'number' || (selectedNode.type === 'CalculatedField' &&
-                        selectedNode.formula && (selectedNode.formula as string).indexOf('Measure') > -1 &&
-                        this.parent.dataType === 'olap')) ? 'values' : 'rows',
-                    dropPosition: fieldInfo.position, draggedAxis: 'fieldlist', cancel: false
-                };
-                control.trigger(events.fieldDrop, eventdrop, (observedArgs: FieldDropEventArgs) => {
-                    if (!observedArgs.cancel) {
-                        addClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
-                        if (parentNode) {
-                            addClass([parentNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
-                        }
-                        this.updateSelectedNodes(li, args.action);
-                        const addNode: IFieldOptions = this.parent.pivotCommon.dataSourceUpdate.getNewField(id, fieldInfo.fieldItem);
-                        this.updateReportSettings(addNode, observedArgs);
-                        this.updateNodeStateChange(id, args, selectedNode);
-                    } else {
-                        this.updateCheckState(selectedNode, args.action);
-                    }
-                });
+        const list: { [key: string]: Object } = this.parent.pivotFieldList;
+        const selectedNode: { [key: string]: Object } = list[id as string] as { [key: string]: Object };
+        const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(id, this.parent);
+        const control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
+        const parentNode: Element = args.node.closest('.' + cls.FIELD_TREE_PARENT);
+        let isChecked: boolean = false; /* eslint-disable @typescript-eslint/no-explicit-any */
+        const getNodeDetails: any = this.fieldTable.getNode(args.node);
+        if ((args as any).event && (args as any).event.target &&
+            !(args as any).event.target.classList.contains(cls.CHECK_BOX_FRAME_CLASS)) {
+            /* eslint-enable @typescript-eslint/no-explicit-any */
+            if (getNodeDetails.isChecked === 'true') {
+                this.fieldTable.uncheckAll([args.node]);
+                isChecked = false;
             } else {
-                const removeFieldArgs: FieldRemoveEventArgs = {
-                    cancel: false, fieldName: id,
-                    dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
-                    fieldItem: fieldInfo.fieldItem, axis: fieldInfo.axis
-                };
-                control.trigger(events.fieldRemove, removeFieldArgs, (observedArgs: FieldRemoveEventArgs) => {
-                    if (!observedArgs.cancel) {
-                        removeClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
-                        if (parentNode && isNullOrUndefined(parentNode.querySelector('.' + cls.FIELD_TREE_CHILD + ' .' + cls.NODE_CHECK_CLASS))) {
-                            removeClass([parentNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
-                        }
-                        this.updateSelectedNodes(li, args.action);
-                        this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(id);
-                        if (this.parent.dataType === 'pivot' && this.parent.showValuesButton && this.parent.dataSourceSettings.values.length > 1 &&
-                            fieldInfo && fieldInfo.position < this.parent.dataSourceSettings.valueIndex &&
-                            ((this.parent.dataSourceSettings.valueAxis === 'row' && fieldInfo.axis === 'rows') ||
-                                (this.parent.dataSourceSettings.valueAxis === 'column' && fieldInfo.axis === 'columns'))) {
-                            control.setProperties({ dataSourceSettings: { valueIndex: this.parent.dataSourceSettings.valueIndex - 1 } }
-                                , true);
-                        }
-                        if (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.values.length === 0) {
-                            this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
-                        }
-                        this.updateNodeStateChange(id, args, selectedNode);
-                    } else {
-                        this.updateCheckState(selectedNode, args.action);
-                    }
-                });
+                this.fieldTable.checkAll([args.node]);
+                isChecked = true;
             }
+        } else {
+            isChecked = getNodeDetails.isChecked === 'true';
+        }
+        if (isChecked) {
+            const eventdrop: FieldDropEventArgs = {
+                fieldName: id, dropField: fieldInfo.fieldItem,
+                dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
+                dropAxis: (selectedNode.type === 'number' || (selectedNode.type === 'CalculatedField' &&
+                    selectedNode.formula && (selectedNode.formula as string).indexOf('Measure') > -1 &&
+                    this.parent.dataType === 'olap')) ? 'values' : 'rows',
+                dropPosition: fieldInfo.position, draggedAxis: 'fieldlist', cancel: false
+            };
+            control.trigger(events.fieldDrop, eventdrop, (observedArgs: FieldDropEventArgs) => {
+                if (!observedArgs.cancel) {
+                    addClass([args.node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
+                    if (parentNode) {
+                        addClass([parentNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
+                    }
+                    this.updateSelectedNodes(args.node, 'check');
+                    const addNode: IFieldOptions = this.parent.pivotCommon.dataSourceUpdate.getNewField(id, fieldInfo.fieldItem);
+                    this.updateReportSettings(addNode, observedArgs);
+                    this.updateNodeStateChange(id, selectedNode, isChecked);
+                } else {
+                    this.updateCheckState(selectedNode, 'check');
+                }
+            });
+        } else {
+            const removeFieldArgs: FieldRemoveEventArgs = {
+                cancel: false, fieldName: id,
+                dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
+                fieldItem: fieldInfo.fieldItem, axis: fieldInfo.axis
+            };
+            control.trigger(events.fieldRemove, removeFieldArgs, (observedArgs: FieldRemoveEventArgs) => {
+                if (!observedArgs.cancel) {
+                    removeClass([args.node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
+                    if (parentNode && isNullOrUndefined(parentNode.querySelector('.' + cls.FIELD_TREE_CHILD + ' .' + cls.NODE_CHECK_CLASS))) {
+                        removeClass([parentNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
+                    }
+                    this.updateSelectedNodes(args.node, 'uncheck');
+                    this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(id);
+                    if (this.parent.dataType === 'pivot' && this.parent.showValuesButton && this.parent.dataSourceSettings.values.length > 1 &&
+                        fieldInfo && fieldInfo.position < this.parent.dataSourceSettings.valueIndex &&
+                        ((this.parent.dataSourceSettings.valueAxis === 'row' && fieldInfo.axis === 'rows') ||
+                            (this.parent.dataSourceSettings.valueAxis === 'column' && fieldInfo.axis === 'columns'))) {
+                        control.setProperties({ dataSourceSettings: { valueIndex: this.parent.dataSourceSettings.valueIndex - 1 } }
+                            , true);
+                    }
+                    if (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.values.length === 0) {
+                        this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
+                    }
+                    this.updateNodeStateChange(id, selectedNode, isChecked);
+                } else {
+                    this.updateCheckState(selectedNode, 'uncheck');
+                }
+            });
         }
     }
 
@@ -718,13 +726,15 @@ export class TreeViewRenderer implements IAction {
         }
     }
 
-    private updateNodeStateChange(id: string, args: NodeCheckEventArgs, selectedNode: { [key: string]: Object }): void {
+    private updateNodeStateChange(
+        id: string, selectedNode: { [key: string]: Object }, isChecked: boolean
+    ): void {
         if (!this.parent.allowDeferLayoutUpdate) {
             this.parent.updateDataSource(true);
         } else {
-            selectedNode.isSelected = args.action === 'check';
+            selectedNode.isSelected = isChecked;
             if (this.parent.dataType === 'olap') {
-                this.parent.olapEngineModule.updateFieldlistData(id, args.action === 'check');
+                this.parent.olapEngineModule.updateFieldlistData(id, isChecked);
             }
             this.updateDataSource();
         }
@@ -765,14 +775,27 @@ export class TreeViewRenderer implements IAction {
     }
 
     private addNode(args: NodeCheckEventArgs): void {
-        if (!args.isInteracted) {
-            return;
-        }
-        const fieldList: { [key: string]: Object } = this.parent.pivotFieldList;
-        const selectedNode: { [key: string]: Object } = fieldList[args.data[0].id.toString()] as { [key: string]: Object };
+        const id: string = args.node.getAttribute('data-uid');
+        const list: { [key: string]: Object } = this.parent.pivotFieldList;
+        const selectedNode: { [key: string]: Object } = list[id as string] as { [key: string]: Object };
         const fieldInfo: FieldItemInfo = PivotUtil.getFieldInfo(selectedNode.id.toString(), this.parent);
         const control: PivotView | PivotFieldList = this.parent.isPopupView ? this.parent.pivotGridModule : this.parent;
-        if (args.action === 'check') {
+        let isChecked: boolean = false; /* eslint-disable @typescript-eslint/no-explicit-any */
+        const getNodeDetails: any = this.fieldTable.getNode(args.node);
+        if ((args as any).event && (args as any).event.target &&
+            !(args as any).event.target.classList.contains(cls.CHECK_BOX_FRAME_CLASS)) {
+            /* eslint-enable @typescript-eslint/no-explicit-any */
+            if (getNodeDetails.isChecked === 'true') {
+                this.fieldTable.uncheckAll([args.node]);
+                isChecked = false;
+            } else {
+                this.fieldTable.checkAll([args.node]);
+                isChecked = true;
+            }
+        } else {
+            isChecked = getNodeDetails.isChecked === 'true';
+        }
+        if (isChecked) {
             const axis: string[] = ['filters', 'columns', 'rows', 'values'];
             const eventdrop: FieldDropEventArgs = {
                 fieldName: fieldInfo.fieldName, dropField: fieldInfo.fieldItem,
@@ -783,7 +806,7 @@ export class TreeViewRenderer implements IAction {
                 if (!observedArgs.cancel) {
                     this.selectedNodes.push(selectedNode.id.toString());
                 } else {
-                    this.updateCheckState(selectedNode, args.action);
+                    this.updateCheckState(selectedNode, 'check');
                 }
             });
         } else {
@@ -802,7 +825,7 @@ export class TreeViewRenderer implements IAction {
                         }
                     }
                 } else {
-                    this.updateCheckState(selectedNode, args.action);
+                    this.updateCheckState(selectedNode, 'uncheck');
                 }
             });
         }
@@ -1076,14 +1099,6 @@ export class TreeViewRenderer implements IAction {
      */
     public destroy(): void {
         this.removeEventListener();
-        if (this.fieldTable && !this.fieldTable.isDestroyed) {
-            this.fieldTable.destroy();
-            this.fieldTable = null;
-        }
-        if (this.fieldDialog && !this.fieldDialog.isDestroyed) {
-            this.fieldDialog.destroy();
-            this.fieldDialog = null;
-        }
         if (this.editorSearch && !this.editorSearch.isDestroyed) {
             this.editorSearch.destroy();
             this.editorSearch = null;
@@ -1091,6 +1106,14 @@ export class TreeViewRenderer implements IAction {
         if (this.fieldSearch && !this.fieldSearch.isDestroyed) {
             this.fieldSearch.destroy();
             this.fieldSearch = null;
+        }
+        if (this.fieldTable && !this.fieldTable.isDestroyed) {
+            this.fieldTable.destroy();
+            this.fieldTable = null;
+        }
+        if (this.fieldDialog && !this.fieldDialog.isDestroyed) {
+            this.fieldDialog.destroy();
+            this.fieldDialog = null;
         }
     }
 }

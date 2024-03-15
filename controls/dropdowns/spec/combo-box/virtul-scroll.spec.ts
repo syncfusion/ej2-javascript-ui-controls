@@ -136,7 +136,7 @@ describe('Combobox_virtualization', () => {
                 expect((li[0] as Element).classList.contains('e-active')).toBe(true);
                 keyEventArgs.action = 'pageDown';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect((li[5] as Element).classList.contains('e-active')).toBe(true);
+                expect((li[6] as Element).classList.contains('e-active')).toBe(true);
                 keyEventArgs.action = 'pageDown';
                 dropObj.keyActionHandler(keyEventArgs);
                 expect((li[9] as Element).classList.contains('e-active')).toBe(true);
@@ -241,6 +241,48 @@ describe('Combobox_virtualization', () => {
                 //dropObj.filterInput.value = '';
             });
         });
+        describe('virtualization incremental actions', () => {
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+            let dropObj: any;
+            let ele: HTMLElement;
+            beforeAll(() => {
+                ele = createElement('input', { id: 'Combobox' });
+                document.body.appendChild(ele);
+                dropObj = new ComboBox({
+                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true, allowFiltering:false, fields: { text: 'text', value: 'id' }
+                });
+                dropObj.appendTo(ele);
+            });
+            afterAll(() => {
+                ele.remove();
+                dropObj.destroy();
+                document.body.innerHTML = '';
+            });
+            it('searching without filtering', () => {
+                //dropObj.sortOrder = 'Ascending';
+                dropObj.dataBind();
+                dropObj.showPopup();
+                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
+                expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(7);
+                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
+                dropObj.filterInput.value = "Item 132";
+                dropObj.onInput();
+                dropObj.isTyped = true;
+                dropObj.inlineSearch();
+                let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
+                keyEventArgs.action = 'down';
+                dropObj.keyActionHandler(keyEventArgs);
+                expect(li[3].classList.contains('e-active')).toBe(true);
+                dropObj.filterInput.value = "P";
+                dropObj.onInput();
+                dropObj.isTyped = true;
+                dropObj.inlineSearch();
+                li = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
+                keyEventArgs.action = 'down';
+                dropObj.keyActionHandler(keyEventArgs);
+                expect(li[0].classList.contains('e-active')).toBe(true);
+            });
+        });
         describe('Virtualization Template support', () => {
             let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
             let dropObj: any;
@@ -270,6 +312,61 @@ describe('Combobox_virtualization', () => {
                     expect((li[0] as Element).classList.contains('e-active')).toBe(true);
                     done();
                 }, 850);
+            });
+        });
+        describe('Virtualization with preselect values', () => {
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+            let dropObj: any;
+            let ele: HTMLElement;
+            let remoteElement: HTMLElement;
+            beforeAll(() => {
+                ele = createElement('input', { id: 'DropDownList' });
+                document.body.appendChild(ele);
+                dropObj = new ComboBox({
+                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'id' }, value: 'id10'
+                });
+                dropObj.appendTo(ele);
+            });
+            afterAll(() => {
+                ele.remove();
+                dropObj.destroy();
+                document.body.innerHTML = '';
+            });
+            it(' value property - local data  ', () => {
+                expect(dropObj.inputElement.value).toBe('Item 10');
+                expect(dropObj.text).toBe('Item 10');
+                expect(dropObj.value).toBe('id10');
+            });
+        });
+        describe('Virtualization with remote preselect values', () => {
+            let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+            let dropObj: any;
+            let ele: HTMLElement;
+            let remoteElement: HTMLElement;
+            beforeAll(() => {
+                ele = createElement('input', { id: 'DropDownList' });
+                document.body.appendChild(ele);
+                dropObj = new ComboBox({
+                    dataSource: new DataManager({
+                        url: 'https://ej2services.syncfusion.com/js/development/api/orders',
+                        adaptor: new WebApiAdaptor ,
+                        crossDomain: true
+                    }), popupHeight:'200px', enableVirtualization: true, allowFiltering: true, value: 10004, fields: { text: 'OrderID', value: 'OrderID' },
+                });
+                dropObj.appendTo(ele);
+            });
+            afterAll(() => {
+                ele.remove();
+                dropObj.destroy();
+                document.body.innerHTML = '';
+            });
+            it(' value property - remote data  ', (done) => {
+                setTimeout(() => {
+                    expect(dropObj.inputElement.value.toString()).toBe('10004');
+                    expect(dropObj.text.toString()).toBe('10004');
+                    expect(dropObj.value.toString()).toBe('10004');
+                    done();
+            }, 450);
             });
         });
         describe('Virtualization with clear value', () => {

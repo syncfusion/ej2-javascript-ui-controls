@@ -4,7 +4,7 @@ import { isNullOrUndefined as isNOU, addClass, removeClass, Touch, TapEventArgs,
 import { TouchEventArgs, MouseEventArgs, KeyboardEventArgs, getValue, setValue, remove } from '@syncfusion/ej2-base';
 import { IFileManager, FileOpenEventArgs, FileLoadEventArgs } from '../base/interface';
 import { FileSelectEventArgs, NotifyArgs, FileSelectionEventArgs } from '../base/interface';
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
 import { ReadArgs, MouseArgs } from '../../index';
@@ -138,7 +138,9 @@ export class LargeIconsView {
             };
             this.items = [];
             this.items = this.renderList(args);
-            this.items = this.allItems = getSortedData(this.parent, this.items);
+            if(this.parent.sortComparer && this.parent.sortBy !== 'None'){
+                this.items = this.allItems = DataUtil.sort(this.items, this.parent.sortBy, this.comparer.bind(this) as Function);
+            } else { this.items = this.allItems = getSortedData(this.parent, this.items); }
             iconsView.classList.remove(CLS.DISPLAY_NONE);
             if (this.parent.enableVirtualization && this.allItems.length > 0) {
                 if (!this.element.style.height) { this.adjustHeight(); }
@@ -193,6 +195,16 @@ export class LargeIconsView {
             if (this.parent.selectedItems.length) { this.checkItem(); }
         }
     }
+
+    private comparer (x: number | string, y: number | string, xObj?: Object, yObj?: Object) {
+        if (this.parent.sortOrder === 'Descending') {
+            const z: number | string = x;
+            x = y;
+            y = z;
+        }
+        return (this.parent.sortComparer as Function)(x, y);
+    };
+
     private preventImgDrag(): void {
         let i: number = 0;
         while (i < this.itemList.length) {

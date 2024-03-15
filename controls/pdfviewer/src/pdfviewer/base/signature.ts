@@ -1,6 +1,6 @@
 import { PdfViewer } from '../index';
 import { PdfViewerBase, IPageAnnotations } from '../index';
-import { createElement, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
@@ -825,6 +825,9 @@ export class Signature {
                 this.updateSignatureTypeValue(true);
             }
             const inputValue: string = this.signtypevalue;
+            if (this.pdfViewer.enableHtmlSanitizer && this.outputString) {
+                this.outputString = SanitizeHtmlHelper.sanitize(this.outputString);
+            }
             annot = {
                 // eslint-disable-next-line max-len
                 id: 'Typesign' + this.pdfViewerBase.signatureCount, bounds: {
@@ -859,6 +862,9 @@ export class Signature {
                 let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
                 this.saveTypeString = canvas.toDataURL();
                 this.updateSignatureTypeValue();
+                if (this.pdfViewer.enableHtmlSanitizer && this.textValue) {
+                    this.textValue = SanitizeHtmlHelper.sanitize(this.textValue);
+                }
                 if (typeCheckbox && typeCheckbox.checked) {
                     if (!this.pdfViewerBase.isInitialField) {
                         this.isSaveSignature = true;
@@ -917,6 +923,9 @@ export class Signature {
             let standardImageRatio:number = 100;
             let currentHeight: number = 0; 
             let currentWidth: number = 0;
+            if (this.pdfViewer.enableHtmlSanitizer && this.outputString) {
+                this.outputString = SanitizeHtmlHelper.sanitize(this.outputString);
+            }
              // eslint-disable-next-line max-len
             if(!isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.height) && (this.pdfViewer.signatureFitMode === "Stretch" ))
             {
@@ -978,6 +987,9 @@ export class Signature {
                 this.saveTypeSignature(typeCheckbox);
                 let canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
                 this.saveUploadString = canvas.toDataURL();
+                if (this.pdfViewer.enableHtmlSanitizer && this.outputString) {
+                    this.outputString = SanitizeHtmlHelper.sanitize(this.outputString);
+                }
                 if (imageCheckbox && imageCheckbox.checked) {
                     if (!this.pdfViewerBase.isInitialField) {
                         this.isSaveSignature = true;
@@ -2292,14 +2304,15 @@ export class Signature {
             this.pdfViewerBase.signatureAdded = true;
             // eslint-disable-next-line max-len
             this.storeSignatureData(currentAnnotation.pageIndex, annot);
-            if (this.signaturetype === 'Draw') {
+            if(this.signaturetype === 'Draw') {
                 signatureData = this.saveImageString;
             }
-            else {
-                signatureData = currentAnnotation.data;
+            else
+            {
+                signatureData =  currentAnnotation.data;
             }
             // eslint-disable-next-line max-len    
-            this.pdfViewer.fireSignatureAdd(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType, currentAnnotation.bounds, currentAnnotation.opacity, currentAnnotation.strokeColor, currentAnnotation.thickness, signatureData);
+            this.pdfViewer.fireSignatureAdd(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType, currentAnnotation.bounds, currentAnnotation.opacity, currentAnnotation.strokeColor, currentAnnotation.thickness, signatureData); 
             this.pdfViewerBase.currentSignatureAnnot = null;
             this.pdfViewerBase.signatureCount++;
         }
@@ -2427,7 +2440,7 @@ export class Signature {
             left = annotations.wrapper.bounds.left;
             top = annotations.wrapper.bounds.top;
         }
-        if (annotations.shapeAnnotationType === 'SignatureText' && annotations.wrapper && annotations.wrapper.children[1]) {
+        if (annotations.shapeAnnotationType === 'SignatureText' && annotations.wrapper && annotations.wrapper.children && annotations.wrapper.children.length >1 && annotations.wrapper.children[1]) {
             left = left + annotations.wrapper.pivot.x + (this.signatureTextContentLeft - (this.signatureTextContentTop * (zoomvalue - (zoomvalue / this.signatureTextContentLeft))));
             top = top + ((annotations.wrapper.children[1].bounds.y - top) - (annotations.wrapper.children[1].bounds.y - top) / 3) + annotations.wrapper.pivot.y + (this.signatureTextContentTop * zoomvalue);
         }

@@ -42,6 +42,8 @@ export class Edit implements IAction {
     public frFormObj: FormValidator;
     /** @hidden */
     public virtualFormObj: FormValidator;
+    /** @hidden */
+    public isShowAddedRowValidate: boolean = false;
     private static editCellType: Object = {
         'dropdownedit': DropDownEditCell, 'numericedit': NumericEditCell,
         'datepickeredit': DatePickerEditCell, 'datetimepickeredit': DatePickerEditCell,
@@ -139,7 +141,7 @@ export class Edit implements IAction {
                 break;
             case 'mode':
                 this.updateEditObj();
-                gObj.isEdit = false;
+                gObj.isEdit = gObj.editSettings.showAddNewRow ? true : false;
                 gObj.refresh();
                 break;
             }
@@ -166,7 +168,9 @@ export class Edit implements IAction {
      */
     public startEdit(tr?: HTMLTableRowElement): void {
         const gObj: IGrid = this.parent;
-        if (!gObj.editSettings.allowEditing || gObj.isEdit || gObj.editSettings.mode === 'Batch') {
+        if (!gObj.editSettings.allowEditing || (gObj.isEdit && (!gObj.editSettings.showAddNewRow || 
+            (gObj.editSettings.showAddNewRow && !isNullOrUndefined(gObj.element.querySelector('.' + literals.editedRow)))))
+            || gObj.editSettings.mode === 'Batch') {
             return;
         }
         this.parent.element.classList.add('e-editing');
@@ -198,6 +202,9 @@ export class Edit implements IAction {
         this.refreshToolbar();
         (gObj.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
         this.parent.notify('start-edit', {});
+        if (gObj.editSettings.showAddNewRow) {
+            this.destroyToolTip();
+        }
     }
 
     /**
@@ -233,6 +240,9 @@ export class Edit implements IAction {
         this.editModule.closeEdit();
         this.refreshToolbar();
         this.parent.notify(events.closeEdit, {});
+        if (this.parent.editSettings.showAddNewRow) {
+            this.destroyToolTip();
+        }
     }
 
     protected refreshToolbar(): void {
@@ -417,8 +427,11 @@ export class Edit implements IAction {
     }
 
     private endEditing(): void {
-        this.parent.element.classList.remove('e-editing');
+        if (!this.parent.editSettings.showAddNewRow) {
+            this.parent.element.classList.remove('e-editing');
+        }
         this.editModule.endEdit();
+        this.isShowAddedRowValidate = false;
         this.refreshToolbar();
     }
 
@@ -426,6 +439,9 @@ export class Edit implements IAction {
         obj.content = '<div>' + this.l10n.getConstant(content) + '</div>';
         obj.dataBind();
         obj.show();
+        if (this.parent.enableRtl) {
+            obj.refresh();
+        }
     }
 
     public getValueFromType(col: Column, value: string | Date | boolean): number | string | Date | boolean {
@@ -603,7 +619,7 @@ export class Edit implements IAction {
     private actionComplete(e: NotifyArgs): void {
         const actions: string[] = ['add', 'beginEdit', 'save', 'delete', 'cancel', 'filterAfterOpen', 'filterchoicerequest'];
         if (actions.indexOf(e.requestType) < 0) {
-            this.parent.isEdit = false;
+            this.parent.isEdit = this.parent.editSettings.showAddNewRow ? true : false;
         }
         if (e.requestType === 'batchsave') {
             this.parent.focusModule.restoreFocus();
@@ -691,7 +707,7 @@ export class Edit implements IAction {
             const col: Column = gObj.getColumnByUid(inputs[parseInt(i.toString(), 10)].getAttribute('e-mappinguid'));
             if (col && col.field) {
                 let value:  number | string | Date | boolean = this.getValue(col, inputs[parseInt(i.toString(), 10)], editedData);
-                if (col.type === 'string') {
+                if (col.type === 'string' && !(col.isForeignColumn() && typeof value !== 'string')) {
                     value = this.parent.sanitize(value as string);
                 }
                 DataUtil.setValue(col.field, value, editedData);
@@ -726,8 +742,8 @@ export class Edit implements IAction {
      * @hidden
      */
     public onActionBegin(e: NotifyArgs): void {
-        if (e.requestType === 'columnstate' && this.parent.isEdit
-        && this.parent.editSettings.mode !== 'Batch') {
+        if ((e.requestType === 'columnstate' || (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache
+            && e.requestType === 'sorting')) && this.parent.isEdit && this.parent.editSettings.mode !== 'Batch') {
             this.closeEdit();
         } else {
             const editRow: Element = this.parent.element.querySelector('.' + literals.editedRow);
@@ -738,9 +754,11 @@ export class Edit implements IAction {
             }
             const restrictedRequestTypes: string[] = ['filterAfterOpen', 'filterBeforeOpen', 'filterchoicerequest', 'filterSearchBegin', 'save', 'infiniteScroll', 'virtualscroll'];
             const isRestrict: boolean = restrictedRequestTypes.indexOf(e.requestType) === -1;
-            const isDestroyVirtualForm: boolean = this.parent.enableVirtualization && this.formObj
+            const isAddRows: boolean =  !this.parent.editSettings.showAddNewRow || (this.parent.editSettings.showAddNewRow && 
+                !isNullOrUndefined(this.parent.element.querySelector('.e-editedrow')));
+            const isDestroyVirtualForm: boolean = (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) && this.formObj && isAddRows
                 && !this.formObj.isDestroyed && (editRow || addRow || e.requestType === 'cancel') && isRestrict;
-            if ((!this.parent.enableVirtualization && this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
+            if ((!this.parent.enableVirtualization && isAddRows && this.parent.editSettings.mode !== 'Batch' && this.formObj && !this.formObj.isDestroyed
                 && isRestrict && !e.cancel) || isDestroyVirtualForm) {
                 this.destroyWidgets();
                 this.destroyForm();
@@ -857,7 +875,8 @@ export class Edit implements IAction {
             break;
         case 'enter':
             if (!parentsUntil(e.target as HTMLElement, 'e-unboundcelldiv') && this.parent.editSettings.mode !== 'Batch' &&
-                    (parentsUntil(e.target as HTMLElement, literals.gridContent) || (this.parent.frozenRows
+                    (parentsUntil(e.target as HTMLElement, literals.gridContent) || ((this.parent.frozenRows || 
+                    (this.parent.editSettings.showAddNewRow && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)))
                     && parentsUntil(e.target as HTMLElement, literals.headerContent)))
                     && !document.getElementsByClassName('e-popup-open').length) {
                 e.preventDefault();
@@ -898,8 +917,8 @@ export class Edit implements IAction {
                 const rowCell: Element = parentsUntil(e.target as Element, 'e-rowcell');
                 if ((rowCell === parentsUntil(focusableEditCells[focusableEditCells.length - 1], 'e-rowcell')
                     && e.action === 'tab' && !rowCell.classList.contains('e-unboundcell'))
-                    || (rowCell === parentsUntil(focusableEditCells[0], 'e-rowcell') && e.action === 'shiftTab')
-                    || e.action === 'escape') {
+                    || (rowCell === parentsUntil(focusableEditCells[0], 'e-rowcell') && e.action === 'shiftTab' &&
+                    !this.parent.editSettings.showAddNewRow) || e.action === 'escape') {
                     const uid: string = editedRow.getAttribute('data-uid');
                     const rows: Element[] = this.parent.getRows();
                     let rowIndex: number = rows.map((m: HTMLTableRowElement) => m.getAttribute('data-uid')).indexOf(uid);
@@ -912,11 +931,19 @@ export class Edit implements IAction {
                     if (e.action === 'escape') {
                         this.closeEdit();
                     } else {
+                        this.isShowAddedRowValidate = true;
                         this.endEdit();
+                        this.isShowAddedRowValidate = false;
                     }
-                    if (this.parent.focusModule.active) {
+                    if (this.parent.focusModule.active && (!this.parent.editSettings.showAddNewRow ||
+                        editedRow.classList.contains('e-editedrow') || (this.parent.editSettings.showAddNewRow &&
+                        (editedRow.classList.contains('e-addedrow') && isNullOrUndefined(this.parent.element.querySelector(
+                        '.e-griderror:not([style*="display: none"])')))))) {
                         this.parent.focusModule.active.matrix.current = [rowIndex, 0];
                     }
+                }
+                if (this.parent.editSettings.showAddNewRow && e.action === 'tab' && parentsUntil(e.target as Element, 'e-addedrow')) {
+                    this.isShowAddedRowValidate = true;
                 }
             }
         }
@@ -947,6 +974,8 @@ export class Edit implements IAction {
         const gObj: IGrid = this.parent;
         const idx: number = 0;
         const form: HTMLFormElement = this.parent.editSettings.mode !== 'Dialog' ?
+        gObj.editSettings.showAddNewRow && gObj.element.querySelector('.' + literals.editedRow) ?  
+            gObj.element.querySelector('.' + literals.editedRow).getElementsByClassName('e-gridform')[parseInt(idx.toString(), 10)] as HTMLFormElement:
             gObj.element.getElementsByClassName('e-gridform')[parseInt(idx.toString(), 10)] as HTMLFormElement :
             select('#' + gObj.element.id + '_dialogEdit_wrapper .e-gridform', document) as HTMLFormElement;
         const index: number = 1;
@@ -989,9 +1018,17 @@ export class Edit implements IAction {
                     inputElement: inputElement,
                     value: (inputElement as HTMLInputElement).value
                 };
-                if (!(event && event['relatedTarget'] && event['relatedTarget'].classList.contains('e-cancelbutton'))) {
-                    this.valErrorPlacement(inputElement, error);
-                }
+                if ((!(event && event['relatedTarget'] && event['relatedTarget'].classList.contains('e-cancelbutton')) &&
+                    !this.parent.editSettings.showAddNewRow) || (this.parent.editSettings.showAddNewRow && event && event.target &&
+                    (parentsUntil(event.target as Element, this.parent.element.id + '_update', true) ||
+                    (parentsUntil(event.target as Element, 'e-grid-menu') && ((event.target as Element).classList.contains('e-save') || 
+                    (event.target as Element).querySelector('.e-save'))) || this.isShowAddedRowValidate ||
+                    (parentsUntil(event.target as Element, 'e-unboundcell') && parentsUntil(event.target as Element, 'e-update'))||
+                    (event['action'] === 'enter' && (parentsUntil(event.target as Element, 'e-content') || parentsUntil(event.target as Element, 'e-addedrow'))))) ||
+                    (this.parent.editSettings.showAddNewRow && !isNullOrUndefined(this.parent.element.querySelector('.' + literals.editedRow)))) {
+                        this.valErrorPlacement(inputElement, error);
+                    }
+                    this.isShowAddedRowValidate = false;
                 this.parent.notify(events.valCustomPlacement, args);
             }
         });
@@ -1010,14 +1047,15 @@ export class Edit implements IAction {
     }
 
     private getElemTable(inputElement: Element): Element {
-        let isFHdr: boolean;
+        let isFrozenHdr: boolean;
         const gObj: IGrid = this.parent;
         let table: Element;
         if (gObj.editSettings.mode !== 'Dialog') {
-            isFHdr = (gObj.frozenRows && gObj.frozenRows
+            isFrozenHdr = (gObj.frozenRows && closest(inputElement, '.' + literals.row) && gObj.frozenRows
                 > (parseInt(closest(inputElement, '.' + literals.row).getAttribute(literals.dataRowIndex), 10) || 0));
             const field: string = (inputElement as HTMLInputElement).name;
-            table = this.parent.isFrozenGrid() ? gObj.element : isFHdr ? gObj.getHeaderTable() : gObj.getContentTable();
+            table = this.parent.isFrozenGrid() ? gObj.element : isFrozenHdr || (gObj.editSettings.showAddNewRow && 
+                (gObj.enableVirtualization || gObj.enableInfiniteScrolling)) ? gObj.getHeaderTable() : gObj.getContentTable();
         } else {
             table = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
         }
@@ -1040,6 +1078,12 @@ export class Edit implements IAction {
     private validationComplete(args: { status: string, inputName: string, element: HTMLElement, message: string }): void {
         if (this.parent.isEdit) {
             const elem: HTMLElement = this.getElemTable(args.element).querySelector('#' + getParsedFieldID(args.inputName) + '_Error') as HTMLElement;
+            if (this.parent.editSettings.showAddNewRow && !elem && args.element) {
+                const error: Element = parentsUntil(args.element, 'e-rowcell').querySelector('.e-error');
+                if (error) {
+                    error.classList.remove('e-error');
+                }
+            }
             if (elem) {
                 if (args.status === 'failure') {
                     elem.style.display = '';
@@ -1066,6 +1110,8 @@ export class Edit implements IAction {
         let isFHdrLastRow: boolean = false;
         let validationForBottomRowPos: boolean;
         let isBatchModeLastRow: boolean = false;
+        const isAddNewRow: boolean = this.parent.editSettings.showAddNewRow && !isNullOrUndefined(parentsUntil(element, literals.addedRow))
+            && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling);
         const viewPortRowCount: number = Math.round(this.parent.getContent().clientHeight / this.parent.getRowHeight()) - 1;
         let rows: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
         if (this.parent.editSettings.mode === 'Batch') {
@@ -1076,9 +1122,11 @@ export class Edit implements IAction {
             }
         }
         if (isInline) {
-            if (this.parent.frozenRows) {
+            if (this.parent.frozenRows || isAddNewRow) {
+                const headerRows: string = this.parent.editSettings.showAddNewRow ? '.e-row:not(.e-hiddenrow.e-addedrow)' :
+                '.e-row:not(.e-hiddenrow)';
                 const fHearderRows: HTMLCollection = [].slice.call(
-                    this.parent.getHeaderTable().querySelector(literals.tbody).querySelectorAll('.e-row:not(.e-hiddenrow)'));
+                    this.parent.getHeaderTable().querySelector(literals.tbody).querySelectorAll(headerRows));
                 isFHdr = fHearderRows.length > (parseInt(row.getAttribute(literals.dataRowIndex), 10) || 0);
                 isFHdrLastRow = isFHdr && parseInt(row.getAttribute(literals.dataRowIndex), 10) === fHearderRows.length - 1;
                 const insertRow: Element[] = [].slice.call(
@@ -1131,14 +1179,14 @@ export class Edit implements IAction {
         }
         div.appendChild(content);
         div.appendChild(arrow);
-        if (!customForm && (this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
+        if (!customForm && (this.parent.frozenRows || isAddNewRow) && this.parent.editSettings.mode !== 'Dialog') {
             const getEditCell: HTMLElement = this.parent.editSettings.mode === 'Normal' ?
                 closest(element, '.e-editcell') as HTMLElement : closest(element, '.' + literals.table) as HTMLElement;
             getEditCell.style.position = 'relative';
             div.style.position = 'absolute';
             if (this.parent.editSettings.mode === 'Batch' ||
                 (closest(element, '.' + literals.frozenContent) || closest(element, '.' + literals.frozenHeader))
-                || (this.parent.frozenRows)) {
+                || (this.parent.frozenRows || isAddNewRow)) {
                     if (this.parent.isFrozenGrid()) {
                         if (td.classList.contains('e-unfreeze')) {
                             addClass([div], 'e-unfreeze');
@@ -1199,19 +1247,20 @@ export class Edit implements IAction {
             div.querySelector('label').getBoundingClientRect().height / (lineHeight * 1.2) >= 2) {
             div.style.width = div.style.maxWidth;
         }
-        if (this.parent.frozenRows && this.parent.editSettings.mode !== 'Dialog') {
+        if ((this.parent.frozenRows || isAddNewRow) && this.parent.editSettings.mode !== 'Dialog') {
             div.style.left = input.offsetLeft + (input.offsetWidth / 2 - div.offsetWidth / 2) + 'px';
         } else {
             div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
         }
-        if (isInline && !isScroll && !this.parent.allowPaging || this.parent.frozenRows) {
+        if (isInline && !isScroll && !this.parent.allowPaging || (this.parent.frozenRows || isAddNewRow)) {
             // gcontent.style.position = 'static';
             const pos: OffsetPosition = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';
         }
         if (validationForBottomRowPos) {
-            if (isScroll && this.parent.height !== 'auto' && !this.parent.frozenRows
-                && !this.parent.enableVirtualization && !(div.classList.contains('e-freezeerror') && div.classList.contains('e-fixederror'))) {
+            if (isScroll && this.parent.height !== 'auto' && (!this.parent.frozenRows || !isAddNewRow)
+                && !this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling && !(div.classList.contains('e-freezeerror')
+             && div.classList.contains('e-fixederror'))) {
                 const scrollWidth: number = gcontent.scrollWidth > gcontent.offsetWidth ? getScrollBarWidth() : 0;
                 const gHeight: number | string = this.parent.height.toString().indexOf('%') === -1 ?
                     parseInt(this.parent.height as string, 10) : gcontent.offsetHeight;
@@ -1222,7 +1271,8 @@ export class Edit implements IAction {
             }
             if (rows.length < viewPortRowCount && this.parent.editSettings.newRowPosition === 'Bottom' && (this.editModule.args
                 && this.editModule.args.requestType === 'add')) {
-                const rowsCount: number = this.parent.frozenRows ? this.parent.frozenRows + (rows.length - 1) : rows.length - 1;
+                const rowsCount: number = this.parent.frozenRows ? (isAddNewRow ? this.parent.frozenRows + 1 : this.parent.frozenRows) +
+                    (rows.length - 1) : rows.length - 1;
                 const rowsHeight: number = rowsCount * this.parent.getRowHeight();
                 const position: number = this.parent.getContent().clientHeight - rowsHeight;
                 div.style.bottom = position + 9 + 'px';

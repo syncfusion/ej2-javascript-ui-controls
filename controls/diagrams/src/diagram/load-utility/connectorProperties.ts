@@ -10,12 +10,10 @@ import { Shape } from "../objects/node";
 import { Point } from "../primitives/point";
 import { SegmentInfo } from "../rendering/canvas-interface";
 import { LabelProperties } from "./labelProperties";
-import { EJ1SerializationModule } from "./modelProperties";
 
 
 export class ConnectorProperties {
     private diagram: Diagram;
-    private modelproperties: EJ1SerializationModule;
     public labelProperties: LabelProperties;
 
     constructor(labelProperties: LabelProperties) {

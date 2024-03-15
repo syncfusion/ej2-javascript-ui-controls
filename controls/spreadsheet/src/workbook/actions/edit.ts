@@ -3,7 +3,7 @@ import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refre
 import { getRangeIndexes, parseIntValue, setLinkModel, getCellAddress } from '../common/index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { checkIsFormula, DateFormatCheckArgs } from '../../workbook/common/index';
-import { getTypeFromFormat } from '../integrations/index';
+import { getFormatFromType, getTypeFromFormat } from '../integrations/index';
 
 /**
  * The `WorkbookEdit` module is used to handle the editing functionalities in Workbook.
@@ -139,7 +139,7 @@ export class WorkbookEdit {
                     value = cell.value;
                     const formula: string = cell.formula.toLowerCase();
                     if (formula === '=now()' && (!cell.format || cell.format === 'General')) {
-                        cell.format = 'M/d/yyyy h:mm';
+                        cell.format = `${getFormatFromType('ShortDate')} h:mm`;
                     } else if (formula.includes('=time(') && !cell.format) {
                         cell.format = 'h:mm AM/PM';
                     }

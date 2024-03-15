@@ -195,11 +195,11 @@ export class Toolbar {
             const largeIconSpan: string = '<span class="' + CLS.ICON_LARGE + ' ' + CLS.MENU_ICON + '"></span>';
             const layoutItems: SplitButtonItemModel[] = [
                 {
-                    id: this.getPupupId('large'), text: largeIconSpan + getLocaleText(this.parent, 'View-LargeIcons'),
+                    id: this.getPupupId('large'), text: getLocaleText(this.parent, 'View-LargeIcons'),
                     iconCss: this.parent.view === 'Details' ? '' : CLS.TB_OPTION_TICK
                 },
                 {
-                    id: this.getPupupId('details'), text: gridSpan + getLocaleText(this.parent, 'View-Details'),
+                    id: this.getPupupId('details'), text: getLocaleText(this.parent, 'View-Details'),
                     iconCss: this.parent.view === 'Details' ? CLS.TB_OPTION_TICK : ''
                 }
             ];
@@ -208,7 +208,17 @@ export class Toolbar {
                 cssClass: getCssClass(this.parent, 'e-caret-hide ' + CLS.ROOT_POPUP),
                 items: layoutItems, select: this.layoutChange.bind(this),
                 enableRtl: this.parent.enableRtl,
-                content: '<span class="e-tbar-btn-text">' + getLocaleText(this.parent, 'View') + '</span>'
+                content: '<span class="e-tbar-btn-text">' + getLocaleText(this.parent, 'View') + '</span>',
+                beforeItemRender: (args: MenuEventArgs) => {
+                    const tickIcon = args.item.iconCss;
+                    const viewText = args.item.text === getLocaleText(this.parent, 'View-LargeIcons');
+                    const iconClass = tickIcon ? ' e-menu-icon ' + tickIcon : '';
+                    args.element.innerHTML = '<span class="' + iconClass + '"></span>' + (viewText ? largeIconSpan : gridSpan) + args.item.text;
+                    const span = args.element.firstChild as HTMLElement;
+                    if (span && span.className === '') {
+                        args.element.removeChild(span);
+                    }
+                }
             });
             this.layoutBtnObj.isStringTemplate = true;
             this.layoutBtnObj.appendTo('#' + this.getId('View'));

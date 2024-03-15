@@ -41,7 +41,7 @@ import { StockEvents } from './renderer/stock-events';
 import { IThemeStyle } from '../chart/model/chart-interface';
 import { StockChartLegendSettingsModel } from './legend/legend-model';
 import { StockLegend, StockChartLegendSettings } from './legend/legend';
-import { SeriesModel, VisibleRangeModel } from './index';
+import { ColumnSeries, RangeAreaSeries, SeriesModel, SplineRangeAreaSeries, VisibleRangeModel } from './index';
 
 /**
  * Stock Chart
@@ -669,6 +669,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     constructor(options?: StockChartModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+        StockChart.Inject(ColumnSeries, RangeAreaSeries, SplineRangeAreaSeries);
         this.toolbarHeight = this.enablePeriodSelector ? (Browser.isDevice ? 56 : 42) : 0;
     }
 
@@ -1088,17 +1089,19 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         }
         this.resizeTo = +setTimeout(
             (): void => {
-                calculateSize(this);
-                this.renderBorder();
-                this.calculateLegendBounds();
-                this.renderTitle();
-                this.renderLegend();
-                this.cartesianChart.cartesianChartRefresh(this);
-                if (!this.legendSettings.visible) {
-                    this.mainObject.setAttribute('width', this.availableSize.width.toString());
-                }
-                if (this.enablePeriodSelector) {
-                    this.renderPeriodSelector();
+                if (this.cartesianChart) {
+                    calculateSize(this);
+                    this.renderBorder();
+                    this.calculateLegendBounds();
+                    this.renderTitle();
+                    this.renderLegend();
+                    this.cartesianChart.cartesianChartRefresh(this);
+                    if (!this.legendSettings.visible) {
+                        this.mainObject.setAttribute('width', this.availableSize.width.toString());
+                    }
+                    if (this.enablePeriodSelector) {
+                        this.renderPeriodSelector();
+                    }
                 }
             },
             500);

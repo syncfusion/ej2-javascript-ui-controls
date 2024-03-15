@@ -117,6 +117,7 @@ describe('Gantt spec for  scroll', () => {
                   child: 'subtasks',
                 },
                 columns: [
+                 { field: 'TaskID', visible: false },
                   {
                     field: 'TaskName',
                     headerText: 'Task Name',
@@ -162,7 +163,7 @@ describe('Gantt spec for  scroll', () => {
             destroyGantt(ganttObj);
         });
         it('column type', () => {
-            expect(ganttObj.treeGridModule.treeGridColumns[2].type).toBe('number')
+            expect(ganttObj.treeGridModule.treeGridColumns[3].type).toBe('number')
 
         });
     });

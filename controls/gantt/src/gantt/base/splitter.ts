@@ -115,9 +115,9 @@ export class Splitter {
             return this.splitterObject.paneSettings[0].size;
         }
         if (splitter.view === 'Grid') {
-            return '100%';
+            return this.parent.enableRtl ? '0%' : '100%';
         } else if (splitter.view === 'Chart') {
-            return '0%';
+            return this.parent.enableRtl ? '100%' : '0%';
         } else {
             if (!isNullOrUndefined(splitter.position) && splitter.position !== '') {
                 return this.getSpliterPositionInPercentage(splitter.position);
@@ -129,7 +129,10 @@ export class Splitter {
                     return this.getSpliterPositionInPercentage((splitter.columnIndex * 130) + 'px');
                 }
             } else {
-                return this.getSpliterPositionInPercentage('250px');
+                const ganttWidth: number = this.parent.ganttWidth;
+                const width: number = ganttWidth - 250;
+                const widthAsString: string = width + 'px';
+                return (this.parent.enableRtl) ? this.getSpliterPositionInPercentage(widthAsString) : this.getSpliterPositionInPercentage('250px');
             }
         }
     }
@@ -145,8 +148,13 @@ export class Splitter {
                 value = (((intValue / this.parent.ganttWidth) * 100) <= 100 ? ((intValue / this.parent.ganttWidth) * 100) + '%' :
                     '25%');
             } else {
-                value = position.indexOf('%') === -1 ?
-                    position + '%' : position;
+                if (this.parent.enableRtl) {
+                    let newPosition: number = 100 - parseFloat(position);
+                    value = newPosition + '%';
+                } else {
+                    value = position.indexOf('%') === -1 ?
+                        position + '%' : position;
+                }
             }
         }
         return value;
@@ -157,10 +165,21 @@ export class Splitter {
      */
     private getTotalColumnWidthByIndex(index: number): number {
         let width: number = 0;
-        const tr: any = this.parent.ganttColumns;
+        const ganttWidth: number = this.parent.ganttWidth;
+        let originalArray: any[] = this.parent.ganttColumns;
+        let newArray: any[] = originalArray.filter(obj => obj.visible === undefined || obj.visible === true);
+        let deepCopiedArray: any[] = newArray.map(obj => Object.assign({}, obj));
+        const tr: any = deepCopiedArray;
         index = tr.length > index ? index : tr.length;
-        for (let column: number = 0; column < index; column++) {
-            width = width + parseInt(tr[column as number].width);
+        if (this.parent.enableRtl) {
+            for (let column: number = 0; column < index; column++) {
+                width += parseInt(tr[column as number].width);
+            }
+            width = ganttWidth - width;
+        } else {
+            for (let column: number = 0; column < index; column++) {
+                width += parseInt(tr[column as number].width);
+            }
         }
         return width;
     }

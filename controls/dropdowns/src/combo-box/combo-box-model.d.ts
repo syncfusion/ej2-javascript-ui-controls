@@ -1,4 +1,4 @@
-import { EventHandler, Property, Event, EmitType, addClass, Browser, KeyboardEventArgs, removeClass, detach } from '@syncfusion/ej2-base';import { isNullOrUndefined, NotifyPropertyChanges, getValue, setValue } from '@syncfusion/ej2-base';import { DropDownList, dropDownListClasses } from '../drop-down-list/drop-down-list';import { FilteringEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { Search } from '../common/incremental-search';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { DataManager, Query } from '@syncfusion/ej2-data';
+import { EventHandler, Property, Event, EmitType, addClass, Browser, KeyboardEventArgs, removeClass, detach } from '@syncfusion/ej2-base';import { isNullOrUndefined, NotifyPropertyChanges, getValue, setValue } from '@syncfusion/ej2-base';import { DropDownList, dropDownListClasses } from '../drop-down-list/drop-down-list';import { FilteringEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { Search } from '../common/incremental-search';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';import { DataManager, DataOptions, Predicate, Query } from '@syncfusion/ej2-data';
 import {CustomValueSpecifierEventArgs} from "./combo-box";
 import {DropDownListModel} from "../drop-down-list/drop-down-list-model";
 
@@ -66,6 +66,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * {% codeBlock src="combobox/index-api/index.html" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType double
      * @deprecated
      */
     index?: number | null;
@@ -219,6 +220,7 @@ export interface ComboBoxModel extends DropDownListModel{
      * Gets or sets the display text of the selected item in the component.
      *
      * @default null
+     * @aspType string
      * @deprecated
      */
     text?: string | null;
@@ -230,6 +232,13 @@ export interface ComboBoxModel extends DropDownListModel{
      * @isGenericType true
      * @deprecated
      */
-    value?: number | string | boolean | null;
+    value?: number | string | boolean | object | null;
+
+    /**
+    * Defines whether the object binding is allowed or not in the component.
+    *
+    * @default false
+    */
+    allowObjectBinding?: boolean; 
 
 }

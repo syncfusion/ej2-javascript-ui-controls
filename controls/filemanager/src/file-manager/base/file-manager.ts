@@ -35,6 +35,7 @@ import { ContextMenu } from '../pop-up/context-menu';
 import { defaultLocale } from '../models/default-locale';
 import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
 import { Virtualization } from '../actions/virtualization';
+import { SortComparer } from './interface';
 
 /**
  * The FileManager component allows users to access and manage the file system through the web  browser. It can performs the
@@ -403,6 +404,18 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public sortBy: string;
 
     /**
+     * Defines the custom sorting function.
+     * The sort comparer function has the same functionality like
+     * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
+     * This can be used to customize the default sorting functionalities with required comparison values.
+     * 
+     * @default null
+     * @aspType string
+     */
+    @Property(null)
+    public sortComparer: SortComparer | string;
+
+    /**
      * Specifies the group of items aligned horizontally in the toolbar.
      *
      * @default {
@@ -722,31 +735,36 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         if (this.toolbarSettings.visible) {
             modules.push({
                 member: 'toolbar',
-                args: [this]
+                args: [this],
+                name:'Toolbar'
             });
         }
         if (this.navigationPaneSettings.visible) {
             modules.push({
                 member: 'navigationpane',
-                args: [this]
+                args: [this],
+                name: 'NavigationPane'
             });
         }
         if (this.view) {
             modules.push({
                 member: 'detailsview',
-                args: [this]
+                args: [this],
+                name: 'DetailsView'
             });
         }
         if (this.contextMenuSettings.visible && !this.isDevice) {
             modules.push({
                 member: 'contextmenu',
-                args: [this]
+                args: [this],
+                name: 'ContextMenu'
             });
         }
         if (this.enableVirtualization) {
             modules.push({
                 member: 'virtualization',
-                args: [this]
+                args: [this],
+                name: 'Virtualization'
             });
         }
         return modules;

@@ -784,6 +784,7 @@ describe('Gantt Edit support', () => {
                         work: 'work',
                         child: 'subtasks'
                     },
+		    taskType:'FixedWork',
                     resourceFields: {
                         id: 'resourceId',
                         name: 'resourceName',
@@ -1633,6 +1634,7 @@ describe('Gantt Edit support', () => {
                     expandState: 'isExpand',
                     work: 'work',
                 },
+		taskType:'FixedWork',
                 resourceFields: {
                     id: 'resourceId',
                     name: 'resourceName',
@@ -1645,7 +1647,6 @@ describe('Gantt Edit support', () => {
                     allowDeleting: true,
                     allowTaskbarEditing: true
                 },
-		taskType: 'FixedWork',
                 columns: [
                     { field: 'TaskID', visible: false },
                     { field: 'TaskName', headerText: 'Name', width: 250 },
@@ -2717,6 +2718,495 @@ describe('taskbar indent', () => {
        ganttObj.selectRow(9);
        ganttObj.indent();
        expect(ganttObj.flatData[8].hasChildRecords).toBe(true)
+    }); 
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('Indent predecessor task', () => {
+    let ganttObj: Gantt;
+    var projectNewData = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                    Indicators: [
+                        {
+                            'date': '04/16/2019',
+                            'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                            'name': '<span style="color:red">String Template</span>',
+                            'tooltip': 'Review results'
+                        }
+                    ]
+                },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+            ]
+        },
+        { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+        {
+            TaskID: 6,
+            TaskName: 'Market Research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand Analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5", Progress: 30 },
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                    ]
+                },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectNewData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            baselineStartDate: "BaselineStartDate",
+            baselineEndDate: "BaselineEndDate",
+            child: 'subtasks',
+            indicators: 'Indicators'
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'Outdent', 'Indent', 'Undo','Redo'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        splitterSettings: {
+            position: "50%",
+        },
+        selectionSettings: {
+            mode: 'Row',
+            type: 'Single',
+            enableToggle: false
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        holidays: [{
+                from: "04/04/2019",
+                to: "04/05/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "04/12/2019",
+                to: "04/12/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('task indent',()=>{
+       ganttObj.selectRow(4);
+       ganttObj.indent();
+       ganttObj.indent();
+       expect(ganttObj.getFormatedDate(ganttObj.currentViewData[5].ganttProperties.startDate,'M/d/yyyy')).toBe('4/9/2019');
+    }); 
+    afterAll(() => {
+        destroyGantt(ganttObj);       
+    });
+});
+describe('Range container in project view ', () => {
+    let ganttObj: Gantt;
+    var selfData = [
+        {
+            taskID: '1',
+            taskName: 'Project Schedule',
+            startDate: new Date('02/04/2019'),
+            endDate: new Date('03/10/2019')
+        },
+        {
+            taskID: '2',
+            taskName: 'Planning',
+            startDate: new Date('02/04/2019'),
+            endDate: new Date('02/10/2019'),
+            parentID: 1
+        },
+        {
+            taskID: '3',
+            taskName: 'Plan timeline',
+            startDate: new Date('02/04/2019'),
+            endDate: new Date('02/10/2019'),
+            duration: 6,
+            progress: '60',
+            parentID: 2
+        },
+        {
+            taskID: '4',
+            taskName: 'Plan budget',
+            startDate: new Date('02/04/2019'),
+            endDate: new Date('02/10/2019'),
+            duration: 6,
+            progress: '90',
+            parentID: 2
+        },
+        {
+            taskID: '5',
+            taskName: 'Allocate resources',
+            startDate: new Date('02/04/2019'),
+            endDate: new Date('02/10/2019'),
+            duration: 6,
+            progress: '75',
+            parentID: 2
+        },
+        {
+            taskID: '6',
+            taskName: 'Planning complete',
+            startDate: new Date('02/06/2019'),
+            endDate: new Date('02/10/2019'),
+            duration: 0,
+            predecessor: '3FS,4FS,5FS',
+            parentID: 2
+        },
+        {
+            taskID: '7',
+            taskName: 'Design',
+            startDate: new Date('02/13/2019'),
+            endDate: new Date('02/17/2019'),
+            parentID: 1,
+        },
+        {
+            taskID: '8',
+            taskName: 'Software Specification',
+            startDate: new Date('02/13/2019'),
+            endDate: new Date('02/15/2019'),
+            duration: 3,
+            progress: '60',
+            predecessor: '6FS',
+            parentID: 7,
+        },
+        {
+            taskID: '9',
+            taskName: 'Develop prototype',
+            startDate: new Date('02/13/2019'),
+            endDate: new Date('02/15/2019'),
+            duration: 3,
+            progress: '100',
+            predecessor: '6FS',
+            parentID: 7,
+        },
+        {
+            taskID: '10',
+            taskName: 'Get approval from customer',
+            startDate: new Date('02/16/2019'),
+            endDate: new Date('02/17/2019'),
+            duration: 2,
+            progress: '100',
+            predecessor: '9FS',
+            parentID: 7,
+        },
+        {
+            taskID: '11',
+            taskName: 'Design complete',
+            startDate: new Date('02/17/2019'),
+            endDate: new Date('02/17/2019'),
+            duration: 0,
+            predecessor: '10FS',
+            parentID: 7,
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: selfData,
+            height: '450px',
+            highlightWeekends: true,
+            allowSelection: true,
+            treeColumnIndex: 1,
+            allowReordering: true,
+            enableContextMenu: true,
+            enableMultiTaskbar: true,
+            showOverAllocation: true,
+            taskFields: {
+                id: 'taskID',
+                name: 'taskName',
+                startDate: 'startDate',
+                endDate: 'endDate',
+                duration: 'duration',
+                progress: 'progress',
+                dependency: 'predecessor',
+                parentID: 'parentID'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'taskID', width: 60 },
+                { field: 'taskName', width: 250 },
+                { field: 'startDate' },
+                { field: 'endDate' },
+                { field: 'duration' },
+                { field: 'predecessor' },
+                { field: 'progress' },
+            ],
+            sortSettings: {
+                columns: [{ field: 'taskID', direction: 'Ascending' },
+                { field: 'taskName', direction: 'Ascending' }]
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowExcelExport: true,
+            allowPdfExport: true,
+            allowRowDragAndDrop: true,
+            selectedRowIndex: 1,
+            splitterSettings: {
+                position: "50%",
+            },
+            selectionSettings: {
+                mode: 'Row',
+                type: 'Single',
+                enableToggle: true
+            },
+            tooltipSettings: {
+                showTooltip: true
+            },
+            filterSettings: {
+                type: 'Menu'
+            },
+            allowFiltering: true,
+            gridLines: "Both",
+            showColumnMenu: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            eventMarkers: [
+                {
+                    day: '02/22/2019',
+                    cssClass: 'e-custom-event-marker',
+                    label: 'Project approval and kick-off'
+                }
+            ],
+            holidays: [{
+                from: "02/27/2019",
+                to: "02/28/2019",
+                label: " Public holidays",
+                cssClass: "e-custom-holiday"
+            },
+            {
+                from: "01/30/2019",
+                to: "01/30/2019",
+                label: " Public holiday",
+                cssClass: "e-custom-holiday"
+            }],
+            searchSettings: {
+                fields: ['taskName', 'duration']
+            },
+            labelSettings: {
+                leftLabel: 'taskID',
+                rightLabel: 'Task Name: ${taskData.taskName}',
+                taskLabel: '${progress}%'
+            },
+            allowResizing: true,
+            readOnly: false,
+            taskbarHeight: 20,
+            allowTaskbarOverlap: false,
+            rowHeight: 40,
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('01/28/2019'),
+            projectEndDate: new Date('03/10/2019')
+        }, done);
+
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('collapse all', () => {
+        ganttObj.collapsed = function (args: any): void {
+                expect(ganttObj.element.getElementsByClassName('e-rg-rangdiv e-leftarc')[0]['style'].height
+                ).toBe('21px');
+        };
+        ganttObj.dataBind();
+        ganttObj.collapseAll()
+    });
+});
+describe('Predecessor validation for taskbar indent', () => {
+    let ganttObj: Gantt;
+    let data= [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), Duration: 0,
+                    Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+                },
+                {
+                    TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2',
+                    resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                        'From an engineer or company specializing in soil testing'
+                },
+                { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3', Progress: 30 },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                dateFormat: 'MMM dd, y',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+                allowSelection: true,
+                gridLines: 'Both',
+                height: '450px',
+                treeColumnIndex: 1,
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                    },
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                eventMarkers: [
+                    { day: '4/17/2019', label: 'Project approval and kick-off' },
+                    { day: '5/3/2019', label: 'Foundation inspection' },
+                    { day: '6/7/2019', label: 'Site manager inspection' },
+                    { day: '7/16/2019', label: 'Property handover and sign-off' },
+                ],
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    rightLabel: 'resources'
+                },
+                editDialogFields: [
+                    { type: 'General', headerText: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                ],
+                splitterSettings: {
+                    position: "35%"
+                },
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('07/28/2019')
+            }, done);
+    });
+    
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('task indent',()=>{
+       ganttObj.selectRow(1);
+       ganttObj.outdent();
+       ganttObj.selectRow(2);
+       ganttObj.indent();
+       expect(ganttObj.getFormatedDate(ganttObj.flatData[1].ganttProperties.startDate, 'M/d/yyyy')).toBe('4/5/2019')
     }); 
     afterAll(() => {
         destroyGantt(ganttObj);       

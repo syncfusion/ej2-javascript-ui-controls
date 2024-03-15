@@ -83,7 +83,6 @@ export class Fields extends ChildProperty<Fields> {
      *
      * @default []
      */
-    /* eslint-disable */
     @Property([])
     public dataSource: DataManager | { [key: string]: Object }[];
     /* eslint-enable */
@@ -133,8 +132,8 @@ export class Fields extends ChildProperty<Fields> {
     public query: Query;
 
     /**
-     * Specifies whether the node can be selected by users or not 
-     * When set to false, the user interaction is prevented for the corresponding node. 
+     * Specifies whether the node can be selected by users or not
+     * When set to false, the user interaction is prevented for the corresponding node.
      */
     @Property('selectable')
     public selectable: string;
@@ -248,7 +247,6 @@ export interface DdtDataBoundEventArgs {
     /**
      * Return the DropDownTree data.
      */
-    // eslint-disable-next-line
     data: { [key: string]: Object }[];
 }
 
@@ -303,7 +301,6 @@ export interface DdtSelectEventArgs {
     /**
      * Return the currently selected item as JSON object from the data source.
      */
-    // eslint-disable-next-line
     itemData: { [key: string]: Object };
 }
 
@@ -388,7 +385,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private removeValue: boolean;
     private currentValue: string[];
     private currentText: string;
-    // eslint-disable-next-line
     private treeItems: { [key: string]: Object }[];
     private filterTimer: number = null;
     private filterContainer: HTMLElement;
@@ -421,9 +417,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private overFlowWrapper: HTMLElement;
     private isFilteredData: boolean = false;
     private isFilterRestore: boolean = false;
-    // eslint-disable-next-line
     private treeData: { [key: string]: Object }[];
-    // eslint-disable-next-line
     private selectedData: { [key: string]: Object }[] = [];
     private filterObj: TextBox;
     private filterDelayTime: number = 300;
@@ -483,13 +477,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     public cssClass: string;
 
     /**
-     * This property is used to customize the display text of the selected items in the Dropdown Tree. The given custom template is 
+     * This property is used to customize the display text of the selected items in the Dropdown Tree. The given custom template is
      * added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled.
      *
      * @default "${value.length} item(s) selected"
      * @aspType string
      */
-    @Property("${value.length} item(s) selected")
+    @Property('${value.length} item(s) selected')
     public customTemplate: string | Function;
 
     /**
@@ -645,7 +639,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * * Delimiter : Selected items will be visualized in the text content.
      * * Default : On focus in component will act in the box mode. On blur component will act in the delimiter mode.
      * * Custom : Selected items will be visualized with the given custom template value. The given custom template
-     *  is added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled. 
+     *  is added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled.
      */
     @Property('Default')
     public mode: Mode;
@@ -717,13 +711,23 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     public showCheckBox: boolean;
 
     /**
-     * Specifies whether to allow rendering of untrusted HTML values in the Dropdown Tree component.
-     * While enable this property, it sanitize suspected untrusted strings and script, and update in the Dropdown Tree component.
+     * Specifies whether to destroy the popup or to maintain it in DOM when it is closed.
+     * When this property is set to false, then the popup will not be removed from DOM once it is closed.
      * 
-     * @default false
+     * @default true
+     * @deprecated
      */
-     @Property(false)
-     public enableHtmlSanitizer: boolean;
+    @Property(true)
+    public destroyPopupOnHide: boolean;
+
+    /**
+     * Specifies whether to display or remove the untrusted HTML values in the Dropdown Tree component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableHtmlSanitizer: boolean;
 
     /**
      * Specifies whether to show or hide the clear icon in textbox.
@@ -817,7 +821,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      *
      * @event
      */
-    /* eslint-disable */
     @Event()
     public actionFailure: EmitType<Object>;
     /* eslint-enable */
@@ -850,7 +853,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      *
      * @event
      */
-    /* eslint-disable */
     @Event()
     public blur: EmitType<Object>;
     /* eslint-enable */
@@ -859,7 +861,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      *
      * @event
      */
-    /* eslint-disable */
     @Event()
     public created: EmitType<Object>;
     /* eslint-enable */
@@ -877,7 +878,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      *
      * @event
      */
-    /* eslint-disable */
     @Event()
     public destroyed: EmitType<Object>;
     /* eslint-enable */
@@ -1019,7 +1019,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.inputEle.setAttribute('aria-expanded', 'false');
                 this.inputEle.setAttribute('role', 'combobox');
                 this.inputEle.setAttribute('aria-haspopup', 'tree');
-                this.inputEle.setAttribute('aria-controls', this.element.id + "_options");
+                this.inputEle.setAttribute('aria-controls', this.element.id + '_options');
             }
             if (isNOU(this.inputEle.getAttribute('type'))) {
                 this.inputEle.setAttribute('type', 'text');
@@ -1064,7 +1064,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.popupDiv.classList.add(DROPDOWN);
         this.tree = this.createElement('div', { id: this.element.id + '_tree' });
         this.popupDiv.appendChild(this.tree);
-        document.body.appendChild(this.popupDiv);
+        if (!this.destroyPopupOnHide) {
+            document.body.appendChild(this.popupDiv);
+        }
         this.wireTreeEvents();
         addClass([this.popupDiv], DDTHIDEICON);
         this.renderTree();
@@ -1171,6 +1173,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 if (value === '') {
                     this.isFilteredData = false;
                     this.isFilterRestore = true;
+                    this.isFromFilterChange = false;
                     fields = this.cloneFields(this.fields);
                 } else if (args.preventDefaultAction) {
                     fields = args.fields;
@@ -1203,7 +1206,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.treeObj.dataBind();
                 if (this.hasTemplate && (this as any).portals && (this.treeObj as any).portals) {
                     for (let i: number = 0; i < (this.treeObj as any).portals.length; i++) {
-                        if ((this as any).portals.indexOf((this.treeObj as any).portals[i as number]) == -1) {
+                        if ((this as any).portals.indexOf((this.treeObj as any).portals[i as number]) === -1) {
                             (this as any).portals.push((this.treeObj as any).portals[i as number]);
                         }
                     }
@@ -1247,7 +1250,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private nestedFilter(value: string, filteredFields: FieldsModel): FieldsModel {
-        // eslint-disable-next-line
         const matchedDataSource: { [key: string]: Object }[] = [];
         for (let i: number = 0; i < this.treeData.length; i++) {
             // eslint-disable-next-line
@@ -1258,14 +1260,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         return filteredFields;
     }
 
-    // eslint-disable-next-line
     private nestedChildFilter(value: string, node: { [key: string]: Object }): { [key: string]: Object } {
-        // eslint-disable-next-line
         const children: { [key: string]: Object }[] = <{ [key: string]: Object }[]>node[this.fields.child as string];
         if (isNOU(children)) {
             return (this.isMatchedNode(value, node)) ? node : null;
         } else {
-            // eslint-disable-next-line
             const matchedChildren: { [key: string]: Object }[] = [];
             for (let i: number = 0; i < children.length; i++) {
                 // eslint-disable-next-line
@@ -1284,9 +1283,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private selfReferencefilter(value: string, filteredFields: FieldsModel): FieldsModel {
-        // eslint-disable-next-line
         const matchedData: { [key: string]: Object }[] = [];
-        // eslint-disable-next-line
         const matchedDataSource: { [key: string]: Object }[] = [];
         for (let i: number = 0; i < this.treeData.length; i++) {
             if (this.isMatchedNode(value, this.treeData[i as number])) {
@@ -1299,7 +1296,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 // eslint-disable-next-line
                 let parentId: object = matchedData[i][this.fields.parentValue];
                 while (!isNOU(parentId)) {
-                    // eslint-disable-next-line
                     let parent: { [key: string]: Object } = null;
                     for (let j: number = 0; j < this.treeData.length; j++) {
                         // eslint-disable-next-line
@@ -1322,7 +1318,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         return filteredFields;
     }
 
-    // eslint-disable-next-line
     private isMatchedNode(value: string, node: { [key: string]: Object }, isChild?: boolean, isChildFiltering?: boolean): boolean {
         let checkValue: string;
         let isObjectValue = isChild && isChildFiltering && this.isChildObject();
@@ -1696,7 +1691,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     this.clickHandler(e);
                     break;
                 case 'moveDown':
-                    let focusedElement: HTMLElement= this.treeObj.element.querySelector('li');
+                    const focusedElement: HTMLElement = this.treeObj.element.querySelector('li');
                     focusedElement.focus();
                     addClass([focusedElement], ['e-node-focus']);
                 }
@@ -1735,14 +1730,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             let tempIndex: number = 1; let wrapperleng: number;
             let remaining: number; let downIconWidth: number = 0;
             this.overFlowWrapper.innerHTML = '';
-            // eslint-disable-next-line
             const l10nLocale: Object = { overflowCountTemplate: '+${count} more..', totalCountTemplate: '${count} selected' };
             this.l10n = new L10n(this.getLocaleName(), l10nLocale, this.locale);
             const remainContent: string = this.l10n.getConstant('overflowCountTemplate');
             const totalContent: string = this.l10n.getConstant('totalCountTemplate');
             const remainElement: HTMLElement = this.createElement('span', { className: REMAIN_WRAPPER });
             this.overFlowWrapper.appendChild(remainElement);
-            remainElement.innerText = remainContent.replace('${count}',this.value.length.toString());
+            remainElement.innerText = remainContent.replace('${count}', this.value.length.toString());
             const remainSize: number = remainElement.offsetWidth;
             remove(remainElement);
             if (this.showDropDownIcon) {
@@ -1840,7 +1834,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         remainElement.innerHTML = '';
         remainElement.innerText = (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) ?
-        remainContent.replace('${count}', remaining.toString()) : totalContent.replace('${count}', remaining.toString());
+            remainContent.replace('${count}', remaining.toString()) : totalContent.replace('${count}', remaining.toString());
         if (this.overFlowWrapper.firstChild && (this.overFlowWrapper.firstChild.nodeType === 3 || this.mode === 'Box')) {
             removeClass([this.overFlowWrapper], TOTAL_COUNT_WRAPPER);
         } else {
@@ -2012,7 +2006,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (this.selectAllText !== 'Select All' || this.unSelectAllText !== 'Unselect All') {
             const template: string = unSelect ? this.unSelectAllText : this.selectAllText;
             this.selectAllSpan.textContent = '';
-            // eslint-disable-next-line
             const compiledString: Function = compile(template);
             const templateName: string = unSelect ? 'unSelectAllText' : 'selectAllText';
             for (const item of compiledString({}, this, templateName, null, !this.isStringTemplate)) {
@@ -2036,10 +2029,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             for (const htmlAttr of Object.keys(this.htmlAttributes)) {
                 if (htmlAttr === 'class') {
                     this.inputWrapper.classList.add(this.htmlAttributes[`${htmlAttr}`]);
-                } else if (htmlAttr === 'disabled' && this.htmlAttributes[`${htmlAttr}`] === 'disabled') {
+                } else if (htmlAttr === 'disabled') {
                     this.setProperties({ enabled: false }, true);
                     this.setEnable();
-                } else if (htmlAttr === 'readonly' && !isNOU(this.htmlAttributes[`${htmlAttr}`])) {
+                } else if (htmlAttr === 'readonly') {
                     this.setProperties({ readonly: true }, true);
                     this.dataBind();
                 } else if (htmlAttr === 'style') {
@@ -2096,7 +2089,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     private setTreeValue(): void {
         if (this.value !== null && this.value.length !== 0) {
-            // eslint-disable-next-line
             let data: { [key: string]: Object };
             if (this.showCheckBox || this.allowMultiSelection) {
                 for (let i: number = 0; i < this.value.length; i++) {
@@ -2125,7 +2117,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             return;
         }
         if (this.text !== null) {
-            // eslint-disable-next-line
             let data: { [key: string]: Object };
             const valArr: string[] = [];
             if (this.showCheckBox || this.allowMultiSelection) {
@@ -2190,14 +2181,14 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             }
         } else {
             if (this.showCheckBox) {
-                let difference: string[] = this.value.filter((e) => {
+                const difference: string[] = this.value.filter((e) => {
                     return this.treeObj.checkedNodes.indexOf(e) === -1;
                 });
                 if (difference.length > 0 || this.treeSettings.autoCheck) {
                     this.treeObj.checkedNodes = this.value.slice();
                     this.treeObj.dataBind();
                     this.setMultiSelect();
-                } 
+                }
             } else {
                 this.treeObj.selectedNodes = this.value.slice();
                 this.selectedText = [];
@@ -2212,9 +2203,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
-    // eslint-disable-next-line
     private getItems(givenText: string): { [key: string]: Object } {
-        // eslint-disable-next-line
         let data: { [key: string]: Object };
         if (this.treeDataType === 1) {
             for (let i: number = 0; i < this.treeItems.length; i++) {
@@ -2231,9 +2220,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         return data;
     }
 
-    // eslint-disable-next-line
     private getNestedItems(data: { [key: string]: Object }[], field: FieldsModel, givenText: string): { [key: string]: Object } {
-        // eslint-disable-next-line
         let newData: { [key: string]: Object };
         for (let i: number = 0, objlen: number = data.length; i < objlen; i++) {
             // eslint-disable-next-line
@@ -2243,7 +2230,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             } else if (typeof field.child === 'string' && !isNOU(getValue(field.child, data[i as number]))) {
                 // eslint-disable-next-line
                 const childData: Object = getValue(field.child, data[i]);
-                // eslint-disable-next-line
                 newData = this.getNestedItems(<{ [key: string]: Object }[]>childData, this.getChildType(field), givenText);
                 if (newData !== undefined) {
                     break;
@@ -2287,7 +2273,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             nodeTemplate: this.itemTemplate
         });
         this.treeObj.root = this.root ? this.root : this;
-        this.treeObj.appendTo('#' + this.tree.id);
+        this.treeObj.appendTo(this.tree);
     }
 
     /* To render the popup element */
@@ -2337,9 +2323,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.isFirstRender = false;
                 /* eslint-disable */
                 if (this.hasTemplate && (this as any).portals) {
-                    (this as any).portals = (this as any).portals.concat((this.treeObj as any).portals);
+                    if ((this.treeObj as any).portals) {
+                        (this as any).portals = (this as any).portals.concat((this.treeObj as any).portals.filter((item: any) => !(this as any).portals.includes(item)));
+                    }
                     /* eslint-enable */
-                    this.renderReactTemplates();
+                    if ((this as any).isReact) {
+                        this.renderReactTemplates(this.reactCallBack);
+                    }
                 }
             }
             if (!isCancelled) {
@@ -2350,7 +2340,15 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.popupObj.refreshPosition();
                 if (!(this.showCheckBox && this.showSelectAll) && (!this.popupDiv.classList.contains(NODATA)
                                                                             && this.treeItems.length > 0)) {
-                    let focusedElement: HTMLElement= this.treeObj.element.querySelector('li');
+                    let focusedElement: HTMLElement;
+                    if (this.value != null && this.text != null) {
+                        this.treeObj.element.querySelector('li').setAttribute('tabindex', '-1');
+                        focusedElement = this.treeObj.element.querySelector('[data-uid="' + this.value[0] + '"]');
+                        focusedElement.setAttribute('tabindex', '0');
+                    }
+                    else {
+                        focusedElement = this.treeObj.element.querySelector('li');
+                    }
                     focusedElement.focus();
                     addClass([focusedElement], ['e-node-focus']);
                 }
@@ -2367,6 +2365,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.trigger('open', eventArgs);
             }
         });
+    }
+
+    private reactCallBack(): void {
+        this.updatePopupHeight();
+        this.popupObj.refreshPosition();
     }
 
     private updatePopupHeight(): void {
@@ -2622,7 +2625,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         return null;
     }
 
-    // eslint-disable-next-line
     private getTreeDataType(ds: { [key: string]: Object }[], field: FieldsModel): number {
         if (this.fields.dataSource instanceof DataManager) {
             for (let i: number = 0; i < ds.length; i++) {
@@ -2632,7 +2634,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             }
             return 2;
         }
-        if(isNOU(this.fields.dataSource)) this.fields.dataSource = [];
+        if (isNOU(this.fields.dataSource)) { this.fields.dataSource = []; }
         for (let i: number = 0, len: number = this.fields.dataSource.length; i < len; i++) {
             if ((typeof field.child === 'string') && !isNOU(getValue(field.child, this.fields.dataSource[i as number]))) {
                 return 2;
@@ -2654,9 +2656,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.treeObj.dataBind();
     }
     private getEventArgs(args: NodeCheckEventArgs | NodeSelectEventArgs): DdtSelectEventArgs {
-        // eslint-disable-next-line
         const checkData: { [key: string]: Object }[] = (args as NodeCheckEventArgs).data;
-        // eslint-disable-next-line
         const selectData: { [key: string]: Object } = (args as NodeSelectEventArgs).nodeData;
         let state: string;
         if (this.showCheckBox) {
@@ -2741,7 +2741,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         const target: Element = <Element>args.event.target;
         if ((target.classList.contains('e-fullrow') || target.classList.contains('e-list-text')) && this.showCheckBox) {
             this.isClicked = true;
-            // eslint-disable-next-line
             const getNodeDetails: { [key: string]: Object } = this.treeObj.getNode(args.node);
             if (getNodeDetails.isChecked === 'true') {
                 this.treeObj.uncheckAll([args.node]);
@@ -2794,7 +2793,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private onNodeExpanded(args: NodeExpandEventArgs): void {
         if (this.hasTemplate && (this as any).portals && (this.treeObj as any).portals) {
             for (let i: number = 0; i < (this.treeObj as any).portals.length; i++) {
-                if ((this as any).portals.indexOf((this.treeObj as any).portals[i as number]) == -1) {
+                if ((this as any).portals.indexOf((this.treeObj as any).portals[i as number]) === -1) {
                     (this as any).portals.push((this.treeObj as any).portals[i as number]);
                 }
             }
@@ -2887,7 +2886,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     private setMultiSelectValue(newValues: string[]): void {
         if (!this.isFilteredData) {
-            this.setProperties({ value: this.isFromFilterChange && newValues && newValues.length == 0 ? this.value : newValues }, true);
+            this.setProperties({ value: this.isFromFilterChange && newValues && newValues.length === 0 ? this.value : newValues }, true);
             this.isFromFilterChange = false;
             if (newValues && newValues.length !== 0 && !this.showCheckBox) {
                 this.treeObj.selectedNodes = this.value.slice();
@@ -2937,9 +2936,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.updateSelectedValues();
     }
 
-    // eslint-disable-next-line
     private getSelectedData(value: string): { [key: string]: Object } {
-        // eslint-disable-next-line
         let data: { [key: string]: Object } = null;
         if (this.isFilteredData) {
             for (let i: number = 0; i < this.selectedData.length; i++) {
@@ -2966,7 +2963,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             return childItems;
         } else if (this.treeDataType === 1) {
             for (let i: number = 0, objlen: number = this.treeItems.length; i < objlen; i++) {
-                let dataId: Object = getValue(this.fields.value, this.treeItems[i as number]);
+                const dataId: Object = getValue(this.fields.value, this.treeItems[i as number]);
                 if (!isNOU(this.treeItems[i as number]) && !isNOU(dataId) && dataId.toString() === id) {
                     return this.treeItems[i as number];
                 }
@@ -2983,17 +2980,17 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             return newChildItems;
         }
         for (let i: number = 0, objlen: number = obj.length; i < objlen; i++) {
-            let dataValue: Object = getValue(mapper.value, obj[i as number]);
+            const dataValue: Object = getValue(mapper.value, obj[i as number]);
             if (obj[i as number] && dataValue && dataValue.toString() === id) {
                 return obj[i as number];
             } else if (typeof mapper.child === 'string' && !isNOU(getValue(mapper.child, obj[i as number]))) {
-                let childNodeData: Object = getValue(mapper.child, obj[i as number]);
+                const childNodeData: Object = getValue(mapper.child, obj[i as number]);
                 newChildItems = this.getChildNodeData(<{ [key: string]: Object }[]>childNodeData, this.getChildMapperFields(mapper), id);
                 if (newChildItems !== undefined) {
                     break;
                 }
             } else if (this.fields.dataSource instanceof DataManager && !isNOU(getValue('child', obj[i as number]))) {
-                let child: string = 'child';
+                const child: string = 'child';
                 newChildItems = this.getChildNodeData(<{ [key: string]: Object }[]>getValue(child, obj[i as number]), this.getChildMapperFields(mapper), id);
                 if (newChildItems !== undefined) {
                     break;
@@ -3024,7 +3021,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         let temp: string;
         let text: string;
         let textValue: string = '';
-        // eslint-disable-next-line
         let selectedData: { [key: string]: Object };
         this.hiddenElement.innerHTML = '';
         let hiddenInputValue = '';
@@ -3113,7 +3109,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             addClass([this.inputWrapper], SHOW_CHIP);
         }
         const chip: HTMLElement = this.createElement('span', {
-            className: CHIP,
+            className: CHIP
         });
         if (!this.inputEle.classList.contains(CHIP_INPUT)) {
             addClass([this.inputEle], CHIP_INPUT);
@@ -3153,7 +3149,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.header = this.createElement('div');
             addClass([this.header], HEADER);
         }
-        // eslint-disable-next-line
         const compiledString: Function = this.templateComplier(this.headerTemplate);
         let tempArr: Element[] = compiledString({}, this, 'headerTemplate', this.headerTemplateId, this.isStringTemplate, undefined, this.header);
         if (tempArr) {
@@ -3163,7 +3158,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.popupEle.insertBefore(this.header, this.checkAllParent ? this.checkAllParent : this.popupDiv);
     }
 
-    // eslint-disable-next-line
     private templateComplier(template: string | Function): Function {
         if (template) {
             // eslint-disable-next-line
@@ -3189,7 +3183,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.footer = this.createElement('div');
             addClass([this.footer], FOOTER);
         }
-        // eslint-disable-next-line
         const compiledString: Function = this.templateComplier(this.footerTemplate);
         let tempArr: Element[] = compiledString({}, this, 'footerTemplate', this.footerTemplateId, this.isStringTemplate, undefined, this.footer);
         if (tempArr) {
@@ -3251,7 +3244,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private resetValue(isDynamicChange?: boolean): void {
-        if (this.value == [] && this.text == null) { return; }
+        if (this.value === [] && this.text == null) { return; }
         Input.setValue(null, this.inputEle, this.floatLabelType);
         if (!isDynamicChange) {
             this.oldValue = this.value;
@@ -3383,7 +3376,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             const template: string | Function = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             const templateId: string = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
             const templatestring: string = actionFailure ? 'actionFailureTemplate' : 'noRecordsTemplate';
-            // eslint-disable-next-line
             const compiledString: Function = this.templateComplier(template);
             let tempArr: Element[] = compiledString({}, this, templatestring, templateId, this.isStringTemplate, undefined, this.noRecord);
             if (tempArr) {
@@ -3391,11 +3383,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 append(tempArr, this.noRecord);
             }
         } else {
-            // eslint-disable-next-line
             const l10nLocale: Object = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed'};
             this.l10n = new L10n(this.getLocaleName(), l10nLocale, this.locale);
             this.noRecord.innerHTML = actionFailure ?
-            this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
+                this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
         }
         addClass([this.noRecord], NODATACONTAINER);
         prepend([this.noRecord], this.popupDiv);
@@ -3550,7 +3541,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             case 'text': this.updateText(newProp.text); break;
             case 'allowMultiSelection': this.updateMultiSelection(newProp.allowMultiSelection); break;
             case 'mode':
-                if (!this.showCheckBox && !this.allowMultiSelection) { return;}
+                if (!this.showCheckBox && !this.allowMultiSelection) { return; }
                 if (this.mode === 'Custom') {
                     if (this.overFlowWrapper) {
                         detach(this.overFlowWrapper);
@@ -3593,9 +3584,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             case 'treeSettings':
                 this.updateTreeSettings(newProp);
                 break;
-            case 'customTemplate': 
-                if (this.mode !== "Custom") { return; }
-                this.chipCollection.innerHTML = "";
+            case 'customTemplate':
+                if (this.mode !== 'Custom') { return; }
+                this.chipCollection.innerHTML = '';
                 this.setTagValues();
                 break;
             case 'sortOrder':
@@ -3734,6 +3725,18 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
+    private destroyPopup(): void {
+        this.isPopupOpen = false;
+        if ((this as any).isReact) {
+            this.clearTemplate();
+        }
+        if(this.popupObj)
+        {
+            this.popupObj.destroy();
+            detach(this.popupObj.element);
+        }
+    }
+
     /**
      * Ensures visibility of the Dropdown Tree item by using item value or item element.
      * If many Dropdown Tree items are present, and we are in need to find a particular item, then the `ensureVisible` property
@@ -3752,7 +3755,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * @param  {string | Element} item - Specifies the value of Dropdown Tree item/ Dropdown Tree item element
      * @returns {'{[key: string]: Object }[]'} - returns the updated data source of the Dropdown Tree.
      */
-    // eslint-disable-next-line
     public getData(item?: string | Element): { [key: string]: Object }[] {
         return this.treeObj.getTreeData(item);
     }
@@ -3778,6 +3780,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 }
             }
             this.trigger('close', eventArgs);
+            if (this.destroyPopupOnHide) {
+                this.isFirstRender = true;
+                this.destroyPopup();
+            }
         }
     }
 

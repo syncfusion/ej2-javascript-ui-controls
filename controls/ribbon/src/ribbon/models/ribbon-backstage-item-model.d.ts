@@ -21,6 +21,13 @@ export interface BackstageItemModel {
     id?: string;
 
     /**
+     * Specifies the keytip content.
+     *
+     * @default ''
+     */
+    keyTip?: string;
+
+    /**
      * Specifies the backstage item’s content as selector.
      *
      * @default ''

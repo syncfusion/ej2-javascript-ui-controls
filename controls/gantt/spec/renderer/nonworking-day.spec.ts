@@ -80,7 +80,6 @@ describe('Gantt spec for non -working-day', () => {
             ganttObj.dataBind();
            });
     });
-    
         describe('Empty holidays', () => {
         Gantt.Inject(DayMarkers);
         let ganttObj: Gantt;

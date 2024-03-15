@@ -9,8 +9,8 @@ import { ISmithChartTooltipEventArgs, ISmithChartPoint } from '../model/interfac
  * To render tooltip
  */
 export class TooltipRender {
-    private mouseX: number;
-    private mouseY: number;
+    public mouseX: number;
+    public mouseY: number;
     private locationX: number;
     private locationY: number;
     /** To define the tooltip element. */
@@ -57,9 +57,9 @@ export class TooltipRender {
         }
     }
 
-    private createTooltip(
-        smithchart: Smithchart, e: PointerEvent, pointindex: number, seriesindex: number, series: SmithchartSeriesModel): void {
-        const currentPoint: ISmithChartPoint = series.points[pointindex as number];
+    public createTooltip(
+        smithchart: Smithchart, e: PointerEvent | Event, pointIndex: number, seriesindex: number, series: SmithchartSeriesModel): void {
+        const currentPoint: ISmithChartPoint = series.points[pointIndex as number];
         const pointX: number = currentPoint.resistance;
         const pointY: number = currentPoint.reactance;
         const tooltip: string[] = currentPoint.tooltip ? [currentPoint.tooltip] : null;
@@ -117,7 +117,7 @@ export class TooltipRender {
         smithChartTooltipSuccess.bind(this, smithchart);
         smithchart.trigger('tooltipRender', argsData, smithChartTooltipSuccess);
     }
-    private closestPointXY(smithchart: Smithchart, x: number, y: number, series: SmithchartSeriesModel, seriesindex: number): ClosestPoint {
+    public closestPointXY(smithchart: Smithchart, x: number, y: number, series: SmithchartSeriesModel, seriesindex: number): ClosestPoint {
         let pointIndex: number;
         let chartPoint: Point;
         let closePoint: Point;

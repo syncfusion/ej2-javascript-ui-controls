@@ -26,6 +26,14 @@ export class RibbonGroupButtonItem extends ChildProperty<RibbonGroupButtonItem> 
     public iconCss: string;
 
     /**
+     * Specifies the keytip content.
+     *
+     * @default ''
+     */
+    @Property('')
+    public keyTip: string;
+
+    /**
      * Specifies the tooltip settings for the group button items.
      *
      * @default {}

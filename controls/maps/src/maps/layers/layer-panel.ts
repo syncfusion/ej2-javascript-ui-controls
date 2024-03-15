@@ -185,8 +185,10 @@ export class LayerPanel {
         } else if (panel.mapObject.defaultState) {
             panel.mapObject.previousZoomFactor = panel.mapObject.tileZoomLevel;
             panel.mapObject.tileZoomLevel = zoomFactorValue;
-            panel.mapObject.tileTranslatePoint.x = 0;
-            panel.mapObject.tileTranslatePoint.y = 0;
+            if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint)) {
+                panel.mapObject.tileTranslatePoint.x = 0;
+                panel.mapObject.tileTranslatePoint.y = 0;
+            }
         }
         if ( zoomFactorValue <= 1 && !isNullOrUndefined(panel.mapObject.height) && !panel.mapObject.zoomSettings.shouldZoomInitially
         && (panel.mapObject.tileZoomLevel === panel.mapObject.tileZoomScale) && this.mapObject.initialCheck ) {
@@ -194,8 +196,10 @@ export class LayerPanel {
         }
         if (!isNullOrUndefined(panel.mapObject.centerLatOfGivenLocation) && !isNullOrUndefined(panel.mapObject.centerLongOfGivenLocation) &&
             panel.mapObject.zoomNotApplied) {
-            centerTileMap.y = panel.mapObject.centerLatOfGivenLocation;
-            centerTileMap.x = panel.mapObject.centerLongOfGivenLocation;
+            if (!isNullOrUndefined(centerTileMap)) {
+                centerTileMap.y = panel.mapObject.centerLatOfGivenLocation;
+                centerTileMap.x = panel.mapObject.centerLongOfGivenLocation;
+            }
             panel.mapObject.tileZoomLevel = panel.mapObject.mapScaleValue = panel.mapObject.scaleOfGivenLocation;
         }
         panel.mapObject.tileTranslatePoint = panel.panTileMap(
@@ -208,8 +212,10 @@ export class LayerPanel {
             const padding : number = this.mapObject.layers[this.mapObject.baseLayerIndex].layerType !== 'GoogleStaticMap' ?
                 20 : 0;
             const totalSize : number = Math.pow(2, this.mapObject.initialZoomLevel) * 256;
-            this.mapObject.initialTileTranslate.x = (this.mapObject.availableSize.width / 2) - (totalSize / 2);
-            this.mapObject.initialTileTranslate.y = (this.mapObject.availableSize.height / 2) - (totalSize / 2) + padding;
+            if (!isNullOrUndefined(this.mapObject.initialTileTranslate)) {
+                this.mapObject.initialTileTranslate.x = (this.mapObject.availableSize.width / 2) - (totalSize / 2);
+                this.mapObject.initialTileTranslate.y = (this.mapObject.availableSize.height / 2) - (totalSize / 2) + padding;
+            }
         }
         panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, null, bing);
         if (!isNullOrUndefined(panel.mapObject.previousZoomFactor)
@@ -733,7 +739,7 @@ export class LayerPanel {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const intersect: any[] = [];
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            renderData.map((currentShapeData: any[], i: number) => {
+            Array.prototype.forEach.call(renderData, (currentShapeData: any[], i: number) => {
                 this.renderLabel(this.currentLayer, layerIndex, currentShapeData, group, i, labelTemplateEle, intersect);
             });
             this.groupElements.push(group);

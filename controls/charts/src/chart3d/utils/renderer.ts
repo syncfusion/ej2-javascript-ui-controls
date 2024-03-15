@@ -4,7 +4,7 @@ import { Chart3DAxis, Visible3DLabels } from '../axis/axis';
 import { rotateTextSize } from '../../common/utils/helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Chart3DDataElement, Chart3DLabelElement, Chart3DLabelRect, Chart3DPolygon, Chart3DTickPosition, Chart3DBasicTransform, Chart3DWallRect, Chart3DTickElement, Chart3DVector } from '../model/chart3d-Interface';
-import { Chart3DFontModel } from '../model/chart3d-Interface-model';
+import { Chart3DTextFontModel } from '../model/chart3d-Interface-model';
 import { valueToCoefficients } from './chart3dRender';
 /**
  * The WallRenderer class provides methods to update the 3D wall of the chart.
@@ -171,7 +171,7 @@ export class AxisRenderer {
      */
     private drawAxisTitle(axis: Chart3DAxis, chart: Chart3D, index: number): void {
         if (axis.title) {
-            let font: Chart3DFontModel = {
+            let font: Chart3DTextFontModel = {
                 size: axis.titleStyle.size,
                 fontWeight: axis.titleStyle.fontWeight,
                 fontStyle: axis.titleStyle.fontStyle,
@@ -248,11 +248,11 @@ export class AxisRenderer {
      *
      * @param {number} maxWidth - The maximum width to fit the text within.
      * @param {string} text - The text to be trimmed.
-     * @param {Chart3DFontModel} labelStyle - The label style settings to be applied.
-     * @param {Chart3DFontModel} font - The font settings to be applied.
+     * @param {Chart3DTextFontModel} labelStyle - The label style settings to be applied.
+     * @param {Chart3DTextFontModel} font - The font settings to be applied.
      * @returns {string} - The trimmed text.
      */
-    private textTrim(maxWidth: number, text: string, labelStyle: Chart3DFontModel, font: Chart3DFontModel): string {
+    private textTrim(maxWidth: number, text: string, labelStyle: Chart3DTextFontModel, font: Chart3DTextFontModel): string {
         const textLength: number = text.length;
         let trimmedSize: Size;
         let label: string;
@@ -278,10 +278,10 @@ export class AxisRenderer {
      * @param {number} currentX - The current X-coordinate.
      * @param {Visible3DLabels} currentLabel - The current label settings.
      * @param {Chart3DAxis} axis - The Chart3DAxis instance.
-     * @param {Chart3DFontModel} font - The font settings to be applied.
+     * @param {Chart3DTextFontModel} font - The font settings to be applied.
      * @returns {void}
      */
-    private multipleRows(length: number, currentX: number, currentLabel: Visible3DLabels, axis: Chart3DAxis, font: Chart3DFontModel): void {
+    private multipleRows(length: number, currentX: number, currentLabel: Visible3DLabels, axis: Chart3DAxis, font: Chart3DTextFontModel): void {
         let label: Visible3DLabels;
         let pointX: number;
         let labelSize: Size;
@@ -406,7 +406,7 @@ export class AxisRenderer {
                         }
                     }
                 }
-                let font: Chart3DFontModel = {
+                let font: Chart3DTextFontModel = {
                     size: axis.visibleLabels[i as number].labelStyle.size,
                     fontWeight: axis.visibleLabels[i as number].labelStyle.fontWeight,
                     fontStyle: axis.visibleLabels[i as number].labelStyle.fontStyle,

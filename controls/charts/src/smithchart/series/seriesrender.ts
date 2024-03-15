@@ -205,7 +205,11 @@ export class SeriesRender {
             'clip-path': 'url(#' + smithchart.element.id + '_ChartSeriesClipRect_' +
                 seriesindex + ')'
         });
+        if (!smithchart.series[seriesindex].marker.visible) {
+            gsEle.setAttribute('tabindex', seriesindex === 0 ? '0' : '');
+        }
         gsEle.setAttribute('visibility', smithchart.series[seriesindex].visibility);
+        gsEle.setAttribute('role', 'region');
         gsEle.setAttribute('aria-label', ('Smithchart with ' + smithchart.series[seriesindex].points.length + ' points'));
         groupElement.appendChild(gsEle);
         let sb: string = '';

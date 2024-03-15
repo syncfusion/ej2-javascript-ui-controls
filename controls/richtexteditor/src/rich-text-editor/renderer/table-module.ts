@@ -51,6 +51,7 @@ export class Table {
     private dialogRenderObj: DialogRenderer;
     private currentColumnResize: string = '';
     private previousTableElement: HTMLElement;
+    private resizeEndTime: number = 0;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -217,7 +218,13 @@ export class Table {
     private keyUp (e: NotifyArgs): void {
         const target: HTMLElement = <HTMLElement>(e.args as KeyboardEventArgs).target;
         if ((e.args as KeyboardEventArgs).key.toLocaleLowerCase() === 'escape' && target && target.classList && (this.popupObj && !closest(target, '[id=' + "'" + this.popupObj.element.id + "'" +']')) && this.popupObj) {
+            let createTableToolbarBtn: HTMLElement = this.popupObj.relateTo as HTMLElement;
+            if (createTableToolbarBtn.nodeName !== 'BUTTON') {
+                createTableToolbarBtn = createTableToolbarBtn.querySelector('span.e-create-table');
+                createTableToolbarBtn = createTableToolbarBtn.parentElement as HTMLElement;
+            }
             this.popupObj.hide();
+            if (createTableToolbarBtn) { createTableToolbarBtn.focus(); }
         }
     }
     private keyDown(e: NotifyArgs): void {
@@ -392,8 +399,20 @@ export class Table {
             return false;
         }
     }
-
+    private removeEmptyTextNodes(element: HTMLTableRowElement) {
+        const children: NodeListOf<ChildNode> = element.childNodes;
+        for (let i: number = children.length - 1; i >= 0; i--) {
+            const node = children[i as number];
+            if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() === '') {
+                element.removeChild(node);
+            }
+        }
+    }
     private tabSelection(event: KeyboardEvent, selection: NodeSelection, ele: HTMLElement): void {
+        let allHeadBodyTRElements: NodeListOf<HTMLTableRowElement> = ele.closest('table').querySelectorAll('thead, tbody, tr');
+        for (let i: number = 0; i < allHeadBodyTRElements.length; i++) {
+            this.removeEmptyTextNodes(allHeadBodyTRElements[i as number])
+        }
         this.previousTableElement = ele;
         const insideList: boolean = this.insideList(selection.range);
         if ((event.keyCode === 37 || event.keyCode === 39) && selection.range.startContainer.nodeType === 3 ||
@@ -535,10 +554,12 @@ export class Table {
             const startNode: HTMLElement = this.parent.getRange().startContainer.parentElement;
             const endNode: HTMLElement = this.parent.getRange().endContainer.parentElement;
             const isAnchorEle = this.getAnchorNode(target);
+            const currentTime = new Date().getTime();
             if (target && target.nodeName !== 'A' && isAnchorEle.nodeName !== 'A' && target.nodeName !== 'IMG' && target.nodeName !== 'VIDEO' && !target.classList.contains(classes.CLS_CLICKELEM) &&
                 target.nodeName !== 'AUDIO' && startNode === endNode && (target.nodeName === 'TD' || target.nodeName === 'TH' ||
                 target.nodeName === 'TABLE' || (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable)))
-                && !(range.startContainer.nodeType === 3 && !range.collapsed)) {
+                && !(range.startContainer.nodeType === 3 && !range.collapsed) &&
+                currentTime - this.resizeEndTime > 100) {
                 const range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
@@ -640,7 +661,10 @@ export class Table {
         const tdNode: Element = closest(target, 'td,th') as HTMLTableCellElement;
         target = (target.nodeName !== 'TD' && tdNode && this.parent.contentModule.getEditPanel().contains(tdNode)) ?
             tdNode as HTMLTableCellElement : target;
-        removeClass(this.contentModule.getEditPanel().querySelectorAll('table td, table th'), classes.CLS_TABLE_SEL);
+        if (!(this.parent.quickToolbarSettings.showOnRightClick && (e.args as MouseEvent).which === 3 &&
+            target.classList.contains(classes.CLS_TABLE_SEL))) {
+            removeClass(this.contentModule.getEditPanel().querySelectorAll('table td, table th'), classes.CLS_TABLE_SEL);
+        }
         if (target && (target.tagName === 'TD' || target.tagName === 'TH')) {
             addClass([target], classes.CLS_TABLE_SEL);
             this.activeCell = target;
@@ -1028,6 +1052,9 @@ export class Table {
                     widthCompare = rteWidth;
                 }
                 if (this.resizeBtnStat.column) {
+                    if (this.curTable.closest('li')) {
+                        widthCompare = this.curTable.closest('li').offsetWidth;
+                    }
                     const colGroup: NodeListOf<HTMLTableColElement> = this.curTable.querySelectorAll('colgroup > col');
                     let currentTableWidth: number;
                     if (this.curTable.style.width !== '' && this.curTable.style.width.includes('%')){
@@ -1054,16 +1081,32 @@ export class Table {
                             const differenceWidth: number = currentTableWidth - this.convertPixelToPercentage(
                                 tableWidth - mouseX, widthCompare);
                             let preMarginLeft: number = 0;
-                            if (!isNullOrUndefined(this.curTable.style.marginLeft) && this.curTable.style.marginLeft !== '')
-                            {
+                            const widthType: boolean = this.curTable.style.width.indexOf('%') > -1;
+                            if (!widthType && this.curTable.offsetWidth > (this.contentModule.getEditPanel() as HTMLElement).offsetWidth) {
+                                this.curTable.style.width = rteWidth + 'px';
+                                return;
+                            }
+                            if (widthType && parseFloat(this.curTable.style.width.split('%')[0]) > 100) {
+                                this.curTable.style.width = '100%';
+                                return;
+                            }
+                            if (!isNOU(this.curTable.style.marginLeft) && this.curTable.style.marginLeft !== '') {
                                 const regex: RegExp = /[-+]?\d*\.\d+|\d+/;
                                 const value: RegExpMatchArray | null = this.curTable.style.marginLeft.match(regex);
-                                if (!isNullOrUndefined(value))
-                                {
+                                if (!isNOU(value)) {
                                     preMarginLeft = parseFloat(value[0]);
                                 }
                             }
-                            const currentMarginLeft: number = preMarginLeft + differenceWidth;
+                            let currentMarginLeft: number = preMarginLeft + differenceWidth;
+                            if (currentMarginLeft && currentMarginLeft > 100) {
+                                const width: number = parseFloat(this.curTable.style.width);
+                                currentMarginLeft = 100 - width;
+                            }
+                            if (currentMarginLeft && currentMarginLeft < 1) {
+                                this.curTable.style.marginLeft = null;
+                                this.curTable.style.width = '100%';
+                                return;
+                            }
                             this.curTable.style.marginLeft = 'calc(' + (this.curTable.style.width === '100%' ? 0 : currentMarginLeft) + '%)';
                             for (let i: number = 0; i < firstColumnsCell.length; i++) {
                                 const currentColumnCellWidth: number = this.getCurrentColWidth(firstColumnsCell[i as number], tableWidth);
@@ -1131,15 +1174,26 @@ export class Table {
                         maxiumWidth = Math.abs(tableBoxPosition - currentTdElement.getBoundingClientRect().width) - 5;
                         this.curTable.style.maxWidth = maxiumWidth + 'px';
                     }
-                    const widthType: boolean = this.curTable.style.width.indexOf('%') > -1;
-                    this.curTable.style.width = widthType ? this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) + '%'
-                        : tableWidth + mouseX + 'px';
                     this.curTable.style.height = tableHeight + mouseY + 'px';
                     if (!isNOU(tableReBox)) {
                         tableReBox.classList.add('e-rbox-select');
                         tableReBox.style.cssText = 'top: ' + (this.calcPos(this.curTable).top + tableHeight - 4) +
                             'px; left:' + (this.calcPos(this.curTable).left + tableWidth - 4) + 'px;';
                     }
+                    if (this.curTable.closest('li')) {
+                        widthCompare = this.curTable.closest('li').offsetWidth;
+                    }
+                    const widthType: boolean = this.curTable.style.width.indexOf('%') > -1;
+                    if (widthType && parseFloat(this.curTable.style.width.split('%')[0]) > 100) {
+                        this.curTable.style.width = '100%';
+                        return;
+                    }
+                    if (!widthType && this.curTable.offsetWidth > (this.contentModule.getEditPanel() as HTMLElement).offsetWidth) {
+                        this.curTable.style.width = rteWidth + 'px';
+                        return;
+                    }
+                    this.curTable.style.width = widthType ? this.convertPixelToPercentage(tableWidth + mouseX, widthCompare) + '%'
+                        : tableWidth + mouseX + 'px';
                 }
             }
         });
@@ -1206,7 +1260,7 @@ export class Table {
         this.pageX = null;
         this.pageY = null;
         this.moveEle = null;
-         const currentTableTrElement: NodeListOf<Element> = this.curTable.querySelectorAll("tr");
+        const currentTableTrElement: NodeListOf<Element> = this.curTable.querySelectorAll("tr");
         const tableTrPercentage: number[] = [];
         for (let i:number = 0; i < currentTableTrElement.length; i++) {
             const percentage = (parseFloat(currentTableTrElement[i as number].clientHeight.toString()) / parseFloat(this.curTable.clientHeight.toString())) * 100;
@@ -1218,6 +1272,7 @@ export class Table {
         const args: ResizeArgs = { event: e, requestType: 'table' };
         this.parent.trigger(events.resizeStop, args);
         this.parent.formatter.saveData();
+        this.resizeEndTime = new Date().getTime();
     }
 
     private resetResizeHelper(curTable: HTMLTableElement): void {
@@ -1233,6 +1288,9 @@ export class Table {
                 element.parentNode.removeChild(element);
             }
         });
+        if (!curTable.style.width) {
+            curTable.style.width = curTable.offsetWidth + 'px';
+        }
         const colGroup: HTMLElement | null  = curTable.querySelector('colgroup');
         if (colGroup) {
             for (let i: number = 0; i < curTable.rows.length; i++) {
@@ -1331,7 +1389,7 @@ export class Table {
         this.createTableButton.isStringTemplate = true;
         this.createTableButton.appendTo(btnEle);
         EventHandler.add(btnEle, 'click', this.insertTableDialog, { self: this, args: args.args, selection: args.selection });
-        this.parent.getToolbar().appendChild(this.dlgDiv);
+        this.parent.getToolbar().parentElement.appendChild(this.dlgDiv);
         let target: HTMLElement = (((args as ITableNotifyArgs).args as ClickEventArgs).originalEvent.target as HTMLElement);
         target = target.classList.contains('e-toolbar-item') ? target.firstChild as HTMLElement : target.parentElement;
         this.popupObj = new Popup(this.dlgDiv, {

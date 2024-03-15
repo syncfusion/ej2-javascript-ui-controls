@@ -803,8 +803,8 @@ describe('TreeView control', () => {
                         showCheckBox: true,
                     }, '#tree1');
                     setTimeout(function () {
-                        let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-			let liEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+			let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+		        let liEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                         expect(checkEle.length).toBeGreaterThan(0);
                         expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
                         var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
@@ -9623,7 +9623,7 @@ describe('TreeView control', () => {
                     tapCount: 1
                 };
                 let treeObj: any;
-                let i = 0;
+                var i = 0;
                 let ele: HTMLElement = createElement('div', { id: 'tree1' });
                 let dataManager1: DataManager 
                 let originalTimeout: any;
@@ -9724,7 +9724,7 @@ describe('TreeView control', () => {
                             ]
                         },
                     ];
-
+                    
                     let newTreeObj: TreeView = new TreeView({
                         fields: {
                             dataSource: customDataSource,
@@ -10559,7 +10559,7 @@ describe('TreeView control', () => {
                     },450 );
                 },4450);
             });
-        });
+            });
 
          xdescribe('Remote data Offline', () => {
                 let mouseEventArgs: any = {

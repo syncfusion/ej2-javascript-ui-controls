@@ -6,9 +6,10 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, EventHandler, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1, data17, data18, data19 } from '../data';
+import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1, data17, data18, data19, sortComparerData } from '../data';
 import { extend } from '@syncfusion/ej2-grids';
 import { FileSelectEventArgs } from '../../../src';
+import { sortComparer } from '../../../src/file-manager/common/utility';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -22,6 +23,94 @@ function eventObject(eventType: string, eventName: string): Object {
 
 
 describe('FileManager control LargeIcons view', () => {
+    describe('sortComparer property testing', function () {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((done: Function): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(sortComparerData)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            setTimeout(function () {
+                done();
+            }, 500);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('Custom Sorting - SortBy Ascending', function (done) {
+            feObj.sortComparer = function (reference: string, comparer: string) {
+                return sortComparer(reference, comparer);
+            };
+            expect(feObj.toolbarSettings.visible).toEqual(true);
+            var sortbyObj = feObj.toolbarModule.toolbarObj.element.querySelector('#' + feObj.element.id + '_tb_sortby');
+            sortbyObj.click();
+            sortbyObj.ej2_instances[0].dropDown.element.querySelectorAll('.e-item')[4].click();
+            setTimeout(function () {
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[0].querySelector(".e-list-text").textContent).toBe("1. A");
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[1].querySelector(".e-list-text").textContent).toBe("2. react");
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[2].querySelector(".e-list-text").textContent).toBe("10. angular");
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[3].querySelector(".e-list-text").textContent).toBe("20. vue");
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[4].querySelector(".e-list-text").textContent).toBe("Downloads");
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[5].querySelector(".e-list-text").textContent).toBe("Nuggets.png");
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[6].querySelector(".e-list-text").textContent).toBe("Sugar cookie.png");
+                done();
+            }, 300);
+        });
+        it('Custom Sorting - SortBy Descending', function (done) {
+            feObj.sortComparer = function (reference: string, comparer: string) {
+                return sortComparer(reference, comparer);
+            };
+            expect(feObj.toolbarSettings.visible).toEqual(true);
+            var sortbyObj = feObj.toolbarModule.toolbarObj.element.querySelector('#' + feObj.element.id + '_tb_sortby');
+            sortbyObj.click();
+            sortbyObj.ej2_instances[0].dropDown.element.querySelectorAll('.e-item')[5].click();
+            setTimeout(function () {
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[0].querySelector(".e-list-text").textContent).toBe("Sugar cookie.png");
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[1].querySelector(".e-list-text").textContent).toBe("Nuggets.png");
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[2].querySelector(".e-list-text").textContent).toBe("Downloads");
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[3].querySelector(".e-list-text").textContent).toBe("20. vue");
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[4].querySelector(".e-list-text").textContent).toBe("10. angular");
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[5].querySelector(".e-list-text").textContent).toBe("2. react");
+                expect(document.querySelectorAll(".e-list-item.e-large-icon")[6].querySelector(".e-list-text").textContent).toBe("1. A");
+                done();
+            }, 300);
+        });
+    });
     describe('mouse event testing', () => {
         let mouseEventArgs: any, tapEvent: any;
         let feObj: any;

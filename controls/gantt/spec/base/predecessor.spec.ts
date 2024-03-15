@@ -955,3 +955,99 @@ describe('Bug -855406 -Dependency line not render after adding child record ', (
         destroyGantt(ganttObj);
     });
 });
+describe('AlphaID predecessor', () => {
+    let ganttObj: Gantt;
+    let data = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('11/02/2022'),
+            EndDate: new Date('11/21/2022'),
+          },
+          {
+            TaskID: 'A-2',
+            TaskName: 'Identify site location',
+            StartDate: new Date('11/02/2022'),
+            Duration: 3,
+            Progress: 30,
+          },
+          {
+            TaskID: 3,
+            TaskName: 'Perform Soil test',
+            StartDate: new Date('11/02/2022'),
+            Duration: 4,
+            Predecessor: 'A-2FS',
+          },
+          {
+            TaskID: 'A1',
+            TaskName: 'Project Initiation',
+            StartDate: new Date('2022-11-06'),
+            EndDate: new Date('2022-11-20'),
+          },
+          {
+            TaskID: 'A-3',
+            TaskName: 'Identify Site location',
+            StartDate: new Date('2022-11-16'),
+            EndDate: new Date('2022-11-19'),
+            progress: 50,
+          },
+          {
+            TaskID: 'A3',
+            TaskName: 'Apply for permits',
+            StartDate: new Date('2022-11-19'),
+            EndDate: new Date('2022-11-22'),
+            Progress: 50,
+            Predecessor: 'A-2SS'
+          }
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                allowSorting: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor'
+        },
+        editSettings: {
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+        allowSelection: true,
+        gridLines: "Both",
+        showColumnMenu: false,
+        highlightWeekends: true,
+        timelineSettings: {
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        labelSettings: {
+            leftLabel: 'TaskName',
+            taskLabel: 'Progress'
+        },
+        height: '550px',
+        allowUnscheduledTasks: true,
+            }, done);
+    });
+    it('Check predecessor length', () => {
+        expect(ganttObj.currentViewData[1].ganttProperties.predecessor.length).toBe(2);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});

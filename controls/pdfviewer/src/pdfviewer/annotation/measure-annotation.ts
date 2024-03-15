@@ -350,7 +350,7 @@ export class MeasureAnnotation {
                                 vPoints = [];
                             }
                             // eslint-disable-next-line max-len
-                            annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                            annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ?  typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
                             // eslint-disable-next-line max-len
                             annotation.allowedInteractions = annotation.AllowedInteractions ? annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
                             annot = {
@@ -400,7 +400,8 @@ export class MeasureAnnotation {
     public getSettings(annotation : any) : any {
         let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
         if (annotation.AnnotationSelectorSettings) {
-            selector = annotation.AnnotationSelectorSettings;
+            // eslint-disable-next-line max-len
+            selector = typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
         } else {
             selector = this.getSelector(annotation.Subject);
         }
@@ -931,8 +932,6 @@ export class MeasureAnnotation {
         } else {
             this.unit = this.getContent(this.convertUnit.content) as CalibrationUnit;
             this.displayUnit = this.getContent(this.dispUnit.content) as CalibrationUnit;
-            this.srcValue = this.sourceTextBox.value;
-            this.destValue = this.destTextBox.value;
             this.ratio = this.destTextBox.value / this.sourceTextBox.value;
             this.volumeDepth = this.depthTextBox.value;
             this.scaleRatioString = this.sourceTextBox.value + ' ' + this.unit + ' = ' + this.destTextBox.value + ' ' + this.displayUnit;

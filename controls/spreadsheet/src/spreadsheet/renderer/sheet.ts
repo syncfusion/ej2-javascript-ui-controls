@@ -1011,9 +1011,9 @@ export class SheetRender implements IRenderer {
      * @returns {void}
      */
     public destroy(): void {
-        this.headerPanel = null;
-        this.contentPanel = null;
-        this.col = null;
+        if (this.headerPanel) { this.headerPanel.remove(); } this.headerPanel = null;
+        if (this.contentPanel) { this.contentPanel.remove(); } this.contentPanel = null;
+        if (this.col) { this.col.remove(); } this.col = null;
         this.rowRenderer = null;
         this.cellRenderer = null;
         this.colGroupWidth = null;

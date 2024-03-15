@@ -194,7 +194,6 @@ export class ColorPickerInput {
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.showColorPicker, this.showColorPicker, this);
     }
-
     private showColorPicker(e: { [key: string]: Object }) {
         if (!isNullOrUndefined(this.fontColorPicker) && ((e as { [key: string]: Object }).toolbarClick === "fontcolor")) {
             this.fontColorDropDown.toggle();

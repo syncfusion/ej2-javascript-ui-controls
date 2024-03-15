@@ -256,6 +256,7 @@ export class DateRangePicker extends CalendarBase {
     protected touchRangeModule: Touch;
     protected touchRangeStart: boolean;
     protected iconRangeRight: string;
+    protected clearButton: HTMLElement;
 
     /**
      * Gets or sets the start and end date of the Calendar.
@@ -1344,8 +1345,8 @@ export class DateRangePicker extends CalendarBase {
             const startDate: Date = this.presetsItem[i as number].start as Date;
             const endDate: Date = this.presetsItem[i as number].end as Date;
             if (this.startValue && this.endValue) {
-                if(startDate.getDate() == this.startValue.getDate() && startDate.getMonth() == this.startValue.getMonth() && startDate.getFullYear() == this.startValue.getFullYear()
-                && endDate.getDate() == this.endValue.getDate() && endDate.getMonth() == this.endValue.getMonth() && endDate.getFullYear() == this.endValue.getFullYear()) {
+                if (startDate.getDate() == this.startValue.getDate() && startDate.getMonth() == this.startValue.getMonth() && startDate.getFullYear() == this.startValue.getFullYear()
+                    && endDate.getDate() == this.endValue.getDate() && endDate.getMonth() == this.endValue.getMonth() && endDate.getFullYear() == this.endValue.getFullYear()) {
                     this.activeIndex = i;
                     this.isCustomRange = false;
                 }
@@ -4330,6 +4331,9 @@ export class DateRangePicker extends CalendarBase {
      */
     public destroy(): void {
         this.unBindEvents();
+        if (this.showClearButton) {
+            this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
+        }
         this.hide(null);
         const ariaAttrs: object = {
             'tabindex': '0', 'aria-expanded': 'false', 'role': 'combobox',
@@ -4363,6 +4367,11 @@ export class DateRangePicker extends CalendarBase {
                 this.clearCalendarEvents();
             }
         }
+        Input.destroy({
+            element: this.inputElement,
+            floatLabelType: this.floatLabelType,
+            properties: this.properties
+        }, this.clearButton);
         super.destroy();
         this.inputWrapper = this.popupWrapper = this.popupObj = this.cloneElement = this.presetElement = null;
         if (this.formElement) {

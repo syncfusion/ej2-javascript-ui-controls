@@ -294,9 +294,11 @@ export class Virtualization {
             }
             if ((this.listViewInstance.curViewDS[index as number] as { [key: string]: object; })[this.listViewInstance.fields.iconCss]) {
                 const textContent: Element = element.querySelector('.' + classNames.textContent);
+                const curViewDS: { [key: string]: object; } =
+                    this.listViewInstance.curViewDS[index as number] as { [key: string]: object; };
+                const iconCss: string = curViewDS[this.listViewInstance.fields.iconCss].toString();
                 const target: Element = this.listViewInstance.createElement('div', {
-                    className: classNames.listIcon + ' ' +
-                        (this.listViewInstance.curViewDS[index as number] as { [key: string]: object; })[this.listViewInstance.fields.iconCss]
+                    className: classNames.listIcon + ' ' + iconCss
                 });
                 textContent.insertBefore(target, element.querySelector('.' + classNames.listItemText));
             }
@@ -565,7 +567,7 @@ export class Virtualization {
             if (curViewDS[(resutJSON.index as number) - 1] &&
                 curViewDS[(resutJSON.index as number) - 1].isHeader &&
                 ((curViewDS[(resutJSON.index as number) - 1])
-                    .items as { [key: string]: any; }[]).length === 1) {
+                    .items as { [key: string]: object; }[]).length === 1) {
                 this.removeUiItem((resutJSON.index as number) - 1);
                 this.removeUiItem((resutJSON.index as number) - 1);
             } else {
@@ -812,7 +814,9 @@ export class Virtualization {
             target = this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index + 1]) ||
                 this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index + 2]);
         }
-        if (this.listViewInstance.fields.groupBy && this.listViewInstance.curViewDS[index + 1] && this.listViewInstance.curViewDS[index + 1].isHeader) {
+        if (this.listViewInstance.fields.groupBy
+            && this.listViewInstance.curViewDS[index + 1]
+            && this.listViewInstance.curViewDS[index + 1].isHeader) {
             const targetEle: HTMLElement = this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index - 1]);
             if (targetEle) {
                 target = targetEle.nextElementSibling as HTMLElement;
@@ -831,7 +835,7 @@ export class Virtualization {
 
     public createUIItem(args: ItemCreatedArgs): void {
         if (!args.item.classList.contains('e-list-group-item')) {
-            this.templateData = args.curData.isHeader ? (args.curData as { [key: string]: any[]; }).items[0] as DataSource :
+            this.templateData = args.curData.isHeader ? (args.curData as { [key: string]: object[]; }).items[0] as DataSource :
                 args.curData;
             if (this.listViewInstance.showCheckBox) {
                 // eslint-disable-next-line
@@ -858,14 +862,17 @@ export class Virtualization {
                             div.children[0].classList.add('e-checkbox-right');
                         }
                         if (this.listViewInstance.checkBoxPosition === 'Left') {
-                            div.children[0].insertBefore(this.listViewInstance.virtualCheckBox, (div.childNodes[0] as HTMLElement).children[0]);
+                            div.children[0].insertBefore(
+                                this.listViewInstance.virtualCheckBox,
+                                (div.childNodes[0] as HTMLElement).children[0]
+                            );
                         } else {
                             div.children[0].appendChild(this.listViewInstance.virtualCheckBox);
                         }
                         while (args.item.lastChild) {
                             args.item.removeChild(args.item.lastChild);
                         }
-                        [].slice.call(div.children).forEach(function (ele: HTMLElement) {
+                        [].slice.call(div.children).forEach((ele: HTMLElement): void => {
                             args.item.appendChild(ele);
                         });
                     }
@@ -911,6 +918,7 @@ export class Virtualization {
      * @param {DataSource} newData - The new data source for the list view.
      * @param {ElementContext} listElement - The HTML element context for the list view.
      * @param {Virtualization} virtualThis - The virtualization context for the list view.
+     * @returns {void}
      */
     private onChange(newData: DataSource, listElement: ElementContext, virtualThis: Virtualization): void {
         const liItem: HTMLElement[] = ListBase.createListItemFromJson(virtualThis.listViewInstance.createElement,
@@ -922,7 +930,7 @@ export class Virtualization {
         while (listElement.lastChild) {
             listElement.removeChild(listElement.lastChild);
         }
-        [].slice.call(liItem[0].children).forEach(function (ele: HTMLElement) {
+        [].slice.call(liItem[0].children).forEach((ele: HTMLElement): void => {
             listElement.appendChild(ele);
         });
     }

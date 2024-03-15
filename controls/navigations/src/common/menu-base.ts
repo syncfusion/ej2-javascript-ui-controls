@@ -401,11 +401,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     public enableScrolling: boolean;
 
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Specifies whether to enable the rendering of untrusted HTML values in the Context Menu component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
 
     /**
@@ -590,9 +591,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             this.targetElement = target;
             if (!this.isMenu) {
-                EventHandler.add(this.targetElement, 'mousewheel DOMMouseScroll', this.scrollHandler, this);
+                EventHandler.add(this.targetElement, 'scroll', this.scrollHandler, this);
                 for (const parent of getScrollableParent(this.targetElement)) {
-                    EventHandler.add(parent, 'mousewheel DOMMouseScroll', this.scrollHandler, this);
+                    EventHandler.add(parent, 'scroll', this.scrollHandler, this);
                 }
             }
         }
@@ -807,7 +808,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     const aEle: HTMLElement = fli.querySelector('.e-menu-url');
                     if (item.url && aEle) {
                         switch(aEle.getAttribute('target')) {
-                           case '_blank':
+                            case '_blank':
                                 window.open(item.url, '_blank');
                                 break;
                             case '_parent':
@@ -1303,8 +1304,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     this.trigger('select', eventArgs);
                 }
                 (li as HTMLElement).focus(); cul = this.getUlByNavIdx();
-                const index: number = this.isValidLI(cul.children[0], 0, this.action);
-                cul.children[index as number].classList.add(FOCUSED); (cul.children[index as number] as HTMLElement).focus();
+                if (cul) {
+                    const index: number = this.isValidLI(cul.children[0], 0, this.action);
+                    cul.children[index as number].classList.add(FOCUSED); (cul.children[index as number] as HTMLElement).focus();
+                }
             }
         });
     }
@@ -1612,97 +1615,94 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private clickHandler(e: MouseEvent): void {
-        if (this.isTapHold) {
-            this.isTapHold = false;
-        } else {
-            const wrapper: Element = this.getWrapper();
-            const trgt: Element = e.target as Element;
-            const cli: Element = this.cli = this.getLI(trgt);
-            const regex: RegExp = new RegExp('-ej2menu-(.*)-popup');
-            const cliWrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
-            const isInstLI: boolean = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
-                : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
-            if (Browser.isDevice && this.isMenu) {
-                this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
-                this.mouseDownHandler(e);
+        this.isTapHold = this.isTapHold ? false : this.isTapHold;
+        const wrapper: Element = this.getWrapper();
+        const trgt: Element = e.target as Element;
+        const cli: Element = this.cli = this.getLI(trgt);
+        const regex: RegExp = new RegExp('-ej2menu-(.*)-popup');
+        const cliWrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
+        const isInstLI: boolean = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
+            : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
+        if (Browser.isDevice && this.isMenu) {
+            this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
+            this.mouseDownHandler(e);
+        }
+        if (cli && cliWrapper && this.isMenu) {
+            const cliWrapperId: string = cliWrapper.id ? regex.exec(cliWrapper.id)[1] : cliWrapper.querySelector('.e-menu-parent').id;
+            if (this.element.id !== cliWrapperId) {
+                return;
             }
-            if (cli && cliWrapper && this.isMenu) {
-                const cliWrapperId: string = cliWrapper.id ? regex.exec(cliWrapper.id)[1] : cliWrapper.querySelector('.e-menu-parent').id;
-                if (this.element.id !== cliWrapperId) {
-                    return;
+        }
+        if (isInstLI && e.type === 'click' && !cli.classList.contains(HEADER)) {
+            this.setLISelected(cli);
+            const navIdx: number[] = this.getIndex(cli.id, true);
+            const item: MenuItemModel = this.getItem(navIdx);
+            const eventArgs: MenuEventArgs = { element: cli as HTMLElement, item: item, event: e };
+            this.trigger('select', eventArgs);
+        }
+        if (isInstLI && (e.type === 'mouseover' || Browser.isDevice || this.showItemOnClick)) {
+            let ul: HTMLElement;
+            if (cli.classList.contains(HEADER)) {
+                ul = wrapper.children[this.navIdx.length - 1] as HTMLElement;
+                this.toggleAnimation(ul);
+                const sli: Element = this.getLIByClass(ul, SELECTED);
+                if (sli) {
+                    sli.classList.remove(SELECTED);
                 }
-            }
-            if (isInstLI && e.type === 'click' && !cli.classList.contains(HEADER)) {
-                this.setLISelected(cli);
-                const navIdx: number[] = this.getIndex(cli.id, true);
-                const item: MenuItemModel = this.getItem(navIdx);
-                const eventArgs: MenuEventArgs = { element: cli as HTMLElement, item: item, event: e };
-                this.trigger('select', eventArgs);
-            }
-            if (isInstLI && (e.type === 'mouseover' || Browser.isDevice || this.showItemOnClick)) {
-                let ul: HTMLElement;
-                if (cli.classList.contains(HEADER)) {
-                    ul = wrapper.children[this.navIdx.length - 1] as HTMLElement;
-                    this.toggleAnimation(ul);
-                    const sli: Element = this.getLIByClass(ul, SELECTED);
-                    if (sli) {
-                        sli.classList.remove(SELECTED);
-                    }
-                    detach(cli.parentNode);
-                    this.navIdx.pop();
-                } else {
-                    if (!cli.classList.contains(SEPARATOR)) {
-                        this.showSubMenu = true;
-                        const cul: Element = cli.parentNode as Element;
-                        if (isNullOrUndefined(cul)) {
-                            return;
-                        }
-                        this.cliIdx = this.getIdx(cul, cli);
-                        if (this.isMenu || !Browser.isDevice) {
-                            const culIdx: number = this.isMenu ? Array.prototype.indexOf.call(
-                                [wrapper].concat(this.getPopups()), closest(cul, '.' + 'e-' + this.getModuleName() + '-wrapper'))
-                                : this.getIdx(wrapper, cul);
-                            if (this.navIdx[culIdx as number] === this.cliIdx) {
-                                this.showSubMenu = false;
-                            }
-                            if (culIdx !== this.navIdx.length && (e.type !== 'mouseover' || this.showSubMenu)) {
-                                const sli: Element = this.getLIByClass(cul, SELECTED);
-                                if (sli) {
-                                    sli.classList.remove(SELECTED);
-                                }
-                                this.isClosed = true;
-                                this.keyType = 'click';
-                                if (this.showItemOnClick) { this.setLISelected(cli); }
-                                this.closeMenu(culIdx + 1, e);
-                                if (this.showItemOnClick) { this.setLISelected(cli); }
-                            }
-                        }
-                        if (!this.isClosed) {
-                            this.afterCloseMenu(e);
-                        }
-                        this.isClosed = false;
-                    }
-                }
+                detach(cli.parentNode);
+                this.navIdx.pop();
             } else {
-                if (this.isMenu && trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
-                    const popupEle: Element = closest(trgt, '.' + POPUP);
-                    const cIdx: number = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
-                    if (cIdx < this.navIdx.length) {
-                        this.closeMenu(cIdx + 1, e);
-                        if (popupEle) { this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]); }
+                if (!cli.classList.contains(SEPARATOR)) {
+                    this.showSubMenu = true;
+                    const cul: Element = cli.parentNode as Element;
+                    if (isNullOrUndefined(cul)) {
+                        return;
                     }
-                } else if (this.isMenu && this.hamburgerMode && trgt.tagName === 'SPAN'
-                    && trgt.classList.contains('e-menu-icon')) {
-                    this.menuHeaderClickHandler(e);
-                } else {
-                    if (trgt.tagName !== 'UL' || (this.isMenu ? trgt.parentElement.classList.contains('e-menu-wrapper') &&
-                    !this.getIndex(trgt.querySelector('.' + ITEM).id, true).length : trgt.parentElement !== wrapper)) {
-                        if (!cli) {
-                            this.removeLIStateByClass([SELECTED], [wrapper]);
+                    this.cliIdx = this.getIdx(cul, cli);
+                    if (this.isMenu || !Browser.isDevice) {
+                        const culIdx: number = this.isMenu ? Array.prototype.indexOf.call(
+                            [wrapper].concat(this.getPopups()), closest(cul, '.' + 'e-' + this.getModuleName() + '-wrapper'))
+                            : this.getIdx(wrapper, cul);
+                        if (this.navIdx[culIdx as number] === this.cliIdx) {
+                            this.showSubMenu = false;
                         }
-                        if (!cli || !cli.querySelector('.' + CARET)) {
-                            this.closeMenu(null, e);
+                        if (culIdx !== this.navIdx.length && (e.type !== 'mouseover' || this.showSubMenu)) {
+                            const sli: Element = this.getLIByClass(cul, SELECTED);
+                            if (sli) {
+                                sli.classList.remove(SELECTED);
+                            }
+                            this.isClosed = true;
+                            this.keyType = 'click';
+                            if (this.showItemOnClick) { this.setLISelected(cli); }
+                            this.closeMenu(culIdx + 1, e);
+                            if (this.showItemOnClick) { this.setLISelected(cli); }
                         }
+                    }
+                    if (!this.isClosed) {
+                        this.afterCloseMenu(e);
+                    }
+                    this.isClosed = false;
+                }
+            }
+        } else {
+            if (this.isMenu && trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
+                const popupEle: Element = closest(trgt, '.' + POPUP);
+                const cIdx: number = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
+                if (cIdx < this.navIdx.length) {
+                    this.closeMenu(cIdx + 1, e);
+                    if (popupEle) { this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]); }
+                }
+            } else if (this.isMenu && this.hamburgerMode && trgt.tagName === 'SPAN'
+                && trgt.classList.contains('e-menu-icon')) {
+                this.menuHeaderClickHandler(e);
+            } else {
+                if (trgt.tagName !== 'UL' || (this.isMenu ? trgt.parentElement.classList.contains('e-menu-wrapper') &&
+                !this.getIndex(trgt.querySelector('.' + ITEM).id, true).length : trgt.parentElement !== wrapper)) {
+                    if (!cli) {
+                        this.removeLIStateByClass([SELECTED], [wrapper]);
+                    }
+                    if (!cli || !cli.querySelector('.' + CARET)) {
+                        this.closeMenu(null, e);
                     }
                 }
             }
@@ -1759,9 +1759,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private getLIByClass(ul: Element, classname: string): Element {
-        for (let i: number = 0, len: number = ul.children.length; i < len; i++) {
-            if (ul.children[i as number].classList.contains(classname)) {
-                return ul.children[i as number];
+        if (ul) {
+            for (let i: number = 0, len: number = ul.children.length; i < len; i++) {
+                if (ul.children[i as number].classList.contains(classname)) {
+                    return ul.children[i as number];
+                }
             }
         }
         return null;
@@ -2040,9 +2042,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
             }
             if (!this.isMenu) {
-                EventHandler.remove(this.targetElement, 'mousewheel DOMMouseScroll', this.scrollHandler);
+                EventHandler.remove(this.targetElement, 'scroll', this.scrollHandler);
                 for (const parent of getScrollableParent(this.targetElement)) {
-                    EventHandler.remove(parent, 'mousewheel DOMMouseScroll', this.scrollHandler);
+                    EventHandler.remove(parent, 'scroll', this.scrollHandler);
                 }
             }
         }

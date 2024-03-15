@@ -11,6 +11,7 @@ export * from './selection';
 export * from './toolbar';
 export * from './day-markers';
 export * from './critical-path';
+export * from './undo-redo';
 export * from './context-menu';
 export * from './excel-export';
 export * from './column-menu';

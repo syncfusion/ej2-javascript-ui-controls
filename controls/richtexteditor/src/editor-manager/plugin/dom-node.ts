@@ -518,7 +518,7 @@ export class DOMNode {
         const startChildNodes: NodeListOf<Node> = range.startContainer.childNodes;
         const isTableStart: boolean = startChildNodes.length > 1 && startChildNodes[0].nodeName === 'TABLE';
         const isImgOnlySelected: boolean = startChildNodes.length > 1 && startChildNodes[0].nodeName === 'IMAGE' &&
-        range.endOffset === 1 && range.endContainer.nodeName === '#text' && range.endContainer.textContent.length === 0;
+            range.endOffset === 1 && range.endContainer.nodeName === '#text' && range.endContainer.textContent.length === 0;
         let start: Element = <Element>((isTableStart ? getLastTextNode(startChildNodes[range.startOffset + 1]) :
             startChildNodes[(range.startOffset > 0) ? (range.startOffset - 1) : range.startOffset]) || range.startContainer);
         let end: Element = <Element>(range.endContainer.childNodes[(range.endOffset > 0) ? (isImgOnlySelected ? range.endOffset : (range.endOffset - 1)) : range.endOffset]
@@ -687,11 +687,12 @@ export class DOMNode {
     /**
      * blockNodes method
      *
+     * @param {boolean} action - Optional Boolean that specifies the action is whether performed.
      * @returns {Node[]} - returns the node array values
      * @hidden
      * @deprecated
      */
-    public blockNodes(): Node[] {
+    public blockNodes(action?: boolean): Node[] {
         const collectionNodes: Element[] = [];
         const selection: Selection = this.getSelection();
         if (this.isEditorArea() && selection.rangeCount) {
@@ -705,21 +706,40 @@ export class DOMNode {
                     collectionNodes.push(startNode);
                 }
                 parentNode = this.blockParentNode(startNode);
+                const endParentNode: Element = this.blockParentNode(endNode);
                 if (parentNode && collectionNodes.indexOf(parentNode) < 0) {
-                    if (CONSTANT.IGNORE_BLOCK_TAGS.indexOf(parentNode.tagName.toLocaleLowerCase()) >= 0 && (startNode.tagName === 'BR' ||
+                    if (!isNOU(action) && action) {
+                        if (range.commonAncestorContainer.nodeName === 'TD' || parentNode.nodeName === 'TD' || endParentNode.nodeName === 'TD') {
+                            const processedNodes: Node[] = this.getPreBlockNodeCollection(range);
+                            if (processedNodes.length > 1) {
+                                this.wrapWithBlockNode(processedNodes, collectionNodes);
+                            } else if (processedNodes.length > 0) {
+                                if (startNode !== endNode && startNode.nodeName !== 'BR') {
+                                    collectionNodes.push(this.createTempNode(startNode));
+                                } else if (startNode === endNode && startNode.nodeName === 'SPAN' && ((startNode as HTMLElement).classList.contains(markerClassName.startSelection)
+                                || (startNode as HTMLElement).classList.contains(markerClassName.endSelection))) {
+                                    collectionNodes.push(this.createTempNode(startNode));
+                                }
+                            }
+                        } else {
+                            collectionNodes.push(parentNode);
+                        }
+                    } else {
+                        if (CONSTANT.IGNORE_BLOCK_TAGS.indexOf(parentNode.tagName.toLocaleLowerCase()) >= 0 && (startNode.tagName === 'BR' ||
                         startNode.nodeType === Node.TEXT_NODE ||
                         startNode.classList.contains(markerClassName.startSelection) ||
                         startNode.classList.contains(markerClassName.endSelection))) {
-                        const tempNode: Element = startNode.previousSibling &&
-                            (startNode.previousSibling as Element).nodeType === Node.TEXT_NODE ?
-                            startNode.previousSibling as Element : startNode;
-                        if (!startNode.nextSibling && !startNode.previousSibling && startNode.tagName === 'BR') {
-                            collectionNodes.push(tempNode);
+                            const tempNode: Element = startNode.previousSibling &&
+                                (startNode.previousSibling as Element).nodeType === Node.TEXT_NODE ?
+                                startNode.previousSibling as Element : startNode;
+                            if (!startNode.nextSibling && !startNode.previousSibling && startNode.tagName === 'BR') {
+                                collectionNodes.push(tempNode);
+                            } else {
+                                collectionNodes.push(this.createTempNode(tempNode));
+                            }
                         } else {
-                            collectionNodes.push(this.createTempNode(tempNode));
+                            collectionNodes.push(parentNode);
                         }
-                    } else {
-                        collectionNodes.push(parentNode);
                     }
                 }
                 const nodes: Element[] = [];
@@ -783,5 +803,123 @@ export class DOMNode {
 
     private ignoreTableTag(element: Element): boolean {
         return !(CONSTANT.TABLE_BLOCK_TAGS.indexOf(element.tagName.toLocaleLowerCase()) >= 0);
+    }
+
+    private getPreBlockNodeCollection(range: Range): Node[] {
+        const startNode: Element = this.getSelectedNode(range.startContainer as Element, range.startOffset);
+        const endNode: Element = this.getSelectedNode(range.endContainer as Element, range.endOffset);
+        const nodes: Element[] = [];
+        const rootNode: Node = startNode.closest('td, th');
+        if (isNOU(rootNode)) {
+            return nodes;
+        }
+        const rootChildNode : ChildNode[] = Array.from(rootNode.childNodes);
+        let isContinue: boolean = true;
+        const processedStart: Node =  this.getClosestInlineParent(startNode, rootNode, true);
+        const processedEnd: Node =  this.getClosestInlineParent(endNode, rootNode, false);
+        for (let i: number = 0; i < rootChildNode.length; i++) {
+            const child: Node = rootChildNode[i as number];
+            if (processedStart === processedEnd && child === processedStart) {
+                nodes.push(child as Element);
+                isContinue = true;
+            }
+            else if (child === processedStart) {
+                isContinue = false;
+            } else if (child === processedEnd) {
+                nodes.push(child as Element); // Early Exit so Push the end node.
+                isContinue = true;
+            }
+            if (isContinue) {
+                continue;
+            } else {
+                nodes.push(child as Element);
+            }
+        }
+        return nodes;
+    }
+
+    private getClosestInlineParent(node: Node, rootNode: Node, isStart: boolean): Node | null {
+        // 1. If the node is a text node, return the node
+        // 2. If the node is a block node return block node
+        // 3. If the node is a inline node,
+        //      Traverse back untill the TD or TH node
+        //      Check if the the previous sibling , next sibling is a block node.
+        //      If yes return the inline node that is closest to the block node.
+        if (node.nodeType === Node.TEXT_NODE) {
+            return node;
+        }
+        if (this.isBlockNode(node as Element)) {
+            return node;
+        }
+        let currentNode: Node = node;
+        let rootFlag: boolean = false;
+        while (currentNode) {
+            const previousNode: Node = currentNode;
+            if (rootFlag) {
+                if (this.isBlockNode(currentNode as Element)) {
+                    return previousNode;
+                }
+                if (isStart && currentNode.previousSibling) {
+                    if (this.isBlockNode(currentNode.previousSibling as Element) || currentNode.previousSibling.nodeName === 'BR') {
+                        return previousNode;
+                    } else {
+                        currentNode = currentNode.previousSibling;
+                    }
+                } else if (!isStart && currentNode.nextSibling) {
+                    if (this.isBlockNode(currentNode.nextSibling as Element) || currentNode.nextSibling.nodeName === 'BR') {
+                        return previousNode;
+                    } else {
+                        currentNode = currentNode.nextSibling;
+                    }
+                } else {
+                    return currentNode;
+                }
+            } else {
+                currentNode = currentNode.parentElement;
+                if (currentNode === rootNode ) {
+                    currentNode = previousNode;
+                    rootFlag = true;
+                }
+            }
+        }
+        return null;
+    }
+
+    private wrapWithBlockNode(nodes: Node[], collectionNodes: Node[]): void {
+        let wrapperElement: Element = createElement('p');
+        for (let i: number = 0; i < nodes.length; i++) {
+            const child: Node = nodes[i as number];
+            if (child.nodeName === 'BR') {
+                child.parentNode.insertBefore(wrapperElement, child);
+                wrapperElement.appendChild(child);
+                if (wrapperElement.childNodes.length > 0) {
+                    collectionNodes.push(wrapperElement);
+                }
+                wrapperElement = createElement('p');
+            } else {
+                if (!this.isBlockNode(child as Element)) {
+                    if (child.nodeName === '#text' && child.textContent.trim() === '') {
+                        continue;
+                    }
+                    if (wrapperElement.childElementCount === 0) {
+                        child.parentNode.insertBefore(wrapperElement, child);
+                        wrapperElement.appendChild(child);
+                    } else {
+                        wrapperElement.appendChild(child);
+                    }
+                } else {
+                    collectionNodes.push(child);
+                }
+                // Use case when the BR is next sibling but the BR is not the part of selection.
+                if ((i === nodes.length - 1) && wrapperElement.nextElementSibling && 
+                    wrapperElement.querySelectorAll('br').length === 0 &&
+                    wrapperElement.nextElementSibling.nodeName === 'BR') {
+                    wrapperElement.appendChild(wrapperElement.nextElementSibling);
+                }
+            }
+        }
+        if (wrapperElement.childNodes.length > 0 && collectionNodes.indexOf(wrapperElement) < 0){
+            collectionNodes.push(wrapperElement);
+        }
     }
 }

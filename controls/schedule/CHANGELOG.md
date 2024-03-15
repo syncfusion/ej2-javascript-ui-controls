@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 25.1.35 (2024-03-15)
+
+### Schedule
+
+#### New Features
+
+- `#I511506` - Provided support to prevent the reloading of appointment data source when resource data source changes dynamically by providing an additional boolean parameter `isEventDataRefresh` in the `setResourceCollections` method. To prevent reloading of the appointments you have to send the `isEventDataRefresh` parameter value as `false`.
+
 ## 24.2.8 (2024-02-27)
 
 ### Schedule

@@ -159,7 +159,7 @@ export class WorkbookSort {
                 cell = this.skipBorderOnSorting(rowIdx, j, args.sheet, cell);
                 if (cell && cell.formula) {
                     cell.formula = getUpdatedFormula(
-                        [rowIdx, j], [parseInt(data['__rowIndex'] as string, 10) - 1, j], args.sheet, cell, this.parent, true);
+                        [rowIdx, j], [parseInt(data['__rowIndex'] as string, 10) - 1, j], args.sheet, this.parent, cell, true);
                 }
                 setCell(rowIdx, j, args.sheet, cell);
             }

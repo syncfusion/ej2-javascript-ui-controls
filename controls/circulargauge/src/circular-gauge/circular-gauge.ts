@@ -698,16 +698,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 }
             }
         });
-        if (!this.isTouch) {
-            if (this.legendModule && this.legendSettings.visible) {
-                this.legendModule.move(e);
-            }
-        }
         this.notify(Browser.touchMoveEvent, e);
-        if (this.title && ((args.target.id === (this.element.id + '_CircularGaugeTitle') ||
-        args.target.id.indexOf('_gauge_legend_') > -1) && document.getElementsByClassName('EJ2-CircularGauge-Tooltip').length > 0)) {
-            titleTooltip(e, e.clientX, e.clientY, this, false);
-        }
+        titleTooltip(e, e.clientX, e.clientY, this, false);
         return false;
     }
 
@@ -925,7 +917,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         }
         this.svgObject.setAttribute('cursor', 'auto');
         this.notify(Browser.touchEndEvent, e);
-        if (args.target.id === (this.element.id + '_CircularGaugeTitle') || args.target.id.indexOf('_gauge_legend_') > -1) {
+        if (e.type.indexOf('touch') > -1 && (args.target.id === (this.element.id + '_CircularGaugeTitle') || args.target.id.indexOf('_gauge_legend_') > -1)) {
             const touchArg: TouchEvent = <TouchEvent & PointerEvent>e;
             titleTooltip(e, touchArg.changedTouches[0].pageX, touchArg.changedTouches[0].pageY, this, true);
         }
@@ -1334,7 +1326,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 options, style, style.color || this.themeStyle.titleFontColor, this.svgObject, ''
             );
             element.setAttribute('aria-label', this.description || this.title);
-            element.setAttribute('role', '');
+            element.setAttribute('role', 'region');
             element.setAttribute('tabindex', this.tabIndex.toString());
         }
     }
@@ -1614,9 +1606,33 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         this.gaugeRect = null;
         this.gaugeAxisLayoutPanel = null;
         this.themeStyle = null;
+        this.loadingAnimationDuration = null;
+        this.intl = null;
         this.removeSvg();
+        this.resizeEvent = null;
         this.svgObject = null;
         this.renderer = null;
+    }
+
+    private isGradientVisible(): boolean {
+        let isVisible: boolean = false;
+        for (const axis of this.axes) {
+            for (const pointer of axis.pointers) {
+                if (!isNullOrUndefined(pointer.linearGradient) || !isNullOrUndefined(pointer.radialGradient) ||
+                    (!isNullOrUndefined(pointer.cap) && (!isNullOrUndefined(pointer.cap.linearGradient) || !isNullOrUndefined(pointer.cap.linearGradient))) ||
+                    (!isNullOrUndefined(pointer.needleTail) && (!isNullOrUndefined(pointer.needleTail.linearGradient) || !isNullOrUndefined(pointer.needleTail.radialGradient)))) {
+                    isVisible = true;
+                    break;
+                }
+            }
+            for (const range of axis.ranges) {
+                if (!isNullOrUndefined(range.linearGradient) || !isNullOrUndefined(range.radialGradient)) {
+                    isVisible = true;
+                    break;
+                }
+            }
+        }
+        return isVisible;
     }
 
     /**
@@ -1631,49 +1647,61 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         const axes: Axis[] = <Axis[]>this.axes;
         axes.map((axis: Axis) => {
             axis.annotations.map((annotation: Annotation) => {
-                annotationEnable = annotationEnable || annotation.content !== null;
+                if (!annotationEnable) {
+                    annotationEnable = !isNullOrUndefined(annotation.content) && annotation.content.length !== 0;
+                }
             });
         });
         if (annotationEnable) {
             modules.push({
                 member: 'Annotations',
-                args: [this, Annotations]
+                args: [this, Annotations],
+                name: 'Annotations'
             });
         }
         if (this.tooltip.enable) {
             modules.push({
                 member: 'Tooltip',
-                args: [this, GaugeTooltip]
+                args: [this, GaugeTooltip],
+                name: 'Tooltip'
             });
         }
         if (this.allowPrint) {
             modules.push({
                 member: 'Print',
-                args: [this, Print]
+                args: [this, Print],
+                name: 'Print'
             });
         }
         if (this.allowImageExport) {
             modules.push({
                 member: 'ImageExport',
-                args: [this, ImageExport]
+                args: [this, ImageExport],
+                name: 'ImageExport'
             });
         }
         if (this.allowPdfExport) {
             modules.push({
                 member: 'PdfExport',
-                args: [this, PdfExport]
+                args: [this, PdfExport],
+                name: 'PdfExport'
             });
         }
         if (this.legendSettings.visible) {
             modules.push({
                 member: 'Legend',
-                args: [this, Legend]
+                args: [this, Legend],
+                name: 'Legend'
             });
         }
-        modules.push({
-            member: 'Gradient',
-            args: [this, Gradient]
-        });
+
+        if (this.isGradientVisible()) {
+            modules.push({
+               member: 'Gradient',
+               args: [this, Gradient],
+               name: 'Gradient'
+            });
+        }
         return modules;
     }
 

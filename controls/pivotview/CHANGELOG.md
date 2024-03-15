@@ -2,102 +2,20 @@
 
 ## [Unreleased]
 
-## 24.2.9 (2024-03-06)
+## 25.1.35 (2024-03-15)
 
 ### PivotTable
 
 #### Bug fixes
 
-- `#I542318` - When using the server-side engine, the pivot table will now be rendered properly when the value axis is set to "row" and subTotalsPosition is set to "Bottom".
-
-## 24.2.8 (2024-02-27)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#I555926` - When using the Nextjs project, the pivot table will now render properly in the production environment.
-- `#F186589` - The Pivot Table will now be properly rendered when connecting an OLAP cube with no named set.
-
-## 24.2.5 (2024-02-13)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#I542318` - When using the server-side engine, the pivot table will now be rendered properly when the value axis is set to "row" and subTotalsPosition is set to "Bottom".
-- `#I548199` - When using the server-side engine, the "SaveAs" toolbar option will now work properly in the pivot table with a CSV data source.
-- `#I548188` - Filter dialog members will now be properly sorted for date type fields in the pivot table.
-- `#I549549` - The number formatting dialog will not be closed unnecessarily when you click the overlay in the pivot table.
-- `#I548580` - When using the server-side engine, drill-through data for calculated field values in the pivot table will now be properly displayed.
-
-## 24.2.4 (2024-02-06)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#I545563` - On demand date formatting will now be applied properly in the pivot table.
-- `#I540803` - The pivot table will now be properly rendered while changing the width of the first column with virtualization enabled.
-- `#I547664` - The pivot table will now be properly exported as an excel document via the server-side engine.
-- `#I548392` - Aggregated values will now be displayed correctly in the OLAP pivot table.
-
-## 24.2.3 (2024-01-31)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#I544455` - When we bind no fields to the value axis using the server-side engine, the static pivot field list will now be rendered properly.
+- `#I559899` - The grid and chart modules will now be properly destroyed when we switch views in the Angular Pivot Table.
 
 #### New features
 
-- `#F184050` - Added error handling support when fetching data from an OLAP cube using an incorrect MDX query during the pivot table's initial rendering.
-
-## 24.1.47 (2024-01-23)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#F186081` - With virtualization, the pivot table will now be properly displayed when using the mouse wheel to scroll.
-- `#I186080` - When "DataCompression" is enabled in the Pivot table, the date formatting will now be properly maintained.
-
-## 24.1.46 (2024-01-17)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#F185974` - The selected node state will now be properly maintained in the filter dialog for the pivot table's date type field.
-- `#I539759` - On-demand grouping will now work properly with CSV data source.
-
-## 24.1.45 (2024-01-09)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#F185974` - When using the pivot table and the pivot field list with virtualization, the loading indicator is now properly hidden.
-- `#F185974` - The all node check box status will now work properly when you click the "All" text in the member filter dialog.
-- `#F185974` - When adding a field via drag and drop in the static field list, the "fieldDrop" event is now properly triggered.
-- `#I538805` - The OLAP Pivot table will now work properly while binding calculated fields via code-behind.
-
-## 24.1.44 (2024-01-03)
-
-### PivotTable
-
-#### Bug fixes
-
-- The script error caused by multiple cell selection mode when clicking specific cells has been resolved.
-
-## 24.1.43 (2023-12-27)
-
-### PivotTable
-
-#### Bug fixes
-
-- `#I528347` - The pivot table will now be properly refreshed while dynamically changing its container width.
+- `#I311046` - Added value sorting support to the OLAP cube connected pivot table, which allows to sort individual measures and their aggregated values in both ascending and descending order using code-behind or UI actions at runtime. Check out the [demo](https://ej2.syncfusion.com/demos/#/material3/pivot-table/olap.html) here.
+- `#I538753` - Done optimization to improve pivot table rendering performance, when there are large number of fields in the bound data source.
+- `#I550925` - Added support for selecting fields using node click in the pivot field list UI.
+- Introduced single page mode, which allows only the current view page to be displayed during virtual scrolling operations when virtualization is enabled in the pivot table. It enhances the pivot table’s performance even more during initial rendering and when making UI actions like drill up/down, sorting, filtering, and so on. This is done by rendering only the rows and columns relevant to the current viewport for display in the pivot table. Check out the [demo](https://ej2.syncfusion.com/demos/#/material3/pivot-table/virtual-scrolling.html) here.
 
 ## 24.1.41 (2023-12-18)
 

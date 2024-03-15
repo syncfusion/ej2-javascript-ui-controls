@@ -391,7 +391,7 @@ describe('MultiSelect', () => {
             mouseEventArgs.type = 'click';
             mouseEventArgs.target = elem;
             (<any>listObj).wrapperClick(mouseEventArgs);
-            expect((<HTMLElement>elem.lastElementChild).style.display).toBe('');
+            expect((<HTMLElement>elem.lastElementChild).style.display).toBe('none');
             (<any>listObj).value = ["JAVA"];
             (<any>listObj).dataBind();
             (<any>listObj).focusInHandler();
@@ -1636,6 +1636,22 @@ describe('MultiSelect', () => {
             expect(listObj.value.length).toBe(2);
             expect((<any>listObj).chipCollectionWrapper.style.display).toBe('');
             listObj.destroy();
+        });
+        it('mouse click on list with allowObjectBinding', (done) => {
+            listObj = new MultiSelect({ hideSelectedItem: false, closePopupOnSelect: false, dataSource: datasource2, allowObjectBinding: true, fields: { value: 'id', text: 'text' } });
+            listObj.appendTo(element);
+            //open action validation
+            listObj.showPopup();
+            setTimeout(() => {
+                let item: HTMLElement[] = (<any>listObj).list.querySelectorAll('li')[3];
+                mouseEventArgs.target = item;
+                mouseEventArgs.type = 'click';
+                (<any>listObj).onMouseClick(mouseEventArgs);
+                setTimeout(function () {
+                    expect(listObj.value.length).toBe(1);
+                    done();
+                }, 450);
+            }, 450)
         });
         it('select event validation with keyboard interaction-Esc key-Box', () => {
             listObj = new MultiSelect({ hideSelectedItem: false, closePopupOnSelect: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, value: ['JAVA', 'Python'], mode: 'Box' });
@@ -6218,6 +6234,45 @@ describe('MultiSelect', () => {
                 }, 2000);
             }, 800);
         });
+        function commonFun(value : any) : void {
+            (<any>listObj).inputElement.value = value;
+            keyboardEventArgs.keyCode = 113;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 70;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).keyUp(keyboardEventArgs);
+            expect((<any>listObj).liCollections.length).toBe(7);
+            mouseEventArgs.target = (<any>listObj).liCollections[0];
+            mouseEventArgs.type = 'click';
+            (<any>listObj).onMouseClick(mouseEventArgs);
+            expect((<any>listObj).value && (<any>listObj).value.length).not.toBeNull();
+        }
+        it('customvalue with allowObjectBinding', (done) => {
+            let changeAction: EmitType<Object> = jasmine.createSpy('Change');
+            listObj = new MultiSelect({ hideSelectedItem: false, closePopupOnSelect: false, dataSource: datasource2, allowObjectBinding: true, allowCustomValue:true, fields: { value: 'id', text: 'text' } });
+            listObj.appendTo(element);
+            (<any>listObj).wrapperClick(mouseEventArgs);
+            setTimeout(() => {
+                (<any>listObj).inputElement.value = "Rac";
+                keyboardEventArgs.altKey = false;
+                keyboardEventArgs.keyCode = 67;
+                (<any>listObj).keyDownStatus = true;
+                (<any>listObj).onInput();
+                (<any>listObj).keyUp(keyboardEventArgs); 
+                done();
+            }, 800);
+            listObj.showPopup();
+            commonFun('Vue');
+            listObj.showPopup();
+            (<any>listObj).focusAtFirstListItem();
+            keyboardEventArgs.keyCode = 8;
+            (<any>listObj).removelastSelection(keyboardEventArgs);
+            //expect(listObj.isObjectInArray({ id: "Vue", text: "Vue" }, [listObj.value])).toBe(true)
+        });
     });
     describe('EJ2-32125-Remote data binding', () => {
         let listObj: MultiSelect;
@@ -10076,3 +10131,7 @@ describe('MultiSelect', () => {
         });
     });
 });
+function commonFun(arg0: string) {
+    throw new Error('Function not implemented.');
+}
+

@@ -1,6 +1,6 @@
 import { extend, select } from '@syncfusion/ej2-base';
 import { remove, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { IGrid, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs, CustomEditEventArgs, CustomAddEventArgs } from '../base/interface';
+import { IGrid, EJ2Intance, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs, CustomEditEventArgs, CustomAddEventArgs } from '../base/interface';
 import { parentsUntil, isGroupAdaptive, refreshForeignData, getObject } from '../base/util';
 import * as events from '../base/constant';
 import { EditRender } from '../renderer/edit-renderer';
@@ -49,6 +49,7 @@ export class NormalEdit {
     protected clickHandler(e: MouseEvent): void {
         const target: Element = e.target as Element;
         const gObj: IGrid = this.parent;
+        if (gObj.editSettings.showAddNewRow && isNullOrUndefined(gObj.element.querySelector('.' + literals.editedRow))) { return; }
         if ((((parentsUntil(target,  literals.gridContent) &&
             parentsUntil(parentsUntil(target,  literals.gridContent), 'e-grid').id === gObj.element.id)) || (gObj.frozenRows
                 && parentsUntil(target, literals.headerContent))) && !parentsUntil(target, 'e-unboundcelldiv')) {
@@ -61,7 +62,9 @@ export class NormalEdit {
     }
 
     protected dblClickHandler(e: MouseEvent): void {
-        if (parentsUntil(e.target as Element, literals.rowCell) && this.parent.editSettings.allowEditOnDblClick) {
+        if (parentsUntil(e.target as Element, literals.rowCell) && this.parent.editSettings.allowEditOnDblClick &&
+            (!this.parent.editSettings.showAddNewRow || (this.parent.editSettings.showAddNewRow &&
+            !parentsUntil(e.target as Element, 'e-addedrow')))) {
             this.parent.editModule.startEdit(parentsUntil(e.target as Element, literals.row) as HTMLTableRowElement);
         }
     }
@@ -74,13 +77,14 @@ export class NormalEdit {
      * @hidden
      */
     public editComplete(e: NotifyArgs): void {
-        this.parent.isEdit = false;
+        this.parent.isEdit = this.parent.editSettings.showAddNewRow ? true : false;
         const action: string = 'action';
         switch (e.requestType as string) {
         case 'save':
             if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
                 || (!this.parent.isPersistSelection)) {
-                if (e[`${action}`] !== 'edit') {
+                if (e[`${action}`] !== 'edit' && (!this.parent.editSettings.showAddNewRow ||
+                    (this.parent.editSettings.showAddNewRow && e[`${action}`] !== 'add'))) {
                     this.parent.selectRow(e['index']);
                 }
             }
@@ -159,6 +163,58 @@ export class NormalEdit {
         }
     }
 
+
+    private disabledShowAddRow(disable?: boolean, prevent?: boolean): void {
+        const addRow: Element = this.parent.element.querySelector('.e-addedrow');
+        const inputs: Element[] = [].slice.call(addRow ? addRow.querySelectorAll('.e-input') : []);
+        if (addRow && addRow.querySelector('.e-unboundcell')) {
+            const buttons: Element[] = [].slice.call(addRow.querySelector('.e-unboundcell').querySelectorAll('.e-btn'));
+            for (let i: number = 0; i < buttons.length; i++) {
+                if (!disable) {
+                    buttons[parseInt(i.toString(), 10)].classList.add('e-disabled');
+                    buttons[parseInt(i.toString(), 10)].setAttribute('disabled', 'disabled');
+                } else {
+                    buttons[parseInt(i.toString(), 10)].classList.remove('e-disabled');
+                    buttons[parseInt(i.toString(), 10)].removeAttribute('disabled');
+                }
+            }
+        }
+        if (inputs.length) {
+            for (let i: number = 0; i < inputs.length; i++) {
+                const input = inputs[parseInt(i.toString(), 10)];
+                const uid: string = input.getAttribute('e-mappinguid');
+                const column = this.parent.getColumnByUid(uid);
+                const error: Element = parentsUntil(input, 'e-rowcell').querySelector('.e-error');
+                if (error) {
+                    error.classList.remove('e-error');
+                }
+                if ((<EJ2Intance>input).ej2_instances) {
+                    if (prevent && isNullOrUndefined(column.defaultValue)) {
+                        (<EJ2Intance>input).ej2_instances[0].value = null;
+                        (input as HTMLInputElement).value = null;
+                    } 
+                    if (!isNullOrUndefined(disable)) {
+                        (<EJ2Intance>input).ej2_instances[0].enabled = disable && column.allowEditing ? true : false;
+                    }
+                } else {
+                    if (prevent && (input as HTMLInputElement).value && (input as HTMLInputElement).value.length &&
+                        isNullOrUndefined(column.defaultValue)) {
+                        (input as HTMLInputElement).value = null;
+                    } 
+                    if (!isNullOrUndefined(disable)) {
+                        if (!disable) {
+                            input.classList.add('e-disabled');
+                            input.setAttribute('disabled', 'disabled');
+                        } else if (column.allowEditing) {
+                            input.classList.remove('e-disabled');
+                            input.removeAttribute('disabled');
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private inlineEditHandler(editargs: EditEventArgs, tr: Element): void {
         const gObj: IGrid = this.parent;
         gObj.isEdit = true;
@@ -173,6 +229,9 @@ export class NormalEdit {
         this.renderer.update(editargs);
         this.uid = tr.getAttribute('data-uid');
         gObj.editModule.applyFormValidation();
+        if (gObj.editSettings.showAddNewRow && !tr.classList.contains('e-addedrow')) {
+            this.disabledShowAddRow(false, true);
+        }
         editargs.type = 'actionComplete';
         gObj.trigger(events.actionComplete, editargs);
         if (gObj.editSettings.template) {
@@ -230,7 +289,9 @@ export class NormalEdit {
         });
         const isDlg: boolean = gObj.editSettings.mode === 'Dialog';
         const dlgWrapper: Element = select('#' + gObj.element.id + '_dialogEdit_wrapper', document);
-        const dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') : gObj.element.getElementsByClassName('e-gridform')[0];
+        const dlgForm: Element = isDlg ? dlgWrapper.querySelector('.e-gridform') :  gObj.editSettings.showAddNewRow &&
+        gObj.element.querySelector('.' + literals.editedRow) ?  gObj.element.querySelector(
+            '.' + literals.editedRow).getElementsByClassName('e-gridform')[0] : gObj.element.getElementsByClassName('e-gridform')[0];
         const data: { virtualData: Object, isAdd: boolean, isScroll: boolean, endEdit?: boolean } = {
             virtualData: extend({}, {}, this.previousData, true), isAdd: false, isScroll: false, endEdit: true
         };
@@ -259,6 +320,9 @@ export class NormalEdit {
                 if (this.parent.loadingIndicator.indicatorType === 'Shimmer') {
                     this.parent.showMaskRow();
                 }
+                if (gObj.editSettings.showAddNewRow) {
+                    this.disabledShowAddRow(true);
+                }
                 gObj.notify(events.updateData, endEditArgs);
             });
         } else {
@@ -271,13 +335,21 @@ export class NormalEdit {
             if (args.cancel) {
                 return;
             }
+            if (this.parent.editSettings.showAddNewRow) {
+                this.parent.notify(events.showAddNewRowFocus, {});
+                if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
+                    this.disabledShowAddRow(true, true);
+                }
+            }
         }
     }
 
     private destroyElements(): void {
         const gObj: IGrid = this.parent;
-        gObj.editModule.destroyWidgets();
-        gObj.editModule.destroyForm();
+        if (!gObj.editSettings.showAddNewRow || (gObj.editSettings.showAddNewRow && gObj.element.querySelector('.e-editedrow'))) {
+            gObj.editModule.destroyWidgets();
+            gObj.editModule.destroyForm();
+        }
         this.parent.notify(events.dialogDestroy, {});
     }
 
@@ -286,6 +358,9 @@ export class NormalEdit {
             args.promise.then((e: ReturnType) => this.edSucc(e, args)).catch((e: ReturnType) => this.edFail(e));
         } else {
             this.editSuccess(args.data, args);
+        }
+        if (this.parent.editSettings.showAddNewRow) {
+            this.parent.editModule.applyFormValidation();
         }
     }
 
@@ -322,7 +397,7 @@ export class NormalEdit {
         this.requestSuccess(args);
         this.parent.trigger(events.beforeDataBound, args);
         args.type = events.actionComplete;
-        this.parent.isEdit = false;
+        this.parent.isEdit = this.parent.editSettings.showAddNewRow ? true : false;
         this.refreshRow(args.data);
         this.parent.notify(events.virtualScrollEditSuccess, args);
         this.parent.editModule.checkLastRow(args.row);
@@ -475,7 +550,14 @@ export class NormalEdit {
     }
 
     protected closeEdit(): void {
-        if (!this.parent.isEdit) { return; }
+        if (!this.parent.isEdit || (this.parent.editSettings.showAddNewRow && this.parent.element.querySelector('.e-addedrow') &&
+            isNullOrUndefined(this.parent.element.querySelector('.' + literals.editedRow)))) {
+            if (this.parent.editSettings.showAddNewRow) {
+                this.disabledShowAddRow(true, true);
+                this.parent.notify(events.showAddNewRowFocus, {});
+            }
+            return;
+        }
         const gObj: IGrid = this.parent;
         const args: { data: Object, requestType: string, cancel: boolean, selectedRow: number, type: string } = extend(this.args, {
             requestType: 'cancel', type: events.actionBegin, cancel: false, data: this.previousData, selectedRow: gObj.selectedRowIndex
@@ -491,11 +573,19 @@ export class NormalEdit {
                 if (this.parent.editSettings.mode === 'Dialog') {
                     this.parent.notify(events.dialogDestroy, {});
                 }
-                gObj.isEdit = false;
-                this.stopEditStatus();
                 closeEditArgs.type = events.actionComplete;
+                if (!this.parent.editSettings.showAddNewRow) {
+                    gObj.isEdit = false;
+                }
                 if (gObj.editSettings.mode !== 'Dialog') {
                     this.refreshRow(closeEditArgs.data);
+                }
+                this.stopEditStatus();
+                gObj.isEdit = false;
+                if (gObj.editSettings.showAddNewRow) {
+                    this.disabledShowAddRow(true);
+                    gObj.editModule.applyFormValidation();
+                    gObj.isEdit = true;
                 }
                 const isLazyLoad: boolean = gObj.groupSettings.enableLazyLoading && gObj.groupSettings.columns.length
                     && !gObj.getContentTable().querySelector('tr.e-emptyrow');
@@ -526,7 +616,9 @@ export class NormalEdit {
         this.uid = '';
         const cols: Column[] = gObj.getColumns();
         const rowData: { virtualData: Object, isScroll: boolean } = { virtualData: {}, isScroll: false };
-        this.parent.notify(events.getVirtualData, rowData);
+        if (!gObj.editSettings.showAddNewRow) {
+            this.parent.notify(events.getVirtualData, rowData);
+        }
         for (let i: number = 0; i < cols.length; i++) {
             if (rowData.isScroll) {
                 continue;
@@ -552,12 +644,16 @@ export class NormalEdit {
                 events.createVirtualValidationForm,
                 { uid: this.uid, prevData: this.previousData, argsCreator: this.getEditArgs.bind(this), renderer: this.renderer }
             );
-            gObj.trigger(events.actionBegin, args, (addArgs: AddEventArgs) => {
-                if (addArgs.cancel) {
-                    return;
-                }
-                this.inlineAddHandler(addArgs);
-            });
+            if (gObj.editSettings.showAddNewRow) {
+                this.inlineAddHandler(args);
+            } else {
+                gObj.trigger(events.actionBegin, args, (addArgs: AddEventArgs) => {
+                    if (addArgs.cancel) {
+                        return;
+                    }
+                    this.inlineAddHandler(addArgs);
+                });
+            }
         } else {
             this.inlineAddHandler(args);
         }
@@ -573,7 +669,9 @@ export class NormalEdit {
         gObj.editModule.applyFormValidation();
         addArgs.type = events.actionComplete;
         addArgs.row = gObj.element.querySelector('.' + literals.addedRow);
-        gObj.trigger(events.actionComplete, addArgs);
+        if (!gObj.editSettings.showAddNewRow) {
+            gObj.trigger(events.actionComplete, addArgs);
+        }
         if (gObj.editSettings.template) {
             gObj.editModule.applyFormValidation(undefined, addArgs.form.ej2_instances[0].rules);
         }
@@ -614,7 +712,8 @@ export class NormalEdit {
 
     private stopEditStatus(): void {
         const gObj: IGrid = this.parent;
-        const addElements: Element[] = [].slice.call(gObj.element.getElementsByClassName(literals.addedRow));
+        const addElements: Element[] = [].slice.call(gObj.editSettings.showAddNewRow ? [] :
+            gObj.element.getElementsByClassName(literals.addedRow));
         const editElements: Element[] = [].slice.call(gObj.element.getElementsByClassName(literals.editedRow));
         for (let i: number = 0; i < addElements.length; i++) {
             remove(addElements[parseInt(i.toString(), 10)]);

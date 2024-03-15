@@ -78,7 +78,7 @@ export class TableProperties {
         this.imageProperty = imageProperty;
         this.elementId = this.documentEditor.element.id;
         this.initializeTablePropPane();
-        this.prevContext = this.documentEditor.selection.contextType;
+        this.prevContext = this.documentEditor.selectionModule.contextType;
     }
     private initializeTablePropPane(): void {
         this.localObj = new L10n('documenteditorcontainer', this.container.defaultLocale, this.container.locale);
@@ -199,31 +199,31 @@ export class TableProperties {
         return borderSettings;
     }
     private onOutlineBorder(): void {
-        this.documentEditor.editor.applyBorders(this.getBorder('OutsideBorders'));
+        this.documentEditor.editorModule.applyBorders(this.getBorder('OutsideBorders'));
     }
     private onAllBorder(): void {
-        this.documentEditor.editor.applyBorders(this.getBorder('AllBorders'));
+        this.documentEditor.editorModule.applyBorders(this.getBorder('AllBorders'));
     }
     private onInsideBorder(): void {
-        this.documentEditor.editor.applyBorders(this.getBorder('InsideBorders'));
+        this.documentEditor.editorModule.applyBorders(this.getBorder('InsideBorders'));
     }
     private onLeftBorder(): void {
-        this.documentEditor.editor.applyBorders(this.getBorder('LeftBorder'));
+        this.documentEditor.editorModule.applyBorders(this.getBorder('LeftBorder'));
     }
     private onVerticalBorder(): void {
-        this.documentEditor.editor.applyBorders(this.getBorder('InsideVerticalBorder'));
+        this.documentEditor.editorModule.applyBorders(this.getBorder('InsideVerticalBorder'));
     }
     private onRightBorder(): void {
-        this.documentEditor.editor.applyBorders(this.getBorder('RightBorder'));
+        this.documentEditor.editorModule.applyBorders(this.getBorder('RightBorder'));
     }
     private onTopBorder(): void {
-        this.documentEditor.editor.applyBorders(this.getBorder('TopBorder'));
+        this.documentEditor.editorModule.applyBorders(this.getBorder('TopBorder'));
     }
     private onHorizontalBorder(): void {
-        this.documentEditor.editor.applyBorders(this.getBorder('InsideHorizontalBorder'));
+        this.documentEditor.editorModule.applyBorders(this.getBorder('InsideHorizontalBorder'));
     }
     private onBottomBorder(): void {
-        this.documentEditor.editor.applyBorders(this.getBorder('BottomBorder'));
+        this.documentEditor.editorModule.applyBorders(this.getBorder('BottomBorder'));
     }
     private onTopMargin(e: KeyboardEventArgs): void {
         if (e.keyCode === 13) {
@@ -257,86 +257,86 @@ export class TableProperties {
         if (!this.isTopMarginApply) {
             return;
         }
-        this.documentEditor.selection.cellFormat.topMargin = (this.topMargin.value > this.topMargin.max)
+        this.documentEditor.selectionModule.cellFormat.topMargin = (this.topMargin.value > this.topMargin.max)
             ? this.topMargin.max : this.topMargin.value;
     }
     private applyBottomMargin(): void {
         if (!this.isBottomMarginApply) {
             return;
         }
-        this.documentEditor.selection.cellFormat.bottomMargin = (this.bottomMargin.value > this.bottomMargin.max)
+        this.documentEditor.selectionModule.cellFormat.bottomMargin = (this.bottomMargin.value > this.bottomMargin.max)
             ? this.bottomMargin.max : this.bottomMargin.value;
     }
     private applyLeftMargin(): void {
         if (!this.isLeftMarginApply) {
             return;
         }
-        this.documentEditor.selection.cellFormat.leftMargin = (this.leftMargin.value > this.leftMargin.max)
+        this.documentEditor.selectionModule.cellFormat.leftMargin = (this.leftMargin.value > this.leftMargin.max)
             ? this.leftMargin.max : this.leftMargin.value;
     }
     private applyRightMargin(): void {
         if (!this.isRightMarginApply) {
             return;
         }
-        this.documentEditor.selection.cellFormat.rightMargin = (this.rightMargin.value > this.rightMargin.max)
+        this.documentEditor.selectionModule.cellFormat.rightMargin = (this.rightMargin.value > this.rightMargin.max)
             ? this.rightMargin.max : this.rightMargin.value;
     }
     private applyAlignTop(): void {
-        this.documentEditor.selection.cellFormat.verticalAlignment = 'Top';
+        this.documentEditor.selectionModule.cellFormat.verticalAlignment = 'Top';
     }
     private applyAlignBottom(): void {
-        this.documentEditor.selection.cellFormat.verticalAlignment = 'Bottom';
+        this.documentEditor.selectionModule.cellFormat.verticalAlignment = 'Bottom';
     }
     private applyAlignCenterHorizontal(): void {
-        this.documentEditor.selection.cellFormat.verticalAlignment = 'Center';
+        this.documentEditor.selectionModule.cellFormat.verticalAlignment = 'Center';
     }
     private onMergeCell(): void {
-        this.documentEditor.editor.mergeCells();
+        this.documentEditor.editorModule.mergeCells();
     }
     private onInsertRowAbove(): void {
-        this.documentEditor.editor.insertRow(true);
+        this.documentEditor.editorModule.insertRow(true);
     }
     private onInsertRowBelow(): void {
-        this.documentEditor.editor.insertRow(false);
+        this.documentEditor.editorModule.insertRow(false);
     }
     private onInsertColumnLeft(): void {
-        this.documentEditor.editor.insertColumn(true);
+        this.documentEditor.editorModule.insertColumn(true);
     }
     private onInsertColumnRight(): void {
-        this.documentEditor.editor.insertColumn(false);
+        this.documentEditor.editorModule.insertColumn(false);
     }
     private onDeleteRow(): void {
-        this.documentEditor.editor.deleteRow();
+        this.documentEditor.editorModule.deleteRow();
         this.documentEditor.focusIn();
     }
     private onDeleteColumn(): void {
-        this.documentEditor.editor.deleteColumn();
+        this.documentEditor.editorModule.deleteColumn();
         this.documentEditor.focusIn();
     }
     public onSelectionChange(): void {
-        if (this.documentEditor.selection) {
-            if (this.documentEditor.editor && this.documentEditor.editor.canMergeCells()) {
+        if (this.documentEditor.selectionModule) {
+            if (this.documentEditor.editorModule && this.documentEditor.editorModule.canMergeCells()) {
                 this.horizontalMerge.disabled = false;
             } else {
                 this.horizontalMerge.disabled = true;
             }
-            if (this.documentEditor.selection.contextType === 'TableText' || this.documentEditor.selection.contextType === 'TableImage') {
-                this.shadingBtn.value = this.documentEditor.selection.cellFormat.background ? this.documentEditor.selection.cellFormat.background : '';
+            if (this.documentEditor.selectionModule.contextType === 'TableText' || this.documentEditor.selectionModule.contextType === 'TableImage') {
+                this.shadingBtn.value = this.documentEditor.selectionModule.cellFormat.background ? this.documentEditor.selectionModule.cellFormat.background : '';
             }
             /* eslint-disable-next-line max-len */
-            this.topMargin.value = this.documentEditor.selection.cellFormat.topMargin ? this.documentEditor.selection.cellFormat.topMargin : 0;
+            this.topMargin.value = this.documentEditor.selectionModule.cellFormat.topMargin ? this.documentEditor.selectionModule.cellFormat.topMargin : 0;
             /* eslint-disable-next-line max-len */
-            this.bottomMargin.value = this.documentEditor.selection.cellFormat.bottomMargin ? this.documentEditor.selection.cellFormat.bottomMargin : 0;
+            this.bottomMargin.value = this.documentEditor.selectionModule.cellFormat.bottomMargin ? this.documentEditor.selectionModule.cellFormat.bottomMargin : 0;
             /* eslint-disable-next-line max-len */
-            this.rightMargin.value = this.documentEditor.selection.cellFormat.rightMargin ? this.documentEditor.selection.cellFormat.rightMargin : 0;
+            this.rightMargin.value = this.documentEditor.selectionModule.cellFormat.rightMargin ? this.documentEditor.selectionModule.cellFormat.rightMargin : 0;
             /* eslint-disable-next-line max-len */
-            this.leftMargin.value = this.documentEditor.selection.cellFormat.leftMargin ? this.documentEditor.selection.cellFormat.leftMargin : 0;
+            this.leftMargin.value = this.documentEditor.selectionModule.cellFormat.leftMargin ? this.documentEditor.selectionModule.cellFormat.leftMargin : 0;
         }
     }
     private changeBackgroundColor(args: ColorPickerEventArgs): void {
         if (!this.documentEditor.isReadOnly) {
             //Handle API for shading.
-            this.documentEditor.selection.cellFormat.background = args.currentValue.hex;
+            this.documentEditor.selectionModule.cellFormat.background = args.currentValue.hex;
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 10);
@@ -355,6 +355,7 @@ export class TableProperties {
         // const buttonStyle: string = 'width:92px;display:inline-flex;padding:3px';
         this.shadingBtn = this.createColorPickerTemplate(this.elementId + '_tableShading', fillDiv, this.localObj.getConstant('Fill color'), false);
         classList((fillDiv.lastElementChild.lastElementChild.lastElementChild.firstChild as HTMLElement), ['e-de-ctnr-cellbg-clr-picker'], ['e-caret']);
+        this.documentEditor.documentHelper.shadingBtn = this.shadingBtn;
     }
     private initBorderStylesDiv(): void {
         const borderStyleDiv: HTMLElement = createElement('div', { className: 'e-de-property-div-padding' });
@@ -395,6 +396,7 @@ export class TableProperties {
             styleTypeDiv.classList.add('e-de-stylediv-rtl');
         }
         this.borderBtn = this.createColorPickerTemplate(this.elementId + '_tableBorderColor', styleTypeDiv, this.localObj.getConstant('Border color'), true);
+        this.documentEditor.documentHelper.borderBtn = this.borderBtn;
         this.borderBtn.value = '#000000';
         (styleTypeDiv.firstElementChild.lastElementChild.lastElementChild as HTMLElement).style.width = '30px';
         (styleTypeDiv.firstElementChild.lastElementChild.firstElementChild.firstElementChild as HTMLElement).style.width = '100%';
@@ -643,6 +645,7 @@ export class TableProperties {
         return btn;
     }
     private createColorPickerTemplate(id: string, divElement: HTMLElement, toolTipText: string, isBorderWidth: boolean): ColorPicker {
+        const {columns , createPopupOnClick , disabled , enablePersistence , inline , mode , modeSwitcher , noColor , presetColors , showButtons } = this.documentEditor.documentEditorSettings.colorPickerSettings;
         const inputElement: HTMLInputElement = createElement('input', { id: id }) as HTMLInputElement;
         divElement.appendChild(inputElement);
         let cssClass: string = 'e-de-prop-font-button e-de-prop-font-colorpicker';
@@ -650,7 +653,8 @@ export class TableProperties {
             cssClass = cssClass + ' e-de-border-clr-picker';
         }
         /* eslint-disable-next-line max-len */
-        const colorPicker: ColorPicker = new ColorPicker({ showButtons: true, cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false }, inputElement);
+        const colorPicker: ColorPicker = new ColorPicker({ cssClass: cssClass, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false , 
+            mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors}, inputElement);
         inputElement.parentElement.setAttribute('title', toolTipText);
         inputElement.parentElement.setAttribute('aria-label',toolTipText);
         return colorPicker;
@@ -661,11 +665,11 @@ export class TableProperties {
                 this.propertiesTab.hideTab(1, true);
             } else {
                 this.propertiesTab.hideTab(1, false);
-                if (this.prevContext !== this.documentEditor.selection.contextType) {
+                if (this.prevContext !== this.documentEditor.selectionModule.contextType) {
                     this.propertiesTab.selectedItem = 1;
                 }
             }
-            this.prevContext = this.documentEditor.selection.contextType;
+            this.prevContext = this.documentEditor.selectionModule.contextType;
             this.onSelectionChange();
             this.tableTextProperties.onSelectionChange();
         }
@@ -677,7 +681,7 @@ export class TableProperties {
             this.updateTabContainerHeight();
         }
         this.documentEditor.resize();
-        this.prevContext = this.documentEditor.selection.contextType;
+        this.prevContext = this.documentEditor.selectionModule.contextType;
     }
     /**
      * @private

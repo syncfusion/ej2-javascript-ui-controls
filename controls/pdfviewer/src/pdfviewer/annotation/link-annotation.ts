@@ -165,7 +165,9 @@ export class LinkAnnotation {
                 };
             }
             const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
-            pageDiv.appendChild(aTag);
+            if (!isNullOrUndefined(pageDiv)) {
+                pageDiv.appendChild(aTag);
+            }
         }
     }
 

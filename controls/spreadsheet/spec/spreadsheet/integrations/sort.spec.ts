@@ -1,11 +1,9 @@
-import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, Spreadsheet } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, virtualData, dataSource } from '../util/datasource.spec';
 import { CellModel, SortEventArgs, SortDescriptor, getCell, DialogBeforeOpenEventArgs, SheetModel, setCell, BeforeSortEventArgs } from '../../../src/index';
 import { Dialog } from '../../../src/spreadsheet/services/index';
 import { getComponent } from '@syncfusion/ej2-base';
-
-Spreadsheet.Inject(BasicModule);
 
 /**
  *  Sorting test cases

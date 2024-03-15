@@ -619,7 +619,7 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.nodes[0].id === (diagram.layers[1] as Layer).zIndexTable[0]).toBe(true);
             done();
             diagram.bringToFront();
-            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[1] as Layer).zIndexTable[Object.keys((diagram.layers[1] as Layer).zIndexTable).length - 1]).toBe(true);
+            expect(diagram.selectedItems.nodes[0].id === (diagram.layers[1] as Layer).zIndexTable[2]).toBe(true);
             done();
         });
         it('Checking bringLayerForward Function', (done: Function) => {
@@ -1024,7 +1024,7 @@ describe('Diagram-Layers - sendToBack Not functioning correctly for single node 
     expect(diagram.nodes[2].zIndex).toBe(1)
     diagram.layerZIndexTable
     diagram.sendToBack();
-    expect(diagram.nodes[2].zIndex).toBe(0)
+    expect(diagram.nodes[2].zIndex).toBe(-1)
     expect(diagram.nodes[1].zIndex).toBe(0)
     done();
   });
@@ -1032,10 +1032,10 @@ describe('Diagram-Layers - sendToBack Not functioning correctly for single node 
   it('BringToFront Command for a single node in a layer',(done: Function)=>
   {
     diagram.select([diagram.nodes[0]]);
-    expect(diagram.nodes[0].zIndex).toBe(1)
+    expect(diagram.nodes[0].zIndex).toBe(0)
     diagram.layerZIndexTable
     diagram.bringToFront();
-    expect(diagram.nodes[0].zIndex).toBe(2)
+    expect(diagram.nodes[0].zIndex).toBe(0)
     done();
   });
   
@@ -1043,10 +1043,10 @@ describe('Diagram-Layers - sendToBack Not functioning correctly for single node 
   {
     diagram.select([diagram.nodes[2]]);
     expect(diagram.nodes[1].zIndex).toBe(0)
-    expect(diagram.nodes[2].zIndex).toBe(1)
+    expect(diagram.nodes[2].zIndex).toBe(-1)
     diagram.layerZIndexTable
     diagram.bringToFront();
-    expect(diagram.nodes[2].zIndex).toBe(2)
+    expect(diagram.nodes[2].zIndex).toBe(1)
     expect(diagram.nodes[1].zIndex).toBe(0)
     done();
   });

@@ -63,24 +63,24 @@ export class SpellCheckDialog {
     public onIgnoreClicked = (): void => {
         if (!isNullOrUndefined(this.elementBox)) {
             showSpinner(this.documentHelper.dialog.element);
-            this.parent.spellChecker.manageReplace('Ignore Once', this.elementBox);
+            this.parent.spellCheckerModule.manageReplace('Ignore Once', this.elementBox);
             this.removeErrors();
-            this.parent.spellChecker.checkForNextError();
+            this.parent.spellCheckerModule.checkForNextError();
             // this.documentHelper.hideDialog();
             hideSpinner(this.documentHelper.dialog.element);
         }
     };
 
     private removeErrors(): void {
-        if (!isNullOrUndefined(this.errorText) && this.parent.spellChecker.errorWordCollection.containsKey(this.errorText)) {
-            const textElement: ElementBox[] = this.parent.spellChecker.errorWordCollection.get(this.errorText);
+        if (!isNullOrUndefined(this.errorText) && this.parent.spellCheckerModule.errorWordCollection.containsKey(this.errorText)) {
+            const textElement: ElementBox[] = this.parent.spellCheckerModule.errorWordCollection.get(this.errorText);
             textElement.splice(0, 1);
             if (textElement.length === 0) {
-                this.parent.spellChecker.errorWordCollection.remove(this.errorText);
+                this.parent.spellCheckerModule.errorWordCollection.remove(this.errorText);
             }
         }
 
-        if (this.parent.spellChecker.errorWordCollection.length === 0) {
+        if (this.parent.spellCheckerModule.errorWordCollection.length === 0) {
             this.documentHelper.hideDialog();
         }
     }
@@ -93,8 +93,8 @@ export class SpellCheckDialog {
         if (!isNullOrUndefined(this.elementBox)) {
             showSpinner(this.documentHelper.dialog.element);
             const text: string = (this.elementBox as TextElementBox).text;
-            this.parent.spellChecker.handleIgnoreAllItems({ element: this.elementBox, text: text });
-            this.parent.spellChecker.checkForNextError();
+            this.parent.spellCheckerModule.handleIgnoreAllItems({ element: this.elementBox, text: text });
+            this.parent.spellCheckerModule.checkForNextError();
             // this.documentHelper.hideDialog();
             hideSpinner(this.documentHelper.dialog.element);
         }
@@ -106,11 +106,11 @@ export class SpellCheckDialog {
     public addToDictClicked = (): void => {
         if (!isNullOrUndefined(this.elementBox)) {
             showSpinner(this.documentHelper.dialog.element);
-            this.parent.spellChecker.handleAddToDictionary({ element: this.elementBox, text: (this.elementBox as TextElementBox).text });
-            if (this.parent.spellChecker.errorWordCollection.containsKey(this.errorText)) {
-                this.parent.spellChecker.errorWordCollection.remove(this.errorText);
+            this.parent.spellCheckerModule.handleAddToDictionary({ element: this.elementBox, text: (this.elementBox as TextElementBox).text });
+            if (this.parent.spellCheckerModule.errorWordCollection.containsKey(this.errorText)) {
+                this.parent.spellCheckerModule.errorWordCollection.remove(this.errorText);
             }
-            this.parent.spellChecker.checkForNextError();
+            this.parent.spellCheckerModule.checkForNextError();
             this.documentHelper.hideDialog();
         }
     };
@@ -122,9 +122,9 @@ export class SpellCheckDialog {
         if (!isNullOrUndefined(this.selectedText)) {
             this.isSpellChecking = true;
             showSpinner(this.documentHelper.dialog.element);
-            this.parent.spellChecker.manageReplace(this.selectedText, this.elementBox);
+            this.parent.spellCheckerModule.manageReplace(this.selectedText, this.elementBox);
             this.removeErrors();
-            this.parent.spellChecker.checkForNextError();
+            this.parent.spellCheckerModule.checkForNextError();
             hideSpinner(this.documentHelper.dialog.element);
             this.selectedText = undefined;
         }
@@ -136,31 +136,33 @@ export class SpellCheckDialog {
     public changeAllButtonClicked = (): void => {
         if (!isNullOrUndefined(this.selectedText)) {
             this.isSpellChecking = true;
+            this.parent.spellCheckerModule.isChangeAll = true;
             showSpinner(this.documentHelper.dialog.element);
-            const elements: ElementBox[] = this.parent.spellChecker.errorWordCollection.get(this.errorText);
+            const elements: ElementBox[] = this.parent.spellCheckerModule.errorWordCollection.get(this.errorText);
             for (let i: number = 0; i < elements.length; i++) {
                 if (elements[i] instanceof ErrorTextElementBox && !elements[i].ischangeDetected) {
-                    this.parent.spellChecker.manageReplace(this.selectedText, elements[i]);
+                    this.parent.spellCheckerModule.manageReplace(this.selectedText, elements[i]);
                 } else if (elements[i] instanceof TextElementBox) {
-                    const matchResults: MatchResults = this.parent.spellChecker.getMatchedResultsFromElement(elements[i]);
+                    const matchResults: MatchResults = this.parent.spellCheckerModule.getMatchedResultsFromElement(elements[i]);
                     const results: TextSearchResults = matchResults.textResults;
                     const markIndex: number = (elements[i].ischangeDetected) ?
                         (elements[i] as ErrorTextElementBox).start.offset : elements[i].line.getOffset(elements[i], 0);
                     this.parent.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo,
                         0, elements[i], false, null, markIndex);
                     for (let j: number = 0; j < results.length; j++) {
-                        const element: ElementBox = this.parent.spellChecker.createErrorElementWithInfo(results.innerList[j], elements[i]);
-                        this.parent.spellChecker.manageReplace(this.selectedText, element);
+                        const element: ElementBox = this.parent.spellCheckerModule.createErrorElementWithInfo(results.innerList[j], elements[i]);
+                        this.parent.spellCheckerModule.manageReplace(this.selectedText, element);
                     }
                 }
             }
-            if (this.parent.spellChecker.errorWordCollection.containsKey(this.errorText)) {
-                this.parent.spellChecker.errorWordCollection.remove(this.errorText);
+            if (this.parent.spellCheckerModule.errorWordCollection.containsKey(this.errorText)) {
+                this.parent.spellCheckerModule.errorWordCollection.remove(this.errorText);
             }
-            this.parent.spellChecker.checkForNextError();
+            this.parent.spellCheckerModule.checkForNextError();
             this.documentHelper.hideDialog();
             hideSpinner(this.documentHelper.dialog.element);
             this.selectedText = undefined;
+            this.parent.spellCheckerModule.isChangeAll = false;
         }
     };
     /**
@@ -188,7 +190,7 @@ export class SpellCheckDialog {
         let suggestions: string[];
         if (this.isSpellChecking) {
             /* eslint-disable @typescript-eslint/no-explicit-any */
-            this.parent.spellChecker.callSpellChecker(this.parent.spellChecker.languageID, error, false, true).then((data: any) => {
+            this.parent.spellCheckerModule.callSpellChecker(this.parent.spellCheckerModule.languageID, error, false, true).then((data: any) => {
                 /* eslint-disable @typescript-eslint/no-explicit-any */
                 const jsonObject: any = JSON.parse(data);
                 suggestions = jsonObject.Suggestions;
@@ -196,16 +198,16 @@ export class SpellCheckDialog {
                 this.handleRetrievedSuggestion(error, suggestions);
             });
         } else {
-            error = this.parent.spellChecker.manageSpecialCharacters(error, undefined, true);
-            suggestions = this.parent.spellChecker.errorSuggestions.containsKey(error) ?
-                this.parent.spellChecker.errorSuggestions.get(error) : [];
+            error = this.parent.spellCheckerModule.manageSpecialCharacters(error, undefined, true);
+            suggestions = this.parent.spellCheckerModule.errorSuggestions.containsKey(error) ?
+                this.parent.spellCheckerModule.errorSuggestions.get(error) : [];
             this.handleRetrievedSuggestion(error, suggestions);
         }
     }
 
 
     private handleRetrievedSuggestion(error: string, suggestions: string[]): void {
-        error = this.parent.spellChecker.manageSpecialCharacters(error, undefined, true);
+        error = this.parent.spellCheckerModule.manageSpecialCharacters(error, undefined, true);
         this.initSpellCheckDialog(this.localValue, error, suggestions);
         if (this.documentHelper.selection.caret.style.display !== 'none') {
             this.documentHelper.selection.caret.style.display = 'none';

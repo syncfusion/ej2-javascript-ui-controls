@@ -61,6 +61,18 @@
       font-size: 14px;
     }
 
+    .e-de-cmt-resolve-icon::before {
+      content: '\e9c4';
+      font-family: 'e-icons';
+      font-size: 13px;
+    }
+
+    .e-de-multi-cmt-resolve::before {
+      content: '\e9c5';
+      font-family: 'e-icons';
+      font-size: 14px;
+    }
+
     .e-de-cmt-post::before {
       content: '\e816';
       font-family: 'e-icons';

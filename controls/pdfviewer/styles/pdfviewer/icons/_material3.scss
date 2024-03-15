@@ -1,4 +1,4 @@
-@include export-module('pdfviewer-tailwind-icons') {
+@include export-module('pdfviewer-material-icons') {
   .e-pdfviewer {
     .e-pv-icon::before {
       font-family: 'e-icons';
@@ -59,6 +59,28 @@
 
     .e-pv-thumbnail-view-icon::before {
       content: '\e79e';
+    }
+
+    .e-pv-rotate-right-icon::before{
+      content: '\e8a6';
+    }
+
+    .e-pv-organize-view-icon::before{
+      content: '\e8dc';
+    }
+
+    .e-pv-organize-view-disable-icon::before{
+      color: $pv-thumbnail-icon-disable-color;
+      content: '\e8dc';
+    }
+
+    .e-pv-organize-view-selection-icon::before{
+      color: $pv-thumbnail-icon-selection-color;
+      content: '\e8dc';
+    }
+        
+    .e-pv-rotate-left-icon::before{
+      content: '\e8a5';
     }
 
     .e-pv-stamp-icon::before {

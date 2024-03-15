@@ -2902,7 +2902,12 @@ export class Ribbon {
         }
         this.cPickerEle = null;
         if (this.datavalidationDdb) { this.datavalidationDdb.destroy(); } this.datavalidationDdb = null;
+        if (this.border) { this.border = ''; }
+        if (this.fontNameIndex) { this.fontNameIndex = null; }
+        if (this.preTabIdx) { this.preTabIdx = null; }
+        if (this.numPopupWidth) { this.numPopupWidth = null; }
         this.removeEventListener();
+        this.parent = null;
     }
     private destroyComponent(id: string | HTMLElement, moduleName: string): void {
         const ele: HTMLElement = typeof id === 'string' ? document.getElementById(id) : id;

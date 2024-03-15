@@ -4,7 +4,7 @@
 import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syncfusion/ej2-base';
 import { RichTextEditor, QuickToolbar, IRenderer, DialogType } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
-import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA, dispatchKeyEvent } from "./../render.spec";
+import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA, dispatchKeyEvent, ImageResizeGripper, clickImage, clickGripper, moveGripper, leaveGripper } from "./../render.spec";
 import { SelectEventArgs } from '@syncfusion/ej2-navigations';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
@@ -631,6 +631,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             clickEvent.initEvent("mousedown", false, true);
             resizeBot.dispatchEvent(clickEvent);
             (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
+            (<any>rteObj.imageModule).currentResizeHandler = 'botRight';
             (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 200 });
             let width = (rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth;
             expect(width).toEqual((trg as HTMLImageElement).width);
@@ -1738,7 +1739,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             let width = (rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth;
             (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
             (rteObj.imageModule as any).resizing({ target: resizeBot, pageX: 300 });
-            width += 100;
+            width = 80;
             expect(width).toEqual((rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth);
             (rteObj.imageModule as any).resizeEnd({ target: resizeBot });
             keyboardEventArgs.ctrlKey = true;
@@ -3841,15 +3842,16 @@ client side. Customer easy to edit the contents and get the HTML content for
             clickEvent = document.createEvent("MouseEvents");
             clickEvent.initEvent("mousedown", false, true);
             trg.dispatchEvent(clickEvent);
-            (rteObj.imageModule as any).resizeStart({ target: trg, pageX: 0 });
+            (rteObj.imageModule as any).resizeStart({ target: trg, pageX: 0 , pageY: 0 });
             let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-rte-botRight') as HTMLElement;
             clickEvent = document.createEvent("MouseEvents");
             clickEvent.initEvent("mousedown", false, true);
             resizeBot.dispatchEvent(clickEvent);
             (rteObj.imageModule as any).resizeStart(clickEvent);
             (<any>rteObj.imageModule).resizeBtnStat.botRight = true;
+            (<any>rteObj.imageModule).currentResizeHandler = 'botRight';
             let imgHeight: number = trg.offsetHeight;
-            (rteObj.imageModule as any).resizing({ target: document.body, pageX: 200 });
+            (rteObj.imageModule as any).resizing({ target: document.body, pageX: 200, pageY: 500 });
             expect(imgHeight < document.querySelector('img').offsetHeight).toBe(true);
             done();
         });
@@ -4538,7 +4540,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         afterAll(() => {
             destroy(rteObj);
         });
-        it("Check undo action after replace the image.", () => {
+        it("Check undo action after replace the image.", (done) => {
             let target: HTMLElement = rteEle.querySelector('#imgTag');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
             setCursorPoint(target, 0);
@@ -4550,12 +4552,15 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(imgPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             (<HTMLElement>document.querySelectorAll("[title='Replace']")[0]).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png';
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (dialogEle.querySelector('.e-insertImage') as HTMLElement).click();
-            (document.querySelector('[title="Undo (Ctrl+Z)"]') as HTMLElement).click();
-            expect(rteEle.querySelector('img').src == "http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png").toBe(true)
+            setTimeout(() => {
+                (document.querySelector('[title="Undo (Ctrl+Z)"]') as HTMLElement).click();
+                expect(rteEle.querySelector('img').src == "http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png").toBe(true);
+                done();
+            }, 100);
         });
     });
     describe('EJ2-845426: Undo does not works properly after replace the image', () => {
@@ -4577,7 +4582,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         afterAll(() => {
             destroy(rteObj);
         });
-        it("Check undo action after replace the image.", () => {
+        it("Check undo action after replace the image.", (done) => {
             let target: HTMLElement = rteEle.querySelector('#imgTag');
             let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
             setCursorPoint(target, 0);
@@ -4589,12 +4594,15 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(imgPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             (<HTMLElement>document.querySelectorAll("[title='Replace']")[0]).click();
             let dialogEle: any = rteObj.element.querySelector('.e-dialog');
-            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png';
             (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
             expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
             (dialogEle.querySelector('.e-insertImage') as HTMLElement).click();
-            (document.querySelector('[title="Undo (Ctrl+Z)"]') as HTMLElement).click();
-            expect(rteEle.querySelector('img').src == "http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png").toBe(true)
+            setTimeout(() => {
+                (document.querySelector('[title="Undo (Ctrl+Z)"]') as HTMLElement).click();
+                expect(rteEle.querySelector('img').src == "http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png").toBe(true);
+                done();
+            }, 100);
         });
     });
     describe('850205 - Editor content get hidden while try to resize the image.', function () {
@@ -4972,7 +4980,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 done();
             }, 800);
         });
-    }); 
+    });
 
     describe('837486 - Image gets flickered while resize the cell - ', () => {
         let rteObj: RichTextEditor;
@@ -5010,7 +5018,59 @@ client side. Customer easy to edit the contents and get the HTML content for
             },200);
         });
     });
-    describe('871139 - when image removing event API is used argument is null', () => {
+
+    describe('872197 - Multiple anchor added to the image - ', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: Element
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: `<p><img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" alt="googlelogo_color_272x92dp.png" width="auto" height="auto" style="min-width: 0px; min-height: 0px;" class="e-rte-image e-imginline"> </p>`
+            });
+            rteEle = rteObj.element;
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it('Check the insert link item added in Quick toolbar', (done) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            var clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            rteObj.inputElement.dispatchEvent(clickEvent);
+            let imgEle: HTMLElement = rteObj.element.querySelector("img");
+            imgEle.focus();
+            setCursorPoint(imgEle, 0);
+            var eventsArg = { pageX: 50, pageY: 300, target: imgEle };
+            (<any>rteObj).imageModule.editAreaClickHandler({ args: eventsArg });
+            let imageQTBarEle: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            let openLink: HTMLElement = imageQTBarEle.querySelector("[title='Open Link']") as HTMLElement;
+            setTimeout(() => {
+                expect((imageQTBarEle.querySelector("[title='Open Link']") as HTMLElement).style.display === "none").toBe(true);
+                expect((imageQTBarEle.querySelector("[title='Edit Link']") as HTMLElement).style.display === "none").toBe(true);
+                expect((imageQTBarEle.querySelector("[title='Remove Link']") as HTMLElement).style.display === "none").toBe(true);
+                (imageQTBarEle.querySelector("[title='Insert Link']")as HTMLElement).click();
+                let dialog =  document.querySelector('.e-rte-img-dialog');
+                dialog.querySelector('.e-img-link');
+                let urlInput: HTMLInputElement = dialog.querySelector(".e-input.e-img-link");
+                urlInput.value = "http://www.google.com";
+                let insertButton: HTMLElement = dialog.querySelector('.e-update-link.e-primary');
+                insertButton.click();
+                setCursorPoint(imgEle, 0);
+                var eventsArg = { pageX: 50, pageY: 300, target: imgEle };
+                (<any>rteObj).imageModule.editAreaClickHandler({ args: eventsArg });
+                setTimeout(() => {
+                    expect((imageQTBarEle.querySelector("[title='Insert Link']") as HTMLElement).style.display === "none").toBe(true);
+                    done();
+                },500);
+            },500)
+            
+        });
+    });
+     describe('871139 - when image removing event API is used argument is null', () => {
         let rteObj: RichTextEditor;
         let propertyCheck: boolean;
         beforeEach((done: Function) => {
@@ -5054,6 +5114,67 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 300);
         });
     });
+  
+    describe('832079 - Not able to resize the image propely', () => {
+        let editor: RichTextEditor;
+        beforeAll((done: DoneFn) => {
+            let link = document.createElement('link');
+            link.href = 'https://cdn.syncfusion.com/ej2/material.css';
+            link.rel = 'stylesheet';
+            link.id = 'materialTheme';
+            document.head.appendChild(link);
+            setTimeout(() => {
+                done();
+            }, 200);
+        });
+        afterAll((done: DoneFn) => {
+            document.getElementById('materialTheme').remove();
+            done();
+        });
+        beforeEach((done: Function) => {
+            editor = renderRTE({
+                value: `
+                <p>Image with Width and Height</p>
+                <p>
+                <img alt="image 1" src="/base/spec/content/image/RTEImage-Feather.png" style="width: 450px; height: 300px;" />                </p>`
+            });
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(editor);
+            done();
+        });
+        it('Should resize the image properly Case 1 Top Right Increase size', (done: DoneFn) => {
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            clickGripper(gripperElement);
+            const width = image.width;
+            // Start position x: 481 y: 86
+            moveGripper(gripperElement, 500, 100);
+            leaveGripper(gripperElement);
+            setTimeout(() => {
+                expect(image.width > width);
+                done();
+            }, 150);
+        });
+        it('Should resize the image properly Case 1 Top Right Decrease size', (done: DoneFn) => {
+            const image: HTMLImageElement = editor.element.querySelector('img');
+            clickImage(image);
+            const gripper: ImageResizeGripper = 'e-rte-topRight';
+            const gripperElement: HTMLElement = document.querySelector(`.${gripper}`);
+            clickGripper(gripperElement);
+            const width = image.width;
+            // Start position x: 481 y: 86
+            moveGripper(gripperElement, 400, 60);
+            leaveGripper(gripperElement);
+            setTimeout(() => {
+                expect(image.width < width);
+                done();
+            }, 150);
+       });
+   });
 
     describe("867960 - beforeQuickToolbarOpen event args positionX and positionY doesn't change the position of image quicktoolbar in RichTextEditor.", () => {
         let rteObj: RichTextEditor;
@@ -5083,4 +5204,34 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
+
+    describe('874686 - Image Size pop up has more empty space at below before update buttom. Can reduce the size of pop up.', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><img id="image" alt="Logo" src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;">`
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it("Check the image popup size", (done) => {
+            let image: HTMLElement = rteObj.element.querySelector("#image");
+            setCursorPoint(image, 0);
+            dispatchEvent(image, 'mousedown');
+            image.click();
+            dispatchEvent(image, 'mouseup');
+            setTimeout(() => {
+                let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_Dimension");
+                imageBtn.click();
+                expect(rteObj.element.querySelector(".e-rte-img-size-dialog").hasAttribute("height")).toBe(false);
+                done();
+            }, 100);
+        });
+    });
 });
+

@@ -20,6 +20,13 @@ export interface RibbonGroupButtonItemModel {
     iconCss?: string;
 
     /**
+     * Specifies the keytip content.
+     *
+     * @default ''
+     */
+    keyTip?: string;
+
+    /**
      * Specifies the tooltip settings for the group button items.
      *
      * @default {}

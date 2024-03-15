@@ -140,7 +140,7 @@ export class ColumnWidthService {
                     }
                 }
             }
-            if (edit.length && editTableCol.length) {
+            if (edit.length && editTableCol.length && editTableCol[parseInt(index.toString(), 10)]) {
                 editTableCol[parseInt(index.toString(), 10)].style.width = fWidth;
             }
         }

@@ -209,6 +209,50 @@ describe('AutoComplete', () => {
                 atcObj.onFilterUp(e);
                 expect(atcObj.list.classList.contains('e-nodata')).toBe(true);
             });
+            it('customvalue with allowObjectBinding', (done) => {
+                let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', keyCode: 72 };
+                let changeAction: EmitType<Object> = jasmine.createSpy('Change');
+                atcObj = new AutoComplete({
+                    dataSource: languageData,
+                    allowObjectBinding: true,
+                    allowCustom: true,
+                    fields: { value: 'text' },
+                });
+                atcObj.appendTo(element);
+                atcObj.showPopup();
+                setTimeout(() => {
+                    atcObj.inputElement.value = 'ASP';
+                    atcObj.onInput(keyEventArgs);
+                    atcObj.onFilterUp(keyEventArgs);
+                    atcObj.hidePopup(); 
+                    setTimeout(() => {
+                        expect(atcObj.inputElement.value).toEqual('ASP');
+                        expect(atcObj.isObjectInArray({ id: null, text: "ASP" }, [atcObj.value])).toBe(true)
+                        expect(atcObj.text).toEqual('ASP');
+                        done();
+                    }, 450)
+                }, 450)
+            });
+            it('filtering case', (done) => {
+                let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', keyCode: 72 };
+                let changeAction: EmitType<Object> = jasmine.createSpy('Change');
+                atcObj = new AutoComplete({
+                    dataSource: languageData,
+                    allowObjectBinding: true,
+                    allowCustom: true,
+                    fields: { value: 'text' },
+                });
+                atcObj.appendTo(element);
+                atcObj.showPopup();
+                atcObj.inputElement.value = 'HTML';
+                e.keyCode = 72;
+                atcObj.onInput(e);
+                atcObj.onFilterUp(e);
+                setTimeout(() => {
+                    expect(atcObj.isPopupOpen).toBe(true);
+                    done();
+                }, 500);
+            });
         });
         describe('internal searching with complex data', () => {
             let atcObj: any;
@@ -1167,6 +1211,49 @@ describe('AutoComplete', () => {
                     done()
                 }, 400);
             }, 400);
+        });
+        it('mouse click on list with allowObjectBinding', (done) => {
+            list = new AutoComplete({
+                dataSource: languageData,
+                fields: { value: 'text' },
+                popupHeight: '250px',
+                allowObjectBinding: true,
+                showClearButton: true,
+            });
+            list.appendTo(ele);
+            list.showPopup();
+            setTimeout(() => {
+                let item: HTMLElement[] = list.popupObj.element.querySelectorAll('li')[3];
+                mouseEventArgs.target = item;
+                mouseEventArgs.type = 'click';
+                list.onMouseClick(mouseEventArgs);
+                setTimeout(function () {
+                    expect(list.isPopupOpen).toBe(false);
+                    done();
+                }, 450);
+            }, 450)
+        });
+        it('value at dynamic changes with allowObjectBinding', (done) => {
+            let changeAction: EmitType<Object> = jasmine.createSpy('Change');
+            list = new AutoComplete({
+                dataSource: languageData,
+                fields: { value: 'text' },
+                popupHeight: '250px',
+                allowObjectBinding: true,
+                showClearButton: true,
+            });
+            list.appendTo(ele);
+            list.value = { id: 'id1', text: 'HTML' };
+            list.dataBind();
+            setTimeout(() => { 
+                expect(list.isObjectInArray({ id: "id1", text: "HTML" }, [list.value])).toBe(true)
+                list.value = { id: 'list2', text: 'PYTHON' };
+                setTimeout(() => {
+                    expect(list.isObjectInArray({ id: 'list2', text: 'PYTHON' }, [list.value])).toBe(true)
+                    expect(isNullOrUndefined(list.popupObj)).toBe(true);
+                    done();
+                }, 800);
+            }, 800);
         });
     });
     describe('clear button event argument isInteraction', () => {

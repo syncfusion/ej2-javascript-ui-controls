@@ -1240,7 +1240,11 @@ export class _XfdfDocument extends _ExportHelper {
                 writer._writeEndElement();
             } else if (Array.isArray(primitive)) {
                 this._writePrefix(writer, 'ARRAY', key);
-                this._writeArray(writer, dictionary.getArray(key), dictionary);
+                if (dictionary.has(key)) {
+                    this._writeArray(writer, dictionary.getArray(key), dictionary);
+                } else {
+                    this._writeArray(writer, primitive, dictionary);
+                }
                 writer._writeEndElement();
             } else if (typeof primitive === 'string') {
                 this._writePrefix(writer, 'STRING', key);
@@ -1285,10 +1289,12 @@ export class _XfdfDocument extends _ExportHelper {
                         writer._writeRaw(data);
                     }
                 } else {
-                    const data: string = primitive.getString();
+                    let data: string = primitive.getString();
                     if (!streamDictionary.has('Length') && data && data !== '') {
                         streamDictionary.update('Length', primitive.length);
                     }
+                    data = data.replace(/</g, '&lt;');
+                    data = data.replace(/>/g, '&gt;');
                     this._writeAppearanceDictionary(writer, streamDictionary);
                     writer._writeStartElement('DATA');
                     writer._writeAttributeString('MODE', 'FILTERED');

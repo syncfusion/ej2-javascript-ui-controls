@@ -696,7 +696,7 @@ describe('DOM Wrapper Testing with basic properites', () => {
         datetimepicker.getDateObject(datetimepicker.value);
     });
     it('enabled false DISABLED attribute testing', () => {
-        expect(datetimepicker.inputElement.getAttribute('disabled')).toEqual('disabled');
+        expect(datetimepicker.inputElement.getAttribute('disabled')).toEqual('');
     });
     it('enabled false input element ARIA-DISABELD testing', () => {
         expect(datetimepicker.inputElement.getAttribute('aria-disabled')).toEqual('true');

@@ -75,6 +75,10 @@ export class InsertHtml {
         const isCollapsed: boolean = range.collapsed;
         const nodes: Node[] = this.getNodeCollection(range, nodeSelection, node);
         const closestParentNode: Node = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
+        if (closestParentNode && closestParentNode.nodeName === 'LI' && node.nodeName.toLowerCase() === 'table') {
+            this.insertTableInList(range, node as HTMLTableElement, closestParentNode, nodes[0], nodeCutter);
+            return;
+        }
         if (isExternal || (!isNOU(node) && !isNOU((node as HTMLElement).classList) &&
         (node as HTMLElement).classList.contains('pasteContent'))) {
             this.pasteInsertHTML(
@@ -536,6 +540,9 @@ export class InsertHtml {
     }
     private static closestEle(element: Element | Node, editNode: Element): Element {
         let el: Element = <Element>element;
+        if (closest(el, 'li')) {
+            return closest(el, 'li');
+        }
         while (el && el.nodeType === 1) {
             if (el.parentNode === editNode ||
                 (!isNOU((el.parentNode as Element).tagName) &&
@@ -545,5 +552,26 @@ export class InsertHtml {
             el = <Element>el.parentNode;
         }
         return null;
+    }
+    private static insertTableInList(range: Range, insertNode: HTMLTableElement, parentNode: Node, currentNode: Node, nodeCutter: NodeCutter): void {
+        if (range.collapsed) {
+            const isStart: boolean = range.startOffset === 0;
+            const isEnd: boolean = (range.startContainer.textContent as any).trimEnd().length === range.startOffset;
+            if (isStart || isEnd) {
+                if (isStart) {
+                    InsertMethods.AppendBefore(insertNode, currentNode as HTMLElement, false);
+                } else {
+                    InsertMethods.AppendBefore(insertNode, currentNode as HTMLElement, true);
+                }
+            } else {
+                const preNode: Node = nodeCutter.SplitNode(range, parentNode as HTMLElement, true);
+                const sibNode: Node = preNode.previousSibling; 
+                sibNode.appendChild(insertNode);
+            }
+        } else {
+            range.deleteContents();
+            parentNode.appendChild(insertNode);
+        }
+        insertNode.classList.add('ignore-table');
     }
 }

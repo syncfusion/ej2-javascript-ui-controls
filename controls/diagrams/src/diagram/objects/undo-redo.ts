@@ -731,9 +731,13 @@ export class UndoRedo {
         let connector: ConnectorModel;
         if (obj.nodes && obj.nodes.length > 0) {
             for (i = 0; i < obj.nodes.length; i++) {
+                if(diagram.bpmnModule){
+                    (diagram as any).isPositionUndo = true
+                }
                 node = obj.nodes[parseInt(i.toString(), 10)];
                 this.positionChanged(node, diagram);
             }
+            (diagram as any).isPositionUndo = false;
         }
         if (obj.connectors && obj.connectors.length > 0) {
             for (i = 0; i < obj.connectors.length; i++) {
@@ -792,8 +796,14 @@ export class UndoRedo {
                         }
                     }
                 } else {
+                    if(diagram.bpmnModule){
+                        (diagram as any).sizeUndo = true;
+                    }
                     this.sizeChanged(node, diagram);
                     this.positionChanged(node, diagram);
+                    if(diagram.bpmnModule){
+                        (diagram as any).sizeUndo = false;
+                    }
                 }
             }
         }

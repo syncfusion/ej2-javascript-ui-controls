@@ -178,10 +178,10 @@ export class TableOptionsDialog {
      * @returns {void}
      */
     public applySubTableOptions(tableFormat: WTableFormat, sourceTable?: TableWidget): void {
-        this.documentHelper.owner.editorHistory.initComplexHistory(this.documentHelper.selection, 'TableMarginsSelection');
+        this.documentHelper.owner.editorHistoryModule.initComplexHistory(this.documentHelper.selection, 'TableMarginsSelection');
         this.applyTableOptionsHistory(tableFormat, sourceTable);
-        if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentHistoryInfo)) {
-            this.documentHelper.owner.editorHistory.updateComplexHistory();
+        if (!isNullOrUndefined(this.documentHelper.owner.editorHistoryModule.currentHistoryInfo)) {
+            this.documentHelper.owner.editorHistoryModule.updateComplexHistory();
         }
     }
     /**
@@ -204,8 +204,8 @@ export class TableOptionsDialog {
             ownerTable = ownerTable.combineWidget(this.documentHelper.owner.viewer) as TableWidget;
         }
         const currentTableFormat: WTableFormat = ownerTable.tableFormat;
-        if (!isNullOrUndefined(this.documentHelper.owner.editorHistory.currentBaseHistoryInfo)) {
-            this.documentHelper.owner.editorHistory.currentBaseHistoryInfo.addModifiedTableOptions(currentTableFormat);
+        if (!isNullOrUndefined(this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo)) {
+            this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.addModifiedTableOptions(currentTableFormat);
         }
         currentTableFormat.cellSpacing = tableFormat.cellSpacing;
         currentTableFormat.leftMargin = tableFormat.leftMargin;

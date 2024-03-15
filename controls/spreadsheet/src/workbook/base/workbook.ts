@@ -14,7 +14,7 @@ import { SaveOptions, SetCellFormatArgs, ClearOptions, AutoFillSettings, AutoFil
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, ConditionalFormatModel } from '../common/index';
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, ChartModel, getCellIndexes, getCellAddress } from '../common/index';
 import { setMerge, MergeType, MergeArgs, ImageModel, FilterCollectionModel, SortCollectionModel, dataChanged } from '../common/index';
-import { getCell, skipDefaultValue, setCell, wrap as wrapText, Cell } from './cell';
+import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
 import { DataBind, setRow, setColumn, InsertDeleteEventArgs, NumberFormatArgs } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter, WorkbookImage } from '../integrations/index';
 import { WorkbookChart } from '../integrations/index';
@@ -462,6 +462,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     @Property(true)
     public allowFreezePane: boolean;
 
+    /**
+     * Specifies the list separator which is used as the formula argument separator.
+     *
+     * @default ','
+     */
+    @Property(',')
+    public listSeparator: string;
+
     /** @hidden */
     public commonCellStyle: CellStyleModel;
 
@@ -614,6 +622,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         return style;
     }
 
+    
     /**
      * Applies the number format (number, currency, percentage, short date, etc...) to the specified range of cells.
      *
@@ -692,6 +701,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 } else {
                     initSheet(this);
                 }
+                break;
+            case 'listSeparator':
+                this.notify(events.workbookFormulaOperation, { action: 'setArgumentSeparator' });
                 break;
             }
         }
@@ -1321,7 +1333,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     public conditionalFormat(conditionalFormat: ConditionalFormatModel): void {
-        conditionalFormat.range = conditionalFormat.range || this.getActiveSheet().selectedRange;
+        if (conditionalFormat.range) {
+            if (this.listSeparator !== ',' && conditionalFormat.range.includes(this.listSeparator)) {
+                conditionalFormat.range = conditionalFormat.range.split(this.listSeparator).join(',');
+            }
+        } else {
+            conditionalFormat.range = this.getActiveSheet().selectedRange;
+        }
         this.notify(setCFRule, <CFArgs>{ cfModel: conditionalFormat });
     }
 

@@ -143,7 +143,7 @@ describe('Diagram Control', () => {
                 wrapper.offsetY === 100 && wrapper.actualSize.width === 50 && wrapper.actualSize.height === 50).toBe(true);
             done();
         });
-        it('Checking min width and min height at run time', (done: Function) => {         
+        it('Checking min width and min height at run time', (done: Function) => {
             diagram.nodes[4].minWidth = 60;
             diagram.nodes[4].minHeight = 60;
             diagram.dataBind();
@@ -154,66 +154,6 @@ describe('Diagram Control', () => {
             expect(node.wrapper.minWidth == 60 && node.wrapper.children[0].minWidth == 60 &&
                 node.wrapper.minHeight == 60 && node.wrapper.children[0].minHeight == 60).toBe(true);
             done();
-        });
-    });
-    describe('Node is connect to connector', () => {
-        let diagram: Diagram;
-        let ele: HTMLElement;
-        let mouseEvents: MouseEvents = new MouseEvents();
-        beforeAll((): void => {
-            const isDef = (o: any) => o !== undefined && o !== null;
-            if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
-                this.skip(); //Skips test (in Chai)
-                return;
-            }
-            ele = createElement('div', { id: 'diagram90' });
-            document.body.appendChild(ele);
-
-            let node1 = {
-                id: 'node1',width: 100,height: 100,offsetX:100 , offsetY: 200,
-                constraints:NodeConstraints.Default & ~(NodeConstraints.Resize | NodeConstraints.Rotate),
-                annotations: [{ content: 'Node1' }],
-                ports: [
-                  
-                  {
-                    id: 'Out2_xyz',offset: { x: 1, y: 0.5 },visibility: PortVisibility.Visible,
-                    constraints:PortConstraints.Default | PortConstraints.Draw,  
-                  }
-                ],
-              };
-            let node2 = {
-                id: 'node2',width: 100,height: 100,offsetX: 500,offsetY: 200,
-                constraints:NodeConstraints.Default & ~( NodeConstraints.Resize | NodeConstraints.Rotate),
-                annotations: [{ content: 'Node2' }],
-                ports: [
-                  {
-                    id: 'Inp_xyz_abc',offset: { x: 0, y: 0.5 },visibility: PortVisibility.Visible,
-                    constraints:PortConstraints.Default | PortConstraints.Draw,
-                 },
-                ],
-            };
-
-            diagram = new Diagram({ width: 1000, height: 800, nodes: [node1,node2] });
-            diagram.appendTo('#diagram90');
-        });
-
-        afterAll((): void => {
-            diagram.destroy();
-            ele.remove();
-        });
-
-        it('select the node and draw connector Checking connector connect to source port', (done: Function) =>{
-            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            let node: NodeModel = diagram.nodes[0];
-            diagram.select([diagram.nodes[0]]);
-            mouseEvents.mouseDownEvent(diagramCanvas, 157, 208);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 200, 210);
-            mouseEvents.mouseMoveEvent(diagramCanvas, 458, 208);
-            mouseEvents.mouseUpEvent(diagramCanvas, 458, 208);
-            console.log("Ports len "+ diagram.nodes[0].ports[0].outEdges.length);
-            expect(diagram.nodes[0].ports[0].outEdges.length === 0).toBe(true);
-             done();
         });
     });
 
@@ -884,7 +824,6 @@ describe('Diagram Control', () => {
         });
 
         it('Native element hover issue', (done: Function) => {
-            
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.mouseMoveEvent(diagramCanvas, 100, 100, true);
             mouseEvents.mouseMoveEvent(diagramCanvas, 101, 101, true);
@@ -1980,7 +1919,6 @@ describe('node default connector default check', () => {
         });
 
         it('Pan Status on events', (done: Function) => {
-            
             let diagramCanvas: Element = document.getElementById('diagramNodeZindexcontent');
             let mouseevents: MouseEvents = new MouseEvents();
             diagram.scrollChange = (args:IScrollChangeEventArgs | IBlazorScrollChangeEventArgs) => {
@@ -2462,5 +2400,65 @@ describe('Performance of diagram while rendering large number of nodes and conne
         console.log("time");
         console.log(renderingTimeInMs);
         done();        
+    });
+});
+
+describe('Drawing connectors from a source port to target port do not attach to source Node', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram90' });
+        document.body.appendChild(ele);
+
+        let node1 = {
+            id: 'node1',width: 100,height: 100,offsetX:100 , offsetY: 200,
+            constraints:NodeConstraints.Default & ~(NodeConstraints.Resize | NodeConstraints.Rotate),
+            annotations: [{ content: 'Node1' }],
+            ports: [
+
+              {
+                id: 'Out2_xyz',offset: { x: 1, y: 0.5 },visibility: PortVisibility.Visible,
+                constraints:PortConstraints.Default | PortConstraints.Draw,  
+              }
+            ],
+          };
+        let node2 = {
+            id: 'node2',width: 100,height: 100,offsetX: 500,offsetY: 200,
+            constraints:NodeConstraints.Default & ~( NodeConstraints.Resize | NodeConstraints.Rotate),
+            annotations: [{ content: 'Node2' }],
+            ports: [
+              {
+                id: 'Inp_xyz_abc',offset: { x: 0, y: 0.5 },visibility: PortVisibility.Visible,
+                constraints:PortConstraints.Default | PortConstraints.Draw,
+             },
+            ],
+        };
+
+        diagram = new Diagram({ width: 1000, height: 800, nodes: [node1,node2] });
+        diagram.appendTo('#diagram90');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('select the node and draw connector Checking connector connect to source port', (done: Function) =>{
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let node: NodeModel = diagram.nodes[0];
+        diagram.select([diagram.nodes[0]]);
+        mouseEvents.mouseDownEvent(diagramCanvas, 157, 208);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 200, 210);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 458, 208);
+        mouseEvents.mouseUpEvent(diagramCanvas, 458, 208);
+        expect(diagram.nodes[0].ports[0].outEdges.length === 1).toBe(true);
+         done();
     });
 });

@@ -6,7 +6,7 @@ import { withIn } from '../../common/utils/helper';
 import { Chart3D } from '../chart3D';
 import { extend, getValue } from '@syncfusion/ej2-base';
 import { NiceIntervals } from '../axis/axis-helper';
-import { Chart3DFont } from '../model/chart3d-Interface';
+import { Chart3DTextFont } from '../model/chart3d-Interface';
 
 
 /**
@@ -87,12 +87,12 @@ export class Category3D extends NiceIntervals {
         axis.visibleLabels = [];
         axis.visibleRange.interval = axis.visibleRange.interval < 1 ? 1 : axis.visibleRange.interval;
         let tempInterval: number = Math.ceil(axis.visibleRange.min);
-        let labelStyle: Chart3DFont;
+        let labelStyle: Chart3DTextFont;
         let position: number;
         axis.startLabel = axis.labels[Math.round(axis.visibleRange.min)];
         axis.endLabel = axis.labels[Math.floor(axis.visibleRange.max)];
         for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
-            labelStyle = <Chart3DFont>(extend({}, getValue('properties', axis.labelStyle), null, true));
+            labelStyle = <Chart3DTextFont>(extend({}, getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange) && axis.labels.length > 0) {
                 position = Math.round(tempInterval);
                 triggerLabelRender(

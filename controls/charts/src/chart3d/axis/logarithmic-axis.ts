@@ -5,7 +5,7 @@ import { Size } from '@syncfusion/ej2-svg-base';
 import { logBase, withIn } from '../../common/utils/helper';
 import { Chart3D } from '../chart3D';
 import { extend, getValue } from '@syncfusion/ej2-base';
-import { Chart3DFont } from '../model/chart3d-Interface';
+import { Chart3DTextFont } from '../model/chart3d-Interface';
 
 /**
  * The `Logarithmic` module is used to render log axis.
@@ -121,7 +121,7 @@ export class Logarithmic3D extends Double3D {
         /*! Generate axis labels */
         let tempInterval: number = axis.visibleRange.min;
         axis.visibleLabels = [];
-        let labelStyle: Chart3DFont;
+        let labelStyle: Chart3DTextFont;
         let value: number;
         const axisFormat: string = this.getFormat(axis);
         const isCustomFormat: boolean = axisFormat.match('{value}') !== null;
@@ -134,7 +134,7 @@ export class Logarithmic3D extends Double3D {
         axis.startLabel = axis.format(startValue < 1 ? +startValue.toPrecision(1) : startValue);
         axis.endLabel = axis.format(Math.pow(axis.logBase, axis.visibleRange.max));
         for (; tempInterval <= axis.visibleRange.max; tempInterval += axis.visibleRange.interval) {
-            labelStyle = <Chart3DFont>(extend({}, getValue('properties', axis.labelStyle), null, true));
+            labelStyle = <Chart3DTextFont>(extend({}, getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
                 value = Math.pow(axis.logBase, tempInterval);
                 triggerLabelRender(

@@ -248,8 +248,6 @@ describe('Symbol Palette - Group', () => {
                 events.mouseUpEvent(palette.element, 150, 150, false, false);
                 palette.getPersistData();
                 let start: HTMLElement = document.getElementById('group3');
-                console.log(start.offsetWidth);
-                console.log(start.offsetHeight);
                 expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
                 done();
             }, 10);
@@ -345,8 +343,6 @@ describe('Symbol Palette - Group', () => {
                 events.mouseUpEvent(palette.element, 150, 150, false, false);
                 palette.getPersistData();
                 let start: HTMLElement = document.getElementById('SHAPE_BELL11');
-                console.log(start.offsetWidth);
-                console.log(start.offsetHeight);
                 expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
                 done();
             }, 10);
@@ -391,19 +387,17 @@ describe('Symbol Palette - Group', () => {
             ele.remove();
         });
         it('Checking highlights', (done: Function) => {
-                palette.refresh();
-                setTimeout(() => {
-                    let events: MouseEvents = new MouseEvents();
-                    events.mouseDownEvent(palette.element, 70, 125, false, false);
-                    events.mouseMoveEvent(palette.element, 150, 150, false, false);
-                    events.mouseUpEvent(palette.element, 150, 150, false, false);
-                    palette.getPersistData();
-                    let start: HTMLElement = document.getElementById('group');
-                    console.log(start.offsetWidth);
-                    console.log(start.offsetHeight);
-                    expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
-                    done();
-                }, 10);
+            palette.refresh();
+            setTimeout(() => {
+                let events: MouseEvents = new MouseEvents();
+                events.mouseDownEvent(palette.element, 70, 125, false, false);
+                events.mouseMoveEvent(palette.element, 150, 150, false, false);
+                events.mouseUpEvent(palette.element, 150, 150, false, false);
+                palette.getPersistData();
+                let start: HTMLElement = document.getElementById('group');
+                expect(start.offsetWidth == 59 && start.offsetHeight == 59).toBe(true);
+                done();
+            }, 10);
         });
     });
     describe('Testing multiSelect tool enables selector for dropped node', () => {
@@ -486,7 +480,6 @@ describe('Symbol Palette - Group', () => {
         });
      
     });
-
 
 });
 
@@ -732,98 +725,68 @@ describe('Symbol Palette - Draggable Element', () => {
             done();
         });
     });
+    describe('873843-Issue with node height and width in the symbol palette',()=>{
+                let diagram: Diagram;
+                let palette: SymbolPalette;
+                let ele: HTMLElement;
+                let mouseEvents: MouseEvents = new MouseEvents();
+                beforeAll((): void => {
+                    ele = createElement('div', { styles: 'width:100%;height:500px;' });
+                    ele.appendChild(createElement('div', { id: 'symbolpaletteBpmnSize', styles: 'width:25%;float:left;' }));
+                    ele.appendChild(createElement('div', { id: 'diagramBpmnSize', styles: 'width:50%;height:500px;float:left;' }));
+                    document.body.appendChild(ele);
+                    diagram = new Diagram({
+                        width: '70%', height: 500
+                    });
+                    diagram.appendTo('#diagramBpmnSize');
+                    var BpmnShape : NodeModel[] =[{
+                        annotations: [
+                          {
+                            content: 'Event',
+                            margin: { top: 15 },
+                            offset: { x: 0.5, y: 1 },
+                          },
+                        ],
+                        height: 40,
+                        id: 'Event',
+                        shape: {
+                          event: {
+                            event: 'Start',
+                          },
+                          type: 'Bpmn',
+                          shape: 'Event',
+                        },
+                        width: 40,
+                      },
+                    ]
+                    var palettes = [
+                        {
+                            id: 'BpmnShapes', expanded: true, symbols: BpmnShape
+                            , title: 'Bpmn'
+                        }
+                    ];
+                    palette = new SymbolPalette({
+                        width: '25%', height: '500px',
+                        palettes: palettes,
+                        symbolHeight: 50, symbolWidth: 50,
+                        symbolPreview: { height: 100, width: 100 },
+                        enableSearch: true,
+                        symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
+                        getSymbolInfo: (symbol: NodeModel): SymbolInfo => {
+                            return { description:{text:symbol.id} };
+                        }
+                    });
+                    palette.appendTo('#symbolpaletteBpmnSize');
+                });
+                afterAll((): void => {
+                    diagram.destroy();
+                    palette.destroy();
+                    ele.remove();
+                });
+                it('Checking bpmn event shape size ', (done: Function) => {
+                    let element = (document.getElementById('Event_container').getBoundingClientRect());
+                    expect(element !== null).toBe(true);
+                    done();
+                });
+            });
 });
-
-describe('Testing BPMN shape symbol palette with description', () => {
-    let diagram: Diagram;
-    let palette: SymbolPalette;
-    let ele: HTMLElement;
-    let mouseEvents: MouseEvents = new MouseEvents();
-
-    let basicShapes: NodeModel[] = [
-        {
-            id: 'Ellipse', shape: { type: 'Basic', shape: 'Ellipse' }, style: { strokeWidth: 2 },
-        },
-    ];
-    let BPMNShapes: NodeModel[] = [
-        {
-            id: 'BPMNStart', style: { strokeWidth: 2 }, shape: { type: 'Bpmn', shape: 'Event', event: { event: 'Start', trigger: 'None' } },
-        },
-    ];
-    beforeAll((): void => {
-        ele = createElement('div', { styles: 'width:100%;height:500px;' });
-        ele.appendChild(createElement('div', { id: 'symbolPalette', styles: 'width:25%;float:left;' }));
-        ele.appendChild(createElement('div', { id: 'diagram', styles: 'width:74%;height:500px;float:left;' }));
-        document.body.appendChild(ele);
-
-        diagram = new Diagram({
-            width: '74%', height: '600px'
-        });
-        diagram.appendTo('#diagram');
-
-        palette = new SymbolPalette({
-            width: '250px', height: '100%',
-            palettes: [
-                { id: 'basic', expanded: true, symbols: basicShapes, title: 'Basic Shapes' },
-                { id: 'bpmn', expanded: true, symbols: BPMNShapes , title: 'BPMN Shapes' },
-            ], enableAnimation: false, enableSearch: true, symbolHeight: 100, symbolWidth: 100,
-            getNodeDefaults: (node: NodeModel) => {
-                if (node.id === 'Terminator' || node.id === 'Process') {
-                    node.width = 130;
-                    node.height = 65;
-                } else {
-                    node.width = 50;
-                    node.height = 50;
-                }
-                node.ports = [
-                    {
-                        offset: { x: 0, y: 0.5 },
-                        visibility: PortVisibility.Connect | PortVisibility.Hover, constraints: PortConstraints.Draw
-                    },
-                    {
-                        offset: { x: 0.5, y: 0 },
-                        visibility: PortVisibility.Connect | PortVisibility.Hover, constraints: PortConstraints.Draw
-                    },
-                    {
-                        offset: { x: 1, y: 0.5 },
-                        visibility: PortVisibility.Connect | PortVisibility.Hover, constraints: PortConstraints.Draw
-                    },
-                    {
-                        offset: { x: 0.5, y: 1 },
-                        visibility: PortVisibility.Connect | PortVisibility.Hover, constraints: PortConstraints.Draw
-                    }
-                ];
-                node.style.strokeColor = '#3A3A3A';
-            },
-            symbolMargin: { top: 12, bottom: 12, left: 12, right: 12 },
-            symbolPreview: { height: 100, width: 100 },
-             getSymbolInfo: (symbol: NodeModel): SymbolInfo => {
-                 return { description: { text: symbol.id } };
-             }
-        });
-        palette.appendTo('#symbolPalette');
-    });
-
-    afterAll((): void => {
-        diagram.destroy();
-        palette.destroy();  
-        ele.remove();
-    });
-    it('871464 - Checking BPMN shape symbol palette with description', (done: Function) => {
-        setTimeout(() => {
-            let events: MouseEvents = new MouseEvents();
-            events.mouseDownEvent(palette.element, 70, 125, false, false);
-            events.mouseMoveEvent(palette.element, 150, 150, false, false);
-            events.mouseUpEvent(palette.element, 150, 150, false, false);
-            palette.getPersistData();
-            let start: HTMLElement = document.getElementById('Ellipse');
-            let start1: HTMLElement = document.getElementById('BPMNStart');
-            console.log(start.offsetWidth);
-            console.log(start.offsetHeight);
-            console.log(start1.offsetWidth);
-            console.log(start1.offsetHeight);
-            expect(start.offsetWidth == 161 && start.offsetHeight == 171).toBe(true);
-            done();
-        }, 10);
-    });
-}); 

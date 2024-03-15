@@ -409,18 +409,18 @@ describe('860251-Bpmn message flow and sequence flow connector child path is not
             id: 'node6', width: 100, height: 100, offsetX: 500, offsetY: 300,
             shape: { type: 'Bpmn', shape: 'Gateway', gateway: { type: 'ParallelEventBased' } as BpmnGatewayModel },
         };
-        
+
         let connectors:ConnectorModel[] = [
             {id:'message',sourceID:'node1',type:'Orthogonal',targetID:'node3',shape:{type:'Bpmn',flow:'Message',message:'InitiatingMessage'}},
             {id:'sequence',sourceID:'node4',type:'Orthogonal',targetID:'node6',shape:{type:'Bpmn',flow:'Sequence',sequence:'Default'}},
-        
-            
+
+
             { id: 'message2', sourcePoint:{x:300,y:300}, type: 'Orthogonal', targetPoint:{x:400,y:400}, shape: { type: 'Bpmn', flow: 'Message', message: 'InitiatingMessage' } },
             { id: 'sequence2', sourcePoint:{x:400,y:400}, type: 'Orthogonal', targetPoint:{x:300,y:300}, shape: { type: 'Bpmn', flow: 'Sequence', sequence: 'Default' } },
-        
+
             { id: 'message3', sourcePoint:{x:600,y:300}, type: 'Straight', targetPoint:{x:700,y:400}, shape: { type: 'Bpmn', flow: 'Message', message: 'InitiatingMessage' } },
             { id: 'sequence3', sourcePoint:{x:700,y:300}, type: 'Straight', targetPoint:{x:600,y:400}, shape: { type: 'Bpmn', flow: 'Sequence', sequence: 'Default' } },
-        
+
         ]
         diagram = new Diagram({
 

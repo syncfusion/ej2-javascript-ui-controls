@@ -1,5 +1,5 @@
 import { OlapEngine, ConnectionInfo, FieldData, IOlapField, IOlapFieldListOptions } from './engine';
-import { IFieldOptions, IDataOptions, IValueSortSettings, IDrillOptions, IDrilledItem, IPageSettings, IFilter } from '../engine';
+import { IFieldOptions, IDataOptions, IDrillOptions, IDrilledItem, IPageSettings, IFilter } from '../engine';
 import { ICalculatedFieldSettings } from '../engine';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Operators, FilterType } from '../types';
@@ -25,8 +25,6 @@ export class MDXQuery {
     /** @hidden */
     private static calculatedFieldSettings: ICalculatedFieldSettings[];
     /** @hidden */
-    private static valueSortSettings: IValueSortSettings;
-    /** @hidden */
     public static drilledMembers: IDrillOptions[];
     /** @hidden */
     private static filterMembers: { [key: string]: string[] | IFilter[] };
@@ -51,8 +49,9 @@ export class MDXQuery {
     /** @hidden */
     private static allowValueFilter: boolean;
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    public static getCellSets(dataSourceSettings: IDataOptions, olapEngine: OlapEngine, refPaging?: boolean,
-                              drillInfo?: IDrilledItem, isQueryUpdate?: boolean): any { /* eslint-enable @typescript-eslint/no-explicit-any */
+    public static getCellSets(
+        dataSourceSettings: IDataOptions, olapEngine: OlapEngine, refPaging?: boolean, drillInfo?: IDrilledItem, isQueryUpdate?: boolean
+    ): any { /* eslint-enable @typescript-eslint/no-explicit-any */
         this.engine = olapEngine;
         this.isMondrian = olapEngine.isMondrian;
         this.isMeasureAvail = olapEngine.isMeasureAvail;
@@ -64,7 +63,6 @@ export class MDXQuery {
         this.filters = olapEngine.filters;
         this.allowLabelFilter = olapEngine.allowLabelFilter;
         this.allowValueFilter = olapEngine.allowValueFilter;
-        this.valueSortSettings = dataSourceSettings.valueSortSettings ? dataSourceSettings.valueSortSettings : undefined;
         this.drilledMembers = olapEngine.updateDrilledItems(dataSourceSettings.drilledMembers);
         this.calculatedFieldSettings = olapEngine.calculatedFieldSettings;
         this.valueAxis = dataSourceSettings.valueAxis === 'row' ? 'rows' : 'columns';
@@ -100,18 +98,23 @@ export class MDXQuery {
             request: query,
             LCID: dataSourceSettings.localeIdentifier.toString(),
             roles: dataSourceSettings.roles
-        };
-        olapEngine.mdxQuery = query.replace(/\&amp;/g, '&').replace(/\&gt;/g, '>').replace(/\&lt;/g, '<').replace(/%280/g, '\"').replace(/\&apos;/g, '\'');   /* eslint-disable-line */
+        };  /* eslint-disable-next-line no-useless-escape*/
+        olapEngine.mdxQuery = query.replace(/\&amp;/g, '&').replace(/\&gt;/g, '>').replace(/\&lt;/g, '<').replace(/%280/g, '\"').replace(/\&apos;/g, '\'');
         // console.log(olapEngine.mdxQuery);
         if (drillInfo) {
             drillInfo.axis = drillInfo.axis === 'rows' ? 'row' : 'column';
         }
         if (!isQueryUpdate) {
-            this.getTableCellData(args, (this.isPaging && !refPaging ? this.engine.generatePagingData.bind(this.engine) :
-                this.engine.generateEngine.bind(this.engine)),
-                                  drillInfo ? { action: drillInfo.action, drillInfo: drillInfo } : {
-                                      dataSourceSettings: dataSourceSettings, action: 'loadTableElements'
-                                  });
+            this.getTableCellData(
+                args, (
+                    this.isPaging && !refPaging ? this.engine.generatePagingData.bind(this.engine) :
+                        this.engine.generateEngine.bind(this.engine)
+                ), drillInfo ? {
+                    action: drillInfo.action, drillInfo: drillInfo
+                } : {
+                    dataSourceSettings: dataSourceSettings, action: 'loadTableElements'
+                }
+            );
         }
     }
     private static getTableCellData(args: ConnectionInfo, successMethod: Function, customArgs: object): void {
@@ -125,8 +128,9 @@ export class MDXQuery {
             throw this.engine.errorInfo;
         }
     }
-    public static frameMDXQuery(rowQuery: string, columnQuery: string, slicerQuery: string, filterQuery: string,
-                                caclQuery: string, refPaging?: boolean): string {
+    public static frameMDXQuery(
+        rowQuery: string, columnQuery: string, slicerQuery: string, filterQuery: string, caclQuery: string, refPaging?: boolean
+    ): string {
         let query: string = ((this.isPaging && !refPaging) ? caclQuery !== '' ? '' : '\nWITH' : '\nSelect ');
         if (columnQuery.length > 0) {
             query = query + columnQuery;
@@ -211,13 +215,14 @@ export class MDXQuery {
             const drillQueryObj: { query: string; collection: string[] } = this.getDrillQuery(dimensions, measureQuery, axis, drillInfo);
             query = (drillInfo && drillInfo.axis === axis ? '\nNON EMPTY ( ' + (this.drilledMembers.length > 0 ? 'HIERARCHIZE ({' : '') + drillQueryObj.query : query + (drillQueryObj.query !== '' ? ',' : '') + drillQueryObj.query);
             const drillQuery: string = this.getAttributeDrillQuery(dimensions, measureQuery, axis, drillInfo);
-            query = (this.valueAxis !== axis ? this.updateValueSortQuery(query, this.valueSortSettings) : query) +
-                (this.isPaging ? ((drillQuery !== '' ? '-' : '') + drillQuery) : '') + (this.drilledMembers.length > 0 ? '})' : '') + (!this.isPaging ? ((drillQuery !== '' ? '-' : '') + drillQuery) : '') + ')';
+            query = query + (this.isPaging ? ((drillQuery !== '' ? '-' : '') + drillQuery) : '') +
+                (this.drilledMembers.length > 0 ? '})' : '') + (!this.isPaging ? ((drillQuery !== '' ? '-' : '') + drillQuery) : '') + ')';
         }
         return query;
     }
-    private static getAttributeDrillQuery(dimensions: IFieldOptions[], measureQuery: string, axis: string,
-                                          drillInfo?: IDrilledItem): string {
+    private static getAttributeDrillQuery(
+        dimensions: IFieldOptions[], measureQuery: string, axis: string, drillInfo?: IDrilledItem
+    ): string {
         let query: string = '';
         let drilledMembers: IDrillOptions[] = [];
         if (drillInfo && drillInfo.axis === axis && drillInfo.action.toLowerCase() === 'down') {
@@ -248,9 +253,11 @@ export class MDXQuery {
                                 (dimensions[i as number].isNamedSet && this.fieldList[dimensions[i as number].name] && drillInfo[i as number].indexOf(this.fieldList[dimensions[i as number].name].pid.split('Sets_')[1]) !== -1))) {
                                 levelQuery.push(this.getHierarchyQuery(drillInfo[i as number], false, false, false, result.level, true));
                             } else if (!drillInfo[i as number] && dimensions[i as number]) {
-                                levelQuery.push(this.getHierarchyQuery(dimensions[i as number].name, ((this.isPaging && result.level === 2)
-                                 || (!this.isPaging && index > i) ? true : false), dimensions[i as number].isNamedSet,
-                                                                       dimensions[i as number].isCalculatedField, result.level, false));
+                                levelQuery.push(this.getHierarchyQuery(
+                                    dimensions[i as number].name, (
+                                        (this.isPaging && result.level === 2) || (!this.isPaging && index > i) ? true : false
+                                    ), dimensions[i as number].isNamedSet, dimensions[i as number].isCalculatedField, result.level, false
+                                ));
                             } else {
                                 levelQuery = [];
                                 break;
@@ -310,13 +317,15 @@ export class MDXQuery {
         }
         return { level: this.isPaging ? 2 : level, isDrill: isDrill };
     }
-    private static getHierarchyQuery(name: string, isChildren: boolean, isNamedSet: boolean,
-                                     isCalculatedField: boolean, level: number, isDrill: boolean): string {
+    private static getHierarchyQuery(
+        name: string, isChildren: boolean, isNamedSet: boolean, isCalculatedField: boolean, level: number, isDrill: boolean
+    ): string {
         name = isCalculatedField ? this.fieldList[name as string].tag : name;
         return ((this.fieldList[name as string] && !this.fieldList[name as string].hasAllMember && !isNamedSet && !isCalculatedField) ? '((' + name + ').levels(0).AllMembers)' : (isNamedSet || isCalculatedField) ? ('({' + name + '})') : this.isPaging ? ('({' + name) + (isChildren ? '.CHILDREN})' : (!isDrill && level === 1) ? '.[All]})' : '})') : ('({DrilldownLevel({' + name + (isChildren ? '.CHILDREN' : '') + '},,,INCLUDE_CALC_MEMBERS' + ')})'));
     }
-    private static isAttributeMemberExist(hierarchy: string, item: string[], delimiter: string,
-                                          drillInfo: string[], axis: string): boolean {
+    private static isAttributeMemberExist(
+        hierarchy: string, item: string[], delimiter: string, drillInfo: string[], axis: string
+    ): boolean {
         item.splice(drillInfo.length - 1, 1);
         let isAvailable: boolean = false;
         if (item.join(delimiter) !== '' && !(this.isPaging && item.length === 1 && item.join(delimiter) === '[Measures]') && this.engine.fieldList[hierarchy as string] && this.engine.fieldList[hierarchy as string].hasAllMember) {
@@ -343,8 +352,9 @@ export class MDXQuery {
         }
         return isAvailable;
     }
-    private static getDrillQuery(dimensions: IFieldOptions[], measureQuery: string, axis: string,
-                                 drillInfo?: IDrilledItem): { query: string; collection: string[] } {
+    private static getDrillQuery(
+        dimensions: IFieldOptions[], measureQuery: string, axis: string, drillInfo?: IDrilledItem
+    ): { query: string; collection: string[] } {
         let query: string = '';
         const rawDrillQuery: string[] = [];
         let drilledMembers: IDrillOptions[] = [];
@@ -439,29 +449,6 @@ export class MDXQuery {
             collection: (isOnDemandDrill ? [onDemandDrillQuery] : rawDrillQuery)
         };
         return queryCollection;
-    }
-    private static updateValueSortQuery(query: string, valueSortSettings: IValueSortSettings): string {
-        if (valueSortSettings && valueSortSettings.measure && valueSortSettings.measure !== '') {
-            const heirarchize: string = (this.drilledMembers.length > 0 ? 'HIERARCHIZE ({' : '');
-            const measure: string = (this.fieldList[valueSortSettings.measure] &&
-                this.fieldList[valueSortSettings.measure].isCalculatedField ?
-                this.fieldList[valueSortSettings.measure].tag : valueSortSettings.measure);
-            switch (valueSortSettings.sortOrder) {
-            case 'Ascending':
-                query = query.replace('NON EMPTY ( ' + heirarchize, 'NON EMPTY ( ' + heirarchize + ' ORDER ({');
-                query = query + '},(' + measure + '), ASC)';
-                // query = query + '},(' + valueSortSettings.measure + '), ' +
-                //     (valueSortSettings.preserveHierarchy ? 'BASC' : 'ASC') + ')';
-                break;
-            case 'Descending':
-                query = query.replace('NON EMPTY ( ' + heirarchize, 'NON EMPTY ( ' + heirarchize + ' ORDER ({');
-                query = query + '},(' + measure + '), DESC)';
-                // query = query + '},(' + valueSortSettings.measure + '), ' +
-                //     (valueSortSettings.preserveHierarchy ? 'BDESC' : 'DESC') + ')';
-                break;
-            }
-        }
-        return query;
     }
     public static getSlicersQuery(slicers: IFieldOptions[], axis: string): string {
         let query: string = '';
@@ -624,13 +611,15 @@ export class MDXQuery {
 
     private static getAdvancedFilterQuery(filterItem: IFilter, query: string, currentAxis: string): string {
         const filterQuery: string = '\nFROM (SELECT Filter(' + filterItem.selectedField + '.AllMembers, ' +
-            this.getAdvancedFilterCondtions(filterItem.name, filterItem.condition, filterItem.value1 as string,
-                                            filterItem.value2 as string, filterItem.type, filterItem.measure) +
-            ')) on ' + currentAxis;
+            this.getAdvancedFilterCondtions(
+                filterItem.name, filterItem.condition, filterItem.value1 as string, filterItem.value2 as string,
+                filterItem.type, filterItem.measure
+            ) + ')) on ' + currentAxis;
         return filterQuery;
     }
-    private static getAdvancedFilterCondtions(fieldName: string, filterOperator: Operators, value1: string, value2: string,
-                                              filterType: FilterType, measures: string): string {
+    private static getAdvancedFilterCondtions(
+        fieldName: string, filterOperator: Operators, value1: string, value2: string, filterType: FilterType, measures: string
+    ): string {
         let advancedFilterQuery: string = '';
         switch (filterOperator) {
         case 'Equals':  /* eslint-disable no-useless-escape */

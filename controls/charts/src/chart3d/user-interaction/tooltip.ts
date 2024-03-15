@@ -316,7 +316,7 @@ export class Tooltip3D extends BaseTooltip {
      * @returns {string} - The header for the tooltip.
      * @private
      */
-    private findHeader(data: Point3D): string {
+    public findHeader(data: Point3D): string {
         if (this.header === '') {
             return '';
         }
@@ -367,7 +367,7 @@ export class Tooltip3D extends BaseTooltip {
      * @returns {void}
      * @private
      */
-    private triggerTooltipRender(point: Point3D, isFirst: boolean, textCollection: string,
+    public triggerTooltipRender(point: Point3D, isFirst: boolean, textCollection: string,
                                  headerText: string): void {
         let tooltipTemplate: string;
         const argsData: Chart3DTooltipRenderEventArgs = {
@@ -508,7 +508,7 @@ export class Tooltip3D extends BaseTooltip {
      * @returns {string} - The tooltip text.
      * @private
      */
-    private getTooltipText(pointData: Point3D): string {
+    public getTooltipText(pointData: Point3D): string {
         return this.parseTemplate(pointData.point,
                                   pointData.series, this.getFormat(this.chart3D, pointData.series),
                                   pointData.series.xAxis, pointData.series.yAxis);

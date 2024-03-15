@@ -1,4 +1,4 @@
-import { Property, EventHandler, KeyboardEventArgs, isNullOrUndefined, detach } from '@syncfusion/ej2-base';import { Event, EmitType, Complex } from '@syncfusion/ej2-base';import { removeClass, attributes, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { dropDownListClasses } from '../drop-down-list/drop-down-list';import { ComboBox } from '../combo-box/combo-box';import { highlightSearch, revertHighlightSearch } from '../common/highlight-search';import { Search } from '../common/incremental-search';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { FieldSettings, FilteringEventArgs, FilterType, ResultData } from '../drop-down-base/drop-down-base';import { FloatLabelType, Input } from '@syncfusion/ej2-inputs';import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
+import { Property, EventHandler, KeyboardEventArgs, isNullOrUndefined, detach, getValue } from '@syncfusion/ej2-base';import { Event, EmitType, Complex } from '@syncfusion/ej2-base';import { removeClass, attributes, NotifyPropertyChanges } from '@syncfusion/ej2-base';import { dropDownListClasses } from '../drop-down-list/drop-down-list';import { ComboBox } from '../combo-box/combo-box';import { highlightSearch, revertHighlightSearch } from '../common/highlight-search';import { Search } from '../common/incremental-search';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { FieldSettings, FilteringEventArgs, FilterType, ResultData } from '../drop-down-base/drop-down-base';import { FloatLabelType, Input } from '@syncfusion/ej2-inputs';import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
 import {ComboBoxModel} from "../combo-box/combo-box-model";
 
 /**
@@ -135,6 +135,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * Not applicable to this component.
      *
      * @default null
+     * @aspType double
      * @private
      * @deprecated
      */
@@ -190,6 +191,7 @@ export interface AutoCompleteModel extends ComboBoxModel{
      * Not applicable to this component.
      *
      * @default null
+     * @aspType string
      * @private
      * @deprecated
      */

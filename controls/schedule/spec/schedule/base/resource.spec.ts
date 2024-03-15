@@ -7,7 +7,7 @@ import { DataManager } from '@syncfusion/ej2-data';
 import { Popup } from '@syncfusion/ej2-popups';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineYear,
-    ResourceDetails, EJ2Instance, ScheduleModel, TimelineViews, ActionEventArgs
+    ResourceDetails, EJ2Instance, ScheduleModel, TimelineViews, ActionEventArgs, ResourcesModel
 } from '../../../src/schedule/index';
 import { resourceData, resourceGroupData } from '../base/datasource.spec';
 import * as util from '../util.spec';
@@ -587,6 +587,72 @@ describe('Schedule Resources', () => {
         });
     });
 
+    describe('Testing setResourceCollection public method', () => {
+        let schObj: Schedule;
+        const resource: ResourcesModel[] = [{
+            field: 'OwnerId',
+            name: 'Owners',
+            dataSource: [
+                { text: 'Nancy', id: 1, color: '#df5286' },
+                { text: 'Steven', id: 2, color: '#7fa900' },
+                { text: 'Robert', id: 3, color: '#ea7a57' }
+            ],
+            textField: 'text', idField: 'id', colorField: 'color'
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2018, 3, 1),
+                group: {
+                    resources: ['Owners']
+                },
+                resources: [{
+                    field: 'OwnerId',
+                    name: 'Owners',
+                    dataSource: [
+                        { text: 'Alice', id: 1, color: '#df5286' },
+                        { text: 'Smith', id: 2, color: '#7fa900' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color'
+                }],
+                views: ['Day', 'WorkWeek', 'Month', 'Agenda'],
+                currentView: 'WorkWeek',
+                eventSettings: {
+                    dataSource: resourceData
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Set resource collection without refreshing events data source', () => {
+            expect(schObj.eventsData.length).toEqual(9);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
+            expect(schObj.resourceBase.lastResourceLevel.length).toEqual(2);
+            schObj.setResourceCollections(resource, false);
+        });
+
+        it('Set resource collection with refreshing events data source', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
+                expect(schObj.eventsData.length).toEqual(9);
+                expect(schObj.resourceBase.lastResourceLevel.length).toEqual(2);
+                done();
+            };
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+            expect(schObj.eventsData.length).toEqual(9);
+            expect(schObj.resourceBase.lastResourceLevel.length).toEqual(3);
+            resource[0].dataSource = [
+                { text: 'Nancy', id: 1, color: '#df5286' },
+                { text: 'Steven', id: 2, color: '#7fa900' }
+            ];
+            schObj.setResourceCollections(resource);
+        });
+    });
+
     describe('Add resources dynamically', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {
@@ -690,7 +756,7 @@ describe('Schedule Resources', () => {
                 headers: new Headers({
                     'Content-Type': 'application/json'
                 }),
-                statusText: 'Page not found',
+                statusText: 'Page not found'
             }));
             const model: ScheduleModel = {
                 selectedDate: new Date(2019, 11, 5),

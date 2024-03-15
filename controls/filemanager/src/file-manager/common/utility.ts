@@ -10,6 +10,36 @@ import { createDialog } from '../pop-up/dialog';
 import { ColumnModel } from '../models';
 
 /**
+ * Utility function to compare two strings in a way similar to Windows Explorer.
+ * Files and folders are sorted separately, with folders coming before files.
+ *
+ * @param {string} reference - The first string to compare. This could be a file or folder name.
+ * @param {string} comparer - The second string to compare. This could be a file or folder name.
+ * @returns {number} - A negative number if `reference` should come before `comparer`, a positive number if `comparer` should come before `reference`, and 0 if they are considered equal.
+ */
+export function sortComparer(reference: string, comparer:  string): number {
+    // Check if reference and comparer are files or folders
+    let referenceIsFile = /\.\S+/.test(reference);
+    let comparerIsFile = /\.\S+/.test(comparer);
+    // If one is a file and the other is a folder, the folder should come first
+    if (referenceIsFile && !comparerIsFile) return 1;
+    if (!referenceIsFile && comparerIsFile) return -1;
+    let referenceParts: Array<[number, string]> = [];
+    let comparerParts: Array<[number, string]> = [];
+    (reference + '').replace(/(\d+)|(\D+)/g, function(_, $1, $2) { referenceParts.push([$1 || Infinity, $2 || ""]); return ""; });
+    (comparer + '').replace(/(\d+)|(\D+)/g, function(_, $1, $2) { comparerParts.push([$1 || Infinity, $2 || ""]); return ""; });
+    // Compare each part of reference and comparer
+    while (referenceParts.length && comparerParts.length) {
+        let referencePart = referenceParts.shift();
+        let comparerPart = comparerParts.shift();
+        let comparisonResult =
+            referencePart![0] - comparerPart![0] ||
+            referencePart![1].localeCompare(comparerPart![1]);
+        if (comparisonResult) return comparisonResult;
+    }
+    return referenceParts.length - comparerParts.length;
+}
+/**
  * Utility file for common actions
  *
  * @param {HTMLLIElement} node - specifies the node.

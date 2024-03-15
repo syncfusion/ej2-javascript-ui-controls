@@ -5,17 +5,17 @@ import { Diagram } from "../diagram";
 import { AnnotationConstraints, HorizontalAlignment, TextAlign, TextDecoration, TextWrap, VerticalAlignment } from "../enum/enum";
 import { AnnotationModel } from "../objects/annotation-model";
 import { NodeModel } from "../objects/node-model";
-import { EJ1SerializationModule } from "./modelProperties";
+import { Ej1Serialization } from "./modelProperties";
 
 export class LabelProperties {
 
     private diagram: Diagram;
 
-    private modelProperties: EJ1SerializationModule;
+    private modelProperties: Ej1Serialization;
 
-   constructor(modelProperties: EJ1SerializationModule) {
-       this.modelProperties = modelProperties;
-   }
+    constructor(modelProperties: Ej1Serialization) {
+        this.modelProperties = modelProperties;
+    }
 
     //(EJ2-272287) Provide support to convert the EJ1 diagram to EJ2 diagram
     //Update and assign the annotation properties from EJ1 to EJ2

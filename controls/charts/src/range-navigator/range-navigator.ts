@@ -1141,10 +1141,12 @@ export class RangeNavigator extends Component<HTMLElement> {
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
         this.series.map((series: RangeNavigatorSeries) => {
-            modules.push({
-                member: series.type + 'Series',
-                args: [this]
-            });
+            if (series.type === 'Area' || series.type === 'StepLine') {
+                modules.push({
+                    member: series.type + 'Series',
+                    args: [this]
+                });
+            }
         });
         if (this.periodSelectorSettings.periods.length > 0) {
             modules.push({

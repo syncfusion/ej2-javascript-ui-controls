@@ -128,6 +128,17 @@ export class Timeline {
     public processZooming(isZoomIn: boolean): void {
         this.isZoomToFit = false;
         this.isZoomedToFit = false;
+        const action: string = isZoomIn ? "ZoomIn" : 'ZoomOut';
+        if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent'](action)) {
+            if (this.parent.undoRedoModule['redoEnabled']) {
+                this.parent.undoRedoModule['disableRedo']();
+            }
+            this.parent.undoRedoModule['createUndoCollection']();
+            let previousTimeline: Object = {};
+            previousTimeline['action'] = action;
+            previousTimeline['previousZoomingLevel'] = extend({}, {}, this.parent.currentZoomingLevel, true);
+            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = previousTimeline;
+        }
         if(!this.parent['isProjectDateUpdated']){
             this.parent.dateValidationModule.calculateProjectDates();
         }
@@ -253,6 +264,18 @@ export class Timeline {
         this.isZoomToFit = true;
         this.isZooming = false;
         this.isZoomedToFit = true;
+        let previousTimeline: Object = {};
+        if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent['isUndoRedoItemPresent']('ZoomToFit')) {
+            if (this.parent.undoRedoModule['redoEnabled']) {
+                this.parent.undoRedoModule['disableRedo']();
+            }
+            this.parent.undoRedoModule['createUndoCollection']();
+            previousTimeline['action'] = 'ZoomToFit';
+            previousTimeline['previousTimelineStartDate'] = extend([], [], [this.parent.cloneProjectStartDate], true)[0];
+            previousTimeline['previousTimelineEndDate'] = extend([], [], [this.parent.cloneProjectEndDate], true)[0];
+            previousTimeline['previousZoomingLevel'] = extend({}, {}, this.parent.currentZoomingLevel, true);
+            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = previousTimeline;
+        }
         if (!this.parent.zoomingProjectStartDate) {
             this.parent.zoomingProjectStartDate = this.parent.cloneProjectStartDate;
             this.parent.zoomingProjectEndDate = this.parent.cloneProjectEndDate;

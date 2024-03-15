@@ -67,7 +67,7 @@ export class TableCommand {
         e.item.selection.restore();
         InsertHtml.Insert(this.parent.currentDocument, table, this.parent.editableElement);
         e.item.selection.setSelectionText(this.parent.currentDocument, table.querySelector('td'), table.querySelector('td'), 0, 0);
-        if (table.nextElementSibling === null) {
+        if (table.nextElementSibling === null && !table.classList.contains('ignore-table')) {
             let insertElem: HTMLElement;
             if (e.enterAction === 'DIV') {
                 insertElem = createElement('div');
@@ -79,6 +79,9 @@ export class TableCommand {
                 insertElem.appendChild(createElement('br'));
             }
             this.insertAfter(insertElem, table);
+        }
+        if (table.classList.contains('ignore-table')) {
+            table.classList.remove('ignore-table');
         }
         table.querySelector('td').classList.add('e-cell-select');
         if (e.callBack) {
@@ -506,10 +509,22 @@ export class TableCommand {
             (firstCell as HTMLElement).setAttribute('rowspan', (minMaxIndexes.endRow - minMaxIndexes.startRow + 1).toString());
         }
         let totalWidth: number = 0;
+        let unit: string;
         for (let j: number = rowSelectedCells.length - 1; j >= 0; j--) {
-            totalWidth = totalWidth + parseFloat((rowSelectedCells[j as number] as HTMLElement).style.width);
+            if (!isNOU((rowSelectedCells[j as number] as HTMLElement).style.width)
+                && (rowSelectedCells[j as number] as HTMLElement).style.width !== '') {
+                if (!unit) {
+                    const match = rowSelectedCells[j as number].style.width.match(/^([\d.]+)([a-z%]+)$/i);
+                    unit = match ? match[2] : '%';
+                }
+                totalWidth = totalWidth + parseFloat((rowSelectedCells[j as number] as HTMLElement).style.width);
+            }
+            else {
+                totalWidth = totalWidth + (((rowSelectedCells[j as number] as HTMLElement).offsetWidth / this.curTable.offsetWidth) * 100);
+                unit = '%';
+            }
         }
-        (firstCell as HTMLElement).style.width = totalWidth + '%';
+        (firstCell as HTMLElement).style.width = totalWidth + unit;
 
         for (let i: number = 1; i <= selectedCells.length - 1; i++) {
             detach(selectedCells[i as number]);

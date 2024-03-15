@@ -260,6 +260,10 @@
       @if ($skin-name == 'bootstrap5') {
         border-bottom: 1px solid $field-list-border;
       }
+
+      .e-dlg-header {
+        overflow: visible;
+      }
     }
 
     .e-footer-content {
@@ -372,7 +376,6 @@
           @if ($skin-name == 'FluentUI') {
             .e-sort-none {
               padding-right: 2px !important;
-              transform: rotate(90deg);
             }
           }
           /* stylelint-enable */

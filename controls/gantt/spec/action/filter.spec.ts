@@ -491,6 +491,7 @@ describe('Gantt filter support', () => {
                         child: 'subtasks',
                     },
                     columns: [
+                        { field: 'TaskID', visible: false },
                         {
                             field: 'TaskName',
                             headerText: 'Task Name',
@@ -623,6 +624,7 @@ describe('Gantt filter support', () => {
                         child: 'subtasks',
                     },
                     columns: [
+                        { field: 'TaskID', visible: false },
                         {
                             field: 'TaskName',
                             headerText: 'Task Name',

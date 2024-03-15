@@ -1,16 +1,103 @@
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
-import { PdfPage } from './pdf-page';
-import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlightMode, PdfBorderStyle, PdfBorderEffectStyle, PdfLineEndingStyle, _PdfCheckFieldState, PdfMeasurementUnit, _PdfGraphicsUnit, PdfTextMarkupAnnotationType, PdfRotationAngle, PdfAnnotationState, PdfAnnotationStateModel, PdfPopupIcon, PdfRubberStampAnnotationIcon, PdfAttachmentIcon, PdfAnnotationIntent, PdfBlendMode, _PdfAnnotationType } from './enumerator';
+import { PdfDestination, PdfPage } from './pdf-page';
+import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlightMode, PdfBorderStyle, PdfBorderEffectStyle, PdfLineEndingStyle, _PdfCheckFieldState, PdfMeasurementUnit, _PdfGraphicsUnit, PdfTextMarkupAnnotationType, PdfRotationAngle, PdfAnnotationState, PdfAnnotationStateModel, PdfPopupIcon, PdfRubberStampAnnotationIcon, PdfAttachmentIcon, PdfAnnotationIntent, PdfBlendMode, _PdfAnnotationType, PdfDestinationMode } from './enumerator';
 import { _PdfTransformationMatrix } from './graphics/pdf-graphics';
-import { PdfDocument } from './pdf-document';
+import { PdfDocument, PdfPageSettings } from './pdf-document';
 import { _PdfBaseStream, _PdfStream } from './base-stream';
-import { PdfStateItem, PdfComment, PdfWidgetAnnotation, PdfAnnotation } from './annotations/annotation';
+import { PdfStateItem, PdfComment, PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation } from './annotations/annotation';
 import { PdfPopupAnnotationCollection } from './annotations/annotation-collection';
 import { PdfTemplate } from './graphics/pdf-template';
 import { PdfField } from './form/field';
 import { PdfCjkFontFamily, PdfCjkStandardFont, PdfFont, PdfFontFamily, PdfFontStyle, PdfStandardFont, PdfTrueTypeFont } from './fonts/pdf-standard-font';
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { PdfForm } from './form';
+import { _ImageDecoder } from './graphics/images/image-decoder';
+import { _JpegDecoder } from './graphics/images/jpeg-decoder';
+import { _PngDecoder } from './graphics/images/png-decoder';
+/**
+ * Gets the unsigned value.
+ *
+ * @param {number} value input value.
+ * @param {number} bits bits to process.
+ * @returns {number} unsigned value.
+ */
+export function _toUnsigned(value: number, bits: number): number {
+    return (value & ((2 ** bits) - 1));
+}
+/**
+ * Gets the signed 16 bit value.
+ *
+ * @param {number} value input value.
+ * @returns {number} unsigned value.
+ */
+export function _toSigned16(value: number): number {
+    return (value << 16) >> 16;
+}
+/**
+ * Gets the signed 32 bit value.
+ *
+ * @param {number} value input value.
+ * @returns {number} unsigned value.
+ */
+export function _toSigned32(value: number): number {
+    return (value << 0);
+}
+/**
+ * Copy values from one array to another.
+ *
+ * @param {number[]} target destination array.
+ * @param {number} at target index.
+ * @param {number[]} source source array.
+ * @param {number} start start index.
+ * @param {number} end end index.
+ * @returns {void} Returns nothing.
+ */
+export function _copyRange(target: number[], at: number, source: number[], start?: number, end?: number): void {
+    if (start === null || typeof start === 'undefined') {
+        start = 0;
+    }
+    end = (typeof end === 'undefined') ? source.length : end;
+    start = Math.max(0, Math.min(source.length, start));
+    end = Math.max(0, Math.min(source.length, end));
+    if (at + (end - start) > target.length) {
+        target.length = at + (end - start);
+    }
+    for (let i: number = start, j: number = at; i < end; i++, j++) {
+        target[Number.parseInt(j.toString(), 10)] = source[Number.parseInt(i.toString(), 10)];
+    }
+}
+/**
+ * Checks the type of the image using header bytes.
+ *
+ * @param {Uint8Array} imageData image data.
+ * @param {number[]} header header bytes.
+ * @returns {boolean} Header matched or not.
+ */
+export function _checkType(imageData: Uint8Array, header: number[]): boolean {
+    for (let i: number = 0; i < header.length; i++) {
+        if (header[Number.parseInt(i.toString(), 10)] !== imageData[Number.parseInt(i.toString(), 10)]) {
+            return false;
+        }
+    }
+    return true;
+}
+/**
+ * Gets the image decoder.
+ *
+ * @param {Uint8Array} imageData image data.
+ * @returns {_ImageDecoder} Image decoder.
+ */
+export function _getDecoder(imageData: Uint8Array): _ImageDecoder {
+    let decoder: _ImageDecoder;
+    if (_checkType(imageData, [255, 216])) {
+        decoder = new _JpegDecoder(imageData);
+    } else if (_checkType(imageData, [137, 80, 78, 71, 13, 10, 26, 10])) {
+        decoder = new _PngDecoder(imageData);
+    } else {
+        throw new Error('Unsupported image format');
+    }
+    return decoder;
+}
 /**
  * Gets the page rotation.
  *
@@ -1679,13 +1766,20 @@ export function _getColorValue(colorName: string): number[] {
  * @param {number} angle Angle value.
  * @returns {void} Nothing.
  */
-export function _setMatrix(template: PdfTemplate, angle?: PdfRotationAngle): void {
+export function _setMatrix(template: PdfTemplate, angle?: number): void {
     const box: number[] = template._content.dictionary.getArray('BBox');
     if (box && typeof angle !== 'undefined' && angle !== null) {
         if (angle === 0) {
             template._content.dictionary.set('Matrix', [1, 0, 0, 1, -box[0], -box[1]]);
         } else {
             const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
+            if (angle === 90) {
+                matrix._translate(box[3], -box[0]);
+            } else if (angle === 180) {
+                matrix._translate(box[2], box[3]);
+            } else if (angle === 270) {
+                matrix._translate(-box[1], box[2]);
+            }
             matrix._rotate(angle);
             template._content.dictionary.set('Matrix', matrix._matrix._elements);
         }
@@ -1875,57 +1969,75 @@ export function _mapRubberStampIcon(iconString: string): PdfRubberStampAnnotatio
     let icon: PdfRubberStampAnnotationIcon;
     switch (iconString) {
     case '#Approved':
+    case 'SBApproved':
         icon = PdfRubberStampAnnotationIcon.approved;
         break;
     case '#AsIs':
+    case 'SBAsIs':
         icon = PdfRubberStampAnnotationIcon.asIs;
         break;
     case '#Completed':
+    case 'SBCompleted':
         icon = PdfRubberStampAnnotationIcon.completed;
         break;
     case '#Confidential':
+    case 'SBConfidential':
         icon = PdfRubberStampAnnotationIcon.confidential;
         break;
     case '#Departmental':
+    case 'SBDepartmental':
         icon = PdfRubberStampAnnotationIcon.departmental;
         break;
     case '#Draft':
+    case 'SBDraft':
         icon = PdfRubberStampAnnotationIcon.draft;
         break;
     case '#Experimental':
+    case 'SBExperimental':
         icon = PdfRubberStampAnnotationIcon.experimental;
         break;
     case '#Expired':
+    case 'SBExpired':
         icon = PdfRubberStampAnnotationIcon.expired;
         break;
     case '#Final':
+    case 'SBFinal':
         icon = PdfRubberStampAnnotationIcon.final;
         break;
     case '#ForComment':
+    case 'SBForComment':
         icon = PdfRubberStampAnnotationIcon.forComment;
         break;
     case '#ForPublicRelease':
+    case 'SBForPublicRelease':
         icon = PdfRubberStampAnnotationIcon.forPublicRelease;
         break;
     case '#InformationOnly':
+    case 'SBInformationOnly':
         icon = PdfRubberStampAnnotationIcon.informationOnly;
         break;
     case '#NotApproved':
+    case 'SBNotApproved':
         icon = PdfRubberStampAnnotationIcon.notApproved;
         break;
     case '#NotForPublicRelease':
+    case 'SBNotForPublicRelease':
         icon = PdfRubberStampAnnotationIcon.notForPublicRelease;
         break;
     case '#PreliminaryResults':
+    case 'SBPreliminaryResults':
         icon = PdfRubberStampAnnotationIcon.preliminaryResults;
         break;
     case '#Sold':
+    case 'SBSold':
         icon = PdfRubberStampAnnotationIcon.sold;
         break;
     case '#TopSecret':
+    case 'SBTopSecret':
         icon = PdfRubberStampAnnotationIcon.topSecret;
         break;
     case '#Void':
+    case 'SBVoid':
         icon = PdfRubberStampAnnotationIcon.void;
         break;
     default:
@@ -3440,6 +3552,9 @@ export function _mapFont(name: string, size: number, style: PdfFontStyle, annota
     if (fontFamily.includes('-')) {
         fontFamily = fontFamily.substring(0, fontFamily.indexOf('-'));
     }
+    if (typeof size === 'undefined' && annotation instanceof PdfLineAnnotation && annotation._isLoaded) {
+        size = 10;
+    }
     const fontSize: number = typeof size !== 'undefined' ? size : 1;
     if (annotation._dictionary.has('DS') || annotation._dictionary.has('DA')) {
         switch (fontFamily) {
@@ -3572,4 +3687,187 @@ export function _checkInkPoints(inkPointsCollection: Array<number[]>, previousCo
         }
     }
     return true;
+}
+/**
+ * Gets the Destination.
+ *
+ * @param {_PdfDictionary} dictionary widget dictionary.
+ * @param {string} key bookmark or action dictionary key.
+ * @returns {PdfDestination} destination.
+ */
+export function _obtainDestination(dictionary: _PdfDictionary, key: string): PdfDestination {
+    let page: PdfPage;
+    let destination: PdfDestination;
+    if (dictionary) {
+        let destinationArray: any[]; // eslint-disable-line
+        if (dictionary.has(key)) {
+            destinationArray = dictionary.getArray(key);
+        }
+        const loadedDocument: PdfDocument = dictionary._crossReference._document;
+        let mode: _PdfName;
+        if (destinationArray && Array.isArray(destinationArray) && destinationArray.length > 0) {
+            const value: any = destinationArray[0]; // eslint-disable-line
+            let left: number;
+            let height: number;
+            let bottom: number;
+            let right: number;
+            let zoom: number;
+            if (typeof value === 'number') {
+                const pageNumber: number = destinationArray[0];
+                if (pageNumber >= 0) {
+                    const document: PdfDocument = dictionary._crossReference._document;
+                    if (document && document.pageCount > pageNumber) {
+                        page = document.getPage(pageNumber);
+                    }
+                    if (destinationArray.length > 1) {
+                        mode = destinationArray[1];
+                    }
+                    if (mode && mode.name === 'XYZ') {
+                        if (destinationArray.length > 2) {
+                            left = destinationArray[2];
+                        }
+                        if (destinationArray.length > 3) {
+                            height = destinationArray[3];
+                        }
+                        if (destinationArray.length > 4) {
+                            zoom = destinationArray[4];
+                        }
+                        if (page) {
+                            const topValue: number = (height === null || typeof height === 'undefined') ? 0 : page.size[1] - height;
+                            const leftValue: number = (left === null || typeof left === 'undefined') ? 0 : left;
+                            if (page.rotation !== PdfRotationAngle.angle0) {
+                                _checkRotation(page, height, left);
+                            }
+                            destination = new PdfDestination(page, [leftValue, topValue]);
+                            destination._index = pageNumber;
+                            destination.zoom = (typeof zoom !== 'undefined' && zoom !== null) ? zoom : 0;
+                            if (left === null || height === null || zoom === null || typeof left === 'undefined'
+                                 || typeof height === 'undefined' || typeof zoom === 'undefined') {
+                                destination._setValidation(false);
+                            }
+                        }
+                    }
+                }
+            }
+            if (value instanceof _PdfDictionary) {
+                const pageDictionary: _PdfDictionary = value;
+                let index: number;
+                if (loadedDocument && pageDictionary) {
+                    index = _getPageIndex(loadedDocument, pageDictionary);
+                }
+                if (typeof index !== 'undefined' && index !== null && index >= 0) {
+                    page = loadedDocument.getPage(index);
+                }
+                if (destinationArray.length > 1) {
+                    mode = destinationArray[1];
+                }
+                if (mode) {
+                    if (mode.name === 'XYZ') {
+                        if (destinationArray.length > 2) {
+                            left = destinationArray[2];
+                        }
+                        if (destinationArray.length > 3) {
+                            height = destinationArray[3] as number;
+                        }
+                        if (destinationArray.length > 4) {
+                            zoom = destinationArray[4];
+                        }
+                        if (page) {
+                            let topValue: number = (height === null || typeof height === 'undefined') ? 0 : page.size[1] - height;
+                            const leftValue: number = (left === null || typeof left === 'undefined') ? 0 : left;
+                            if (page.rotation !== PdfRotationAngle.angle0) {
+                                topValue = _checkRotation(page, height, left);
+                            }
+                            destination = new PdfDestination(page, [leftValue, topValue]);
+                            destination._index = index;
+                            destination.zoom = (typeof zoom !== 'undefined' && zoom !== null) ? zoom : 0;
+                            if (left === null || height === null || zoom === null || typeof left === 'undefined' ||
+                                 typeof height === 'undefined' || typeof zoom === 'undefined') {
+                                destination._setValidation(false);
+                            }
+                        }
+                    } else {
+                        if (mode.name === 'FitR') {
+                            if (destinationArray.length > 2) {
+                                left = destinationArray[2];
+                            }
+                            if (destinationArray.length > 3) {
+                                bottom = destinationArray[3];
+                            }
+                            if (destinationArray.length > 4) {
+                                right = destinationArray[4];
+                            }
+                            if (destinationArray.length > 5) {
+                                height = destinationArray[5];
+                            }
+                            if (page) {
+                                left = (left === null || typeof left === 'undefined') ? 0 : left;
+                                bottom = (bottom === null || typeof bottom === 'undefined') ? 0 : bottom;
+                                height = (height === null || typeof height === 'undefined') ? 0 : height;
+                                right = (right === null || typeof right === 'undefined') ? 0 : right;
+                                destination = new PdfDestination(page, [left, bottom, right, height]);
+                                destination._index = index;
+                                destination.mode = PdfDestinationMode.fitR;
+                            }
+                        } else if (mode.name === 'FitBH' || mode.name === 'FitH') {
+                            if (destinationArray.length >= 3) {
+                                height = destinationArray[2];
+                            }
+                            if (typeof index !== 'undefined' && index !== null && index >= 0) {
+                                page = loadedDocument.getPage(index);
+                            }
+                            if (page && page.size) {
+                                const topValue: number = (height === null || typeof height === 'undefined') ? 0 : page.size[1] - height;
+                                destination = new PdfDestination(page, [0, topValue]);
+                                destination._index = index;
+                                destination.mode = PdfDestinationMode.fitH;
+                                if (height === null || typeof height === 'undefined') {
+                                    destination._setValidation(false);
+                                }
+                            }
+                        } else {
+                            if (page && mode.name === 'Fit') {
+                                destination = new PdfDestination(page);
+                                destination._index = index;
+                                destination.mode = PdfDestinationMode.fitToPage;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return destination;
+}
+/**
+ * Update the annotation bounds.
+ *
+ * @param {PdfAnnotation} annotation annotation.
+ * @param {number[]} bounds annotation bounds.
+ * @returns {number[]} bounds.
+ */
+export function _updateBounds(annotation: PdfAnnotation, bounds?: number[]): number[] {
+    if (bounds) {
+        annotation._bounds = {x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3]};
+    }
+    let rect: number[];
+    if (annotation._page && annotation.bounds) {
+        rect = [annotation.bounds.x, annotation.bounds.y + annotation.bounds.height,
+            annotation.bounds.width, annotation.bounds.height];
+        if (annotation._page._isNew && annotation._page._pageSettings) {
+            const pageSettings: PdfPageSettings = annotation._page._pageSettings;
+            const pageBounds: number[] = [pageSettings.margins.left, pageSettings.margins.top, pageSettings.size[0] -
+                (pageSettings.margins.left + pageSettings.margins.right),
+            pageSettings.size[1] - (pageSettings.margins.top + pageSettings.margins.bottom)];
+            rect[0] += pageBounds[0];
+            rect[1] = pageSettings.size[1] - (pageBounds[1] + rect[1]);
+        } else {
+            rect = [annotation.bounds.x,
+                annotation._page.size[1] - (annotation.bounds.y + annotation.bounds.height),
+                annotation.bounds.width,
+                annotation.bounds.height];
+        }
+        return [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]];
+    }
+    return rect;
 }

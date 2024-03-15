@@ -2,31 +2,19 @@
 
 ## [Unreleased]
 
-## 24.2.9 (2024-03-06)
+## 25.1.35 (2024-03-15)
 
 ### Spreadsheet
 
 #### Bug fixes
 
-- `#I870831` - Issue with "formula calculation with defined name does not work as expected when adding the defined name using public method" has been resolved.
+- `#I549016` - Issue with "script error occurs when inserting multiple images into a single active cell and performing delete an action" has been resolved.
 
-## 24.2.8 (2024-02-27)
+#### Features
 
-### Spreadsheet
+- `#I369726` - Now, provided support for accepting the culture-based argument separator in the formula.
 
-#### Bug fixes
-
-- `#I870021` - Issue with "`cellEditing` event is not triggered when you focus the cell and press the backspace key" has been resolved.
-
-- `#I870519` - Issue with "cell values are updated directly from the data source before being converted to formatted values" has been resolved.
-
-## 24.2.4 (2024-02-06)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-- Issue with "formula returns the wrong result when performing an arithmetic expression with a negative sign" has been resolved.
+- `#I369726` - Now, provided support to pass numeric values with culture-based decimal separators as arguments to the formulas.
 
 ## 24.1.41 (2023-12-18)
 

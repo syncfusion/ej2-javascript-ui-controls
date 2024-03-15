@@ -6,7 +6,7 @@ import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, c
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
 import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, applyProtect } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale, removeHyperlink } from '../common/index';
-import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel, SortCollectionModel } from '../../workbook/common/index';
+import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel, SortCollectionModel} from '../../workbook/common/index';
 import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndex, moveSheet, duplicateSheet, hideShow } from '../../workbook/index';
 import { toggleProtect } from '../common/index';
 

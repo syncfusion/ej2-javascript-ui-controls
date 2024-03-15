@@ -2,121 +2,18 @@
 
 ## [Unreleased]
 
-## 24.2.9 (2024-03-06)
+## 25.1.35 (2024-03-15)
 
 ### Grid
 
-#### Bug fixes
+#### Features
 
-- `#I546749`, `#I551015` - The issue in column reordering with frozen column and `enablePersistence` has been resolved.
-- `#I545290` - Resolved the script error in the lazy load grouping with infinite scrolling.
-- `#I553601` - Fixed the issue where the grid's edit type as `datepicker` with enable mask for date column was not being applied.
-- `#I553142` - Edited Cells are misalignment when show/hide the `childGrid` issue has been resolved.
-- `#FB51346` - Resolved an issue where the column width auto is not working properly with the freeze and resize features.
-
-## 24.2.8 (2024-02-27)
-
-### Grid
-
-#### Bug fixes
-
-- `#I550034` - Resolved an issue where printing is not work properly in grid with aggregation and grouping.
-- `#I536128` - Horizontal scrollbar appear when set column width to `auto` issue has been resolved.
-- `#I555494` - Fixed an issue where the `EllipsisWithTooltip` feature does not work correctly.
-- `#I552236` - The issue of encountering a script error when editing a grid with virtual scrolling and a column without a field name has been fixed.
-
-## 24.2.7 (2024-02-20)
-
-### Grid
-
-#### Bug fixes
-
-- `#I547707` - Resolved a script error occurring when collapsing a grouped row along with `virtualization` while the grid is in edited state.
-- `#FB50079` - Fixed the issue where scrolling with the Up arrow in virtual scroll caused the focus to leave and enter the column header.
-- `#FB50364` - Fixed an accessibility issue with row checkboxes identified by the Accessibility Insights for Web tool.
-- `#I549898` - Fixed the issue where the shimmer loader was visible outside of the grid.
-- `#I525457` - Resolved the issue where navigation through the down arrow key suddenly changed its position to the bottom of the table.
-- `#I547895` - Fixed the issue where the save action was not performed when clicking outside the dropdown.
-
-## 24.2.5 (2024-02-13)
-
-### Grid
-
-#### Bug fixes
-
-- `#I545865` - Resolved the issue where the grid aggregate value was not updating correctly after filtering and editing.
-- `#I545552` - The Excel filter is not displaying the advanced filtering sub menu items when selecting number/text/date filtering options on mobile and tablet devices.
-- `#F186229` - The issue where the toolbar search text box couldn't be focused when the grid is rendered inside a dialog has been resolved.
-- `#I550243` - Fixed the problem of recursive triggering of the `actionBegin` event when changing the page size from the second page.
-- `#SF543888` - Fixed the issue where `groupSettings` were not updated properly when cancelling a group action using `args.cancel` in the `actionBegin` event.
-
-## 24.2.4 (2024-02-06)
-
-### Grid
-
-#### Bug fixes
-
-- `#FB48959` - Empty grid message does not display correctly when drag and drop is enabled issue has been resolved.
-- `#FB50056` - Aggregates not working properly when Exporting Grid with custom dataSource issue has been resolved.
-- `#I538079` - The alignment issue with the frozen grid while using EJ compatibility CSS has been resolved.
-
-## 24.2.3 (2024-01-31)
-
-### Grid
-
-#### Bug fixes
-
-- `#FB49514` - Resolved the issue where the entire page was reloading on Command Column button actions in grid with remote data.
-- `#I537973` - Fixed the issue where the clear icon of the search bar was displayed when clicking outside the grid.
-- `#I532462` - Resolved the problem with focus and keyboard traversal in the `checkbox filter popup` elements and `filter menu` elements.
-
-## 24.1.47 (2024-01-23)
-
-### Grid
-
-#### Bug fixes
-
-- `#I539223` - The issue with `ellipsisWithTooltip` not working properly in the Adaptive view has been resolved.
-
-## 24.1.46 (2024-01-17)
-
-### Grid
-
-#### Bug fixes
-
-- `#FB49473` - Resolved the issue where preventing checkbox selection by setting `isSelectable` property to false was not effective when using a column template in the grid.
-
-## 24.1.45 (2024-01-09)
-
-### Grid
-
-#### Bug fixes
-
-- `#FB49340` - Fixed an issue that occurred when resizing columns in the grid with stacked headers.
-- `#I520335` - Resolved an issue regarding incorrect `filterBeforeOpen requestType` naming and updated the `options` property scope as public within the `actionBegin` event argument when opening the filter menu.
-- `#I533690` - Script error thrown when clicking the cancel button in batch edit has been fixed.
-- `#FB49544` - The problem with `persistSelection` in custom data binding has been successfully resolved.
-- `#FB49437` - Auto suggestion not working when using the right click paste issue has been fixed.
-
-## 24.1.44 (2024-01-03)
-
-### Grid
-
-#### Bug fixes
-
-- `#I527253` - The issue of displaying data in date format when it's provided as a string for the string column in the grid has been resolved.
-- `#I525816` - The problem of losing focus in the Grid when scrolling down using the down arrow key while focusing on the template has been resolved.
-- `#I525124` - The issue where Datamanager arguments were null when unchecking 15 or more items in the filter dialog has been resolved.
-- `#I528688` - Fixed an issue with keyboard navigation when the grid contains hidden columns.
-
-## 24.1.43 (2023-12-27)
-
-### Grid
-
-#### Bug fixes
-
-- `F185807` - The programmatic removal of frozen columns is now working properly.
-- `I531641` - The issue where column width was being modified when resizing the grid containing frozen columns has been resolved.
+- `#I512834` - The `autoFitColumns` method has been improved to provide more precise adjustments to column widths. This update allows you to adjust column widths based on the maximum content width within a specified range of rows or header content. Additionally, two new optional parameters have been introduced in `autoFitColumns`- `startRowIndex` to specify the starting index for content rows and `endRowIndex` to specify the ending index.
+- `#I311297` - The Grid now includes a "show add new row" feature during inline editing. This feature ensures that a blank row is constantly visible within the grid content, facilitating the easy insertion of new records. Explore the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/grid/normal-editing.html).
+- `#I280166` - The enhancement of the Grid frozen row and column feature improves compatibility with enabling the row span and column span functionality. Now, you can merge rows and cells when the same value is present within frozen table rows and cells, or within movable table rows and cells. Explore the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/grid/row-spanning.html) for spanned row and for spanned column [here](https://ej2.syncfusion.com/demos/#/bootstrap5/grid/column-spanning.html).
+- `#I515873` - When dragging the autofill icon from selected cells to desired cells, the grid now automatically scrolls its content both vertically and horizontally, adjusting according to the direction of your drag.
+- `#I335199` - The Grid Infinite scrolling feature enhances the compatibility of the row drag and drop feature.
+- `#F47784` - The improvement made to the grid's infinite scrolling feature enhances its compatibility with the column `virtualization` functionality. This feature ensures optimal performance by effectively displaying multiple columns within infinite scrolling with large datasets, without experiencing any degradation in performance. Explore the demo [here](https://ej2.syncfusion.com/demos/#/bootstrap5/grid/infinite-scrolling.html).
 
 ## 24.1.41 (2023-12-18)
 

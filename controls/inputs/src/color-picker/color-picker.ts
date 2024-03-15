@@ -412,7 +412,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         if (this.cssClass) {
             addClass([popupEle], this.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !this.createPopupOnClick) {
             const popupInst: Popup = this.getPopupInst();
             popupInst.relateTo = document.body;
             popupInst.position = { X: 'center', Y: 'center' };
@@ -453,6 +453,15 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                     this.createWidget();
                     popupEle.style.display = '';
                     if (Browser.isDevice) {
+                        if (this.createPopupOnClick) {
+                            const popupInst: Popup = this.getPopupInst();
+                            popupInst.relateTo = document.body;
+                            popupInst.position = { X: 'center', Y: 'center' };
+                            popupInst.targetType = 'container';
+                            popupInst.collision = { X: 'fit', Y: 'fit' };
+                            popupInst.offsetY = 4;
+                            popupEle.style.zIndex = getZindexPartial(this.splitBtn.element).toString();
+                        }
                         this.modal = this.createElement('div');
                         this.modal.className = 'e-' + this.getModuleName() + ' e-modal';
                         this.modal.style.display = 'none';

@@ -437,8 +437,8 @@ export class CheckBoxFilterBase {
                 clearReactVueTemplates(this.parent, ['filterItemTemplate']);
             }
             this.parent.notify(events.filterMenuClose, { field: this.options.field });
-            this.dialogObj.destroy();
             this.unWireEvents();
+            this.dialogObj.destroy();
             remove(this.dlg);
             this.dlg = null;
             this.parent.notify(events.filterDialogClose, {});

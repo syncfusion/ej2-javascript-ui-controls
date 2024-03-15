@@ -526,7 +526,7 @@ describe('Diagram Control', () => {
                 mouseEvents.mouseUpEvent(diagramCanvas, x + diagram.element.offsetLeft, y + diagram.element.offsetTop);
                 node = document.getElementById('Order');
                 bounds = node.getBoundingClientRect();
-                expect(diagram.nameTable["Order"].parentId != "swimlanestackCanvas21").toBe(true);
+                expect(diagram.nameTable["Order"].parentId === "swimlanestackCanvas21").toBe(true);
                 done();
             }, 1000);
         });

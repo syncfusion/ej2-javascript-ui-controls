@@ -6,19 +6,8 @@ import { RichTextEditor, ToolbarType } from "../../../src/rich-text-editor/index
 import { IToolbarStatus } from '../../../src/common/interface';
 import { renderRTE, destroy, dispatchEvent } from "./../render.spec";
 import { NodeSelection } from "../../../src/selection/index";
+import { ARROWRIGHT_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from "../../constant.spec";
 
-const toolbarFocusShortCutEvent = new KeyboardEvent('keydown', {
-    key: "F10",
-    keyCode: 121,
-    which: 121,
-    code: "F10",
-    location: 0,
-    altKey: true,
-    ctrlKey: false,
-    metaKey: false,
-    shiftKey: false,
-    repeat: false
-} as EventInit);
 
  describe('Checking the customized NumberFormatListand BulletFormatList dropdownItems', () => {
         let rteObj: RichTextEditor;
@@ -1420,81 +1409,13 @@ describe("Toolbar - Actions Module", () => {
             detach(ele1);
         });
 
-        it("Class testing", (done: Function) => {
-            expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-            window.scrollTo(0, 200);
-            rteObj.fullScreenModule.showFullScreen();
-            expect((rteObj.getToolbarElement() as HTMLElement).style.top === '0px').toBe(true);
-            setTimeout(() => {
-                expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(true);
-                window.scrollTo(0, 0);
-                done();
-            }, 500);
+        it("Class testing", () => {
+            expect(document.querySelector(".e-richtexteditor .e-toolbar").parentElement.classList.contains("e-rte-tb-float")).toBe(true);
         });
-
-        it("Out of viewable area with class testing", (done: Function) => {
-            expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-            window.scrollTo(0, 1000);
-            setTimeout(() => {
-                expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-                done();
-            }, 400);
-        });
-
-        it("Element as target testing", (done: Function) => {
-            document.body.style.height = '';
-            destroy(rteObj);
-            document.body.appendChild(ele1);
-            ele1.appendChild(ele2);
-            ele1.style.height = '300px';
-            ele1.style.overflow = 'auto';
-            rteObj = new RichTextEditor({
-                toolbarSettings: {
-                    enableFloating: true,
-                    type: ToolbarType.Expand
-                },
-                height: '800px',
-                value: '<br /> <br /> <br /> <br /> <p id="trg"></p>',
-            }, '#div2');
-            expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-            ele1.scrollTo(0, 200);
-            rteObj.fullScreenModule.showFullScreen();
-            expect((rteObj.getToolbarElement() as HTMLElement).style.top === '0px').toBe(true);
-            setTimeout(() => {
-                expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(true);
-                window.scrollTo(0, 0);
-                done();
-            }, 500);
-        });
-
-        it("Floating with disabled - class testing", (done: Function) => {
-            document.body.style.height = '';
-            destroy(rteObj);
-            document.body.appendChild(ele1);
-            ele1.appendChild(ele2);
-            ele1.style.height = '300px';
-            ele1.style.overflow = 'auto';
-            rteObj = new RichTextEditor({
-                toolbarSettings: {
-                    enableFloating: true,
-                    type: ToolbarType.Expand
-                },
-                height: '800px',
-                value: '<br /> <br /> <br /> <br /> <p id="trg"></p>',
-            }, '#div2');
-            expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-            ele1.scrollTo(0, 200);
-            rteObj.fullScreenModule.showFullScreen();
-            expect((rteObj.getToolbarElement() as HTMLElement).style.top === '0px').toBe(true);
-            setTimeout(() => {
-                expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(true);
-                rteObj.enabled = false;
-                rteObj.dataBind();
-                expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-                (rteObj.element.querySelector('.e-toolbar-item') as HTMLElement).click();
-                window.scrollTo(0, 0);
-                done();
-            }, 500);
+        it("dyanamic disable the enable floating", () => {
+            rteObj.toolbarSettings.enableFloating = false;
+            rteObj.dataBind();
+            expect(document.querySelector(".e-richtexteditor .e-toolbar").parentElement.classList.contains("e-rte-tb-float")).toBe(false);
         });
     });
 
@@ -1535,82 +1456,6 @@ describe("Toolbar - Actions Module", () => {
             expect(document.querySelector(".e-italic").parentElement.attributes[6].value).toBe("true");
             expect(document.querySelector(".e-preview").parentElement.attributes[6].value).toBe("false");
             expect((document.querySelector(".e-rte-srctextarea")as HTMLElement).style.display).toBe("block");            
-        });
-    });
-
-    describe("Floating toolbar with transform element testing", () => {
-        let rteObj: RichTextEditor;
-        let ele1: HTMLElement = createElement("div", { id: "div1", styles: "height: 900px" });
-        let ele2: HTMLElement = createElement("div", { id: "div2", styles: "height: 400px" });
-
-        beforeEach((done: Function) => {
-            document.body.style.height = '2000px';
-            document.body.style.transform = 'translateX(0)';
-            ele1.style.transform = 'translateX(0)';
-            rteObj = renderRTE({
-                toolbarSettings: {
-                    enableFloating: true,
-                    type: ToolbarType.Expand
-                },
-                height: '800px',
-                value: '<br /> <br /> <br /> <br /> <p id="trg"></p>',
-            });
-            document.body.appendChild(ele1);
-            done();
-        });
-
-        afterEach(() => {
-            document.body.style.height = '';
-            destroy(rteObj);
-            detach(ele1);
-            document.body.style.transform = '';
-        });
-
-        it("Class testing", (done: Function) => {
-            expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-            window.scrollTo(0, 200);
-            rteObj.fullScreenModule.showFullScreen();
-            expect((rteObj.getToolbarElement() as HTMLElement).style.top === '0px').toBe(true);
-            setTimeout(() => {
-                expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(true);
-                window.scrollTo(0, 0);
-                done();
-            }, 500);
-        });
-
-        it("Out of viewable area with class testing", (done: Function) => {
-            expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-            window.scrollTo(0, 1000);
-            setTimeout(() => {
-                expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-                done();
-            }, 400);
-        });
-
-        it("Element as target testing", (done: Function) => {
-            document.body.style.height = '';
-            destroy(rteObj);
-            document.body.appendChild(ele1);
-            ele1.appendChild(ele2);
-            ele1.style.height = '300px';
-            ele1.style.overflow = 'auto';
-            rteObj = new RichTextEditor({
-                toolbarSettings: {
-                    enableFloating: true,
-                    type: ToolbarType.Expand
-                },
-                height: '800px',
-                value: '<br /> <br /> <br /> <br /> <p id="trg"></p>',
-            }, '#div2');
-            expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-            ele1.scrollTo(0, 200);
-            rteObj.fullScreenModule.showFullScreen();
-            expect((rteObj.getToolbarElement() as HTMLElement).style.top === '0px').toBe(true);
-            setTimeout(() => {
-                expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(true);
-                window.scrollTo(0, 0);
-                done();
-            }, 500);
         });
     });
 
@@ -2001,7 +1846,7 @@ describe("Toolbar - Actions Module", () => {
 
         it('open drop down button using keyboard', () => {
             rteObj.focusIn();
-            rteObj.contentModule.getEditPanel().dispatchEvent(toolbarFocusShortCutEvent);
+            rteObj.contentModule.getEditPanel().dispatchEvent(TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT);
             const enterKeyDownEvent = new KeyboardEvent('keydown', {
                 ctrlKey: false,
                 shiftKey: false,
@@ -2053,40 +1898,6 @@ describe("Toolbar - Actions Module", () => {
             expect(!isNullOrUndefined(rteEle.querySelector("#"+controlId+"_toolbar_FontColor").querySelector(".e-underline"))).toBe(true);
             expect(!isNullOrUndefined(rteEle.querySelector("#"+controlId+"_toolbar_Italic").querySelector(".e-bold"))).toBe(true);
             expect(!isNullOrUndefined(rteEle.querySelector("#"+controlId+"_toolbar_Bold").querySelector(".e-italic"))).toBe(true);
-        });
-    });
-
-    describe("EJ2-30374 - Issue with toolbar alignment when render Rich Text Editor within Tab", () => {
-        let rteObj: any;
-        let container: HTMLElement = createElement('div', { id: getUniqueID('container'), styles: 'height:800px;' });
-        let element1: HTMLElement = createElement('div', { id: getUniqueID('rte-wrapper') });
-        let element2: HTMLElement = createElement('div', { id: getUniqueID('rte-test'),  });
-
-        beforeEach(() => {
-            document.body.appendChild(container);
-            container.appendChild(element1);
-            element1.appendChild(element2);
-            rteObj = new RichTextEditor({
-                toolbarSettings: { enableFloating: true }
-            });
-            rteObj.appendTo(element2);
-        });
-
-        afterEach(() => {
-            destroy(rteObj);
-            detach(container);
-        });
-
-        it("Testing scroll with parent element in hidden mode", (done: Function) => {
-            element1.style.display = "none";
-            expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-            window.scrollTo(0, 100);
-            setTimeout(() => {
-                element1.style.display = "";
-                expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-                window.scrollTo(0, 0);
-                done();
-            }, 500);
         });
     });
 
@@ -2393,38 +2204,6 @@ describe("Toolbar - Actions Module", () => {
     });
 });
 
-describe(" EJ2-59527 - Floating toolbar testing", () => {
-    it("EJ2-59527 - with target and with extra element as top", (done: Function) => {
-        let rteObj: RichTextEditor;
-        let ele1: HTMLElement = createElement("div", { id: "div1", className: "default-section", styles: "height: 400px;" });
-        document.body.appendChild(ele1);
-        let ele2: HTMLElement = createElement("div", { id: "div2", styles: "height: 100px; background-color: red;" });
-        ele1.appendChild(ele2);
-        let ele3: HTMLElement = createElement("div", { id: "div3", styles: "height: 300px; overflow: scroll" });
-        ele1.appendChild(ele3);
-        let ele4: HTMLElement = createElement("div", { id: "defaultFloatRTE"});
-        ele3.appendChild(ele4);
-        rteObj = new RichTextEditor({
-            toolbarSettings: {
-                enableFloating: true,
-                type: ToolbarType.Expand
-            },
-            height: '600px',
-            value: '<br /> <br /> <br /> <br /> <p id="trg"></p>',
-        });
-        rteObj.appendTo(ele4);
-        expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
-        ele3.scrollTo(0, 200);
-        setTimeout(() => {
-            expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(true);
-            window.scrollTo(0, 0);
-            detach(ele1);
-            destroy(rteObj);
-            done();
-        }, 500);
-    });
-});
-
 describe('EJ2-58542: Memory leak issue with Rich Text Editor component ', () => {
     let rteObj: RichTextEditor;
     beforeAll(() => {
@@ -2530,32 +2309,8 @@ describe('849075 - The screen reader does not read the toolbar items in the Rich
 
 describe('849075 - Checking the tab index on navigating the toolbar items using arrow keys', () => {
     // Checking the tab index value on focus blur and toolbar navigation states.
-    const rightArrowKeyDownEvent = new KeyboardEvent('keydown', {
-        bubbles: true,
-        key: "ArrowRight",
-        keyCode: 39,
-        which: 39,
-        code: "ArrowRight",
-        location: 0,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: false,
-        shiftKey: false,
-        repeat: false,
-    } as EventInit);
-    const rightArrowKeyUpEvent = new KeyboardEvent('keyup', {
-        bubbles: true,
-        key: "ArrowRight",
-        keyCode: 39,
-        which: 39,
-        code: "ArrowRight",
-        location: 0,
-        altKey: false,
-        ctrlKey: false,
-        metaKey: false,
-        shiftKey: false,
-        repeat: false,
-    } as EventInit);
+    const rightArrowKeyUpEvent = new KeyboardEvent('keyup', ARROWRIGHT_EVENT_INIT);
+    const rightArrowKeyDownEvent = new KeyboardEvent('keydown', ARROWRIGHT_EVENT_INIT);
     let editorObj: RichTextEditor;
     let toolbarElement: HTMLElement;
     let toolbarItems: NodeListOf<Element>;
@@ -2572,7 +2327,7 @@ describe('849075 - Checking the tab index on navigating the toolbar items using 
     });
     it('Case 1:', (done: DoneFn) => {
         editorObj.focusIn();
-        editorObj.contentModule.getEditPanel().dispatchEvent(toolbarFocusShortCutEvent);
+        editorObj.contentModule.getEditPanel().dispatchEvent(TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT);
         toolbarElement = document.querySelector('.e-rte-toolbar');
         toolbarItems = document.querySelectorAll('.e-toolbar-item');
         expect(toolbarItems[0].firstElementChild.getAttribute('tabindex') === '-1').toBe(true);

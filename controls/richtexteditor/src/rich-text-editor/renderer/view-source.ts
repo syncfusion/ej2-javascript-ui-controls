@@ -154,7 +154,6 @@ export class ViewSource {
             rteContent.appendChild(this.previewElement);
             this.parent.element.appendChild(rteContent);
             rteContent.style.height = (this.contentModule.getPanel() as HTMLElement).style.height;
-            rteContent.style.marginTop = (this.contentModule.getPanel() as HTMLElement).style.marginTop;
             (this.getPanel() as HTMLTextAreaElement).value = this.getTextAreaValue();
             (this.contentModule.getPanel() as HTMLElement).style.display = 'none';
             rteContent.style.display = 'block';
@@ -174,14 +173,17 @@ export class ViewSource {
             removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]);
         }
         removeClass(tbItems, [CLS_ACTIVE]);
-        this.parent.setContentHeight('sourceCode', true);
+        const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
+        this.parent.setContentHeight('SourceCode', isExpand);
         this.wireEvent(this.previewElement);
         this.unWireBaseKeyDown();
         this.previewElement.focus();
         this.parent.updateValue();
         if (!isNullOrUndefined(this.parent.placeholder) && !this.parent.iframeSettings.enable) {
             const placeHolderWrapper: HTMLElement = this.parent.element.querySelector('.rte-placeholder.e-rte-placeholder') as HTMLElement;
-            placeHolderWrapper.style.display = 'none';
+            if (placeHolderWrapper) {
+                placeHolderWrapper.style.display = 'none';
+            }
         }
         this.parent.trigger(events.actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
         this.parent.invokeChangeEvent();
@@ -234,7 +236,8 @@ export class ViewSource {
         if (this.parent.getToolbar()) {
             removeClass([this.parent.getToolbar()], [CLS_EXPAND_OPEN]);
         }
-        this.parent.setContentHeight('preview', true);
+        const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
+        this.parent.setContentHeight('Preview', isExpand);
         this.unWireEvent();
         this.wireBaseKeyDown();
         (this.contentModule.getEditPanel() as HTMLElement).focus();

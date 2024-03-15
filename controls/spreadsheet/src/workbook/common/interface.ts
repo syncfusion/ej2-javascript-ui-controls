@@ -485,6 +485,7 @@ export interface CellUpdateArgs {
     eventOnly?: boolean;
     requestType?: string;
     cellDelete?: boolean;
+    mergedCells?: boolean;
     isFormulaDependent?: boolean;
     skipFormatCheck?: boolean;
     isRandomFormula?: boolean;
@@ -541,6 +542,8 @@ export interface AutoDetectGeneralFormatArgs {
     rowIdx?: number;
     colIdx?: number;
     sheet?: SheetModel;
+    cellVal?: string;
+    prevVal?: string;
 }
 /** @hidden */
 export interface checkCellValid {
@@ -603,4 +606,15 @@ export interface VisibleMergeIndexArgs {
     rowIdx: number;
     colIdx: number;
     isMergedHiddenCell?: boolean;
+}
+
+/**@hidden */
+export interface LocaleNumericSettings {
+    decimal: string;
+    group: string;
+    timeSeparator: string;
+    dateSeparator: string;
+    am?: string;
+    pm?: string;
+    percentSign?: string;
 }

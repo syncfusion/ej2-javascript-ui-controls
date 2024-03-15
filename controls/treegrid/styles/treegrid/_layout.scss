@@ -372,11 +372,19 @@
           border-bottom: $treegrid-rowdd-topbottom-border;
           box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
         }
+        &.e-droptop {
+          border-top: $treegrid-rowdd-topbottom-border;
+          box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+        }
       }
-
+      
       td.e-rowdragdrop {
         &.e-dropbottom {
           border-bottom: $treegrid-rowdd-topbottom-border;
+          box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+        }
+        &.e-droptop {
+          border-top: $treegrid-rowdd-topbottom-border;
           box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
         }
       }

@@ -1,4 +1,4 @@
-import { extend, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dimension } from '@syncfusion/ej2-inputs';
 import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { BeforeSaveEventArgs, FileType, ImageEditor, Point, SaveEventArgs, SelectionPoint, ActivePoint, CurrentObject } from '../index';
@@ -28,16 +28,7 @@ export class Export {
     }
 
     private export(args?: { onPropertyChange: boolean, prop: string, value?: object }): void {
-        if (isBlazor()) {
-            const obj: Object = {shape: '' };
-            this.parent.notify('selection', { prop: 'getCurrentDrawingShape', onPropertyChange: false, value: {obj: obj }});
-            if (obj['shape'] !== '') {
-                this.parent.notify('selection', { prop: 'setCurrentDrawingShape', onPropertyChange: false, value: {value: '' }});
-                this.parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
-            }
-        } else {
-            this.parent.notify('toolbar', { prop: 'refreshShapeDrawing', onPropertyChange: false });
-        }
+        this.parent.notify('toolbar', { prop: 'refreshShapeDrawing', onPropertyChange: false });
         this.updatePvtVar();
         switch (args.prop) {
         case 'export':
@@ -93,15 +84,8 @@ export class Export {
                 value: {x: null, y: null, isMouseDown: null}});
             const beforeSave: BeforeSaveEventArgs = { cancel: false, fileName: fileName ? fileName : imageName,
                 fileType: type as FileType};
-            if (isBlazor() && parent.events && parent.events.saving.hasDelegate === true) {
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                (parent.dotNetRef.invokeMethodAsync('BeforeSaveEventAsync', 'BeforeSave', beforeSave) as any).then((beforeSave: BeforeSaveEventArgs) => {
-                    this.beforeSaveEvent(beforeSave, type, fileName, imageName);
-                });
-            } else {
-                parent.trigger('beforeSave', beforeSave);
-                this.beforeSaveEvent(beforeSave, type, fileName, imageName);
-            }
+            parent.trigger('beforeSave', beforeSave);
+            this.beforeSaveEvent(beforeSave, type, fileName, imageName);
         }
     }
 
@@ -119,9 +103,7 @@ export class Export {
             }
             const saved: SaveEventArgs = { fileName: fileName ? fileName : imageName, fileType: type as FileType};
             parent.trigger('saved', saved);
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-            }
+            parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
             parent.lowerCanvas.style.left = parent.upperCanvas.style.left = '';
             parent.lowerCanvas.style.top = parent.upperCanvas.style.top = '';
             parent.lowerCanvas.style.maxWidth = parent.upperCanvas.style.maxWidth = '';
@@ -187,14 +169,7 @@ export class Export {
             value: {obj: selPointCollObj }});
         if (this.parent.aspectWidth) {
             parent.notify('undo-redo', { prop: 'setPreventUR', value: { bool: true } });
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'resizeClick', value: {bool: false }}); 
-            } else {
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                (parent as any).performResizeClick();
-            }
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            (parent as any).currentToolbar = 'resize-toolbar';
+            parent.notify('toolbar', { prop: 'resizeClick', value: {bool: false }}); 
             parent.okBtn();
             if (parent.transform.degree % 90 === 0 && parent.transform.degree % 180 !== 0) {
                 width = this.parent.aspectHeight; height = this.parent.aspectWidth;

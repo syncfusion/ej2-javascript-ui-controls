@@ -7,7 +7,7 @@ import { Chart3DSeries } from '../series/chart-series';
 import { withIn, logBase } from '../../common/utils/helper';
 import { isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-base';
 import { getMinPointsDeltaValue } from '../utils/chart3dRender';
-import { Chart3DFont } from '../model/chart3d-Interface';
+import { Chart3DTextFont } from '../model/chart3d-Interface';
 
 
 /**
@@ -367,7 +367,7 @@ export class Double3D {
         /*! Generate axis labels */
         axis.visibleLabels = [];
         let tempInterval: number = axis.visibleRange.min;
-        let labelStyle: Chart3DFont;
+        let labelStyle: Chart3DTextFont;
         const format: string = this.getFormat(axis);
         const isCustom: boolean = format.match('{value}') !== null;
         let intervalDigits: number = 0;
@@ -388,7 +388,7 @@ export class Double3D {
         for (; (tempInterval <= axis.visibleRange.max) && (duplicateTempInterval !== tempInterval);
             tempInterval += axis.visibleRange.interval) {
             duplicateTempInterval = tempInterval;
-            labelStyle = <Chart3DFont>(extend({}, getValue('properties', axis.labelStyle), null, true));
+            labelStyle = <Chart3DTextFont>(extend({}, getValue('properties', axis.labelStyle), null, true));
             if (withIn(tempInterval, axis.visibleRange)) {
                 triggerLabelRender(chart, tempInterval, this.formatValue(axis, isCustom, format, tempInterval), labelStyle, axis);
             }

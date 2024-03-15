@@ -140,9 +140,18 @@ export class Text {
         this.createChangecase(rightDiv2);
     }
     private createChangecase = (container: HTMLElement): void => {
-        const items: ItemModel[] = [{
-            text: this.localObj.getConstant('UPPERCASE'), id: 'uppercase'
-        }];
+        const items: ItemModel[] = [
+            {
+                text: this.localObj.getConstant('SentenceCase'), id: 'sentencecase'
+            }, {
+                text: this.localObj.getConstant('UPPERCASE'), id: 'uppercase'
+            }, {
+                text: this.localObj.getConstant('Lowercase'), id: 'lowercase'
+            }, {
+                text: this.localObj.getConstant('CapitalizeEachWord'), id: 'capitalizeEachWord'
+            }, {
+                text: this.localObj.getConstant('ToggleCase'), id: 'togglecase'
+            }];
         this.changeCaseDropdown = new DropDownButton({
             items: items,
             iconCss: 'e-icons e-de-ctnr-change-case',
@@ -165,13 +174,33 @@ export class Text {
         }
         const text: string = args.item.id;
         switch (text) {
-        case 'uppercase':
-            if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-                this.documentEditor.editor.changeCase('Uppercase');
-            }
-            break;
-        default:
-            break;
+            case 'sentencecase':
+                if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+                    this.documentEditor.editorModule.changeCase('SentenceCase');
+                }
+                break;
+            case 'uppercase':
+                if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+                    this.documentEditor.editorModule.changeCase('Uppercase');
+                }
+                break;
+            case 'lowercase':
+                if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+                    this.documentEditor.editorModule.changeCase('Lowercase');
+                }
+                break;
+            case 'capitalizeEachWord':
+                if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+                    this.documentEditor.editorModule.changeCase('CapitalizeEachWord');
+                }
+                break;
+            case 'togglecase':
+                if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+                    this.documentEditor.editorModule.changeCase('ToggleCase');
+                }
+                break;
+            default:
+                break;
         }
     }
     private createHighlightColorSplitButton(id: string, width: number, divElement: HTMLElement, toolTipText: string): SplitButton {
@@ -252,7 +281,7 @@ export class Text {
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private onHighLightColor(event: any): void {
-        if (this.documentEditor.selection) {
+        if (this.documentEditor.selectionModule) {
             this.applyHighlightColor(event.currentTarget.style.backgroundColor);
             this.highlightColor.toggle();
         }
@@ -314,9 +343,9 @@ export class Text {
         this.appliedHighlightColor = color;
         const hgltColor: HighlightColor = this.getHighLightColor(color);
         if (hgltColor === 'NoColor') {
-            this.documentEditor.selection.characterFormat.highlightColor = null;
+            this.documentEditor.selectionModule.characterFormat.highlightColor = null;
         }
-        this.documentEditor.selection.characterFormat.highlightColor = hgltColor as HighlightColor;
+        this.documentEditor.selectionModule.characterFormat.highlightColor = hgltColor as HighlightColor;
         this.documentEditor.focusIn();
     }
     private getHighLightColor(color: string): HighlightColor {
@@ -404,12 +433,15 @@ export class Text {
         return button;
     }
     private createFontColorPicker(id: string, width: number, divElement: HTMLElement, toolTipText: string): HTMLInputElement {
+        const {columns , createPopupOnClick , cssClass , disabled , enablePersistence , inline , mode , modeSwitcher , noColor , presetColors , showButtons } = this.documentEditor.documentEditorSettings.colorPickerSettings;
         const inputElement: HTMLInputElement = createElement('input', { id: id, attrs: { 'type': 'color' } }) as HTMLInputElement;
         inputElement.style.width = width + 'px';
         divElement.appendChild(inputElement);
-        this.fontColorInputElement = new ColorPicker({ value: '#000000', showButtons: true, enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false }, inputElement);
+        
+        this.fontColorInputElement = new ColorPicker({ value: '#000000', enableRtl: this.isRtl, locale: this.container.locale, enableOpacity: false , mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , cssClass : cssClass , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors}, inputElement);
         this.fontColorInputElement.element.parentElement.setAttribute('title', toolTipText);
         this.fontColorInputElement.element.parentElement.setAttribute('aria-label', toolTipText);
+        this.documentEditor.documentHelper.fontColorInputElement = this.fontColorInputElement;
         return inputElement;
     }
 
@@ -426,7 +458,7 @@ export class Text {
         this.fontSize.focus = (): void => {
             this.isRetrieving = false; (this.fontSize.element as HTMLInputElement).select();
         };
-        this.fontSize.value = this.documentEditor.selection.characterFormat.fontSize.toString();
+        this.fontSize.value = this.documentEditor.selectionModule.characterFormat.fontSize.toString();
         this.fontSize.appendTo(fontSelectElement);
         this.fontSize.element.parentElement.setAttribute('title', this.localObj.getConstant('Font Size'));
     }
@@ -521,8 +553,8 @@ export class Text {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.toggleBold();
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.toggleBold();
             this.documentEditor.focusIn();
         }
     }
@@ -530,8 +562,8 @@ export class Text {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.toggleItalic();
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.toggleItalic();
             this.documentEditor.focusIn();
         }
     }
@@ -539,8 +571,8 @@ export class Text {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.toggleUnderline('Single');
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.toggleUnderline('Single');
             this.documentEditor.focusIn();
         }
     }
@@ -548,8 +580,8 @@ export class Text {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.toggleStrikethrough();
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.toggleStrikethrough();
             this.documentEditor.focusIn();
         }
     }
@@ -557,16 +589,16 @@ export class Text {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.clearFormatting();
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.clearFormatting();
         }
     }
     private subscriptAction(): void {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.toggleSubscript();
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.toggleSubscript();
             this.documentEditor.focusIn();
         }
     }
@@ -574,8 +606,8 @@ export class Text {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.editor) {
-            this.documentEditor.editor.toggleSuperscript();
+        if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
+            this.documentEditor.editorModule.toggleSuperscript();
             this.documentEditor.focusIn();  
         }
     }
@@ -583,8 +615,8 @@ export class Text {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.selection) {
-            this.documentEditor.selection.characterFormat.fontColor = arg.currentValue.hex;
+        if (!this.documentEditor.isReadOnly && this.documentEditor.selectionModule) {
+            this.documentEditor.selectionModule.characterFormat.fontColor = arg.currentValue.hex;
             setTimeout((): void => {
                 this.documentEditor.focusIn();
             }, 30);
@@ -594,9 +626,9 @@ export class Text {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.selection && this.fontFamily.value !== '') {
+        if (!this.documentEditor.isReadOnly && this.documentEditor.selectionModule && this.fontFamily.value !== '') {
             setTimeout((): void => {
-                this.documentEditor.selection.characterFormat.fontFamily = SanitizeHtmlHelper.sanitize(this.fontFamily.value as string);
+                this.documentEditor.selectionModule.characterFormat.fontFamily = SanitizeHtmlHelper.sanitize(this.fontFamily.value as string);
             }, 10);
             this.documentEditor.focusIn();
         }
@@ -605,23 +637,23 @@ export class Text {
         if (this.isRetrieving) {
             return;
         }
-        if (!this.documentEditor.isReadOnly && this.documentEditor.selection && this.fontSize.value !== '') {
+        if (!this.documentEditor.isReadOnly && this.documentEditor.selectionModule && this.fontSize.value !== '') {
             setTimeout((): void => {
-                this.documentEditor.selection.characterFormat.fontSize = this.fontSize.value as number;
+                this.documentEditor.selectionModule.characterFormat.fontSize = this.fontSize.value as number;
             }, 10);
             this.documentEditor.focusIn();
         }
     }
     public onSelectionChange(): void {
         this.isRetrieving = true;
-        if (this.documentEditor.selection) {
+        if (this.documentEditor.selectionModule) {
             //#region character format
-            if (this.documentEditor.selection.characterFormat.fontFamily) {
+            if (this.documentEditor.selectionModule.characterFormat.fontFamily) {
                 let fontFamily: string;
-                if(!isNullOrUndefined(this.documentEditor.selection.characterFormat.renderedFontFamily) && !isNullOrUndefined(this.documentEditor.selection.characterFormat.fontFamily)){
-                    fontFamily = this.documentEditor.selection.characterFormat.renderedFontFamily;
+                if(!isNullOrUndefined(this.documentEditor.selectionModule.characterFormat.renderedFontFamily) && !isNullOrUndefined(this.documentEditor.selectionModule.characterFormat.fontFamily)){
+                    fontFamily = this.documentEditor.selectionModule.characterFormat.renderedFontFamily;
                 } else {
-                    fontFamily = this.documentEditor.selection.characterFormat.fontFamily;
+                    fontFamily = this.documentEditor.selectionModule.characterFormat.fontFamily;
                 }
                 this.fontFamily.value = fontFamily;
                 this.fontFamily.dataBind();
@@ -632,13 +664,13 @@ export class Text {
             } else {
                 this.fontFamily.value = '';
             }
-            if (this.documentEditor.selection.characterFormat.fontSize) {
-                this.fontSize.value = this.documentEditor.selection.characterFormat.fontSize.toString();
+            if (this.documentEditor.selectionModule.characterFormat.fontSize) {
+                this.fontSize.value = this.documentEditor.selectionModule.characterFormat.fontSize.toString();
                 this.fontSize.dataBind();
             } else {
                 this.fontSize.value = '';
             }
-            if (this.documentEditor.selection.characterFormat.bold) {
+            if (this.documentEditor.selectionModule.characterFormat.bold) {
                 if (!this.bold.classList.contains('e-btn-toggle')) {
                     this.bold.classList.add('e-btn-toggle');
                     this.bold.setAttribute('aria-pressed', 'true');
@@ -649,7 +681,7 @@ export class Text {
                     this.bold.setAttribute('aria-pressed', 'false');
                 }
             }
-            if (this.documentEditor.selection.characterFormat.italic) {
+            if (this.documentEditor.selectionModule.characterFormat.italic) {
                 if (!this.italic.classList.contains('e-btn-toggle')) {
                     this.italic.classList.add('e-btn-toggle');
                     this.italic.setAttribute('aria-pressed', 'true');
@@ -660,8 +692,8 @@ export class Text {
                     this.italic.setAttribute('aria-pressed', 'false');
                 }
             }
-            if (this.documentEditor.selection.characterFormat.underline
-                && this.documentEditor.selection.characterFormat.underline !== 'None') {
+            if (this.documentEditor.selectionModule.characterFormat.underline
+                && this.documentEditor.selectionModule.characterFormat.underline !== 'None') {
                 if (!this.underline.classList.contains('e-btn-toggle')) {
                     this.underline.classList.add('e-btn-toggle');
                     this.underline.setAttribute('aria-pressed', 'true');
@@ -672,8 +704,8 @@ export class Text {
                     this.underline.setAttribute('aria-pressed', 'false');
                 }
             }
-            if (this.documentEditor.selection.characterFormat.strikethrough
-                && this.documentEditor.selection.characterFormat.strikethrough !== 'None') {
+            if (this.documentEditor.selectionModule.characterFormat.strikethrough
+                && this.documentEditor.selectionModule.characterFormat.strikethrough !== 'None') {
                 if (!this.strikethrough.classList.contains('e-btn-toggle')) {
                     this.strikethrough.classList.add('e-btn-toggle');
                     this.strikethrough.setAttribute('aria-pressed', 'true');
@@ -684,8 +716,8 @@ export class Text {
                     this.strikethrough.setAttribute('aria-pressed', 'false');
                 }
             }
-            if (this.documentEditor.selection.characterFormat.baselineAlignment
-                && this.documentEditor.selection.characterFormat.baselineAlignment === 'Subscript') {
+            if (this.documentEditor.selectionModule.characterFormat.baselineAlignment
+                && this.documentEditor.selectionModule.characterFormat.baselineAlignment === 'Subscript') {
                 if (!this.subscript.classList.contains('e-btn-toggle')) {
                     this.subscript.classList.add('e-btn-toggle');
                     this.subscript.setAttribute('aria-pressed', 'true');
@@ -696,8 +728,8 @@ export class Text {
                     this.subscript.setAttribute('aria-pressed', 'false');
                 }
             }
-            if (this.documentEditor.selection.characterFormat.baselineAlignment
-                && this.documentEditor.selection.characterFormat.baselineAlignment === 'Superscript') {
+            if (this.documentEditor.selectionModule.characterFormat.baselineAlignment
+                && this.documentEditor.selectionModule.characterFormat.baselineAlignment === 'Superscript') {
                 if (!this.superscript.classList.contains('e-btn-toggle')) {
                     this.superscript.classList.add('e-btn-toggle');
                     this.superscript.setAttribute('aria-pressed', 'true');
@@ -708,17 +740,17 @@ export class Text {
                     this.superscript.setAttribute('aria-pressed', 'false');
                 }
             }
-            if (this.documentEditor.selection.characterFormat.fontColor) {
-                let fontColor: string = this.documentEditor.selection.characterFormat.fontColor;
+            if (this.documentEditor.selectionModule.characterFormat.fontColor) {
+                let fontColor: string = this.documentEditor.selectionModule.characterFormat.fontColor;
                 // "empty" is old value used for auto color till v19.2.49. It is maintained for backward compatibility.
                 if (fontColor === 'empty' || fontColor === '#00000000') {
                     fontColor = '#000000';
                 }
                 this.fontColorInputElement.value = fontColor;
             }
-            if (this.documentEditor.selection.characterFormat.highlightColor) {
+            if (this.documentEditor.selectionModule.characterFormat.highlightColor) {
                 this.highlightColorInputElement.style.backgroundColor = this.appliedHighlightColor;
-                this.applyHighlightColorAsBackground(this.documentEditor.selection.characterFormat.highlightColor);
+                this.applyHighlightColorAsBackground(this.documentEditor.selectionModule.characterFormat.highlightColor);
             }
             //#endregion
         }

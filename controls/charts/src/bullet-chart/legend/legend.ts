@@ -69,6 +69,7 @@ export class BulletChartLegend extends BaseLegend {
         this.legendCollections = [];
         let fill: string;
         let count: number = 0;
+        this.isRtlEnable = this.chart.enableRtl;
         const key: string = 'color';
         const bulletChart: BulletChart = this.chart as BulletChart;
         for (const range of visibleRangeCollection) {
@@ -183,7 +184,8 @@ export class BulletChartLegend extends BaseLegend {
     public getRenderPoint(
         bulletLegendOption: LegendOptions, start: ChartLocation, textPadding: number, prevLegend: LegendOptions,
         rect: Rect, count: number, firstLegend: number): void {
-        const previousBound: number = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
+        const textWidth: number = textPadding + (this.legend.maximumLabelWidth ? this.legend.maximumLabelWidth : prevLegend.textSize.width);
+        const previousBound: number = prevLegend.location.x + ((!this.isRtlEnable) ? textWidth : -textWidth);
         const padding: number = this.legend.padding;
         if ((previousBound + (bulletLegendOption.textSize.width + textPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2) ||
             this.isVertical) {
@@ -194,8 +196,8 @@ export class BulletChartLegend extends BaseLegend {
             bulletLegendOption.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
             bulletLegendOption.location.y = prevLegend.location.y;
         }
-        const availwidth: number = (this.legendBounds.x + this.legendBounds.width) - (bulletLegendOption.location.x +
-            textPadding - this.legend.shapeWidth / 2);
+        const availwidth: number = (!this.isRtlEnable) ? (this.legendBounds.x + this.legendBounds.width) - (bulletLegendOption.location.x +
+            textPadding - this.itemPadding - this.legend.shapeWidth / 2) : (bulletLegendOption.location.x - textPadding + this.itemPadding + (this.legend.shapeWidth / 2)) - this.legendBounds.x;
         bulletLegendOption.text = textTrim(+availwidth.toFixed(4), bulletLegendOption.text, this.legend.textStyle, this.chart.enableRtl, this.chart.themeStyle.legendLabelFont);
     }
     /**

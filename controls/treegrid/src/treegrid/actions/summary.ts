@@ -7,7 +7,6 @@ import { isNullOrUndefined, setValue, NumberFormatOptions, DateFormatOptions, cr
 import { AggregateColumn } from '../models/summary';
 import { AggregateRowModel } from '../models/summary-model';
 import { Column } from '../models';
-import * as events from '../base/constant';
 
 
 /**
@@ -199,12 +198,7 @@ export class Aggregate {
         if ((<{ isReact?: boolean }>this.parent).isReact) {
             const renderReactTemplates: string = 'renderReactTemplates';
             tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property, '', null, null, cellElement);
-            // eslint-disable-next-line @typescript-eslint/no-this-alias
-            const thisRef: Aggregate = this;
-            // tslint:disable-next-line:typedef
-            thisRef.parent[`${renderReactTemplates}`](function(){
-                thisRef.parent.trigger(events.queryCellInfo, thisRef.parent['args']);
-            });
+            this.parent[`${renderReactTemplates}`]();
         } else {
             appendChildren(cellElement, tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property));
         }

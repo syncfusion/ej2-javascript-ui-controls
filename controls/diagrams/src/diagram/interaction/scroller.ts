@@ -817,15 +817,19 @@ export class DiagramScroller {
         var voffset = -this.verticalOffset;
         bounds = new Rect(bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale);
         var view = new Rect(hoffset, voffset, this.viewPortWidth, this.viewPortHeight);
+        //To prevent nodes from being cut off in the horizontal and vertical scrollbars when calling the "bring into view" function, a padding value is added.
+        const nodePadding = 20;
         if (!(view.containsRect(bounds))) {
             if (bounds.right > (-hoffset + this.viewPortWidth)) {
                 x = bounds.right - this.viewPortWidth;
+                x+=nodePadding
             }
             if (bounds.x < -hoffset) {
                 x = bounds.x;
             }
             if (bounds.bottom > (-voffset + this.viewPortHeight)) {
                 y = bounds.bottom - this.viewPortHeight;
+                y+=nodePadding;
             }
             if (bounds.y < -voffset) {
                 y = bounds.y;
@@ -864,7 +868,7 @@ export class DiagramScroller {
          */
         if (this.diagram.scrollSettings.scrollLimit === 'Infinity')
         {
-            if (isInteractiveZoomPan === undefined){
+            if (isInteractiveZoomPan === undefined && !isBringIntoView){
                 hOffset = -hOffset; vOffset = -vOffset;
             }
         }

@@ -1,4 +1,4 @@
-import { extend, isNullOrUndefined, Browser, isBlazor, getComponent } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, Browser, getComponent } from '@syncfusion/ej2-base';
 import { ActivePoint, Dimension } from '@syncfusion/ej2-inputs';
 import { ImageEditor, Point, SelectionPoint, OpenEventArgs, Direction, CurrentObject, ShapeSettings, FileType, StrokeSettings, Transition, TextSettings, CropSelectionSettings, SelectionChangeEventArgs, FrameValue, FrameChangeEventArgs, FrameSettings, FrameType, FrameLineStyle, ImageDimension } from '../index';
 import { Dialog, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -607,7 +607,7 @@ export class Draw {
         case 'crop-16:9':
             x = 16; y = 9;
             break;
-            case 'crop-2:3':
+        case 'crop-2:3':
             x = 2; y = 3;
             break;
         case 'crop-3:4':
@@ -2185,33 +2185,20 @@ export class Draw {
                 parent.currObjType.isUndoZoom = false; proxy.parent.lowerCanvas.style.display = 'block';
             }
             parent.isUndoRedo = this.isErrorImage = false;
-            if (!isBlazor()) {
-                if (Browser.isDevice) {
-                    parent.notify('toolbar', {prop: 'destroy-top-toolbar', onPropertyChange: false});
-                    parent.notify('toolbar', {prop: 'destroy-bottom-toolbar', onPropertyChange: false});
-                    const eventargs: object = { isApplyBtn: false, isDevice: Browser.isDevice, isOkBtn: null,
-                        isResize: null, isFrame: null, isMainToolbar: true };
-                    parent.notify('toolbar', { prop: 'init-main-toolbar', onPropertyChange: false, value: eventargs});
-                    parent.notify('toolbar', { prop: 'create-bottom-toolbar', onPropertyChange: false});
-                } else {
-                    parent.notify('toolbar', {prop: 'destroy-top-toolbar', onPropertyChange: false});
-                    const eventargs: object = { isApplyBtn: false, isDevice: false, isOkBtn: null };
-                    parent.notify('toolbar', { prop: 'init-main-toolbar', onPropertyChange: false, value: eventargs});
-                }
+            if (Browser.isDevice) {
+                parent.notify('toolbar', {prop: 'destroy-top-toolbar', onPropertyChange: false});
+                parent.notify('toolbar', {prop: 'destroy-bottom-toolbar', onPropertyChange: false});
+                const eventargs: object = { isApplyBtn: false, isDevice: Browser.isDevice, isOkBtn: null,
+                    isResize: null, isFrame: null, isMainToolbar: true };
+                parent.notify('toolbar', { prop: 'init-main-toolbar', onPropertyChange: false, value: eventargs});
+                parent.notify('toolbar', { prop: 'create-bottom-toolbar', onPropertyChange: false});
             } else {
-                parent.updateToolbar(parent.element, 'imageLoaded', 'initial');
-                if (Browser.isDevice) {
-                    (parent.element.querySelector('.e-bottom-toolbar-area') as HTMLElement).style.display = 'block';
-                    (parent.element.querySelector('.e-canvas-wrapper') as HTMLElement).style.height = (parent.element.offsetHeight
-                        - parent.toolbarHeight * 2) - 1 + 'px';
-                }
+                parent.notify('toolbar', {prop: 'destroy-top-toolbar', onPropertyChange: false});
+                const eventargs: object = { isApplyBtn: false, isDevice: false, isOkBtn: null };
+                parent.notify('toolbar', { prop: 'init-main-toolbar', onPropertyChange: false, value: eventargs});
             }
             if (parent.isImageLoaded && parent.element.style.opacity !== '0.5') {
-                if (isBlazor() && parent.events && parent.events.fileOpened.hasDelegate === true) {
-                    parent.dotNetRef.invokeMethodAsync('FileOpenEventAsync', 'FileOpened', fileOpened);
-                } else {
-                    parent.trigger('fileOpened', fileOpened);
-                }
+                parent.trigger('fileOpened', fileOpened);
             }
         };
         parent.baseImg.onerror = () => {
@@ -2224,11 +2211,7 @@ export class Draw {
     private errorLoading(): void {
         const parent: ImageEditor = this.parent;
         const fileOpened: OpenEventArgs = {fileName: null, fileType: null, isValidImage: false };
-        if (isBlazor() && parent.events && parent.events.fileOpened.hasDelegate === true) {
-            parent.dotNetRef.invokeMethodAsync('FileOpenEventAsync', 'FileOpened', fileOpened);
-        } else {
-            parent.trigger('fileOpened', fileOpened);
-        }
+        parent.trigger('fileOpened', fileOpened);
     }
 
     private updateBaseImgCanvas(): void {
@@ -2307,11 +2290,7 @@ export class Draw {
         this.resetFrameZoom(false);
         if (obj['bool']) {
             parent.notify('freehand-draw', {prop: 'cancelFhd', onPropertyChange: false});
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
-            } else {
-                parent.updateToolbar(parent.element, 'destroyQuickAccessToolbar');
-            }
+            parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
             parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'cancel' }});
         } else if (parent.textArea.style.display === 'block' || parent.textArea.style.display === 'inline-block') {
             parent.textArea.style.display = 'none'; parent.textArea.value = ''; parent.textArea.style.transform = '';
@@ -2325,16 +2304,10 @@ export class Draw {
                 parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
             }
             parent.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: true}});
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-            } else {
-                parent.updateToolbar(parent.element, 'imageLoaded');
-            }
+            parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
             parent.notify('selection', { prop: 'setTempActObj', onPropertyChange: false, value: {obj: parent.activeObj }});
-        } else if ((!isBlazor() && (!Browser.isDevice || (Browser.isDevice && !straightenObj['bool'])) &&
-            document.querySelector('#' + parent.element.id + '_sliderWrapper')) ||
-            (isBlazor() && !parent.element.querySelector('.e-ie-contextual-slider').classList.contains('e-hidden')) ||
-            parent.currObjType.isFiltered) {
+        } else if (((!Browser.isDevice || (Browser.isDevice && !straightenObj['bool'])) &&
+            document.querySelector('#' + parent.element.id + '_sliderWrapper')) || parent.currObjType.isFiltered) {
             this.lowerContext.filter = this.tempAdjValue; parent.canvasFilter = this.tempAdjValue;
             parent.notify('filter', { prop: 'setAdjustmentValue', onPropertyChange: false, value: {adjustmentValue: this.tempAdjValue }});
             parent.initialAdjustmentValue = this.tempAdjValue;
@@ -2359,17 +2332,10 @@ export class Draw {
                     value: {context: this.lowerContext, isSave: null, isFlip: null}});
             }
             const eventargs: object = { type: 'main', isApplyBtn: null, isCropping: null, isZooming: null};
-            if (!isBlazor()) {
-                parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
-                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: eventargs});
-                if (parent.activeObj.shape && parent.activeObj.shape === 'image') {
-                    parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
-                }
-            } else {
-                parent.updateToolbar(parent.element, 'imageLoaded');
-                if (parent.activeObj.shape && parent.activeObj.shape === 'image') {
-                    parent.updateToolbar(parent.element, 'destroyQuickAccessToolbar');
-                }
+            parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
+            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: eventargs});
+            if (parent.activeObj.shape && parent.activeObj.shape === 'image') {
+                parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
             }
             parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'cancel' }});
             parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
@@ -2377,11 +2343,7 @@ export class Draw {
         } else {
             if (isContextualToolbar && (!Browser.isDevice || (Browser.isDevice && !straightenObj['bool']))) {
                 const eventargs: object = { type: 'main', isApplyBtn: null, isCropping: null, isZooming: null};
-                if (!isBlazor()) {
-                    parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: eventargs});
-                } else {
-                    parent.updateToolbar(parent.element, 'imageLoaded');
-                }
+                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: eventargs});
             } else {
                 this.cancelItems();
                 if (parent.transform.zoomFactor > 0) {
@@ -2395,10 +2357,8 @@ export class Draw {
         }
         this.isShapeTextInserted = false;
         this.isNewPath = false;
-        if (!isBlazor()) {
-            parent.notify('toolbar', {prop: 'refresh-dropdown-btn', value: {isDisabled: false}});
-            parent.notify('toolbar', {prop: 'setCurrentToolbar', value: {type: 'main' }});
-        }
+        parent.notify('toolbar', {prop: 'refresh-dropdown-btn', value: {isDisabled: false}});
+        parent.notify('toolbar', {prop: 'setCurrentToolbar', value: {type: 'main' }});
     }
 
     private cancelItems(): void {
@@ -2463,7 +2423,7 @@ export class Draw {
                 parent.isResize = false;
                 parent.notify('transform', { prop: 'setResizedImgAngle', onPropertyChange: false, value: {angle: null}});
                 const temp: boolean = parent.isCropTab; parent.isCropTab = false;
-                this.updateCropSelObj(); parent.isCropTab = temp;
+                this.updateCropSelObj(); parent.cancelCropSelection = null; parent.isCropTab = temp;
             }
         }
         switch (true) {
@@ -2489,8 +2449,7 @@ export class Draw {
         parent.upperCanvas.style.cursor = parent.cursor = 'default'; parent.currObjType.isCustomCrop = false;
         this.tempStrokeSettings = {strokeColor: '#fff', fillColor: '', strokeWidth: null};
         const eventargs: object = { type: 'main', isApplyBtn: null, isCropping: false, isZooming: null};
-        if (!isBlazor()) {parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: eventargs}); }
-        else {parent.updateToolbar(parent.element, 'imageLoaded'); }
+        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: eventargs});
     }
 
     private cancelPen(): void {
@@ -2550,11 +2509,7 @@ export class Draw {
                 parent.clearSelection();
             }
         }
-        if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
-        } else {
-            parent.updateToolbar(parent.element, 'destroyQuickAccessToolbar');
-        }
+        parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
         this.tempTextSettings = {text: 'Enter Text', fontFamily: parent.fontFamily.default, fontSize: null, fontRatio: null, bold: false,
             italic: false, underline: false};
     }
@@ -2596,11 +2551,7 @@ export class Draw {
             }
         }
         parent.currObjType.isDragging = false;
-        if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
-        } else {
-            parent.updateToolbar(parent.element, 'destroyQuickAccessToolbar');
-        }
+        parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
     }
 
     private cancelSelection(): void {
@@ -2787,38 +2738,19 @@ export class Draw {
             startY: obj['shapeSettingsObj']['startY'], width: obj['shapeSettingsObj']['width'], height: obj['shapeSettingsObj']['height'] };
         const selectionChangingArgs: SelectionChangeEventArgs = {action: 'insert', previousSelectionSettings: selectionSettings,
             currentSelectionSettings: selectionSettings};
-        if (isBlazor() && parent.events && parent.events.onSelectionResizeStart.hasDelegate === true) {
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            (parent.dotNetRef.invokeMethodAsync('SelectionEventAsync', 'OnSelectionResizeStart', selectionChangingArgs) as any).then((selectionChangingArgs: SelectionChangeEventArgs) => {
-                parent.notify('shape', { prop: 'updSelChangeEventArgs', onPropertyChange: false,
-                    value: {selectionSettings: selectionChangingArgs.currentSelectionSettings}});
-                if (selectionChangingArgs.currentSelectionSettings.type === 'Custom') {
-                    this.drawObject('duplicate', parent.activeObj, null, null, true);
-                } else {
-                    if (actPoint.startX !== 0 || actPoint.startY !== 0 ||
-                        actPoint.width !== 0 || actPoint.height !== 0) {
-                        points = {startX : actPoint.startX, startY : actPoint.startY,
-                            endX : actPoint.endX, endY : actPoint.endY,
-                            width: actPoint.width, height: actPoint.height};
-                    }
-                    this.drawObject('duplicate', null, true, points);
-                }
-            });
+        parent.trigger('selectionChanging', selectionChangingArgs);
+        parent.notify('shape', { prop: 'updSelChangeEventArgs', onPropertyChange: false,
+            value: {selectionSettings: selectionChangingArgs.currentSelectionSettings}});
+        if (selectionChangingArgs.currentSelectionSettings.type === 'Custom') {
+            this.drawObject('duplicate', parent.activeObj, null, null, true);
         } else {
-            parent.trigger('selectionChanging', selectionChangingArgs);
-            parent.notify('shape', { prop: 'updSelChangeEventArgs', onPropertyChange: false,
-                value: {selectionSettings: selectionChangingArgs.currentSelectionSettings}});
-            if (selectionChangingArgs.currentSelectionSettings.type === 'Custom') {
-                this.drawObject('duplicate', parent.activeObj, null, null, true);
-            } else {
-                if (actPoint.startX !== 0 || actPoint.startY !== 0 ||
-                    actPoint.width !== 0 || actPoint.height !== 0) {
-                    points = {startX : actPoint.startX, startY : actPoint.startY,
-                        endX : actPoint.endX, endY : actPoint.endY,
-                        width: actPoint.width, height: actPoint.height};
-                }
-                this.drawObject('duplicate', null, true, points);
+            if (actPoint.startX !== 0 || actPoint.startY !== 0 ||
+                actPoint.width !== 0 || actPoint.height !== 0) {
+                points = {startX : actPoint.startX, startY : actPoint.startY,
+                    endX : actPoint.endX, endY : actPoint.endY,
+                    width: actPoint.width, height: actPoint.height};
             }
+            this.drawObject('duplicate', null, true, points);
         }
     }
 
@@ -3304,14 +3236,12 @@ export class Draw {
             });
             this.imgCanvasPoints = points;
             let count: number = 0;
-            if ((!isBlazor() && parent.transform.straighten === 3 && !this.preventStraightening) ||
-                (isBlazor() && parent.transform.straighten === 5 && !this.preventStraightening)) {
+            if (parent.transform.straighten === 3 && !this.preventStraightening) {
                 this.preventStraightening = true;
                 const temp: number = parent.prevStraightenedDegree;
                 parent.prevStraightenedDegree = parent.transform.straighten;
                 parent.setStraighten(0);
-                if (isBlazor()) {parent.setStraighten(5); }
-                else {parent.setStraighten(3) };
+                parent.setStraighten(3);
                 parent.prevStraightenedDegree = temp;
                 this.preventStraightening = false;
             }
@@ -3349,18 +3279,12 @@ export class Draw {
         const toolbar: HTMLInputElement = document.querySelector('#' + id + '_currPos');
         if (toolbar) {toolbar.style.display = 'none'; }
         const obj: Object = {defToolbarItems : null };
-        if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'getDefToolbarItems', value: {obj: obj }});
-            if (obj['defToolbarItems'].length === 0 &&
-                (isNullOrUndefined(document.getElementById(id + '_toolbar'))) &&
-                parent.element.querySelector('#' + id + '_toolbarArea')) {
-                const height: number = parent.element.querySelector('#' + id + '_toolbarArea').clientHeight;
-                parent.notify('toolbar', { prop: 'setToolbarHeight', value: {height: height }});
-            }
-        } else {
-            if (parent.element.querySelector('#' + id + '_toolbarArea')) {
-                parent.toolbarHeight = parent.element.querySelector('#' + id + '_toolbarArea').clientHeight;
-            }
+        parent.notify('toolbar', { prop: 'getDefToolbarItems', value: {obj: obj }});
+        if (obj['defToolbarItems'].length === 0 &&
+            (isNullOrUndefined(document.getElementById(id + '_toolbar'))) &&
+            parent.element.querySelector('#' + id + '_toolbarArea')) {
+            const height: number = parent.element.querySelector('#' + id + '_toolbarArea').clientHeight;
+            parent.notify('toolbar', { prop: 'setToolbarHeight', value: {height: height }});
         }
         parent.reset(); parent.update();
         parent.transform.degree = 0; parent.transform.zoomFactor = 0; parent.isImageLoaded = false;
@@ -3413,9 +3337,7 @@ export class Draw {
         } else {
             this.reset(); this.openNewImage();
         }
-        if (!isBlazor()) {
-            (getComponent(document.getElementById(parent.element.id + '_dialog'), 'dialog') as Dialog).destroy();
-        }
+        (getComponent(document.getElementById(parent.element.id + '_dialog'), 'dialog') as Dialog).destroy();
         this.isImageEdited = false;
     }
 
@@ -3521,8 +3443,7 @@ export class Draw {
             this.openURL = url;
             if (parent.isImageLoaded && !parent.isChangesSaved && (this.isImageEdited || parent.pointColl.length > 0 || parent.objColl.length > 0)) {
                 this.isFileChanged = true;
-                if (!isBlazor()) {this.showDialogPopup(); }
-                else {parent.dotNetRef.invokeMethodAsync('UpdateDialog', true); }
+                this.showDialogPopup();
             } else {this.checkToolbarTemplate(inputElement, url); }
         }
     }
@@ -4061,52 +3982,8 @@ export class Draw {
             frameLineStyle: parent.toPascalCase(parent.frameObj.border) as FrameLineStyle, lineCount: parent.frameObj.amount};
         const frameChange: FrameChangeEventArgs = {cancel: false, previousFrameSetting: prevFrameSettings,
             currentFrameSetting: currFrameSettings };
-        if (isBlazor()) {
-            if (parent.events && parent.events.frameChanging.hasDelegate === true) {
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                (parent.dotNetRef.invokeMethodAsync('OnFrameChangingAsync', 'FrameChanging', frameChange, null) as any).then((args: FrameChangeEventArgs) => {
-                    if (!args.cancel) {
-                        this.setFrameObj(args.currentFrameSetting);
-                        const obj: Object = {currObj: {} as CurrentObject };
-                        parent.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: obj }});
-                        parent.notify('undo-redo', {prop: 'updateUndoRedoColl', onPropertyChange: false, value: {
-                            operation: 'frame', previousObj: obj['currObj'], previousObjColl: obj['currObj']['objColl'],
-                            previousPointColl: obj['currObj']['pointColl'], previousSelPointColl: obj['currObj']['selPointColl'],
-                            previousCropObj: extend({}, parent.cropObj, {}, true) as CurrentObject, previousText: null, currentText: null,
-                            previousFilter: null, isCircleCrop: null }});
-                        const fillColorDiv: HTMLElement = parent.element.querySelector('.e-ie-toolbar-e-frame-color');
-                        if (fillColorDiv) {
-                            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                            (parent.element.querySelector('.e-ie-toolbar-e-frame-color' + (parent as any).DDBPREVIEW) as HTMLElement).style.background = parent.frameObj.color;
-                        }
-                        const graColorDiv: HTMLElement = parent.element.querySelector('.e-ie-toolbar-e-frame-gradient');
-                        if (graColorDiv) {
-                            const noColorDiv: HTMLElement = document.querySelector('.e-dropdown-popup.e-frame-gradient-dd-btn');
-                            if (noColorDiv) {
-                                noColorDiv.querySelector('.e-nocolor-item').classList.remove('e-selected');
-                            }
-                            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                            parent.element.querySelector('.e-ie-toolbar-e-frame-gradient' + (parent as any).DDBPREVIEW).classList.remove('e-nocolor-item');
-                            if (parent.frameObj.gradientColor === '') {
-                                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                                parent.element.querySelector('.e-ie-toolbar-e-frame-gradient' + (parent as any).DDBPREVIEW).classList.add('e-nocolor-item');
-                            } else {
-                                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                                (parent.element.querySelector('.e-ie-toolbar-e-frame-gradient' + (parent as any).DDBPREVIEW) as HTMLElement).style.background = parent.frameObj.gradientColor;
-                            }
-                        }
-                        parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null } });
-                        parent.curFrameObjEvent = { currentFrameSetting: args.currentFrameSetting };
-                        parent.isFrameBtnClick = true;
-                    }
-                });
-            } else {
-                if (!frameChange.cancel) {this.setFrameObj(frameChange.currentFrameSetting); }
-            }
-        } else {
-            parent.trigger('frameChange', frameChange);
-            if (!frameChange.cancel) {this.setFrameObj(frameChange.currentFrameSetting); }
-        }
+        parent.trigger('frameChange', frameChange);
+        if (!frameChange.cancel) {this.setFrameObj(frameChange.currentFrameSetting); }
         return frameChange;
     }
 

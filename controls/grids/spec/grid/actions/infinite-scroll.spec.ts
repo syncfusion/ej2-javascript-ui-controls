@@ -5,6 +5,8 @@ import { Grid } from '../../../src/grid/base/grid';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Edit } from '../../../src/grid/actions/edit';
 import { Group } from '../../../src/grid/actions/group';
+import { Freeze } from '../../../src/grid/actions/freeze';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { Page } from '../../../src/grid/actions/page';
@@ -21,7 +23,7 @@ import { select } from '@syncfusion/ej2-base';
 import { infiniteGroupData } from '../../../spec/grid/base/datasource.spec';
 import { CommandColumn } from '../../../src/grid/actions/command-column';
 
-Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, CommandColumn, Aggregate);
+Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, CommandColumn, Aggregate, Freeze, VirtualScroll);
 
 let virtualData: Object[] = [];
 function virtualdataSource() {
@@ -1972,3 +1974,64 @@ describe('EJ2-72231- Cannot edit newly added row when infiniteScrolling enabled 
        gridObj = null;
    });
 }); 
+
+describe('EJ2-865027 - Coverage for Implementaion of enabling column virtualization with infinite scrolling => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData.slice(0, 500),
+                enableColumnVirtualization: true,
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { enableCache: true },
+                pageSettings: { pageSize: 50 },
+                frozenRows: 2,
+                frozenColumns: 1,
+                height: 400,
+                columns: [
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD2', headerText: 'FIELD2', width: 120 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 },
+                    { field: 'FIELD6', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD7', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD8', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD9', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD10', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD11', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD12', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD13', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD14', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD15', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD16', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD17', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD18', width: 150, textAlign: 'Right' },
+                    { field: 'FIELD19', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD20', width: 150, textAlign: 'Right' },
+                    { field: 'FIELD21', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD22', width: 300, textAlign: 'Right' },
+                    { field: 'FIELD23', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD24', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD25', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD26', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD27', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD28', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD29', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD30', width: 130, textAlign: 'Right' }
+                ]
+            }, done);
+    });
+    it('Scroll bottom for infinite scrolling', (done: Function) => {
+        gridObj.getContent().firstElementChild.scrollTop = gridObj.getContent().firstElementChild.scrollHeight;
+        setTimeout(done, 200);
+    });
+    it('Horizontal scroll for column virtualization', (done: Function) => {
+        gridObj.getContent().firstElementChild.scrollLeft = 1000;
+        setTimeout(done, 200);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

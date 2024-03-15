@@ -15,13 +15,11 @@ export class SmithchartLegend {
      */
     public legendItemGroup: Element;
 
-    public renderLegend(smithchart: Smithchart): SmithchartRect {
-        this.calculateLegendBounds(smithchart);
+    public renderLegend(smithchart: Smithchart): void {
         this._drawLegend(smithchart);
-        return this.legendActualBounds;
     }
 
-    private calculateLegendBounds(smithchart: Smithchart): void {
+    public calculateLegendBounds(smithchart: Smithchart): SmithchartRect {
         this.legendSeries = [];
         const padding: number = 10;
         const legend: SmithchartLegendSettingsModel = smithchart.legendSettings;
@@ -116,6 +114,7 @@ export class SmithchartLegend {
         if (legendSizeHeight != null) {
             this.legendActualBounds.height = legendSizeHeight;
         }
+        return this.legendActualBounds;
     }
 
     private _getLegendSize(smithchart: Smithchart, series: LegendSeries): SmithchartSize {
@@ -300,6 +299,7 @@ export class SmithchartLegend {
 
         let legendGroup: Element = smithchart.renderer.createGroup({ id: smithchart.element.id + '_svg' + '_Legend' + k.toString() });
         legendGroup['style']['cursor'] = legend.toggleVisibility ? 'pointer' : 'default';
+        legendGroup.setAttribute('tabindex', k === 0 ? '0' : '');
         let legendEventArgs: ISmithchartLegendRenderEventArgs = {
             text: legendSeries['text'],
             fill: legendSeries['fill'],
@@ -319,6 +319,7 @@ export class SmithchartLegend {
                 legend.textStyle.size = legend.textStyle.size || smithchart.themeStyle.legendLabelFont.size;
                 let element: Element = renderTextElement(options, legend.textStyle, legend.textStyle.color || smithchart.themeStyle.legendLabelFont.color, legendGroup, smithchart.themeStyle.legendLabelFont);
                 legendGroup.setAttribute('aria-label', legend.description || ('Show ' + options.text));
+                legendGroup.setAttribute('role', 'button');
                 legendGroup.appendChild(element);
                 this.legendItemGroup.appendChild(legendGroup);
             }

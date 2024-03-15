@@ -5,7 +5,7 @@ import { FormFieldAnnotationType, PdfAnnotationBase, PdfFormFieldBaseModel, PdfF
 import { DiagramHtmlElement } from "../drawing/html-element";
 import { PdfAnnotationBaseModel, PdfViewer, PdfViewerBase, IPageAnnotations } from "../index";
 import { CheckBoxFieldSettings, DropdownFieldSettings, PasswordFieldSettings, Item, ListBoxFieldSettings, RadioButtonFieldSettings, SignatureFieldSettings, TextFieldSettings, InitialFieldSettings, SignatureIndicatorSettings } from "../pdfviewer";
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { FormFieldModel, ItemModel } from "../pdfviewer-model";
 import { Dialog, Tooltip } from "@syncfusion/ej2-popups";
 import { Tab } from "@syncfusion/ej2-navigations";
@@ -2012,6 +2012,9 @@ export class FormDesigner {
                 (this.pdfViewer.nameTable as any)[(event.target as Element).id.split("_")[0]].name === formFieldsData[i].FormField.name) {
                 let oldValue = this.pdfViewerBase.formFieldCollection[i].FormField.value;
                 formFieldsData[i].FormField.value = (event.target as IElement).value;
+                if(this.pdfViewer.enableHtmlSanitizer){
+                    formFieldsData[i].FormField.value = SanitizeHtmlHelper.sanitize(formFieldsData[i].FormField.value);
+                }
                 (this.pdfViewer.nameTable as any)[formFieldsData[i].Key.split("_")[0]].value = formFieldsData[i].FormField.value;
                 this.pdfViewerBase.formFieldCollection[i].FormField.value = formFieldsData[i].FormField.value;
                 if (formFieldsData[i].Key.split("_")[0] !== (event.target as Element).id.split("_")[0]) {
@@ -3591,7 +3594,7 @@ export class FormDesigner {
         inputElement.style.textAlign = obj.alignment ? obj.alignment.toLowerCase() : 'left';
         inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
         inputElement.style.pointerEvents = obj.isReadonly ? (obj.isMultiline ? 'default' : 'none') : 'default';
-        inputElement.style.resize = obj.isMultiline && !this.pdfViewer.isFormDesignerToolbarVisible ? 'none' : 'default';
+        inputElement.style.resize = obj.isMultiline && !this.pdfViewer.isFormDesignerToolbarVisible ?  'none' : 'default';
         if (obj.isReadonly) {
             (inputElement as HTMLInputElement).disabled = true;
             inputElement.style.cursor = 'default';
@@ -3810,7 +3813,9 @@ export class FormDesigner {
         inputElement.style.backgroundColor = isPrint ? 'transparent' : background;
         inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
         if (obj.isReadonly) {
-            (inputElement.firstElementChild as HTMLInputElement).disabled = true;
+            if (!isNullOrUndefined(inputElement.firstElementChild)) {
+                (inputElement.firstElementChild as HTMLInputElement).disabled = true;
+            } 
             inputElement.style.cursor = 'default';
             inputElement.style.backgroundColor = 'transparent';
         }
@@ -5018,6 +5023,11 @@ export class FormDesigner {
             oldValue = selectedItem.borderColor;
             newValue = this.borderColorValue ? this.borderColorValue : selectedItem.borderColor;
         }
+        if(this.pdfViewer.enableHtmlSanitizer && this.borderColorValue){
+            this.borderColorValue = SanitizeHtmlHelper.sanitize(this.borderColorValue);
+        } else {
+            this.borderColorValue = this.borderColorValue;
+        }
         if (isUndoRedo) {
             element.style.borderColor = selectedItem.borderColor;
         } else {
@@ -5044,6 +5054,11 @@ export class FormDesigner {
             isBackgroundColorChanged = true;
             oldValue = selectedItem.backgroundColor;
             newValue = this.backgroundColorValue ? this.backgroundColorValue : selectedItem.backgroundColor;
+        }
+        if(this.pdfViewer.enableHtmlSanitizer && this.backgroundColorValue){
+            this.backgroundColorValue = SanitizeHtmlHelper.sanitize(this.backgroundColorValue);
+        } else {
+            this.backgroundColorValue = this.backgroundColorValue;
         }
         if (isUndoRedo) {
             if (selectedItem.formFieldAnnotationType == "RadioButton")
@@ -5075,6 +5090,11 @@ export class FormDesigner {
             isColorChanged = true;
             oldValue = selectedItem.color;
             newValue = this.fontColorValue ? this.fontColorValue : selectedItem.color;
+        }
+        if(this.pdfViewer.enableHtmlSanitizer && this.fontColorValue){
+            this.fontColorValue = SanitizeHtmlHelper.sanitize(this.fontColorValue);
+        } else {
+            this.fontColorValue = this.fontColorValue;
         }
         if (isUndoRedo) {
             element.style.color = selectedItem.color;
@@ -5165,7 +5185,7 @@ export class FormDesigner {
     private updateFontFamilyPropertyChange(selectedItem: any, element: any, isUndoRedo: boolean, index: number, formFieldsData: any) {
         let isFontFamilyChanged: boolean = false
         let oldValue: any, newValue: any;
-        let fontFamily = this.formFieldFontFamily ? this.formFieldFontFamily.value.toString() : "";
+        let fontFamily = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(this.formFieldFontFamily ? this.formFieldFontFamily.value.toString() : "") : (this.formFieldFontFamily ? this.formFieldFontFamily.value.toString() : "");
         if (selectedItem.fontFamily !== fontFamily) {
             isFontFamilyChanged = true;
             oldValue = selectedItem.fontFamily;
@@ -5296,6 +5316,11 @@ export class FormDesigner {
             oldValue = selectedItem.tooltip;
             newValue = this.formFieldTooltip.value;
         }
+        if (this.pdfViewer.enableHtmlSanitizer && this.formFieldTooltip.value){
+            this.formFieldTooltip.value = SanitizeHtmlHelper.sanitize(this.formFieldTooltip.value);
+        } else {
+            this.formFieldTooltip.value = this.formFieldTooltip.value
+        }
         if (isUndoRedo) {
             this.formFieldTooltip = new TextBox();
             this.formFieldTooltip.value = selectedItem.tooltip;
@@ -5320,6 +5345,11 @@ export class FormDesigner {
     private updateNamePropertyChange(selectedItem: any, element: any, isUndoRedo: boolean, index: number, formFieldsData: any) {
         let designerName = document.getElementById(selectedItem.id + "_designer_name");
         let zoomValue: number = this.pdfViewerBase.getZoomFactor();
+        if (this.pdfViewer.enableHtmlSanitizer && this.formFieldName.value){
+            this.formFieldName.value = SanitizeHtmlHelper.sanitize(this.formFieldName.value);
+        } else {
+            this.formFieldName.value = this.formFieldName.value;
+        }
         designerName.style.fontSize = selectedItem.fontSize ? (selectedItem.fontSize * zoomValue) + 'px' : (10 * zoomValue) + 'px';
         if (isUndoRedo) {
             designerName.innerHTML = selectedItem.name;
@@ -6712,22 +6742,22 @@ export class FormDesigner {
             drawingObject.isRequired = textFieldSettings.isRequired;
         }
         if (textFieldSettings.value && this.textFieldPropertyChanged.isValueChanged) {
-            drawingObject.value = textFieldSettings.value;
+            drawingObject.value = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(textFieldSettings.value) : textFieldSettings.value;
         }
         if ((textFieldSettings.backgroundColor && textFieldSettings.backgroundColor !== 'white') && this.textFieldPropertyChanged.isBackgroundColorChanged) {
-            drawingObject.backgroundColor = textFieldSettings.backgroundColor;
+            drawingObject.backgroundColor = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(textFieldSettings.backgroundColor) : textFieldSettings.backgroundColor;
         }
         if ((textFieldSettings.borderColor && textFieldSettings.borderColor !== 'black') && this.textFieldPropertyChanged.isBorderColorChanged) {
-            drawingObject.borderColor = textFieldSettings.borderColor;
+            drawingObject.borderColor = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(textFieldSettings.borderColor) : textFieldSettings.borderColor;
         }
         if ((textFieldSettings.alignment && textFieldSettings.alignment !== 'Left') && this.textFieldPropertyChanged.isAlignmentChanged) {
             drawingObject.alignment = textFieldSettings.alignment;
         }
         if ((textFieldSettings.color && textFieldSettings.color !== 'black') && this.textFieldPropertyChanged.isColorChanged) {
-            drawingObject.color = textFieldSettings.color;
+            drawingObject.color = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(textFieldSettings.color) : textFieldSettings.color;
         }
         if ((textFieldSettings.fontFamily && textFieldSettings.fontFamily !== 'Helvetica') && this.textFieldPropertyChanged.isFontFamilyChanged) {
-            drawingObject.fontFamily = textFieldSettings.fontFamily;
+            drawingObject.fontFamily = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(textFieldSettings.fontFamily) : textFieldSettings.fontFamily;
         }
         if ((textFieldSettings.fontSize && textFieldSettings.fontSize !== 10) && this.textFieldPropertyChanged.isFontSizeChanged) {
             drawingObject.fontSize = textFieldSettings.fontSize;
@@ -6736,10 +6766,10 @@ export class FormDesigner {
             (drawingObject as any).fontStyle = this.getFontStyleName(textFieldSettings.fontStyle, drawingObject);;
         }
         if (textFieldSettings.name && this.textFieldPropertyChanged.isNameChanged) {
-            drawingObject.name = textFieldSettings.name;
+            drawingObject.name = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(textFieldSettings.name) : textFieldSettings.name;
         }
         if (textFieldSettings.tooltip && this.textFieldPropertyChanged.isToolTipChanged) {
-            drawingObject.tooltip = textFieldSettings.tooltip;
+            drawingObject.tooltip = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(textFieldSettings.tooltip) : textFieldSettings.tooltip;
         }
         if ((textFieldSettings.thickness && textFieldSettings.thickness !== 1) && this.textFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = textFieldSettings.thickness;
@@ -6770,19 +6800,19 @@ export class FormDesigner {
             drawingObject.value = passwordFieldSettings.value;
         }
         if ((passwordFieldSettings.backgroundColor && passwordFieldSettings.backgroundColor !== 'white') && this.passwordFieldPropertyChanged.isBackgroundColorChanged) {
-            drawingObject.backgroundColor = passwordFieldSettings.backgroundColor;
+            drawingObject.backgroundColor = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(passwordFieldSettings.backgroundColor) : passwordFieldSettings.backgroundColor;
         }
         if ((passwordFieldSettings.borderColor && passwordFieldSettings.borderColor !== 'black') && this.passwordFieldPropertyChanged.isBorderColorChanged) {
-            drawingObject.borderColor = passwordFieldSettings.borderColor;
+            drawingObject.borderColor = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(passwordFieldSettings.borderColor) : passwordFieldSettings.borderColor;
         }
         if ((passwordFieldSettings.alignment && passwordFieldSettings.alignment !== 'Left') && this.passwordFieldPropertyChanged.isAlignmentChanged) {
             drawingObject.alignment = passwordFieldSettings.alignment;
         }
         if ((passwordFieldSettings.color && passwordFieldSettings.color !== 'black') && this.passwordFieldPropertyChanged.isColorChanged) {
-            drawingObject.color = passwordFieldSettings.color;
+            drawingObject.color = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(passwordFieldSettings.color) : passwordFieldSettings.color;
         }
         if ((passwordFieldSettings.fontFamily && passwordFieldSettings.fontFamily !== 'Helvetica') && this.passwordFieldPropertyChanged.isFontFamilyChanged) {
-            drawingObject.fontFamily = passwordFieldSettings.fontFamily;
+            drawingObject.fontFamily = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(passwordFieldSettings.fontFamily) : passwordFieldSettings.fontFamily;
         }
         if ((passwordFieldSettings.fontSize && passwordFieldSettings.fontSize !== 10) && this.passwordFieldPropertyChanged.isFontSizeChanged) {
             drawingObject.fontSize = passwordFieldSettings.fontSize;
@@ -6791,10 +6821,10 @@ export class FormDesigner {
             (drawingObject as any).fontStyle = this.getFontStyleName(passwordFieldSettings.fontStyle, drawingObject);
         }
         if (passwordFieldSettings.name && this.passwordFieldPropertyChanged.isNameChanged) {
-            drawingObject.name = passwordFieldSettings.name;
+            drawingObject.name = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(passwordFieldSettings.name) : passwordFieldSettings.name;
         }
         if (passwordFieldSettings.tooltip && this.passwordFieldPropertyChanged.isToolTipChanged) {
-            drawingObject.tooltip = passwordFieldSettings.tooltip;
+            drawingObject.tooltip = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(passwordFieldSettings.tooltip) : passwordFieldSettings.tooltip;
         }
         if ((passwordFieldSettings.thickness && passwordFieldSettings.thickness !== 1) && this.passwordFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = passwordFieldSettings.thickness;
@@ -6822,16 +6852,16 @@ export class FormDesigner {
             drawingObject.value = checkBoxFieldSettings.value;
         }
         if ((checkBoxFieldSettings.backgroundColor && checkBoxFieldSettings.backgroundColor !== 'white') && this.checkBoxFieldPropertyChanged.isBackgroundColorChanged) {
-            drawingObject.backgroundColor = checkBoxFieldSettings.backgroundColor;
+            drawingObject.backgroundColor = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(checkBoxFieldSettings.backgroundColor) : checkBoxFieldSettings.backgroundColor;
         }
         if ((checkBoxFieldSettings.borderColor && checkBoxFieldSettings.borderColor !== 'black') && this.checkBoxFieldPropertyChanged.isBorderColorChanged) {
-            drawingObject.borderColor = checkBoxFieldSettings.borderColor;
+            drawingObject.borderColor = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(checkBoxFieldSettings.borderColor) : checkBoxFieldSettings.borderColor;
         }
         if (checkBoxFieldSettings.name && this.checkBoxFieldPropertyChanged.isNameChanged) {
-            drawingObject.name = checkBoxFieldSettings.name;
+            drawingObject.name = SanitizeHtmlHelper.sanitize(checkBoxFieldSettings.name);
         }
         if (checkBoxFieldSettings.tooltip && this.checkBoxFieldPropertyChanged.isToolTipChanged) {
-            drawingObject.tooltip = checkBoxFieldSettings.tooltip;
+            drawingObject.tooltip = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(checkBoxFieldSettings.tooltip) : checkBoxFieldSettings.tooltip;
         }
         if ((checkBoxFieldSettings.thickness && checkBoxFieldSettings.thickness !== 1) && this.checkBoxFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = checkBoxFieldSettings.thickness;
@@ -6859,16 +6889,16 @@ export class FormDesigner {
             drawingObject.value = radioButtonFieldSettings.value;
         }
         if ((radioButtonFieldSettings.backgroundColor && radioButtonFieldSettings.backgroundColor !== 'white') && this.radioButtonFieldPropertyChanged.isBackgroundColorChanged) {
-            drawingObject.backgroundColor = radioButtonFieldSettings.backgroundColor;
+            drawingObject.backgroundColor = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(radioButtonFieldSettings.backgroundColor) : radioButtonFieldSettings.backgroundColor;
         }
         if ((radioButtonFieldSettings.borderColor && radioButtonFieldSettings.borderColor !== 'black') && this.radioButtonFieldPropertyChanged.isBorderColorChanged) {
-            drawingObject.borderColor = radioButtonFieldSettings.borderColor;
+            drawingObject.borderColor = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(radioButtonFieldSettings.borderColor) : radioButtonFieldSettings.borderColor;
         }
         if (radioButtonFieldSettings.name && this.radioButtonFieldPropertyChanged.isNameChanged) {
-            drawingObject.name = radioButtonFieldSettings.name;
+            drawingObject.name = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(radioButtonFieldSettings.name) : radioButtonFieldSettings.name;
         }
         if (radioButtonFieldSettings.tooltip && this.radioButtonFieldPropertyChanged.isToolTipChanged) {
-            drawingObject.tooltip = radioButtonFieldSettings.tooltip;
+            drawingObject.tooltip = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(radioButtonFieldSettings.tooltip) : radioButtonFieldSettings.tooltip;
         }
         if ((radioButtonFieldSettings.thickness && radioButtonFieldSettings.thickness !== 1) && this.radioButtonFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = radioButtonFieldSettings.thickness;
@@ -6893,19 +6923,20 @@ export class FormDesigner {
             drawingObject.isRequired = dropdownFieldSettings.isRequired;
         }
         if ((dropdownFieldSettings.backgroundColor && dropdownFieldSettings.backgroundColor !== 'white') && this.dropdownFieldPropertyChanged.isBackgroundColorChanged) {
-            drawingObject.backgroundColor = dropdownFieldSettings.backgroundColor;
+            drawingObject.backgroundColor = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(dropdownFieldSettings.backgroundColor) : dropdownFieldSettings.backgroundColor;
         }
         if ((dropdownFieldSettings.borderColor && dropdownFieldSettings.borderColor !== 'black') && this.dropdownFieldPropertyChanged.isBorderColorChanged) {
-            drawingObject.borderColor = dropdownFieldSettings.borderColor;
+            drawingObject.borderColor = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(dropdownFieldSettings.borderColor) : dropdownFieldSettings.borderColor;
         }
         if ((dropdownFieldSettings.alignment && dropdownFieldSettings.alignment !== 'Left') && this.dropdownFieldPropertyChanged.isAlignmentChanged) {
             drawingObject.alignment = dropdownFieldSettings.alignment;
         }
         if ((dropdownFieldSettings.color && dropdownFieldSettings.color !== 'black') && this.dropdownFieldPropertyChanged.isColorChanged) {
-            drawingObject.color = dropdownFieldSettings.color;
+            drawingObject.color = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(dropdownFieldSettings.color) : dropdownFieldSettings.color;
         }
         if ((dropdownFieldSettings.fontFamily && dropdownFieldSettings.fontFamily !== 'Helvetica') && this.dropdownFieldPropertyChanged.isFontFamilyChanged) {
-            drawingObject.fontFamily = dropdownFieldSettings.fontFamily;
+
+            drawingObject.fontFamily = SanitizeHtmlHelper.sanitize(dropdownFieldSettings.fontFamily);
         }
         if ((dropdownFieldSettings.fontSize && dropdownFieldSettings.fontSize !== 10) && this.dropdownFieldPropertyChanged.isFontSizeChanged) {
             drawingObject.fontSize = dropdownFieldSettings.fontSize;
@@ -6914,10 +6945,10 @@ export class FormDesigner {
             (drawingObject as any).fontStyle = this.getFontStyleName(dropdownFieldSettings.fontStyle, drawingObject);;
         }
         if (dropdownFieldSettings.name && this.dropdownFieldPropertyChanged.isNameChanged) {
-            drawingObject.name = dropdownFieldSettings.name;
+            drawingObject.name = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(dropdownFieldSettings.name) : dropdownFieldSettings.name;
         }
         if (dropdownFieldSettings.tooltip && this.dropdownFieldPropertyChanged.isToolTipChanged) {
-            drawingObject.tooltip = dropdownFieldSettings.tooltip;
+            drawingObject.tooltip = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(dropdownFieldSettings.tooltip) : dropdownFieldSettings.tooltip;
         }
         if ((dropdownFieldSettings && dropdownFieldSettings.thickness !== 1) && this.dropdownFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = dropdownFieldSettings.thickness;
@@ -6942,19 +6973,19 @@ export class FormDesigner {
             drawingObject.isRequired = listBoxFieldSettings.isRequired;
         }
         if ((listBoxFieldSettings.backgroundColor && listBoxFieldSettings.backgroundColor !== 'white') && this.listBoxFieldPropertyChanged.isBackgroundColorChanged) {
-            drawingObject.backgroundColor = listBoxFieldSettings.backgroundColor;
+            drawingObject.backgroundColor = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(listBoxFieldSettings.backgroundColor) : listBoxFieldSettings.backgroundColor;
         }
         if ((listBoxFieldSettings.borderColor && listBoxFieldSettings.borderColor !== 'black') && this.listBoxFieldPropertyChanged.isBorderColorChanged) {
-            drawingObject.borderColor = listBoxFieldSettings.borderColor;
+            drawingObject.borderColor = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(listBoxFieldSettings.borderColor) : listBoxFieldSettings.borderColor;
         }
         if ((listBoxFieldSettings.alignment && listBoxFieldSettings.alignment !== 'Left') && this.listBoxFieldPropertyChanged.isAlignmentChanged) {
             drawingObject.alignment = listBoxFieldSettings.alignment;
         }
         if ((listBoxFieldSettings.color && listBoxFieldSettings.color !== 'black') && this.listBoxFieldPropertyChanged.isColorChanged) {
-            drawingObject.color = listBoxFieldSettings.color;
+            drawingObject.color = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(listBoxFieldSettings.color) : listBoxFieldSettings.color;
         }
         if ((listBoxFieldSettings.fontFamily && listBoxFieldSettings.fontFamily !== 'Helvetica') && this.listBoxFieldPropertyChanged.isFontFamilyChanged) {
-            drawingObject.fontFamily = listBoxFieldSettings.fontFamily;
+            drawingObject.fontFamily = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(listBoxFieldSettings.fontFamily) : listBoxFieldSettings.fontFamily;
         }
         if ((listBoxFieldSettings.fontSize && listBoxFieldSettings.fontSize !== 10) && this.listBoxFieldPropertyChanged.isFontSizeChanged) {
             drawingObject.fontSize = listBoxFieldSettings.fontSize;
@@ -6963,10 +6994,10 @@ export class FormDesigner {
             (drawingObject as any).fontStyle = this.getFontStyleName(listBoxFieldSettings.fontStyle, drawingObject);;
         }
         if (listBoxFieldSettings.name && this.listBoxFieldPropertyChanged.isNameChanged) {
-            drawingObject.name = listBoxFieldSettings.name;
+            drawingObject.name = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(listBoxFieldSettings.name) : listBoxFieldSettings.name;
         }
         if (listBoxFieldSettings.tooltip && this.listBoxFieldPropertyChanged.isToolTipChanged) {
-            drawingObject.tooltip = listBoxFieldSettings.tooltip;
+            drawingObject.tooltip = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(listBoxFieldSettings.tooltip) : listBoxFieldSettings.tooltip;
         }
         if ((listBoxFieldSettings.thickness && listBoxFieldSettings.thickness !== 1) && this.listBoxFieldPropertyChanged.isThicknessChanged) {
             drawingObject.thickness = listBoxFieldSettings.thickness;
@@ -6996,13 +7027,13 @@ export class FormDesigner {
                 signatureField.visibility = initialFieldSettings.visibility;
             }
             if (initialFieldSettings.tooltip && this.initialFieldPropertyChanged.isTooltipChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
-                signatureField.tooltip = initialFieldSettings.tooltip;
+                signatureField.tooltip = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(initialFieldSettings.tooltip) : initialFieldSettings.tooltip;
             }
             if ((!isNullOrUndefined(initialFieldSettings.thickness) && isSetFormFieldMode === true) && this.initialFieldPropertyChanged.isThicknessChanged) {
                 signatureField.thickness = initialFieldSettings.thickness;
             }
             if (initialFieldSettings.name && this.initialFieldPropertyChanged.isNameChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
-                signatureField.name = initialFieldSettings.name;
+                signatureField.name = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(initialFieldSettings.name) : initialFieldSettings.name;
             }
             if (!isNullOrUndefined(initialFieldSettings.isPrint) && this.initialFieldPropertyChanged.isPrintChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
                 signatureField.isPrint = initialFieldSettings.isPrint;
@@ -7019,13 +7050,13 @@ export class FormDesigner {
                 signatureField.visibility = signatureFieldSettings.visibility;
             }
             if (signatureFieldSettings.tooltip && this.signatureFieldPropertyChanged.isTooltipChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
-                signatureField.tooltip = signatureFieldSettings.tooltip;
+                signatureField.tooltip = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(signatureFieldSettings.tooltip) : signatureFieldSettings.tooltip;
             }
             if ((!isNullOrUndefined(signatureFieldSettings.thickness) && isSetFormFieldMode === true) && this.signatureFieldPropertyChanged.isThicknessChanged) {
                 signatureField.thickness = signatureFieldSettings.thickness;
             }
             if (signatureFieldSettings.name && this.signatureFieldPropertyChanged.isNameChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
-                signatureField.name = signatureFieldSettings.name;
+                signatureField.name = this.pdfViewer.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(signatureFieldSettings.name) : signatureFieldSettings.name;
             }
             if (!isNullOrUndefined(signatureFieldSettings.isPrint) && this.signatureFieldPropertyChanged.isPrintChanged && !this.pdfViewer.magnificationModule.isFormFieldPageZoomed) {
                 signatureField.isPrint = signatureFieldSettings.isPrint;

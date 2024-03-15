@@ -279,7 +279,7 @@ export class TextFormFieldDialog {
      * @returns {void}
      */
     public loadTextDialog(local?: L10n): void {
-        let inline: ElementBox = this.owner.selection.getCurrentFormField();
+        let inline: ElementBox = this.owner.selectionModule.getCurrentFormField();
         if (inline instanceof FieldElementBox) {
             this.fieldBegin = inline;
             let data: TextFormField = inline.formFieldData as TextFormField;
@@ -399,7 +399,7 @@ export class TextFormFieldDialog {
                 formField.name = SanitizeHtmlHelper.sanitize(this.bookmarkTextInput.value);
                 formField.helpText = SanitizeHtmlHelper.sanitize(this.tooltipTextInput.value);
                 formField.enabled = this.fillInEnable.checked;
-                this.owner.editor.editFormField('Text', formField);
+                this.owner.editorModule.editFormField('Text', formField);
                 this.closeTextField();
             }
         } else {

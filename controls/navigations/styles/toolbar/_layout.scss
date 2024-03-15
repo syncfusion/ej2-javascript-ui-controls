@@ -98,7 +98,7 @@
         }
       }
 
-      &:not(.e-separator) {
+      &:not(.e-separator):not(.e-spacer) {
         min-width: $tbar-bgr-item-size;
         padding: $tbar-item-bgr-padding;
       }
@@ -312,7 +312,7 @@
       }
     }
   }
-
+  
   .e-toolbar {
     border-radius: $tbar-radius;
     display: block;
@@ -342,6 +342,7 @@
         }
       }
     }
+  
 
     .e-blazor-toolbar-items {
       position: absolute;
@@ -481,7 +482,7 @@
       vertical-align: middle;
       width: auto;
       flex: 0 0 auto;
-      
+
       &.e-spacer {
         flex-grow: 1;
       }
@@ -545,7 +546,7 @@
         }
       }
 
-      &:not(.e-separator) {
+      &:not(.e-separator):not(.e-spacer) {
         height: inherit;
         min-width: $tbar-item-nrml-minwidth;
         padding: $tbar-item-nrml-padding;
@@ -924,7 +925,7 @@
           }
         }
       }
-
+      
       .e-toolbar-item {
 
         .e-tbar-btn {
@@ -996,10 +997,8 @@
         }
 
         &:not(.e-tbar-pos) {
-
           .e-toolbar-item:first-child {
             margin-left: 0;
-            margin-right: $tbar-item-nrml-mrgn;
           }
         }
 

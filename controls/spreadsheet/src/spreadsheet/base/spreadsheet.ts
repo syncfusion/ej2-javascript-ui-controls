@@ -21,7 +21,7 @@ import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectEvent
 import { Dialog, ActionEvents, Overlay } from '../services/index';
 import { ServiceLocator } from '../../workbook/services/index';
 import { SheetModel, getColumnsWidth, getSheetIndex, WorkbookHyperlink, HyperlinkModel, DefineNameModel } from './../../workbook/index';
-import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, getCellAddress, getColumnHeaderText, SortCollectionModel  } from './../../workbook/common/index';
+import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, getCellAddress, getColumnHeaderText, SortCollectionModel } from './../../workbook/common/index';
 import { BeforeCellFormatArgs, afterHyperlinkCreate, getColIndex, CellStyleModel, setLinkModel } from './../../workbook/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, WorkbookInsert, WorkbookDelete, WorkbookMerge } from './../../workbook/index';
 import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate, DataSourceChangedEventArgs } from './../../workbook/index';
@@ -38,7 +38,7 @@ import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberF
 import { RefreshValueArgs, Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';
 import { Sort, Filter, SpreadsheetImage, SpreadsheetChart } from '../integrations/index';
 import { isNumber, getColumn, WorkbookFilter, refreshInsertDelete, InsertDeleteEventArgs, RangeModel } from '../../workbook/index';
-import { PredicateModel } from '@syncfusion/ej2-grids';
+import { PredicateModel, fltrPrevent } from '@syncfusion/ej2-grids';
 import { RibbonItemModel } from '../../ribbon/index';
 import { DataValidation } from '../actions/index';
 import { WorkbookDataValidation, WorkbookConditionalFormat, WorkbookFindAndReplace, WorkbookAutoFill } from '../../workbook/actions/index';
@@ -55,7 +55,7 @@ import { updateScroll, SelectionMode, clearCopy, isImported, clearUndoRedoCollec
  * ```html
  * <div id='spreadsheet'></div>
  * <script>
- *  var spreadsheetObj = new Spreadsheet();
+ *  let spreadsheetObj = new Spreadsheet();
  *  spreadsheetObj.appendTo('#spreadsheet');
  * </script>
  * ```
@@ -429,24 +429,6 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public cellEdit: EmitType<CellEditEventArgs>;
 
     /**
-     * Triggers when the cell has been edited.
-     * ```html
-     * <div id='Spreadsheet'></div>
-     * ```
-     * ```typescript
-     * new Spreadsheet({
-     *       cellEdited: (args: CellEditEventArgs) => {
-     *       }
-     *      ...
-     *  }, '#Spreadsheet');
-     * ```
-     *
-     * @event cellEdited
-     */
-    @Event()
-    public cellEdited: EmitType<CellEditEventArgs>;
-
-    /**
      * Triggers every time a request is made to access cell information.
      * This will be triggered when editing a cell.
      * ```html
@@ -464,6 +446,24 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     @Event()
     public cellEditing: EmitType<CellEditEventArgs>;
+
+    /**
+     * Triggers when the cell has been edited.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       cellEdited: (args: CellEditEventArgs) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     *
+     * @event cellEdited
+     */
+    @Event()
+    public cellEdited: EmitType<CellEditEventArgs>;
 
     /**
      * Triggers when the edited cell is saved.
@@ -2506,7 +2506,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * Destroys the component (detaches/removes all event handlers, attributes, classes, and empties the component element).
      *
-     * @returns {void} - Destroys the component
+     * {% codeBlock src='spreadsheet/destroy/index.md' %}{% endcodeBlock %}
+     *
+     * @returns {void} - Destroys the component.
      */
     public destroy(): void {
         if ((this as { isReact?: boolean }).isReact) {
@@ -3152,6 +3154,16 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (!this.allowFiltering) { return Promise.reject(); }
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const promise: Promise<void> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
+        if (predicates && predicates.length) {
+            let eventArgs: { instance: { options: { type?: string, format?: string } }, arg3: number | string, arg8?: number | string,
+                arg2: string, arg7?: string };
+            predicates.forEach((predicate: PredicateModel) => {
+                eventArgs = { instance: { options: { type: predicate.type, format: predicate.type === 'date' && 'yMd' } },
+                    arg3: <string>predicate.value, arg2: predicate.operator };
+                this.notify(fltrPrevent, eventArgs);
+                predicate.value = eventArgs.arg3;
+            });
+        }
         const filterArgs: { promise: Promise<void>, predicates?: PredicateModel[], range?: string, isInternal: boolean } = { predicates:
             predicates, range: range, isInternal: true, promise: promise };
         this.notify(initiateFilterUI, filterArgs);

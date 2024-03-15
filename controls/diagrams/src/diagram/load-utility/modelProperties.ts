@@ -17,7 +17,7 @@ import { NodeProperties } from "./nodeProperties";
 import { PortProperties } from "./portProperties";
 
 
-export class EJ1SerializationModule {
+export class Ej1Serialization {
 
     private diagram: Diagram;
 
@@ -492,7 +492,7 @@ export class EJ1SerializationModule {
         /**
          * Returns the module name
          */
-        return 'EJ1SerializationModule';
+        return 'Ej1Serialization';
 
     }
 

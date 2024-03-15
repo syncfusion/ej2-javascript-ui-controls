@@ -1,7 +1,7 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase } from '../index';
 import {FormFieldsBase, AnnotationRenderer, ShapeAnnotationBase, PdfLayer, PopupAnnotationBase, FreeTextAnnotationBase, MeasureShapeAnnotationBase, AnnotBounds, TextMarkupAnnotationBase, SignatureAnnotationBase, InkSignatureAnnotation, ImageStructureBase  } from './index';
-import { PdfAnnotationBorder, PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, PdfPopupAnnotation, PdfFreeTextAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfInkAnnotation, PdfLineAnnotation, PdfRectangleAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfPolygonAnnotation, PdfPolyLineAnnotation , PdfAnnotation, PdfFont, PdfAnnotationCollection, PdfAngleMeasurementAnnotation, _PdfCrossReference, _PdfDictionary, _PdfStream, PdfRubberStampAnnotationIcon, PdfAnnotationState, PdfAnnotationStateModel, _PdfReference, _ContentParser, _stringToBytes, _bytesToString, _PdfRecord, _encode, _PdfBaseStream } from '@syncfusion/ej2-pdf';
+import { PdfAnnotationBorder, PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, PdfPopupAnnotation, PdfFreeTextAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfInkAnnotation, PdfLineAnnotation, PdfRectangleAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfPolygonAnnotation, PdfPolyLineAnnotation , PdfAnnotation, PdfFont, PdfAnnotationCollection, PdfAngleMeasurementAnnotation, _PdfCrossReference, _PdfDictionary, _PdfStream, PdfRubberStampAnnotationIcon, PdfAnnotationState, PdfAnnotationStateModel, _PdfReference, _ContentParser, _stringToBytes, _bytesToString, _PdfRecord, _encode, _PdfBaseStream, PdfPageSettings, PdfMargins, PdfTemplate, _JsonDocument } from '@syncfusion/ej2-pdf';
 import { Matrix, Rect, Size } from '@syncfusion/ej2-drawings';
 
 /**
@@ -343,26 +343,39 @@ export class PageRenderer{
                                 }
                             } else {
                                 // If the rotate angle is not specified in the annotation dictionary, then calculate it based on the page rotation.
-                                rubberStampAnnotation.RotateAngle = 360 - (Math.abs(stampAnnotation.rotate * 90) - (pageRotation * 90));
+                                rubberStampAnnotation.RotateAngle = 360 - (Math.abs(stampAnnotation.rotate) - (pageRotation * 90));
                                 let rubberStampAnnotationAngle: number = rubberStampAnnotation.RotateAngle;
-                                if (rubberStampAnnotation.RotateAngle > 360) {
+                                if (rubberStampAnnotation.RotateAngle >= 360) {
                                     rubberStampAnnotation.RotateAngle = rubberStampAnnotationAngle - 360;
                                 }
                             }
+                            let isBoundsEqual: boolean = false;
                             if (rubberStampAnnotation.RotateAngle != 0) {
-
+                                isBoundsEqual = (
+                                    Math.ceil(stampAnnotation._innerTemplateBounds.x * 100) / 100 === Math.ceil(stampAnnotation.bounds.x * 100) / 100 &&
+                                    Math.ceil(stampAnnotation._innerTemplateBounds.y * 100) / 100 === Math.ceil(stampAnnotation.bounds.y * 100) / 100 &&
+                                    Math.ceil(stampAnnotation._innerTemplateBounds.width * 100) / 100 === Math.ceil(stampAnnotation.bounds.width * 100) / 100 &&
+                                    Math.ceil(stampAnnotation._innerTemplateBounds.height * 100) / 100 === Math.ceil(stampAnnotation.bounds.height * 100) / 100
+                                );
+                            }
+                            if ((rubberStampAnnotation.RotateAngle != 0 && isBoundsEqual) || (rubberStampAnnotation.RotateAngle == 0)) {
+                                rubberStampAnnotation.Rect = this.getBounds(stampAnnotation.bounds, height, width, pageRotation);
+                            }
+                            else {
                                 let bounds: Rect = this.getRubberStampBounds(stampAnnotation._innerTemplateBounds, stampAnnotation.bounds, height, width, pageRotation);
                                 rubberStampAnnotation.Rect = bounds;
                             }
-                            else {
-                                rubberStampAnnotation.Rect = this.getBounds(stampAnnotation.bounds, height, width, pageRotation)
-                            }
-                            if (rubberStampAnnotation.Rect.y) {
+                            if (rubberStampAnnotation.Rect.y < 0) {
                                 let cropRect: Rect = new Rect(rubberStampAnnotation.Rect.x, loadedPage.cropBox[1] + rubberStampAnnotation.Rect.y, rubberStampAnnotation.Rect.width, rubberStampAnnotation.Rect.height);
                                 rubberStampAnnotation.Rect = this.getBounds(cropRect, height, width, pageRotation);
                             }
                             rubberStampAnnotation.Icon = stampAnnotation.icon;
-                            rubberStampAnnotation.ModifiedDate = stampAnnotation.modifiedDate.toString();
+                            if (!isNullOrUndefined(stampAnnotation.modifiedDate)){
+                                rubberStampAnnotation.ModifiedDate = this.formatDate(stampAnnotation.modifiedDate);
+                            }
+                            else{
+                                rubberStampAnnotation.ModifiedDate = this.formatDate(new Date());
+                            }
                             rubberStampAnnotation.Opacity = stampAnnotation.opacity;
                             rubberStampAnnotation.pageNumber = pageNumber;
                             let dictionary: _PdfDictionary = annotation._dictionary.get('AP');
@@ -410,18 +423,6 @@ export class PageRenderer{
                                     rubberStampAnnotation.Subject = stampAnnotation.icon.toString();
                                 }
                             }
-                            if (isNullOrUndefined(dictionary)) {
-                                let pdfReference: any = annotation._dictionary.get('AP');
-                                if (!isNullOrUndefined(pdfReference) && !isNullOrUndefined(pdfReference.dictionary) && (pdfReference.dictionary.has('N')) ) {
-                                    let ap_dictionary: any = pdfReference.dictionary;
-                                    if (!isNullOrUndefined(ap_dictionary)) {
-                                        this.findStampImage(annotation);
-                                    }
-                                }
-                            }
-                            else if (dictionary.has('N')) {
-                                this.findStampImage(annotation)
-                            }
                             rubberStampAnnotation.IsMaskedImage = this.isMaskedImage;
                             rubberStampAnnotation.Apperarance = this.htmldata;
                             if (stampAnnotation._dictionary.has('CustomData')) {
@@ -435,6 +436,26 @@ export class PageRenderer{
                             }
                             this.rubberStampAnnotationList.push(rubberStampAnnotation);
                             this.annotationOrder.push(rubberStampAnnotation);
+                            if (isNullOrUndefined(dictionary)) {
+                                let pdfReference: any = annotation._dictionary.get('AP');
+                                if (!isNullOrUndefined(pdfReference) && !isNullOrUndefined(pdfReference.dictionary) && (pdfReference.dictionary.has('N')) ) {
+                                    let ap_dictionary: any = pdfReference.dictionary;
+                                    if (!isNullOrUndefined(ap_dictionary)) {
+                                        let template: PdfTemplate = annotation.createTemplate();
+                                        if(template.size[0] === 0 || template.size[1] === 0 || isNullOrUndefined(template._appearance))
+                                            this.findStampImage(annotation);
+                                        else
+                                            this.findStampTemplate(annotation,rubberStampAnnotation,pageRotation);
+                                    }
+                                }
+                            }
+                            else if (dictionary.has('N')) {
+                                let template: PdfTemplate = annotation.createTemplate();
+                                if(template.size[0] === 0 || template.size[1] === 0 || isNullOrUndefined(template._appearance))
+                                    this.findStampImage(annotation)
+                                else
+                                    this.findStampTemplate(annotation,rubberStampAnnotation,pageRotation);
+                            }
                         }
                     
                     }
@@ -507,6 +528,23 @@ export class PageRenderer{
             annotationOrder: this.annotationOrder };
     }
 
+    private formatDate(date: Date): string {
+
+        const month: string = this.datePadding(date.getMonth() + 1); // Months are zero-based
+        const day: string = this.datePadding(date.getDate());
+        const year: number = date.getFullYear();
+        const hours: string = this.datePadding(date.getHours());
+        const minutes: string = this.datePadding(date.getMinutes());
+        const seconds: string = this.datePadding(date.getSeconds());
+
+        return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
+    }
+
+    // Pad the numbers with leading zeros if they are single digits
+    private datePadding(number: number): string {
+        return number < 10 ? ('0' + number) : number.toString();
+    }
+
     /**
      * @private
      * @param annotation 
@@ -523,6 +561,101 @@ export class PageRenderer{
 
         }
     }
+
+    /**
+     * @private
+     * @param annotation 
+     */
+    public findStampTemplate(annotation: PdfRubberStampAnnotation,rubberStampAnnotation: any,pageRotation: number) {
+        // Create a template from the appearance of rubber stamp annotation
+        let template: PdfTemplate = annotation.createTemplate();
+        let templateData: _JsonDocument = new _JsonDocument();
+        //Store custom stamp model calss
+        rubberStampAnnotation.template = template._appearance;
+        rubberStampAnnotation.templateSize = template.size;
+        let stampDocument: PdfDocument = new PdfDocument(this.readFromResources());
+        // Add a new page with template size and no margins
+        let pageSettings: PdfPageSettings = new PdfPageSettings();
+        pageSettings.margins = new PdfMargins(0);
+        // pageSettings.rotation = this.getPageRotation(annotation);
+        pageSettings.rotation = pageRotation;
+        pageSettings.size = template.size;
+        let page: PdfPage = stampDocument.addPage(pageSettings);
+        // Draw template into new page graphics
+        page.graphics.drawTemplate(template, {x: 0, y: 0, width: template.size[0], height: template.size[1]});
+        // Remove existing PDF page at index 0
+        stampDocument.removePage(0);
+        // Save the PDF document which have appearance template
+        let data: string =  'data:application/pdf;base64,' + _encode(stampDocument.save());
+        data = this.pdfViewerBase.checkDocumentData(data);
+        let fileByteArray: any = this.pdfViewerBase.convertBase64(data);
+        this.pdfViewerBase.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageStampCollection', password: null, pageIndex: 0, zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, isZoomMode: false, AnnotName: rubberStampAnnotation.AnnotName, rubberStampAnnotationPageNumber: rubberStampAnnotation.pageNumber, annotationOrder: JSON.stringify(this.annotationOrder)});
+    }
+
+    /**
+     * @private
+     * @param data 
+     */
+    public initialPagesRendered(data: any): void {
+        let canvas: HTMLCanvasElement = document.createElement('canvas');
+        let { value, width, height } = data;
+        canvas.width = width;
+        canvas.height = height;
+        const canvasContext = canvas.getContext('2d');
+        const imageData = canvasContext.createImageData(width, height);
+        imageData.data.set(value);
+        canvasContext.putImageData(imageData, 0, 0);
+        let imageUrl: string = canvas.toDataURL();
+        let base64string: string = this.pdfViewerBase.checkDocumentData(imageUrl);
+        let Json: any = { imagedata: imageUrl };
+        const id: any = data.annotName;
+        let annotOrder: any = [];
+        if(JSON.parse(data.annotationOrder).length > 0) {
+            annotOrder = JSON.parse(data.annotationOrder);
+        }
+        else {
+            // eslint-disable-next-line max-len
+            if (this.pdfViewer.viewerBase.importedAnnotation && this.pdfViewer.viewerBase.importedAnnotation[data.rubberStampAnnotationPageNumber]) {
+                annotOrder = this.pdfViewer.viewerBase.importedAnnotation[data.rubberStampAnnotationPageNumber].annotationOrder;
+            }
+        }
+        const currentAnnot: any = annotOrder.find((currentAnnotation: { AnnotName: any; }) => id === currentAnnotation.AnnotName);
+        if (currentAnnot) {
+            if (!isNullOrUndefined(currentAnnot.Apperarance)) {
+                currentAnnot.Apperarance = [];
+            }
+            currentAnnot.Apperarance.push(Json);
+            this.pdfViewer.annotationModule.stampAnnotationModule.renderStampAnnotImage(currentAnnot, 0, null, null, true);
+        }
+        this.Imagedata = imageUrl;
+    }
+
+    /**
+     * @private
+     * @param filename 
+     */
+    public readFromResources(): string {
+        let base64string: string = "JVBERi0xLjUNCiWDkvr+DQo0IDAgb2JqDQo8PA0KL1R5cGUgL0NhdGFsb2cNCi9QYWdlcyA1IDAgUg0KL0Fjcm9Gb3JtIDYgMCBSDQo+Pg0KZW5kb2JqDQoxIDAgb2JqDQo8PA0KL0ZpbHRlciAvRmxhdGVEZWNvZGUNCi9MZW5ndGggMTINCj4+DQpzdHJlYW0NCnheUyhU4AIAAiEAvA0KZW5kc3RyZWFtDQplbmRvYmoNCjIgMCBvYmoNCjw8DQovRmlsdGVyIC9GbGF0ZURlY29kZQ0KL0xlbmd0aCAxMg0KPj4NCnN0cmVhbQ0KeF5TCFTgAgABwQCcDQplbmRzdHJlYW0NCmVuZG9iag0KMyAwIG9iag0KPDwNCi9GaWx0ZXIgL0ZsYXRlRGVjb2RlDQovTGVuZ3RoIDEzNQ0KPj4NCnN0cmVhbQ0KeF5tjs0KwjAQhO8L+w578diYSlu9+wSC4DnUbRvIT0324ttrogiih2UYlm9mbggbOi4mzExjbGK62mCEKd+zsCeJ5HiSrcRVIbRKa1Lv+5hDtytCo69Zzq7kTZptyE+k0+XXvKRv++r2QyUSIywIFwoFPCcTsivdvzv+dn9F1/YTwgN6hTPqDQplbmRzdHJlYW0NCmVuZG9iag0KOSAwIG9iag0KPDwNCi9GaXJzdCAyNg0KL04gNA0KL1R5cGUgL09ialN0bQ0KL0ZpbHRlciAvRmxhdGVEZWNvZGUNCi9MZW5ndGggMTk2DQo+Pg0Kc3RyZWFtDQp4Xm1PTQuCQBC9L+x/mF+Qu34H4qHCSwRi3cTDYkMI4YauUP++WcVM6rA784b35r0JQHAWgpQ+ZxFIL+QsBlcIzpKEM+fyeiA4ubphT+jYXHsoIxBQVAT3emgNSOoK7PXQ1dhDkqQpZzQ64bVRO/2EciME2BdsA1ti36Vi9YU2yqANMGlGx6zBu3WpVtPF6l+ieE6Uqw6JF1i80i+qhRVNLNrdGsK0R9oJuOPvzTu/b7PiTtdnNFA6+SH7hPy55Q19a1EBDQplbmRzdHJlYW0NCmVuZG9iag0KMTAgMCBvYmoNCjw8DQovUm9vdCA0IDAgUg0KL0luZGV4IFswIDExXQ0KL1NpemUgMTENCi9UeXBlIC9YUmVmDQovVyBbMSAyIDFdDQovRmlsdGVyIC9GbGF0ZURlY29kZQ0KL0xlbmd0aCA0NA0KPj4NCnN0cmVhbQ0KeF4Vw0ENACAMALG77cVzBvCFUEShAkaTAlcWstFCimD89uipB3PyAFuGA3QNCmVuZHN0cmVhbQ0KZW5kb2JqDQoNCnN0YXJ0eHJlZg0KNzk4DQolJUVPRg0KJVBERi0xLjUNCiWDkvr+DQoxMSAwIG9iag0KPDwNCi9GaXJzdCA1DQovTiAxDQovVHlwZSAvT2JqU3RtDQovRmlsdGVyIC9GbGF0ZURlY29kZQ0KL0xlbmd0aCA3MQ0KPj4NCnN0cmVhbQ0KeF4zVzDg5bKx4eXSd84vzStRMOTl0g+pLEhV0A9ITE8tBvK8M1OKFaItFAwUgmKB3IDEolSgOlMQn5fLzo6Xi5cLAEOtEAkNCmVuZHN0cmVhbQ0KZW5kb2JqDQoxMiAwIG9iag0KPDwNCi9Sb290IDQgMCBSDQovSW5kZXggWzAgMSA3IDEgMTEgMl0NCi9TaXplIDEzDQovVHlwZSAvWFJlZg0KL1cgWzEgMiAxXQ0KL1ByZXYgNzk4DQovTGVuZ3RoIDI0DQovRmlsdGVyIC9GbGF0ZURlY29kZQ0KPj4NCnN0cmVhbQ0KeF5jYGD4z8TAzcDIwsLAyLKbAQAPSwHWDQplbmRzdHJlYW0NCmVuZG9iag0KDQpzdGFydHhyZWYNCjEyMTENCiUlRU9GDQo="
+        return base64string;
+    }
+
+    /**
+     * @private
+     * @param annotation 
+     */
+    public getPageRotation(annotation: PdfRubberStampAnnotation): number {
+        if (annotation.rotate === 0) {
+            return 0;
+        } else if (annotation.rotate === 90) {
+            return 1;
+        } else if (annotation.rotate === 180) {
+            return 2;
+        } else if (annotation.rotate === 270) {
+            return 3;
+        }
+        return 0;
+    }
+
     
     private stampAnnoattionRender(recordCollection: _PdfRecord[], dictionary: any) {
         if (!isNullOrUndefined(recordCollection)) {
@@ -665,7 +798,7 @@ export class PageRenderer{
         }
     }
 
-    private getBounds(bounds: any, pageWidth: number, pageHeight: number, pageRotation: number): Rect {
+    private getBounds(bounds: any, pageHeight: number, pageWidth: number, pageRotation: number): Rect {
         let bound: Rect;
         if (pageRotation === 0) {
             // eslint-disable-next-line max-len
@@ -673,15 +806,15 @@ export class PageRenderer{
         }
         else if (pageRotation === 1) {
             // eslint-disable-next-line max-len
-            bound = new Rect(this.convertPixelToPoint(pageWidth - this.convertPointToPixel(bounds.y)) - this.convertPointToPixel(bounds.height), bounds.x, bounds.height, bounds.width);
+            bound = new Rect(this.convertPixelToPoint(pageWidth - this.convertPointToPixel(bounds.y) - this.convertPointToPixel(bounds.height)), bounds.x, bounds.height, bounds.width);
         }
         else if (pageRotation === 2) {
             // eslint-disable-next-line max-len
-            bound = new Rect(this.convertPixelToPoint(pageWidth - this.convertPointToPixel(bounds.x)) - this.convertPointToPixel(bounds.width), this.convertPixelToPoint(pageHeight - this.convertPointToPixel(bounds.y)) - this.convertPointToPixel(bounds.height), this.convertPointToPixel(bounds.width), bounds.height);
+            bound = new Rect(this.convertPixelToPoint(pageWidth - this.convertPointToPixel(bounds.x) - this.convertPointToPixel(bounds.width)), this.convertPixelToPoint(pageHeight - this.convertPointToPixel(bounds.y) - this.convertPointToPixel(bounds.height)), bounds.width, bounds.height);
         }
         else if (pageRotation === 3) {
             // eslint-disable-next-line max-len
-            bound = new Rect(bounds.y, this.convertPixelToPoint(pageHeight - this.convertPointToPixel(bounds.x)) - this.convertPointToPixel(bounds.width), bounds.height, bounds.width);
+            bound = new Rect(bounds.y, this.convertPixelToPoint(pageHeight - this.convertPointToPixel(bounds.x) - this.convertPointToPixel(bounds.width)), bounds.height, bounds.width);
         }
         return bound;
     }
@@ -697,20 +830,20 @@ export class PageRenderer{
             centerPointY = bounds.y + (bounds.height / 2);
             bound = new Rect(centerPointX - (innerTemplateBounds.width / 2), centerPointY - (innerTemplateBounds.height / 2), innerTemplateBounds.width, innerTemplateBounds.height);
         } else if (pageRotation === 1) {
-            const boundsX = this.convertPixelToPoint(pageWidth - this.convertPointToPixel(bounds.Y) - this.convertPointToPixel(bounds.height));
-            const boundsY = bounds.X;
+            const boundsX = this.convertPixelToPoint(pageWidth - this.convertPointToPixel(!isNullOrUndefined(bounds.Y) ? bounds.Y : bounds.y) - this.convertPointToPixel(bounds.height));
+            const boundsY = !isNullOrUndefined(bounds.X) ? bounds.X : bounds.x;
             centerPointX = boundsX + (bounds.height / 2);
             centerPointY = boundsY + (bounds.width / 2);
             bound = new Rect(centerPointX - (innerTemplateBounds.width / 2), centerPointY - (innerTemplateBounds.height / 2), innerTemplateBounds.width, innerTemplateBounds.height);
         } else if (pageRotation === 2) {
-            const boundsX = this.convertPixelToPoint(pageWidth - this.convertPointToPixel(bounds.X) - this.convertPointToPixel(bounds.width));
-            const boundsY = this.convertPixelToPoint(pageHeight - this.convertPointToPixel(bounds.Y) - this.convertPointToPixel(bounds.height));
+            const boundsX = this.convertPixelToPoint(pageWidth - this.convertPointToPixel(!isNullOrUndefined(bounds.X) ? bounds.X : bounds.x) - this.convertPointToPixel(bounds.width));
+            const boundsY = this.convertPixelToPoint(pageHeight - this.convertPointToPixel(!isNullOrUndefined(bounds.Y) ? bounds.Y : bounds.y) - this.convertPointToPixel(bounds.height));
             centerPointX = boundsX + (bounds.width / 2);
             centerPointY = boundsY + (bounds.height / 2);
             bound = new Rect(centerPointX - (innerTemplateBounds.width / 2), centerPointY - (innerTemplateBounds.height / 2), innerTemplateBounds.width, innerTemplateBounds.height)
         } else if (pageRotation === 3) {
-            const boundsX = bounds.Y;
-            const boundsY = this.convertPixelToPoint(pageHeight - this.convertPointToPixel(bounds.X) - this.convertPointToPixel(bounds.width));
+            const boundsX = !isNullOrUndefined(bounds.Y) ? bounds.Y : bounds.y;
+            const boundsY = this.convertPixelToPoint(pageHeight - this.convertPointToPixel(!isNullOrUndefined(bounds.X) ? bounds.X : bounds.x) - this.convertPointToPixel(bounds.width));
             centerPointX = boundsX + (bounds.height / 2);
             centerPointY = boundsY + (bounds.width / 2);
             bound = new Rect(centerPointX - (innerTemplateBounds.width / 2), centerPointY - (innerTemplateBounds.height / 2), innerTemplateBounds.width, innerTemplateBounds.height);

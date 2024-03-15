@@ -110,21 +110,18 @@ export class ImageCommand {
             const selectedNode: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
             const imgElm: Element = (e.value === 'Replace' || isReplaced) ? (e.item.selectParent[0] as Element) :
                 (Browser.isIE ? (selectedNode.previousSibling as Element) : (selectedNode as Element).previousElementSibling);
-            imgElm.addEventListener('load', () => {
-                if (e.value !== 'Replace' || !isReplaced) {
-                    e.callBack({
-                        requestType: 'Images',
-                        editorMode: 'HTML',
-                        event: e.event,
-                        range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                        elements: [imgElm]
-                    });
-                }
-            });
-        }
-        if (e.value === 'Replace') {
-            e.item.subCommand = 'Replace';
-            this.callBack(e);
+            let imageInstance = this;
+            const onImageLoadEvent = () => {
+                e.callBack({
+                    requestType: (e.value === 'Replace') ? (e.item.subCommand = 'Replace', "Replace") : 'Images',
+                    editorMode: 'HTML',
+                    event: e.event,
+                    range: imageInstance.parent.nodeSelection.getRange(imageInstance.parent.currentDocument),
+                    elements: [imgElm]
+                });
+                imgElm.removeEventListener('load', onImageLoadEvent);
+            }
+            imgElm.addEventListener('load', onImageLoadEvent);
         }
     }
     private setStyle(imgElement: HTMLElement, e: IHtmlItem, imgReplace?: boolean): void {

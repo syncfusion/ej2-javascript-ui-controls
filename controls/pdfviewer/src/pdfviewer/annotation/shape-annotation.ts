@@ -273,7 +273,7 @@ export class ShapeAnnotation {
                                 vPoints = [];
                             }
                             // eslint-disable-next-line max-len
-                            annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                            annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
                             annot = {
                             // eslint-disable-next-line max-len
                                 id: 'shape' + this.shapeCount, shapeAnnotationType: this.getShapeType(annotationObject), author: annotationObject.author, allowedInteractions: annotationObject.allowedInteractions, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName,
@@ -323,7 +323,8 @@ export class ShapeAnnotation {
     public getSettings(annotation : any) : any {
         let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
         if (annotation.AnnotationSelectorSettings) {
-            selector = annotation.AnnotationSelectorSettings;
+            // eslint-disable-next-line max-len
+            selector = typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
         } else {
             selector = this.getSelector(annotation.ShapeAnnotationType, annotation.Subject);
         }

@@ -2,74 +2,15 @@
 
 ## [Unreleased]
 
-## 24.2.9 (2024-03-06)
+## 25.1.35 (2024-03-15)
 
 ### Tree Grid
 
 #### Bug Fixes
 
-- `#F50979` - Fixed issue where the action complete with `args.requestType` Cancel was not being passed when performing a cell edit action.
+- `#F50891` - Fixed issue where react template disappears in tree grid column while using `useState()`.
 
-## 24.2.8 (2024-02-27)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F50621` - Resolved an issue where a script error was being thrown when performing `ExpandAll` and `CollapseAll` actions in row template.
-
-## 24.2.7 (2024-02-20)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F50469` - Fixed issue where excel export after sorting led to missing expand icons in the excel file.
-
-## 24.2.5 (2024-02-13)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#F50215` - Filtering not working on navigating to another page when all records are collapsed.
-- `#F50218` - Fixed the issue where the `RowSelecting` and `RowSelected` events were triggered twice when selecting a row using the keyboard down arrow.
-- `#F50385` - Fixed the misalignment issue with column header text when filtering and using the row drag and drop feature.
-- `#F50301` - Fixed an issue where the `AddRecord` method was not functioning correctly after reaching level 2.
-
-## 24.2.4 (2024-02-06)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I546807` - Fixed issue where filtering was not working when navigating to another page when all records were collapsed.
-
-## 24.1.46 (2024-01-17)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I538969`  - Fixed an issue where the `ContextMenu` with indent/outdent items was being displayed when clicking in an empty space.
-
-## 24.1.45 (2024-01-09)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I534170`  - Fixed an issue where indent/outdent option is not displayed in the context menu when in cell edit mode.
-
-## 24.1.44 (2024-01-03)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I531278` - Fixed an issue where the checkbox column behaviour was not working correctly when the `displayascheckbox` column was placed as the first column.
-
-## 24.1.41 (2023-12-18)
+## 23.1.36 (2022-09-15)
 
 ### Tree Grid
 

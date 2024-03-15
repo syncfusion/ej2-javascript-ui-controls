@@ -1,7 +1,7 @@
 import { Droppable, DropEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setStyleAttribute, remove, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { getUpdateUsingRaf, appendChildren, setDisplayValue, clearReactVueTemplates, getScrollBarWidth, getScrollWidth } from '../base/util';
+import { getUpdateUsingRaf, appendChildren, setDisplayValue, clearReactVueTemplates, getScrollBarWidth, getScrollWidth, getTransformValues } from '../base/util';
 import * as events from '../base/constant';
 import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs, CellFocusArgs, InfiniteScrollArgs } from '../base/interface';
 import { VirtualInfo } from '../base/interface';
@@ -92,6 +92,10 @@ export class ContentRender implements IRenderer {
                 }
             }
             this.parent.notify(events.contentReady, { rows: rows, args: arg });
+            if (this.parent.editSettings.showAddNewRow && this.parent.addNewRowFocus) {
+                this.parent.notify(events.showAddNewRowFocus, {});
+                this.parent.addNewRowFocus = false;
+            }
             if (this.parent.autoFit) {
                 this.parent.preventAdjustColumns();
             }
@@ -312,6 +316,7 @@ export class ContentRender implements IRenderer {
         const row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
         const isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling
             && (args as InfiniteScrollArgs).requestType === 'infiniteScroll';
+        const isColumnVirtualInfiniteProcess: boolean = this.isInfiniteColumnvirtualization() && args.requestType !== 'virtualscroll';
         gObj.notify(events.destroyChildGrid, {});
         this.rowElements = [];
         this.rows = [];
@@ -569,7 +574,8 @@ export class ContentRender implements IRenderer {
         getUpdateUsingRaf<HTMLElement>(
             () => {
                 this.parent.notify(events.beforeFragAppend, args);
-                if (!this.parent.enableVirtualization && !this.parent.enableColumnVirtualization && !isInfiniteScroll) {
+                if (!this.parent.enableVirtualization && (!this.parent.enableColumnVirtualization || isColumnVirtualInfiniteProcess)
+                    && !isInfiniteScroll) {
                     if (!gObj.isReact) {
                         this.tbody.innerHTML = '';
                     }
@@ -584,7 +590,8 @@ export class ContentRender implements IRenderer {
                 if (gObj.rowTemplate) {
                     updateBlazorTemplate(gObj.element.id + 'rowTemplate', 'RowTemplate', gObj);
                 }
-                if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling) {
+                if (!isNullOrUndefined(this.parent.infiniteScrollModule) && ((this.parent.enableInfiniteScrolling
+                    && !this.isInfiniteColumnvirtualization()) || isColumnVirtualInfiniteProcess)) {
                     this.isAddRows = false;
                     this.parent.notify(events.removeInfiniteRows, { args: args });
                     this.parent.notify(events.appendInfiniteContent, {
@@ -592,9 +599,37 @@ export class ContentRender implements IRenderer {
                         rowElements: this.rowElements, visibleRows: this.visibleRows,
                         tableName: tableName
                     });
+                    if (this.isInfiniteColumnvirtualization() && this.parent.isFrozenGrid()) {
+                        const virtualTable: Element = this.parent.getContent().querySelector('.e-virtualtable');
+                        const transform: { width: number, height: number } = getTransformValues(virtualTable);
+                        (this.parent.contentModule as VirtualContentRenderer).resetStickyLeftPos(transform.width);
+                        this.widthService.refreshFrozenScrollbar();
+                    }
                 } else {
                     this.useGroupCache = false;
                     this.appendContent(this.tbody, frag as DocumentFragment, args);
+                }
+                
+                if (this.parent.editSettings.showAddNewRow && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
+                    const newRow: Element = this.parent.element.querySelector('.e-addrow-removed');
+                    if (newRow) {
+                        remove(newRow);
+                    }
+                }
+                const startAdd: boolean = !this.parent.element.querySelector('.' + literals.addedRow);
+                if (this.parent.editSettings.showAddNewRow && this.parent.editSettings.mode === 'Normal') {
+                    if (startAdd) {
+                        if (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) {
+                            this.parent.isAddNewRow = true;
+                        }
+                        this.parent.isEdit = false;
+                        this.parent.addRecord();
+                    }
+                    if (startAdd || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) &&
+                        ['sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder']
+                            .some(function (value) { return args.requestType === value; }))) {
+                        this.parent.notify(events.showAddNewRowFocus, {});
+                    }
                 }
                 if (this.parent.getVisibleFrozenRightCount() && this.parent.getContent() && getScrollWidth(this.parent) > 0) {
                     this.parent.element.classList.add('e-right-shadow');
@@ -602,6 +637,14 @@ export class ContentRender implements IRenderer {
                 frag = null;
             },
             this.rafCallback(extend({}, args)));
+    }
+
+    protected isInfiniteColumnvirtualization(): boolean {
+        return this.parent.enableColumnVirtualization && this.parent.enableInfiniteScrolling;
+    }
+
+    protected enableCacheOnInfiniteColumnVirtual(): boolean {
+        return this.isInfiniteColumnvirtualization() && this.parent.infiniteScrollSettings.enableCache;
     }
 
     public emptyVcRows(): void {
@@ -682,10 +725,9 @@ export class ContentRender implements IRenderer {
     }
 
     private setInfiniteVisibleRows(args: InfiniteScrollArgs, data: Row<Column>): void {
-        if (this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache) {
-            if (!this.parent.infiniteScrollSettings.enableCache) {
-                this.visibleRows.push(data);
-            }
+        if (this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache
+            && !(this.isInfiniteColumnvirtualization() && args.requestType === 'virtualscroll')) {
+            this.visibleRows.push(data);
         }
     }
 
@@ -884,6 +926,10 @@ export class ContentRender implements IRenderer {
             this.refreshContentRows({ requestType: 'refresh' });
         } else {
             this.parent.notify(events.partialRefresh, { rows: contentrows, args: args });
+            if (this.parent.editSettings.showAddNewRow && (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)) {
+                this.parent.notify(events.showAddNewRowFocus, {});
+                
+            }
         }
     }
 

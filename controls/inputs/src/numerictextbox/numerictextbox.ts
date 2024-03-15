@@ -78,6 +78,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private isAngular: boolean = false;
     private isDynamicChange: boolean = false;
     private inputValue: number;
+    private clearButton: HTMLElement;
 
     /*NumericTextBox Options */
 
@@ -1403,6 +1404,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      */
     public destroy(): void {
         this.unwireEvents();
+        if (this.showClearButton) {
+            this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
+        }
         detach(this.hiddenInput);
         if (this.showSpinButton) {
             this.unwireSpinBtnEvents();
@@ -1426,7 +1430,11 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             this.blurEventArgs = null;
             this.focusEventArgs = null;
             this.inputWrapper = null;
-            Input.destroy();
+            Input.destroy({
+                element: this.element,
+                floatLabelType: this.floatLabelType,
+                properties: this.properties
+            }, this.clearButton);
             super.destroy();
     }
     /* eslint-disable valid-jsdoc, jsdoc/require-returns */

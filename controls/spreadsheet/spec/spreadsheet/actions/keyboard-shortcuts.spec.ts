@@ -1,9 +1,7 @@
-import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, Spreadsheet } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { CellModel } from '../../../src';
-
-Spreadsheet.Inject(BasicModule);
 
 /**
  *  Keyboard shortcuts spec

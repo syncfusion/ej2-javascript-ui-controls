@@ -12,13 +12,13 @@ import { TaskbarEdit } from './taskbar-edit';
 export class Dependency {
 
     private parent: Gantt;
+    public validatedChildItems: IGanttData[];
     private dateValidateModule: DateProcessor;
     private parentRecord: IParent[] = [];
     private parentIds: string[] = [];
     private parentPredecessors: IGanttData[] = [];
     private validatedParentIds: string[] = [];
     public isValidatedParentTaskID: string;
-    public validatedChildItems: IGanttData[];
     private storeId:any = null;
     constructor(gantt: Gantt) {
         this.parent = gantt;
@@ -147,7 +147,7 @@ export class Dependency {
         let values: string[] = [];
         let offsetValue: string;
         let predecessorText: string;
-
+        let parentRecords: IGanttData[] = [];
         predecessor.split(',').forEach((el: string): void => {
             let isGUId: boolean = false
             let firstPart: string;
@@ -167,15 +167,17 @@ export class Dependency {
                 }
             }
             if (el.includes('-')) {
-                if(el.includes('-') && el.includes('days')){
-                    predecessorName = el.slice(-9).toString();
+                const lastIndex: number = el.lastIndexOf("-");
+                const lastPart: string = el.substring(lastIndex + 1);
+                let lengthToSlice: number;
+                if (el.includes('days')) {
+                    lengthToSlice = lastPart.includes('.') ? 11 : 9;
+                } else if (el.includes('day')) {
+                    lengthToSlice = lastPart.includes('.') ? 10 : 8;
+                } else {
+                    lengthToSlice = 2;
                 }
-                if(el.includes('-') && el.includes('day')){
-                    predecessorName = el.slice(-8).toString();
-                }
-                else {
-                    predecessorName = el.slice(-2).toString();
-                }
+                predecessorName = el.slice(-lengthToSlice).toString();
                 if(el.includes('-') && /[A-Za-z]/.test(predecessorName)){
                     const indexFS = el.indexOf(predecessorName);
                     if (indexFS !== -1) {
@@ -299,8 +301,12 @@ export class Dependency {
                 let isValid: boolean
                 if (this.parent.connectorLineEditModule && toData && fromData) {
                     isValid = this.parent.connectorLineEditModule.validateParentPredecessor(toData, fromData);
-                    if (isValid)
+                    if (isValid) {
                         collection.push(obj);
+                        if (parentRecords.indexOf(toData) == -1 && toData.hasChildRecords && this.parent.editModule.cellEditModule && this.parent.editModule.cellEditModule.isCellEdit) {
+                            parentRecords.push(extend([],[],[toData],true)[0]);
+                        }
+                    }
                 }
                 else {
                     collection.push(obj);
@@ -308,6 +314,9 @@ export class Dependency {
                 match.splice(0);
             }
         });
+        if (parentRecords.length > 0 && this.parent.undoRedoModule && this.parent.editModule && this.parent.editModule.cellEditModule && this.parent.editModule.cellEditModule.isCellEdit) {
+            this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1]['connectedRecords'] = parentRecords;
+        }
         return collection;
     }
 
@@ -481,6 +490,9 @@ export class Dependency {
         }
         const flatData: IGanttData[] = this.parent.flatData;
         const totLength: number = this.parent.flatData.length;
+        const traverseParents = (record: any) => {
+            this.parent.dataOperation.updateParentItems(record)
+        };
         for (let count: number = 0; count < totLength; count++) {
             if (flatData[count as number].ganttProperties.predecessorsName) {
                 this.validatePredecessorDates(flatData[count as number]);
@@ -493,9 +505,13 @@ export class Dependency {
                         }
                     }
                 }
-                if (flatData[count as number].hasChildRecords && this.parent.editModule && !this.parent.allowUnscheduledTasks
+                if (flatData[count as number].hasChildRecords && this.parent.editModule && flatData[count as number].ganttProperties.startDate
                     && this.parent.allowParentDependency) {
                     this.updateChildItems(flatData[count as number]);
+                }
+                if (flatData[count as number].parentItem) {
+                    let recordId = flatData[count as number].parentItem.taskId;
+                    traverseParents(this.parent.getRecordByID(recordId));
                 }
             }
         }
@@ -540,7 +556,17 @@ export class Dependency {
                 const predecessor: IPredecessor = predecessors[count as number];
                 parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
                 record = this.parent.connectorLineModule.getRecordByID(predecessor.to);
-                if (this.parent.allowParentDependency && this.parent.isLoad && this.parentPredecessors.indexOf(ganttRecord) == -1 
+                if (this.parent.viewType === 'ProjectView' && this.parent.allowTaskbarDragAndDrop) {
+                    let index: number;
+                    if (isNullOrUndefined(record)) {
+                        index = this.parent.editModule.taskbarEditModule.previousIds.indexOf(predecessor.to);
+                        record = this.parent.editModule.taskbarEditModule.previousFlatData[index as number];
+                    } else if (isNullOrUndefined(parentGanttRecord)) {
+                        index = this.parent.editModule.taskbarEditModule.previousIds.indexOf(predecessor.from);
+                        parentGanttRecord = this.parent.editModule.taskbarEditModule.previousFlatData[index as number];
+                    }
+                }
+                if (this.parent.allowParentDependency && this.parent.isLoad && this.parentPredecessors.indexOf(ganttRecord) === -1 
                     && (ganttRecord.hasChildRecords || record.hasChildRecords)) {
                         this.parentPredecessors.push(ganttRecord);
                     }
@@ -616,8 +642,14 @@ export class Dependency {
                 const predecessor: IPredecessor = validatedPredecessor[i as number];
                 parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
                 childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.to);
-                tempStartDate =
-                    this.getValidatedStartDate(childGanttRecord.ganttProperties, parentGanttRecord.ganttProperties, predecessor);
+                if (this.parent.viewType === 'ProjectView' && this.parent.allowTaskbarDragAndDrop && !(isNullOrUndefined(childGanttRecord) && isNullOrUndefined(parentGanttRecord))) {
+                    childGanttRecord = isNullOrUndefined(childGanttRecord) ? this.getRecord(parentGanttRecord, childGanttRecord, predecessor): childGanttRecord;
+                    parentGanttRecord = isNullOrUndefined(parentGanttRecord) ? this.getRecord(parentGanttRecord, childGanttRecord, predecessor): parentGanttRecord;
+                }
+                if (childGanttRecord && parentGanttRecord) {
+                    tempStartDate =
+                        this.getValidatedStartDate(childGanttRecord.ganttProperties, parentGanttRecord.ganttProperties, predecessor);
+                }
                 if (maxStartDate == null || this.dateValidateModule.compareDates(tempStartDate, maxStartDate) === 1) {
                     maxStartDate = tempStartDate;
                 }
@@ -732,7 +764,12 @@ export class Dependency {
                    const parentItem: IGanttData = this.parent.getRecordByID(ganttRecords[count as number].parentItem.taskId.toString());
                    this.parent.setRecordValue('parentItem', this.parent.dataOperation.getCloneParent(parentItem), ganttRecords[count as number]);
                 }
+            }
+            if (this.parent.undoRedoModule && this.parent.undoRedoModule['canUpdateIndex']) {
                 ganttRecords[count as number].index = count;
+                if (ganttRecords[count as number].parentItem && this.parent.getParentTask(ganttRecords[count as number].parentItem)) {
+                    ganttRecords[count as number].parentItem.index = this.parent.getParentTask(ganttRecords[count as number].parentItem).index;
+                }
             }
             ganttRecord = ganttRecords[count as number];
             predecessorsCollection = ganttRecord.ganttProperties.predecessor;
@@ -759,7 +796,12 @@ export class Dependency {
                 const from: string = 'from'; const to: string = 'to';
                 parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[from as string]);
                 childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[to as string]);
-                if (this.parent.connectorLineModule.expandedRecords &&
+                let isValid: boolean = true;
+                if(((parentGanttRecord && parentGanttRecord.hasChildRecords && !parentGanttRecord.expanded) || (childGanttRecord && childGanttRecord.hasChildRecords && !childGanttRecord.expanded)) &&
+                   !this.parent.allowTaskbarOverlap && this.parent.viewType == 'ProjectView') {
+                    isValid = false;
+                }
+                if (isValid && this.parent.connectorLineModule.expandedRecords &&
                      this.parent.connectorLineModule.expandedRecords.indexOf(parentGanttRecord) !== -1 &&
                     this.parent.connectorLineModule.expandedRecords.indexOf(childGanttRecord) !== -1) {
                     this.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
@@ -829,10 +871,27 @@ export class Dependency {
             const successors: IPredecessor[] = predecessorsCollection.filter((data: IPredecessor): IPredecessor => {
                 if (data.from === currentTaskId) { return data; } else { return null; }
             });
+            let parentRec: IGanttData;
             for (let count: number = 0; count < predecessors.length; count++) {
                 predecessor = predecessors[count as number];
                 parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor.from);
                 record = this.parent.connectorLineModule.getRecordByID(predecessor.to);
+                if(record.parentItem) {
+                    parentRec = this.parent.getTaskByUniqueID(record.parentItem.uniqueID);
+                    if(this.parent.editModule['updateParentRecords'].indexOf(parentRec) == -1) {
+                        this.parent.editModule['updateParentRecords'].push(parentRec);
+                    }
+                }
+                if(parentGanttRecord.parentItem) {
+                    parentRec = this.parent.getTaskByUniqueID(parentGanttRecord.parentItem.uniqueID);
+                    if(this.parent.editModule['updateParentRecords'].indexOf(parentRec) == -1) {
+                        this.parent.editModule['updateParentRecords'].push(parentRec);
+                    }
+                }
+                if (this.parent.viewType === 'ProjectView' && this.parent.allowTaskbarDragAndDrop && !(isNullOrUndefined(record) && isNullOrUndefined(parentGanttRecord))) {
+                    record = isNullOrUndefined(record) ? this.getRecord(parentGanttRecord, record, predecessor): record;
+                    parentGanttRecord = isNullOrUndefined(parentGanttRecord) ? this.getRecord(parentGanttRecord, record, predecessor): parentGanttRecord;
+                }
                 if (this.parent.isInPredecessorValidation && record.ganttProperties.isAutoSchedule) {
                     this.parent.isValidationEnabled = true;
                 } else {
@@ -851,6 +910,22 @@ export class Dependency {
                 successor = successors[count as number];
                 parentGanttRecord = this.parent.connectorLineModule.getRecordByID(successor.from);
                 record = this.parent.connectorLineModule.getRecordByID(successor.to);
+                if(record.parentItem) {
+                    parentRec = this.parent.getTaskByUniqueID(record.parentItem.uniqueID);
+                    if(this.parent.editModule['updateParentRecords'].indexOf(parentRec) == -1) {
+                        this.parent.editModule['updateParentRecords'].push(parentRec);
+                    }
+                }
+                if(parentGanttRecord.parentItem) {
+                    parentRec = this.parent.getTaskByUniqueID(parentGanttRecord.parentItem.uniqueID);
+                    if(this.parent.editModule['updateParentRecords'].indexOf(parentRec) == -1) {
+                        this.parent.editModule['updateParentRecords'].push(parentRec);
+                    }
+                }
+                if (this.parent.viewType === 'ProjectView' && this.parent.allowTaskbarDragAndDrop && !(isNullOrUndefined(record) && isNullOrUndefined(parentGanttRecord))) {
+                    record = isNullOrUndefined(record) ? this.getRecord(parentGanttRecord, record, successor): record;
+                    parentGanttRecord = isNullOrUndefined(parentGanttRecord) ? this.getRecord(parentGanttRecord, record, successor): parentGanttRecord;
+                }
                 if (this.parent.isInPredecessorValidation && record.ganttProperties.isAutoSchedule) {
                     this.parent.isValidationEnabled = true;
                 } else {
@@ -878,7 +953,7 @@ export class Dependency {
                     }
                 }
             }
-            if (record && !record.hasChildRecords && record.parentItem && this.validatedParentIds.indexOf(record.parentItem.taskId) == -1) {
+            if (record && !record.hasChildRecords && record.parentItem && this.validatedParentIds.indexOf(record.parentItem.taskId) === -1) {
                 this.validatedParentIds.push(record.parentItem.taskId);
             };
             let validUpdate: boolean = true;
@@ -902,17 +977,19 @@ export class Dependency {
                         this.parent.dataOperation.updateParentItems(record, true);
                     }
                 }
-                else if (record && record.hasChildRecords && !ganttProp) {
+                else if (record && record.hasChildRecords && this.isValidatedParentTaskID != record.ganttProperties.taskId && !ganttProp) {
                     this.updateChildItems(record);
+                    this.isValidatedParentTaskID = record.ganttProperties.taskId;
                 }
             }
         }
     }
+
     /**
-    *
-    * @param {IGanttData} ganttRecord .
-    * @returns {void} .
-    */
+     *
+     * @param {IGanttData} ganttRecord .
+     * @returns {void} .
+     */
     private updateChildItems(ganttRecord: IGanttData): void {
         const previousData: IGanttData = this.parent.previousRecords[ganttRecord.uniqueID];
         let previousStartDate: Date;
@@ -993,12 +1070,12 @@ export class Dependency {
         }
     }
     /**
-    * To get updated child records.
-    *
-    * @param {IGanttData} parentRecord .
-    * @param {IGanttData} childLists .
-    * @returns {void} .
-    */
+     * To get updated child records.
+     *
+     * @param {IGanttData} parentRecord .
+     * @param {IGanttData} childLists .
+     * @returns {void} .
+     */
     private getUpdatableChildRecords(parentRecord: IGanttData, childLists: IGanttData[]): void {
         const childRecords: IGanttData[] = parentRecord.childRecords;
         for (let i: number = 0; i < childRecords.length; i++) {
@@ -1011,11 +1088,11 @@ export class Dependency {
         }
     }
     /**
-    *
-    * @param {IGanttData} data .
-    * @param {Date} newStartDate .
-    * @returns {void} .
-    */
+     *
+     * @param {IGanttData} data .
+     * @param {Date} newStartDate .
+     * @returns {void} .
+     */
     private calculateDateByRoundOffDuration(data: IGanttData, newStartDate: Date): void {
         const ganttRecord: IGanttData = data;
         const taskData: ITaskData = ganttRecord.ganttProperties;
@@ -1039,6 +1116,19 @@ export class Dependency {
         }
         this.parent.dataOperation.updateWidthLeft(data);
         this.parent.dataOperation.updateTaskData(ganttRecord);
+    }
+
+    private getRecord(parentGanttRecord: IGanttData, record: IGanttData, predecessor:IPredecessor): IGanttData{
+        let index: number;
+        let data: IGanttData;
+        if (isNullOrUndefined(record)) {
+            index = this.parent.editModule.taskbarEditModule.previousIds.indexOf(predecessor.to);
+            data = this.parent.editModule.taskbarEditModule.previousFlatData[index as number];
+        } else if (isNullOrUndefined(parentGanttRecord)) {
+            index = this.parent.editModule.taskbarEditModule.previousIds.indexOf(predecessor.from);
+            data = this.parent.editModule.taskbarEditModule.previousFlatData[index as number];
+        }
+        return data;
     }
     /**
      * Method to get validate able predecessor alone from record

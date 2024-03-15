@@ -86,13 +86,7 @@ let rowtemplate: string = `
 
 describe('Render rowtemplate', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
-    let actionComplete: () => void;
-    let dataBound: () => void;
-    let actionFailure: () => void;
     beforeAll((done: Function) => {
-        
       gridObj = createGrid(
         {
             dataSource: employeeData,
@@ -119,11 +113,11 @@ describe('Render rowtemplate', () => {
     it('Render the row template', () => {
         expect(gridObj.getRows()[0].querySelectorAll('td')[2].classList.contains("details")).toBe(true);
      });
-    //  it('onpropertychange set null value', function (done: Function) {
-    //     gridObj.rowTemplate = null;
-    //     expect((gridObj.getRows()[0].firstChild as HTMLElement).innerText == "EMP001").toBe(true);
-    //     done();
-    // });
+     it('onpropertychange set null value', function (done: Function) {
+        gridObj.rowTemplate = null;
+        expect((gridObj.getRows()[0].firstChild as HTMLElement).innerText == "EMP001").toBe(true);
+        done();
+    });
         afterAll(() => {
         destroy(gridObj);
       });
@@ -131,8 +125,6 @@ describe('Render rowtemplate', () => {
 
 describe('Sorting in row template', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
     let actionComplete: () => void;
     beforeAll((done: Function) => {
         
@@ -174,9 +166,6 @@ describe('Sorting in row template', () => {
 
 describe('Paging in row template', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
-    let actionComplete: () => void;
     beforeAll((done: Function) => {
         
       gridObj = createGrid(
@@ -209,8 +198,6 @@ describe('Paging in row template', () => {
 
 describe('Searching in rowtemplate', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
     let actionComplete: () => void;
     beforeAll((done: Function) => {
         
@@ -249,8 +236,6 @@ describe('Searching in rowtemplate', () => {
 
 describe('Filter in rowtemplate', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
     let actionComplete: () => void;
     beforeAll((done: Function) => {
         
@@ -288,8 +273,6 @@ describe('Filter in rowtemplate', () => {
 
 describe('Contextmenu in row template', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
     let actionComplete: () => void;
     beforeAll((done: Function) => {
         
@@ -339,9 +322,6 @@ describe('Contextmenu in row template', () => {
 
 describe('Check the row databound in row template', () => {
     let gridObj: TreeGrid;
-    let rows: Element[];
-    let actionBegin: () => void;
-    let actionComplete: () => void;
     let rowDataBound: () => void;
     beforeAll((done: Function) => {
         

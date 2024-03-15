@@ -36,7 +36,8 @@ describe('DropDown Tree control List datasource', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
         });
         it('for showPopup', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, treeSettings: { loadOnDemand: true } }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            treeSettings: { loadOnDemand: true }, destroyPopupOnHide: false }, '#ddtree');
             ddtreeObj.showPopup();
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
             expect(ddtreeObj.inputEle.getAttribute("aria-expanded")).toBe('true');
@@ -59,7 +60,8 @@ describe('DropDown Tree control List datasource', () => {
             expect(ddtreeObj.inputEle.getAttribute("aria-expanded")).toBe('false');
         });
         it('for hidePopup', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, treeSettings: { loadOnDemand: true } }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            treeSettings: { loadOnDemand: true }, destroyPopupOnHide: false }, '#ddtree');
             ddtreeObj.showPopup();
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
             expect(ddtreeObj.inputEle.getAttribute("aria-expanded")).toBe('true');
@@ -173,6 +175,13 @@ describe('DropDown Tree control List datasource', () => {
             expect(ddtreeObj.value.length === 24).toBe(true);
             ddtreeObj.selectAll(false);
             expect(ddtreeObj.value.length === 0).toBe(true);
+        });
+        it('for react callback', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' } }, '#ddtree');
+            ddtreeObj.showPopup();
+            ddtreeObj.reactCallBack();
+            ddtreeObj.isChildObject();
+            expect(ddtreeObj.getData().length).toBe(24);
         });
     });
     describe('Destroy Method testing', () => {

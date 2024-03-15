@@ -402,9 +402,13 @@ export class TrackChangesPane {
                 for (let i: number = 0; i < this.tableRevisions.keys.length; i++) {
                     let revision: Revision = this.tableRevisions.keys[i];
                     let index: number = this.revisions.indexOf(revision);
-                    let removeChild: boolean = (this.tableRevisions.get(revision))[(this.tableRevisions.get(revision)).length -1] === revision;
-                    if (!isNullOrUndefined(this.changesInfoDiv.childNodes[index + 1]) && removeChild) {
-                        this.changesInfoDiv.removeChild(this.changesInfoDiv.childNodes[index + 1]);
+                    let removeChild: boolean = (this.tableRevisions.get(revision))[(this.tableRevisions.get(revision)).length - 1] === revision;
+                    if (!isNullOrUndefined(this.changes)) {
+                        let changesSingleView: ChangesSingleView = this.changes.get(revision);
+                        if (removeChild && !isNullOrUndefined(this.changesInfoDiv)) {
+                            let changesSingleView: ChangesSingleView = this.changes.get(revision);
+                            this.changesInfoDiv.removeChild(changesSingleView.outerSingleDiv);
+                        }
                     }
                     if (this.renderedChanges.containsKey(revision)) {
                         this.renderedChanges.remove(revision);
@@ -434,7 +438,7 @@ export class TrackChangesPane {
                     if (ranges instanceof TextElementBox &&
                         ranges.paragraph.containerWidget instanceof HeaderFooterWidget) {
                         let headerFooterType: HeaderFooterType = ranges.paragraph.containerWidget.headerFooterType;
-                        let sectionFormat: SelectionSectionFormat = this.owner.selection.sectionFormat;
+                        let sectionFormat: SelectionSectionFormat = this.owner.selectionModule.sectionFormat;
                         if ((headerFooterType === 'EvenFooter' || headerFooterType === 'EvenHeader' || headerFooterType === 'OddFooter' || headerFooterType === 'OddHeader') && !sectionFormat.differentOddAndEvenPages) {
                             continue;
                         } else if ((headerFooterType === 'FirstPageHeader' || headerFooterType === 'FirstPageFooter') && !sectionFormat.differentFirstPage) {
@@ -474,11 +478,14 @@ export class TrackChangesPane {
                 }
             }
             else {
+                // Use this property to insert revision order wise in pane(revision order collapsed when using i value because total 10 revision, 2nd revision is table and table contain 5 row and each row preserved as a separate revision, so after table iteration i value is 6, so next revision inserted 6th position instead of 3).
+                let insertIndex: number = 0;
                 for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
                     let revision: Revision = this.owner.revisions.changes[i];
                     let ranges: object = this.owner.revisions.changes[i].range[0];
                     if (this.changes.containsKey(revision)) {
                         let currentChangeView: ChangesSingleView = this.renderedChanges.get(revision);
+
                         if (isNullOrUndefined(currentChangeView)) {
                             continue;
                         }
@@ -491,17 +498,21 @@ export class TrackChangesPane {
                             currentChangeView.acceptButtonElement.classList.remove('e-de-overlay');
                             currentChangeView.rejectButtonElement.classList.remove('e-de-overlay');
                         }
+                        insertIndex++;
                         continue;
                     }
                     if (ranges instanceof WRowFormat) {
                         let groupedRevision: Revision[] = this.groupTableRevisions(this.owner.revisions.changes, i);
                         if (groupedRevision.length > 1) {
+                            if (insertIndex === 0) {
+                                insertIndex = i;
+                            }
                             let changeView: ChangesSingleView;
                             for (let j: number = 0; j < groupedRevision.length; j++) {
                                 let nextRevision: Revision = groupedRevision[j];
                                 if (j === 0) {
                                     let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this);
-                                    this.changesInfoDiv.insertBefore(currentChangeView.createSingleChangesDiv(nextRevision), this.changesInfoDiv.children[i + 1]);
+                                    this.changesInfoDiv.insertBefore(currentChangeView.createSingleChangesDiv(nextRevision), this.changesInfoDiv.children[insertIndex + 1]);
                                     this.revisions.splice(i, 0, nextRevision);
                                     this.changes.add(nextRevision, currentChangeView);
                                     this.renderedChanges.add(nextRevision, currentChangeView);
@@ -509,11 +520,12 @@ export class TrackChangesPane {
                                 } else {
                                     let nextRowFormat: WRowFormat = nextRevision.range[0] as WRowFormat;
                                     changeView.appendRowToTable(nextRowFormat, j);
-                                    this.revisions.splice(i, 0, nextRevision);
+                                    this.revisions.splice(i + j, 0, nextRevision);
                                     this.changes.add(nextRevision, changeView);
                                 }
                                 this.tableRevisions.add(nextRevision, groupedRevision);
                             }
+                            insertIndex++;
                         } else {
                             let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this);
                             this.changesInfoDiv.insertBefore(currentChangeView.createSingleChangesDiv(revision), this.changesInfoDiv.children[i + 1]);
@@ -770,9 +782,9 @@ export class TrackChangesPane {
             let ranges: object = revision.range[0];
             if (ranges instanceof WRowFormat) {
                 let groupingAccept: Revision[] = this.groupTableRevisions(this.owner.revisions.changes, this.owner.revisions.changes.indexOf(revision));
-                this.owner.selection.selectTableRevision(groupingAccept);
+                this.owner.selectionModule.selectTableRevision(groupingAccept);
             } else {
-                this.owner.selection.selectRevision(revision);
+                this.owner.selectionModule.selectRevision(revision);
             }
         }
         this.currentSelectedRevision = this.owner.documentHelper.currentSelectedRevision;
@@ -915,9 +927,9 @@ export class ChangesSingleView {
         let ranges: object = this.revision.range[0];
         if (ranges instanceof WRowFormat) {
             let groupingAccept: Revision[] = this.trackChangesPane.groupTableRevisions(this.owner.revisions.changes, this.owner.revisions.changes.indexOf(this.revision));
-            this.owner.selection.selectTableRevision(groupingAccept);
+            this.owner.selectionModule.selectTableRevision(groupingAccept);
         } else {
-            this.owner.selection.selectRevision(this.revision);
+            this.owner.selectionModule.selectRevision(this.revision);
             this.trackChangesPane.onSelection(this.revision);
         }
     }
@@ -942,13 +954,13 @@ export class ChangesSingleView {
             if (element instanceof TextElementBox) {
                 text += element.text;
             } else if (element instanceof FieldElementBox && element.fieldType === 0) {
-                let fieldCode: string = this.owner.selection.getFieldCode(element);
+                let fieldCode: string = this.owner.selectionModule.getFieldCode(element);
                 if (fieldCode.match('TOC ') || fieldCode.match('Toc')) {
                     text += '<Table of Content>';
                     changesText.appendChild(this.addSpan(text));
                     return;
                 } else if (fieldCode.match('HYPERLINK ') || fieldCode.match('MERGEFIELD') || fieldCode.match('FORMTEXT') || fieldCode.match('PAGE ')) {
-                    text += this.owner.editor.retrieveFieldResultantText(element.fieldEnd);
+                    text += this.owner.editorModule.retrieveFieldResultantText(element.fieldEnd);
                 } else if (element.formFieldData) {
                     let emptyChar: string = this.owner.documentHelper.textHelper.repeatChar(
                         this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 5);
@@ -1010,14 +1022,14 @@ export class ChangesSingleView {
     private acceptButtonClick(): void {
         this.revision.accept();
         if (this.owner.enableHeaderAndFooter) {
-            this.owner.editor.updateHeaderFooterWidget();
+            this.owner.editorModule.updateHeaderFooterWidget();
         }
     }
 
     private rejectButtonClick(): void {
         this.revision.reject();
         if (this.owner.enableHeaderAndFooter) {
-            this.owner.editor.updateHeaderFooterWidget();
+            this.owner.editorModule.updateHeaderFooterWidget();
         }
     }
 

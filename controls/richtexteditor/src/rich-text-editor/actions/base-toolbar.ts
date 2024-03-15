@@ -130,22 +130,13 @@ export class BaseToolbar {
             case '-':
                 return { type: 'Separator', cssClass: CLS_HR_SEPARATOR };
             default:
-                if (this.parent.showTooltip) {
-                    return {
-                        id: this.parent.getID() + '_' + container + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id,
-                        prefixIcon: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].icon,
-                        tooltipText: getTooltipText(itemStr, this.locator),
-                        command: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].command,
-                        subCommand: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].subCommand
-                    };
-                } else {
-                    return {
-                        id: this.parent.getID() + '_' + container + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id,
-                        prefixIcon: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].icon,
-                        command: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].command,
-                        subCommand: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].subCommand
-                    };
-                }
+                return {
+                    id: this.parent.getID() + '_' + container + '_' + this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].id,
+                    prefixIcon: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].icon,
+                    tooltipText: getTooltipText(itemStr, this.locator),
+                    command: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].command,
+                    subCommand: this.tools[itemStr.toLocaleLowerCase() as ToolbarItems].subCommand
+                };
             }
         }
     }
@@ -192,17 +183,21 @@ export class BaseToolbar {
                 items.push(item as ItemModel);
             }
         }
-        for (let num : number = 0; num < items.length; num++){
-            const tooltipText : string = items[num as number].tooltipText;
-            let shortCutKey : string;
-            if (windowKeys[`${tooltipText}`]){
-                shortCutKey = Browser.isDevice && isIDevice() ? windowKeys[`${tooltipText}`].replace('Ctrl', 'Cmd') : windowKeys[`${tooltipText}`];
-            }
-            else{
-                shortCutKey = tooltipText;
-            }
-            if (shortCutKey) {
-                items[num as number].tooltipText = (tooltipText !== shortCutKey) ? tooltipText + ' (' + shortCutKey + ')' : tooltipText;
+        if (this.parent.showTooltip) {
+            for (let num : number = 0; num < items.length; num++) {
+                const tooltipText : string = items[num as number].tooltipText;
+                let shortCutKey : string;
+                if (windowKeys[`${tooltipText}`]){
+                    shortCutKey = window.navigator.platform.toLocaleLowerCase().includes('mac') ? windowKeys[`${tooltipText}`].replace('Ctrl', 'Cmd') : windowKeys[`${tooltipText}`];
+                }
+                else{
+                    shortCutKey = tooltipText;
+                }
+                if (shortCutKey) {
+                    if (!((items[num as number] as any).command === "Images" && (items[num as number] as any).subCommand === "InsertLink")) {
+                        items[num as number].tooltipText = (tooltipText !== shortCutKey) ? tooltipText + ' (' + shortCutKey + ')' : tooltipText;
+                    }
+                }
             }
         }
         return items;

@@ -1,10 +1,10 @@
 /* eslint-disable */
 // eslint-disable-next-line max-len
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor, Browser } from '@syncfusion/ej2-base';
-import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
+import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 // eslint-disable-next-line max-len
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel } from './pdfviewer-model';
-import { ToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel, SignatureFieldSettingsModel, InitialFieldSettingsModel, SignatureIndicatorSettingsModel, TextFieldSettingsModel, PasswordFieldSettingsModel, CheckBoxFieldSettingsModel, RadioButtonFieldSettingsModel, DropdownFieldSettingsModel, ListBoxFieldSettingsModel, ItemModel, SignatureDialogSettingsModel, PageOrganizerSettingsModel } from './pdfviewer-model';
+import { ToolbarSettingsModel, ShapeLabelSettingsModel, KeyGestureModel, KeyboardCommandModel, CommandManagerModel } from './pdfviewer-model';
 // eslint-disable-next-line max-len
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampModel, CustomToolbarItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, ScrollSettingsModel, FormFieldModel, InkAnnotationSettingsModel } from './pdfviewer-model';
 import { IAnnotationPoint, IPoint, PdfViewerBase, PdfiumRunner } from './index';
@@ -14,7 +14,7 @@ import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 import { PdfRenderer } from './index';
 // eslint-disable-next-line max-len
-import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat } from './base/types';
+import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -25,13 +25,15 @@ import { AccessibilityTags } from './index';
 import { FormFields } from './index';
 import { FormDesigner } from './index';
 import { Print, CalibrationUnit } from './index';
+import { PageOrganizer } from './index';
 // eslint-disable-next-line max-len
-import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs, AjaxRequestSuccessEventArgs } from './index';
+import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs,PageRenderInitiateEventArgs, AjaxRequestSuccessEventArgs,PageRenderCompleteEventArgs, PageOrganizerSaveAsEventArgs } from './index';
 import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs, AnnotationMouseLeaveEventArgs , ButtonFieldClickEventArgs} from './index';
 // eslint-disable-next-line max-len
 import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';
 // eslint-disable-next-line max-len
 import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';
+import { CustomContextMenuSelectEventArgs, CustomContextMenuBeforeOpenEventArgs } from './index';
 import { PdfAnnotationBase, PdfFormFieldBase, ZOrderPageTable } from './drawing/pdf-annotation';
 import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-annotation-model';
 import { Drawing, ClipBoardObject } from './drawing/drawing';
@@ -41,13 +43,13 @@ import { PointModel, IElement, Rect, cornersPointsBeforeRotation, Point } from '
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 // eslint-disable-next-line max-len
-import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs } from './base';
+import { ValidateFormFieldsArgs, BookmarkClickEventArgs, AnnotationUnSelectEventArgs, BeforeAddFreeTextEventArgs, FormFieldFocusOutEventArgs, CommentEventArgs, FormFieldClickArgs, FormFieldAddArgs, FormFieldRemoveArgs, FormFieldPropertiesChangeArgs, FormFieldMouseLeaveArgs, FormFieldMouseoverArgs, FormFieldMoveArgs, FormFieldResizeArgs, FormFieldSelectArgs, FormFieldUnselectArgs, FormFieldDoubleClickArgs, AnnotationMovingEventArgs, KeyboardCustomCommandsEventArgs } from './base';
 // eslint-disable-next-line max-len
 import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import { ContextMenuSettingsModel } from './pdfviewer-model';
 import { IFormField, IFormFieldBound } from './form-designer/form-designer';
-import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export'; 
-import { ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { PdfPageRotateAngle } from '@syncfusion/ej2-pdf-export';
+import { ClickEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
@@ -128,7 +130,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
      * shows only the defined options in the PdfViewer.
      */
     @Property()
-    public toolbarItems: (CustomToolbarItemModel  | ToolbarItem)[];
+    public toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
 
     /**
      * Provide option to customize the annotation toolbar of the PDF Viewer.
@@ -146,8 +148,8 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
 /** 
  * Defines customized toolbar items.
  */
-export class CustomToolbarItem  extends ChildProperty<CustomToolbarItem> {
-    
+export class CustomToolbarItem extends ChildProperty<CustomToolbarItem> {
+
     /**
      * Defines single/multiple classes separated by space used to specify an icon for the button.
      * The icon will be positioned before the text content if text is available, otherwise the icon alone will be rendered.
@@ -198,7 +200,6 @@ export class CustomToolbarItem  extends ChildProperty<CustomToolbarItem> {
     public type: string;
 
 }    
-
 /**
  * The `AjaxRequestSettings` module is used to set the ajax Request Headers of PDF viewer.
  * 
@@ -1697,24 +1698,24 @@ export class CircleSettings extends ChildProperty<CircleSettings> {
      */
      @Property({ x: 0, y: 0})
      public offset: IPoint;
- 
-     /**
-      * Get or set page number of the annotation.
-      */
-     @Property(1)
-     public pageNumber: number;
- 
-     /**
-      * specifies the width of the annotation.
-      */
-     @Property(100)
-     public width: number;
-  
-     /**
-      * specifies the height of the annotation.
-      */
-     @Property(100)
-     public height: number;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    @Property(1)
+    public pageNumber: number;
+
+    /**
+     * specifies the width of the annotation.
+     */
+    @Property(100)
+    public width: number;
+
+    /**
+     * specifies the height of the annotation.
+     */
+    @Property(100)
+    public height: number;
 
     /**
      * specifies the opacity of the annotation.
@@ -1917,12 +1918,12 @@ export class PolygonSettings extends ChildProperty<PolygonSettings> {
      */
      @Property({ x: 0, y: 0})
      public offset: IPoint;
- 
-     /**
-      * Get or set page number of the annotation.
-      */
-     @Property(1)
-     public pageNumber: number;
+
+    /**
+     * Get or set page number of the annotation.
+     */
+    @Property(1)
+    public pageNumber: number;
 
     /**
      * Get or set vertex points of the annotation.
@@ -2353,6 +2354,7 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
      */
     @Property('')
     public subject: string;
+
 }
 
 /**
@@ -2535,8 +2537,7 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
      */
     @Property(true)
     public isPrint: boolean;
-    
-    /**
+     /**
      * specifies the subject of the annotation.
      */
     @Property('')
@@ -2911,12 +2912,12 @@ export class RadiusSettings extends ChildProperty<RadiusSettings> {
      */
      @Property(100)
      public width: number;
- 
-     /**
-      * specifies the height of the annotation.
-      */
-     @Property(90)
-     public height: number;
+
+    /**
+     * specifies the height of the annotation.
+     */
+    @Property(90)
+    public height: number;
 
     /**
      * specifies the opacity of the annotation.
@@ -3057,12 +3058,12 @@ export class VolumeSettings extends ChildProperty<VolumeSettings> {
     @Property({ x: 0, y: 0})
     public offset: IPoint;
 
-     /**
-     * Get or set page number of the annotation.
-     */
-     @Property(1)
-     public pageNumber: number;
-    
+    /**
+    * Get or set page number of the annotation.
+    */
+    @Property(1)
+    public pageNumber: number;
+
     /**
      * Get or set vertex points of the annotation.
      *
@@ -3208,12 +3209,12 @@ export class InkAnnotationSettings extends ChildProperty<InkAnnotationSettings> 
      */
      @Property(0)
      public width: number;
- 
-     /**
-      * specifies the height of the annotation.
-      */
-     @Property(0)
-     public height: number;
+
+    /**
+     * specifies the height of the annotation.
+     */
+    @Property(0)
+    public height: number;
 
     /**
       * Gets or sets the path of the ink annotation.
@@ -4710,7 +4711,7 @@ export class TextFieldSettings extends ChildProperty<TextFieldSettings> {
  * 
  */
  export class CheckBoxFieldSettings extends ChildProperty<CheckBoxFieldSettings> {
-    
+   
     /**
      * Get or set the form field bounds.
      */
@@ -5189,6 +5190,226 @@ export class Item extends ChildProperty<Item> {
 }
 
 /**
+ * Defines the combination of keys and modifier keys.
+ */
+export class KeyGesture extends ChildProperty<KeyGesture> {
+    /**
+     * Defines a collection of keys commonly used in Pdf-related operations.
+     * * none - no key
+     * * N0 = The 0 key
+     * * N1 = The 1 key
+     * * N2 = The 2 key
+     * * N3 = The 3 key
+     * * N4 = The 4 key
+     * * N5 = The 5 key
+     * * N6 = The 6 key
+     * * N7 = The 7 key
+     * * N8 = The 8 key
+     * * N9 = The 9 key
+     * * Number0 = The 0 in number pad key
+     * * Number1 = The 1 in number pad key
+     * * Number2 = The 2 in number pad key
+     * * Number3 = The 3 in number pad key
+     * * Number4 = The 4 in number pad key
+     * * Number5 = The 5 in number pad key
+     * * Number6 = The 6 in number pad key
+     * * Number7 = The 7 in number pad key
+     * * Number8 = The 8 in number pad key
+     * * Number9 = The 9 in number pad key
+     * * BackSpace = The BackSpace key
+     * * F1 = The f1 key
+     * * F2 = The f2 key
+     * * F3 = The f3 key
+     * * F4 = The f4 key
+     * * F5 = The f5 key
+     * * F6 = The f6 key
+     * * F7 = The f7 key
+     * * F8 = The f8 key
+     * * F9 = The f9 key
+     * * F10 = The f10 key
+     * * F11 = The f11 key
+     * * F12 = The f12 key
+     * * A = The a key
+     * * B = The b key
+     * * C = The c key
+     * * D = The d key
+     * * E = The e key
+     * * F = The f key
+     * * G = The g key
+     * * H = The h key
+     * * I = The i key
+     * * J = The j key
+     * * K = The k key
+     * * L = The l key
+     * * M = The m key
+     * * N = The n key
+     * * O = The o key
+     * * P = The p key
+     * * Q = The q key
+     * * R = The r key
+     * * S = The s key
+     * * T = The t key
+     * * U = The u key
+     * * V = The v key
+     * * W = The w key
+     * * X = The x key
+     * * Y = The y key
+     * * Z = The z key
+     * * Left = The left key
+     * * Right = The right key
+     * * Top = The top key
+     * * Bottom = The bottom key
+     * * Escape = The Escape key
+     * * Tab = The tab key
+     * * Delete = The delete key
+     * * Enter = The enter key
+     * * The Space key
+     * * The page up key
+     * * The page down key
+     * * The end key
+     * * The home key
+     * * The Minus key
+     * * The Plus key
+     * * The Star key
+     *
+     * @aspDefaultValueIgnore
+     * @aspNumberEnum
+     * @default undefined
+     */
+    @Property()
+    public pdfKeys: PdfKeys;
+    /**
+     * Specifies a combination of key modifiers, on recognition of which the command will be executed.
+     * * None - no modifiers are pressed
+     * * Control - ctrl key
+     * * Meta - meta key im mac
+     * * Alt - alt key
+     * * Shift - shift key
+     *
+     * @aspDefaultValueIgnore
+     * @aspNumberEnum
+     * @default undefined
+     */
+    @Property()
+    public modifierKeys: ModifierKeys;
+}
+
+/**
+ * Defines a command and a key gesture to define when the command should be executed.
+ */
+export class KeyboardCommand extends ChildProperty<KeyboardCommand> {
+
+    /**
+     * Defines the name of the command.
+     *
+     * @default ''
+     */
+    @Property('')
+    public name: string;
+
+    /**
+     * Defines a combination of keys and key modifiers, on recognition of which the command will be executed.
+     * 
+     * ```html
+     * <div id='pdfViewer'></div>
+     * ```
+     * ```typescript
+     * let pdfViewer: PdfViewer = new PdfViewer({
+     * ...
+     * commandManager:{
+     * commands:[{
+     * name:'customCopy',
+     * gesture:{
+     * key:Keys.G, keyModifiers:KeyModifiers.Shift | KeyModifiers.Alt
+     * }
+     * }]
+     * },
+     * ...
+     * });
+     * pdfViewer.appendTo('#pdfViewer');
+     * ```
+     * 
+     * @default {}
+     */
+    @Complex<KeyGestureModel>({}, KeyGesture)
+    public gesture: KeyGestureModel;
+}
+
+/**
+ * Defines the collection of commands and the corresponding key gestures.
+ *```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ * let viewer: PdfViewer = new PdfViewer();
+ * viewer.commandManager = {
+ *      keyboardCommand: [{
+ *          name: 'customCopy',
+ *          gesture: {
+ *              pdfKeys: PdfKeys.G,
+ *              modifierKeys: ModifierKeys.Shift | ModifierKeys.Alt
+ *          }          
+ *       },
+ *       {
+ *          name: 'customPaste',
+ *          gesture: {
+ *              pdfKeys: PdfKeys.H,
+ *              modifierKeys: ModifierKeys.Shift | ModifierKeys.Alt
+ *          }
+ *      }]
+ * };
+ * viewer.appendTo("#pdfViewer");
+ * ```
+ */
+export class CommandManager extends ChildProperty<CommandManager> {
+    /**
+     * Defines the multiple command names with the corresponding command objects.
+     * @default [] 
+     */
+    @Collection<KeyboardCommandModel>([], KeyboardCommand)
+    public keyboardCommand: KeyboardCommandModel[];
+}
+
+/**
+ * The `PageOrganizerSettings` is allows pages to be deleted, inserted and rotated in the PDF viewer.
+ * 
+ * ```html
+ * <div id="pdfViewer" style="height: 100%;width: 100%;"></div>
+ * ```
+ * ```ts
+ *  let viewer: PdfViewer = new PdfViewer();
+ *  // Change the page organizer settings.
+ *  viewer.pageOrganizerSettings = {
+*           canDelete: true, 
+*           canInsert: true, 
+*           canRotate: true
+*   };
+ *  viewer.appendTo("#pdfViewer");
+ * ```
+ * 
+ */
+export class PageOrganizerSettings extends ChildProperty<PageOrganizerSettings> {
+
+    /**
+     * Specifies whether the pages can be deleted.
+     */
+     @Property(true)
+     public canDelete: boolean;
+
+    /**
+     * Specifies whether the pages can be inserted.
+     */
+    @Property(true)
+    public canInsert: boolean;
+
+    /**
+     * Specifies whether the pages can be rotated.
+     */
+    @Property(true)
+    public canRotate: boolean;
+}
+
+/**
  * Represents the PDF viewer component.
  * ```html
  * <div id="pdfViewer"></div>
@@ -5554,7 +5775,36 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableThumbnail: boolean;
 
     /**
-     * If it set as true, then the thumbnail view show at initial document loading in the PDF viewer
+     * Enable or disable the page organizer in the PDF Viewer.
+     * 
+     * {% codeBlock src='pdfviewer/enablePageOrganizer/index.md' %}{% endcodeBlock %}
+     *
+     * @default true
+     */
+    @Property(true)
+    public enablePageOrganizer: boolean;    
+
+   /**
+    * Specifies whether the page organizer dialog will be displayed upon the initial document loading in the PDF Viewer.
+    * 
+    * {% codeBlock src='pdfviewer/isPageOrganizerOpen/index.md' %}{% endcodeBlock %}
+    *
+    * @default false
+    */
+    @Property(false)
+    public isPageOrganizerOpen: boolean;
+
+    /**
+     * This property allows for control over various page management functionalities within the PDF Viewer. By setting it to `true`, users will be able to delete, insert and rotate pages. Conversely, setting it to `false` will disable these actions.
+     * 
+     * {% codeBlock src='pdfviewer/pageOrganizerSettings/index.md' %}{% endcodeBlock %}
+     *
+     */
+    @Property({canDelete: true, canInsert: true, canRotate: true})
+    public pageOrganizerSettings: PageOrganizerSettingsModel;
+
+    /**
+     * If it set as true, then the thumbnail view show at initial document loading in the PDF Viewer
      * 
      * {% codeBlock src='pdfviewer/isThumbnailViewOpen/index.md' %}{% endcodeBlock %}
      *
@@ -6040,6 +6290,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableAccessibilityTags: boolean;
 
     /**
+     * Specifies whether to display or remove the untrusted HTML values in the PDF Viewer component.
+     * 
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @private
+     * @default true
+     */
+    @Property(true)
+    public enableHtmlSanitizer: boolean;
+
+    /**
      * Customize desired date and time format
      * 
      * {% codeBlock src='pdfviewer/dateTimeFormat/index.md' %}{% endcodeBlock %}
@@ -6462,7 +6723,36 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // eslint-disable-next-line max-len
     @Property({ contextMenuAction: 'RightClick', contextMenuItems: [ContextMenuItem.Comment, ContextMenuItem.Copy, ContextMenuItem.Cut, ContextMenuItem.Delete, ContextMenuItem.Highlight, ContextMenuItem.Paste, ContextMenuItem.Properties, ContextMenuItem.ScaleRatio, ContextMenuItem.Strikethrough, ContextMenuItem.Underline] })
     public contextMenuSettings: ContextMenuSettingsModel;
-
+    /**
+     * Defines the custom context menu items.
+     * 
+     * @private
+    */
+    @Property([])
+    public customContextMenuItems: MenuItemModel[];
+    /**
+     * Defines the custom context menu items.
+     * 
+     * @private
+    */
+    @Property(false)
+    public disableDefaultContextMenu: boolean;
+    /**
+     * Defines the custom context menu items.
+     * 
+     * @private
+    */
+    @Property(false)
+    public showCustomContextMenuBottom: boolean;
+    /**
+     * Defines a set of custom commands and binds them with a set of desired key gestures.
+     * 
+     * {% codeBlock src='pdfviewer/commandManager/index.md' %}{% endcodeBlock %}
+     * 
+     * @default {}
+     */
+    @Complex<CommandManagerModel>({}, CommandManager)
+    public commandManager: CommandManagerModel;
     /**
      * @private
      */
@@ -6560,6 +6850,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public pdfRendererModule: PdfRenderer;
+    /**
+     * @private
+     */
+    public pageOrganizerModule: PageOrganizer; 
     private isTextSelectionStarted: boolean = false;
     /**
      * @private
@@ -6698,6 +6992,17 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * Gets the page organizer object of the PDF Viewer.
+     *
+     * @asptype PageOrganizer
+     * @blazorType PageOrganizer
+     * @returns { PageOrganizer }
+     */
+    public get pageOrganizer(): PageOrganizer {
+        return this.pageOrganizerModule;
+    }
+
+    /**
      * Triggers during the creation of the PDF viewer component.
      *
      * @event created
@@ -6749,7 +7054,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
      @Event()
      public ajaxRequestSuccess: EmitType<AjaxRequestSuccessEventArgs>;
-     
+     /**
+     * Triggers upon completion of page rendering.
+     * 
+     * @event pageRenderComplete 
+     */
+    @Event()
+    public pageRenderComplete : EmitType<PageRenderCompleteEventArgs>;
     /**
      * Triggers when validation is failed.
      *
@@ -7154,6 +7465,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public ajaxRequestInitiate: EmitType<AjaxRequestInitiateEventArgs>;
+    /**
+     * Triggers upon the initiation of page rendering.
+     *
+     * @event pageRenderInitiate 
+     */
+    @Event()
+    public pageRenderInitiate: EmitType<PageRenderInitiateEventArgs>;
 
     /**
      * Triggers when a comment for the annotation is added to the comment panel.
@@ -7309,6 +7627,38 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public formFieldDoubleClick: EmitType<FormFieldDoubleClickArgs>;
 
     /**
+     * Fires when a custom context menu option is selected.
+     *
+     * @event customContextMenuSelect
+     */
+    @Event()
+    public customContextMenuSelect: EmitType<CustomContextMenuSelectEventArgs>
+
+    /**
+     * Fires before the custom context menu option is opened.
+     *
+     * @event customContextMenuBeforeOpen
+     */
+    @Event()
+    public customContextMenuBeforeOpen: EmitType<CustomContextMenuBeforeOpenEventArgs>
+
+     /**
+     * Triggers when the customized keyboard command keys are pressed.
+     *
+     * @event keyboardCustomCommands
+     */
+     @Event()
+     public keyboardCustomCommands: EmitType<KeyboardCustomCommandsEventArgs>;
+
+     /**
+     * Triggers when the page organizer save as triggered.
+     *
+     * @event pageOrganizerSaveAs
+     */
+     @Event()
+     public pageOrganizerSaveAs: EmitType<PageOrganizerSaveAsEventArgs>;
+
+    /**
      * PDF document annotation collection.
      *
      * @private
@@ -7374,6 +7724,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     protected render(): void {
+        if (this.enableHtmlSanitizer && this.serviceUrl) {
+            this.serviceUrl = SanitizeHtmlHelper.sanitize(this.serviceUrl)
+        }
         if (isNullOrUndefined(this.serviceUrl) || this.serviceUrl === '') {
             this.viewerBase.clientSideRendering = true;
         }
@@ -7398,8 +7751,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     private getScriptPathForPlatform(): string {
-        if(!isNullOrUndefined(this.resourceUrl) && this.resourceUrl !== '') {
-            if(this.resourceUrl.indexOf('/ej2-pdfviewer-lib') !== -1){
+        if (this.enableHtmlSanitizer && this.resourceUrl) {
+            this.resourceUrl = SanitizeHtmlHelper.sanitize(this.resourceUrl)
+        }
+        if (!isNullOrUndefined(this.resourceUrl) && this.resourceUrl !== '') {
+            if (this.resourceUrl.indexOf('/ej2-pdfviewer-lib') !== -1) {
                 return this.resourceUrl;
             }
             return this.resourceUrl + "/ej2-pdfviewer-lib";
@@ -7421,9 +7777,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         else {
             (window as any).getRunningScript = (): (() => string) => {
                 return (): string => {
-                    return new Error().stack.match(/(?:http[s]?:\/\/(?:[^\/\s]+\/))(.*\.js)/)[0];
-                }
-            }
+                    let stackTrace = new Error().stack;
+                    let match = stackTrace && stackTrace.match(/(?:http[s]?:\/\/(?:[^\/\s]+\/))(.*\.js)/);
+                    return match ? match[0] : "src/pdfviewer/pdfviewer.js";
+                };
+            };
             let scriptLinkURL: string = (window as any).getRunningScript()();
             let splitURL: any = scriptLinkURL.split('/');
             let path: string = scriptLinkURL.replace("/" + splitURL[splitURL.length - 1], "");
@@ -7500,8 +7858,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 case 'toolbarSettings':
                     if (!Browser.isDevice || this.enableDesktopMode) {
                         this.toolbar.applyToolbarSettings();
+                        if (!isNullOrUndefined(this.toolbar.annotationToolbarModule) && !isNullOrUndefined(this.toolbar.formDesignerToolbarModule)) {
                         this.toolbar.annotationToolbarModule.applyAnnotationToolbarSettings();
                         this.toolbar.formDesignerToolbarModule.applyFormDesignerToolbarSettings();
+                    }
                     }
                     else {
                         this.toolbar.applyToolbarSettingsForMobile();
@@ -7575,7 +7935,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     if (newProp.customStampSettings.customStamps) {
                         for (let i: number = 0; i < newProp.customStampSettings.customStamps.length; i++) {
                             this.viewerBase.customStampCollection.push({ customStampName: this.customStampSettings.customStamps[i].customStampName, customStampImageSource: this.customStampSettings.customStamps[i].customStampImageSource });
-                        }
+                    }
                     }
                     break;
                 case 'enableFormFields':
@@ -7676,6 +8036,19 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         this.viewerBase.clientSideRendering = false;
                     }
                     break;
+                case 'pageOrganizerSettings':
+                    if(!isNullOrUndefined(newProp.pageOrganizerSettings)){
+                        if(isNullOrUndefined(newProp.pageOrganizerSettings.canDelete)){
+                            this.pageOrganizerSettings.canDelete = true
+                        }
+                        if(isNullOrUndefined(newProp.pageOrganizerSettings.canRotate)){
+                            this.pageOrganizerSettings.canRotate = true
+                        }
+                        if(isNullOrUndefined(newProp.pageOrganizerSettings.canInsert)){
+                            this.pageOrganizerSettings.canInsert = true
+                        }
+                    }
+                    break;
             }
         }
     }
@@ -7756,13 +8129,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 member: 'FormDesigner', args: [this, this.viewerBase]
             });
         }
-        modules.push({
-            member: 'AccessibilityTags', args: [this, this.viewerBase]
-        });
-        modules.push({
-            member: 'PdfRenderer', args: [this, this.viewerBase]
-        });
-        
+        if(this.enableAccessibilityTags){
+            modules.push({
+                member: 'AccessibilityTags', args: [this, this.viewerBase]
+            });
+        }
+        if(isNullOrUndefined(this.serviceUrl) || this.serviceUrl === ''){
+            modules.push({
+                member: 'PdfRenderer', args: [this, this.viewerBase]
+            });
+        }
+        if (this.enablePageOrganizer) {
+            modules.push({
+                member: 'PageOrganizer', args: [this, this.viewerBase]
+            });
+        }
         return modules;
     }
     /** @hidden */
@@ -7788,9 +8169,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Zoom': 'Zoom',
         'Zoom In': 'Zoom in',
         'Zoom Out': 'Zoom out',
-        'Page Thumbnails': 'Page thumbnails',
+        'Page Thumbnails': 'Page Thumbnails',
         'Bookmarks': 'Bookmarks',
         'Print': 'Print file',
+        'Organize Pages': 'Organize Pages',
+        'Insert Right': 'Insert Right',
+        'Insert Left': 'Insert Left',
+        'Total': 'Total',
+        'Pages': 'Pages',
+        'Rotate Right': 'Rotate Right',
+        'Rotate Left': 'Rotate Left',
+        'Delete Page': 'Delete Page',
+        'Delete Pages': 'Delete Pages',
+        'Save':'Save',
+        'Save As':'Save As',
+        'Select All':'Select All',
         'Password Protected': 'Password Required',
         'Copy': 'Copy',
         'Text Selection': 'Text selection tool',
@@ -8032,6 +8425,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         } else {
             this.viewerBase.clear(false);
         }
+        this.viewerBase.clear(!isNullOrUndefined(this.customContextMenuItems));
         this.pageCount = 0;
         this.currentPageNumber = 0;
         this.viewerBase.blazorUIAdaptor.resetToolbar();
@@ -8379,7 +8773,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
 
     private imageOnLoad(bounds: any , image:HTMLImageElement, currentData: any){
         if (this.signatureFitMode === 'Default') {
-            let padding = Math.min(bounds.height /this. paddingDifferenceValue, bounds.width / this.paddingDifferenceValue);
+            let padding = Math.min(bounds.height /this.paddingDifferenceValue, bounds.width / this.paddingDifferenceValue);
             let maxHeight = bounds.height - padding;
             let maxWidth = bounds.width - padding;
             let imageWidth = image.width;
@@ -8401,9 +8795,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                    }
                 }
                 window.sessionStorage.removeItem(this.viewerBase.documentId + '_formfields');
-               this.viewerBase.setItemInSessionStorage(FormFieldsData , '_formfields');
+                this.viewerBase.setItemInSessionStorage(FormFieldsData, '_formfields');
             }
-         }
+          }
     }
     /**
      * Perform undo action for the edited annotations
@@ -8413,6 +8807,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public undo(): void {
         if (this.annotationModule) {
             this.annotationModule.undo();
+        } else {
+            this.viewerBase.getModuleWarningMessage("Annotation")
         }
     }
 
@@ -8424,6 +8820,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public redo(): void {
         if (this.annotationModule) {
             this.annotationModule.redo();
+        } else {
+            this.viewerBase.getModuleWarningMessage("Annotation")
         }
     }
 
@@ -8454,7 +8852,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         if (this.viewerBase.pageTextDetails) {
             this.viewerBase.pageTextDetails = {};
-        }   
+        }
+        if(this.textSearchModule){
+            this.textSearchModule.showSearchBox(false);
+        }
     }
 
     /**
@@ -8471,7 +8872,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.element.innerHTML = '';
         }
         if(this.viewerBase.navigationPane){
-        this.viewerBase.navigationPane.restrictUpdateZoomValue = false;
+            this.viewerBase.navigationPane.restrictUpdateZoomValue = false;
         }
         this.viewerBase.destroy();
         if(this.viewerBase.navigationPane){
@@ -8532,10 +8933,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.viewerBase.importAnnotations(btoa(importData), AnnotationDataFormat.Json);
                 }
             }
+        } else {
+            this.viewerBase.getModuleWarningMessage("Annotation")
         }
     }
 
-     // eslint-disable-next-line
+    // eslint-disable-next-line
     private importAnnotationsAsJson(importData: any): void {
         let jsonData: any = JSON.parse(importData);
         let firstAnnotation: any = jsonData.pdfAnnotation[Object.keys(jsonData.pdfAnnotation)[0]];
@@ -8561,6 +8964,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             } else {
                 this.viewerBase.exportAnnotations(AnnotationDataFormat.Json);
             }
+        } else {
+            this.viewerBase.getModuleWarningMessage("Annotation")
         }
     }
 
@@ -8631,6 +9036,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 formFieldDataFormat = FormFieldDataFormat.Json;
             }
             this.viewerBase.importFormFields(data, formFieldDataFormat);
+        } else {
+            this.viewerBase.getModuleWarningMessage("FormFields")
         }
     }
 
@@ -8644,6 +9051,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      public exportFormFields(data?: string, formFieldDataFormat?: FormFieldDataFormat): void {
         if (this.formFieldsModule) {
             this.viewerBase.exportFormFields(data, formFieldDataFormat);
+        } else {
+            this.viewerBase.getModuleWarningMessage("FormFields")
         }
     }
 
@@ -8692,6 +9101,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public deleteAnnotations(): void {
         if (this.annotationModule) {
             this.viewerBase.deleteAnnotations();
+        } else {
+            this.viewerBase.getModuleWarningMessage("Annotation")
         }
     }
 
@@ -8724,6 +9135,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireAjaxRequestInitiate(JsonData: any): void {
         const eventArgs: AjaxRequestInitiateEventArgs = { name: 'ajaxRequestInitiate', JsonData: JsonData };
         this.trigger('ajaxRequestInitiate', eventArgs);
+    }
+    /**
+     * @param jsonData
+     * @private
+     */
+    // eslint-disable-next-line
+    public firePageRenderInitiate(jsonData: any): void {
+        const eventArgs: PageRenderInitiateEventArgs = { name: 'pageRenderInitiate', jsonData: jsonData };
+        this.trigger('pageRenderInitiate', eventArgs);
     }
     /**
      * @param value
@@ -8994,6 +9414,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         } else {
            return false;
         }
+    }
+    /**
+     * @param data
+     * @private
+     */
+    public firePageRenderComplete(data: any): any {
+        const eventArgs: PageRenderCompleteEventArgs = { name: 'pageRenderComplete', documentName: this.fileName, data: data};
+        this.trigger('pageRenderComplete', eventArgs);
     }
     /**
      * @param action
@@ -9480,7 +9908,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.isTextSelectionStarted = false;
         }
     }
-
+  
     /**
      * @param canvas
      * @param index
@@ -9859,6 +10287,46 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         this.trigger('textSearchHighlight', eventArgs);
     }
     /**
+     * @param id
+     * @private
+     */
+    public firecustomContextMenuSelect(id: string): void{
+        const eventArgs: CustomContextMenuSelectEventArgs = { id: id};
+        this.trigger('customContextMenuSelect', eventArgs);
+    }
+    /**
+     * @param ids
+     * @private
+     */
+    public firecustomContextMenuBeforeOpen(ids: string[]): void{
+        const eventArgs: CustomContextMenuBeforeOpenEventArgs = { ids: ids};
+        this.trigger('customContextMenuBeforeOpen', eventArgs);
+    }
+    /**
+     * @param gesture
+     * @private
+     */
+    // eslint-disable-next-line
+    public fireKeyboardCustomCommands(gesture:KeyboardCommandModel): void {
+        const eventArgs: KeyboardCustomCommandsEventArgs = {keyboardCommand: gesture };
+        this.trigger('keyboardCustomCommands', eventArgs);
+    }
+    /**
+     * @param fileName
+     * @param downloadData
+     * @private
+     */
+    // eslint-disable-next-line
+    public firePageOrganizerSaveAsEventArgs(fileName: string, downloadData: string): any {
+        const eventArgs: PageOrganizerSaveAsEventArgs = {fileName: fileName, downloadDocument: downloadData, cancel: false};
+        this.trigger('pageOrganizerSaveAs', eventArgs);
+        if (eventArgs.cancel) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    /**
      * @param bounds
      * @param commonStyle
      * @param cavas
@@ -10195,6 +10663,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // eslint-disable-next-line max-len
     public checkBoundaryConstraints(tx: number, ty: number, pageIndex: number, nodeBounds?: Rect, isStamp?: boolean, isSkip?: boolean): boolean {
         return this.drawing.checkBoundaryConstraints(tx, ty, pageIndex, nodeBounds, isStamp, isSkip);
+    }
+
+    /**
+     * Adds a custom menu item to the existing menu, with optional configurations.
+     * 
+     * @param {MenuItemModel[]} menuItems - The custom menu item to be added.
+     * @param {boolean} disableDefaultItems - Optional. When set to true, this parameter disables the inclusion of default items in the menu. Defaults to false, meaning default items will be included.
+     * @param {boolean} appendToEnd - Optional. When set to true, the custom menu item will be added at the bottom of the existing menu list. If false or not provided, the item will be added at the default position.
+     * @returns {void}
+     */
+    public addCustomMenu(menuItems: MenuItemModel[], disableDefaultItems?: boolean, appendToEnd?: boolean): void  {         
+        if(!isNullOrUndefined(menuItems)){
+            this.customContextMenuItems.push(...menuItems);   
+            this.showCustomContextMenuBottom = appendToEnd;
+        }
+        this.disableDefaultContextMenu = disableDefaultItems;             
     }
 
 }

@@ -516,8 +516,12 @@ export class InfiniteScroll implements IAction {
                         this.resetInfiniteCurrentViewData(page, index);
                     }
                     rows.splice(index, 1);
-                    remove(rowElms[parseInt(index.toString(), 10)]);
-                    rowElms.splice(index, 1);
+                    const rowElement: Element = this.parent.getRowElementByUID(e.uid);
+                    if (rowElement) {
+                        const rowElementIndex: number = rowElms.indexOf(rowElement);
+                        remove(rowElement);
+                        rowElms.splice(rowElementIndex, 1);
+                    }
                 }
             });
         }
@@ -626,7 +630,7 @@ export class InfiniteScroll implements IAction {
             if (!this.isAdd && args.data) {
                 this.updateCurrentViewRecords(args.data);
             }
-            this.isAdd = false;
+            this.isAdd = false || this.parent.editSettings.showAddNewRow;
         }
     }
 
@@ -653,7 +657,7 @@ export class InfiniteScroll implements IAction {
         if (args.requestType === 'delete' || args.requestType === 'save' || args.requestType === 'cancel') {
             this.requestType = this.empty as Action;
             this.isCancel = args.requestType === 'cancel' || args.requestType === 'save';
-            this.isAdd = this.isEdit = false;
+            this.isAdd = this.isEdit = false || this.parent.editSettings.showAddNewRow;
             if (this.isNormaledit) {
                 this.editRowIndex = this.empty as number;
                 this.virtualInfiniteData = {};
@@ -671,15 +675,11 @@ export class InfiniteScroll implements IAction {
     }
 
     private getVirtualInfiniteData(data: { virtualData: Object, isAdd: boolean, isCancel: boolean }): void {
-        if (this.parent.infiniteScrollSettings.enableCache && this.parent.isEdit && isNullOrUndefined(data['endEdit'])) {
-            this.parent.editModule.closeEdit();
-        }
-        else {
-            this.getVirtualInfiniteEditedData();
-            data.virtualData = this.virtualInfiniteData;
-            data.isAdd = this.isAdd;
-            data.isCancel = this.isCancel;
-        }
+        this.getVirtualInfiniteEditedData();
+        data.virtualData = this.parent.enableColumnVirtualization && !this.parent.infiniteScrollSettings.enableCache ? data.virtualData
+            : this.virtualInfiniteData;
+        data.isAdd = this.isAdd;
+        data.isCancel = this.isCancel;
     }
 
     private editActionBegin(e: { data: Object, index: number }): void {
@@ -732,8 +732,8 @@ export class InfiniteScroll implements IAction {
                 }
                 const rows: Element[] = [].slice.call(scrollEle.querySelectorAll('.e-row:not(.e-addedrow)'));
                 const row: Element = rows[rows.length - 1];
-                const rowIndex: number = !this.parent.groupSettings.enableLazyLoading ? getRowIndexFromElement(row) :
-                    this.parent.contentModule['visibleRows'].length - 1;
+                const rowIndex: number = !(this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length)
+                    ? getRowIndexFromElement(row) : this.parent.contentModule['visibleRows'].length - 1;
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) + 1;
                 args = {
                     requestType: 'infiniteScroll',
@@ -1297,6 +1297,26 @@ export class InfiniteScroll implements IAction {
     private resetContentModuleCache(data: { [x: number]: Row<Column>[] } | { [x: number]: Row<Column>[][] }): void {
         (<{ infiniteCache?: { [x: number]: Row<Column>[] } | { [x: number]: Row<Column>[][] } }>(this.parent as Grid).contentModule)
             .infiniteCache = data;
+    }
+
+    /**
+     * @param {Row<Column>[]} rowObjects - Defines the grid's row objects
+     * @returns {void}
+     * @hidden
+     */
+    public resetInfiniteCache(rowObjects: Row<Column>[]): void {
+        const blockLength: number = Object.keys(this.infiniteCache).length;
+        this.infiniteCache = {};
+        for (let i: number = 1; i <= blockLength; i++) {
+            const startIndex: number = (i - 1) * this.parent.pageSettings.pageSize;
+            const endIndex: number = i * this.parent.pageSettings.pageSize;
+            if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+                this.setInitialGroupCache(rowObjects, i, startIndex, endIndex);
+            } else {
+                this.infiniteCache[parseInt(i.toString(), 10)] = rowObjects.slice(startIndex, endIndex);
+                this.resetContentModuleCache(this.infiniteCache);
+            }
+        }
     }
 
     /**

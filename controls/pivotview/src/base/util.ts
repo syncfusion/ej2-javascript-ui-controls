@@ -1,4 +1,4 @@
-import { IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, IFieldListOptions, IMembers } from './engine';
+import { IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, IFieldListOptions, IMembers, PivotEngine } from './engine';
 import { IDrillOptions, IValueSortSettings, IGroupSettings, IConditionalFormatSettings, ICustomGroups, FieldItemInfo } from './engine';
 import { ICalculatedFieldSettings, IAuthenticationInfo, IGridValues, IAxisSet } from './engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -10,6 +10,7 @@ import { IOlapCustomProperties, IOlapField, IOlapFieldListOptions } from './olap
 import { HeadersSortEventArgs } from '../common/base/interface';
 import { PdfPageSize } from '@syncfusion/ej2-grids';
 import { SizeF } from '@syncfusion/ej2-pdf-export';
+import { PivotChart } from '../pivotchart/base/pivotchart';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
@@ -56,6 +57,7 @@ export class PivotUtil {
         }
         return clonedData;
     }
+
     public static getClonedCSVData(data: string[][]): string[][] {
         const clonedData: string[][] = data.map((row: string[]) => [...row]);
         return clonedData;
@@ -179,7 +181,6 @@ export class PivotUtil {
                     baseField: fieldlistObj.baseField,
                     baseItem: fieldlistObj.baseItem,
                     dateMember: this.cloneDateMembers(fieldlistObj.dateMember),
-                    formattedMembers: this.cloneFormatMembers(fieldlistObj.formattedMembers),
                     members: this.cloneFormatMembers(fieldlistObj.members),
                     formatString: fieldlistObj.formatString,
                     format: fieldlistObj.format,
@@ -432,6 +433,101 @@ export class PivotUtil {
         } else {
             return collection;
         }
+    }
+
+    /**
+     * It format the headers of pivot table.
+     *
+     * @param {IAxisSet} headerCell - It contains the header cell.
+     * @param {PivotEngine} engine - It contains the instance of pivot engine.
+     * @returns {IAxisSet} - It returns the formatted header data as IAxisSet.
+     * @hidden
+     */
+    public static getFormattedHeader(headerCell: IAxisSet, engine: PivotEngine): IAxisSet {
+        const clonedHeader: IAxisSet = PivotUtil.frameHeaderWithKeys(headerCell);
+        if (clonedHeader.valueSort && clonedHeader.valueSort['axis']) {
+            const fieldName: string = clonedHeader.valueSort['axis'] as string;
+            const isDateType: boolean = this.isDateField(fieldName as string, engine);
+            clonedHeader.formattedText = isDateType || !engine.formatFields[fieldName as string] || headerCell.isSum === true ?
+                clonedHeader.formattedText : engine.getFormattedValue(clonedHeader.actualText, fieldName as string).formattedText;
+        }
+        return clonedHeader;
+    }
+
+    /**
+     * It format the members of field.
+     *
+     * @param {IMembers} members - It contains the members.
+     * @param {string} fieldName - It contains the field Name.
+     * @param {PivotEngine} engine - It contains the instance of pivot engine.
+     * @returns {IMembers} - It returns the formatted members as IMembers.
+     * @hidden
+     */
+    public static getFormattedMembers(members: IMembers, fieldName: string, engine: PivotEngine): IMembers {
+        const isDateField: boolean = this.isDateField(fieldName as string, engine);
+        if (isDateField || engine.groupingFields[fieldName as string]) {
+            const fieldMembers: IMembers = {};
+            const keys: any = Object.keys(members); // eslint-disable-line @typescript-eslint/no-explicit-any
+            const dateMember: IAxisSet[] = engine.fieldList[fieldName as string].dateMember;
+            for (let i: number = 0, j: number = keys.length; i < j; i++) {
+                const values: any = members[keys[i as number] as string]; // eslint-disable-line @typescript-eslint/no-explicit-any
+                if (isDateField) {
+                    fieldMembers[values.caption as string] = values;
+                } else {
+                    const commonValue: string | number = dateMember[values.ordinal - 1].actualText;
+                    fieldMembers[commonValue as string] = values;
+                }
+            }
+            return fieldMembers;
+        }
+        return members;
+    }
+
+    /**
+     * It determines whether the specified field is of date type.
+     *
+     * @param {string} fieldName - It contains the field Name.
+     * @param {PivotEngine} engineModule - It contains the instance of pivot engine.
+     * @returns {boolean} - It  returns whether the field is of date type or not.
+     * @hidden
+     */
+    public static isDateField(fieldName: string, engineModule: PivotEngine): boolean {
+        return (engineModule.formatFields[fieldName as string] &&
+            (['date', 'dateTime', 'time'].indexOf(engineModule.formatFields[fieldName as string].type) > -1));
+    }
+
+    /**
+     * It format the headers of pivot chart.
+     *
+     * @param {string[]} values - It contains the headers.
+     * @param {PivotChart} chartModule - It contains the instance of pivot chart.
+     * @param {boolean} isColumnHeader - It determines whether the specified header is column or row.
+     * @returns {string} - It returns the formatted header.
+     * @hidden
+     */
+    public static formatChartHeaders(values: string[], chartModule: PivotChart, isColumnHeader: boolean): string {
+        const formattedValues: string[] = [];
+        for (let i: number = 0, j: number = values.length; i < j; i++) {
+            const fieldName: string = isColumnHeader ? ((chartModule.parent.dataSourceSettings.columns.length > 0 &&
+                !isNullOrUndefined(chartModule.parent.dataSourceSettings.columns[i as number])) ?
+                chartModule.parent.dataSourceSettings.columns[i as number].name as string : undefined) :
+                (chartModule.parent.dataSourceSettings.rows.length > 0 &&
+                    !isNullOrUndefined(chartModule.parent.dataSourceSettings.rows[i as number])) ?
+                    chartModule.parent.dataSourceSettings.rows[i as number].name as string : undefined;
+            if (!isNullOrUndefined(fieldName)) {
+                if ((chartModule.engineModule.formatFields[fieldName as string] &&
+                    (['date', 'dateTime', 'time'].indexOf(chartModule.engineModule.formatFields[fieldName as string].type) > -1))) {
+                    formattedValues.push(values[i as number] as string);
+                } else {
+                    formattedValues.push((chartModule.engineModule as PivotEngine).getFormattedValue(
+                        values[i as number] as string, fieldName as string).formattedText
+                    );
+                }
+            } else {
+                formattedValues.push(values[i as number] as string);
+            }
+        }
+        return formattedValues.join(' - ');
     }
 
     public static cloneDrillMemberSettings(collection: IDrillOptions[]): IDrillOptions[] {
@@ -1020,7 +1116,7 @@ export class PivotUtil {
         try {
             pivot.olapEngineModule.renderEngine(
                 pivot.dataSourceSettings as IDataOptions, customProperties ? customProperties :
-                (pivot as PivotFieldList).frameCustomProperties(pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList),
+                    (pivot as PivotFieldList).frameCustomProperties(pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList),
                 pivot.onHeadersSort ? (pivot as any).getHeaderSortInfo.bind(pivot) : undefined // eslint-disable-line @typescript-eslint/no-explicit-any
             );
             pivot.setProperties({ dataSourceSettings: { valueIndex: pivot.olapEngineModule.measureIndex } }, true);
@@ -1116,5 +1212,27 @@ export class PivotUtil {
         default:
             return new SizeF(595, 842);
         }
+    }
+
+    /**
+     *
+     * @param {any} aggreColl - It contains the selected header and its value cell collection, that should be sorted for value sorting.
+     * @param {string} sortOrder - It denotes the sorting order.
+     * @returns {IAxisSet[]} - It returns the sorted collection in the provided sort order.
+     * @hidden */
+    public static getSortedValue(aggreColl: { 'header': IAxisSet; 'value'?: number }[], sortOrder: string): IAxisSet[] {
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        aggreColl.sort((a: any, b: any) => {
+            return sortOrder === 'Descending' ? (
+                (b['value'] || b['header']['type'] === 'grand sum' ? b['value'] : 0) -
+                (a['value'] || a['header']['type'] === 'grand sum' ? a['value'] : 0)
+            ) : (
+                (a['value'] || a['header']['type'] === 'grand sum' ? a['value'] : 0) -
+                (b['value'] || b['header']['type'] === 'grand sum' ? b['value'] : 0)
+            );
+        });
+        return aggreColl.map((item: { 'header': IAxisSet; 'value'?: number }) => {
+            return item['header'];
+        });
     }
 }

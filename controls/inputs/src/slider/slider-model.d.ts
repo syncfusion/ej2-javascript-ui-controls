@@ -342,9 +342,10 @@ export interface SliderModel extends ComponentModel{
     cssClass?: string;
 
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Specifies whether to display or remove the untrusted HTML values in the Slider component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
     enableHtmlSanitizer?: boolean;
 

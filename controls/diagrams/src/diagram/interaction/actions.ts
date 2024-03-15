@@ -243,6 +243,8 @@ function checkForConnectorSegment(conn: Connector, handle: SelectorModel, positi
                 }
             }
         }
+    }else if(canDragSegmentThumb(conn as Connector)){
+        console.warn("[WARNING] :: Module \"ConnectorEditing\" is not available in Diagram component! You either misspelled the module name or forgot to load it.");
     }
     return null;
 }

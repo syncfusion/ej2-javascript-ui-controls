@@ -1,4 +1,4 @@
-import { addClass, Browser, L10n, removeClass, formatUnit, isNullOrUndefined, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { addClass, Browser, L10n, removeClass, formatUnit, isNullOrUndefined, isNullOrUndefined as isNOU, EventHandler } from '@syncfusion/ej2-base';
 import { getInstance, closest, MouseEventArgs, selectAll } from '@syncfusion/ej2-base';
 import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode } from '@syncfusion/ej2-navigations';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -34,6 +34,7 @@ export class ToolbarRenderer implements IRenderer {
     private tooltip: Tooltip;
     private l10n: L10n;
     private dropdownTooltip :Tooltip;
+    private tooltipTargetEle: Element;
 
     /**
      * Constructor for toolbar renderer module
@@ -52,6 +53,7 @@ export class ToolbarRenderer implements IRenderer {
     private wireEvent(): void {
         this.parent.on(events.destroy, this.unWireEvent, this);
         this.parent.on(events.destroyTooltip, this.destroyTooltip, this);
+        this.parent.on(events.closeTooltip, this.closeTooltip, this);
     }
 
     private destroyTooltip(): void {
@@ -66,6 +68,8 @@ export class ToolbarRenderer implements IRenderer {
 
     private unWireEvent(): void {
         this.parent.off(events.destroy, this.unWireEvent);
+        this.parent.off(events.destroyTooltip, this.destroyTooltip);
+        this.parent.off(events.closeTooltip, this.closeTooltip);
     }
 
     private toolbarBeforeCreate(e: BeforeCreateArgs): void {
@@ -193,7 +197,7 @@ export class ToolbarRenderer implements IRenderer {
                 windowCollision: true,
                 position: 'BottomCenter'
             });
-            this.tooltip.appendTo(args.target);
+            this.tooltip.appendTo(args.target.parentElement);
         }
     }
 
@@ -322,6 +326,31 @@ export class ToolbarRenderer implements IRenderer {
         popupElement.setAttribute('aria-owns', this.parent.getID());
         return dropDown;
     }
+    private mouseOutHandler (): void {
+        if (!isNOU(this.tooltipTargetEle)){
+            this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
+        } else {
+            const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
+                this.parent.contentModule.getDocument();
+            this.tooltipTargetEle = currentDocument.querySelector('[data-title]');
+            this.tooltipTargetEle.setAttribute('title', this.tooltipTargetEle.getAttribute('data-title'));
+        }
+        this.tooltipTargetEle.removeAttribute('data-title');
+        EventHandler.remove(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler);
+    }
+    private closeTooltip(args:{[key: string]: HTMLElement} ){
+        const currentDocument: Document = this.parent.iframeSettings.enable ? this.parent.contentModule.getPanel().ownerDocument :
+            this.parent.contentModule.getDocument();
+        this.tooltipTargetEle = closest(args.target as HTMLElement, '[data-tooltip-id]');
+        if (!isNOU(this.tooltipTargetEle) && this.parent.showTooltip && !isNOU(currentDocument.querySelector('.e-tooltip-wrap'))) {
+            this.destroyTooltip();
+             if (!this.tooltipTargetEle.closest('.e-rte-quick-popup')) {
+                this.tooltipTargetEle.setAttribute('data-title', this.tooltipTargetEle.getAttribute('title'));
+                this.tooltipTargetEle.removeAttribute('title');
+                EventHandler.add(this.tooltipTargetEle, 'mouseout', this.mouseOutHandler, this);
+            }
+        }
+    }
     /**
      * renderListDropDown method
      *
@@ -346,6 +375,31 @@ export class ToolbarRenderer implements IRenderer {
             enableRtl: this.parent.enableRtl,
             select: this.dropDownSelected.bind(this),
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
+                if (proxy.parent.editorMode !== 'Markdown' ) {
+                    const startNode: HTMLElement = proxy.parent.getRange().startContainer.parentElement;
+                    const listElem: Element = startNode.closest('LI');
+                    const currentLiElem: HTMLElement = !isNOU(listElem) ? listElem.parentElement : null;
+                    if (!isNOU(currentLiElem) && (currentLiElem.nodeName === 'OL' || currentLiElem.nodeName === 'UL')) {
+                        if (currentLiElem.nodeName === 'UL' && (args.items[0 as number] as any).subCommand === 'NumberFormatList') {
+                            addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
+                        } else if (currentLiElem.nodeName === 'OL' && (args.items[0 as number] as any).subCommand === 'BulletFormatList') {
+                            addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
+                        } else {
+                            let currentListStyle: string = currentLiElem.style.listStyleType.split('-').join('').toLocaleLowerCase();
+                            currentListStyle = currentListStyle === 'decimal' ? 'number' : currentListStyle;
+                            for (let index: number = 0; index < args.element.childNodes.length; index++) {
+                                if (currentListStyle === (args.element.childNodes[index as number] as HTMLElement).innerHTML.split(' ').join('').toLocaleLowerCase()) {
+                                    addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                                } else if (currentListStyle === '') {
+                                    addClass([args.element.childNodes[index as number]] as Element[], 'e-active');
+                                }
+                            }
+                        }
+                    } else {
+                        addClass([args.element.childNodes[0 as number]] as Element[], 'e-active');
+                    }
+                }
+                this.closeTooltip({target:args.event.target as HTMLElement});
                 if (proxy.parent.readonly || !proxy.parent.enabled) {
                     args.cancel = true;
                     return;

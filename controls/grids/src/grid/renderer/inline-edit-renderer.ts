@@ -1,7 +1,7 @@
 import { IGrid } from '../base/interface';
 import { Column } from '../models/column';
 import { isNullOrUndefined, addClass, extend } from '@syncfusion/ej2-base';
-import { appendChildren, setStyleAndAttributes, addFixedColumnBorder, addStickyColumnPosition } from '../base/util';
+import { appendChildren, setStyleAndAttributes, addFixedColumnBorder, addStickyColumnPosition, resetColandRowSpanStickyPosition } from '../base/util';
 import * as literals from '../base/string-literals';
 
 /**
@@ -28,13 +28,14 @@ export class InlineEditRender {
     public addNew(elements: Object, args: { row?: Element, rowData?: Object, isScroll?: boolean }): void {
         this.isEdit = false;
         let tbody: Element;
-        if (this.parent.frozenRows && this.parent.editSettings.newRowPosition === 'Top') {
+        if ((this.parent.frozenRows || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling) &&
+            this.parent.editSettings.showAddNewRow)) && this.parent.editSettings.newRowPosition === 'Top') {
             tbody = this.parent.getHeaderTable().querySelector( literals.tbody);
         } else {
             tbody = this.parent.getContentTable().querySelector( literals.tbody);
         }
         args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow' });
-        if (this.parent.getContentTable().querySelector('.e-emptyrow')) {
+        if (this.parent.getContentTable().querySelector('.e-emptyrow') && !this.parent.editSettings.showAddNewRow) {
             const emptyRow: Element = this.parent.getContentTable().querySelector('.e-emptyrow');
             emptyRow.parentNode.removeChild(emptyRow);
             if (this.parent.frozenRows && this.parent.element.querySelector('.e-frozenrow-empty')) {
@@ -102,7 +103,8 @@ export class InlineEditRender {
         let inputValue: string;
         const cols: Column[] = args.isCustomFormValidation ? (<{ columnModel?: Column[] }>this.parent).columnModel : gObj.getColumns();
         while ((isEdit && m < tdElement.length && i < cols.length) || i < cols.length) {
-            const span: string = isEdit ? tdElement[parseInt(m.toString(), 10)].getAttribute('colspan') : null;
+            const span: string = isEdit && tdElement[parseInt(m.toString(), 10)] ?
+                tdElement[parseInt(m.toString(), 10)].getAttribute('colspan') : null;
             const col: Column = cols[parseInt(i.toString(), 10)] as Column;
             inputValue = (elements[col.uid]).value;
             const td: HTMLElement = this.parent.createElement(
@@ -129,6 +131,10 @@ export class InlineEditRender {
             }
             if (this.parent.isFrozenGrid()) {
                 addStickyColumnPosition(this.parent, col, td);
+                if (this.parent.isSpan) {
+                    const colSpan: number = td.getAttribute('colspan') ? parseInt(td.getAttribute('colspan'), 10) : 1;
+                    resetColandRowSpanStickyPosition(this.parent, col, td, colSpan);
+                }
                 if (this.parent.enableColumnVirtualization) {
                     if (col.freeze === 'Left' && !isNullOrUndefined((<{ valueX?: number }>col).valueX)) {
                         td.style.left = ((<{ valueX?: number }>col).valueX - this.parent.translateX) + 'px';

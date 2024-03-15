@@ -1,4 +1,4 @@
-import { EventHandler, Browser, ScrollEventArgs, select, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EventHandler, Browser, ScrollEventArgs, select, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { debounce, Touch } from '@syncfusion/ej2-base';
 import { IDropdownlist } from './interface'; 
 import { DropDownList } from '../drop-down-list/'; 
@@ -111,8 +111,10 @@ export class VirtualScroll {
     private generateAndExecuteQueryAsync(query: Query, virtualItemStartIndex: number = 0, virtualItemEndIndex: number = 0, isQueryGenerated: boolean = false): void {
         let dataSource = this.parent.dataSource;
         if (!isQueryGenerated) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if(!isNullOrUndefined((this.parent as any).query))
             {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 var newQuery = this.removeSkipAndTakeEvents((this.parent as any).query.clone());
                 query = this.getPageQuery(newQuery, virtualItemStartIndex, virtualItemEndIndex);
             } else {
@@ -126,6 +128,7 @@ export class VirtualScroll {
                 totalData = this.parent.dataSource.dataSource.json.length;
             }
             else if(this.parent.dataSource && (this.parent.dataSource as any).length > 0){
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 totalData = (this.parent.dataSource as any).length;
             }
             if(totalData > 0){
@@ -144,21 +147,150 @@ export class VirtualScroll {
         return query;
     }
 
-    public setCurrentViewDataAsync(): void {
+    public setCurrentViewDataAsync(component?: object): void {
         // eslint-disable-next-line
         let currentData: any = [];
-        for (let i = this.parent.viewPortInfo.startIndex; i < this.parent.viewPortInfo.endIndex; i++) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const alreadyAddedData: any = this.parent.generatedDataObject[i as number];
-            if (alreadyAddedData) {
-                currentData.push(alreadyAddedData[0]);
+        let isResetListCalled: boolean = false;
+        let isListUpdated: boolean = true;
+        if(isNullOrUndefined(this.component)){
+            this.component = (component as any).component;
+        }
+        let endIndex: number = this.parent.viewPortInfo.endIndex;
+        if (this.component === 'multiselect' && this.parent.mode === 'CheckBox' && this.parent.value && Array.isArray(this.parent.value) && this.parent.value.length > 0 && this.parent.enableSelectionOrder) {
+            if (this.parent.viewPortInfo.startIndex < this.parent.value.length) {
+                endIndex = this.parent.viewPortInfo.endIndex - this.parent.value.length;
+                if (this.parent.viewPortInfo.startIndex === 0){
+                    this.parent.updateVirtualReOrderList(true);
+                    if(this.parent.value.length < this.parent.itemCount){
+                        var oldUlElement = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
+                        if (oldUlElement) {
+                            this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);
+                        }
+                        var query = this.parent.getForQuery(this.parent.value).clone();
+                        query = query.skip(0).take(this.parent.itemCount - (this.parent.value.length - this.parent.viewPortInfo.startIndex));
+                        this.parent.appendUncheckList = true;
+                        this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
+                        isListUpdated = false;
+                        this.parent.appendUncheckList = false;
+                        isListUpdated = false;
+                    }
+                    else{
+                        var oldUlElement = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
+                        if (oldUlElement) {
+                            this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);
+                        }
+                    }
+                    isListUpdated = false;
+                }
+                else if (this.parent.viewPortInfo.startIndex != 0) {
+                    this.parent.updateVirtualReOrderList(true);
+                    var oldUlElement = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
+                    if (oldUlElement) {
+                        this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);
+                    }
+                    isListUpdated = false;
+                }
+                if(this.parent.viewPortInfo.startIndex != 0 && this.parent.viewPortInfo.startIndex-this.parent.value.length != this.parent.itemCount && (this.parent.viewPortInfo.startIndex + this.parent.itemCount > this.parent.value.length)) {
+                    var query = this.parent.getForQuery(this.parent.value).clone();    
+                    query = query.skip(0).take(this.parent.itemCount - (this.parent.value.length-this.parent.viewPortInfo.startIndex));
+                    this.parent.appendUncheckList = true;
+                    this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
+                    isListUpdated = false;
+                    this.parent.appendUncheckList = false;
+                }
+            }
+            else {
+                var reOrderList = this.parent.list.querySelectorAll('.e-reorder')[0];
+                if (this.parent.list.querySelector('.e-virtual-ddl-content') && reOrderList) {
+                    this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(reOrderList);
+                }
+                var query = this.parent.getForQuery(this.parent.value).clone();
+                if (!this.parent.allowFiltering) { //need to check with allowFiltering false
+                    var skipvalue = this.parent.viewPortInfo.startIndex - this.parent.value.length >= 0 ? this.parent.viewPortInfo.startIndex - this.parent.value.length : 0;
+                    query = query.skip(skipvalue);
+                }
+                this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
+                isListUpdated = false;
+            }
+            this.parent.totalItemsCount();
+        }
+        if (isListUpdated) {
+            for (let i = this.parent.viewPortInfo.startIndex; i < endIndex; i++) {
+                var index = i;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const alreadyAddedData: any = this.parent.generatedDataObject[index as number];
+                if (this.component === 'multiselect' && this.parent.hideSelectedItem) {
+                    if (alreadyAddedData) {
+                        let value = getValue(this.parent.fields.value, alreadyAddedData[0])
+                        if (this.parent.value && value != null && Array.isArray(this.parent.value) && this.parent.value.length > 0 && this.parent.value.indexOf(value) < 0) {
+                            var query = this.parent.getForQuery(this.parent.value as any).clone();
+                            if(this.parent.viewPortInfo.endIndex == this.parent.totalItemCount + (this.parent.value as any).length && this.parent.hideSelectedItem){
+                                query = query.skip(this.parent.totalItemCount - this.parent.itemCount);
+                            }
+                            else{
+                                query = query.skip(this.parent.viewPortInfo.startIndex);
+                            }
+                            this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
+                            isResetListCalled = true;
+                            break;
+                        }
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        else if ((this.parent.value === null || (this.parent.value && (this.parent.value as any).length === 0))) {
+                            currentData.push(alreadyAddedData[0]);
+                        }
+                    }
+                    if (index === endIndex - 1) {
+                        if (currentData.length != this.parent.itemCount) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            if (this.parent.hideSelectedItem) {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                var query = this.parent.getForQuery(this.parent.value as any).clone();
+                                if(this.parent.viewPortInfo.endIndex == this.parent.totalItemCount + (this.parent.value as any).length && this.parent.hideSelectedItem){
+                                    query = query.skip(this.parent.totalItemCount - this.parent.itemCount);
+                                }
+                                else{
+                                    query = query.skip(this.parent.viewPortInfo.startIndex);
+                                }
+                                this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
+                                isResetListCalled = true;
+                            }
+                        }
+                    }
+                }
+                else {
+                    if (alreadyAddedData) {
+                        currentData.push(alreadyAddedData[0]);
+                    }
+                }
             }
         }
-        this.parent.renderItems(currentData, this.parent.fields);
+        if (!isResetListCalled && isListUpdated) {
+            if(this.component === 'multiselect' && this.parent.allowCustomValue && this.parent.viewPortInfo.startIndex == 0 && this.parent.virtualCustomData){
+                currentData.splice(0, 0, this.parent.virtualCustomData);
+            }
+            let totalData: { [key: string]: Object }[] = [];
+            if(this.component === 'multiselect' && this.parent.allowCustomValue && this.parent.viewPortInfo.endIndex == this.parent.totalItemCount){
+                if(this.parent.virtualCustomSelectData && this.parent.virtualCustomSelectData.length > 0){
+                    totalData = currentData.concat(this.parent.virtualCustomSelectData);
+                    currentData = totalData;
+                }
+            }
+            let ulElement = this.parent.renderItems(currentData, this.parent.fields, this.component === 'multiselect' && this.parent.mode === 'CheckBox');
+        }
+        if (this.component === 'multiselect') {
+            this.parent.updatevirtualizationList();
+        }
+        this.parent.getSkeletonCount();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const virtualTrackElement = this.parent.list.getElementsByClassName('e-virtual-ddl')[0] as any;
         if (virtualTrackElement) {
             (virtualTrackElement).style = this.parent.GetVirtualTrackHeight();
+        }
+        else if (!virtualTrackElement && this.parent.skeletonCount > 0 && this.parent.popupWrapper) {
+            var virualElement = this.parent.createElement('div', {
+                id: this.parent.element.id + '_popup', className: 'e-virtual-ddl', styles: this.parent.GetVirtualTrackHeight()
+            });
+            this.parent.popupWrapper.querySelector('.e-dropdownbase').appendChild(virualElement);
         }
         this.parent.UpdateSkeleton();
         this.parent.liCollections = <HTMLElement[] & NodeListOf<Element>>this.parent.list.querySelectorAll('.e-list-item');
@@ -170,14 +302,18 @@ export class VirtualScroll {
         if(this.parent.fields.groupBy){
             this.parent.scrollStop();
         }
+        if (this.parent.keyCode == 40 && this.parent.isScrollChanged &&  this.parent.hideSelectedItem && !isNullOrUndefined(this.parent.currentFocuedListElement)) {
+            let currentSelectElem: Element = this.parent.getElementByValue(this.parent.currentFocuedListElement.getAttribute('data-value'));
+            this.parent.addListFocus(currentSelectElem as HTMLElement);
+            this.parent.isScrollChanged = false;
+        }
     }
 
     private generateQueryAndSetQueryIndexAsync(query: Query, isPopupOpen?: boolean): void {
         let isStartIndexInitialised: boolean = false;
         let queryStartIndex: number = 0;
         let queryEndIndex: number = 0;
-        let sortedDataStartIndex: number = 0;
-        let vEndIndex: number = this.parent && this.parent.viewPortInfo.endIndex !== 0 ? this.parent.viewPortInfo.endIndex : sortedDataStartIndex + this.parent.getItems().length;
+        let vEndIndex: number = this.parent.viewPortInfo.endIndex;
         if (!isPopupOpen && vEndIndex !== 0) {
             for (let i = this.parent.viewPortInfo.startIndex; i <= vEndIndex; i++) {
                 if (!(i in this.parent.generatedDataObject)) {
@@ -194,6 +330,13 @@ export class VirtualScroll {
             this.parent.virtualItemStartIndex = queryStartIndex;
             this.parent.virtualItemEndIndex = queryEndIndex;
             this.generateAndExecuteQueryAsync(query, queryStartIndex, queryEndIndex);
+            if (this.component === 'multiselect' && this.parent.hideSelectedItem && this.parent.value && Array.isArray(this.parent.value) && this.parent.value.length > 0) {
+                this.parent.totalItemsCount();
+            }
+            if(this.component === 'multiselect' && this.parent.virtualItemStartIndex === this.parent.virtualItemEndIndex) {
+                this.parent.virtualItemStartIndex = this.parent.viewPortInfo.startIndex;
+                this.parent.virtualItemEndIndex = this.parent.viewPortInfo.endIndex;
+            }
         }
         this.setCurrentViewDataAsync();
     }
@@ -229,7 +372,8 @@ export class VirtualScroll {
     }
 
     public scrollListener(scrollArgs: ScrollArg): void {
-        if (!this.parent.isPreventScrollAction) {
+        if (!this.parent.isPreventScrollAction && !this.parent.isVirtualTrackHeight) {
+            this.parent.preventSetCurrentData = false;
             let info: SentinelType = scrollArgs.sentinel;
             let pStartIndex: number = this.parent.previousStartIndex;
             this.parent.viewPortInfo = this.getInfoFromView(scrollArgs.direction, info, scrollArgs.offset, false);
@@ -266,19 +410,6 @@ export class VirtualScroll {
         }
     }
 
-    private getPageCount(popupElement: HTMLElement, returnExactCount: boolean = false): number {
-        var list = popupElement && popupElement.querySelector('.e-content');
-        if (list) {
-            var liHeight = list.classList.contains('e-nodata') ? null : getComputedStyle(list.querySelectorAll('.e-list-item')[0], null).getPropertyValue('height');
-            var pageCount = list.getBoundingClientRect().height / parseInt(liHeight, 10)
-            return returnExactCount ? pageCount : Math.round(pageCount);
-        }
-        return 0;
-    };
-
-    private getRowHeight(): number {
-        return (isNullOrUndefined(this.parent.liCollections) || this.parent.liCollections.length == 0) ? 0 : Math.ceil(this.parent.liCollections[0].getBoundingClientRect().height);
-    }
     private getInfoFromView(direction: string, info: SentinelType, e: Offsets, isscrollAction: boolean): VirtualInfo {
 
         let infoType: VirtualInfo = {
@@ -295,7 +426,6 @@ export class VirtualScroll {
         let totalItemCount: number = this.parent.totalItemCount;
         if (infoType.direction === 'down') {
             let sIndex: number = Math.round(exactEndIndex) - Math.round((pageSizeBy4));
-
             if (isNullOrUndefined(infoType.startIndex) || (exactEndIndex >
                 (infoType.startIndex + Math.round((this.parent.virtualItemCount / 2 + pageSizeBy4)))
                 && infoType.endIndex !== totalItemCount)) {
@@ -315,7 +445,7 @@ export class VirtualScroll {
                     let idxAddedToExactTop: number = (pageSizeBy4) > infoViewIndices ? pageSizeBy4 :
                         (infoViewIndices + infoViewIndices / 4);
                     let eIndex: number = Math.round(exactTopIndex + idxAddedToExactTop);
-                    infoType.endIndex = eIndex < totalItemCount ? eIndex : totalItemCount;
+                    infoType.endIndex = (eIndex < totalItemCount || this.component == "multiselect") ? eIndex : totalItemCount;
                     let sIndex: number = infoType.endIndex - this.parent.virtualItemCount;
                     infoType.startIndex = sIndex > 0 ? sIndex : 0;
                     infoType.endIndex = sIndex < 0 ? this.parent.virtualItemCount : infoType.endIndex;
@@ -367,7 +497,7 @@ export class VirtualScroll {
                 top: top,
                 left: left
             }
-            if (this.parent.list.querySelectorAll('.e-virtual-list').length > 0) {
+            if (this.parent.list && this.parent.list.querySelectorAll('.e-virtual-list').length > 0) {
                 var infoview = this.getInfoFromView(direction, current, scrollOffsetargs, true)
                 if (this.parent.scrollPreStartIndex != pstartIndex && !this.parent.isPreventScrollAction) {
                     this.parent.isScrollActionTriggered = true;

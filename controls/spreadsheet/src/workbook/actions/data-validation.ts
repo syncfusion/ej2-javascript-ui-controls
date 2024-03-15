@@ -72,6 +72,10 @@ export class WorkbookDataValidation {
         if (args.viewport && rangeInfo.isFullCol) {
             viewportIndexes = getViewportIndexes(this.parent, args.viewport);
         }
+        if (this.parent.listSeparator !== ',' && !args.isRemoveValidation && args.rules.type === 'List' &&
+            args.rules.value1.includes(this.parent.listSeparator)) {
+            args.rules.value1 = args.rules.value1.split(this.parent.listSeparator).join(',');
+        }
         for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
             if (rangeInfo.isFullCol) {
                 column = getColumn(sheet, colIdx);

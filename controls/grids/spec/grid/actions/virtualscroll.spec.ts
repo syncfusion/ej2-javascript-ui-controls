@@ -1574,4 +1574,4 @@ describe('EJ2-859411-Scroll using the down arrow key by focusing the template, t
         destroy(grid);
         grid = dataBound = null;
     });
-})
+});

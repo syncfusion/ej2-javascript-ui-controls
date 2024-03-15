@@ -6,6 +6,20 @@ import { ChildProperty, Collection, Property } from '@syncfusion/ej2-base';impor
 export interface RibbonGroupModel {
 
     /**
+     * Specifies the keytip content.
+     *
+     * @default ''
+     */
+    keyTip?: string;
+
+    /**
+     * Specifies the keytip content for launcher icon.
+     *
+     * @default ''
+     */
+    launcherIconKeyTip?: string;
+
+    /**
      * Defines the list of ribbon collections.
      *
      * @default []

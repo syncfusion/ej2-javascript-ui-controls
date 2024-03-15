@@ -951,7 +951,7 @@ describe('Zoom feature tesing for map control', () => {
             let element: Element = getElementByID(map.element.id + '_svg');
             let rect: ClientRect = element.getBoundingClientRect();
             let down: ITouches[] = [{ pageX: rect.left + 100, pageY: rect.top + 100 }, { pageX: rect.left + 200, pageY: rect.top + 200 }]
-            map.zoomModule.isPanning = true;
+            map.zoomModule.isPanModeEnabled = true;
             map.zoomModule.touchStartList = down;
             let eventObj: Object = {
                 target: element,
@@ -971,6 +971,7 @@ describe('Zoom feature tesing for map control', () => {
                 target: element,
                 type: 'touchend',
                 touches: [{ clientX: rect.left + 100, clientY: rect.top + 100 }],
+                changedTouches: [{ pageX: rect.left + 100, pageY: rect.top + 100 }],
                 pageX: element.getBoundingClientRect().left,
                 pageY: element.getBoundingClientRect().top
             };
@@ -1846,7 +1847,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 map.zoomModule['zoomingRect'] = new Rect(0, 0, 100, 200);
                 map.zoomModule.performRectZooming();
-                map.zoomModule.isPanning = true;
+                map.zoomModule.isPanModeEnabled = true;
                 let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
                 let eventObj: Object = {
                     target: element,
@@ -1873,7 +1874,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 map.zoomModule['zoomingRect'] = new Rect(0, 0, 100, 200);
                 map.zoomModule.performRectZooming();
-                map.zoomModule.isPanning = true;
+                map.zoomModule.isPanModeEnabled = true;
                 let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Reset_Rect');
                 let eventObj: Object = {
                     target: element,
@@ -1897,7 +1898,7 @@ describe('Zoom feature tesing for map control', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 map.zoomModule['zoomingRect'] = new Rect(0, 0, 100, 200);
                 map.zoomModule.performRectZooming();
-                map.zoomModule.isPanning = true;
+                map.zoomModule.isPanModeEnabled = true;
                 let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Reset_Rect');
                 let eventObj: Object = {
                     target: element,

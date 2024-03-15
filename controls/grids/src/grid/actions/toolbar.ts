@@ -346,6 +346,7 @@ export class Toolbar {
         let disableItems: string[] = [];
         const edit: EditSettingsModel = gObj.editSettings;
         const hasData: number = gObj.currentViewData && gObj.currentViewData.length;
+        const addRow: boolean = edit.showAddNewRow && !gObj.element.querySelector('.e-editedrow');
         if (edit.allowAdding) {
             enableItems.push(this.gridID + '_add');
         } else {
@@ -370,9 +371,11 @@ export class Toolbar {
                 disableItems.push(this.gridID + '_cancel');
             }
         } else {
-            if (gObj.isEdit && (edit.allowAdding || edit.allowEditing)) {
-                enableItems = [this.gridID + '_update', this.gridID + '_cancel'];
-                disableItems = [this.gridID + '_add', this.gridID + '_edit', this.gridID + '_delete'];
+            if ((gObj.isEdit || edit.showAddNewRow) && (edit.allowAdding || edit.allowEditing)) {
+                enableItems = addRow ? [this.gridID + '_update', this.gridID + '_cancel',this.gridID + '_edit', this.gridID + '_delete'] :
+                    [this.gridID + '_update', this.gridID + '_cancel'];
+                disableItems = addRow ? [this.gridID + '_add'] :
+                    [this.gridID + '_add', this.gridID + '_edit', this.gridID + '_delete'];
             } else {
                 disableItems.push(this.gridID + '_update');
                 disableItems.push(this.gridID + '_cancel');
@@ -660,7 +663,7 @@ export class Toolbar {
             this.sIcon = this.searchElement.parentElement.querySelector('.e-sicon');
             if (this.searchElement.value.length && !isNullOrUndefined(this.sIcon)) {
                 this.sIcon.classList.add('e-clear-icon');
-                this.sIcon.setAttribute('title', this.l10n.getConstant('ClearButton'));
+                this.sIcon.setAttribute('title', this.l10n.getConstant('Clear'));
                 this.sIcon.style.cursor = 'pointer';
             }
             else {

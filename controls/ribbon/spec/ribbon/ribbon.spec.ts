@@ -704,6 +704,58 @@ describe('Ribbon', () => {
             expect((ribbon.element.querySelector('#item5') as any).ej2_instances[0].enablePersistence).toBe(true);
             expect((ribbon.element.querySelector('#item6') as any).ej2_instances[0].enablePersistence).toBe(true);
         });
+        it('animation',() => {
+            ribbon = new Ribbon({
+                tabAnimation : {previous : {effect : 'None',duration : 0,easing : 'ease'},next : {effect : 'None',duration : 0,easing : 'ease'}},
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }]
+                    }]
+                }, {
+                    id: "tab2",
+                    header: "tab2",
+                    groups: [{
+                        id: "group2",
+                        header: "group2Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button2',
+                                    iconCss: 'e-icons e-copy',
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            expect(ribbon.tabAnimation.previous.effect).toBe('None');
+            expect(ribbon.tabAnimation.previous.duration).toBe(0);
+            expect(ribbon.tabAnimation.previous.easing).toBe('ease');
+            expect(ribbon.tabAnimation.next.effect).toBe('None');
+            expect(ribbon.tabAnimation.next.duration).toBe(0);
+            expect(ribbon.tabAnimation.next.easing).toBe('ease');
+        });
         it('activeLayout property with enablePersistence', () => {
             ribbon = new Ribbon({
                 cssClass: 'oldCss',
@@ -1168,6 +1220,53 @@ describe('Ribbon', () => {
             }
             remove(ribbonEle);
             remove(containerEle);
+        });
+        it('get item', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    header: "Home",
+                    groups: [{
+                        header: "Clipboard",
+                        collections: [{
+                            items: [{
+                                id: "paste-button",
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    content: 'Paste',
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }]
+                                }
+                            }]
+                        }, {
+                            items: [{
+                                id: "cut-button",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }, {
+                                id: "copy-button",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    content: 'Copy',
+                                    iconCss: 'e-icons e-copy'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+
+            let item1 = ribbon.getItem('paste-button');
+            item1.splitButtonSettings.content = "Apply";
+            ribbon.updateItem(item1);
+            expect((ribbon.element.querySelector('#paste-button_dropdownbtn') as HTMLElement).innerText).toBe('Apply');
+            let item2 = ribbon.getItem('cut-button');
+            item2.disabled = true;
+            ribbon.updateItem(item2);
+            expect((ribbon.element.querySelector('#cut-button') as HTMLButtonElement).disabled).toBe(true);
         });
         it('add/remove tab', () => {
             ribbon = new Ribbon({
@@ -2298,6 +2397,35 @@ describe('Ribbon', () => {
             ribbon.updateCollection(newCollection);
             expect(ribbon.element.querySelectorAll('.e-ribbon-collection').length).toBe(1);
             expect(ribbon.element.querySelectorAll('.e-ribbon-item').length).toBe(3);
+        });
+        it('Should check Color Picker value', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            //Check colorpicker value set correctly default value
+            expect((getComponent('item1', ColorPicker) as ColorPicker).value.slice(0, -2)).toBe('#123456');
+            //Colorpicker value updated correctly when switching display modes 
+            ribbon.ribbonColorPickerModule.updateColorPicker({ value: '#FF0000' }, 'item1');
+            ribbon.activeLayout = 'Simplified'
+            expect((getComponent('item1', ColorPicker) as ColorPicker).value).toBe('#FF0000');
         });
         it('update collection in simplified mode', () => {
             ribbon = new Ribbon({

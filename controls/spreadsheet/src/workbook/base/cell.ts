@@ -222,7 +222,7 @@ export function wrap(address: string, wrap: boolean = true, context?: Workbook, 
         for (let j: number = rng[1]; j <= rng[3]; j++) {
             cancel = updateCell(context, sheet, { cell: { wrap: wrap }, rowIdx: i, colIdx: j, preventEvt: preventEvt });
             if (!cancel && uiRefresh) {
-                context.notify(wrapEvent, { range: [i, j, i , j], wrap: wrap, sheet: sheet });
+                context.notify(wrapEvent, { range: [i, j, i , j], wrap: wrap, sheet: sheet, initial: true });
             }
         }
     }

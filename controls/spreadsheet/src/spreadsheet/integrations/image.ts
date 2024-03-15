@@ -268,7 +268,7 @@ export class SpreadsheetImage {
         const prevCellImg: ImageModel[] = cellObj.image;
         const imgLength: number = prevCellImg.length;
         let image: ImageModel = {};
-        for (let i: number = 0; i < imgLength; i++) {
+        for (let i: number = imgLength - 1; i >= 0; i--) {
             if (prevCellImg[i as number].id === args.id) {
                 image = prevCellImg.splice(i, 1)[0];
             }

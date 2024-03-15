@@ -145,8 +145,14 @@ export namespace ListBase {
         if (type === 'string' || type === 'number') {
             return createListFromArray(createElement, <string[] | number[]>dataSource, isSingleLevel, options, componentInstance);
         } else {
-            return createListFromJson(createElement, <{ [key: string]: Object }[]>dataSource, options,
-                ariaAttributes.level, isSingleLevel, componentInstance);
+            return createListFromJson(
+                createElement, 
+                <{ [key: string]: Object }[]>dataSource, 
+                options,
+                ariaAttributes.level, 
+                isSingleLevel, 
+                componentInstance
+            );
         }
     }
 
@@ -342,7 +348,7 @@ export namespace ListBase {
                     if (options && options.enableHtmlSanitizer) {
                         tooltipText = SanitizeHtmlHelper.sanitize(tooltipText);
                     } else {
-                        let tooltipTextElement = createElement('span', { innerHTML: tooltipText });
+                        let tooltipTextElement: HTMLElement = createElement('span', { innerHTML: tooltipText });
                         tooltipText = tooltipTextElement.innerText;
                         tooltipTextElement = null;
                     }
@@ -352,7 +358,7 @@ export namespace ListBase {
                 if (fieldData.hasOwnProperty(fields.htmlAttributes) && fieldData[fields.htmlAttributes]) {
                     const htmlAttributes: { [key: string]: string } = <{ [key: string]: string }>fieldData[fields.htmlAttributes];
                     // Check if 'class' attribute is present and not an empty string
-                    if (htmlAttributes.hasOwnProperty('class') && typeof htmlAttributes['class'] === 'string' && htmlAttributes['class'].trim() === '') {
+                    if ('class' in htmlAttributes && typeof htmlAttributes['class'] === 'string' && htmlAttributes['class'].trim() === '') {
                         delete htmlAttributes['class'];
                     }
                     setAttribute(li, htmlAttributes);

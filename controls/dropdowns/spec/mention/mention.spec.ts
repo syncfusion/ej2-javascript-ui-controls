@@ -1666,6 +1666,54 @@ describe('Mention', () => {
         });
     });
 
+    describe('868160 - Check the Keyboard event', () => {
+        let mentionObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputMention' });
+        let divElement: HTMLDivElement = document.createElement('div');
+        divElement.id = 'divElement';
+        beforeAll(() => {
+
+            document.body.appendChild(element);
+            document.body.appendChild(divElement);
+            mentionObj = new Mention({ dataSource: datasource2, target: '#inputMention', cssClass: 'sample', mentionChar: '@' });
+            mentionObj.appendTo(divElement);
+            mentionObj.initValue();
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        /**
+         * initialize
+         */
+        it('ShowPopup with @ as value', () => {
+            let keyEventArgs: any = {
+                preventDefault: function () { },
+                keyCode: 13,
+                altKey: false,
+                shiftKey: false
+            };
+            mentionObj.keyDownHandler(keyEventArgs);
+            expect(keyEventArgs.action).toEqual('enter');
+            expect(mentionObj.isRTE).toBe(false);
+            expect(mentionObj.keyEventName).toEqual('mousedown');
+            keyEventArgs.altKey = true;
+            keyEventArgs.keyCode = 40;
+            mentionObj.keyDownHandler(keyEventArgs);
+            expect(keyEventArgs.action).toEqual('open');
+            keyEventArgs.altKey = false;
+            keyEventArgs.keyCode = 9;
+            mentionObj.keyDownHandler(keyEventArgs);
+            expect(keyEventArgs.action).toEqual('tab');
+            keyEventArgs.shiftKey = true;
+            keyEventArgs.keyCode = 9;
+            mentionObj.keyDownHandler(keyEventArgs);
+            expect(keyEventArgs.action).toEqual('close');
+        });
+    });
+
     describe('Show popup with CSS and target property set for input', () => {
         let mentionObj: any;
         let popupObj: any;

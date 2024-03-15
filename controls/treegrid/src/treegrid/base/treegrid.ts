@@ -79,7 +79,6 @@ import { InfiniteScrollSettings } from '../models/infinite-scroll-settings';
 import { InfiniteScrollSettingsModel } from '../models/infinite-scroll-settings-model';
 import { TreeActionEventArgs } from '..';
 import * as literals from '../base/constant';
-import { Tooltip } from '@syncfusion/ej2-popups';
 
 
 
@@ -97,7 +96,7 @@ import { Tooltip } from '@syncfusion/ej2-popups';
 export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyChanged {
     constructor(options?: TreeGridModel, element?: Element) {
         super(options, <HTMLButtonElement | string>element);
-        TreeGrid.Inject(TreeGridSelection);
+        TreeGrid.Inject(TreeGridSelection, TreeLogger);
         setValue('mergePersistData', this.mergePersistTreeGridData, this);
         const logger: string = 'Logger';
         if (!isNullOrUndefined(this.injectedModules[`${logger}`])) {
@@ -759,11 +758,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public enableColumnVirtualization: boolean;
     /**
      * Specifies whether to display or remove the untrusted HTML values in the TreeGrid component.
-     * If `enableHtmlSanitizer` set to true, then it will sanitize any suspected untrusted strings and scripts before rendering them.
+     * By default `enableHtmlSanitizer` is set to true, and it sanitizes any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
     /**
      * If `enableInfiniteScrolling` set to true, then the data will be loaded in TreeGrid when the scrollbar reaches the end.
@@ -1765,7 +1764,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public wireEvents(): void {
         EventHandler.add(this.grid.element, 'click', this.mouseClickHandler, this);
         EventHandler.add(this.element, 'touchend', this.mouseClickHandler, this);
-        EventHandler.add(this.element, 'mousemove', this.mouseMoveHandler, this);
         this.keyboardModule = new KeyboardEvents(
             this.element,
             {
@@ -1789,78 +1787,94 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid[`${splitFrozenCount}`](this.getColumns());
         if (this.isDestroyed) { return modules; }
         modules.push({
-            member: 'filter', args: [this, this.filterSettings]
+            member: 'filter', args: [this, this.filterSettings],
+            name: 'Filter'
         });
         if (!isNullOrUndefined(this.toolbar)) {
             modules.push({
                 member: 'toolbar',
-                args: [this]
+                args: [this],
+                name: 'Toolbar'
             });
         }
         if (this.contextMenuItems) {
             modules.push({
                 member: 'contextMenu',
-                args: [this]
+                args: [this],
+                name: 'ContextMenu'
             });
         }
         if (this.allowPaging) {
             modules.push({
                 member: 'pager',
-                args: [this, this.pageSettings]
+                args: [this, this.pageSettings],
+                name: 'Page'
             });
         }
         if (this.allowReordering) {
             modules.push({
                 member: 'reorder',
-                args: [this]
+                args: [this],
+                name: 'Reorder'
             });
         }
         if (this.allowSorting) {
             modules.push({
                 member: 'sort',
-                args: [this]
+                args: [this],
+                name: 'Sort'
             });
         }
         if (this.aggregates.length > 0) {
             modules.push({
-                member: 'summary', args: [this]
+                member: 'summary', args: [this],
+                name: 'Aggregate'
             });
         }
-        modules.push({
-            member: 'resize', args: [this]
-        });
+        if (this.allowResizing) {
+            modules.push({
+                member: 'resize', args: [this],
+                name: 'Resize'
+            });
+        }
         if (this.allowExcelExport) {
             modules.push({
-                member: 'ExcelExport', args: [this]
+                member: 'ExcelExport', args: [this],
+                name: 'ExcelExport'
             });
         }
         const freezePresent: Function[] = this.injectedModules.filter((e: Function) => {
             return e.prototype.getModuleName() === 'freeze';
         });
-        if (this.frozenColumns || this.frozenRows || this.getFrozenColumns() ||
-            this.grid.getFrozenLeftColumnsCount() || this.grid.getFrozenRightColumnsCount() || freezePresent.length) {
+        if ((this.frozenColumns || this.frozenRows || this.getFrozenColumns() ||
+            this.grid.getFrozenLeftColumnsCount() || this.grid.getFrozenRightColumnsCount()) && freezePresent.length > 0) {
             modules.push({
-                member: 'freeze', args: [this]
+                member: 'freeze', args: [this],
+                name: 'Freeze'
             });
         }
         if (this.detailTemplate) {
             modules.push({
-                member: 'detailRow', args: [this]
+                member: 'detailRow', args: [this],
+                name: 'DetailRow'
             });
         }
         if (this.allowPdfExport) {
             modules.push({
-                member: 'PdfExport', args: [this]
+                member: 'PdfExport', args: [this],
+                name: 'PdfExport'
             });
         }
         if (this.showColumnMenu) {
             modules.push({
-                member: 'columnMenu', args: [this]
+                member: 'columnMenu', args: [this],
+                name: 'ColumnMenu'
             });
         }
         if (this.showColumnChooser) {
             modules.push({
-                member: 'ColumnChooser', args: [this]
+                member: 'ColumnChooser', args: [this],
+                name: 'ColumnChooser'
             });
         }
         this.extendRequiredModules(modules);
@@ -1877,37 +1891,43 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             modules.push({
                 member: 'rowDragAndDrop',
-                args: [this]
+                args: [this],
+                name: 'RowDD'
             });
         }
         if (this.editSettings.allowAdding || this.editSettings.allowDeleting || this.editSettings.allowEditing) {
             modules.push({
                 member: 'edit',
-                args: [this]
+                args: [this],
+                name: 'Edit'
             });
         }
         if (this.isCommandColumn(<Column[]>this.columns)) {
             modules.push({
                 member: 'commandColumn',
-                args: [this]
+                args: [this],
+                name: 'CommandColumn'
             });
         }
         if (this.allowSelection) {
             modules.push({
                 member: 'selection',
-                args: [this]
+                args: [this],
+                name: 'Selection'
             });
         }
         if (this.enableVirtualization) {
             modules.push({
                 member: 'virtualScroll',
-                args: [this]
+                args: [this],
+                name: 'VirtualScroll'
             });
         }
         if (this.enableInfiniteScrolling) {
             modules.push({
                 member: 'infiniteScroll',
-                args: [this]
+                args: [this],
+                name: 'InfiniteScroll'
             });
         }
         modules.push({
@@ -1932,6 +1952,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public unwireEvents(): void {
         if (this.grid && this.grid.element) {
             EventHandler.remove(this.grid.element, 'click', this.mouseClickHandler);
+        }
+        if (this.element) {
+            EventHandler.remove(this.element, 'touchend', this.mouseClickHandler);
+            if (this.keyboardModule) {
+                this.keyboardModule.destroy();
+                this.keyboardModule = null;
+            }
+            if (this.allowKeyboard) {
+                this.element.removeAttribute('tabIndex');
+            }
         }
     }
     /**
@@ -3195,6 +3225,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         ) {
             this.expandCollapseRequest(target);
         }
+        const isEllipsisTooltip: string = 'isEllipsisTooltip';
+        if ((target.classList.contains('e-treegridexpand') || target.classList.contains('e-treegridcollapse')) &&
+            (this.grid[`${isEllipsisTooltip}`]())) {
+            this.grid['toolTipObj'].close();
+        }
         this.isEditCollapse = false;
         this.notify('checkboxSelection', {target: target});
         if (this.grid.isCheckBoxSelection && !this.grid.isPersistSelection) {
@@ -3208,21 +3243,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     addClass([spanEle], ['e-check']);
                 }
             }
-        }
-    }
-
-    private mouseMoveHandler(e: MouseEvent): void {
-        let showTooltip : boolean = false;
-        const cols: Column[] = this.getColumns();
-        if (this.clipMode === 'EllipsisWithTooltip') {
-            showTooltip = true;
-        }
-        const element: HTMLElement = parentsUntil((e.target as Element), 'e-ellipsistooltip') as HTMLElement;
-        if ((showTooltip || (this.treeColumnIndex !== -1 && cols[this.treeColumnIndex].clipMode === 'EllipsisWithTooltip')) && element !== null && parseInt(element.getAttribute('data-colindex'), 10) === this.treeColumnIndex && element.children[0].scrollWidth > element.children[0].clientWidth){
-            const tooltip : Tooltip = new Tooltip({
-                content: element.textContent
-            });
-            tooltip.appendTo(element);
         }
     }
 
@@ -4363,7 +4383,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.expandCollapseAll('collapse');
     }
     private expandCollapseAll(action: string): void {
-        let rows: HTMLTableRowElement[]
+        let rows: HTMLTableRowElement[];
         if (this.rowTemplate) {
             rows = [].slice.call(this.grid.getContentTable().querySelectorAll('tr')).filter((e: HTMLTableRowElement) => {
                 return e.querySelector('.e-treegrid' + (action === 'expand' ? 'collapse' : 'expand'));
@@ -4440,7 +4460,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             row.setAttribute('aria-expanded', action === 'expand' ? 'true' : 'false');
         }
         if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) && !isRemoteData(this)
-          && !isCountRequired(this)) {
+            && !isCountRequired(this)) {
             this.notify(events.localPagedExpandCollapse, {action: action, row: row, record: record});
         } else {
             let displayAction: string;

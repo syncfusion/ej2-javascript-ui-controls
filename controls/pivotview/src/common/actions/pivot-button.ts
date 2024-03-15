@@ -944,6 +944,9 @@ export class PivotButton implements IAction {
                     pivotObj.getEngine('fetchFieldMembers', null, null, null, null, null, fieldName);
                 }
             } else {
+                if (pivotObj.dataType === 'pivot' &&  !this.parent.engineModule.fieldList[fieldName as string].isMembersFilled) {
+                    this.parent.engineModule.fetchFieldMembers(fieldName);
+                }
                 this.updateFilterEvents();
             }
         } catch (execption) {

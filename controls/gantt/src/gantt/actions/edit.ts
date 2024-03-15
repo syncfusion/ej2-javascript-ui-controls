@@ -31,6 +31,7 @@ export class Edit {
     private targetedRecords: IGanttData[] = [];
     private isNewRecordAdded: boolean = false;
     private isValidatedEditedRecord: boolean = false;
+    private createArray: boolean = true;
     public isFirstCall:boolean;
     /**
      * @private
@@ -393,14 +394,62 @@ export class Edit {
             }
             const ganttData: IGanttData = this.parent.viewType === 'ResourceView' ?
                 this.parent.flatData[this.parent.getTaskIds().indexOf('T' + data[tasks.id])] : this.parent.getRecordByID(data[tasks.id]);
+            if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent['isUndoRedoItemPresent']('Edit') && ganttData) {
+                this.parent.undoRedoModule['createUndoCollection']();
+                let details: Object = {};
+                details['requestType'] = ((this.parent.contextMenuModule && this.parent.contextMenuModule.item) ? this.parent.contextMenuModule.item : 'methodUpdate');
+                details['modifiedRecords'] = extend([], [ganttData], [], true);
+                (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = details;
+            }
             if (!isNullOrUndefined(this.parent.editModule) && ganttData) {
                 this.parent.isOnEdit = true;
                 this.validateUpdateValues(data, ganttData, true);
+                if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                    if (this.parent.viewType == 'ProjectView' && data['ganttProperties'].predecessor) {
+                        for (let i: number = 0; i < data['ganttProperties'].predecessor.length; i++) {
+                            let isValid: IPredecessor[] = ganttData.ganttProperties.predecessor.filter((pred: IPredecessor) => {
+                                return pred.from != data['ganttProperties'].predecessor[i as number].from && pred.from != data['ganttProperties'].predecessor[i as number].to;
+                            });
+                            if (isValid.length > 0) {
+                                for (let j: number = 0; j < isValid.length; j++) {
+                                    const record: IGanttData = this.parent.flatData[this.parent.ids.indexOf(isValid[j as number].from)];
+                                    for (let k: number = 0; k < record.ganttProperties.predecessor.length; k++) {
+                                        if (record.ganttProperties.predecessor[k as number].from == isValid[j as number].from && record.ganttProperties.predecessor[k as number].to == isValid[j as number].to) {
+                                            record.ganttProperties.predecessor.splice(k, 1);
+                                            break;
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    else if (!data['ganttProperties'].predecessor && ganttData.ganttProperties.predecessor) {
+                        for (let i: number = 0; i < ganttData.ganttProperties.predecessor.length; i++) {
+                            let id: string;
+                            if (ganttData.ganttProperties.taskId.toString() == ganttData.ganttProperties.predecessor[i as number].from) {
+                                id = ganttData.ganttProperties.predecessor[i as number].to;
+                            }
+                            else {
+                                id = ganttData.ganttProperties.predecessor[i as number].from;
+                            }
+                            const parentRec: IGanttData = this.parent.flatData[this.parent.ids.indexOf(id)];
+                            for (let j: number = 0; j < parentRec.ganttProperties.predecessor.length; j++) {
+                                if (parentRec.ganttProperties.predecessor[j as number].from == ganttData.ganttProperties.predecessor[i as number].from && parentRec.ganttProperties.predecessor[j as number].to == ganttData.ganttProperties.predecessor[i as number].to) {
+                                    parentRec.ganttProperties.predecessor.splice(j, 1);
+                                }
+                            }
+                        }
+                    }
+                    ganttData.ganttProperties.resourceInfo = data['ganttProperties'].resourceInfo;
+                }
                 if (data[this.parent.taskFields.resourceInfo]) {
                     if (ganttData.ganttProperties.duration === 0) {
                         this.parent.dataOperation.updateWorkWithDuration(ganttData);
                     }
-                    this.updateResourceRelatedFields(ganttData, 'resource');
+                    if (!this.parent.undoRedoModule || !this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                        this.updateResourceRelatedFields(ganttData, 'resource');
+                    }
                     this.parent.dateValidationModule.calculateEndDate(ganttData);
                 }
                 const keys: string[] = Object.keys(data);
@@ -456,7 +505,10 @@ export class Edit {
                         }
                         ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key as string]);
                     } else {
-                        const tempDate: Date = typeof data[key as string] === 'string' ? new Date(data[key as string] as string) : data[key as string];
+                        let tempDate: Date = typeof data[key as string] === 'string' ? new Date(data[key as string] as string) : data[key as string];
+                        if (key === tasks.endDate && isNullOrUndefined(ganttData.ganttProperties.startDate) && (isNullOrUndefined(data[tasks.duration]) || data[tasks.duration] === ""|| Number.isNaN(data[tasks.duration]))) {
+                            tempDate = ganttData.ganttProperties.endDate
+                        }
                         ganttObj.setRecordValue(ganttPropByMapping[key as string], tempDate, ganttData.ganttProperties, true);
                         ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key as string]);
                     }
@@ -475,7 +527,9 @@ export class Edit {
                         this.parent.editModule.dialogModule.isResourceUpdate = false;
                     }
                 }
-                ganttData.ganttProperties.resourceInfo = resourceData;
+                if (!this.parent.undoRedoModule || !this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                    ganttData.ganttProperties.resourceInfo = resourceData;
+                }
                 ganttObj.dataOperation.updateMappingData(ganttData, 'resourceInfo');
             } else if (tasks.dependency === key) {
                 //..
@@ -803,7 +857,9 @@ export class Edit {
                 }
             }
         }
-        this.taskbarMoved = this.isTaskbarMoved(args.data);
+        if(!this.parent.undoRedoModule || (this.parent.undoRedoModule && !this.parent.undoRedoModule['currentAction'] || (this.parent.undoRedoModule['currentAction'] && this.parent.undoRedoModule['currentAction']['action'] != 'indent' && this.parent.undoRedoModule['currentAction']['action'] != 'outdent'))) {
+            this.taskbarMoved = this.isTaskbarMoved(args.data);
+        }
         this.predecessorUpdated = this.isPredecessorUpdated(args.data);
         if (this.predecessorUpdated) {
             this.parent.isConnectorLineUpdate = true;
@@ -879,7 +935,7 @@ export class Edit {
         if (this.parent.autoCalculateDateScheduling) {
             this.updateParentChildRecord(ganttRecord);
         }
-        if (this.parent.isConnectorLineUpdate && this.parent.autoCalculateDateScheduling) {
+        if ((this.parent.isConnectorLineUpdate || (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'])) && this.parent.autoCalculateDateScheduling) {
             /* validating predecessor for updated child items */
             for (let i: number = 0; i < this.parent.predecessorModule.validatedChildItems.length; i++) {
                 const child: IGanttData = this.parent.predecessorModule.validatedChildItems[i as number];
@@ -905,6 +961,13 @@ export class Edit {
             if (this.parent.allowParentDependency && ganttRecord.hasChildRecords && this.parent.previousRecords[ganttRecord.uniqueID].ganttProperties.startDate &&
                 (args.action === "DrawConnectorLine")) {
                 this.parent.predecessorModule['updateChildItems'](ganttRecord);
+            }
+            if(this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                for (let i: number = 0; i < ganttRecord.childRecords.length; i++) {
+                    if (ganttRecord.childRecords[i as number].ganttProperties.predecessor) {
+                        this.parent.predecessorModule.validatePredecessor(ganttRecord.childRecords[i as number], [], '');
+                    }
+                }
             }
             this.updateParentItemOnEditing();
             this.parent.dataOperation.updateParentItems(ganttRecord, true);
@@ -999,6 +1062,7 @@ export class Edit {
             this.parent.dataOperation.updateWidthLeft(data);
         }
     }
+
 
     /**
      * To update progress value of parent tasks
@@ -1129,6 +1193,10 @@ export class Edit {
         eventArgs.requestType = 'beforeSave';
         eventArgs.data = args.data;
         eventArgs.cancel = false;
+        this.createArray = true;
+        if (this.parent.toolbarModule && this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.undoRedoModule['getUndoCollection'].length > 0) {
+            this.parent.toolbarModule.enableItems([this.parent.controlId + '_undo'], true); // enable toolbar items.
+        }
         eventArgs.modifiedRecords = this.parent.editedRecords;
         if (!isNullOrUndefined(args.target)) {
             eventArgs.target = args.target;
@@ -1193,6 +1261,9 @@ export class Edit {
                         .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                 } else {
                     this.saveSuccess(args);
+                }
+                if (this.parent.undoRedoModule) {
+                    this.parent.previousFlatData = extend([], this.parent.flatData, [], true) as IGanttData[];
                 }
             }
         });
@@ -1326,7 +1397,7 @@ export class Edit {
                 this.parent.treeGrid.endEdit();
             }
             this.parent.chartRowsModule.refreshRecords(this.parent.editedRecords);
-            if (this.parent.viewType === 'ResourceView' && !this.parent.allowTaskbarOverlap && this.parent.showOverAllocation) {
+            if (!this.parent.allowTaskbarOverlap && this.parent.showOverAllocation) {
                 this.parent.contentHeight = this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
                 this.parent.ganttChartModule.chartBodyContent.style.height = this.parent.contentHeight + 'px';
                 this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
@@ -1334,7 +1405,7 @@ export class Edit {
                     this.parent.ganttChartModule.reRenderConnectorLines();
                 }
             } 
-            if (this.parent.isConnectorLineUpdate && !isNullOrUndefined(this.parent.connectorLineEditModule)) {
+            if ((this.parent.isConnectorLineUpdate || (this.parent.undoRedoModule && this.parent.undoRedoModule['currentAction'] && this.parent.undoRedoModule['currentAction']['connectedRecords'])) && !isNullOrUndefined(this.parent.connectorLineEditModule)) {
                 this.parent.updatedConnectorLineCollection = [];
                 this.parent.connectorLineIds = [];
                 this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.editedRecords);
@@ -1375,9 +1446,13 @@ export class Edit {
         }
         if (this.parent.viewType === 'ResourceView' && this.isTreeGridRefresh) {
             this.parent.treeGrid.parentData = [];
+            this.parent.updatedConnectorLineCollection = [];
+            this.parent.connectorLineIds = [];
+            this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
             this.parent.treeGrid.refresh();
             this.isTreeGridRefresh = false;
         }
+       this.parent.editedRecords = [];
     }
 
     private updateResoures(prevResource: Object[], currentResource: Object[], updateRecord: IGanttData): void {
@@ -1440,6 +1515,12 @@ export class Edit {
         //Assign resource to unassigned task
         if (currentLength === 0) {
             this.checkWithUnassignedTask(updateRecord);
+        }
+        if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.flatData[this.parent.flatData.length - 1].ganttProperties.taskName == this.parent.localeObj.getConstant('unassignedTask')) {
+            this.parent.flatData.splice(this.parent.flatData.length - 1, 1);
+            this.parent.currentViewData.splice(this.parent.currentViewData.length - 1, 1);
+            this.parent.taskIds.splice(this.parent.flatData.length - 1, 1);
+            this.parent.ids.splice(this.parent.flatData.length - 1, 1);
         }
     }
     /**
@@ -1592,7 +1673,61 @@ export class Edit {
         const recordIndex1: number = this.parent.flatData.indexOf(droppedRecord);
         const childRecords: number = this.parent.editModule.getChildCount(droppedRecord, 0);
         let childRecordsLength: number;
-        if (!isNullOrUndefined(this.addRowIndex) && this.addRowPosition && droppedRecord.childRecords && this.addRowPosition !== 'Child') {
+        let spliceIndex: number;
+        const parentTask: IGanttData = this.parent.getTaskByUniqueID(draggedRecord.parentItem.uniqueID);
+        if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && this.dialogModule['indexes'] && this.dialogModule['indexes'].deletedIndexes && this.dialogModule['indexes'].deletedIndexes.length > 0) {
+            if (parentTask.ganttProperties.taskName == this.parent.localeObj.getConstant('unassignedTask')) {
+                childRecordsLength = this.parent.taskIds.length + 1;
+            }
+            else {
+                for (let j: number = 0; j < this.dialogModule['indexes'].deletedIndexes.length; j++) {
+                    if (this.dialogModule['indexes'].deletedIndexes[j as number].data.parentUniqueID == draggedRecord.parentUniqueID && draggedRecord.ganttProperties.taskId == this.dialogModule['indexes'].deletedIndexes[j as number].data.ganttProperties.taskId) {
+                        let toIndex: number = this.dialogModule['indexes'].deletedIndexes[j as number].index;
+                        if (this.dialogModule['indexes'].deletedIndexes[j as number].position == 'above') {
+                            childRecordsLength = toIndex;
+                        }
+                        else {
+                            childRecordsLength = toIndex + 1;
+                        }
+                        for (let i: number = 0; i < droppedRecord.childRecords.length; i++) {
+                            if ('T' + droppedRecord.childRecords[i as number].ganttProperties.taskId == this.dialogModule['indexes'].deletedIndexes[j as number].id) {
+                                if (this.dialogModule['indexes'].deletedIndexes[j as number].position == 'above') {
+                                    spliceIndex = i;
+                                }
+                                else {
+                                    spliceIndex = i + 1;
+                                }
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    else if (this.dialogModule['indexes'].deletedIndexes[j as number].data.parentUniqueID !== draggedRecord.parentUniqueID && draggedRecord.ganttProperties.taskId == this.dialogModule['indexes'].deletedIndexes[j as number].data.ganttProperties.taskId) {
+                        let draggedParent: IGanttData = this.parent.getTaskByUniqueID(draggedRecord.parentItem.uniqueID);
+                        childRecordsLength = draggedParent.index + draggedParent.childRecords.length + 1;
+                        break;
+                    }
+                }
+            }
+        }
+        else if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && parentTask.ganttProperties.taskName == this.parent.localeObj.getConstant('unassignedTask') && this.parent.undoRedoModule['currentAction']['deletedRecordsDetails']) {
+            for (let i: number = 0; i < this.parent.undoRedoModule['currentAction']['deletedRecordsDetails'].length; i++) {
+                if (this.parent.undoRedoModule['currentAction']['deletedRecordsDetails'][i as number].data.ganttProperties.taskId == draggedRecord.ganttProperties.taskId) {
+                    if (parentTask.index) {
+                        childRecordsLength = this.parent.undoRedoModule['currentAction']['deletedRecordsDetails'][i as number].data.index;
+                        spliceIndex = childRecordsLength - parentTask.index - 1;
+                    }
+                    else {
+                        childRecordsLength = (isNullOrUndefined(childRecords) ||
+                            childRecords === 0) ? recordIndex1 + 1 :
+                            childRecords + recordIndex1 + 1;
+                        spliceIndex = 0;
+                    }
+                    break;
+                }
+            }
+        }
+        else if (!isNullOrUndefined(this.addRowIndex) && this.addRowPosition && droppedRecord.childRecords && this.addRowPosition !== 'Child') {
             const dropChildRecord: IGanttData = droppedRecord.childRecords[this.addRowIndex];
             const position: RowPosition = this.addRowPosition === 'Above' || this.addRowPosition === 'Below' ? this.addRowPosition :
                 'Child';
@@ -1621,7 +1756,12 @@ export class Edit {
                 }
             }
         }
-        droppedRecord.childRecords.splice(droppedRecord.childRecords.length, 0, draggedRecord);
+        if (spliceIndex >= 0) {
+            droppedRecord.childRecords.splice(spliceIndex, 0, draggedRecord);
+        }
+        else {
+            droppedRecord.childRecords.splice(droppedRecord.childRecords.length, 0, draggedRecord);
+        }
         if (!isNullOrUndefined(draggedRecord) && !this.parent.taskFields.parentID
             && !isNullOrUndefined(droppedRecord.taskData[this.parent.taskFields.child])) {
             droppedRecord.taskData[this.parent.taskFields.child].splice(droppedRecord.childRecords.length, 0, draggedRecord.taskData);
@@ -1748,10 +1888,16 @@ export class Edit {
                         if (this.parent.ids.indexOf(ids[j as number].toString()) !== -1) {
                             deleteRecords.push(this.parent.flatData[this.parent.ids.indexOf(ids[j as number].toString())]);
                         }
+                        else if(this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.undoRedoModule['currentAction'] && this.parent.undoRedoModule['currentAction']['action'] == 'Delete') {
+                            deleteRecords.push(this.parent.flatData[this.parent.taskIds.indexOf('T' + selectedRecords[i as number].ganttProperties.taskId)]);
+                        }
                     }
-                    if (this.parent.ids.indexOf(data.ganttProperties.rowUniqueID) !== -1) {
+                    if (this.parent.ids.indexOf(data.ganttProperties.rowUniqueID) !== -1 && deleteRecords.indexOf(this.parent.flatData[this.parent.ids.indexOf(data.ganttProperties.rowUniqueID)]) === -1) {
                         deleteRecords.push(this.parent.flatData[this.parent.ids.indexOf(data.ganttProperties.rowUniqueID)]);
                     }
+                }
+                else if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && selectedRecords[i as number].ganttProperties.sharedTaskUniqueIds.length > 1) {
+                    deleteRecords.push(selectedRecords[i as number]);
                 }
             }
             else {
@@ -1763,6 +1909,21 @@ export class Edit {
             }
         }
         this.deleteRow(deleteRecords);
+    }
+
+    public add(record: IGanttData, totalRecords: IGanttData[]) {
+        totalRecords.push(record);
+        if (record.hasChildRecords) {
+            let child: IGanttData[] = record.childRecords;
+            for (let i: number = 0; i < child.length; i++) {
+                this.add(child[i as number], totalRecords)
+            }
+        }
+        else {
+            if (totalRecords.indexOf(record) == -1) {
+                totalRecords.push(record);
+            }
+        }
     }
 
     private deleteSelectedItems(): void {
@@ -1867,34 +2028,62 @@ export class Edit {
             if (this.parent.viewType === 'ResourceView' && !tasks.length) {
                 rowItems = [];
             }
+            if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent['isUndoRedoItemPresent']('Delete')) {
+                if (this.parent.undoRedoModule['redoEnabled'] && !this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                    this.parent.undoRedoModule['disableRedo']();
+                    this.parent.undoRedoModule['getUndoCollection'][0] = [];
+                }
+                if (!this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                    this.parent.undoRedoModule['createUndoCollection']();
+                }
+                let records: Object = {};
+                records['action'] = 'Delete';
+                records['deletedRecordsDetails'] = [];
+                this.parent.undoRedoModule['findPosition'](extend([],[],rowItems,true) as IGanttData[],records,'deletedRecordsDetails');
+                (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = records;
+            }
             for (let i: number = 0; i < rowItems.length; i++) {
                 const deleteRecord: IGanttData = rowItems[i as number];
                 if (this.deletedTaskDetails.indexOf(deleteRecord) !== -1) {
                     continue;
                 }
-                const parentTask: IGanttData = this.parent.getParentTask(deleteRecord.parentItem);
-                if (deleteRecord.parentItem) {
-                    const childRecord: IGanttData[] = parentTask.childRecords;
-                    const filteredRecord: IGanttData[] = childRecord.length === 1 ?
-                        childRecord : childRecord.filter((data: IGanttData): boolean => {
-                            return !data.isDelete;
-                        });
-                    if (filteredRecord.length > 0) {
-                        this.parent.dataOperation.updateParentItems(deleteRecord.parentItem);
+                let deleteItems: IGanttData[] = [deleteRecord];
+                if (this.parent.viewType == 'ResourceView' && this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && rowItems[i as number].ganttProperties.resourceInfo && rowItems[i as number].ganttProperties.resourceInfo.length > 1) {
+                    deleteItems = [];
+                    if (!rowItems[i as number].hasChildRecords) {
+                        const id: string = 'T' + rowItems[i as number].ganttProperties.taskId;
+                        this.parent.taskIds.reduce(function (a: any, e: any, j: any) {
+                            if (e === id) {
+                                deleteItems.push(this.parent.flatData[j as number]);
+                            }
+                        }.bind(this), []);
                     }
                 }
-                const predecessor: IPredecessor[] = deleteRecord.ganttProperties.predecessor;
-                let canDeletePredecessor: boolean = true;
-                if (this.parent.viewType === 'ResourceView' && parentTask && parentTask.ganttProperties.taskName !==
-                    this.parent.localeObj.getConstant('unassignedTask')) {
-                    canDeletePredecessor = false;
-                }
-                if (predecessor && predecessor.length && canDeletePredecessor) {
-                    this.removePredecessorOnDelete(deleteRecord);
-                }
-                this.deletedTaskDetails.push(deleteRecord);
-                if (deleteRecord.hasChildRecords) {
-                    this.deleteChildRecords(deleteRecord);
+                for (let j: number = 0; j < deleteItems.length; j++) {
+                    const parentTask: IGanttData = this.parent.getParentTask(deleteItems[j as number].parentItem);
+                    if (deleteItems[j as number].parentItem) {
+                        const childRecord: IGanttData[] = parentTask.childRecords;
+                        const filteredRecord: IGanttData[] = childRecord.length === 1 ?
+                            childRecord : childRecord.filter((data: IGanttData): boolean => {
+                                return !data.isDelete;
+                            });
+                        if (filteredRecord.length > 0) {
+                            this.parent.dataOperation.updateParentItems(deleteItems[j as number].parentItem);
+                        }
+                    }
+                    const predecessor: IPredecessor[] = deleteItems[j as number].ganttProperties.predecessor;
+                    let canDeletePredecessor: boolean = true;
+                    if (this.parent.viewType === 'ResourceView' && parentTask && parentTask.ganttProperties.taskName !==
+                        this.parent.localeObj.getConstant('unassignedTask')) {
+                        canDeletePredecessor = false;
+                    }
+                    if (predecessor && predecessor.length && canDeletePredecessor) {
+                        this.removePredecessorOnDelete(deleteItems[j as number]);
+                    }
+                    this.deletedTaskDetails.push(deleteItems[j as number]);
+                    if (deleteItems[j as number].hasChildRecords) {
+                        this.deleteChildRecords(deleteItems[j as number]);
+                    }
                 }
             }
             if (this.parent.selectionModule && this.parent.allowSelection) {
@@ -1952,8 +2141,10 @@ export class Edit {
                             break;
                         }
                     }
-                    fromRecordPredcessor.splice(index, 1);
-                    this.updatePredecessorValues(fromRecord, fromRecordPredcessor);
+                    if (record.uniqueID == fromRecord.parentUniqueID || record.parentUniqueID == fromRecord.uniqueID || this.parent.isOnDelete) {
+                        fromRecordPredcessor.splice(index, 1);
+                        this.updatePredecessorValues(fromRecord, fromRecordPredcessor);
+                    }
                 }
             }
         }
@@ -2151,15 +2342,49 @@ export class Edit {
     private deleteSuccess(args: ITaskDeletedEventArgs): void {
         const flatData: IGanttData[] = this.parent.flatData;
         const currentData: IGanttData[] = this.parent.currentViewData;
-        const deletedRecords: IGanttData[] = this.parent.getRecordFromFlatdata(args.deletedRecordCollection);
+        const deletedRecords: IGanttData[] = [];
+        for (let i: number = 0; i < args.deletedRecordCollection.length; i++) {
+            if (this.parent.viewType === 'ProjectView') {
+                deletedRecords.push(this.parent.getRecordByID(args.deletedRecordCollection[i as number].ganttProperties.taskId));
+            }
+            else {
+                let id: string;
+                if (args.deletedRecordCollection[i as number].hasChildRecords) {
+                    id = 'R' + args.deletedRecordCollection[i as number].ganttProperties.taskId;
+                }
+                else {
+                    id = 'T' + args.deletedRecordCollection[i as number].ganttProperties.taskId;
+                }
+                if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                    deletedRecords.push(this.parent.getTaskByUniqueID(args.deletedRecordCollection[i as number].uniqueID));
+                }
+                else {
+                    deletedRecords.push(this.parent.flatData[this.parent.taskIds.indexOf(id.toString())]);
+                }
+            }
+        }
         const deleteRecordIDs: string[] = [];
         if (deletedRecords.length > 0) {
             this.parent.selectedRowIndex = deletedRecords[deletedRecords.length - 1].index;
         }
         for (let i: number = 0; i < deletedRecords.length; i++) {
             const deleteRecord: IGanttData = deletedRecords[i as number];
-            const currentIndex: number = currentData.indexOf(deleteRecord);
-            const flatIndex: number = flatData.indexOf(deleteRecord);
+            let currentIndex: number;
+            let flatIndex: number;
+            if (this.parent.viewType === 'ResourceView') {
+                if (deleteRecord.hasChildRecords) {
+                    currentIndex = this.parent.taskIds.indexOf('R' + deleteRecord.ganttProperties.taskId.toString());
+                    flatIndex = this.parent.taskIds.indexOf('R' + deleteRecord.ganttProperties.taskId.toString());
+                }
+                else {
+                    currentIndex = this.parent.taskIds.indexOf('T' + deleteRecord.ganttProperties.taskId.toString());
+                    flatIndex = this.parent.taskIds.indexOf('T' + deleteRecord.ganttProperties.taskId.toString());
+                }
+            }
+            else {
+                currentIndex = currentData.indexOf(deleteRecord);
+                flatIndex = flatData.indexOf(deleteRecord);
+            }
             const treeGridParentIndex: number = this.parent.treeGrid.parentData.indexOf(deleteRecord);
             const tempData: ITaskData[] = getValue('dataOperation.dataArray', this.parent);
             const dataIndex: number = tempData.indexOf(deleteRecord.taskData);
@@ -2219,7 +2444,7 @@ export class Edit {
         eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection, null, null, this.parent);
         setValue('action', args.action, eventArgs);
         this.parent.isOnDelete = false;
-        if (this.parent.viewType === 'ResourceView') {
+        if (this.parent.viewType === 'ResourceView' && (!this.parent.undoRedoModule || (this.parent.undoRedoModule && (!this.parent.undoRedoModule['isUndoRedoPerformed'] || (this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.undoRedoModule['currentAction']['action'] == 'Delete'))))) {
             const updateUnAssignedResources: IGanttData[] = eventArgs.data.filter((data: IGanttData) => {
                 return !data.hasChildRecords;
             })
@@ -2381,10 +2606,114 @@ export class Edit {
             }
         }
         this.parent.isOnEdit = true;
-        this.backUpAndPushNewlyAddedRecord(cAddedRecord, rowPosition, parentItem);
+        if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
+            if (obj['hasChildRecords']) {
+                let totalRecords: IGanttData[] = [];
+                let currentAction: Object[] = this.parent.undoRedoModule['currentAction']['deletedRecordsDetails'];
+                for (let i: number = 0; i < obj['childRecords'].length; i++) {
+                    this.add(obj['childRecords'][i as number], totalRecords);
+                }
+                for (let j: number = 0; j < currentAction.length; j++) {
+                    if (obj['ganttProperties'].taskId == currentAction[j as number]['data'].ganttProperties.taskId) {
+                        if (currentAction[j as number]['position'] == 'child') {
+                            rowPosition = 'Child';
+                        }
+                        else if (currentAction[j as number]['position'] == 'below') {
+                            rowPosition = 'Below';
+                        }
+                        else if (currentAction[j as number]['position'] == 'above') {
+                            rowPosition = 'Above';
+                        }
+                        this.backUpAndPushNewlyAddedRecord(cAddedRecord, rowPosition, parentItem);
+                        for (let i: number = 0; i < totalRecords.length; i++) {
+                            if (this.parent.viewType == 'ProjectView') {
+                                if (totalRecords[i as number].parentItem.taskId == cAddedRecord.ganttProperties.taskId) {
+                                    totalRecords[i as number].parentItem.index = cAddedRecord.index;
+                                    totalRecords[i as number].parentItem.taskId = cAddedRecord.ganttProperties.taskId;
+                                    totalRecords[i as number].parentItem.uniqueID = cAddedRecord.ganttProperties.uniqueID;
+                                    totalRecords[i as number].parentUniqueID = cAddedRecord.ganttProperties.uniqueID;
+                                }
+                            }
+                            else {
+                                totalRecords[i as number].parentItem.index = cAddedRecord.index;
+                                totalRecords[i as number].parentItem.taskId = cAddedRecord.ganttProperties.rowUniqueID;
+                                totalRecords[i as number].parentItem.uniqueID = cAddedRecord.ganttProperties.uniqueID;
+                                totalRecords[i as number].parentUniqueID = cAddedRecord.ganttProperties.uniqueID;
+                            }
+
+                        }
+                        break;
+                    }
+                }
+                this.addRowSelectedItem = cAddedRecord;
+                cAddedRecord.taskData[this.parent.taskFields.child] = [];
+                for (let k: number = 0; k < totalRecords.length; k++) {
+                    this.parent.isOnEdit = false;
+                    let newRecord: IGanttData = this.parent.dataOperation.createRecord(totalRecords[k as number], totalRecords[k as number].level);
+                    if (newRecord.childRecords.length == 0 && newRecord.taskData[this.parent.taskFields.child]) {
+                        newRecord.taskData[this.parent.taskFields.child] = [];
+                    }
+                    parentItem = this.parent.getRecordByID(totalRecords[k as number].parentItem.taskId);
+                    if (!isNullOrUndefined(parentItem)) {
+                        this.parent.setRecordValue('parentItem', this.parent.dataOperation.getCloneParent(parentItem), newRecord);
+                        const pIndex: number = newRecord.parentItem ? newRecord.parentItem.index : null;
+                        this.parent.setRecordValue('parentIndex', pIndex, newRecord);
+                        const parentUniqId: string = newRecord.parentItem ? newRecord.parentItem.uniqueID : null;
+                        this.parent.setRecordValue('parentUniqueID', parentUniqId, newRecord);
+                        if (!isNullOrUndefined(this.parent.taskFields.id) &&
+                            !isNullOrUndefined(this.parent.taskFields.parentID) && newRecord.parentItem) {
+                            if (this.parent.viewType === 'ProjectView') {
+                                this.parent.setRecordValue(
+                                    this.parent.taskFields.parentID, newRecord.parentItem.taskId, newRecord.taskData, true);
+                            }
+                            this.parent.setRecordValue('parentId', newRecord.parentItem.taskId, newRecord.ganttProperties, true);
+                            this.parent.setRecordValue(this.parent.taskFields.parentID, newRecord.parentItem.taskId, newRecord, true);
+                        }
+                    }
+                    this.parent.isOnEdit = true;
+                    if (newRecord.parentItem) {
+                        if (parentItem.childRecords.length == 0) {
+                            rowPosition = 'Child';
+                        }
+                        else {
+                            rowPosition = 'Below';
+                        }
+                    }
+                    if (this.parent.getParentTask(newRecord.parentItem).childRecords.length > 0) {
+                        this.addRowSelectedItem = this.parent.getParentTask(newRecord.parentItem).childRecords[this.parent.getParentTask(newRecord.parentItem).childRecords.length - 1];
+                    }
+                    this.backUpAndPushNewlyAddedRecord(newRecord, rowPosition, parentItem);
+                    for (let i: number = 0; i < totalRecords.length; i++) {
+                        if (this.parent.viewType == 'ProjectView') {
+                            if (totalRecords[i as number].parentItem.taskId == newRecord.ganttProperties.taskId) {
+                                totalRecords[i as number].parentItem.index = newRecord.index;
+                                totalRecords[i as number].parentItem.taskId = newRecord.ganttProperties.taskId;
+                                totalRecords[i as number].parentItem.uniqueID = newRecord.ganttProperties.uniqueID;
+                                totalRecords[i as number].parentUniqueID = newRecord.ganttProperties.uniqueID;
+                            }
+                        }
+                        else {
+                            totalRecords[i as number].parentItem.index = cAddedRecord.index;
+                            totalRecords[i as number].parentItem.taskId = cAddedRecord.ganttProperties.rowUniqueID;
+                            totalRecords[i as number].parentItem.uniqueID = cAddedRecord.ganttProperties.uniqueID;
+                            totalRecords[i as number].parentUniqueID = cAddedRecord.ganttProperties.uniqueID;
+                        }
+
+                    }
+                }
+            }
+            else {
+                this.backUpAndPushNewlyAddedRecord(cAddedRecord, rowPosition, parentItem);
+            }
+        }
+        else {
+            this.backUpAndPushNewlyAddedRecord(cAddedRecord, rowPosition, parentItem);
+        }
         // need to push in dataSource also.
         if (this.parent.taskFields.dependency && cAddedRecord.ganttProperties.predecessorsName) {
-            this.parent.predecessorModule.ensurePredecessorCollectionHelper(cAddedRecord, cAddedRecord.ganttProperties);
+            if (!this.parent.undoRedoModule || !this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                this.parent.predecessorModule.ensurePredecessorCollectionHelper(cAddedRecord, cAddedRecord.ganttProperties);
+            } 
             this.parent.predecessorModule.updatePredecessorHelper(cAddedRecord);
             this.parent.predecessorModule.validatePredecessorDates(cAddedRecord);
         }
@@ -2619,7 +2948,7 @@ export class Edit {
         /* Record collection update */
         flatRecords.splice(recordIndex, 0, record);
         currentViewData.splice(updatedCollectionIndex, 0, record);
-        if (this.parent.viewType === 'ResourceView' && typeof(record.ganttProperties.taskId) === "number") {
+        if (this.parent.viewType === 'ResourceView' && typeof(record.ganttProperties.taskId) === "number" && (!this.parent.undoRedoModule || !this.parent.undoRedoModule['isUndoRedoPerformed'])) {
             let taskString: number = record.ganttProperties.taskId;
             ids.push(taskString.toString());
         }
@@ -2706,9 +3035,9 @@ export class Edit {
     private addSuccess(args: ITaskAddedEventArgs): void {
         // let addedRecords: IGanttData = args.addedRecord;
         // let eventArgs: IActionBeginEventArgs = {};
-        // this.parent.updatedConnectorLineCollection = [];
-        // this.parent.connectorLineIds = [];
-        // this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
+        this.parent.updatedConnectorLineCollection = [];
+        this.parent.connectorLineIds = [];
+        this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
         this.parent.treeGrid.parentData = [];
         this.parent.addDeleteRecord = true;
         this.parent.selectedRowIndex = 0;
@@ -2909,13 +3238,34 @@ export class Edit {
         let tempTaskID:string = this.parent.taskFields.id
         if (this.parent.editModule && this.parent.editSettings.allowAdding) {
             this.parent.isDynamicData = true;
+            this.parent.isOnAdded = true;
             let cAddedRecord: IGanttData[] = [];
             if (isNullOrUndefined(data)) {
                 this.validateTaskPosition(data, rowPosition, rowIndex, cAddedRecord);
             }
             else if (data instanceof Array) {
-                for (let i: number = 0; i < data.length; i++) {
-                    this.validateTaskPosition(data[i as number], rowPosition, rowIndex, cAddedRecord);
+                if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                    let addData: Object[] | Object = data;
+                    let addIndex: number = rowIndex;
+                    if (this.parent.viewType === 'ResourceView') {
+                        if (data[0]['position'] == 'below') {
+                            rowPosition = 'Below';
+                        }
+                        else if (data[0]['position'] == 'above') {
+                            rowPosition = 'Above';
+                        }
+                        else if (data[0]['position'] == 'child') {
+                            rowPosition = 'Child';
+                        }
+                        addIndex = this.parent.taskIds.indexOf(data[0]['id'].toString());
+                        addData = data[0]['data'];
+                    }
+                    this.validateTaskPosition(addData, rowPosition, addIndex, cAddedRecord);
+                }
+                else {
+                    for (let i: number = 0; i < data.length; i++) {
+                        this.validateTaskPosition(data[i as number], rowPosition, rowIndex, cAddedRecord);
+                    }
                 }
             }
             else if (typeof (data) == 'object') {
@@ -2926,15 +3276,32 @@ export class Edit {
             }
             let args: ITaskAddedEventArgs = {};
             args = this.constructTaskAddedEventArgs(cAddedRecord, this.parent.editedRecords, 'beforeAdd');
+            if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent['isUndoRedoItemPresent']('Add')) {
+                if (this.parent.undoRedoModule['redoEnabled']) {
+                    this.parent.undoRedoModule['disableRedo']();
+                }
+                this.parent.undoRedoModule['createUndoCollection']();
+            }
             this.parent.trigger('actionBegin', args, (args: ITaskAddedEventArgs) => {
+                this.parent.previousRecords={};
                 if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === "Shimmer" ) {
                     this.parent.showMaskRow()
                 } else {
                     this.parent.showSpinner()
                 }
                 const tasks: TaskFieldsModel = this.parent.taskFields;
-                const ganttData: IGanttData = this.parent.viewType === 'ResourceView' ?
-                this.parent.flatData[this.parent.getTaskIds().indexOf('T' + args.data[tasks.id])] : this.parent.getRecordByID(args.data[tasks.id]);
+                let ganttData: IGanttData;
+                if (this.parent.viewType === 'ResourceView') {
+                    if (args.data['childRecords'].length > 0) {
+                        ganttData = this.parent.flatData[this.parent.getTaskIds().indexOf('R' + args.data[tasks.id])]
+                    }
+                    else {
+                        ganttData = this.parent.flatData[this.parent.getTaskIds().indexOf('T' + args.data[tasks.id])]
+                    }
+                }
+                else {
+                    ganttData = this.parent.getRecordByID(args.data[tasks.id])
+                }
                 if (!isNullOrUndefined(ganttData)) {
                    this.validateUpdateValues(args.newTaskData, ganttData, true);
                    this.parent.dateValidationModule.calculateEndDate(ganttData);
@@ -2955,6 +3322,7 @@ export class Edit {
                     }
                 }
                 if (!args.cancel) {
+                    let record: Object = {};
                     if (isRemoteData(this.parent.dataSource)) {
                         const data: DataManager = this.parent.dataSource as DataManager;
                         const updatedData: object = {
@@ -3039,12 +3407,76 @@ export class Edit {
                             this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
                         }
                         this.updateTreeGridUniqueID(cAddedRecord as IGanttData, 'add');
+                        if (this.parent.viewType === 'ResourceView' && this.parent.undoRedoModule && this.parent.undoRedoModule['currentAction']) {
+                            let canDelete: boolean = false;
+                            if (args.data['hasChildRecords']) {
+                                canDelete = true;
+                            }
+                            else {
+                                if (args.data['parentItem']) {
+                                    const parentTask: IGanttData = this.parent.getTaskByUniqueID(args.data['parentItem'].uniqueID);
+                                    if (parentTask.ganttProperties.taskName != this.parent.localeObj.getConstant('unassignedTask')) {
+                                        canDelete = true;
+                                    }
+                                }
+                            }
+                            if (this.parent.taskIds.indexOf('R0') != -1 && this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.undoRedoModule['currentAction']['action'] === 'Delete'
+                                && canDelete) {
+                                const unassignedTask: IGanttData = this.parent.flatData[this.parent.taskIds.indexOf('R0')];
+                                let isPresent: IGanttData[] = unassignedTask.childRecords.filter((data: IGanttData) => { return data.ganttProperties.taskId == args.data['ganttProperties'].taskId });
+                                if (args.data['hasChildRecords']) {
+                                    isPresent = args.data['childRecords']
+                                }
+                                for (let j: number = 0; j < isPresent.length; j++) {
+                                    if (unassignedTask.childRecords.length == 1) {
+                                        this.parent.flatData.splice(this.parent.taskIds.indexOf('R0'), 2);
+                                        this.parent.ids.splice(this.parent.taskIds.indexOf('R0'), 2);
+                                        this.parent.taskIds.splice(this.parent.taskIds.indexOf('R0'), 2);
+                                    }
+                                    else {
+                                        let index: number = this.parent.taskIds.indexOf('T' + isPresent[j as number].ganttProperties.taskId);
+                                        const id: string = 'T' + isPresent[j as number].ganttProperties.taskId;
+                                        const indexes: number[] = this.parent.taskIds.reduce(function (a, e, i) {
+                                            if (e === id)
+                                                a.push(i);
+                                            return a;
+                                        }, []);
+                                        index = indexes[indexes.length - 1];
+                                        this.parent.taskIds.splice(index, 1);
+                                        this.parent.flatData.splice(index, 1)
+                                        this.parent.ids.splice(index, 1);
+                                    }
+                                }
+                                if (unassignedTask && this.parent.viewType === 'ResourceView') {
+                                    const isValid: IGanttData = this.parent.flatData[this.parent.taskIds.indexOf('R0') + 1];
+                                    if (!isValid) {
+                                        this.parent.flatData.splice(this.parent.taskIds.indexOf('R0'), 1);
+                                        this.parent.ids.splice(this.parent.taskIds.indexOf('R0'), 1);
+                                        this.parent.taskIds.splice(this.parent.taskIds.indexOf('R0'), 1);
+                                    }
+                                }
+                            }
+                        }
                         this.refreshNewlyAddedRecord(args, cAddedRecord);
-                        if(this.parent.viewType === 'ResourceView' && this.parent.taskFields.work){
+                        if(this.parent.viewType === 'ResourceView' && this.parent.taskFields.work && ganttData){
                             this.parent.dataOperation.updateParentItems(ganttData, true);
+                        }
+                        if (this.parent.undoRedoModule && (!this.parent.undoRedoModule['isUndoRedoPerformed'] || (this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.undoRedoModule['currentAction']['action'] == 'Add' && this.parent.viewType === 'ResourceView'))
+                            && this.parent['isUndoRedoItemPresent']('Add')) {
+                            record['action'] = 'Add';
+                            let tempArray: IGanttData[] = (args.data as IGanttData[]).length > 0 ? extend([], [], args.data as IGanttData[], true) as IGanttData[] : [args.data as IGanttData];
+                            let addedRec: IGanttData[] = [];
+                            for (let i: number = 0; i < tempArray.length; i++) {
+                                addedRec = (this.parent.flatData.filter((data: IGanttData) => {
+                                    return (tempArray[i as number].index == data.index && tempArray[i as number]['ganttProperties'].taskId == data.ganttProperties.taskId);
+                                }));
+                            }
+                            record['addedRecords'] = extend([], [], addedRec, true);
+                            (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = record;
                         }
                         this._resetProperties();
                     }
+                    this.parent.isOnAdded = false;
                 } else {
                     args = args;
                     this.removeAddedRecord();
@@ -3154,7 +3586,9 @@ export class Edit {
             parentItem = this.addRowSelectedItem;
             break;
         }
-        this.prepareNewlyAddedData(data, rowPosition);
+        if (!this.parent.undoRedoModule || !this.parent.undoRedoModule['isUndoRedoPerformed']) {
+            this.prepareNewlyAddedData(data, rowPosition);
+        }
         const AddRecord: IGanttData = (this.updateNewlyAddedDataBeforeAjax(data, level, rowPosition, parentItem));
         cAddedRecord.push(AddRecord);
     }
@@ -3208,12 +3642,10 @@ export class Edit {
         if (this.parent.timelineSettings.updateTimescaleView) {
             let tempArray: IGanttData[] = [];
             if (args.modifiedRecords.length > 0) {
-                tempArray = (args.data as IGanttData[]).length > 0 ? args.data as IGanttData[] : [args.data as IGanttData];
-                // eslint-disable-next-line
+                tempArray = (args.data as IGanttData[]).length > 0 ? extend([],[],args.data as IGanttData[],true) as IGanttData[] : [args.data as IGanttData];                // eslint-disable-next-line
                 tempArray.push.apply(tempArray, args.modifiedRecords);
             } else {
-                tempArray = (args.data as IGanttData[]).length > 0 ? args.data as IGanttData[] : [args.data as IGanttData];
-            }
+                tempArray = (args.data as IGanttData[]).length > 0 ? extend([],[],args.data as IGanttData[],true) as IGanttData[] : [args.data as IGanttData];            }
             this.parent.timelineModule.updateTimeLineOnEditing([tempArray], args.action);
         }
         this.addSuccess(args);
@@ -3245,8 +3677,10 @@ export class Edit {
                         // }
                     }
                     else {
-                        this.removeChildRecord(args.data[i as number] as IGanttData);
-                        this.parent.editModule.checkWithUnassignedTask(args.data[i as number] as IGanttData);
+                        if (!this.parent.undoRedoModule || (this.parent.undoRedoModule && !args.data[i as number]['hasChildRecords'] && this.parent.undoRedoModule['isUndoRedoPerformed'] || !this.parent.undoRedoModule['isUndoRedoPerformed'])) {
+                            this.removeChildRecord(args.data[i as number] as IGanttData);
+                            this.parent.editModule.checkWithUnassignedTask(args.data[i as number] as IGanttData);
+                        }
                     }
                     for (let k: number = 0; k < this.updateParentRecords.length; k++) {
                         this.parent.dataOperation.updateParentItems(this.updateParentRecords[k as number]);
@@ -3266,8 +3700,10 @@ export class Edit {
                     }
                 }
                 else {
-                    this.removeChildRecord(args.data as IGanttData);
-                    this.parent.editModule.checkWithUnassignedTask(args.data as IGanttData);
+                    if (!this.parent.undoRedoModule || (this.parent.undoRedoModule && !args.data['hasChildRecords'] && this.parent.undoRedoModule['isUndoRedoPerformed'] || !this.parent.undoRedoModule['isUndoRedoPerformed'])) {
+                        this.removeChildRecord(args.data as IGanttData);
+                        this.parent.editModule.checkWithUnassignedTask(args.data as IGanttData);
+                    }
                 }
                 for (let k: number = 0; k < this.updateParentRecords.length; k++) {
                     this.parent.dataOperation.updateParentItems(this.updateParentRecords[k as number]);
@@ -3366,7 +3802,17 @@ export class Edit {
             let action: string;
             const record: IGanttData[] = [];
             for (let i: number = 0; i < fromIndexes.length; i++) {
-                record[i as number] = this.parent.updatedRecords[fromIndexes[i as number]];
+                if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.undoRedoModule['currentAction']) {
+                    if (this.parent.undoRedoModule['currentAction']['modifiedRecord']) {
+                        record[i as number] = this.parent.undoRedoModule['currentAction']['modifiedRecord'][i as number].data;
+                    }
+                    else {
+                        record[i as number] = this.parent.undoRedoModule['currentAction']['data'][i as number];
+                    }
+                }
+                else {
+                    record[i as number] = this.parent.updatedRecords[fromIndexes[i as number]];
+                }
             }
             const isByMethod: boolean = true;
             const args: RowDropEventArgs = {
@@ -3405,6 +3851,26 @@ export class Edit {
         if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
             const obj: Gantt = this.parent; let draggedRec: IGanttData;
             this.droppedRecord = obj.updatedRecords[args.dropIndex];
+            const action: string = args.dropPosition == 'middleSegment' ? 'Indent' : 'Outdent';
+            if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent['isUndoRedoItemPresent'](action)) {
+                let record: Object = {};
+                record['action'] = action;
+                record['modifiedRecord'] = [];
+                record['selectedRowIndexes'] = extend([], [], this.parent.selectionModule.selectedRowIndexes, true);
+                this.parent.undoRedoModule['findPosition'](extend([],[],[args.data as IGanttData],true)[0],record,'modifiedRecord');
+                record['droppedRecord'] = extend([], [], this.droppedRecord, true);
+                if (this.parent.undoRedoModule['redoEnabled']) {
+                    this.parent.undoRedoModule['redoEnabled'] = false;
+                    this.parent.undoRedoModule['getUndoCollection'] = [];
+                    this.parent.undoRedoModule['getRedoCollection'] = [];
+                    if(this.parent.toolbarModule) {
+                        this.parent.toolbarModule.enableItems([this.parent.controlId + '_redo'], false);
+                    }
+                    this.parent.undoRedoModule['getUndoCollection'][0] = [];
+                }
+                this.parent.undoRedoModule['createUndoCollection']();
+                (this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1] as any) = record;
+            }
             let dragRecords: IGanttData[] = [];
             const droppedRec: IGanttData = this.droppedRecord;
             if (!args.data[0]) {
@@ -3462,7 +3928,7 @@ export class Edit {
                         this.dropMiddle(recordIndex1);
                     }
                     if (!isNullOrUndefined(draggedRec.parentItem && this.updateParentRecords.indexOf(draggedRec.parentItem) !== -1)) {
-                        this.updateParentRecords.push(draggedRec.parentItem);
+                        this.updateParentRecords.push(this.parent.getTaskByUniqueID(draggedRec.parentItem.uniqueID));
                     }
                 }
                 if (isNullOrUndefined(draggedRec.parentItem)) {
@@ -3477,20 +3943,19 @@ export class Edit {
             if (this.dropPosition === 'middleSegment') {
                 if ( !isNullOrUndefined(droppedRec.ganttProperties.predecessor)) {
                     const len: number = droppedRec.ganttProperties.predecessor.length;
-                    for (let count: number = 0; count < len; count++) {
-                        if ( !isNullOrUndefined(droppedRec.ganttProperties.predecessor)) {
-                        const fromRecord: IGanttData = this.parent.getRecordByID(droppedRec.ganttProperties.predecessor[count as number].from);
-                        const toRecord: IGanttData = this.parent.getRecordByID(droppedRec.ganttProperties.predecessor[count as number].to);
-                        const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
-                        
-                        if (droppedRec.ganttProperties.predecessor && !validPredecessor) {
-                            this.parent.editModule.removePredecessorOnDelete(droppedRec);
-                            droppedRec.ganttProperties.predecessor = null;
-                            droppedRec.ganttProperties.predecessorsName = null;
-                            droppedRec[this.parent.taskFields.dependency] = null;
-                            droppedRec.taskData[this.parent.taskFields.dependency] = null;
+                    for (let count: number = len - 1; count >=0 ; count--) {
+                        if (!isNullOrUndefined(droppedRec.ganttProperties.predecessor)) {
+                            const fromRecord: IGanttData = this.parent.getRecordByID(droppedRec.ganttProperties.predecessor[count as number].from);
+                            const toRecord: IGanttData = this.parent.getRecordByID(droppedRec.ganttProperties.predecessor[count as number].to);
+                            const validPredecessor: boolean = this.parent.connectorLineEditModule.validateParentPredecessor(fromRecord, toRecord);
+                            if (droppedRec.ganttProperties.predecessor && !validPredecessor) {
+                                this.parent.editModule.removePredecessorOnDelete(droppedRec);
+                                droppedRec.ganttProperties.predecessor.splice(count, 1);
+                                droppedRec.ganttProperties.predecessorsName = null;
+                                droppedRec[this.parent.taskFields.dependency] = null;
+                                droppedRec.taskData[this.parent.taskFields.dependency] = null;
+                            }
                         }
-                    }
                     }
                 }
                 if (droppedRec.ganttProperties.isMilestone) {
@@ -3505,8 +3970,8 @@ export class Edit {
             for (let k: number = 0; k < this.updateParentRecords.length; k++) {
                 this.parent.dataOperation.updateParentItems(this.updateParentRecords[k as number]);
             }
-            this.isFirstCall = true;
             this.parent.editedRecords.forEach(record => {
+                this.isFirstCall = true;
                 this.parent.predecessorModule.validatePredecessor(record, [], '');
             });
             for (let k: number = 0; k < this.updateParentRecords.length; k++) {
@@ -3553,6 +4018,7 @@ export class Edit {
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
             this.refreshRecordInImmutableMode(args.data, isDrag);
+            this.parent.chartRowsModule.refreshRecords(this.parent.editedRecords);
         }
         if (isDrag) {
             args.requestType = 'rowDropped';
@@ -3578,7 +4044,6 @@ export class Edit {
         if (this.parent.rowDragAndDropModule) {
            this.parent.rowDragAndDropModule['draggedRecord'] = null;
         }
-        this.parent.editedRecords = [];
     }
     private refreshDataSource(): void {
         const draggedRec: IGanttData = this.draggedRecord;
@@ -3672,10 +4137,23 @@ export class Edit {
     }
     private dropMiddle(recordIndex1: number): void {
         const obj: Gantt = this.parent;
-        const childRec: number = this.parent.editModule.getChildCount(this.droppedRecord, 0);
-        const childRecordsLength: number = (isNullOrUndefined(childRec) ||
-            childRec === 0) ? recordIndex1 + 1 :
-            childRec + recordIndex1 + 1;
+        let childRec: number;
+        let childRecordsLength: number;
+        if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent.undoRedoModule['currentAction']['modifiedRecord']
+           && this.parent.undoRedoModule['currentAction']['modifiedRecord'][0].position !== 'child') {
+            if (this.parent.undoRedoModule['currentAction']['modifiedRecord'][0].position == 'above') {
+                childRecordsLength = this.parent.ids.indexOf(this.parent.undoRedoModule['currentAction']['modifiedRecord'][0].id.toString());
+            }
+            else if (this.parent.undoRedoModule['currentAction']['modifiedRecord'][0].position == 'below') {
+                childRecordsLength = this.parent.ids.indexOf(this.parent.undoRedoModule['currentAction']['modifiedRecord'][0].id.toString()) + 1;
+            }
+        }
+        else {
+            childRec = this.parent.editModule.getChildCount(this.droppedRecord, 0);
+            childRecordsLength = (isNullOrUndefined(childRec) ||
+                childRec === 0) ? recordIndex1 + 1 :
+                childRec + recordIndex1 + 1;
+        }
         if (this.dropPosition === 'middleSegment') {
             if (obj.taskFields.parentID && (this.ganttData as IGanttData[]).length > 0) {
                 (this.ganttData as IGanttData[]).splice(childRecordsLength, 0, this.draggedRecord.taskData);
@@ -3751,8 +4229,8 @@ export class Edit {
             dataSource = this.parent.dataSource;
         }
         const delRow: IGanttData = record;
-        const flatParent: IGanttData = this.parent.getParentTask(delRow.parentItem);
         if (delRow) {
+            const flatParent: IGanttData = this.parent.getParentTask(delRow.parentItem);
             if (delRow.parentItem) {
                 const childRecords: IGanttData[] = flatParent ? flatParent.childRecords : [];
                 let childIndex: number = 0;

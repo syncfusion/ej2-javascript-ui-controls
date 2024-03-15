@@ -137,11 +137,12 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     public value: string;
 
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Specifies whether to enable the rendering of untrusted HTML values in the CheckBox component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
 
     /**
@@ -166,10 +167,10 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     private changeState(state?: string, isInitialize?: boolean ): void {
         let ariaState: string;
-        let rippleSpan: Element;
-        const frameSpan: Element = this.getWrapper().getElementsByClassName(FRAME)[0];
+        let rippleSpan: Element | null = null;
+        const frameSpan: Element = (this.getWrapper() as Element).getElementsByClassName(FRAME)[0];
         if (isRippleEnabled) {
-            rippleSpan = this.getWrapper().getElementsByClassName(RIPPLE)[0];
+            rippleSpan = (this.getWrapper() as Element).getElementsByClassName(RIPPLE)[0];
         }
         if (state === 'check') {
             if (frameSpan) {
@@ -255,7 +256,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * @returns {void}
      */
     public destroy(): void {
-        let wrapper: Element = this.getWrapper();
+        let wrapper: Element = this.getWrapper() as Element;
         super.destroy();
         if (this.wrapper) {
             wrapper = this.wrapper;
@@ -295,7 +296,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private focusOutHandler(): void {
-        const wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper() as Element;
         if (wrapper) {
             wrapper.classList.remove('e-focus');
         }
@@ -322,7 +323,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         return this.addOnPersist(['checked', 'indeterminate']);
     }
 
-    private getWrapper(): Element {
+    private getWrapper(): Element | null {
         if (this.element && this.element.parentElement) {
             return this.element.parentElement.parentElement;
         } else {
@@ -330,7 +331,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         }
     }
 
-    private getLabel(): Element {
+    private getLabel(): Element | null {
         if (this.element) {
             return this.element.parentElement;
         } else {
@@ -363,12 +364,14 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private initWrapper(): void {
-        let wrapper: Element = this.element.parentElement;
+        let wrapper: Element = this.element.parentElement as Element;
         if (!wrapper.classList.contains(WRAPPER)) {
             wrapper = this.createElement('div', {
                 className: WRAPPER
             });
-            this.element.parentNode.insertBefore(wrapper, this.element);
+            if (this.element.parentNode) {
+                this.element.parentNode.insertBefore(wrapper, this.element);
+            }
         }
         const label: Element = this.createElement('label', { attrs: { for: this.element.id } });
         const frameSpan: Element = this.createElement('span', { className: 'e-icons ' + FRAME });
@@ -399,18 +402,18 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     private keyUpHandler(): void {
         if (this.isFocused) {
-            this.getWrapper().classList.add('e-focus');
+            (this.getWrapper() as Element).classList.add('e-focus');
         }
     }
 
     private labelMouseDownHandler(e: MouseEvent): void {
         this.isMouseClick = true;
-        const rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
+        const rippleSpan: Element = (this.getWrapper() as Element).getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
     }
 
     private labelMouseLeaveHandler(e: MouseEvent): void {
-        const rippleSpan: Element = this.getLabel().getElementsByClassName(RIPPLE)[0];
+        const rippleSpan: Element = (this.getLabel() as Element).getElementsByClassName(RIPPLE)[0];
         if (rippleSpan) {
             const rippleElem: NodeListOf<Element> = rippleSpan.querySelectorAll('.e-ripple-element');
             for (let i: number = rippleElem.length - 1; i > 0; i--) {
@@ -422,7 +425,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     private labelMouseUpHandler(e: MouseEvent): void {
         this.isMouseClick = true;
-        const rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
+        const rippleSpan: Element = (this.getWrapper() as Element).getElementsByClassName(RIPPLE)[0];
         if (rippleSpan) {
             const rippleElem: NodeListOf<Element> = rippleSpan.querySelectorAll('.e-ripple-element');
             for (let i: number = 0; i < rippleElem.length - 1; i++) {
@@ -442,7 +445,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * @returns {void}
      */
     public onPropertyChanged(newProp: CheckBoxModel, oldProp: CheckBoxModel): void {
-        const wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper() as Element;
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'checked':
@@ -461,7 +464,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             case 'disabled':
                 if (newProp.disabled) {
                     this.setDisabled();
-                    this.wrapper = this.getWrapper();
+                    this.wrapper = this.getWrapper() as Element;
                     this.unWireEvents();
                 } else {
                     this.element.disabled = false;
@@ -486,7 +489,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 }
                 break;
             case 'label':
-                this.setText(newProp.label);
+                this.setText(newProp.label as string);
                 break;
             case 'labelPosition': {
                 const label: Element = wrapper.getElementsByClassName(LABEL)[0];
@@ -500,11 +503,11 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
                 break;
             }
             case 'name':
-                this.element.setAttribute('name', newProp.name);
+                this.element.setAttribute('name', newProp.name as string);
                 break;
             case 'value':
                 if (this.isVue && typeof newProp.value === 'object') { break; }
-                this.element.setAttribute('value', newProp.value);
+                this.element.setAttribute('value', newProp.value as string);
                 break;
             case 'htmlAttributes':
                 this.updateHtmlAttributeToWrapper();
@@ -547,11 +550,11 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         this.updateHtmlAttributeToWrapper();
         this.updateVueArrayModel(true);
         this.renderComplete();
-        this.wrapper = this.getWrapper();
+        this.wrapper = this.getWrapper() as Element;
     }
 
     private setDisabled(): void {
-        const wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper() as Element;
         this.element.disabled = true;
         wrapper.classList.add(DISABLED);
         wrapper.setAttribute('aria-disabled', 'true');
@@ -560,7 +563,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
     private setText(text: string): void {
-        const wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper() as Element;
         if (!wrapper) {
             return;
         }
@@ -609,7 +612,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     protected wireEvents(): void {
-        const wrapper: Element = this.getWrapper();
+        const wrapper: Element = this.getWrapper() as Element;
         EventHandler.add(wrapper, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
@@ -659,14 +662,14 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     protected updateHtmlAttributeToWrapper(): void {
         if (!isNullOrUndefined(this.htmlAttributes)) {
             for (const key of Object.keys(this.htmlAttributes)) {
-                const wrapper: Element = this.getWrapper();
+                const wrapper: Element = this.getWrapper() as Element;
                 if (containerAttr.indexOf(key) > -1) {
                     if (key === 'class') {
                         addClass([wrapper], this.htmlAttributes[`${key}`].split(' '));
                     } else if (key === 'title') {
                         wrapper.setAttribute(key, this.htmlAttributes[`${key}`]);
                     } else if (key === 'style') {
-                        const frameSpan: Element = this.getWrapper().getElementsByClassName(FRAME)[0];
+                        const frameSpan: Element = (this.getWrapper() as Element).getElementsByClassName(FRAME)[0];
                         frameSpan.setAttribute(key, this.htmlAttributes[`${key}`]);
                     } else if(key === 'disabled') {
                         if (this.htmlAttributes[`${key}`] === 'true') {

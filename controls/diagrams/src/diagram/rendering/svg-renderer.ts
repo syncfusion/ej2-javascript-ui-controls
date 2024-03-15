@@ -504,7 +504,7 @@ export class SvgRenderer implements IRenderer {
                                     textNode.data = child.text;
                                 }
                             }
-                           //EJ2-863489 - Node annotation textAlign "Justify" option is not working correctly
+                            //EJ2-863489 - Node annotation textAlign "Justify" option is not working correctly
                            this.alignText(text, tspanElement, child, textNode, offsetX, offsetY,i,options,childNodes);
                             childNodesHeight += child.dy;
                         } else {
@@ -557,7 +557,6 @@ export class SvgRenderer implements IRenderer {
             }
         }
     } 
-
     private setText(
         text: SVGTextElement, tspanElement: SVGElement, child: SubTextElement,
         textNode: Text, offsetX: number, offsetY: number,options?:TextAttributes,textlength?:number,adjustlen?:string): void {
@@ -947,6 +946,9 @@ export class SvgRenderer implements IRenderer {
             }
         } else if (text.textAlign === 'right') {
             pointX = (text.width * 1);
+        }
+        else if(text.textAlign === 'justify'){
+            pointX = 0;
         }
         pos.x = x + pointX + (wrapBound ? wrapBound.x : 0);
         pos.y = y + pointY - bounds.height / 2;

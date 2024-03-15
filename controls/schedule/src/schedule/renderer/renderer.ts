@@ -57,15 +57,21 @@ export class Render {
             break;
         case 'TimelineDay':
             this.parent.activeView = this.parent.timelineViewsModule;
-            this.parent.activeView.viewClass = 'e-timeline-day-view';
+            if (!isNullOrUndefined(this.parent.activeView)) {
+                this.parent.activeView.viewClass = 'e-timeline-day-view';
+            }
             break;
         case 'TimelineWorkWeek':
             this.parent.activeView = this.parent.timelineViewsModule;
-            this.parent.activeView.viewClass = 'e-timeline-work-week-view';
+            if (!isNullOrUndefined(this.parent.activeView)) {
+                this.parent.activeView.viewClass = 'e-timeline-work-week-view';
+            }
             break;
         case 'TimelineWeek':
             this.parent.activeView = this.parent.timelineViewsModule;
-            this.parent.activeView.viewClass = 'e-timeline-week-view';
+            if (!isNullOrUndefined(this.parent.activeView)) {
+                this.parent.activeView.viewClass = 'e-timeline-week-view';
+            }
             break;
         case 'TimelineMonth':
             this.parent.activeView = this.parent.timelineMonthModule;
@@ -82,6 +88,8 @@ export class Render {
                     this.parent.headerModule.updateActiveView();
                     this.parent.headerModule.setCalendarView();
                 }
+                console.warn('[WARNING] :: Module "' + viewName + '" is not available in Schedule component!' +
+                    ' You either misspelled the module name or forgot to load it.');
                 return this.initializeLayout(firstView);
             }
             throw Error('Inject required modules');

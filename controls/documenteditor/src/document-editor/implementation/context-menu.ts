@@ -113,7 +113,7 @@ export class ContextMenu {
     }
 
     private get spellChecker(): SpellChecker {
-        return this.documentHelper.owner.spellChecker;
+        return this.documentHelper.owner.spellCheckerModule;
     }
 
     private getModuleName(): string {
@@ -456,7 +456,7 @@ export class ContextMenu {
                 this.documentHelper.selection.copy();
                 break;
             case id + CONTEXTMENU_CUT:
-                this.documentHelper.owner.editor.cut();
+                this.documentHelper.owner.editorModule.cut();
                 break;
             case id + CONTEXTMENU_PASTE:
                 if (!this.documentHelper.owner.isReadOnlyMode) {
@@ -470,9 +470,9 @@ export class ContextMenu {
                 break;
             case id + CONTEXTMENU_ADD_COMMENT:
                 if (!this.documentHelper.owner.isReadOnlyMode || this.documentHelper.isCommentOnlyMode) {
-                    this.documentHelper.owner.editor.isUserInsert = true;
+                    this.documentHelper.owner.editorModule.isUserInsert = true;
                     this.documentHelper.owner.editorModule.insertComment();
-                    this.documentHelper.owner.editor.isUserInsert = false;
+                    this.documentHelper.owner.editorModule.isUserInsert = false;
                 }
                 break;
             case id + CONTEXTMENU_UPDATE_FIELD:
@@ -507,7 +507,7 @@ export class ContextMenu {
                 }
                 break;
             case id + CONTEXTMENU_REMOVE_HYPERLINK:
-                this.documentHelper.owner.editor.removeHyperlink();
+                this.documentHelper.owner.editorModule.removeHyperlink();
                 break;
             case id + CONTEXTMENU_PARAGRAPH:
                 if (this.documentHelper.owner.paragraphDialogModule) {
@@ -518,28 +518,28 @@ export class ContextMenu {
                 this.documentHelper.owner.tablePropertiesDialogModule.show();
                 break;
             case id + CONTEXTMENU_MERGE_CELL:
-                this.documentHelper.owner.editor.mergeCells();
+                this.documentHelper.owner.editorModule.mergeCells();
                 break;
             case id + CONTEXTMENU_INSERT_ABOVE:
-                this.documentHelper.owner.editor.insertRow(true);
+                this.documentHelper.owner.editorModule.insertRow(true);
                 break;
             case id + CONTEXTMENU_INSERT_BELOW:
-                this.documentHelper.owner.editor.insertRow(false);
+                this.documentHelper.owner.editorModule.insertRow(false);
                 break;
             case id + CONTEXTMENU_INSERT_LEFT:
-                this.documentHelper.owner.editor.insertColumn(true);
+                this.documentHelper.owner.editorModule.insertColumn(true);
                 break;
             case id + CONTEXTMENU_INSERT_RIGHT:
-                this.documentHelper.owner.editor.insertColumn(false);
+                this.documentHelper.owner.editorModule.insertColumn(false);
                 break;
             case id + CONTEXTMENU_COMPLETE_DELETE_TABLE:
-                this.documentHelper.owner.editor.deleteTable();
+                this.documentHelper.owner.editorModule.deleteTable();
                 break;
             case id + CONTEXTMENU_DELETE_ROW:
-                this.documentHelper.owner.editor.deleteRow();
+                this.documentHelper.owner.editorModule.deleteRow();
                 break;
             case id + CONTEXTMENU_DELETE_COLUMN:
-                this.documentHelper.owner.editor.deleteColumn();
+                this.documentHelper.owner.editorModule.deleteColumn();
                 break;
             case id + CONTEXTMENU_CONTINUE_NUMBERING:
                 this.documentHelper.owner.editorModule.applyContinueNumbering();
@@ -548,18 +548,18 @@ export class ContextMenu {
                 this.documentHelper.owner.editorModule.applyRestartNumbering(this.documentHelper.selection);
                 break;
             case id + CONTEXTMENU_AUTO_FIT_TO_CONTENTS:
-                this.documentHelper.owner.editor.autoFitTable('FitToContents');
+                this.documentHelper.owner.editorModule.autoFitTable('FitToContents');
                 break;
             case id + CONTEXTMENU_AUTO_FIT_TO_WINDOW:
-                this.documentHelper.owner.editor.autoFitTable('FitToWindow');
+                this.documentHelper.owner.editorModule.autoFitTable('FitToWindow');
                 break;
             case id + CONTEXTMENU_FIXED_COLUMN_WIDTH:
-                this.documentHelper.owner.editor.autoFitTable('FixedColumnWidth');
+                this.documentHelper.owner.editorModule.autoFitTable('FixedColumnWidth');
                 break;
             case id + CONTEXTMENU_SPELLING_DIALOG:
                 let contextInfo: ContextElementInfo = this.spellChecker.retriveText();
                 this.currentContextInfo = null;
-                this.documentHelper.owner.spellCheckDialog.show(contextInfo.text, contextInfo.element);
+                this.documentHelper.owner.spellCheckDialogModule.show(contextInfo.text, contextInfo.element);
                 break;
             case id + CONTEXTMENU_ACCEPT_CHANGES:
                 this.documentHelper.selection.handleAcceptReject(true);
@@ -900,7 +900,7 @@ export class ContextMenu {
         if(!Browser.isIE){
             let getDialogBox: boolean = JSON.parse(localStorage.getItem("ej_de_hidePasteAlert"));
             if (getDialogBox) {
-                let enablePaste: boolean = (owner.enableLocalPaste && !isNullOrUndefined(owner.editor.copiedData));
+                let enablePaste: boolean = (owner.enableLocalPaste && !isNullOrUndefined(owner.editorModule.copiedData));
                 classList(paste, enablePaste ? [] : ['e-disabled'], enablePaste ? ['e-disabled'] : []);
             }
         }
@@ -911,7 +911,7 @@ export class ContextMenu {
             let start: TextPosition = selection.start;
             let end: TextPosition = selection.end;
             if (selection.contextType === 'List'
-                && owner.selection.getListLevel(start.paragraph).listLevelPattern !== 'Bullet') {
+                && owner.selectionModule.getListLevel(start.paragraph).listLevelPattern !== 'Bullet') {
                 continueNumbering.style.display = 'block';
                 restartAt.style.display = 'block';
                 (restartAt.nextSibling as HTMLElement).style.display = 'block';
@@ -954,14 +954,14 @@ export class ContextMenu {
                 updateField.style.display = 'block';
             }
         }
-        if (this.documentHelper.owner.selection.start.paragraph.isInsideTable
-            && this.documentHelper.owner.selection.end.paragraph.isInsideTable) {
+        if (this.documentHelper.owner.selectionModule.start.paragraph.isInsideTable
+            && this.documentHelper.owner.selectionModule.end.paragraph.isInsideTable) {
             if (owner.tablePropertiesDialogModule) {
                 tableProperties.style.display = 'block';
             }
             insertTable.style.display = 'block';
             deleteTable.style.display = 'block';
-            if (this.documentHelper.owner.editor.canMergeCells()) {
+            if (this.documentHelper.owner.editorModule.canMergeCells()) {
                 mergeCells.style.display = 'block';
             }
             autoFitTable.style.display = this.documentHelper.selection.isTableSelected() ? 'block' : 'none';

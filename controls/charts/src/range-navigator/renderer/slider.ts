@@ -83,7 +83,7 @@ export class RangeSlider {
                 x: range.bounds.x, y: range.bounds.y,
                 width: range.bounds.width / 3,
                 height: range.bounds.height
-            }
+            }, 0, 0, '', style.thumb.border.dashArray
         );
         this.leftUnSelectedElement = renderer.drawRectangle(option) as Element;
         option.id = this.elementId + '_rightUnSelectedArea';
@@ -130,7 +130,7 @@ export class RangeSlider {
         let shadowElement: Element;
         parent.appendChild(render.drawPath(new PathOption(
             id + '_ThumpLine', 'transparent',
-            thump.border.width, control.series.length ? lineColor : 'transparent', 1, null,
+            thump.border.width, control.series.length ? lineColor : 'transparent', 1, thump.border.dashArray,
             'M' + ' ' + (x) + ' ' + (bounds.y) + ' ' + 'L' + ' ' + (x) + ' ' + (bounds.y + bounds.height) + ' '
         )));
         this.thumpY = y - (control.themeStyle.thumbHeight / 2);
@@ -170,7 +170,7 @@ export class RangeSlider {
                     width: control.themeStyle.thumbWidth,
                     height: control.themeStyle.thumbHeight
                 },
-                2, 2
+                2, 2, '', thump.border.dashArray
             )) as Element);
         }
         if (this.thumbVisible) {

@@ -1032,5 +1032,4 @@ describe('ShowHide module testing', () => {
             destroy(gridObj);
         });
     });
-
 });

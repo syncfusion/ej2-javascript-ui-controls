@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-## 24.2.9 (2024-03-06)
+## 25.1.35 (2024-03-15)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- The smoothness and performance of table cell resizing have improved.
+
+- Improved the image resize function to keep the aspect ratio when resizing.
+
+- When Quick Toolbar is active, press <kbd>Alt + F10</kbd> to focus on Quick Toolbar items.
+
+- `#I51118` - Now, the pasted content with the picture element will have proper source values.
+
+- `#I555698` - Now, the customized text is shown properly in the `numberFormatList` icon's tooltip in the Rich Text Editor.
+
+- `#I561056` - Now, the font color is applied properly to the hyperlink text when clicking the `fontcolor` icon in Rich Text Editor.
+
+## 24.2.9 (2024-03-05)
 
 ### RichTextEditor
 

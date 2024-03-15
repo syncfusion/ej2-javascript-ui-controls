@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 24.2.9 (2024-03-06)
+## 25.1.35 (2024-03-15)
+
+### DocumentEditor
+
+#### Features
+
+- `#I560979` - Added the server action settings API for spellcheck by page.
+- `#F139237`, `#I225881`, `#I238529`, `F147966`, `#I251329`, `#I255850`, `#I269572`, `F156967`, `#I294592`, `#I308077`, `#I285839`, `#I312842`, `#I315455`, `#I325461`, `#I326378`, `F169367`, `#I345520`, `#I348003`, `#I357490`, `#I357833`, `#I357923`, `#I361570`, `#I361614`, `#I364681`, `#I369799`, `#I369893`, `#I370223`, `#I371589`, `#I391523` - Added support for collaborative editing. With this feature you can draft and edit Word documents together with multiple users at the same time.
+- `#I304171`, `#I269478`, `#419821`, `#I500679` - Added support for heading navigation support.
+- `#I317930`, `#I318103`, `#I343750`, `#349393`, `#F164868` - Added change case functionality allows users to quickly change the capitalization of the selected text.
+- Document Editor now supports saving the document as a Word Template (DOTX).
+- `#I458609`, `#I355736`, `#I257172`, `#I348514`, `#F165825` - Add support to customize color picker in Document Editor.
+- `#I264509`, `#I280374`, `#I291521`, `#I327285`, `#F166016`, `#F176988` - Added mention support for comments.
+
+## 24.2.9 (2024-03-05)
 
 ### DocumentEditor
 

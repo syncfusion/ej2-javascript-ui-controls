@@ -76,7 +76,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
         let startColumn: number = 0;
         let endColumn: number = 0;
         let cellWidths: number = 0;
-        const availableWidth: number = pointToPixel(this.currentGraphics.clientSize.width) - this.currentBounds.x;
+        const availableWidth: number = (this.treegrid['taskbar'].isAutoFit()) ? pointToPixel(this.currentGraphics.clientSize.width) - this.currentBounds.x : this.currentGraphics.clientSize.width - this.currentBounds.x;
         for (let i: number = 0; i < this.treegrid.columns.count; i++) {
             cellWidths += this.treegrid.columns.getColumn(i).width;
             if (cellWidths >= availableWidth) {

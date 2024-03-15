@@ -1,9 +1,9 @@
-import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexFromId, getSheetNameFromAddress, ColumnModel } from '../index';
-import { getSingleSelectedRange, getCell, getSheetIndex, NumberFormatArgs, checkFormulaRef, ValidationModel } from '../index';
-import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, clearFormulaDependentCells, formulaInValidation } from '../common/index';
+import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexFromId, ColumnModel } from '../index';
+import { getSingleSelectedRange, getCell, getSheetIndex, NumberFormatArgs, checkFormulaRef, parseFormulaArgument } from '../index';
+import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, clearFormulaDependentCells, formulaInValidation, ValidationModel, LocaleNumericSettings } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getNumericObject } from '@syncfusion/ej2-base';
 import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, checkIsFormula, removeUniquecol, checkUniqueRange } from '../common/index';
 import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference, refreshInsertDelete, getUpdatedFormulaOnInsertDelete } from '../common/index';
 import { getUniqueRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula, getSwapRange } from '../common/index';
@@ -16,21 +16,21 @@ import { getUniqueRange, DefineName, selectionComplete, DefinedNameEventArgs, ge
 export class WorkbookFormula {
     private parent: Workbook;
     private calcID: number;
-    public uniqueOBracket: string = String.fromCharCode(129);
-    public uniqueCBracket: string = String.fromCharCode(130);
-    public uniqueCSeparator: string = String.fromCharCode(131);
-    public uniqueCOperator: string = String.fromCharCode(132);
-    public uniquePOperator: string = String.fromCharCode(133);
-    public uniqueSOperator: string = String.fromCharCode(134);
-    public uniqueMOperator: string = String.fromCharCode(135);
-    public uniqueDOperator: string = String.fromCharCode(136);
-    public uniqueModOperator: string = String.fromCharCode(137);
-    public uniqueConcateOperator: string = String.fromCharCode(138);
-    public uniqueEqualOperator: string = String.fromCharCode(139);
-    public uniqueExpOperator: string = String.fromCharCode(140);
-    public uniqueGTOperator: string = String.fromCharCode(141);
-    public uniqueLTOperator: string = String.fromCharCode(142);
-    public calculateInstance: Calculate;
+    private uniqueOBracket: string = String.fromCharCode(129);
+    private uniqueCBracket: string = String.fromCharCode(130);
+    private uniqueCSeparator: string = String.fromCharCode(131);
+    private uniqueCOperator: string = String.fromCharCode(132);
+    private uniquePOperator: string = String.fromCharCode(133);
+    private uniqueSOperator: string = String.fromCharCode(134);
+    private uniqueMOperator: string = String.fromCharCode(135);
+    private uniqueDOperator: string = String.fromCharCode(136);
+    private uniqueModOperator: string = String.fromCharCode(137);
+    private uniqueConcateOperator: string = String.fromCharCode(138);
+    private uniqueEqualOperator: string = String.fromCharCode(139);
+    private uniqueExpOperator: string = String.fromCharCode(140);
+    private uniqueGTOperator: string = String.fromCharCode(141);
+    private uniqueLTOperator: string = String.fromCharCode(142);
+    private calculateInstance: Calculate;
     private sheetInfo: { visibleName: string, sheet: string, index: number }[] = [];
     /**
      * Constructor for formula module in Workbook.
@@ -63,7 +63,7 @@ export class WorkbookFormula {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.parent as any).refreshing) {
             this.clearAllUniqueFormulaValue();
-            let formulaCollect: Map<string, IFormulaColl> = this.calculateInstance.getLibraryFormulas();
+            const formulaCollect: Map<string, IFormulaColl> = this.calculateInstance.getLibraryFormulas();
             formulaCollect.forEach((value: IFormulaColl, key: string) => {
                 if (value.isCustom) {
                     this.parent.customFormulaCollection.set(key, { handler: value.handler, description: value.description });
@@ -72,6 +72,7 @@ export class WorkbookFormula {
         }
         this.calculateInstance.dispose();
         this.calculateInstance = null;
+        if (this.sheetInfo) { this.sheetInfo = []; }
         this.parent = null;
     }
 
@@ -85,6 +86,7 @@ export class WorkbookFormula {
         this.parent.on(refreshInsertDelete, this.refreshInsertDelete, this);
         this.parent.on(getUpdatedFormulaOnInsertDelete, this.getUpdatedFormulaOnInsertDelete, this);
         this.parent.on(checkFormulaRef, this.autoCorrectCellRef, this);
+        this.parent.on(parseFormulaArgument, this.parseFormulaArgument, this);
     }
 
     private removeEventListener(): void {
@@ -97,7 +99,8 @@ export class WorkbookFormula {
             this.parent.off(formulaInValidation, this.formulaInValidation);
             this.parent.off(refreshInsertDelete, this.refreshInsertDelete);
             this.parent.off(getUpdatedFormulaOnInsertDelete, this.getUpdatedFormulaOnInsertDelete);
-            this.parent.on(checkFormulaRef, this.autoCorrectCellRef, this);
+            this.parent.off(checkFormulaRef, this.autoCorrectCellRef);
+            this.parent.off(parseFormulaArgument, this.parseFormulaArgument);
         }
     }
 
@@ -116,6 +119,11 @@ export class WorkbookFormula {
         this.calcID = this.calculateInstance.createSheetFamilyID();
         this.calculateInstance.setTreatEmptyStringAsZero(true);
         this.calculateInstance.grid = this.parent.getActiveSheet().id.toString();
+        this.calculateInstance.setParseArgumentSeparator(this.parent.listSeparator);
+        const decimalSeparator: string = (getNumericObject(this.parent.locale) as LocaleNumericSettings).decimal;
+        if (decimalSeparator !== '.' && this.parent.listSeparator !== decimalSeparator) {
+            this.calculateInstance.setParseDecimalSeparator(decimalSeparator);
+        }
     }
 
     private clearFormulaDependentCells(args: { cellRef?: string, isOpen?: boolean }): void {
@@ -176,6 +184,7 @@ export class WorkbookFormula {
         case 'registerSheet':
             this.registerSheet(<number>args.sheetIndex, <number>args.sheetCount);
             if (args.isImport) {
+                this.calculateInstance.setParseArgumentSeparator(this.parent.listSeparator);
                 this.updateSheetInfo();
             }
             break;
@@ -200,8 +209,8 @@ export class WorkbookFormula {
             this.refreshRandomFormula();
             this.calculateInstance.cell = '';
             break;
-        case 'getArgumentSeparator':
-            args.argumentSeparator = this.calculateInstance.getParseArgumentSeparator();
+        case 'setArgumentSeparator':
+            this.calculateInstance.setParseArgumentSeparator(this.parent.listSeparator);
             break;
         case 'addDefinedName':
             args.isAdded = this.addDefinedName(<DefineNameModel>args.definedName, false, <number>args.index, <boolean>args.isEventTrigger);
@@ -576,7 +585,7 @@ export class WorkbookFormula {
                         cellRef = cellRefArr[idx as number].split(':')[0];
                         if (cellRef.includes('!')) {
                             refArr = cellRef.split('!');
-                            sheetName = refArr[0];
+                            sheetName = refArr[0].split('\'').join('');
                             cellRef = refArr[1];
                         } else {
                             sheetName = '';
@@ -760,7 +769,8 @@ export class WorkbookFormula {
             }
             if (leftParens > -1) {
                 const formulaArgs: string = args.formula.substring(leftParens + 1, rightParens);
-                const formulaArgsArr: string[] = formulaArgs.split(',');
+                const listSeparator: string = this.calculateInstance.getParseArgumentSeparator();
+                const formulaArgsArr: string[] = formulaArgs.split(listSeparator);
                 let isInValidRef: boolean;
                 for (let argsIdx: number = 0; argsIdx < formulaArgsArr.length; argsIdx++) {
                     refCorrectObj = this.correctCellReference(formulaArgsArr[argsIdx as number]);
@@ -770,7 +780,7 @@ export class WorkbookFormula {
                     }
                 }
                 if (isInValidRef) {
-                    args.formula = args.formula.split(formulaArgs).join(formulaArgsArr.join(','));
+                    args.formula = args.formula.split(formulaArgs).join(formulaArgsArr.join(listSeparator));
                     args.isInvalid = true;
                 }
             }
@@ -1020,13 +1030,21 @@ export class WorkbookFormula {
             this.clearUniqueRange(row, col, formulaSheet || args.sheet);
         }
         const getAddress: () => string = (): string => {
-            return index[0] === index[2] && index[1] === index[3] ? getCellAddress(index[0], index[1]) : getRangeAddress(index);
+            let range: string = (isAbsoluteRef ? '$' : '') + getColumnHeaderText(index[1] + 1) + (isAbsoluteRef ? '$' : '') + (index[0] + 1)
+            if (index[0] !== index[2] || index[1] !== index[3]) {
+                range += ':' + (isAbsoluteRef ? '$' : '') + getColumnHeaderText(index[3] + 1) + (isAbsoluteRef ? '$' : '') + (index[2] + 1);
+            }
+            return range;
         };
-        const formulaArr: string[] = this.parseFormula(this.parseSheetRef(cell.formula, true), true);
+        const formulaArr: string[] = this.parseFormulaArgument({ formula: this.parseSheetRef(cell.formula, true), rangeRef: true });
         const sheetInfo: { visibleName: string, sheet: string }[] = this.getSheetInfo();
-        let sheetName: string; let refChanged: boolean;
+        let sheetName: string; let refChanged: boolean; let isAbsoluteRef: boolean;
         for (let i: number = 0; i < formulaArr.length; i++) {
-            ref = formulaArr[i as number].trim().replace(/[$]/g, '');
+            ref = formulaArr[i as number].trim();
+            isAbsoluteRef = ref.includes('$');
+            if (isAbsoluteRef) {
+                ref = ref.replace(/[$]/g, '');
+            }
             isValidCellReference = true;
             if (this.calculateInstance.isCellReference(ref)) {
                 isRangeFormula = ref.includes(':');
@@ -1106,15 +1124,16 @@ export class WorkbookFormula {
         }
     }
 
-    private parseFormula(formula: string, rangeRef?: boolean): string[] {
+    private parseFormulaArgument(args: { formula: string, rangeRef?: boolean, formulaArr?: string[] }): string[] {
         let temp: string;
         let str: string | number;
         let i: number = 0;
         const arr: string[] = [];
-        let formulaVal: string[] | string = [];
-        formulaVal = this.markSpecialChar(formula.replace('=', ''), rangeRef);
-        formulaVal = rangeRef ? formulaVal.split(/\(|\)|=|\^|>|<|,|\+|-|\*|\/|%|&/g) :
-            formulaVal.split(/\(|\)|=|\^|>|<|,|:|\+|-|\*|\/|%|&/g);
+        let formulaVal: string[] | string = this.markSpecialChar(args.formula.replace('=', ''), args.rangeRef);
+        const regExp: RegExpConstructor = RegExp;
+        const validCharRegx: RegExp = new regExp(args.rangeRef ? /\(|\)|=|\^|>|<|\+|-|\*|\/|%|&/g : /\(|\)|=|\^|>|<|:|\+|-|\*|\/|%|&/g);
+        const sepRegx: RegExp = new regExp(this.parent.listSeparator, 'g');
+        formulaVal = formulaVal.split(new regExp(validCharRegx.source + '|' + sepRegx.source, 'g'));
         const len: number = formulaVal.length;
         while (i < len) {
             temp = formulaVal[i as number];
@@ -1143,6 +1162,7 @@ export class WorkbookFormula {
             }
             i++;
         }
+        args.formulaArr = arr;
         return arr;
     }
 
@@ -1153,7 +1173,7 @@ export class WorkbookFormula {
         case this.uniqueCBracket:
             return ')';
         case this.uniqueCSeparator:
-            return ',';
+            return this.parent.listSeparator;
         case this.uniqueCOperator:
             return ':';
         case this.uniquePOperator:
@@ -1187,10 +1207,12 @@ export class WorkbookFormula {
 
     private markSpecialChar(formula: string, rangeRef?: boolean): string {
         formula = formula.replace(/\(/g, '(' + this.uniqueOBracket).replace(/\)/g, ')' + this.uniqueCBracket);
+        const regEx: RegExpConstructor = RegExp;
         if (rangeRef) {
-            formula = formula.replace(/,/g, ',' + this.uniqueCSeparator);
+            formula = formula.replace(new regEx(this.parent.listSeparator, 'g'), this.parent.listSeparator + this.uniqueCSeparator);
         } else {
-            formula = formula.replace(/,/g, ',' + this.uniqueCSeparator).replace(/:/g, ':' + this.uniqueCOperator);
+            formula = formula.replace(new regEx(this.parent.listSeparator, 'g'), this.parent.listSeparator + this.uniqueCSeparator).replace(
+                /:/g, `:${this.uniqueCOperator}`);
         }
         formula = formula.replace(/\+/g, '+' + this.uniquePOperator).replace(/-/g, '-' + this.uniqueSOperator);
         formula = formula.replace(/\*/g, '*' + this.uniqueMOperator).replace(/\//g, '/' + this.uniqueDOperator);

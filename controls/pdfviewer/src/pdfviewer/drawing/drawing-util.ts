@@ -152,7 +152,7 @@ export function cloneObject(obj: any, additionalProp?: Function | string, key?: 
                                 additionalProp, property);
                         } else if (obj[`${property}`] instanceof Array === false && obj[`${property}`] instanceof HTMLElement) {
                             newObject[`${property}`] = obj[`${property}`].cloneNode(true).innerHtml;
-                        } else if (obj[`${property}`] instanceof Array === false && obj[`${property}`] instanceof Object) {
+                        } else if (obj[`${property}`] instanceof Array === false && obj[`${property}`] instanceof Object && property !== 'template') {
                             newObject[`${property}`] = cloneObject(
                                 (internalProp.indexOf(property) === -1 && obj[`${key}`]) ? obj[`${key}`][`${property}`] : obj[`${property}`]);
                         } else {

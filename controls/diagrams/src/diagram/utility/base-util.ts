@@ -34,7 +34,7 @@ export function randomId(): string {
     let id: string = '';
     let num: number;
     for (let i: number = 0; i < 5; i++) {
-        if ('crypto' in window && 'getRandomValues' in crypto) {
+        if (typeof window !== 'undefined' && 'crypto' in window && 'getRandomValues' in crypto) {
             const count: Uint16Array = new Uint16Array(1);
             // tslint:disable-next-line:no-any
             const intCrypto: any = (window as any).msCrypto || window.crypto;
@@ -471,19 +471,18 @@ export function extendArray(sourceArray: Object[], childArray: Object[]): Object
 export function textAlignToString(value: TextAlign): string {
     let state: string = '';
     switch (value) {
-        case 'Center':
-            state = 'center';
-            break;
-        case 'Left':
-            state = 'left';
-            break;
-        case 'Right':
-            state = 'right';
-            break;
-        case 'Justify':
-            state = 'justify';
-            break;
-            
+    case 'Center':
+        state = 'center';
+        break;
+    case 'Left':
+        state = 'left';
+        break;
+    case 'Right':
+        state = 'right';
+        break;
+    case 'Justify':
+        state = 'justify';
+        break;
     }
     return state;
 }

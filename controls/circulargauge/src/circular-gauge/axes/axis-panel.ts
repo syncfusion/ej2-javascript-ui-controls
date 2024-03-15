@@ -841,5 +841,11 @@ export class AxisLayoutPanel {
             this.pointerRenderer.destroy();
         }
         this.pointerRenderer = null;
+        this.axisOption = null;
+        this.prevAnimatedMajorTickValue = null;
+        this.prevAnimatedMajorTickIndex = null;
+        this.prevAnimatedMinorTickIndex = null;
+        this.prevAnimatedMinorTickValue = null;
+        this.allowAxisCount = null;
     }
 }

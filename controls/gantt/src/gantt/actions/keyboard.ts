@@ -48,7 +48,7 @@ export class FocusModule {
         const targetElement: Element = this.parent.focusModule.getActiveElement();
         if (e.action === 'home' || e.action === 'end' || e.action === 'downArrow' || e.action === 'upArrow' || e.action === 'delete' ||
             e.action === 'rightArrow' || e.action === 'leftArrow' || e.action === 'focusTask' || e.action === 'focusSearch' ||
-            e.action === 'expandAll' || e.action === 'collapseAll') {
+            e.action === 'expandAll' || e.action === 'collapseAll' || e.action === 'undo' || e.action === 'redo') {
             if (!isNullOrUndefined(ganttObj.editModule) && !isNullOrUndefined(ganttObj.editModule.cellEditModule) &&
                 ganttObj.editModule.cellEditModule.isCellEdit === true) {
                 return;
@@ -251,6 +251,20 @@ export class FocusModule {
             this.setActiveElement(e.target as HTMLElement);
             contextMenu.open(top, left);
             e.preventDefault();
+            break;
+        }
+        case 'undo': 
+        {
+            if(this.parent.undoRedoModule && this.parent.undoRedoModule['getUndoCollection'].length > 0) {
+                this.parent.undo();
+            }
+            break;
+        }
+        case 'redo': 
+        {
+            if(this.parent.undoRedoModule && this.parent.undoRedoModule['getRedoCollection'].length > 0) {
+                this.parent.redo();
+            }
             break;
         }
         default:

@@ -1,4 +1,4 @@
-import { PdfGanttCellStyle } from './../../base/interface';
+import { PdfGanttCellStyle, PdfGanttFontStyle } from './../../base/interface';
 import { PdfTreeGrid } from '../pdf-treegrid';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfPaddings } from './index';
@@ -54,7 +54,10 @@ export class PdfTreeGridCell {
     public isRowMergeStart: boolean;
     /** @private */
     public isHeaderCell: boolean;
-
+    /** @private */
+    public image: PdfImage;
+    /** @private */
+    public fontStyle: PdfGanttFontStyle;
     constructor(row?: PdfTreeGridRow) {
         if (isNullOrUndefined(row)) {
             this.rowSpan = 1;
@@ -242,7 +245,43 @@ export class PdfTreeGridCell {
             }
         }
         innerLayoutArea = this.adjustContentLayoutArea(innerLayoutArea);
-        if (typeof this.value === 'string' || typeof this.remainingString === 'string') {
+        if (this.image && this.value) {
+            let imageBounds: any;
+            if (this.image.width <= innerLayoutArea.width) {
+                imageBounds = new RectangleF(innerLayoutArea.x, innerLayoutArea.y, this.image.width, this.image.height);
+            }
+            else {
+                imageBounds = innerLayoutArea;
+            }
+            graphics.drawImage(this.image, imageBounds.x, imageBounds.y - 10, imageBounds.width, imageBounds.height);
+            let temp: string = null;
+            // font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
+            let customisedFont: PdfFont;
+            let newFont = new PdfStandardFont(this.fontStyle.fontFamily, this.fontStyle.fontSize, this.fontStyle.fontStyle);
+            if (this.fontStyle.fontSize || this.fontStyle.fontFamily) {
+                customisedFont = newFont;
+            }
+            else {
+                customisedFont = font;
+            }
+            let customisedBrush: PdfBrush;
+            if (this.fontStyle.fontBrush) {
+                customisedBrush = new PdfSolidBrush(this.fontStyle.fontBrush);
+            }
+            else {
+                customisedBrush = textBrush;
+            }
+            if (this.finishedDrawingCell) {
+                temp = (this.remainingString === '') ? this.remainingString : this.value as string;
+                /* eslint-disable-next-line */
+                graphics.drawString(temp, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment) + this.image.width, this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
+            } else {
+                /* eslint-disable-next-line */
+                graphics.drawString(this.remainingString, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, this.style.format);
+            }
+            result = graphics.stringLayoutResult;
+        }
+        else if (typeof this.value === 'string' || typeof this.remainingString === 'string') {
             let temp: string = null;
             if (this.finishedDrawingCell) {
                 temp = (this.remainingString === '') ? this.remainingString : this.value as string;

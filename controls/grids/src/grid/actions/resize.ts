@@ -48,7 +48,7 @@ export class Resize implements IAction {
     //Module declarations
     private parent: IGrid;
     private widthService: ColumnWidthService;
-
+    private isCancelAutoFit: boolean = false;
     /**
      * Constructor for the Grid resize module
      *
@@ -68,16 +68,18 @@ export class Resize implements IAction {
      * Resize by field names.
      *
      * @param  {string|string[]} fName - Defines the field name.
+     * @param  {number} startRowIndex - Specifies the start row index.
+     * @param  {number} endRowIndex - Specifies the end row index.
      * @returns {void}
      */
-    public autoFitColumns(fName?: string | string[]): void {
+    public autoFitColumns(fName?: string | string[], startRowIndex?: number, endRowIndex?: number): void {
         const columnName: string[] = (fName === undefined || fName === null || fName.length <= 0) ?
             this.parent.getColumns().map((x: Column) => x.field) : (typeof fName === 'string') ? [fName] : fName;
         this.parent.isAutoFitColumns = true;
         if (this.parent.enableAdaptiveUI) {
             this.parent.element.classList.add('e-grid-autofit');
         }
-        this.findColumn(columnName);
+        this.findColumn(columnName, startRowIndex, endRowIndex);
     }
 
     private autoFit(): void {
@@ -91,7 +93,19 @@ export class Resize implements IAction {
         }
     }
 
-    private resizeColumn(fName: string, index: number, id?: string): void {
+    private getCellElementsByColumnIndex(columnIndex: number): HTMLTableCellElement[] {
+        if (this.parent.frozenRows) {
+            return [].slice.call(this.parent.getHeaderTable().querySelectorAll(
+                `td.e-rowcell:nth-child(${columnIndex + 1}):not(.e-groupcaption):not(.e-detailcell)`)).concat(
+                [].slice.call(this.parent.getContentTable().querySelectorAll(
+                    `td.e-rowcell:nth-child(${columnIndex + 1}):not(.e-groupcaption):not(.e-detailcell)`)));
+        } else {
+            return [].slice.call(this.parent.getContentTable().querySelectorAll(
+                `td.e-rowcell:nth-child(${columnIndex + 1}):not(.e-groupcaption):not(.e-detailcell)`));
+        }
+    }
+
+    private resizeColumn(fName: string, index: number, id?: string, startRowIndex?: number, endRowIndex?: number): void {
         const gObj: IGrid = this.parent;
         let tWidth: number = 0;
         const headerTable: Element = gObj.getHeaderTable();
@@ -104,8 +118,7 @@ export class Resize implements IAction {
         const uid: string = id ? id : this.parent.getUidByColumnField(fName);
         const columnIndex: number = this.parent.getNormalizedColumnIndex(uid);
         const headerTextClone: Element = (<HTMLElement>headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
-        const contentTextClone: NodeListOf<Element> = contentTable.querySelectorAll(
-            `td.e-rowcell:nth-child(${columnIndex + 1}):not(.e-groupcaption):not(.e-detailcell)`);
+        const contentTextClone: HTMLTableCellElement[] = this.getCellElementsByColumnIndex(columnIndex);
         let footerTextClone: NodeListOf<Element>;
         const columnIndexByField: number = this.parent.getColumnIndexByField(fName);
         if (!isNullOrUndefined(gObj.getFooterContent())) {
@@ -140,7 +153,7 @@ export class Resize implements IAction {
         let wFooter: number = null;
         let wContent: number = null;
         if (gObj.getCurrentViewRecords().length) {
-            wContent = this.createTable(contentTable, contentText, contentDivTag);
+            wContent = this.createTable(contentTable, contentText, contentDivTag, startRowIndex, endRowIndex);
         }
         if (footerText.length) {
             wFooter = this.createTable(footerTable, footerText, footerDivTag);
@@ -221,13 +234,13 @@ export class Resize implements IAction {
         return 'resize';
     }
 
-    private findColumn(fName: string[]): void {
+    private findColumn(fName: string[], startRowIndex?: number, endRowIndex?: number): void {
         for (let i: number = 0; i < fName.length; i++) {
             const fieldName: string = fName[parseInt(i.toString(), 10)] as string;
             const columnIndex: number = this.parent.getColumnIndexByField(fieldName);
             const column: Column = this.parent.getColumns()[parseInt(columnIndex.toString(), 10)];
             if (columnIndex > -1 && !isNullOrUndefined(column) && column.visible === true) {
-                this.resizeColumn(fieldName, columnIndex);
+                this.resizeColumn(fieldName, columnIndex, null, startRowIndex, endRowIndex);
             }
         }
         if (this.parent.allowTextWrap) {
@@ -244,10 +257,18 @@ export class Resize implements IAction {
      * @param {Element} table - specifies the table
      * @param {Element[]} text - specifies the text
      * @param {string} tag - specifies the tag name
+     * @param  {number} startRowIndex - Specifies the start row index.
+     * @param  {number} endRowIndex - Specifies the end row index.
      * @returns {number} returns the number
      * @hidden
      */
-    protected createTable(table: Element, text: Element[], tag: string): number {
+    protected createTable(table: Element, text: Element[], tag: string,
+                         startRowIndex: number = 1, endRowIndex: number = text.length): number {
+        if (startRowIndex > endRowIndex) {
+            startRowIndex ^= endRowIndex;
+            endRowIndex ^= startRowIndex;
+            startRowIndex ^= endRowIndex;
+        }
         const myTableDiv: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
         const adaptiveClass: string = this.parent.enableAdaptiveUI ? ' e-bigger' : '';
         myTableDiv.className = this.parent.element.className + adaptiveClass;
@@ -259,10 +280,10 @@ export class Resize implements IAction {
         myTable.classList.add('e-resizetable');
         myTable.style.cssText = 'table-layout: auto;width: auto';
         const myTr: HTMLTableRowElement = this.parent.createElement('tr') as HTMLTableRowElement;
-        for (let i: number = 0; i < text.length; i++) {
+        for (let i: number = (startRowIndex <= 0 ? 1 : startRowIndex); i <= (endRowIndex > text.length ? text.length : endRowIndex); i++) {
             const tr: HTMLTableRowElement = myTr.cloneNode() as HTMLTableRowElement;
             tr.className = table.querySelector('tr').className;
-            tr.appendChild(text[parseInt(i.toString(), 10)]);
+            tr.appendChild(text[parseInt((i - 1).toString(), 10)]);
             myTable.appendChild(tr);
         }
         mySubDiv.appendChild(myTable);
@@ -348,7 +369,7 @@ export class Resize implements IAction {
     }
 
     private callAutoFit(e: PointerEvent | TouchEvent): void {
-        if ((e.target as HTMLElement).classList.contains('e-rhandler')) {
+        if ((e.target as HTMLElement).classList.contains('e-rhandler') && !this.isCancelAutoFit) {
             const col: Column = this.getTargetColumn(e);
             if (col.columns) {
                 return;
@@ -376,58 +397,62 @@ export class Resize implements IAction {
 
     private resizeStart(e: PointerEvent | TouchEvent): void {
         if ((e.target as HTMLElement).classList.contains('e-rhandler')) {
-            if (!this.helper) {
-                if (this.getScrollBarWidth() === 0) {
-                    this.resizeProcess = true;
-                    if (this.parent.allowGrouping) {
-                        for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
-                            this.widthService.setColumnWidth(new Column({ width: '30px' }), i);
-                        }
-                    }
-                    for (const col of this.refreshColumnWidth()) {
-                        this.widthService.setColumnWidth(col);
-                    }
-                    this.widthService.setWidthToTable();
-                    this.resizeProcess = false;
+            this.isCancelAutoFit = false;
+            const args: ResizeArgs = { e : e, column: this.getTargetColumn(e) };
+            this.parent.trigger(events.resizeStart, args, (args: ResizeArgs) => {
+                if (args.cancel || this.parent.isEdit) {
+                    this.cancelResizeAction();
+                    this.isCancelAutoFit = true;
+                    return;
                 }
-                this.refreshStackedColumnWidth();
-                this.element = e.target as HTMLElement;
-                this.parentElementWidth = this.parent.element.getBoundingClientRect().width;
-                this.appendHelper();
-                this.column = this.getTargetColumn(e);
-                this.pageX = this.getPointX(e);
-                if (this.column.getFreezeTableName() === literals.frozenRight) {
-                    if (this.parent.enableRtl) {
+            });
+            if (!this.isCancelAutoFit) {
+                if (!this.helper) {
+                    if (this.getScrollBarWidth() === 0) {
+                        this.resizeProcess = true;
+                        if (this.parent.allowGrouping) {
+                            for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
+                                this.widthService.setColumnWidth(new Column({ width: '30px' }), i);
+                            }
+                        }
+                        for (const col of this.refreshColumnWidth()) {
+                            this.widthService.setColumnWidth(col);
+                        }
+                        this.widthService.setWidthToTable();
+                        this.resizeProcess = false;
+                    }
+                    this.refreshStackedColumnWidth();
+                    this.element = e.target as HTMLElement;
+                    this.parentElementWidth = this.parent.element.getBoundingClientRect().width;
+                    this.appendHelper();
+                    this.column = this.getTargetColumn(e);
+                    this.pageX = this.getPointX(e);
+                    if (this.column.getFreezeTableName() === literals.frozenRight) {
+                        if (this.parent.enableRtl) {
+                            this.minMove = (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0)
+                                - parseFloat(isNullOrUndefined(this.column.width) ? '' : this.column.width.toString());
+                        } else {
+                            this.minMove = parseFloat(isNullOrUndefined(this.column.width) ? '' : this.column.width.toString())
+                                - (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0);
+                        }
+                    } else if (this.parent.enableRtl) {
+                        this.minMove = parseFloat(this.column.width.toString())
+                            - (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0);
+                    } else {
                         this.minMove = (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0)
                             - parseFloat(isNullOrUndefined(this.column.width) ? '' : this.column.width.toString());
-                    } else {
-                        this.minMove = parseFloat(isNullOrUndefined(this.column.width) ? '' : this.column.width.toString())
-                            - (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0);
                     }
-                } else if (this.parent.enableRtl) {
-                    this.minMove = parseFloat(this.column.width.toString())
-                        - (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0);
-                } else {
-                    this.minMove = (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0)
-                        - parseFloat(isNullOrUndefined(this.column.width) ? '' : this.column.width.toString());
+                    this.minMove += this.pageX;
                 }
-                this.minMove += this.pageX;
-            }
-            if (Browser.isDevice && !this.helper.classList.contains(resizeClassList.icon)) {
-                this.helper.classList.add(resizeClassList.icon);
-                EventHandler.add(document, Browser.touchStartEvent, this.removeHelper, this);
-                EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
-            } else {
-                const args: ResizeArgs = { e : e, column: this.column };
-                this.parent.trigger(events.resizeStart, args, (args: ResizeArgs) => {
-                    if (args.cancel || this.parent.isEdit) {
-                        this.cancelResizeAction();
-                        return;
-                    }
+                if (Browser.isDevice && !this.helper.classList.contains(resizeClassList.icon)) {
+                    this.helper.classList.add(resizeClassList.icon);
+                    EventHandler.add(document, Browser.touchStartEvent, this.removeHelper, this);
+                    EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
+                } else {
                     EventHandler.add(document, Browser.touchEndEvent, this.resizeEnd, this);
                     EventHandler.add(this.parent.element, Browser.touchMoveEvent, this.resizing, this);
                     this.updateCursor('add');
-                });
+                }
             }
         }
     }
@@ -438,11 +463,13 @@ export class Resize implements IAction {
             EventHandler.remove(document, Browser.touchEndEvent, this.resizeEnd);
             this.updateCursor('remove');
         }
-        if (Browser.isDevice) {
+        if (Browser.isDevice  && !isNullOrUndefined(this.helper)) {
             EventHandler.remove(document, Browser.touchStartEvent, this.removeHelper);
             EventHandler.remove(this.helper, Browser.touchStartEvent, this.resizeStart);
         }
-        detach(this.helper);
+        if (!isNullOrUndefined(this.helper)) {
+            detach(this.helper);
+        }
         this.refresh();
     }
 
@@ -521,10 +548,25 @@ export class Resize implements IAction {
                         }
                     }
                 }
-                applyStickyLeftRightPosition(node, width + translateX, this.parent.enableRtl, 'Right');
+                let colSpanwidth: number = 0;
+                if (node.colSpan > 1) {
+                    colSpanwidth = this.calculateColspanWidth(cols, node, column.index);
+
+                }
+                applyStickyLeftRightPosition(node, (width - colSpanwidth) + translateX, this.parent.enableRtl, 'Right');
             }
         }
     }
+
+    private calculateColspanWidth(cols: Column[], node: HTMLTableCellElement, index: number): number {
+        let width: number = 0;
+        for (let j: number = index + 1; j < index + node.colSpan; j++) {
+            width += parseInt(cols[parseInt(j.toString(), 10)].width.toString(), 10);
+        }
+        return width;
+    }
+
+    
 
     private refreshResizePosition(): void {
         this.refreshResizefrzCols(true);
@@ -577,7 +619,11 @@ export class Resize implements IAction {
                     elements = [].slice.call(this.parent.getContent().querySelectorAll('td[data-colindex="' + i + '"]'));
                 }
                 elements.filter((cell: HTMLTableCellElement) => {
-                    applyStickyLeftRightPosition(cell, width + translateX, this.parent.enableRtl, 'Right');
+                    let colSpanwidth: number = 0;
+                    if (cell.colSpan > 1) {
+                        colSpanwidth = this.calculateColspanWidth(columns, cell, columns[parseInt(i.toString(), 10)].index);
+                    }
+                    applyStickyLeftRightPosition(cell, (width - colSpanwidth) + translateX, this.parent.enableRtl, 'Right');
                 });
                 if (this.parent.enableColumnVirtualization) {
                     (<{ valueX?: number }>columns[parseInt(i.toString(), 10)]).valueX = width;
@@ -672,7 +718,7 @@ export class Resize implements IAction {
                             }
                             applyStickyLeftRightPosition(node, width - translateX, this.parent.enableRtl, 'Left');
                             if (this.parent.enableColumnVirtualization) {
-                                (<{ valueX?: number }>column).valueX = width
+                                (<{ valueX?: number }>column).valueX = width;
                             }
                         } else {
                             for (let k: number = 0; k < cols.length; k++) {
@@ -691,7 +737,7 @@ export class Resize implements IAction {
                             }
                             applyStickyLeftRightPosition(node, width - translateX, this.parent.enableRtl, 'Left');
                             if (this.parent.enableColumnVirtualization) {
-                                (<{ valueX?: number }>column).valueX = width
+                                (<{ valueX?: number }>column).valueX = width;
                             }
                         }
                     }
@@ -759,7 +805,7 @@ export class Resize implements IAction {
                         }
                         applyStickyLeftRightPosition(node, width + translateX, this.parent.enableRtl, 'Right');
                         if (this.parent.enableColumnVirtualization) {
-                            (<{ valueX?: number }>column).valueX = width
+                            (<{ valueX?: number }>column).valueX = width;
                         }
                     }
                 }

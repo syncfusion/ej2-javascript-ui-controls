@@ -252,6 +252,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     protected preventChange: boolean = false;
     protected maskedDateValue: string = '';
     protected moduleName: string = this.getModuleName();
+    protected clearButton: HTMLElement;
     /**
      * Gets or sets the width of the TimePicker component. The width of the popup is based on the width of the component.
      *
@@ -918,6 +919,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     // destroy function
     public destroy(): void {
         this.hide();
+        if (this.showClearButton) {
+            this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
+        }
         this.unBindEvents();
         const ariaAttribute: object = {
             'aria-autocomplete': 'list', 'tabindex': '0',
@@ -950,6 +954,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (!isNullOrUndefined(this.rippleFn)) {
             this.rippleFn();
         }
+        Input.destroy({
+            element: this.inputElement,
+            floatLabelType: this.floatLabelType,
+            properties: this.properties
+        }, this.clearButton);
         super.destroy();
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);

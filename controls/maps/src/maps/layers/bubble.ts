@@ -231,10 +231,10 @@ export class Bubble {
     private getbubble(target: string): any {
         const id: string[] = target.split('_LayerIndex_');
         const index: number = parseInt(id[1].split('_')[0], 10);
-        const layer: LayerSettings = <LayerSettings>this.maps.layers[index as number];
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let data: any;
         if (target.indexOf('_BubbleIndex_') > -1) {
+            const layer: LayerSettings = <LayerSettings>this.maps.layers[index as number];
             const bubbleIndex: number = parseInt(id[1].split('_BubbleIndex_')[1], 10);
             const dataIndex: number = parseInt(id[1].split('_BubbleIndex_')[1].split('_dataIndex_')[1], 10);
             if (!isNaN(bubbleIndex as number)) {
@@ -285,7 +285,6 @@ export class Bubble {
      */
     public destroy(): void {
         this.bubbleCollection = [];
-        //TODO: Calling the below code throws spec issue.
-        //this.maps = null;
+        this.maps = null;
     }
 }

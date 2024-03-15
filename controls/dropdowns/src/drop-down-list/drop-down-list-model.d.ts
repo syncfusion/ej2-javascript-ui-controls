@@ -163,6 +163,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * Gets or sets the display text of the selected item in the component.
      *
      * @default null
+     * @aspType string
      */
     text?: string | null;
 
@@ -172,7 +173,14 @@ export interface DropDownListModel extends DropDownBaseModel{
      * @default null
      * @isGenericType true
      */
-    value?: number | string | boolean | null;
+    value?: number | string | boolean | object | null;
+
+    /**
+    * Defines whether the object binding is allowed or not in the component.
+    *
+    * @default false
+    */
+    allowObjectBinding?: boolean; 
 
     /**
      * Gets or sets the index of the selected item in the component.
@@ -182,6 +190,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * {% codeBlock src="dropdownlist/index-api/index.html" %}{% endcodeBlock %}
      *
      * @default null
+     * @aspType double
      */
     index?: number | null;
 

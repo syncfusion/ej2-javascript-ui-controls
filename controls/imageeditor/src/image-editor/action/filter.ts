@@ -1,6 +1,6 @@
 import { ImageEditor, ImageFinetuneOption, CurrentObject, SelectionPoint, Point, ActivePoint, Adjustment, FinetuneSettingsModel } from '../index';
-import { isNullOrUndefined, extend, isBlazor } from '@syncfusion/ej2-base';
-import { FinetuneEventArgs, FrameValue, ImageFilterEventArgs, ImageFilterOption } from '../base';
+import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { FrameValue } from '../base';
 
 export class Filter {
     private parent: ImageEditor;

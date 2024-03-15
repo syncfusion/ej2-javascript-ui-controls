@@ -264,7 +264,7 @@ export class DateProcessor {
                 this.calculateDuration(ganttData);
             }
             if (!isNullOrUndefined(ganttProp.duration)) {
-                const duration: number = !isNullOrUndefined(ganttProp.segments) && ganttProp.segments.length > 0 ?
+                const duration: number = !isNullOrUndefined(ganttProp.segments) && ganttProp.segments.length > 1 ?
                     this.totalDuration(ganttProp.segments) : ganttProp.duration;
                 tempEndDate = this.getEndDate(ganttProp.startDate, duration, ganttProp.durationUnit, ganttProp, false);
             }

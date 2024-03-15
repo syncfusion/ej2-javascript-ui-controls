@@ -267,6 +267,7 @@ describe('- Drill Through', () => {
                 enableVirtualization: true,
                 showGroupingBar: true,
                 dataBound: dataBound,
+                virtualScrollSettings: { allowSinglePage: false }
             });
             pivotGridObj.appendTo('#PivotGrid');
         });

@@ -228,5 +228,25 @@ describe('Image ->', () => {
                 });
             });
         });
+        describe('EJ2-871603 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{}, {}] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Script error occurs while deleting an image after inserting multiple images', (done: Function) => {
+                helper.invoke('insertImage', [[{ src: "https://www.w3schools.com/images/w3schools_green.jpg", width: 110, height: 70 }], 'A1']);
+                helper.invoke('insertImage', [[{ src: "https://www.w3schools.com/images/w3schools_green.jpg", width: 110, height: 70 }], 'A1']);
+                helper.invoke('insertImage', [[{ src: "https://www.w3schools.com/images/w3schools_green.jpg", width: 110, height: 70 }], 'A1']);
+                const imageArr: ImageModel[] = helper.getInstance().sheets[0].rows[0].cells[0].image;
+                expect(imageArr.length).toBe(3);
+                const imageId: string = imageArr[2].id;
+                helper.invoke('deleteImage', [imageId]);
+                expect(imageArr.length).toBe(2);
+                expect(helper.getElementFromSpreadsheet('#' + imageId)).toBeNull();
+                done();
+            });
+        });
     });
 });

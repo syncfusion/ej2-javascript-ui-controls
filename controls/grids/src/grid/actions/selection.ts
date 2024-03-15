@@ -7,7 +7,7 @@ import {
     BeforeAutoFillEventArgs, RowDeselectingEventArgs
 } from '../base/interface';
 import { SelectionSettings } from '../base/grid';
-import { setCssInGridPopUp, getPosition, isGroupAdaptive, addRemoveActiveClasses, removeAddCboxClasses } from '../base/util';
+import { setCssInGridPopUp, getPosition, isGroupAdaptive, addRemoveActiveClasses, removeAddCboxClasses, getCellFromRow } from '../base/util';
 import { getCellsByTableName, parentsUntil, getScrollBarWidth } from '../base/util';
 import * as events from '../base/constant';
 import { RenderType, CheckState } from '../base/enum';
@@ -238,6 +238,7 @@ export class Selection implements IAction {
         if (!gridElement || (!gridElement.querySelector('.' + literals.gridHeader) && !gridElement.querySelector('.' + literals.gridContent))) { return; }
         this.hidePopUp();
         this.clearSelection();
+        this.destroyAutoFillElements();
         this.removeEventListener();
         this.unWireEvents();
         EventHandler.remove(this.parent.getContent(), 'mousedown', this.mouseDownHandler);
@@ -247,7 +248,7 @@ export class Selection implements IAction {
     private isEditing(): boolean {
         return (this.parent.editSettings.mode === 'Normal' || (this.parent.editSettings.mode === 'Batch' && this.parent.editModule &&
             this.parent.editModule.formObj && !this.parent.editModule.formObj.validate())) &&
-            this.parent.isEdit && !this.parent.isPersistSelection;
+            (this.parent.isEdit && !this.parent.editSettings.showAddNewRow) && !this.parent.isPersistSelection;
     }
 
     public getCurrentBatchRecordChanges(): Object[] {
@@ -994,7 +995,8 @@ export class Selection implements IAction {
     public selectCellsByRange(startIndex: IIndex, endIndex?: IIndex): void {
         if (!this.isCellType()) { return; }
         const gObj: IGrid = this.parent;
-        let selectedCell: Element = gObj.getCellFromIndex(startIndex.rowIndex, startIndex.cellIndex);
+        let selectedCell: Element = this.parent.isSpan ? getCellFromRow(this.parent, startIndex.rowIndex, startIndex.cellIndex) :
+            gObj.getCellFromIndex(startIndex.rowIndex, startIndex.cellIndex);
         let min: number;
         let max: number;
         const stIndex: IIndex = startIndex;
@@ -1033,7 +1035,7 @@ export class Selection implements IAction {
                 }
                 cellIndexes = [];
                 for (let j: number = min < max ? min : max, len: number = min > max ? min : max; j <= len; j++) {
-                    selectedCell = gObj.getCellFromIndex(i, j);
+                    selectedCell = this.parent.isSpan ? getCellFromRow(gObj, i, j) : gObj.getCellFromIndex(i, j);
                     if (!selectedCell) {
                         continue;
                     }
@@ -1403,24 +1405,25 @@ export class Selection implements IAction {
         }
     }
 
-    private updateScrollPosition(e: MouseEvent | TouchEvent, position: IPosition, scrollElem: Element): void {
-        const cliRect: ClientRect = scrollElem.getBoundingClientRect();
-        if (cliRect.left >= position.x - 20) {
+    private updateScrollPosition(mouseEvent: MouseEvent | TouchEvent, position: IPosition, scrollElement: Element): void {
+        const clientRect: ClientRect = scrollElement.getBoundingClientRect();
+        if (clientRect.left >= position.x - 20 -
+            (this.parent.enableRtl && this.parent.height !== 'auto' ? getScrollBarWidth() : 0)) {
             this.timer1 = window.setInterval(
-                () => { this.setScrollPosition(scrollElem.firstElementChild, 'left', e); }, 200);
-        } else if (cliRect.left + scrollElem.clientWidth - 20 -
-            (this.parent.height !== 'auto' ? getScrollBarWidth() : 0) < position.x) {
+                () => { this.setScrollPosition(scrollElement.firstElementChild, this.parent.enableRtl ? 'right' : 'left', mouseEvent); }, 200);
+        } else if (clientRect.left + scrollElement.clientWidth - 20 -
+            (!this.parent.enableRtl && this.parent.height !== 'auto' ? getScrollBarWidth() : 0) < position.x) {
             this.timer1 = window.setInterval(
-                () => { this.setScrollPosition(scrollElem.firstElementChild, 'right', e); }, 200);
+                () => { this.setScrollPosition(scrollElement.firstElementChild, this.parent.enableRtl ? 'left' : 'right', mouseEvent); }, 200);
         }
-        if (cliRect.top >= position.y - (this.parent.getRowHeight() * 0.5)) {
+        if (clientRect.top >= position.y - (this.parent.getRowHeight() * 0.5)) {
             this.timer2 = window.setInterval(
-                () => { this.setScrollPosition(scrollElem.firstElementChild, 'up', e); }, 200);
-        } else if (cliRect.top + scrollElem.clientHeight - (this.parent.getRowHeight() * 0.5) -
-            (scrollElem.firstElementChild.scrollWidth > (scrollElem.firstElementChild as HTMLElement).offsetWidth ?
+                () => { this.setScrollPosition(scrollElement.firstElementChild, 'up', mouseEvent); }, 200);
+        } else if (clientRect.top + scrollElement.clientHeight - (this.parent.getRowHeight() * 0.5) -
+            (scrollElement.firstElementChild.scrollWidth > (scrollElement.firstElementChild as HTMLElement).offsetWidth ?
                 getScrollBarWidth() : 0) <= position.y) {
             this.timer2 = window.setInterval(
-                () => { this.setScrollPosition(scrollElem.firstElementChild, 'down', e); }, 200);
+                () => { this.setScrollPosition(scrollElement.firstElementChild, 'down', mouseEvent); }, 200);
         }
     }
 
@@ -1436,17 +1439,17 @@ export class Selection implements IAction {
         this.preventFocus = false;
     }
 
-    private setScrollPosition(scrollElem: Element, direction: string, e?: MouseEvent | TouchEvent): void {
-        let rowIndex: number = -1; let colIndex: number = -1;
+    private setScrollPosition(scrollElement: Element, direction: string, mouseEvent?: MouseEvent | TouchEvent): void {
+        let rowIndex: number = -1; let columnIndex: number = -1;
         if (this.endAFCell || this.prevECIdxs) {
             rowIndex = this.endAFCell ? parseInt(this.endAFCell.getAttribute('index')) : this.prevECIdxs.rowIndex;
-            colIndex = this.endAFCell ? parseInt(this.endAFCell.getAttribute('data-colindex')) : this.prevECIdxs.cellIndex;
+            columnIndex = this.endAFCell ? parseInt(this.endAFCell.getAttribute('data-colindex')) : this.prevECIdxs.cellIndex;
         }
         switch (direction) {
             case 'up':
-                if (e && closest(e.target as Element, '.e-headercontent'))
+                if (mouseEvent && closest(mouseEvent.target as Element, '.e-headercontent'))
                     return;
-                if (this.isAutoFillSel && this.selectedRowCellIndexes.length &&
+                if (this.isAutoFillSel && this.startAFCell && this.selectedRowCellIndexes.length &&
                     ((this.selectedRowCellIndexes.length === 1 && this.startAFCell !== this.startCell) ||
                         (this.selectedRowCellIndexes.length > 1 && this.startAFCell.getBoundingClientRect().top > 0))) {
                     rowIndex = parseInt(this.startAFCell.getAttribute('index'));
@@ -1454,58 +1457,92 @@ export class Selection implements IAction {
                 rowIndex -= 1;
                 if (this.parent.frozenRows)
                     rowIndex += this.parent.frozenRows + 1;
-                rowIndex < 1 ? scrollElem.scrollTop = 0 : scrollElem.scrollTop -= (this.parent.getRowByIndex(rowIndex) as HTMLElement).offsetHeight;
+                rowIndex < 1 ? scrollElement.scrollTop = 0 : scrollElement.scrollTop -= (this.parent.getRowByIndex(rowIndex) as HTMLElement).offsetHeight;
                 break;
             case 'down':
+                if (this.isAutoFillSel && this.startAFCell && this.startAFCell !== this.startCell) {
+                    rowIndex = parseInt(this.startAFCell.getAttribute('index'));
+                }
                 if (rowIndex < this.parent.getRows().length - 1) {
                     rowIndex += 1;
-                    scrollElem.scrollTop += (this.parent.getRowByIndex(rowIndex) as HTMLElement).offsetHeight;
+                    if (this.isAutoFillSel && this.startAFCell && this.startAFCell !== this.startCell) {
+                        this.startAFCell = this.parent.getCellFromIndex(rowIndex, this.selectedRowCellIndexes[0].cellIndexes[0]);
+                    }
+                    scrollElement.scrollTop += (this.parent.getRowByIndex(rowIndex) as HTMLElement).offsetHeight;
                 } else {
-                    scrollElem.scrollTop = scrollElem.scrollHeight;
+                    scrollElement.scrollTop = scrollElement.scrollHeight;
                 }
                 break;
             case 'left':
-                if (colIndex > 0 && rowIndex > -1) {
-                    if (this.isAutoFillSel && this.selectedRowCellIndexes.length &&
+                if (columnIndex > 0 && rowIndex > -1) {
+                    if (this.isAutoFillSel && this.startAFCell && this.selectedRowCellIndexes.length &&
                         ((this.selectedRowCellIndexes[0].cellIndexes.length > 0 && this.startAFCell !== this.startCell) ||
-                        (this.selectedRowCellIndexes[0].cellIndexes.length > 1 && this.startAFCell.getBoundingClientRect().left > 0))) {
-                        colIndex = parseInt(this.startAFCell.getAttribute('data-colindex'));
+                            (this.selectedRowCellIndexes[0].cellIndexes.length > 1 &&
+                                ((!this.parent.enableRtl && this.startAFCell.getBoundingClientRect().left > 0) ||
+                                    (this.parent.enableRtl && this.startAFCell.getBoundingClientRect().left < this.parent.element.offsetWidth))))) {
+                        columnIndex = parseInt(this.startAFCell.getAttribute('data-colindex'));
                     }
-                    const nextEle: HTMLElement = this.findNextCell(scrollElem, direction, colIndex, rowIndex);
-                    colIndex = nextEle ? parseInt(nextEle.getAttribute('data-colindex')) : -1;
-                    colIndex < 1 ? scrollElem.scrollLeft = 0 : scrollElem.scrollLeft -= nextEle.offsetWidth;
+                    const nextElement: HTMLElement = this.findNextCell(scrollElement, direction, columnIndex, rowIndex);
+                    columnIndex = nextElement ? parseInt(nextElement.getAttribute('data-colindex')) : -1;
+                    if (this.parent.enableRtl && nextElement) {
+                        columnIndex < 1 ? scrollElement.scrollLeft = scrollElement.scrollWidth :
+                            scrollElement.scrollLeft += nextElement.offsetWidth;
+                    } else if (nextElement) {
+                        columnIndex < 1 ? scrollElement.scrollLeft = 0 : scrollElement.scrollLeft -= nextElement.offsetWidth;
+                    }
                 }
                 break;
             case 'right':
-                if (colIndex < this.parent.columns.length - 1) {
-                    const nextEle: HTMLElement = this.findNextCell(scrollElem, direction, colIndex, rowIndex);
-                    colIndex = nextEle ? parseInt(nextEle.getAttribute('data-colindex')) : -1;
-                    colIndex < this.parent.columns.length - 1 ? scrollElem.scrollLeft += nextEle.offsetWidth : scrollElem.scrollLeft = scrollElem.scrollWidth;
+                if (this.isAutoFillSel && this.startAFCell && this.startAFCell !== this.startCell) {
+                    columnIndex = parseInt(this.startAFCell.getAttribute('data-colindex'));
+                }
+                const currentElement: HTMLElement = this.parent.getCellFromIndex(rowIndex, columnIndex) as HTMLElement;
+                const nextElement: HTMLElement = this.findNextCell(scrollElement, direction, columnIndex, rowIndex);
+                if (nextElement && this.isAutoFillSel && this.startAFCell && this.startAFCell !== this.startCell) {
+                    this.startAFCell = this.parent.getCellFromIndex(this.selectedRowCellIndexes[0].rowIndex, parseInt(nextElement.getAttribute('data-colindex')));
+                }
+                columnIndex = nextElement ? parseInt(nextElement.getAttribute('data-colindex')) : -1;
+                if (this.parent.enableRtl && nextElement) {
+                    columnIndex < this.parent.columns.length - 1 ? scrollElement.scrollLeft -= currentElement.offsetWidth :
+                        scrollElement.scrollLeft = -scrollElement.scrollWidth;
+                } else if (nextElement) {
+                    columnIndex < this.parent.columns.length - 1 ? scrollElement.scrollLeft += currentElement.offsetWidth :
+                        scrollElement.scrollLeft = scrollElement.scrollWidth;
+                }
+                if (this.isAutoFillSel && (columnIndex === this.parent.columns.length - 1 || columnIndex === -1) &&
+                    this.startAFCell && this.endAFCell) {
+                    this.positionAFBorders();
+                    scrollElement.scrollLeft = this.parent.enableRtl ? -scrollElement.scrollWidth : scrollElement.scrollWidth
                 }
                 break;
         }
-        if (rowIndex > -1 && colIndex > -1) {
-            let e: any = { target: this.parent.getCellFromIndex(rowIndex, colIndex) };
-            this.endAFCell = e.target;
+        if (rowIndex > -1 && rowIndex < this.parent.getRows().length && columnIndex > -1) {
+            let mouseEvent: any = { target: this.parent.getCellFromIndex(rowIndex, columnIndex) };
+            if (this.isAutoFillSel && mouseEvent.target.classList.contains('e-cellselectionbackground') &&
+                ((direction === 'down' && parseInt(mouseEvent.target.getAttribute('index')) === this.parent.getRows().length - 1) ||
+                    (direction === 'right' && parseInt(mouseEvent.target.getAttribute('data-colindex')) === this.parent.columns.length - 1))) {
+                return;
+            }
+            this.endAFCell = mouseEvent.target;
             this.preventFocus = true;
-            this.selectLikeExcel(e, rowIndex, colIndex);
+            this.selectLikeExcel(mouseEvent, rowIndex, columnIndex);
         }
     }
 
-    private findNextCell(scrollElem: Element, direction: string, colInd: number, rowInd: number): HTMLElement {
-        let nextEle: HTMLElement = this.parent.getCellFromIndex(rowInd, direction === 'left' ? colInd - 1 : colInd + 1) as HTMLElement;
-        if (nextEle && nextEle.classList.contains('e-hide')) {
-            const siblingEles: NodeListOf<Element> = nextEle.closest('tr').querySelectorAll('.e-rowcell:not(.e-hide)');
-            const nextEleInd: number = Array.from(siblingEles).indexOf(nextEle.nextElementSibling);
+    private findNextCell(scrollElement: Element, direction: string, columnIndex: number, rowIndex: number): HTMLElement {
+        let nextElement: HTMLElement = this.parent.getCellFromIndex(rowIndex, direction === 'left' ? columnIndex - 1 : columnIndex + 1) as HTMLElement;
+        if (nextElement && nextElement.classList.contains('e-hide')) {
+            const siblingEles: NodeListOf<Element> = nextElement.closest('tr').querySelectorAll('.e-rowcell:not(.e-hide)');
+            const nextEleInd: number = Array.from(siblingEles).indexOf(nextElement.nextElementSibling);
             if (nextEleInd > 0 && nextEleInd < siblingEles.length - 1) {
-                nextEle = (siblingEles[nextEleInd + (direction === 'left' ? -1 : 1)] as HTMLElement);
-                return nextEle;
+                nextElement = (siblingEles[nextEleInd + (direction === 'left' ? -1 : 1)] as HTMLElement);
+                return nextElement;
             } else {
-                scrollElem.scrollLeft = 0;
+                scrollElement.scrollLeft = 0;
                 return null;
             }
         }
-        return nextEle;
+        return nextElement;
     }
 
     private selectLikeExcel(e: MouseEvent, rowIndex: number, cellIndex: number): void {
@@ -2002,14 +2039,19 @@ export class Selection implements IAction {
             this.bdrAFLeft.style.right = parentRect.right - endOff.right - 2 + endOff.width + 'px';
 
             this.bdrAFLeft.style.width = totalWidth <= parseInt(this.bdrAFLeft.style.right, 10) ? '0px' : '2px';
-            this.bdrAFRight.style.right = parentRect.right - stOff.right - firstCellLeft + scrolloffSet - 1 + 'px';
-
+            const borderAFRightValue: number = parentRect.right - stOff.right - firstCellLeft + scrolloffSet - 1;
+            borderAFRightValue > 0 ? this.bdrAFRight.style.right = borderAFRightValue + 'px' : this.bdrAFRight.style.right = '0px';
             this.bdrAFTop.style.left = endOff.left - parentRect.left - 0.5 + 'px';
             this.bdrAFTop.style.width = parseInt(this.bdrAFLeft.style.right, 10) - parseInt(this.bdrAFRight.style.right, 10)
                 - firstCellLeft + 1 + 'px';
             if (parseInt(this.bdrAFTop.style.left, 10) < 0) {
                 this.bdrAFTop.style.width = parseInt(this.bdrAFTop.style.width, 10) + parseInt(this.bdrAFTop.style.left, 10) + 'px';
-                this.bdrAFTop.style.left = '0px';
+                if (this.parent.height !== 'auto' && getScrollBarWidth()) {
+                    this.bdrAFTop.style.left = getScrollBarWidth() + 'px';
+                    this.bdrAFTop.style.width = (parseInt(this.bdrAFTop.style.width, 10) - getScrollBarWidth()) + 'px';
+                } else {
+                    this.bdrAFTop.style.left = '0px';
+                }
             }
         }
 
@@ -2043,6 +2085,20 @@ export class Selection implements IAction {
                 createElement('div', { className: 'e-xlselaf', id: this.parent.element.id + '_bdrafbottom', styles: 'height: 2px;' }));
             this.bdrAFTop = this.parent.element.appendChild(
                 createElement('div', { className: 'e-xlselaf', id: this.parent.element.id + '_bdraftop', styles: 'height: 2px;' }));
+        }
+    }
+
+    public destroyAutoFillElements(): void {
+        if (this.bdrAFLeft) {
+            this.bdrAFLeft.remove();
+            this.bdrAFRight.remove();
+            this.bdrAFBottom.remove();
+            this.bdrAFTop.remove();
+            this.bdrAFLeft = this.bdrAFRight = this.bdrAFBottom = this.bdrAFTop = null;
+        }
+        if (this.autofill) {
+            this.autofill.remove();
+            this.autofill = null;
         }
     }
 
@@ -2241,19 +2297,21 @@ export class Selection implements IAction {
             const lastCell: Element = parentsUntil(e.target as Element, literals.rowCell);
             this.endAFCell = lastCell ? lastCell : this.endCell === this.endAFCell ? this.startAFCell : this.endAFCell;
             this.startAFCell = this.startCell;
-            this.updateStartCellsIndex();
-            this.selectLikeAutoFill(e, true);
-            this.updateAutoFillPosition();
-            this.hideAFBorders();
-            this.positionBorders();
-            if (this.parent.isFrozenGrid()) {
-                this.showHideBorders('none', true);
-                this.refreshFrozenBorders();
+            if (!isNullOrUndefined(this.endAFCell) && !isNullOrUndefined(this.startAFCell)) {
+                this.updateStartCellsIndex();
+                this.selectLikeAutoFill(e, true);
+                this.updateAutoFillPosition();
+                this.hideAFBorders();
+                this.positionBorders();
+                if (this.parent.isFrozenGrid()) {
+                    this.showHideBorders('none', true);
+                    this.refreshFrozenBorders();
+                }
+                if (this.parent.aggregates.length > 0) {
+                    this.parent.notify(events.refreshFooterRenderer, {});
+                }
             }
             this.isAutoFillSel = false;
-            if (this.parent.aggregates.length > 0) {
-                this.parent.notify(events.refreshFooterRenderer, {});
-            }
             this.preventFocus = false;
         }
         EventHandler.remove(this.parent.getContent(), 'mousemove', this.mouseMoveHandler);
@@ -2456,6 +2514,7 @@ export class Selection implements IAction {
             { event: events.contentReady, handler: this.initialEnd },
             { event: events.rowsRemoved, handler: this.rowsRemoved },
             { event: events.headerRefreshed, handler: this.refreshHeader },
+            { event: events.destroyAutoFillElements, handler: this.destroyAutoFillElements },
             { event: events.destroy, handler: this.destroy }];
         addRemoveEventListener(this.parent, this.evtHandlers, true, this);
         this.actionBeginFunction = this.actionBegin.bind(this);
@@ -2478,6 +2537,7 @@ export class Selection implements IAction {
         this.parent.removeEventListener(events.actionBegin, this.actionBeginFunction);
         this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunction);
         this.removeEventListener_checkbox();
+        this.parent.off(events.destroyAutoFillElements, this.destroyAutoFillElements);
     }
 
     private wireEvents(): void {
@@ -3025,8 +3085,8 @@ export class Selection implements IAction {
         } else {
             rIndex = parseInt(target.parentElement.getAttribute(literals.dataRowIndex), 10);
         }
-        if (this.parent.isPersistSelection && this.parent.element.getElementsByClassName(literals.addedRow).length > 0 &&
-            this.parent.editSettings.newRowPosition === 'Top') {
+        if (this.parent.isPersistSelection  && this.parent.element.getElementsByClassName(literals.addedRow).length > 0 &&
+            this.parent.editSettings.newRowPosition === 'Top' && !this.parent.editSettings.showAddNewRow) {
             ++rIndex;
         }
         this.rowCellSelectionHandler(rIndex, parseInt(target.getAttribute(literals.dataColIndex), 10));
@@ -3304,6 +3364,9 @@ export class Selection implements IAction {
     private clickHandler(e: MouseEvent): void {
         let target: HTMLElement = e.target as HTMLElement;
         this.actualTarget = target;
+        if (!this.isAutoFillSel && !e.ctrlKey && !e.shiftKey) {
+            this.startAFCell = this.endAFCell = null;
+        }
         if (this.selectionSettings.persistSelection) {
             this.deSelectedData = iterateExtend(this.persistSelectedData);
         }
@@ -3367,7 +3430,8 @@ export class Selection implements IAction {
                 } else {
                     rIndex = parseInt(target.parentElement.getAttribute(literals.dataRowIndex), 10);
                 }
-                if (this.parent.isPersistSelection && this.parent.element.getElementsByClassName(literals.addedRow).length > 0) {
+                if (this.parent.isPersistSelection && !this.parent.editSettings.showAddNewRow
+                    && this.parent.element.getElementsByClassName(literals.addedRow).length > 0) {
                     ++rIndex;
                 }
                 if (!this.mUPTarget || !this.mUPTarget.isEqualNode(target)) {
@@ -3499,9 +3563,13 @@ export class Selection implements IAction {
         }
         if (this.parent.frozenRows) {
             if (e.container.isHeader && (e.element.tagName === 'TD' || closest(e.element, '.' + literals.rowCell))) {
-                const thLen: number = this.parent.getHeaderTable().querySelector('thead').childElementCount;
-                rowIndex -= thLen;
-                prev.rowIndex = !isNullOrUndefined(prev.rowIndex) ? prev.rowIndex - thLen : null;
+                let hdrLength: number = this.parent.getHeaderTable().querySelector('thead').childElementCount;
+                if (this.parent.editSettings.showAddNewRow && this.parent.editSettings.newRowPosition === 'Top' &&
+                    e.keyArgs.action === 'upArrow') {
+                        hdrLength++;
+                }
+                rowIndex -= hdrLength;
+                prev.rowIndex = !isNullOrUndefined(prev.rowIndex) ? prev.rowIndex - hdrLength : null;
             } else {
                 rowIndex += this.parent.frozenRows;
                 prev.rowIndex = prev.rowIndex === 0 || !isNullOrUndefined(prev.rowIndex) ? prev.rowIndex + this.parent.frozenRows : null;
@@ -3513,6 +3581,10 @@ export class Selection implements IAction {
         if ((headerAction || (['ctrlPlusA', 'escape'].indexOf(e.keyArgs.action) === -1 &&
             e.keyArgs.action !== 'space' && rowIndex === prev.rowIndex && cellIndex === prev.cellIndex)) &&
             !this.selectionSettings.allowColumnSelection) { return; }
+        if (this.parent.editSettings.showAddNewRow && this.parent.editSettings.newRowPosition === 'Top' &&
+            (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) && e.keyArgs.action === 'downArrow') {
+            rowIndex--;
+        }
         this.preventFocus = true;
         const columnIndex: number = this.getKeyColIndex(e);
         if (this.needColumnSelection) {
@@ -4078,8 +4150,17 @@ export class Selection implements IAction {
                     && this.parent.editSettings.mode === 'Normal'
                     && !isNullOrUndefined(rows[parseInt(j.toString(), 10)].querySelector('tr').childNodes[parseInt(startIndex.toString(), 10)])) {
                     addRemoveActiveClasses([rows[parseInt(j.toString(), 10)].querySelector('tr').childNodes[parseInt(startIndex.toString(), 10)] as Element], true, 'e-columnselection');
-                } else if (!isNullOrUndefined(rows[parseInt(j.toString(), 10)].childNodes[parseInt(startIndex.toString(), 10)])) {
-                    addRemoveActiveClasses([rows[parseInt(j.toString(), 10)].childNodes[parseInt(startIndex.toString(), 10)] as Element], true, 'e-columnselection');
+                } else {
+                    if (this.parent.isSpan && this.parent.isFrozenGrid()) {
+                        const cells: NodeListOf<Element> = rows[parseInt(j.toString(), 10)].querySelectorAll('.e-rowcell');
+                        for (let i: number = 0; i < cells.length; i++) {
+                            if (cells[parseInt(i.toString(), 10)].getAttribute('aria-colindex') === selectedCol.getAttribute('aria-colindex')) {
+                                addRemoveActiveClasses([cells[parseInt(i.toString(), 10)]], true, 'e-columnselection');
+                            }
+                        }
+                    } else if(!isNullOrUndefined(rows[parseInt(j.toString(), 10)].childNodes[parseInt(startIndex.toString(), 10)])) {
+                        addRemoveActiveClasses([rows[parseInt(j.toString(), 10)].childNodes[parseInt(startIndex.toString(), 10)] as Element], true, 'e-columnselection');
+                    }
                 }
             }
         }

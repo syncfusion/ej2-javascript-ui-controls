@@ -35,7 +35,7 @@ describe('Pivot Grid Toolbar', () => {
                 document.body.appendChild(elem);
             }
             let dataBound: EmitType<Object> = () => { done(); };
-            PivotView.Inject(FieldList, CalculatedField, Toolbar, ConditionalFormatting, PivotChart);
+            PivotView.Inject(FieldList, CalculatedField, Toolbar, ConditionalFormatting, PivotChart, ExcelExport, PDFExport);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
                     dataSource: pivot_dataset as IDataSet[],

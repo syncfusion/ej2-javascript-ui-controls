@@ -169,4 +169,5 @@ export interface ISmithchartThemeStyle {
     labelFontFamily?: string;
     tooltipFillOpacity?: number;
     tooltipTextOpacity?: number;
+    tabColor: string;
 }

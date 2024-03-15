@@ -35,6 +35,7 @@ describe('Localization', () => {
       gridObj = createGrid(
         {
           dataSource: [],
+          childMapping: '',
           toolbar: ['Print','ExpandAll', 'CollapseAll'],
           locale: 'de-DE',
           columns: ['taskID', 'taskName', 'duration', 'progress'],
@@ -51,44 +52,6 @@ describe('Localization', () => {
       destroy(gridObj);
     });
   });
-  
-      describe('EJ2-59730 - Dynamic Localization Update Testing', () => {
-    let gridObj: TreeGrid;
-    const localede = {
-      'de-DE': {
-        'treegrid': {
-          ExpandAll: 'Alle erweitern',
-          CollapseAll: 'Alles einklappen',
-          Print: 'Drucken'
-        }
-      }
-    };
-    beforeAll((done: Function) => {
-      gridObj = createGrid(
-        {
-          dataSource: [],
-          toolbar: ['Print','ExpandAll', 'CollapseAll'],
-          columns: ['taskID', 'taskName', 'duration', 'progress'],
-        },
-        done
-      );
-    });
-    it('set new locale testing', () => {
-      gridObj.locale = 'de-DE';
-      L10n.load(localede);
-      setCulture('de-DE');
-    });
-    it ('test localization change', () => {
-      expect(gridObj.element.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe('Drucken');
-      expect(gridObj.element.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe('Alle erweitern');
-      expect(gridObj.element.querySelectorAll(".e-toolbar-item")[2].getAttribute("title")).toBe('Alles einklappen');
-      gridObj.locale = 'en-US';
-      setCulture('en-US');
-    })
-    afterAll(() => {
-      destroy(gridObj);
-    });
-  });
 
   it('memory leak', () => {
     profile.sample();
@@ -98,5 +61,44 @@ describe('Localization', () => {
     let memory: any = inMB(getMemoryProfile())
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+  });
 });
+
+describe('EJ2-59730 - Dynamic Localization Update Testing', () => {
+  let gridObj: TreeGrid;
+  const localede = {
+    'de-DE': {
+      'treegrid': {
+        ExpandAll: 'Alle erweitern',
+        CollapseAll: 'Alles einklappen',
+        Print: 'Drucken'
+      }
+    }
+  };
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: [],
+        childMapping: '',
+        toolbar: ['Print','ExpandAll', 'CollapseAll'],
+        columns: ['taskID', 'taskName', 'duration', 'progress'],
+      },
+      done
+    );
+  });
+  it('set new locale testing', () => {
+    gridObj.locale = 'de-DE';
+    L10n.load(localede);
+    setCulture('de-DE');
+  });
+  it ('test localization change', () => {
+    expect(gridObj.element.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe('Drucken');
+    expect(gridObj.element.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe('Alle erweitern');
+    expect(gridObj.element.querySelectorAll(".e-toolbar-item")[2].getAttribute("title")).toBe('Alles einklappen');
+    gridObj.locale = 'en-US';
+    setCulture('en-US');
+  })
+  afterAll(() => {
+    destroy(gridObj);
+  });
 });

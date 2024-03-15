@@ -7,7 +7,7 @@ import { MenuEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-nav
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { ContextMenu as Menu, MenuItemModel, ContextMenuModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';
-import { IFieldOptions, IDataOptions, FieldItemInfo } from '../../base/engine';
+import { IFieldOptions, IDataOptions, FieldItemInfo, IAxisSet, PivotEngine } from '../../base/engine';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
@@ -255,8 +255,12 @@ export class AggregateMenu {
         }
         else {
             baseField = (baseField && (baseField.toString() !== 'undefined' && baseField.toString() !== 'null') ? baseField : fieldDataSource[0].value as string);
-            fieldItemDataSource = Object.keys(this.parent.engineModule.fieldList[(baseField.toString() !== 'undefined' ?
-                baseField : fieldDataSource[0].value as string)].formattedMembers);
+            const fieldName: string = baseField.toString() !== 'undefined' ? baseField : fieldDataSource[0].value as string;
+            const isDateField: boolean = PivotUtil.isDateField(fieldName as string, this.parent.engineModule as PivotEngine);
+            fieldItemDataSource = (this.parent.engineModule.fieldList[fieldName as string].dateMember).map((item: IAxisSet) =>
+                isDateField ? item.formattedText :
+                    this.parent.engineModule.getFormattedValue(item.actualText, fieldName).formattedText
+            );
         }
         baseItem = (baseItem.toString() !== 'undefined' ? baseItem : fieldItemDataSource[0]);
         const mainDiv: HTMLElement = createElement('div', {
@@ -343,7 +347,11 @@ export class AggregateMenu {
             enabled: (baseFieldTypes.indexOf(summaryType) !== -1 ? true : false),
             cssClass: cls.VALUE_OPTIONS_CLASS + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%',
             change: (args: ChangeEventArgs) => {
-                fieldItemDataSource = Object.keys(popupInstance.parent.engineModule.fieldList[args.value as string].formattedMembers);
+                const isDateField: boolean = PivotUtil.isDateField(args.value as string, this.parent.engineModule as PivotEngine);
+                fieldItemDataSource = (popupInstance.parent.engineModule.fieldList[args.value as string].dateMember).map((item: IAxisSet) =>
+                    isDateField ?  item.formattedText :
+                        this.parent.engineModule.getFormattedValue(item.actualText, args.value as string).formattedText
+                );
                 optionWrapper3.dataSource = fieldItemDataSource;
                 optionWrapper3.value = fieldItemDataSource[0];
                 optionWrapper3.filterBarPlaceholder = popupInstance.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0];

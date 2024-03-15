@@ -103,7 +103,7 @@ export class Render {
                 this.engine.headerContent = this.frameDataSource('header');
                 this.engine.valueContent = this.frameDataSource('value');
             } else {
-                if (this.parent.enableValueSorting) {
+                if (this.parent.enableValueSorting && this.parent.dataType !== 'olap') {
                     this.engine.valueContent = this.frameDataSource('value');
                 }
                 this.engine.isEngineUpdated = false;
@@ -171,6 +171,7 @@ export class Render {
     private refreshHeader(): void {
         const mCont: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) as HTMLElement;
         if (this.parent.enableVirtualization && !isNullOrUndefined(mCont)) {
+            const virtualTable: HTMLElement = (closest(mCont, '.' + cls.GRID_CONTENT) as HTMLElement).querySelector('.' + cls.VIRTUALTABLE_DIV);
             const mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
             const vtr: HTMLElement = mCont.querySelector('.' + cls.VIRTUALTRACK_DIV) as HTMLElement;
             this.parent.virtualHeaderDiv = mHdr.querySelector('.' + cls.VIRTUALTRACK_DIV) as HTMLElement;
@@ -197,7 +198,8 @@ export class Render {
                         = Number(-freezedCellValue) + 'px';
                 }
             }
-            const ele: HTMLElement = this.parent.isAdaptive ? mCont : mCont.parentElement.parentElement.querySelector('.' + cls.VIRTUALTABLE_DIV);
+            const ele: HTMLElement = this.parent.isAdaptive ? mCont :
+                (virtualTable && (virtualTable.style.display !== 'none')) ? virtualTable : mCont.parentElement;
             mHdr.scrollLeft = ele.scrollLeft;
         }
     }
@@ -966,17 +968,18 @@ export class Render {
     }
 
     private appendValueSortIcon(cell: IAxisSet, tCell: HTMLElement, rCnt: number, cCnt: number, column: Column): HTMLElement {
-        if (this.parent.enableValueSorting && this.parent.dataType === 'pivot') {
-            const vSort: IValueSortSettings = this.parent.dataSourceSettings.valueSortSettings;
+        const engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
+        const vSort: IValueSortSettings = this.parent.dataSourceSettings.valueSortSettings;
+        if (this.parent.enableValueSorting && vSort && vSort.headerText !== '') {
             const len: number = (cell.type === 'grand sum' &&
                 this.parent.dataSourceSettings.values.length === 1 && !this.parent.dataSourceSettings.alwaysShowValueHeader) ? 0 :
                 (this.parent.dataSourceSettings.values.length > 1 || this.parent.dataSourceSettings.alwaysShowValueHeader) ?
-                    (this.parent.engineModule.headerContent.length - 1) :
-                    this.parent.dataSourceSettings.columns.length === 0 ? 0 : (this.parent.engineModule.headerContent.length - 1);
+                    (engine.headerContent.length - 1) :
+                    this.parent.dataSourceSettings.columns.length === 0 ? 0 : (engine.headerContent.length - 1);
             const lock: boolean = (vSort && vSort.headerText) ? cell.valueSort.levelName === vSort.headerText : cCnt === vSort.columnIndex;
             if (vSort !== undefined && lock && (rCnt === len || (rCnt + 1) === len && cell.level > -1 &&
-                this.parent.engineModule.headerContent[(rCnt + 1)][cCnt as number]
-                && this.parent.engineModule.headerContent[(rCnt + 1)][cCnt as number].level === -1)
+                engine.headerContent[(rCnt + 1)][cCnt as number]
+                && engine.headerContent[(rCnt + 1)][cCnt as number].level === -1)
                 && this.parent.dataSourceSettings.valueAxis === 'column') {
                 tCell.querySelector('div div').appendChild(createElement('span', {
                     className: (vSort.sortOrder === 'Descending' ?
@@ -1467,9 +1470,10 @@ export class Render {
                     } else if (cell.type) {
                         tCell.classList.add('e-colstot');
                     }
+                    const engine: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
                     let localizedText: string = cell.type === 'grand sum' ? (isNullOrUndefined(cell.valueSort.axis) || this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('grandTotal') :
                         cell.formattedText) : cell.formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total');
-                    localizedText = isColumnFieldsAvail && this.parent.engineModule.fieldList ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(this.parent.engineModule.fieldList[cell.actualText].aggregateType)
+                    localizedText = isColumnFieldsAvail && engine.fieldList ? this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant(engine.fieldList[cell.actualText].aggregateType)
                         + ' ' + this.parent.localeObj.getConstant('of') + ' ' + cell.formattedText : localizedText;
                     if ((tCell.querySelector('.e-headertext') as HTMLElement) !== null) {
                         (tCell.querySelector('.e-headertext') as HTMLElement).innerText = localizedText;
@@ -1798,9 +1802,10 @@ export class Render {
      */
     public frameStackedHeaders(): ColumnModel[] {
         const pivotColumns: PivotColumn[] = this.parent.pivotColumns;
+        const engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
         const gridColumns: ColumnModel[] = this.parent.grid['columnModel'];
         let autoFitApplied: boolean = false;
-        const refreshColumn: boolean = this.parent.toolbarModule && this.parent.toolbarModule.isReportChange ? true : this.parent.actionObj ? ((this.parent.actionObj.actionName === 'Sort value' && this.parent.engineModule.valueAxis === 1) ||
+        const refreshColumn: boolean = this.parent.toolbarModule && this.parent.toolbarModule.isReportChange ? true : this.parent.actionObj ? ((this.parent.actionObj.actionName === 'Sort value' && engine.valueAxis === 1) ||
             (this.parent.actionObj.actionName === 'Sort field' && this.parent.actionObj.fieldInfo.axis === 'columns') ||
             (this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.actionObj.actionName === 'Sort field' && this.parent.pivotFieldListModule.actionObj.fieldInfo.axis === 'columns')
         ) : false;
@@ -1933,13 +1938,8 @@ export class Render {
         return this.pivotColumns;
     }
 
-    /**
-     * It is used to configure the last column width.
-     *
-     * @param {ColumnModel} column -  It contains the column model.
-     * @returns {void}
-     * @hidden
-     */
+    /** @hidden */
+
     public configLastColumnWidth(column: ColumnModel): void {
         column.minWidth = column.width;
         column.width = 'auto';

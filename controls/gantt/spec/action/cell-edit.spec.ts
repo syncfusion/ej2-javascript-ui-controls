@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * Gantt taskbaredit spec
  */
 import { Gantt, Edit, Toolbar } from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData } from '../base/data-source.spec';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
@@ -1105,6 +1105,7 @@ describe('Work', () => {
                 work: 'EstimatedWork',
                 child: 'subtasks'
             },
+	    taskType:'FixedWork',
             resourceFields: {
                 id: 'resourceId',
                 name: 'resourceName',
@@ -1125,7 +1126,6 @@ describe('Work', () => {
                 { type: 'Resources' },
                 { type: 'Notes' },
             ],
-	    taskType:'FixedWork',
             splitterSettings: {
                 columnIndex: 9
             },
@@ -1389,6 +1389,7 @@ describe('work mapping with tasktype', () => {
                 type: 'taskType',
                 work: 'work'
             },
+	    taskType:'FixedWork',
             splitterSettings: {
                 columnIndex: 8
             },
@@ -1398,7 +1399,6 @@ describe('work mapping with tasktype', () => {
                 allowTaskbarEditing: true,
                 showDeleteConfirmDialog: true
             },
-	    taskType:'FixedWork',
             toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
             columns: [
                 { field: 'TaskID' },
@@ -2482,5 +2482,129 @@ describe('CR:866697-The taskbar render validation not working properly', () => {
         expect(ganttObj.currentViewData[3].ganttProperties.duration).toBe(0.5);
         expect(ganttObj.currentViewData[3].ganttProperties.width).toBe(16.5);
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.endDate, 'MM/dd/yyyy')).toBe('04/02/2019');
+    });
+});
+describe('Checking predecessor update while updating duration', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: virtualData1,
+                treeColumnIndex: 1,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    parentID: 'parentID',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    notes: 'info',
+                },
+                enableVirtualization: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowReordering: true,
+                enableContextMenu: true,
+                columns: [
+                    { field: 'TaskID', headerText: 'ID', textAlign: 'Left' },
+                    { field: 'TaskName', headerText: 'Name' },
+                    { field: 'StartDate', headerText: 'Start Date' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Predecessor', headerText: 'Dependency' },
+                    { field: 'Progress', headerText: 'Progress' },
+                    { field: 'BaselineStartDate', headerText: 'Baseline Start Date' },
+                    { field: 'BaselineEndDate', headerText: 'Baseline End Date' },
+                    { field: 'info', headerText: 'Notes' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                    { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }, 'Indent', 'Outdent', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                highlightWeekends: true,
+                allowFiltering: true,
+                gridLines: 'Both',
+                height: '550px',
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                eventMarkers: [
+                    {
+                        day: '04/10/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                holidays: [{
+                    from: "04/04/2019",
+                    to: "04/05/2019",
+                    label: " Public holidays",
+                    cssClass: "e-custom-holiday"
+
+                },
+                {
+                    from: "04/12/2019",
+                    to: "04/12/2019",
+                    label: " Public holiday",
+                    cssClass: "e-custom-holiday"
+
+                }],
+                allowResizing: true,
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                taskbarHeight: 20,
+                rowHeight: 40,
+                splitterSettings: {
+                    columnIndex: 3
+                },
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('updating duration', () => {
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = '6 days';
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[7].ganttProperties.startDate, 'M/d/yyyy')).toBe(ganttObj.getFormatedDate(ganttObj.currentViewData[8].ganttProperties.startDate, 'M/d/yyyy'));
     });
 });

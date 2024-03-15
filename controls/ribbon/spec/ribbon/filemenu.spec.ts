@@ -127,6 +127,48 @@ describe('Ribbon', () => {
             (ribbon.element.querySelector('.e-ribbon-file-menu') as HTMLButtonElement).click();//open
             (document.querySelector('#fileMenu') as HTMLElement).click();//click to show submenu item
         });
+        it(' visible as false', () => {
+            let files: FileMenuSettingsModel = ({
+                visible: false,
+                text: 'Files',
+                menuItems:[
+                    {
+                        text: 'Files',
+                        id: 'fileMenu',
+                        items: [
+                            { text: 'Open' },
+                            { text: 'Save' },
+                            { text: 'Exit' }
+                        ]
+                    }
+                ]
+            });
+            ribbon = new Ribbon({
+                fileMenu: files,
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                allowedSizes: RibbonItemSize.Large,
+                                buttonSettings: {
+                                    content: 'button1',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }]
+                    }]
+                },]
+            }, ribbonEle);
+            expect(ribbon.element.querySelector('.e-ribbon-file-menu')).toBe(null);
+        });
         it(' fileMenuTarget property and custom header', () => {
             let files: FileMenuSettingsModel = ({
                 text: 'File Menu',
@@ -356,6 +398,10 @@ describe('Ribbon', () => {
                         { text: 'Save' },
                         { text: 'Exit' }
                     ]
+                },
+                {
+                    text: 'Edit',
+                    id: 'itemMenu2',
                 }
             ];
             let count: number = 0;
@@ -424,7 +470,7 @@ describe('Ribbon', () => {
                 },],
 
             }, ribbonEle);
-            expect(count).toBe(1);
+            expect(count).toBe(2);
             expect(isBeforeOpen).toBe(false);
             expect(isSelect).toBe(false);
             (ribbon.element.querySelector('.e-ribbon-file-menu') as HTMLButtonElement).click();
@@ -435,7 +481,7 @@ describe('Ribbon', () => {
             expect(isBeforeClose).toBe(true);
             expect(isClose).toBe(true);
             (ribbon.element.querySelector('.e-ribbon-file-menu') as HTMLButtonElement).click();
-            (document.querySelector('#itemMenu') as HTMLElement).click();
+            (document.querySelector('#itemMenu2') as HTMLElement).click();
             expect(isSelect).toBe(true);
             files = ({
                 text: 'Files',

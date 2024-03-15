@@ -362,18 +362,29 @@ export class PivotChart {
                                 ((firstRowCell.memberType === 3 && prevMemberCell) ?
                                     (fieldPos === this.measurePos ? (prevMemberCell.isDrilled && prevMemberCell.hasChild) : true) :
                                     (firstRowCell.isDrilled && firstRowCell.hasChild)) : true)
-                                : (((firstRowCell.type === 'value' && prevMemberCell) ? !isNullOrUndefined(prevMemberCell.members) &&
-                                    prevMemberCell.members.length > 0 && prevMemberCell.isDrilled :
-                                    firstRowCell.members.length > 0 && firstRowCell.isDrilled) || !measureAllow)) {
+                                : (((firstRowCell.type === 'value' && prevMemberCell) ?
+                                    (!isNullOrUndefined(prevMemberCell.members) && prevMemberCell.hasChild &&
+                                    prevMemberCell.isDrilled) : firstRowCell.hasChild && firstRowCell.isDrilled) ||
+                                    !measureAllow)) {
                                 break;
                             }
                             if (this.parent.dataType === 'olap' && cell.isSum === true && this.parent.dataSourceSettings.valueAxis === 'row') {
                                 continue;
                             }
-                            const colHeaders: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
-                                : cell.columnHeaders.toString().split(delimiter).join(' - ');
-                            const rowHeaders: string = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
-                                : cell.rowHeaders.toString().split(delimiter).join(' - ');
+                            let colHeaders: string = '';
+                            if (this.parent.dataType === 'olap') {
+                                colHeaders = cell.columnHeaders.toString().split(/~~|::/).join(' - ');
+                            } else {
+                                const values: string[] = cell.columnHeaders.toString().split(delimiter);
+                                colHeaders = PivotUtil.formatChartHeaders(values, this, true);
+                            }
+                            let rowHeaders: string = '';
+                            if (this.parent.dataType === 'olap') {
+                                rowHeaders = cell.rowHeaders.toString().split(/~~|::/).join(' - ');
+                            } else {
+                                const values: string[] = cell.rowHeaders.toString().split(delimiter);
+                                rowHeaders = PivotUtil.formatChartHeaders(values, this, false);
+                            }
                             const columnSeries: string = colHeaders + ' | ' + actualText;
                             this.chartSeriesInfo[colHeaders as string] = { uniqueName: colHeaders, caption: cell.hierarchyName && cell.hierarchyName.toString().split(delimiter).join(' - '), colorIndex: [] };
                             this.chartSeriesInfo[this.chartSeriesInfo[colHeaders as string].caption] =
@@ -1268,9 +1279,17 @@ export class PivotChart {
             this.chartSettings.useGroupingSeparator) ? this.parent.dataType === 'olap' ?
                 valueFormat.toString() : (valueFormat as IAxisSet).formattedText :
             formattedText;
-        const text: string | number | Date = (this.parent.pivotValues[rowIndex as number][colIndex as number] as IAxisSet).columnHeaders;
-        const columnText : string = !isNullOrUndefined(text) ? this.parent.dataType === 'olap' ? this.chartSeriesInfo[text.toString().split(/~~|::/).join(' - ')].uniqueName :
-            this.chartSeriesInfo[text.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter).join(' - ')].uniqueName : undefined;
+        let text: string | number | Date = (this.parent.pivotValues[rowIndex as number][colIndex as number] as IAxisSet).columnHeaders;
+        let columnText : string = '';
+        if (isNullOrUndefined(text)) {
+            columnText = undefined;
+        } else if (this.parent.dataType === 'olap') {
+            columnText = this.chartSeriesInfo[text.toString().split(/~~|::/).join(' - ')].uniqueName;
+        } else {
+            const values: string[] = text.toString().split(this.parent.dataSourceSettings.valueSortSettings.headerDelimiter);
+            text = PivotUtil.formatChartHeaders(values, this, true);
+            columnText = this.chartSeriesInfo[text.toString()].uniqueName;
+        }
         /* eslint-disable @typescript-eslint/no-explicit-any */
         const rowText: any = args.point.x;
         if (this.parent.tooltipTemplate && this.parent.getTooltipTemplate() !== undefined || this.chartSettings.tooltip.template) {

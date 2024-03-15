@@ -774,6 +774,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         const enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
         const allowDataCompression: boolean = this.pivotGridModule && this.pivotGridModule.allowDataCompression ?
             this.pivotGridModule.allowDataCompression : false;
+        const enableOptimizedRendering: boolean = this.pivotGridModule && (this.pivotGridModule.enableVirtualization &&
+            this.pivotGridModule.virtualScrollSettings && this.pivotGridModule.virtualScrollSettings.allowSinglePage);
         let customProperties: ICustomProperties | IOlapCustomProperties;
         if (this.dataType === 'olap') {
             customProperties = {
@@ -801,7 +803,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 enablePaging: isPaging,
                 enableVirtualization: isVirtualization,
                 enableHtmlSanitizer: enableHtmlSanitizer,
-                allowDataCompression: allowDataCompression
+                allowDataCompression: allowDataCompression,
+                enableOptimizedRendering: enableOptimizedRendering
             };
         }
         return customProperties;
@@ -850,7 +853,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             enableValueSorting: this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined,
             enableDrillThrough: this.pivotGridModule ?
                 (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
-            locale: JSON.stringify(PivotUtil.getLocalizedObject(this))
+            locale: JSON.stringify(PivotUtil.getLocalizedObject(this)),
+            enableOptimizedRendering: this.pivotGridModule && (this.pivotGridModule.enableVirtualization &&
+                this.pivotGridModule.virtualScrollSettings && this.pivotGridModule.virtualScrollSettings.allowSinglePage)
         };
         this.request.open('POST', this.dataSourceSettings.url, true);
         const params: BeforeServiceInvokeEventArgs = {
@@ -904,33 +909,30 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 if (this.currentAction === 'fetchFieldMembers') {
                     const currentMembers: any = JSON.parse(engine.members);
                     const dateMembers: any = [];
-                    const formattedMembers: any = {};
                     const members: any = {};
                     /* eslint-enable @typescript-eslint/no-explicit-any */
                     this.engineModule.globalize = !isNullOrUndefined(this.globalize) ? this.globalize : new Internationalization();
-                    this.engineModule.formatFields =  this.engineModule.setFormattedFields(this.dataSourceSettings.formatSettings);
-                    let isFormatAvail: boolean = false;
-                    if (this.engineModule.formatFields.hasOwnProperty(engine.memberName)) // eslint-disable-line no-prototype-builtins
-                    {
-                        isFormatAvail = true;
-                    }
-                    const isDateField: boolean = isFormatAvail && (['date', 'dateTime', 'time'].indexOf(this.engineModule.formatFields[engine.memberName as string].type) > -1);
-                    const valuesCollection: any = Object.keys(currentMembers).map((key: string) => currentMembers[key as string]); // eslint-disable-line @typescript-eslint/no-explicit-any
-                    for (let i: number = 0; i < valuesCollection.length; i++) {
-                        const memberName: string = valuesCollection[i as number].Name as string;
-                        const formattedValue: IAxisSet  = isFormatAvail ?
-                            this.engineModule.getFormattedValue(memberName, engine.memberName) : { formattedText: memberName };
+                    this.engineModule.formatFields = this.engineModule.setFormattedFields(this.dataSourceSettings.formatSettings);
+                    const isDateField: boolean = PivotUtil.isDateField(engine.memberName as string, this.engineModule as PivotEngine);
+                    const isNumberType: boolean = this.engineModule.fieldList[engine.memberName].type === 'number';
+                    const keys: string[] = Object.keys(currentMembers);
+                    for (let i: number = 0, j: number = keys.length; i < j; i++) {
+                        const values: any = currentMembers[keys[i as number] as string]; // eslint-disable-line @typescript-eslint/no-explicit-any
+                        const formattedValue: IAxisSet = isDateField ?
+                            this.engineModule.getFormattedValue(values.Name as string, engine.memberName) :
+                            { formattedText: values.Caption };
+                        members[keys[i as number] as string] = {
+                            index: values.Index, ordinal: values.Ordinal,
+                            isDrilled: values.IsDrilled, caption: formattedValue.formattedText
+                        };
                         dateMembers.push({
                             formattedText: formattedValue.formattedText,
-                            actualText: isDateField ? formattedValue.dateText : this.engineModule.fieldList[engine.memberName].type === 'number' ?
-                                (!isNaN(Number(memberName)) ? Number(memberName) : memberName) : memberName
+                            actualText: isDateField ? formattedValue.dateText : isNumberType ?
+                                (!isNaN(Number(values.Name)) ? Number(values.Name) : values.Name) : values.Name
                         });
-                        formattedMembers[formattedValue.formattedText as string] = {};
-                        members[memberName as string] = {};
                     }
-                    this.engineModule.fieldList[engine.memberName].dateMember = dateMembers;
-                    this.engineModule.fieldList[engine.memberName].formattedMembers = formattedMembers;
                     this.engineModule.fieldList[engine.memberName].members = members;
+                    this.engineModule.fieldList[engine.memberName].dateMember = dateMembers;
                     this.pivotButtonModule.updateFilterEvents();
                 } else {
                     const fList: IFieldListOptions = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
@@ -1443,23 +1445,20 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 PivotUtil.updateDataSourceSettings(pivot.pivotGridModule, observedArgs.dataSourceSettings);
             }
             if (isNullOrUndefined(isEngineRefresh)) {
+                const enableValueSorting: boolean = isSorted ? false : pivot.staticPivotGridModule ?
+                    pivot.staticPivotGridModule.enableValueSorting : pivot.enableValueSorting;
+                if (isSorted && pivot.dataSourceSettings.valueSortSettings.headerText !== '') {
+                    if (pivot.pivotGridModule) {
+                        pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
+                    }
+                    pivot.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
+                }
                 if (pivot.dataType === 'pivot') {
                     const customProperties: ICustomProperties = pivot.frameCustomProperties();
-                    if (!isSorted) {
-                        customProperties.enableValueSorting = pivot.staticPivotGridModule ?
-                            pivot.staticPivotGridModule.enableValueSorting : pivot.enableValueSorting;
-                    }
-                    else {
-                        if (pivot.pivotGridModule) {
-                            pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
-                        }
-                        pivot.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
-                        customProperties.enableValueSorting = false;
-                    }
+                    customProperties.enableValueSorting = enableValueSorting;
                     customProperties.savedFieldList = pivot.pivotFieldList;
                     if (pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange) && !pivot.allowDeferLayoutUpdate) {
                         if (isSorted) {
-                            pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
                             if (control.dataSourceSettings.mode === 'Server') {
                                 control.getEngine('onSort', null, pivot.lastSortInfo, null, null, null, null);
                             } else {
@@ -1517,7 +1516,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         pivot.lastFilterInfo = {};
                     }
                 } else {
-                    isOlapDataRefreshed = pivot.updateOlapDataSource(pivot, isSorted, isCalcChange, isOlapDataRefreshed);
+                    /* eslint-disable */
+                    isOlapDataRefreshed = pivot.updateOlapDataSource(pivot, isSorted, isCalcChange, isOlapDataRefreshed, enableValueSorting);
+                    /* eslint-enable */
                 }
                 pivot.getFieldCaption(pivot.dataSourceSettings);
             } else {
@@ -1585,9 +1586,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         }
     }
 
-    private updateOlapDataSource(pivot: PivotFieldList, isSorted: boolean, isCalcChange: boolean, isOlapDataRefreshed: boolean): boolean {
-        const customProperties: IOlapCustomProperties =
-            pivot.frameCustomProperties(pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList);
+    private updateOlapDataSource(
+        pivot: PivotFieldList, isSorted: boolean, isCalcChange: boolean, isOlapDataRefreshed: boolean, enableValueSorting: boolean
+    ): boolean {
+        const customProperties: IOlapCustomProperties = pivot.frameCustomProperties(
+            pivot.olapEngineModule.fieldListData, pivot.olapEngineModule.fieldList
+        );
+        customProperties.enableValueSorting = enableValueSorting;
         customProperties.savedFieldList = pivot.pivotFieldList;
         if (isCalcChange || isSorted) {
             pivot.olapEngineModule.savedFieldList = pivot.pivotFieldList;
@@ -1779,8 +1784,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.engineModule.fieldList = {};
             this.engineModule.rMembers = null;
             this.engineModule.cMembers = null;
-            (this.engineModule as PivotEngine).valueMatrix = null;
-            (this.engineModule as PivotEngine).indexMatrix = null;
+            (this.engineModule as PivotEngine).valueMatrix = [];
             this.engineModule = {} as PivotEngine;
         }
         if (this.olapEngineModule && !this.destroyEngine) {

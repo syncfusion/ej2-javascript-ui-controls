@@ -1362,4 +1362,52 @@ describe('Resize module', () => {
         });
     });
 
+    describe('EJ2-867174 - Implementation the `autoFitColumns()` method feature request for better performance with start and end row Index', () => {
+        let gridObj: Grid;
+        let data1: object[] = [
+            {
+                OrderID: 10248, About: 'Anne', EmployeeID: 5,
+                ShipCity: 'Reims', Freight: 32.38,
+            },
+            {
+                OrderID: 10249, About: 'Anne has a BA degree in English', EmployeeID: 5,
+                ShipCity: 'Reims', Freight: 32.38,
+            },
+            {
+                OrderID: 10250, About: 'Anne has a BA degree in English', EmployeeID: 5,
+                ShipCity: 'Reims', Freight: 32.38,
+            },
+            {
+                OrderID: 10251, About: 'Anne has a BA degree in English from St. Lawrence College.  She is fluent in French and German', EmployeeID: 5,
+                ShipCity: 'Reims', Freight: 32.38,
+            },]
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data1,
+                    height: 410,
+                    allowResizing: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'About', width: 125, minWidth: 10 },
+                        { field: 'ShipCity', headerText: 'Ship Name', width: 300, minWidth: 10 },
+                    ],
+    
+                    pageSettings: { pageCount: 5 }
+                }, done);
+        });
+    
+        it('Grid with autofit 2 columns with start and end row index', () => {
+            gridObj.autoFitColumns(['About', 'ShipCity'], 1, 3);
+        });
+
+        it('Check whether the width for the columns has been properly set with respect to start and end row index', () => {
+            expect(parseInt((gridObj.resizeModule as any).widthService.getWidth(gridObj.getColumns()[1]))).toBeLessThan(589);
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
 });

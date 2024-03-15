@@ -6,7 +6,7 @@ import { Selection } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DropDownList, ChangeEventArgs as DropDownChangeArgs } from '@syncfusion/ej2-dropdowns';
 import { WParagraphFormat } from '../index';
-import { TextAlignment, LineSpacingType } from '../../base/types';
+import { TextAlignment, LineSpacingType, OutlineLevel } from '../../base/types';
 import { RadioButton, ChangeArgs, CheckBox, ChangeEventArgs, ClickEventArgs } from '@syncfusion/ej2-buttons';
 import { DocumentHelper } from '../viewer';
 import { Tab, TabItemModel } from '@syncfusion/ej2-navigations';
@@ -21,6 +21,7 @@ export class ParagraphDialog {
     public documentHelper: DocumentHelper;
     private target: HTMLElement;
     private alignment: DropDownList;
+    private outlineLevel: DropDownList;
     private lineSpacing: DropDownList;
     private special: DropDownList;
     private leftIndentIn: NumericTextBox;
@@ -45,6 +46,7 @@ export class ParagraphDialog {
     private spaceBeforeAuto: boolean = false;
     private spaceAfterAuto: boolean = false;
     private textAlignment: TextAlignment = undefined;
+    private paraOutlineLevel: OutlineLevel = undefined;
     private firstLineIndent: number = undefined;
     private lineSpacingIn: number = undefined;
     private lineSpacingType: LineSpacingType = undefined;
@@ -110,8 +112,24 @@ export class ParagraphDialog {
                 '</option><option value="Justify">' + locale.getConstant('Justify') + '</option>'
         }) as HTMLSelectElement;
 
+        let outlineLevel: HTMLElement = createElement('select', {
+            id: ownerId + '_Outline',
+            innerHTML: '<option value="BodyText">' + locale.getConstant('BodyText') +
+                '</option><option value="Level1">' + locale.getConstant('Level1') +
+                '</option><option value="Level2">' + locale.getConstant('Level2') +
+                '</option><option value="Level3">' + locale.getConstant('Level3') +
+                '</option><option value="Level4">' + locale.getConstant('Level4') +
+                '</option><option value="Level5">' + locale.getConstant('Level5') +
+                '</option><option value="Level6">' + locale.getConstant('Level6') +
+                '</option><option value="Level7">' + locale.getConstant('Level7') +
+                '</option><option value="Level8">' + locale.getConstant('Level8') +
+                '</option><option value="Level9">' + locale.getConstant('Level9') + '</option>'
+        }) as HTMLSelectElement;
+
         alignmentDiv.appendChild(alignment);
         alignmentDiv.setAttribute('aria-labelledby',alignment.innerText);
+        alignmentDiv.appendChild(outlineLevel);
+        alignmentDiv.setAttribute('aria-labelledby',outlineLevel.innerText);
         let dirLabel: HTMLElement = createElement('div', {
             className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Direction')
         });
@@ -284,6 +302,8 @@ export class ParagraphDialog {
         this.lineSpacing.appendTo(lineSpacing);
         this.alignment = new DropDownList({ change: this.changeByTextAlignment, enableRtl: isRtl ,floatLabelType: 'Always', placeholder: locale.getConstant('Alignment'),htmlAttributes:{'aria-labelledby':locale.getConstant('Alignment')}});
         this.alignment.appendTo(alignment);
+        this.outlineLevel= new DropDownList({ change: this.changeByOutlineLevel, enableRtl: isRtl ,floatLabelType: 'Always', placeholder: locale.getConstant('OutlineLevel'),htmlAttributes:{'aria-labelledby':locale.getConstant('OutlineLevel')}});
+        this.outlineLevel.appendTo(outlineLevel);
         this.atIn.appendTo(lineSpacingAt);
         this.contextSpacing = new CheckBox({
             change: this.changeContextualSpacing,
@@ -528,6 +548,14 @@ export class ParagraphDialog {
     }
     /**
      * @private
+     * @param {DropDownChangeArgs} event - Specifies the event args.
+     * @returns {void}
+     */
+    private changeByOutlineLevel = (args: DropDownChangeArgs): void => {
+        this.paraOutlineLevel=args.value as OutlineLevel;
+    }
+    /**
+     * @private
      * @param {ChangeArgs} event - Specifies change event args.
      * @returns {void}
      */
@@ -673,6 +701,13 @@ export class ParagraphDialog {
         }
         const alignValue: number = this.getAlignmentValue(selectionFormat.textAlignment);
         this.alignment.index = alignValue;
+        const outlineValue: number= this.getOutlineValue(selectionFormat.outlineLevel);
+        this.outlineLevel.index=outlineValue;
+        if(this.isHeadingStyle()){
+            this.outlineLevel.readonly=true;
+        }else{
+            this.outlineLevel.readonly=false;
+        }
         if (selectionFormat.spaceBeforeAuto) {
             this.beforeSpacingIn.value = -1;
         }
@@ -760,6 +795,42 @@ export class ParagraphDialog {
         return alignValue;
     }
 
+    private isHeadingStyle(): boolean{
+        let parastyle: string = this.documentHelper.selection.paragraphFormat.styleName;
+        if(parastyle== "Heading 1" || parastyle== "Heading 2" || parastyle== "Heading 3" || parastyle== "Heading 4" || parastyle== "Heading 5" || parastyle== "Heading 6" || parastyle== "Heading 7" || parastyle== "Heading 8" || parastyle== "Heading 9" )
+        {
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    private getOutlineValue(outlineLevel: OutlineLevel): number {
+        let alignValue: number;
+        if (outlineLevel === 'BodyText') {
+            alignValue = 0;
+        } else if (outlineLevel === 'Level1') {
+            alignValue = 1;
+        } else if (outlineLevel === 'Level2') {
+            alignValue = 2;
+        } else if (outlineLevel === 'Level3') {
+            alignValue = 3;
+        } else if (outlineLevel === 'Level4') {
+            alignValue = 4;
+        } else if (outlineLevel === 'Level5') {
+            alignValue = 5;
+        } else if (outlineLevel === 'Level6') {
+            alignValue = 6;
+        } else if (outlineLevel === 'Level7') {
+            alignValue = 7;
+        } else if (outlineLevel === 'Level8') {
+            alignValue = 8;
+        } else {
+            alignValue = 9;
+        }
+        return alignValue;
+    }
+
     /**
      * @private
      * @returns {void}
@@ -805,6 +876,9 @@ export class ParagraphDialog {
                 paraFormat.firstLineIndent = -paraFormat.firstLineIndent;
                 paraFormat.leftIndent = this.leftIndentIn.value + this.byIn.value;
             }
+        }
+        if(!isNullOrUndefined(this.paraOutlineLevel)) {
+            paraFormat.outlineLevel=this.paraOutlineLevel;
         }
         if (!isNullOrUndefined(this.bidi)) {
             paraFormat.bidi = this.bidi;
@@ -866,12 +940,12 @@ export class ParagraphDialog {
         if (!isListBidi) {
             this.documentHelper.layout.isBidiReLayout = true;
         }
-        this.documentHelper.owner.editor.setPreviousBlockToLayout();
+        this.documentHelper.owner.editorModule.setPreviousBlockToLayout();
         this.documentHelper.owner.editorModule.initHistory('ParagraphFormat');
         this.documentHelper.owner.isShiftingEnabled = true;
         if (this.documentHelper.selection.isEmpty) {
             this.documentHelper.owner.editorModule.applyParaFormatProperty(selection.start.paragraph, undefined, paragraphFormat, false);
-            this.documentHelper.owner.editor.layoutItemBlock(selection.start.paragraph, false);
+            this.documentHelper.owner.editorModule.layoutItemBlock(selection.start.paragraph, false);
         } else {
             this.documentHelper.owner.editorModule.updateSelectionParagraphFormatting('ParagraphFormat', paragraphFormat, false);
         }
@@ -890,6 +964,7 @@ export class ParagraphDialog {
         this.beforeSpacing = undefined;
         this.firstLineIndent = undefined;
         this.textAlignment = undefined;
+        this.paraOutlineLevel=undefined;
         this.rightIndent = undefined;
         this.lineSpacingIn = undefined;
         this.lineSpacingType = undefined;
@@ -982,6 +1057,11 @@ export class ParagraphDialog {
             this.alignment.destroy();
         }
         this.alignment = undefined;
+        if(this.outlineLevel){
+            this.outlineLevel.change=undefined;
+            this.outlineLevel.destroy();
+        }
+        this.outlineLevel=undefined;
         if (this.lineSpacing) {
             this.lineSpacing.change = undefined;
             this.lineSpacing.destroy();

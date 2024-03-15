@@ -633,8 +633,9 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     private beforeItemRenderChanges(prevItem: BreadcrumbItemModel, currItem: BreadcrumbItemModel, elem: Element, isRightIcon: boolean)
         : void {
         const wrapElem: Element = elem.querySelector('.e-anchor-wrap');
-        if (wrapElem) {
+        if (wrapElem && wrapElem.querySelector('.e-home')) {
             wrapElem.parentElement.setAttribute('aria-label', 'home');
+            wrapElem.parentElement.setAttribute('role', 'link');
         }
         if (currItem.text !== prevItem.text) {
             wrapElem.childNodes.forEach((child: Element) => {

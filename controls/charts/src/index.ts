@@ -10,3 +10,4 @@ export * from './bullet-chart/index';
 export * from './smithchart/index';
 export * from './sparkline/index';
 export * from './chart3d/index';
+export * from './circularchart3d/index';

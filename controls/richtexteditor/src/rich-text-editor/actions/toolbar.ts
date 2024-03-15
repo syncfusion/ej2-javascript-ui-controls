@@ -175,65 +175,14 @@ export class Toolbar {
     }
 
     private toggleFloatClass(e?: Event): void {
-        let topValue: number;
-        let isBody: boolean = false;
-        let isFloat: boolean = false;
-        let scrollParent: HTMLElement;
         const floatOffset: number = this.parent.floatingToolbarOffset;
-        if (e && this.parent.iframeSettings.enable && this.parent.inputElement.ownerDocument === e.target) {
-            scrollParent = (e.target as Document).body as HTMLElement;
-        } else if (e && e.target !== document) {
-            scrollParent = e.target as HTMLElement;
-        } else {
-            isBody = true;
-            scrollParent = document.body;
+        if (this.parent.toolbarSettings.enableFloating) {
+           addClass([this.tbElement.parentElement], [classes.CLS_TB_FLOAT]);
+           setStyleAttribute(this.tbElement.parentElement, { top: (floatOffset) + 'px' });
         }
-        const tbHeight: number = this.getToolbarHeight() + this.getExpandTBarPopHeight();
-        if (this.isTransformChild) {
-            topValue = 0;
-            let scrollParentRelativeTop: number = 0;
-            const trgHeight: number = this.parent.element.offsetHeight;
-            if (isBody) {
-                const bodyStyle: CSSStyleDeclaration = window.getComputedStyle(scrollParent);
-                scrollParentRelativeTop = parseFloat(bodyStyle.marginTop.split('px')[0]) + parseFloat(bodyStyle.paddingTop.split('px')[0]);
-            }
-            const targetTop: number = this.parent.element.getBoundingClientRect().top;
-            const scrollParentYOffset: number = (Browser.isMSPointer && isBody) ? window.pageYOffset : scrollParent.parentElement.scrollTop;
-            const scrollParentRect: ClientRect = scrollParent.getBoundingClientRect();
-            const scrollParentTop: number = (!isBody) ? scrollParentRect.top : (scrollParentRect.top + scrollParentYOffset);
-            const outOfRange: boolean = ((targetTop - ((!isBody) ? scrollParentTop : 0))
-                + trgHeight > tbHeight + floatOffset) ? false : true;
-            if (targetTop > (scrollParentTop + floatOffset) || targetTop < -trgHeight || ((targetTop < 0) ? outOfRange : false)) {
-                isFloat = false;
-                removeClass([this.tbElement], [classes.CLS_TB_ABS_FLOAT]);
-            } else if (targetTop < (scrollParentTop + floatOffset)) {
-                if (targetTop < 0) {
-                    topValue = (-targetTop) + scrollParentTop;
-                } else {
-                    topValue = scrollParentTop - targetTop;
-                }
-                topValue = (isBody) ? topValue - scrollParentRelativeTop : topValue;
-                addClass([this.tbElement], [classes.CLS_TB_ABS_FLOAT]);
-                isFloat = true;
-            }
-        } else {
-            const parent: ClientRect = this.parent.element.getBoundingClientRect();
-            if (window.innerHeight < parent.top) {
-                return;
-            }
-            topValue = (e && e.target !== document) ? scrollParent.getBoundingClientRect().top : 0;
-            if ((parent.bottom < (floatOffset + tbHeight + topValue)) || parent.bottom < 0 || parent.top > floatOffset + topValue) {
-                isFloat = false;
-            } else if (parent.top < floatOffset || parent.top < floatOffset + topValue) {
-                isFloat = true;
-            }
-        }
-        if (!isFloat) {
-            removeClass([this.tbElement], [classes.CLS_TB_FLOAT]);
-            setStyleAttribute(this.tbElement, { top: 0 + 'px', width: '100%' });
-        } else {
-            addClass([this.tbElement], [classes.CLS_TB_FLOAT]);
-            setStyleAttribute(this.tbElement, { width: this.parent.element.offsetWidth + 'px', top: (floatOffset + topValue) + 'px' });
+        else {
+            removeClass([this.tbElement.parentElement], [classes.CLS_TB_FLOAT]);
+            setStyleAttribute(this.tbElement.parentElement, { top: '' });
         }
     }
 
@@ -555,21 +504,6 @@ export class Toolbar {
         this.dropDownModule.parent = null;
     }
 
-    private scrollHandler(e: NotifyArgs): void {
-        if (!this.parent.inlineMode.enable) {
-            if (this.parent.toolbarSettings.enableFloating && this.getDOMVisibility(this.tbElement)) {
-                this.toggleFloatClass(e.args as Event);
-            }
-        }
-    }
-
-    private getDOMVisibility(el: HTMLElement): boolean {
-        if (!el.offsetParent && el.offsetWidth === 0 && el.offsetHeight === 0) {
-            return false;
-        }
-        return true;
-    }
-
     private mouseDownHandler(): void {
         if (Browser.isDevice && this.parent.inlineMode.enable && !isIDevice()) {
             this.showFixedTBar();
@@ -610,11 +544,6 @@ export class Toolbar {
 
     private adjustContentHeight(trg: Element, isKeyboard?: boolean): void {
         if (trg && this.parent.toolbarSettings.type === ToolbarType.Expand && !isNOU(trg)) {
-            const extendedTbar: HTMLElement = this.tbElement.querySelector('.e-toolbar-extended');
-            if (!isNOU(extendedTbar)) {
-                setStyleAttribute(extendedTbar, { maxHeight: '', display: 'block' });
-                setStyleAttribute(extendedTbar, { maxHeight: extendedTbar.offsetHeight + 'px', display: '' });
-            }
             const hasActiveClass: boolean = trg.classList.contains('e-nav-active');
             const isExpand: boolean = isKeyboard ? (hasActiveClass ? false : true) : (hasActiveClass ? true : false);
             if (isExpand) {
@@ -622,7 +551,7 @@ export class Toolbar {
             } else {
                 removeClass([this.tbElement], [classes.CLS_EXPAND_OPEN]);
             }
-            this.parent.setContentHeight('toolbar', isExpand);
+            this.parent.setContentHeight('Toolbar', isExpand);
         } else if (Browser.isDevice || this.parent.inlineMode.enable) {
             this.isToolbar = true;
         }
@@ -649,7 +578,6 @@ export class Toolbar {
         this.dropDownModule = new DropDownButtons(this.parent, this.locator);
         this.toolbarActionModule = new ToolbarAction(this.parent);
         this.parent.on(events.initialEnd, this.renderToolbar, this);
-        this.parent.on(events.scroll, this.scrollHandler, this);
         this.parent.on(events.bindOnEnd, this.toolbarBindEvent, this);
         this.parent.on(events.toolbarUpdated, this.updateToolbarStatus, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
@@ -675,7 +603,6 @@ export class Toolbar {
             return;
         }
         this.parent.off(events.initialEnd, this.renderToolbar);
-        this.parent.off(events.scroll, this.scrollHandler);
         this.parent.off(events.bindOnEnd, this.toolbarBindEvent);
         this.parent.off(events.toolbarUpdated, this.updateToolbarStatus);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
@@ -711,7 +638,8 @@ export class Toolbar {
         if (!this.parent.inlineMode.enable){
             this.refreshToolbarOverflow();
         }
-        this.parent.setContentHeight('', true);
+        const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
+        this.parent.setContentHeight('Refresh', isExpand);
     }
     /**
      * Called internally if any of the property value changed.
@@ -729,6 +657,11 @@ export class Toolbar {
                     this.refreshToolbar();
                     break;
                 }
+            }
+        }
+        if (!isNullOrUndefined(e.newProp.toolbarSettings)) {
+            if (!isNullOrUndefined(e.newProp.toolbarSettings.enableFloating)) {
+                this.toggleFloatClass();
             }
         }
         if (e.module !== this.getModuleName()) {

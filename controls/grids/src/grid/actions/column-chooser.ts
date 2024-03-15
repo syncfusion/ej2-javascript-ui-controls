@@ -112,10 +112,12 @@ export class ColumnChooser implements IAction {
     }
 
     private rtlUpdate(): void {
-        if (this.parent.enableRtl) {
-            addClass([].slice.call(this.innerDiv.getElementsByClassName('e-checkbox-wrapper')), ['e-rtl']);
-        } else {
-            removeClass([].slice.call(this.innerDiv.getElementsByClassName('e-checkbox-wrapper')), ['e-rtl']);
+        if (!isNullOrUndefined(this.innerDiv)) {
+            if (this.parent.enableRtl) {
+                addClass([].slice.call(this.innerDiv.getElementsByClassName('e-checkbox-wrapper')), ['e-rtl']);
+            } else {
+                removeClass([].slice.call(this.innerDiv.getElementsByClassName('e-checkbox-wrapper')), ['e-rtl']);
+            }
         }
     }
 
@@ -475,6 +477,9 @@ export class ColumnChooser implements IAction {
             }
             if (this.parent.enableAdaptiveUI && this.parent.scrollModule) {
                 this.parent.scrollModule.refresh();
+            }
+            if (this.parent.editSettings.showAddNewRow) {
+                this.parent.notify(events.showAddNewRowFocus, {});
             }
         }
     }

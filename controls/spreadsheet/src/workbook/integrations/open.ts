@@ -136,7 +136,8 @@ export class WorkbookOpen {
                 'activeSheetIndex': workbookModel.activeSheetIndex,
                 'definedNames': workbookModel.definedNames || [],
                 'filterCollection': workbookModel.filterCollection || [],
-                'sortCollection': workbookModel.sortCollection || []
+                'sortCollection': workbookModel.sortCollection || [],
+                'listSeparator': workbookModel.listSeparator || this.parent.listSeparator
             },
             true
         );

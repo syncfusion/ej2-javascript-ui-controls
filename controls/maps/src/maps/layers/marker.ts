@@ -23,6 +23,8 @@ export class Marker {
     private isMarkerExplode: number;
     private trackElements: Element[];
     private markerSVGObject: Element;
+    public initialMarkerCluster: number[][][];
+    public zoomedMarkerCluster: number[][][];
     /**
      * @private
      */
@@ -31,6 +33,8 @@ export class Marker {
         this.maps = maps;
         this.trackElements = [];
         this.sameMarkerData = [];
+        this.initialMarkerCluster = [];
+        this.zoomedMarkerCluster = [];
     }
 
     public markerRender(maps: Maps, layerElement: Element, layerIndex: number, factor: number, type: string): void {
@@ -62,13 +66,11 @@ export class Marker {
             getZoomTranslate(maps, currentLayer, allowAnimation) :
             getTranslate(maps, currentLayer, allowAnimation)
         }
-        for (let markerIndex = 0; markerIndex < currentLayer.markerSettings.length; markerIndex++) {
-            let markerSettings: MarkerSettingsModel = currentLayer.markerSettings[markerIndex as number];
+        Array.prototype.forEach.call(currentLayer.markerSettings, (markerSettings: MarkerSettingsModel, markerIndex: number) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const markerData: any[] = <any[]>markerSettings.dataSource;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            for (let dataIndex: number = 0; dataIndex < markerData.length; dataIndex++) {
-                let data: any = markerData[dataIndex as number];
+            Array.prototype.forEach.call(markerData, (data: any, dataIndex: number) => {
                 maps.markerNullCount = markerIndex > 0 && dataIndex === 0 ? 0 : maps.markerNullCount;
                 let eventArgs: IMarkerRenderingEventArgs = {
                     cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
@@ -148,8 +150,8 @@ export class Marker {
                         }
                     }
                 });
-            }
-        }
+            });
+        });
     }
     /**
      * To find zoom level for individual layers like India, USA.
@@ -502,6 +504,15 @@ export class Marker {
         };
         this.maps.trigger(markerClusterMouseMove, eventArgs);
     }
+
+    /** @private */
+    public initializeMarkerClusterList(): void {
+        for (let i = 0; i < this.maps.layers.length; i++) {
+            this.initialMarkerCluster[i as number] = [];
+            this.zoomedMarkerCluster[i as number] = [];
+        }
+    }
+
     /**
      * Get module name.
      *
@@ -522,5 +533,7 @@ export class Marker {
         this.trackElements = [];
         this.markerSVGObject = null;
         this.sameMarkerData = [];
+        this.initialMarkerCluster = [];
+        this.zoomedMarkerCluster = [];
     }
 }

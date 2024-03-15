@@ -454,26 +454,26 @@ export function measureText(text: string, font: FontModel): Size {
     let measureObject: HTMLElement = document.getElementById('mapsmeasuretext');
 
     if (measureObject === null) {
-        measureObject = createElement('text', { id: 'mapsmeasuretext' });
+        measureObject = document.createElement('text');
+        measureObject.id = 'mapsmeasuretext';
         document.body.appendChild(measureObject);
     }
     measureObject.innerText = text;
-    measureObject.style.position = 'absolute';
-    if (typeof (font.size) === 'number') {
-        measureObject.style.fontSize = (font.size) + 'px';
-    } else {
-        measureObject.style.fontSize = font.size;
-    }
-    measureObject.style.fontWeight = font.fontWeight;
-    measureObject.style.fontStyle = font.fontStyle;
-    measureObject.style.fontFamily = font.fontFamily;
-    measureObject.style.visibility = 'hidden';
-    measureObject.style.top = '-100';
-    measureObject.style.left = '0';
-    measureObject.style.whiteSpace = 'nowrap';
-    // For bootstrap line height issue
-    measureObject.style.lineHeight = 'normal';
+    measureObject.style.cssText = 'position: absolute; font-size: ' + (typeof (font.size) === 'number' ? (font.size + 'px') :font.size) +
+    '; font-weight: ' + font.fontWeight + '; font-style: ' + font.fontStyle + '; font-family: ' + font.fontFamily +
+    '; visibility: hidden; top: -100; left: 0; whiteSpace: nowrap; lineHeight: normal';
     return new Size(measureObject.clientWidth, measureObject.clientHeight);
+}
+
+/** @private */
+export function measureTextElement(text: string, font: FontModel): Size {
+    const canvas: HTMLCanvasElement = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    context.font = `${font.fontStyle} ${font.fontWeight} ${typeof font.size === 'number' ? font.size + 'px' : font.size} ${font.fontFamily}`;
+    const metrics = context.measureText(text);
+    const width: number = metrics.width;
+    const height: number = parseFloat(font.size) || 16;
+    return new Size(width, height);
 }
 
 /**
@@ -1086,6 +1086,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
         factor = maps.mapLayerPanel.calculateFactor(currentLayer);
     }
     let isClusteringCompleted: boolean = false;
+    const currentZoomFactor: number = !maps.isTileMap ? maps.mapScaleValue : maps.tileZoomLevel;
     maps.trigger('markerClusterRendering', eventArg, (clusterargs: IMarkerClusterRenderingEventArgs) => {
         Array.prototype.forEach.call(markerTemplate.childNodes, (markerElement: Element, o: number) => {
             indexCollection = [];
@@ -1094,20 +1095,27 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                 bounds1 = tempElement.getBoundingClientRect() as DOMRect;
                 indexCollection.push(o);
                 if (!isNullOrUndefined(bounds1)) {
-                    Array.prototype.forEach.call(markerTemplate.childNodes, (otherMarkerElement: Element, p: number) => {
-                        if (p >= o + 1 && otherMarkerElement['style']['visibility'] !== 'hidden') {
-                            tempElement = otherMarkerElement as Element;
-                            bounds2 = tempElement.getBoundingClientRect() as DOMRect;
-                            if (!isNullOrUndefined(bounds2)) {
-                                if (!(bounds1.left > bounds2.right || bounds1.right < bounds2.left
-                                    || bounds1.top > bounds2.bottom || bounds1.bottom < bounds2.top)) {
-                                    colloideBounds.push(bounds2);
-                                    otherMarkerElement['style']['visibility'] = 'hidden';
-                                    indexCollection.push(p);
+                    const list: number[] = (maps.markerModule.zoomedMarkerCluster.length > 0 && maps.markerModule.zoomedMarkerCluster[layerIndex as number] && maps.markerModule.zoomedMarkerCluster[layerIndex as number][o as number] && maps.markerModule.zoomedMarkerCluster[layerIndex as number][o as number].length > 0)
+                    || (maps.markerModule.initialMarkerCluster.length > 0 && maps.markerModule.initialMarkerCluster[layerIndex as number] && maps.markerModule.initialMarkerCluster[layerIndex as number][o as number] && maps.markerModule.initialMarkerCluster[layerIndex as number][o as number].length > 0) ?
+                    (maps.previousScale < currentZoomFactor ? maps.markerModule.zoomedMarkerCluster[layerIndex as number][o as number] : maps.markerModule.initialMarkerCluster[layerIndex as number][o as number]) : null;
+                    if (!isNullOrUndefined(list) && list.length !== 0) {
+                        Array.prototype.forEach.call(list, (currentIndex: number, p: number) => {
+                            if (o !== currentIndex) {
+                                let otherMarkerElement: Element = document.getElementById(maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
+                                    + 0 + '_dataIndex_' + currentIndex);
+                                if (otherMarkerElement['style']['visibility'] !== 'hidden') {
+                                    markerBoundsComparer(otherMarkerElement, bounds1, colloideBounds, indexCollection, currentIndex);
                                 }
                             }
-                        }
-                    });
+                        });
+                    } else {
+                        Array.prototype.forEach.call(markerTemplate.childNodes, (otherMarkerElement: Element, p: number) => {
+                            if (p >= o + 1 && otherMarkerElement['style']['visibility'] !== 'hidden') {
+                                markerBoundsComparer(otherMarkerElement, bounds1, colloideBounds, indexCollection, p);
+                            }
+                        });
+                    }
+                    markerClusterListHandler(maps, currentZoomFactor, layerIndex, o, indexCollection);
                     tempX = bounds1.left + bounds1.width / 2;
                     tempY = bounds1.top + bounds1.height;
                     if (colloideBounds.length > 0) {
@@ -1182,6 +1190,8 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                     }
                 }
                 colloideBounds = [];
+            } else {
+                markerClusterListHandler(maps, currentZoomFactor, layerIndex, o, indexCollection);
             }
             isClusteringCompleted = true;
         });
@@ -1265,6 +1275,31 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
         }
     });
     return isClusteringCompleted;
+}
+
+/** @private */
+export function markerClusterListHandler(maps: Maps, currentZoomFactor: number, layerIndex: number, index: number, indexCollection: number[]): void {
+    if (currentZoomFactor == 1) {
+        const initialMarkerClusterList: number[] = isNullOrUndefined(maps.markerModule.initialMarkerCluster[layerIndex as number][index as number]) ? [] : indexCollection.length > 1 ? indexCollection : [];
+        maps.markerModule.initialMarkerCluster[layerIndex as number][index as number] = initialMarkerClusterList;
+        const zoomedMarkerClusterList: number[] = isNullOrUndefined(maps.markerModule.zoomedMarkerCluster[layerIndex as number][index as number]) ? [] : indexCollection.length > 1 ? indexCollection : [];
+        maps.markerModule.zoomedMarkerCluster[layerIndex as number][index as number] = zoomedMarkerClusterList;
+    } else if (currentZoomFactor > 1) {
+        maps.markerModule.zoomedMarkerCluster[layerIndex as number][index as number] = indexCollection.length > 1 ? indexCollection : [];
+    }
+}
+
+/** @private */
+export function markerBoundsComparer(tempElement: Element, markerBounds: ClientRect, colloideBounds: ClientRect[], indexCollection: number[], p: number): void {
+    let currentMarkerBound = tempElement.getBoundingClientRect() as DOMRect;
+    if (!isNullOrUndefined(currentMarkerBound)) {
+        if (!(markerBounds.left > currentMarkerBound.right || markerBounds.right < currentMarkerBound.left
+            || markerBounds.top > currentMarkerBound.bottom || markerBounds.bottom < currentMarkerBound.top)) {
+            colloideBounds.push(currentMarkerBound);
+            tempElement['style']['visibility'] = 'hidden';
+            indexCollection.push(p);
+        }
+    }
 }
 
 /**
@@ -2074,21 +2109,37 @@ export function isCustomPath(layerData: any[]): boolean {
  * @returns {string} - Returns the string
  * @private
  */
-export function textTrim(maxWidth: number, text: string, font: FontModel): string {
+export function textTrim(maxWidth: number, text: string, font: FontModel, width?: number, isCanvasMeasure?: boolean, widthList?: number[]): string {
     let label: string = text;
-    let size: number = measureText(text, font).width;
-    if (size > maxWidth) {
+    if (isNullOrUndefined(width)) {
+        if (!isCanvasMeasure) {
+            width = measureText(text, font).width;
+        } else {
+            width = measureTextElement(text, font).width;
+        }
+    }
+    if (width > maxWidth) {
         const textLength: number = text.length;
         for (let i: number = textLength - 1; i >= 0; --i) {
             label = text.substring(0, i) + '...';
-            size = measureText(label, font).width;
-            if (size <= maxWidth || label.length < 4) {
+            if (!isCanvasMeasure) {
+                width = measureText(label, font).width;
+            } else {
+                width = measureTextElement(label, font).width;
+            }
+            if (width <= maxWidth || label.length < 4) {
                 if (label.length < 4) {
                     label = ' ';
+                }
+                if (!isNullOrUndefined(widthList)) {
+                    widthList.push(width);
                 }
                 return label;
             }
         }
+    }
+    if (!isNullOrUndefined(widthList)) {
+        widthList.push(width);
     }
     return label;
 }
@@ -2171,11 +2222,11 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
     }
     if (mapObject.zoomSettings.shouldZoomInitially && mapObject.zoomSettings.enable) {
         mapObject.mapScaleValue = scaleFactor = zoomFactorValue = ((mapObject.zoomSettings.shouldZoomInitially || mapObject.enablePersistence) && mapObject.scale === 1)
-            ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? 1 : mapObject.markerZoomFactor;
-        if (mapObject.mapScaleValue !== mapObject.markerZoomFactor && !mapObject.enablePersistence) {
+            ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? 1 : (mapObject.markerZoomedState ? mapObject.markerZoomFactor : parseInt(mapObject.scale.toString()));
+        if (mapObject.markerZoomedState && mapObject.mapScaleValue !== mapObject.markerZoomFactor && !mapObject.enablePersistence) {
             mapObject.mapScaleValue = zoomFactorValue = mapObject.markerZoomFactor;
         }
-        if (!isNullOrUndefined(mapObject.markerCenterLatitude) && !isNullOrUndefined(mapObject.markerCenterLongitude)) {
+        if (mapObject.markerZoomedState && !isNullOrUndefined(mapObject.markerCenterLatitude) && !isNullOrUndefined(mapObject.markerCenterLongitude)) {
             centerLatitude = mapObject.markerCenterLatitude;
             centerLongitude = mapObject.markerCenterLongitude;
         }

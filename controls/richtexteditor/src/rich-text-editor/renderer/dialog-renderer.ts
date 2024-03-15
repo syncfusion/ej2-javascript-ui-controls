@@ -43,7 +43,6 @@ export class DialogRenderer {
         let dlgObj: Dialog;
         e.beforeOpen = this.beforeOpen.bind(this);
         e.open = this.open.bind(this);
-        
         e.position = {
             X: 'center',
             Y: (e.target !== 'string' && (e.target as HTMLElement).nodeName === 'BODY' &&

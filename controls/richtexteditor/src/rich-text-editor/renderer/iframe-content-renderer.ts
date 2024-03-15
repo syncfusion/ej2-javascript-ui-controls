@@ -57,8 +57,12 @@ const IFRAMEHEADER: string = `
                 .e-mob-rte.e-mob-span span.e-rte-imageboxmark, .e-mob-rte.e-mob-span span.e-rte-videoboxmark { background: #4a90e2; border: 1px solid #fff; }
                 .e-rte-content .e-content img.e-resize, .e-rte-content .e-content video.e-resize { z-index: 1000; }
                 .e-img-caption .e-img-inner { outline: 0; }
+                .e-rte-img-caption.e-imgleft .e-img-inner { float: left; text-align: left; }
+                .e-rte-img-caption.e-imgright .e-img-inner { float: right; text-align: right; }
+                .e-rte-img-caption.e-imgleft .e-img-wrap, .e-rte-img-caption.e-imgright .e-img-wrap { display: contents; }
                 .e-img-caption a:focus-visible { outline: none; }
-                .e-img-caption .e-rte-image.e-imgright, .e-img-caption .e-rte-image.e-imgleft { float: none; margin: 0;}
+                .e-rte-img-caption .e-rte-image.e-imgright { margin-left: auto; margin-right: 0; }
+                .e-rte-img-caption .e-rte-image.e-imgleft { margin: 0; }
                 body{box-sizing: border-box;min-height: 100px;outline: 0 solid transparent;
                     overflow-x: auto;padding: 16px;position: relative;text-align: inherit;z-index: 2;}
                 p{margin: 0 0 10px;margin-bottom: 10px;}
@@ -106,6 +110,7 @@ const IFRAMEHEADER: string = `
                 .e-table-rhelper { background-color: #4a90e2;}
                 .e-rtl { direction: rtl; }
                 .e-rte-placeholder::before { content: attr(placeholder); opacity: 0.54; overflow: hidden; padding-top: 16px; position: absolute; text-align: start; top: 0; z-index: 1; }
+                li ol, li ul { margin-block-start: 10px;}
             </style>
         </head>`;
 
@@ -137,6 +142,7 @@ export class IframeContentRender extends ContentRender {
                 styles: 'display:block;',
                 attrs: { 'srcdoc': iFrameContent }
             });
+        iframe.setAttribute("role", "none");
         this.setPanel(iframe);
         rteObj.element.appendChild(iframe);
         iframe.contentDocument.body.id = this.parent.getID() + '_rte-edit-view';

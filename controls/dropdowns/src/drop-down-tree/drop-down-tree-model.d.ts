@@ -17,7 +17,6 @@ export interface FieldsModel {
      *
      * @default []
      */
-    /* eslint-disable */
     dataSource?: DataManager | { [key: string]: Object }[];
 
     /**
@@ -59,8 +58,8 @@ export interface FieldsModel {
     query?: Query;
 
     /**
-     * Specifies whether the node can be selected by users or not 
-     * When set to false, the user interaction is prevented for the corresponding node. 
+     * Specifies whether the node can be selected by users or not
+     * When set to false, the user interaction is prevented for the corresponding node.
      */
     selectable?: string;
 
@@ -179,7 +178,7 @@ export interface DropDownTreeModel extends ComponentModel{
     cssClass?: string;
 
     /**
-     * This property is used to customize the display text of the selected items in the Dropdown Tree. The given custom template is 
+     * This property is used to customize the display text of the selected items in the Dropdown Tree. The given custom template is
      * added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled.
      *
      * @default "${value.length} item(s) selected"
@@ -328,7 +327,7 @@ export interface DropDownTreeModel extends ComponentModel{
      * * Delimiter : Selected items will be visualized in the text content.
      * * Default : On focus in component will act in the box mode. On blur component will act in the delimiter mode.
      * * Custom : Selected items will be visualized with the given custom template value. The given custom template
-     *  is added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled. 
+     *  is added to the input instead of the selected item text in the Dropdown Tree when the multi-selection or checkbox support is enabled.
      */
     mode?: Mode;
 
@@ -392,10 +391,19 @@ export interface DropDownTreeModel extends ComponentModel{
     showCheckBox?: boolean;
 
     /**
-     * Specifies whether to allow rendering of untrusted HTML values in the Dropdown Tree component.
-     * While enable this property, it sanitize suspected untrusted strings and script, and update in the Dropdown Tree component.
+     * Specifies whether to destroy the popup or to maintain it in DOM when it is closed.
+     * When this property is set to false, then the popup will not be removed from DOM once it is closed.
      * 
-     * @default false
+     * @default true
+     * @deprecated
+     */
+    destroyPopupOnHide?: boolean;
+
+    /**
+     * Specifies whether to display or remove the untrusted HTML values in the Dropdown Tree component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
+     *
+     * @default true
      */
     enableHtmlSanitizer?: boolean;
 
@@ -482,7 +490,6 @@ export interface DropDownTreeModel extends ComponentModel{
      *
      * @event
      */
-    /* eslint-disable */
     actionFailure?: EmitType<Object>;
 
     /**
@@ -511,7 +518,6 @@ export interface DropDownTreeModel extends ComponentModel{
      *
      * @event
      */
-    /* eslint-disable */
     blur?: EmitType<Object>;
 
     /**
@@ -519,7 +525,6 @@ export interface DropDownTreeModel extends ComponentModel{
      *
      * @event
      */
-    /* eslint-disable */
     created?: EmitType<Object>;
 
     /**
@@ -534,7 +539,6 @@ export interface DropDownTreeModel extends ComponentModel{
      *
      * @event
      */
-    /* eslint-disable */
     destroyed?: EmitType<Object>;
 
     /**

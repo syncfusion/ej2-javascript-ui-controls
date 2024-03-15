@@ -117,7 +117,7 @@ export class NodeCutter {
             this.spliceEmptyNode(fragment.childNodes[len as number], isStart);
         } else if (len > -1) {
             this.spliceEmptyNode(fragment.childNodes[0], isStart);
-        } else if (fragment.nodeType !== 3 && fragment.nodeType !== 11 && fragment.nodeName !== 'IMG'&& !((fragment as Element).querySelectorAll('img').length > 0 ) && !((fragment as Element).classList.contains('e-video-wrap')) && !((fragment as Element).classList.contains('e-audio-wrap'))) {
+        } else if (fragment.nodeType !== 3 && fragment.nodeType !== 11 && fragment.nodeName !== 'IMG' && !((fragment as Element).querySelectorAll('img').length > 0 ) && !((fragment as Element).classList.contains('e-video-wrap')) && !((fragment as Element).classList.contains('e-audio-wrap'))) {
             fragment.parentNode.removeChild(fragment);
         }
         return fragment;

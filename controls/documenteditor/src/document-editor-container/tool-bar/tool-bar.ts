@@ -622,10 +622,10 @@ export class Toolbar {
                 this.documentEditor.focusIn();
                 break;
             case id + UNDO_ID:
-                this.container.documentEditor.editorHistory.undo();
+                this.container.documentEditor.editorHistoryModule.undo();
                 break;
             case id + REDO_ID:
-                this.container.documentEditor.editorHistory.redo();
+                this.container.documentEditor.editorHistoryModule.redo();
                 break;
             case id + INSERT_TABLE_ID:
                 this.container.documentEditor.showDialog('Table');
@@ -637,29 +637,29 @@ export class Toolbar {
                 this.container.documentEditor.showDialog('Bookmark');
                 break;
             case id + COMMENT_ID:
-                this.documentEditor.editor.isUserInsert =  true;
-                this.documentEditor.editor.insertComment('');
-                this.documentEditor.editor.isUserInsert =  false;
+                this.documentEditor.editorModule.isUserInsert =  true;
+                this.documentEditor.editorModule.insertComment('');
+                this.documentEditor.editorModule.isUserInsert =  false;
                 break;
             case id + TRACK_ID:
                 this.toggleTrackChangesInternal(args.item.id);
                 break;
             case id + HEADER_ID:
-                this.container.documentEditor.selection.goToHeader();
+                this.container.documentEditor.selectionModule.goToHeader();
                 this.container.statusBar.toggleWebLayout();
                 break;
             case id + TABLE_OF_CONTENT_ID:
                 this.onToc();
                 break;
             case id + FOOTER_ID:
-                this.container.documentEditor.selection.goToFooter();
+                this.container.documentEditor.selectionModule.goToFooter();
                 this.container.statusBar.toggleWebLayout();
                 break;
             // case id + PAGE_SET_UP_ID:
             //     this.container.documentEditor.showDialog('PageSetup');
             //     break;
             case id + PAGE_NUMBER_ID:
-                this.container.documentEditor.editor.insertPageNumber();
+                this.container.documentEditor.editorModule.insertPageNumber();
                 break;
             case id + FIND_ID:
                 this.container.documentEditor.showOptionsPane();
@@ -671,10 +671,10 @@ export class Toolbar {
                 this.documentEditor.updateFields();
                 break;
             case id + FOOTNOTE_ID:
-                this.documentEditor.editor.insertFootnote();
+                this.documentEditor.editorModule.insertFootnote();
                 break;
             case id + ENDNOTE_ID:
-                this.documentEditor.editor.insertEndnote();
+                this.documentEditor.editorModule.insertEndnote();
                 break;
             default:
                 this.container.trigger(toolbarClickEvent, args);
@@ -741,11 +741,11 @@ export class Toolbar {
         } else if (id === parentId + PROTECTIONS) {
             this.documentEditor.documentHelper.restrictEditingPane.showHideRestrictPane(true);
         } else if (id === parentId + CHECKBOX) {
-            this.documentEditor.editor.insertFormField('CheckBox');
+            this.documentEditor.editorModule.insertFormField('CheckBox');
         } else if (id === parentId + DROPDOWN) {
-            this.documentEditor.editor.insertFormField('DropDown');
+            this.documentEditor.editorModule.insertFormField('DropDown');
         } else if (id === parentId + TEXT_FORM) {
-            this.documentEditor.editor.insertFormField('Text');
+            this.documentEditor.editorModule.insertFormField('Text');
         }
         setTimeout((): void => {
             this.documentEditor.focusIn();
@@ -857,7 +857,7 @@ export class Toolbar {
         const image: HTMLImageElement = document.createElement('img');
         const container: DocumentEditorContainer = this.container;
         image.addEventListener('load', function (): void {
-            container.documentEditor.editor.insertImageInternal(data, true, this.width, this.height,this.alt);
+            container.documentEditor.editorModule.insertImageInternal(data, true, this.width, this.height,this.alt);
         });
         image.src = data;
     }
@@ -948,7 +948,7 @@ export class Toolbar {
         if (!isNullOrUndefined(this.documentEditor)) {
             this.enableDisableFormField(!this.documentEditor.enableHeaderAndFooter && enable && !this.documentEditor.isReadOnlyMode);
         }
-        if (this.documentEditor.selection.isinFootnote || this.documentEditor.selection.isinEndnote || this.documentEditor.enableHeaderAndFooter) {
+        if (this.documentEditor.selectionModule.isinFootnote || this.documentEditor.selectionModule.isinEndnote || this.documentEditor.enableHeaderAndFooter) {
             if (this.containsItem(id + ENDNOTE_ID)) {
                 this.toolbar.enableItems(document.getElementById(id + ENDNOTE_ID).parentElement, false);
             }
@@ -993,7 +993,7 @@ export class Toolbar {
             // We can optimize this condition check to single bool validation instead of array collection.
             /* eslint-disable-next-line max-len */
             if (!isNullOrUndefined(undoElement)) {
-                this.toolbar.enableItems(undoElement.parentElement, this.container.documentEditor.editorHistory.canUndo());
+                this.toolbar.enableItems(undoElement.parentElement, this.container.documentEditor.editorHistoryModule.canUndo());
             }
         }
         if (this.toolbarItems.indexOf('Redo') >= 0) {
@@ -1001,7 +1001,7 @@ export class Toolbar {
             // We can optimize this condition check to single bool validation instead of array collection.
             /* eslint-disable-next-line max-len */
             if (!isNullOrUndefined(redoElement)) {
-                this.toolbar.enableItems(redoElement.parentElement, this.container.documentEditor.editorHistory.canRedo());
+                this.toolbar.enableItems(redoElement.parentElement, this.container.documentEditor.editorHistoryModule.canRedo());
             }
         }
     }
@@ -1012,7 +1012,7 @@ export class Toolbar {
             return;
         }
         if (this.container.headerFooterProperties.element.style.display === 'block') {
-            this.documentEditor.selection.closeHeaderFooter();
+            this.documentEditor.selectionModule.closeHeaderFooter();
         }
         this.enableDisablePropertyPaneButton(false);
         this.container.showProperties('toc');

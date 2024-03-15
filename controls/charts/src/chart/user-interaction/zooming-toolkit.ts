@@ -417,7 +417,7 @@ export class Toolkit {
                     previousVisibleRange: axis.visibleRange, currentVisibleRange: null
                 };
                 if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
-                    (axis.orientation === 'Vertical')) {
+                    (axis.orientation === 'Vertical' && mode !== 'X')) {
                     cumulative = Math.max(Math.max(1 / minMax(axis.zoomFactor, 0, 1), 1) + (0.25 * scale), 1);
                     zoomFactor = (cumulative === 1) ? 1 : minMax(1 / cumulative, 0, 1);
                     zoomPosition = (cumulative === 1) ? 0 : axis.zoomPosition + ((axis.zoomFactor - zoomFactor) * 0.5);

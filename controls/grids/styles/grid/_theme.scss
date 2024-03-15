@@ -30,6 +30,10 @@
       box-shadow: $grid-cell-focus-shadow;
     }
 
+    .e-addedrow .e-normaledit .e-rowcell.e-focused {
+      box-shadow: none;
+    }
+
     &.e-left-shadow .e-leftfreeze.e-freezeleftborder.e-focused:not(.e-menu-item,.e-xlsel-top-border,.e-xlsel-left-border,.e-xlsel-bottom-border,.e-xlsel-right-border),
     &.e-right-shadow .e-rightfreeze.e-freezerightborder.e-focused:not(.e-menu-item,.e-xlsel-top-border,.e-xlsel-left-border,.e-xlsel-bottom-border,.e-xlsel-right-border) {
       border-color: $grid-cell-focus-border-color;
@@ -284,7 +288,8 @@
     .e-detailrowcollapse,
     .e-detailrowexpand,
     .e-detailindentcell,
-    .e-detailcell {
+    .e-detailcell,
+    .e-emptyrow.e-show-added-row .e-lastrowcell {
       border-color: $grid-cell-border-color;
     }
 
@@ -326,12 +331,12 @@
     }
     
     &.e-rtl .e-filterbarcell.e-fixedfreeze.e-freezeleftborder,
-    &.e-rtl .e-fixedfreeze.e-freezeleftborder {
+    &.e-rtl .e-fixedfreeze.e-freezeleftborder:not(.e-removefreezerightborder) {
       border-right-color: $frozen-border-color;
     }
     
     &.e-rtl .e-filterbarcell.e-fixedfreeze.e-freezerightborder,
-    &.e-rtl .e-fixedfreeze.e-freezerightborder  {
+    &.e-rtl .e-fixedfreeze.e-freezerightborder:not(.e-removefreezeleftborder)  {
       border-left-color: $frozen-border-color;
     }
 
@@ -340,22 +345,22 @@
       border-right-color: $frozen-border-color;
     }
 
-    &.e-lib .e-rightfreeze.e-freezerightborder,
-    .e-rightfreeze.e-freezerightborder {
+    &.e-lib:not(.e-rtl) .e-rightfreeze.e-freezerightborder,
+    &:not(.e-rtl) .e-rightfreeze.e-freezerightborder {
       border-left-color: $frozen-border-color;
     }
 
-    &.e-lib .e-filterbarcell.e-fixedfreeze.e-freezeleftborder,
-    .e-filterbarcell.e-fixedfreeze.e-freezeleftborder,
-    &.e-lib .e-fixedfreeze.e-freezeleftborder,
-    .e-fixedfreeze.e-freezeleftborder {
+    &.e-lib:not(.e-rtl) .e-filterbarcell.e-fixedfreeze.e-freezeleftborder,
+    &:not(.e-rtl) .e-filterbarcell.e-fixedfreeze.e-freezeleftborder,
+    &.e-lib:not(.e-rtl) .e-fixedfreeze.e-freezeleftborder:not(.e-removefreezeleftborder),
+    &:not(.e-rtl) .e-fixedfreeze.e-freezeleftborder:not(.e-removefreezeleftborder) {
       border-left-color: $frozen-border-color;
     }
 
-    &.e-lib .e-filterbarcell.e-fixedfreeze.e-freezerightborder,
-    .e-filterbarcell.e-fixedfreeze.e-freezerightborder,
-    &.e-lib .e-fixedfreeze.e-freezerightborder,
-    .e-fixedfreeze.e-freezerightborder  {
+    &.e-lib:not(.e-rtl) .e-filterbarcell.e-fixedfreeze.e-freezerightborder,
+    &:not(.e-rtl) .e-filterbarcell.e-fixedfreeze.e-freezerightborder,
+    &.e-lib:not(.e-rtl) .e-fixedfreeze.e-freezerightborder:not(.e-removefreezerightborder),
+    &:not(.e-rtl) .e-fixedfreeze.e-freezerightborder:not(.e-removefreezerightborder) {
       border-right-color: $frozen-border-color;
     }
 
@@ -439,6 +444,7 @@
     &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowcollapse,
     &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop,
     &.e-rtl .e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-rowdragdrop,
+    &.e-gridhover .e-row.e-addedrow:not(.e-disable-gridhover):not(.e-detailrow):hover .e-dragindentcell,
     &.e-gridhover .e-row:not(.e-disable-gridhover):not(.e-detailrow):hover .e-detailrowexpand {
       &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd):not(.e-indentcell) {
         background-color: $grid-hover-bg-color;
@@ -826,8 +832,10 @@
       border-top-color: $grid-header-border-color;
     }
 
-    .e-gridcontent table tbody .e-normaledit .e-dragindentcell,
-    .e-gridcontent table tbody .e-normaledit .e-detailrowcollapse {
+    .e-gridcontent table tbody tr:not(:first-child) .e-normaledit .e-dragindentcell,
+    .e-gridcontent table tbody tr:not(:first-child) .e-normaledit .e-detailrowcollapse,
+    .e-gridheader table tbody .e-normaledit .e-dragindentcell,
+    .e-gridheader table tbody .e-normaledit .e-detailrowcollapse {
       border-top: 1px solid $grid-header-border-color;
     }
 
@@ -905,7 +913,8 @@
 
     .e-ftrchk.e-chkfocus,
     .e-menu-item.e-menufocus,
-    li.e-cclist.e-colfocus {
+    li.e-cclist.e-colfocus,
+    &.sf-grid .e-ccheck.e-colfocus {
       background-color: $grid-hover-bg-color;
     }
   }

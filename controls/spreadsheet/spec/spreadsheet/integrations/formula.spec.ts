@@ -1,9 +1,7 @@
-import { SpreadsheetModel, Spreadsheet, BasicModule, DialogBeforeOpenEventArgs, CellSaveEventArgs } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, Spreadsheet, DialogBeforeOpenEventArgs, CellSaveEventArgs } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { CellModel, getCell, getRangeAddress, DefineNameModel, RowModel, SheetModel, getFormatFromType } from '../../../src/index';
-
-Spreadsheet.Inject(BasicModule);
 
 /**
  *  Formula spec
@@ -212,7 +210,7 @@ describe('Spreadsheet formula module ->', () => {
             expect(cell.value.indexOf('/') > -1).toBeFalsy();
             expect(cell.value.indexOf(':') > -1).toBeFalsy();
             expect(!!Number(cell.value)).toBeTruthy();
-            expect(cell.format).toBe('M/d/yyyy h:mm');
+            expect(cell.format).toBe('mm-dd-yyyy h:mm');
             const cellContent: string = helper.invoke('getCell', [12, 0]).textContent;
             expect(cellContent.indexOf('/') > -1).toBeTruthy();
             expect(cellContent.indexOf(':') > -1).toBeTruthy();
@@ -12028,6 +12026,119 @@ describe('Spreadsheet formula module ->', () => {
                 });
             });
         });
+        describe('Checking formula with culture-specific separator', () => {
+            let spreadsheet: any; let sheet: any; let cell: any; let cellEle: Element;
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }], listSeparator: ';' }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Default formula with list separator', (done: Function) => {
+                spreadsheet = helper.getInstance();
+                sheet = spreadsheet.sheets[0];
+                helper.invoke('updateCell', [{ formula: '=PRODUCT(D2;D3)' }, 'D12']);
+                cell = sheet.rows[11].cells[3];
+                expect(cell.value).toBe('200');
+                cellEle = helper.invoke('getCell', [11, 3]);
+                expect(cellEle.textContent).toBe('200');
+                helper.invoke('updateCell', [{ formula: '=SUM(D2;D3;D4;D5)' }, 'D12']);
+                expect(cell.value).toBe(65);
+                expect(cellEle.textContent).toBe('65');
+                helper.invoke('updateCell', [{ formula: '=SUMIF(D2:D7;">10")' }, 'D12']);
+                expect(cell.value).toBe(125);
+                expect(cellEle.textContent).toBe('125');
+                helper.invoke('updateCell', [{ formula: '=IF(4>5;TRUE;FALSE)' }, 'D12']);
+                expect(cell.value).toBe('FALSE');
+                expect(cellEle.textContent).toBe('FALSE');
+                helper.invoke('updateCell', [{ formula: '=IFS(A8<>"LoaferS";TRUE;A11="T-Shirts";FALSE)' }, 'D12']);
+                expect(cell.value).toBe('TRUE');
+                expect(cellEle.textContent).toBe('TRUE');
+                helper.invoke('updateCell', [{ formula: '=COUNTIFS(D2:D11;"<>20")' }, 'D12']);
+                expect(cell.value).toBe(7);
+                expect(cellEle.textContent).toBe('7');
+                helper.invoke('updateCell', [{ formula: '=SUMIFS(D2:D11;E2:E11;">15";F2:F11;">20")' }, 'D12']);
+                expect(cell.value).toBe(126);
+                expect(cellEle.textContent).toBe('126');
+                helper.invoke('updateCell', [{ formula: '=TEXT(B4;"dd-mmm-yy")' }, 'D12']);
+                expect(cell.value).toBe('27-Jul-14');
+                expect(cellEle.textContent).toBe('27-Jul-14');
+                helper.invoke('updateCell', [{ formula: '=CONCATENATE(A2;A3;A4;A8;A10)' }, 'D12']);
+                expect(cell.value).toBe('Casual ShoesSports ShoesFormal ShoesRunning ShoesCricket Shoes');
+                expect(cellEle.textContent).toBe('Casual ShoesSports ShoesFormal ShoesRunning ShoesCricket Shoes');
+                helper.invoke('updateCell', [{ formula: '=OR(TRUE;TRUE;TRUE;FALSE)' }, 'D12']);
+                expect(cell.value).toBe('TRUE');
+                expect(cellEle.textContent).toBe('TRUE');
+                helper.invoke('updateCell', [{ formula: '=HLOOKUP(Sheet1!$F$8;Sheet1!$F$2:$G$11;2;False)' }, 'D12']);
+                expect(cell.value).toBe('600');
+                expect(cellEle.textContent).toBe('600');
+                helper.invoke('updateCell', [{ formula: '=SUMPRODUCT($D$2:$D$11;$H$2:$H$11)' }, 'D12']);
+                expect(cell.value).toBe(18120);
+                expect(cellEle.textContent).toBe('18120');
+                done();
+            });
+            it('Nested formula with list separator', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: '=SUM(SUMIFS(D2:D11; E2:E11; {10; 20}))' }, 'D12']);
+                expect(cell.value).toBe(196);
+                expect(cellEle.textContent).toBe('196');
+                helper.invoke('updateCell', [{ formula: '=ROUNDUP(AVERAGE(F2:F9);COUNT(F9;F11))' }, 'D12']);
+                expect(cell.value).toBe('376.25');
+                expect(cellEle.textContent).toBe('376.25');
+                helper.invoke('updateCell', [{ formula: '=ROUNDDOWN(RSQ(D2:D11;F2:F11);4)' }, 'D12']);
+                expect(cell.value).toBe('0.3789');
+                expect(cellEle.textContent).toBe('0.3789');
+                helper.invoke('updateCell', [{ formula: '=IFS(OR(A2<>"Casual Shoes";A11="T-Shirts");"Y";OR(A2<>"Casual Shoes";A11="T-Shirts"); "R")' }, 'D12']);
+                expect(cell.value).toBe('Y');
+                expect(cellEle.textContent).toBe('Y');
+                helper.invoke('updateCell', [{ formula: '=MAX(MOD(22;3); MOD(12;5))' }, 'D12']);
+                expect(cell.value).toBe('2');
+                expect(cellEle.textContent).toBe('2');
+                const formula: string = '=IF(OR(AND(ABS(D10)>ABS(E10);D10<0);AND(ABS(D10)<=ABS(E10);E10<0));-1*(IF(D10=0;((ABS(E10)-ABS(D10))/1)*100;' +
+                    '((ABS(E10)-ABS(D10))/ABS(D10))*100));IF(D10=0;((ABS(E10)-ABS(D10))/1)*100;((ABS(E10)-ABS(D10))/ABS(D10))*100))';
+                helper.invoke('updateCell', [{ formula: formula }, 'D12']);
+                expect(cell.value).toBe('-26.82926829268293');
+                expect(cellEle.textContent).toBe('-26.82926829');
+                done();
+            });
+            it('Default formula with decimal separator', (done: Function) => {
+                spreadsheet.workbookFormulaModule.calculateInstance.setParseDecimalSeparator(',');
+                helper.invoke('updateCell', [{ formula: '=IF(D2=10,23;D3;10,45)' }, 'D12']);
+                expect(cell.value).toBe('10.45');
+                expect(cellEle.textContent).toBe('10.45');
+                helper.invoke('updateCell', [{ formula: '=SUM("4,9";"5,2")' }, 'D12']);
+                expect(cell.value).toBe('10.1');
+                expect(cellEle.textContent).toBe('10.1');
+                helper.invoke('updateCell', [{ formula: '=SUM(-5,7;-8,9)' }, 'D12']);
+                expect(cell.value).toBe('-14.6');
+                expect(cellEle.textContent).toBe('-14.6');
+                helper.invoke('updateCell', [{ formula: '=COUNTIF(F2:F11;">100,84")' }, 'D12']);
+                expect(cell.value).toBe(10);
+                expect(cellEle.textContent).toBe('10');
+                helper.invoke('updateCell', [{ formula: '=AVERAGEIF(F2:F11;">110,27")' }, 'D12']);
+                expect(cell.value).toBe(472);
+                expect(cellEle.textContent).toBe('472');
+                helper.invoke('updateCell', [{ formula: '=SUMIF(D2:D11;"1,?")' }, 'D12']);
+                expect(cell.value).toBe(0);
+                expect(cellEle.textContent).toBe('0');
+                helper.invoke('updateCell', [{ formula: '=GEOMEAN(10,87;20,33;30;56,45;40,34)' }, 'D12']);
+                expect(cell.value).toBe('27.275806669844062');
+                expect(cellEle.textContent).toBe('27.27580667');
+                helper.invoke('updateCell', [{ formula: '=TRUNC("-8,9")' }, 'D12']);
+                expect(cell.value).toBe('-8');
+                expect(cellEle.textContent).toBe('-8');
+                helper.invoke('updateCell', [{ formula: '=POWER((D2+D10);1,3/3,45)' }, 'D12']);
+                expect(cell.value).toBe('4.3997929579013535');
+                expect(cellEle.textContent).toBe('4.399792958');
+                done();
+            });
+            it('Simple arithmetic expression with decimal separator', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: '=5,8+6,4+8,5' }, 'D12']);
+                expect(cell.value).toBe('20.7');
+                expect(cellEle.textContent).toBe('20.7');
+                spreadsheet.workbookFormulaModule.calculateInstance.setParseDecimalSeparator('.');
+                done();
+            });
+        });
     });
     describe('EJ2-62007 ->', () => {
         beforeAll((done: Function) => {
@@ -16216,7 +16327,7 @@ describe('Spreadsheet formula module ->', () => {
         });
     });
 
-    describe('EJ2-861114 -> Alphanumeric value in cell references are not properly calculated ->', () => {
+    describe('EJ2-861114 -> Alphanumberic value in cell references are not properly calculated ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
                 sheets: [{

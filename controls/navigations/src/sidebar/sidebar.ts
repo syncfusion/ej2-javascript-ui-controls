@@ -385,7 +385,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.type === 'Auto' && !Browser.isDevice) {
             this.show();
         } else if (!this.isOpen) {
-            addClass([this.element], [CLOSE,DISABLEANIMATION]);
+            addClass([this.element], [CLOSE, DISABLEANIMATION]);
         }
     }
     private checkType(val: boolean): void {

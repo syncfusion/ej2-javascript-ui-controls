@@ -1882,7 +1882,7 @@ describe('ListView', () => {
             setTimeout(() => {  
                 expect(listObj.element.querySelectorAll('.e-list-item').length).toBe(1);
                 done();
-            }, 100);
+            }, 100); 
             
         });
 
@@ -2009,6 +2009,7 @@ describe('ListView', () => {
         });
 
         afterEach(() => {
+            listObj.destroy();
             ele.remove();
         });
     });

@@ -30,6 +30,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
         firstRangeColor: '#959595',
         secondRangeColor: '#BDBDBD',
         thirdRangeColor: '#E3E2E2',
+        tabColor: theme === 'Material' ? '#ff4081' : theme === 'Fabric' ? '#0078D6' : '#317AB9',
         rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }],
         titleFont: {
             color: 'rgba(0, 0, 0, 1)' , fontFamily:'Roboto'
@@ -72,6 +73,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             firstRangeColor: '#959595',
             secondRangeColor: '#BDBDBD',
             thirdRangeColor: '#E3E2E2',
+            tabColor: '#0078D6',
             rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }],
             titleFont: {
                 color: '#333333', fontFamily: 'Segoe UI'
@@ -114,6 +116,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             firstRangeColor: '#959595',
             secondRangeColor: '#BDBDBD',
             thirdRangeColor: '#E3E2E2',
+            tabColor: '#317AB9',
             rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }],
             titleFont: {
                 color: '#212529', fontFamily: 'Helvetica'
@@ -156,6 +159,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             firstRangeColor: '#959595',
             secondRangeColor: '#BDBDBD',
             thirdRangeColor: '#E3E2E2',
+            tabColor: '#FFD939',
             rangeStrokes: [{ color: '#757575' }, { color: '#BDBDBD' }, { color: '#EEEEEE' }],
             titleFont: {
                 color: '#FFFFFF', fontFamily: 'Segoe UI'
@@ -200,6 +204,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             firstRangeColor: '#8D8D8D',
             secondRangeColor: '#ADADAD',
             thirdRangeColor: '#EEEEEE',
+            tabColor: theme === 'MaterialDark' ? '#00B0FF' : theme === 'FabricDark' ? '#0074CC' : '#0070F0',
             rangeStrokes: [{ color: '#8D8D8D' }, { color: '#ADADAD' }, { color: '#EEEEEE' }],
             titleFont: {
                 color: theme === 'MaterialDark' ? 'rgba(255, 255, 255, 0.87)' : theme === 'FabricDark' ? '#DADADA' : '#FFFFFF', fontFamily: theme === 'MaterialDark' ? 'Roboto' : theme === 'FabricDark' ? 'Segoe UI' : 'Helvetica'
@@ -242,6 +247,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             firstRangeColor: '#959595',
             secondRangeColor: '#BDBDBD',
             thirdRangeColor: '#E3E2E2',
+            tabColor: '#007BFF',
             rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }],
             titleFont: {
                 color: '#212529', fontFamily: 'Helvetica'
@@ -284,6 +290,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             firstRangeColor: '#9CA3AF',
             secondRangeColor: '#D1D5DB',
             thirdRangeColor: '#E5E7EB',
+            tabColor: '#4F46E5',
             rangeStrokes: [{ color: '#9CA3AF' }, { color: '#D1D5DB' }, { color: '#E5E7EB' }],
             titleFont: {
                 color: '#374151', fontFamily: 'Inter'
@@ -326,6 +333,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             firstRangeColor: '#6B7280',
             secondRangeColor: '#4B5563',
             thirdRangeColor: '#374151',
+            tabColor: '#22D3EE',
             rangeStrokes: [{ color: '#6B7280' }, { color: '#4B5563' }, { color: '#374151' }],
             titleFont: {
                 color: '#D1D5DB', fontFamily: 'Inter'
@@ -368,6 +376,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             firstRangeColor: '#9CA3AF',
             secondRangeColor: '#D1D5DB',
             thirdRangeColor: '#E5E7EB',
+            tabColor: '#0D6EFD',
             rangeStrokes: [{ color: '#9CA3AF' }, { color: '#D1D5DB' }, { color: '#E5E7EB' }],
             titleFont: {
                 color: '#343A40', fontFamily: 'Helvetica'
@@ -410,6 +419,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             firstRangeColor: '#6C757D',
             secondRangeColor: '#495057',
             thirdRangeColor: '#343A40',
+            tabColor: '#0D6EFD',
             rangeStrokes: [{ color: '#6C757D' }, { color: '#495057' }, { color: '#343A40' }],
             titleFont: {
                 color: '#E9ECEF', fontFamily: 'Helvetica'
@@ -452,6 +462,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             firstRangeColor: '#C8C6C4',
             secondRangeColor: '#D2D0CE',
             thirdRangeColor: '#EDEBE9',
+            tabColor: '#0078D4',
             rangeStrokes: [{ color: '#C8C6C4' }, { color: '#D2D0CE' }, { color: '#EDEBE9' }],
             titleFont: {
                 color: '#201F1E', fontFamily: 'Segoe UI'
@@ -494,6 +505,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             firstRangeColor: '#484644',
             secondRangeColor: '#3B3A39',
             thirdRangeColor: '#292827',
+            tabColor: '#0078D4',
             rangeStrokes: [{ color: '#484644' }, { color: '#3B3A39' }, { color: '#292827' }],
             titleFont: {
                 color: '#C8C6C4', fontFamily: 'Segoe UI'
@@ -536,6 +548,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
                 firstRangeColor: '#a6a6a9',
                 secondRangeColor: '#C4C7C5',
                 thirdRangeColor: '#E7E0EC',
+            tabColor: '#49454E',
                 rangeStrokes: [{ color: '#a6a6a9' }, { color: '#C4C7C5' }, { color: '#E7E0EC' }],
                 titleFont: {
                         color: '#1C1B1F', fontFamily: 'Roboto'
@@ -578,6 +591,7 @@ export function getBulletThemeColor(theme: ChartTheme): IBulletStyle {
             firstRangeColor: 'rgba(147,143,153,0.4)',
             secondRangeColor: '#444746',
             thirdRangeColor: '#49454F',
+            tabColor: '#CAC4D0',
             rangeStrokes: [{ color: 'rgba(147,143,153,0.4)' }, { color: '#444746' }, { color: '#49454F' }],
             titleFont: {
                     color: '#E6E1E5', fontFamily: 'Roboto'

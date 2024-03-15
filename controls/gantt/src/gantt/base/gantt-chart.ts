@@ -148,7 +148,7 @@ export class GanttChart {
             if (this.parent.enableCriticalPath && criticalModule && criticalModule.criticalPathCollection) {
                 this.parent.criticalPathModule.criticalConnectorLine(criticalModule.criticalPathCollection,criticalModule.detailPredecessorCollection,this.parent.enableCriticalPath,criticalModule.predecessorCollectionTaskIds)
             }
-            if (this.parent.viewType === 'ResourceView' && this.parent.showOverAllocation) {
+            if (this.parent.showOverAllocation) {
                 this.renderOverAllocationContainer();
             }
         }
@@ -180,8 +180,12 @@ export class GanttChart {
     }
     private getTopValue(currentRecord: IGanttData): number {
         const updatedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
-        const recordIndex: number = updatedRecords.indexOf(currentRecord);
-        if (!currentRecord.expanded) {
+        let recordIndex: number = updatedRecords.indexOf(currentRecord);
+        if (currentRecord.parentItem && recordIndex === -1) {
+            const nestedParent = this.parent.getRecordByID(currentRecord.parentItem.taskId);
+            recordIndex = updatedRecords.indexOf(nestedParent);
+        }
+        if (!currentRecord.expanded ) {
             return (recordIndex * this.parent.rowHeight);
         }
         return ((recordIndex + 1) * this.parent.rowHeight);
@@ -214,9 +218,12 @@ export class GanttChart {
             && !this.parent.enableMultiTaskbar) {
             return;
         }
+        if (currentRecord.level > 0 && currentRecord.expanded && !this.parent.getRecordByID(currentRecord.parentItem.taskId).expanded) {
+            return;
+        }
         for (let i: number = 0; i < rangeCollection.length; i++) {
             let height: number;
-            if (!this.parent.allowTaskbarOverlap && !currentRecord.expanded && this.parent.enableMultiTaskbar) {
+            if (!this.parent.allowTaskbarOverlap && !currentRecord.expanded && this.parent.enableMultiTaskbar && !this.isCollapseAll) {
                 height = parseInt((this.parent.chartRowsModule.ganttChartTableBody.childNodes[rowIndex as number] as HTMLElement).style.height) -
                          (this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight);
             }
@@ -227,14 +234,16 @@ export class GanttChart {
                 className: cls.rangeChildContainer + ' ' +  'e-leftarc', styles: (this.parent.enableRtl? 'right:' : 'left:') +
                 `${(this.parent.enableRtl ? rangeCollection[i as number].left + rangeCollection[i as number].width - 5 : rangeCollection[i as number].left)}px;
                 top: ${Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight) / 2)}px;
-                height: ${height + 1}px; border-right: 0px`
+                height: ${height + 1}px; border-right: 0px;
+                z-index: ${(this.parent.viewType === 'ProjectView') ? currentRecord.childRecords.length > 1 ? currentRecord.childRecords.length + 1 : currentRecord.childRecords.length : 6}`
             });
             const rightDiv: HTMLElement = createElement('div', {
                 className: cls.rangeChildContainer + ' ' + 'e-rightarc',
                 styles: (this.parent.enableRtl? 'right:' : 'left:') + `${(this.parent.enableRtl? rangeCollection[i as number].left :
                     rangeCollection[i as number].left + rangeCollection[i as number].width - 5)}px;
                 top: ${Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight) / 2)}px; height: ${height + 1}px;
-                border-left: 0px`
+                border-left: 0px;
+                z-index: ${(this.parent.viewType === 'ProjectView') ? currentRecord.childRecords.length > 1 ? currentRecord.childRecords.length + 1 : currentRecord.childRecords.length : 6}`
             });
             parentDiv.appendChild(leftDiv);
             parentDiv.appendChild(rightDiv);
@@ -913,7 +922,7 @@ export class GanttChart {
             this.expandCollapseChartRows('collapse', getValue('chartRow', args), record, null);
         }
         // To render the child record on parent row after collapsing
-        if (this.parent.viewType === 'ResourceView') {
+        if (this.parent.viewType === 'ResourceView' || this.parent.viewType === 'ProjectView') {
             this.renderMultiTaskbar(record);
         }
         if (!this.parent.enableVirtualization) {
@@ -978,7 +987,7 @@ export class GanttChart {
             this.parent.isExpandCollapseLevelMethod = false;
         }
         // To render the child record on parent row after expanding.
-        if (this.parent.viewType === 'ResourceView') {
+        if (this.parent.viewType === 'ResourceView' || this.parent.viewType === 'ProjectView') {
             this.renderMultiTaskbar(record);
         }
         if (!this.parent.enableVirtualization) {
@@ -1077,7 +1086,7 @@ export class GanttChart {
         } else {
             this.isCollapseAll = true;
             this.parent.treeGrid.collapseAll();
-            if (this.isCollapseAll && !this.parent.allowTaskbarOverlap && this.parent.viewType === 'ResourceView') {
+            if (this.isCollapseAll && !this.parent.allowTaskbarOverlap) {
                 let treeGridContentHeight: number = this.parent.enableRtl ? this.parent['element'].getElementsByClassName('e-content')[2].children[0]['offsetHeight'] :
                                       this.parent['element'].getElementsByClassName('e-content')[0].children[0]['offsetHeight'];
                 this.parent.contentHeight = treeGridContentHeight;
@@ -1643,6 +1652,11 @@ export class GanttChart {
     private destroy(): void {
         this.removeEventListener();
         this.unWireEvents();
+        this.rangeViewContainer = null;
+        this.chartBodyContent = null;
+        this.scrollElement = null;
+        this.chartTimelineContainer = null;
+        this.chartBodyContainer = null;
         if (!isNullOrUndefined(this.scrollObject)) {
             this.scrollObject.destroy();
             this.scrollObject = null;

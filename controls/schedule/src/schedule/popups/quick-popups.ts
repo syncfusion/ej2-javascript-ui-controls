@@ -1378,6 +1378,17 @@ export class QuickPopups {
                 instance.destroy();
             }
         }
+        if (popupName === 'quickPopup') {
+            const input: HTMLInputElement = popup.element.querySelector('input.' + cls.SUBJECT_CLASS);
+            if (input) {
+                input.remove();
+            }
+            const form: HTMLFormElement = this.quickPopup.element.querySelector('form.' + cls.FORM_CLASS);
+            if (form) {
+                util.removeChildren(form);
+                form.remove();
+            }
+        }
     }
 
     public refreshQuickDialog(): void {

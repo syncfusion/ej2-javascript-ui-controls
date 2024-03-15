@@ -4,6 +4,8 @@
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { DOMNode } from '../../../src/editor-manager/plugin/dom-node';
 import { NodeSelection, } from '../../../src/selection/index';
+import { RichTextEditor } from '../../../src/rich-text-editor';
+import { renderRTE , destroy} from '../../rich-text-editor/render.spec';
 
 describe('DOMNode plugin', () => {
     let domSelection: NodeSelection = new NodeSelection();
@@ -248,6 +250,214 @@ describe('DOMNode plugin', () => {
         });
         afterAll(() => {
             detach(elem);
+        });
+    });
+
+    describe('850070 - Number list not applied properly to the paragraph content when the content is inside the table', () => {
+        let editor: RichTextEditor;
+        const content: string = '<table class="e-rte-table" style="width: 32.6738%; min-width: 0px; height: 26px;">\n            <tbody>\n                <tr>\n                    <td class="" style="width: 100%;">\n                        Item 1\n                        <br>\n                        Item 2\n                        <br>\n                        Item 3\n                        <br>\n                    </td>\n                </tr>\n            </tbody>\n        </table><p><br></p><table class="e-rte-table" style="width: 20.7487%; min-width: 0px; height: 97px;">\n            <tbody>\n                <tr>\n                    <td class="" style="width: 100%;"><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">The\n                            Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit\n                            content and return the valid<span>&nbsp;</span></span><a href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window" style=" background-color: rgb(255, 255, 255); color: rgb(46, 46, 241); text-decoration: none; font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal;">HTML\n                            markup</a><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;"><span>&nbsp;</span>or<span>&nbsp;</span></span><a href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window" style=" background-color: rgb(255, 255, 255); color: rgb(46, 46, 241); text-decoration: none; font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal;">markdown</a><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;"><span>&nbsp;</span>of\n                            the content</span><br></td>\n                </tr>\n            </tbody>\n        </table><p><br></p><table class="e-rte-table" style="width: 20.6952%; min-width: 0px; height: 64px;">\n            <tbody>\n                <tr>\n                    <td class="" style="width: 100%;">\n                        <strong>\n                            This ia&nbsp; a paragraph\n                        </strong>\n                        Which has two nodes.\n                    </td>\n                </tr>\n            </tbody>\n        </table><p><br></p><table class="e-rte-table" style="width: 20.7487%; min-width: 0px; height: 97px;">\n            <tbody>\n                <tr>\n                    <td class="" style="width: 100%;"><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">The\n                            Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit\n                            content and return the valid<span>&nbsp;</span></span><a href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window" style=" background-color: rgb(255, 255, 255); color: rgb(46, 46, 241); text-decoration: none; font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal;">HTML\n                            markup</a><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;"><span>&nbsp;</span>or<span>&nbsp;</span></span><a href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window" style=" background-color: rgb(255, 255, 255); color: rgb(46, 46, 241); text-decoration: none; font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal;">markdown</a><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;"><span>&nbsp;</span>of\n                            the content</span><br>\n                            <p>\n                                <strong>\n                                    This ia&nbsp; a paragraph\n                                </strong>\n                                Which has two nodes.\n                            </p>\n                            <span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">The\n                            Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit\n                            content and return the valid<span>&nbsp;</span></span><a href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window" style=" background-color: rgb(255, 255, 255); color: rgb(46, 46, 241); text-decoration: none; font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal;">HTML\n                            markup</a><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;"><span>&nbsp;</span>or<span>&nbsp;</span></span><a href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window" style=" background-color: rgb(255, 255, 255); color: rgb(46, 46, 241); text-decoration: none; font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal;">markdown</a><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;"><span>&nbsp;</span>of\n                            the content</span>\n                        </td>\n                </tr>\n            </tbody>\n        </table><p>\n            <strong>\n                This ia&nbsp; a paragraph\n            </strong>\n            Which has two nodes.\n        </p><p><br></p><span data-col="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="height: 135px; width: 4px; top: 315px; left: 14px;"></span><span data-col="1" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="height: 135px; width: 4px; top: 315px; left: 397px;"></span><span data-row="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="width: 384px; height: 4px; top: 447px; left: 16px;"></span><span class="e-table-box" data-col="1" unselectable="on" contenteditable="false" style="top: 446px; left: 396px;"></span>';
+        function applyFormat(): void {
+            const wrapper: HTMLElement = editor.element.querySelectorAll('.e-toolbar-item')[0] as HTMLElement;
+            (wrapper.childNodes[0] as HTMLElement).click();
+            (document.body.querySelector('.e-h1') as HTMLElement).click();
+        }
+
+        function applyULList(): void {
+            const wrapper: HTMLElement = editor.element.querySelectorAll('.e-toolbar-item')[2] as HTMLElement;
+            (wrapper.childNodes[0] as HTMLElement).click();
+        }
+
+        function applyOLList(): void {
+            const wrapper: HTMLElement = editor.element.querySelectorAll('.e-toolbar-item')[1] as HTMLElement;
+            (wrapper.childNodes[0] as HTMLElement).click();
+        }
+
+        beforeEach(() => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['Formats', 'OrderedList', 'UnorderedList']
+                },
+                value: content
+            });
+        });
+
+        afterEach(() => {
+            destroy(editor);
+        });
+
+        it('Should apply the number list properly CASE 1 With Selection', () => {
+            let currentTable: HTMLElement = editor.inputElement.querySelectorAll('table')[0] as HTMLElement;
+            let tdElem: HTMLElement = currentTable.querySelector('td');
+            let range: Range = new Range();
+            range.setStart(tdElem.childNodes[0], 1);
+            range.setEnd(tdElem.childNodes[2], 3);
+            const selectiOn: Selection = document.getSelection();
+            selectiOn.removeAllRanges();
+            selectiOn.addRange(range);
+            expect(tdElem.querySelectorAll('br').length).toBe(3);
+            applyFormat();
+            expect(tdElem.querySelectorAll('h1').length).toBe(2);
+            expect(tdElem.querySelectorAll('br').length).toBe(3);
+            editor.value = content;
+            editor.dataBind();
+            currentTable = editor.inputElement.querySelectorAll('table')[0] as HTMLElement;
+            tdElem = currentTable.querySelector('td');
+            range = new Range();
+            range.setStart(tdElem.childNodes[0], 1);
+            range.setEnd(tdElem.childNodes[2], 3);
+            selectiOn.removeAllRanges();
+            selectiOn.addRange(range);
+            expect(tdElem.querySelectorAll('br').length).toBe(3);
+            applyOLList();
+            expect(tdElem.querySelectorAll('br').length).toBe(3);
+            expect(tdElem.querySelectorAll('li').length).toBe(2);
+            editor.value = content;
+            editor.dataBind();
+            currentTable = editor.inputElement.querySelectorAll('table')[0] as HTMLElement;
+            tdElem = currentTable.querySelector('td');
+            range = new Range();
+            range.setStart(tdElem.childNodes[0], 1);
+            range.setEnd(tdElem.childNodes[2], 3);
+            selectiOn.removeAllRanges();
+            selectiOn.addRange(range);
+            expect(tdElem.querySelectorAll('br').length).toBe(3);
+            applyULList();
+            expect(tdElem.querySelectorAll('br').length).toBe(3);
+            expect(tdElem.querySelectorAll('li').length).toBe(2);
+        });
+
+        it('Should apply the number list properly CASE 2 With Cursor', () => {
+            let currentTable: HTMLElement = editor.inputElement.querySelectorAll('table')[0] as HTMLElement;
+            let tdElem: HTMLElement = currentTable.querySelector('td');
+            let range: Range = new Range();
+            range.setStart(tdElem.childNodes[0], 3);
+            range.setEnd(tdElem.childNodes[0], 3);
+            const selectiOn: Selection = document.getSelection();
+            selectiOn.removeAllRanges();
+            selectiOn.addRange(range);
+            expect(tdElem.querySelectorAll('br').length).toBe(3);
+            applyFormat();
+            expect(tdElem.querySelectorAll('h1').length).toBe(1);
+            expect(tdElem.querySelectorAll('br').length).toBe(3);
+            editor.value = content;
+            editor.dataBind();
+            currentTable = editor.inputElement.querySelectorAll('table')[0] as HTMLElement;
+            tdElem = currentTable.querySelector('td');
+            range = new Range();
+            range.setStart(tdElem.childNodes[0], 3);
+            range.setEnd(tdElem.childNodes[0], 3);
+            selectiOn.removeAllRanges();
+            selectiOn.addRange(range);
+            expect(tdElem.querySelectorAll('br').length).toBe(3);
+            applyOLList();
+            expect(tdElem.querySelectorAll('br').length).toBe(3);
+            expect(tdElem.querySelectorAll('li').length).toBe(1);
+            editor.value = content;
+            editor.dataBind();
+            currentTable = editor.inputElement.querySelectorAll('table')[0] as HTMLElement;
+            tdElem = currentTable.querySelector('td');
+            range = new Range();
+            range.setStart(tdElem.childNodes[0], 3);
+            range.setEnd(tdElem.childNodes[0], 3);
+            selectiOn.removeAllRanges();
+            selectiOn.addRange(range);
+            expect(tdElem.querySelectorAll('br').length).toBe(3);
+            applyULList();
+            expect(tdElem.querySelectorAll('br').length).toBe(3);
+            expect(tdElem.querySelectorAll('li').length).toBe(1);
+        });
+
+        it('Should apply the number list properly CASE 3 With Selection Combination inline and Block element', () => {
+            let currentTable: HTMLElement = editor.inputElement.querySelectorAll('table')[3] as HTMLElement;
+            let tdElem: HTMLElement = currentTable.querySelector('td');
+            let range: Range = new Range();
+            range.setStart(tdElem.childNodes[3].firstChild, 0);
+            range.setEnd(tdElem.childNodes[12], 1);
+            const selectiOn: Selection = document.getSelection();
+            selectiOn.removeAllRanges();
+            selectiOn.addRange(range);
+            expect(tdElem.querySelectorAll('br').length).toBe(1);
+            applyFormat();
+            expect(tdElem.querySelectorAll('h1').length).toBe(3);
+            expect(tdElem.querySelectorAll('br').length).toBe(1);
+        });
+    });
+
+    describe('850070 - Number list not applied properly to the paragraph content when the content is inside the table - Case 2', () => {
+        let editor: RichTextEditor;
+        const content: string = '<table class="e-rte-table" style="width: 18.7166%; min-width: 0px; height: 159px;"><tbody><tr style="height: 99.3711%;"><td class="" style="width: 99.7143%;">Item 1&nbsp;<br>Item 2<br>Item 3<br><br><br><br></td></tr></tbody></table><p><br></p>';
+        function applyFormat(): void {
+            const wrapper: HTMLElement = editor.element.querySelectorAll('.e-toolbar-item')[0] as HTMLElement;
+            (wrapper.childNodes[0] as HTMLElement).click();
+            (document.body.querySelector('.e-h1') as HTMLElement).click();
+        }
+
+        function applyULList(): void {
+            const wrapper: HTMLElement = editor.element.querySelectorAll('.e-toolbar-item')[2] as HTMLElement;
+            (wrapper.childNodes[0] as HTMLElement).click();
+        }
+
+        beforeEach(() => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['Formats', 'OrderedList', 'UnorderedList']
+                },
+                value: content
+            });
+        });
+        afterEach(() => {
+            destroy(editor);
+        });
+
+        it('Should not remove the BR element when applying format', () => {
+            let currentTable: HTMLElement = editor.inputElement.querySelectorAll('table')[0] as HTMLElement;
+            let tdElem: HTMLElement = currentTable.querySelector('td');
+            let range: Range = new Range();
+            range.setStart(tdElem.childNodes[0], 3);
+            range.setEnd(tdElem.childNodes[7], 0);
+            const selectiOn: Selection = document.getSelection();
+            selectiOn.removeAllRanges();
+            selectiOn.addRange(range);
+            expect(tdElem.querySelectorAll('br').length).toBe(6);
+            applyFormat();
+            expect(tdElem.querySelectorAll('h1').length).toBe(5);
+            expect(tdElem.querySelectorAll('br').length).toBe(6);
+            expect(tdElem.querySelectorAll('br')[5].parentElement.nodeName === 'P').toBe(true); // Issue
+        });
+
+        it('Should apply Heading format properly on Empty TD', () => {
+            editor.value = '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 100%;"><br></td></tr></tbody></table>';
+            editor.dataBind();
+            let currentTable: HTMLElement = editor.inputElement.querySelectorAll('table')[0] as HTMLElement;
+            let tdElem: HTMLElement = currentTable.querySelector('td');
+            let range: Range = new Range();
+            range.setStart(tdElem.childNodes[0], 0);
+            range.setEnd(tdElem.childNodes[0], 0);
+            const selectiOn: Selection = document.getSelection();
+            selectiOn.removeAllRanges();
+            selectiOn.addRange(range);
+            expect(tdElem.querySelectorAll('br').length).toBe(1);
+            applyFormat();
+            expect(tdElem.querySelectorAll('h1').length).toBe(1);
+            expect(tdElem.querySelectorAll('br').length).toBe(1);
+            expect(tdElem.innerHTML === '<h1><br></h1>').toBe(true); // Issue
+        });
+
+        it('Should apply Unordered List properly on In between text', () => {
+            editor.value = '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 100%;">The Rich<strong> Text</strong> Editor.</td></tr></tbody></table><p><br></p>';
+            editor.dataBind();
+            let currentTable: HTMLElement = editor.inputElement.querySelectorAll('table')[0] as HTMLElement;
+            let tdElem: HTMLElement = currentTable.querySelector('td');
+            let range: Range = new Range();
+            range.setStart(tdElem.querySelector('strong').firstChild, 1);
+            range.setEnd(tdElem.querySelector('strong').firstChild, 1);
+            const selectiOn: Selection = document.getSelection();
+            selectiOn.removeAllRanges();
+            selectiOn.addRange(range);
+            expect(tdElem.querySelectorAll('li').length).toBe(0);
+            applyULList();
+            expect(tdElem.querySelectorAll('li').length).toBe(1);
+            expect(tdElem.innerHTML === '<ul><li>The Rich<strong> Text</strong> Editor.</li></ul>').toBe(true);
         });
     });
 });

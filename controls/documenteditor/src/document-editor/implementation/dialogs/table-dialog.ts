@@ -139,7 +139,7 @@ export class TableDialog {
             const rowCount: number = this.rowValueTextBox.value;
             const columnCount: number = this.columnValueTexBox.value;
             if (!(isNullOrUndefined(rowCount) && isNullOrUndefined(columnCount))) {
-                this.documentHelper.owner.editor.insertTable(rowCount, columnCount);
+                this.documentHelper.owner.editorModule.insertTable(rowCount, columnCount);
             }
             this.documentHelper.hideDialog();
         }

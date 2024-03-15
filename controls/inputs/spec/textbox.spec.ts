@@ -2112,7 +2112,7 @@ describe('TextBox ', () => {
         it('Other attribute testing with htmlAttributes API', () => {
             inputObj = new TextBox({ htmlAttributes:{name:"numeric", maxlength: "50", minlength: "10", class: "test", title:"sample"}});
             inputObj.appendTo('#textbox');
-            inputObj.updateHTMLAttrToWrapper();
+            inputObj.updateHTMLAttributesToWrapper();
             expect(inputObj.element.getAttribute('name')).toBe('numeric');
             expect(inputObj.element.getAttribute('maxlength')).toBe('50');
             expect(inputObj.element.getAttribute('minlength')).toBe('10');
@@ -2124,8 +2124,8 @@ describe('TextBox ', () => {
             inputObj.appendTo('#textbox');
             inputObj.htmlAttributes = { class: "test", title: 'sample', disabled: 'disabled', readonly: 'readonly', placeholder: "Number of states"};
             inputObj.dataBind();
-            inputObj.updateHTMLAttrToElement();
-            inputObj.updateHTMLAttrToWrapper();
+            inputObj.updateHTMLAttributesToElement();
+            inputObj.updateHTMLAttributesToWrapper();
             expect(inputObj.element.hasAttribute('readonly')).toBe(true);
             expect(inputObj.element.hasAttribute('disabled')).toBe(true);
             expect(inputObj.textboxWrapper.container.getAttribute('title')).toBe('sample');
@@ -3086,7 +3086,7 @@ describe('TextBox ', () => {
             });
             inputObj.appendTo('#textbox');
             expect(inputObj.textarea.hasAttribute('disabled')).toBe(true);
-            expect(inputObj.textarea.getAttribute('disabled')).toBe('disabled');
+            expect(inputObj.textarea.getAttribute('disabled')).toBe('');
             expect(inputObj.element.hasAttribute('disabled')).toBe(true);
             expect(inputObj.textarea.hasAttribute('readonly')).toBe(true);
             expect(inputObj.element.hasAttribute('readonly')).toBe(true);

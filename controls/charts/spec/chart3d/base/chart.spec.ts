@@ -846,15 +846,15 @@ describe('Chart Control', () => {
             chart.loaded = loaded;
             chart.dataBind();
         });
-        // it('Checking addSeries method', (done: Function) => {
-        //     loaded = (args: Chart3DLoadedEventArgs) => {
-        //         const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-1-point-0');
-        //         expect(seriesElement.getAttribute('d')).toBe('M 125.38983050847459 146.84745762711864 L 125.38983050847459 146.84745762711864 L 156.71186440677968 146.84745762711864 L 156.71186440677968 357.5593220338984 L 125.38983050847459 357.5593220338984 ');
-        //         done();
-        //     };
-        //     chart.loaded = loaded;
-        //     chart.addSeries([{ dataSource: categoryData, xName: 'x', yName: 'y', fill: 'red', type: 'Column' }]);
-        // });
+        it('Checking addSeries method', (done: Function) => {
+            loaded = (args: Chart3DLoadedEventArgs) => {
+                const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-1-point-0');
+                expect(seriesElement.getAttribute('d')).toBe('M 125.38983050847459 146.84745762711864 L 125.38983050847459 146.84745762711864 L 156.71186440677968 146.84745762711864 L 156.71186440677968 357.5593220338984 L 125.38983050847459 357.5593220338984 ');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.addSeries([{ dataSource: categoryData, xName: 'x', yName: 'y', fill: 'red', type: 'Column' }]);
+        });
         it('Checking removeSeries method', (done: Function) => {
             loaded = (args: Chart3DLoadedEventArgs) => {
                 const seriesElement: Element = document.getElementById('chartContainer-svg-0-region-series-1-point-0');

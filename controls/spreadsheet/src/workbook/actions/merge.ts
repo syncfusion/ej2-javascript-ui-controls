@@ -1,7 +1,7 @@
 import { Workbook, CellModel, getCell, SheetModel, setCell, getSheet } from '../base/index';
 import { setMerge, MergeArgs, getSwapRange, getRangeIndexes, mergedRange, applyMerge, activeCellMergedRange } from './../common/index';
-import { insertMerge, activeCellChanged, checkIsFormula, applyCF, ApplyCFArgs } from './../common/index';
-import { getCellAddress, workbookFormulaOperation, refreshChart } from './../common/index';
+import { insertMerge, activeCellChanged, checkIsFormula, applyCF, ApplyCFArgs, updateCell, CellUpdateArgs } from './../common/index';
+import { refreshChart } from './../common/index';
 import { extend, isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -23,20 +23,38 @@ export class WorkbookMerge {
         args.sheetIndex = isUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex;
         if (args.isAction) {
             this.parent.notify('actionBegin', { eventArgs: args, action: 'merge' });
-            if (!args.model) { args.model = []; }
+            if (!args.model) {
+                args.model = [];
+            }
         }
-        if (typeof(args.range) === 'string') { args.range = getRangeIndexes(args.range); }
-        args.range = getSwapRange(args.range);
-        if (!args.skipChecking) { this.mergedRange(args); }
+        if (typeof args.range === 'string') {
+            args.range = getRangeIndexes(args.range);
+        }
+        const range: number[] = args.range = getSwapRange(args.range);
+        if (!args.skipChecking) {
+            this.mergedRange(args);
+        }
         if (!args.merge || args.type === 'All') {
-            this.mergeAll(args); if (args.refreshRibbon) { this.parent.notify(activeCellChanged, null); }
+            this.mergeAll(args);
+            if (args.refreshRibbon) {
+                this.parent.notify(activeCellChanged, null);
+            }
         } else if (args.type === 'Horizontally') {
-            this.mergeHorizontally(args);
+            for (let rowIdx: number = args.range[0], endIdx: number = args.range[2]; rowIdx <= endIdx; rowIdx++) {
+                args.range = [rowIdx, range[1], rowIdx, range[3]];
+                this.mergeAll(args, rowIdx - range[0]);
+            }
         } else if (args.type === 'Vertically') {
-            this.mergeVertically(args);
+            for (let colIdx: number = args.range[1], endIdx: number = args.range[3]; colIdx <= endIdx; colIdx++) {
+                args.range = [range[0], colIdx, range[2], colIdx];
+                this.mergeAll(args, 0, colIdx - range[1]);
+            }
         }
+        args.range = range;
         this.parent.setUsedRange(args.range[2], args.range[3]);
-        if (args.isAction) { this.parent.notify('actionComplete', { eventArgs: args, action: 'merge' }); }
+        if (args.isAction) {
+            this.parent.notify('actionComplete', { eventArgs: args, action: 'merge' });
+        }
         if (args.sheetIndex === this.parent.activeSheetIndex) {
             this.parent.notify('selectRange', { address: getSheet(this.parent, args.sheetIndex).selectedRange, skipChecking: true });
             if (this.parent.chartColl && this.parent.chartColl.length) {
@@ -44,182 +62,97 @@ export class WorkbookMerge {
             }
         }
     }
-    private mergeAll(args: MergeArgs): void {
-        let rowSpan: number = 0; let cell: CellModel; args.range = args.range as number[]; let colSpan: number;
-        let value: string; let curCell: CellModel;
+    private mergeAll(args: MergeArgs, startRow: number = 0, startCol: number = 0): void {
+        let rowSpan: number = 0; let cell: CellModel; args.range = args.range as number[]; let colSpan: number; let cellValue: string;
+        let refreshAllCF: boolean; let format: string; let modelCell: CellModel;
         const sheet: SheetModel = isUndefined(args.sheetIndex) ? this.parent.getActiveSheet() : getSheet(this.parent, args.sheetIndex);
-        let refreshAllCF: boolean;
-        for (let i: number = args.range[0]; i <= args.range[2]; i++) {
-            colSpan = 0; if (args.isAction) { args.model.push({ cells: [] }); }
-            for (let j: number = args.range[1]; j <= args.range[3]; j++) {
-                cell = getCell(i, j, sheet);
-                if (cell && (cell.value || cell.formula) && !value) { value = cell.formula || cell.value; }
+        const updateObj: CellUpdateArgs = { cell: new Object(), rowIdx: args.range[0], colIdx: args.range[1], valChange: !args.merge,
+            preventEvt: true, uiRefresh: !args.preventRefresh, skipFormatCheck: true };
+        for (let rowIdx: number = args.range[0], rIdx: number = startRow; rowIdx <= args.range[2]; rowIdx++, rIdx++) {
+            colSpan = 0;
+            if (args.isAction && !args.model[rIdx as number]) {
+                args.model.push({ cells: [] });
+            }
+            for (let colIdx: number = args.range[1], cIdx: number = startCol; colIdx <= args.range[3]; colIdx++, cIdx++) {
+                cell = getCell(rowIdx, colIdx, sheet);
+                if (cell && (cell.value || <unknown>cell.value === 0 || cell.formula) && !cellValue) {
+                    cellValue = cell.formula || cell.value;
+                    format = cell.format;
+                }
                 if (args.isAction && args.merge) {
-                    args.model[i - args.range[0]].cells[j - args.range[1]] = {};
-                    extend(args.model[i - args.range[0]].cells[j - args.range[1]], cell, null, true);
+                    modelCell = args.model[rIdx as number].cells[cIdx as number] = {};
+                    extend(modelCell, cell, null, true);
                 }
-                if (sheet.rows[i as number] && sheet.rows[i as number].cells && sheet.rows[i as number].cells[j as number]) {
-                    delete sheet.rows[i as number].cells[j as number].rowSpan; delete sheet.rows[i as number].cells[j as number].colSpan;
-                    if (!args.merge && !args.isAction && args.model && args.model[i - args.range[0]] && args.model[i - args.range[0]].
-                        cells[j - args.range[1]] && args.model[i - args.range[0]].cells[j - args.range[1]] !== {}) {
-                        setCell(i, j, sheet, args.model[i - args.range[0]].cells[j - args.range[1]]);
+                if (cell) {
+                    delete cell.rowSpan;
+                    delete cell.colSpan;
+                    modelCell = !args.merge && !args.isAction && args.model && args.model[rIdx as number] &&
+                        args.model[rIdx as number].cells[cIdx as number];
+                    if (modelCell) {
+                        setCell(rowIdx, colIdx, sheet, modelCell);
                     }
                 }
-                if (args.merge) {
-                    cell = new Object();
-                    if (i === args.range[0] && j === args.range[1]) {
-                        if (args.range[3] - args.range[1] > 0) { cell.colSpan = (args.range[3] - args.range[1]) + 1; }
-                        if (args.range[2] - args.range[0] > 0) { cell.rowSpan = (args.range[2] - args.range[0]) + 1; }
-                        setCell(args.range[0], args.range[1], sheet, cell, true);
-                        continue;
-                    } else {
-                        if (i !== args.range[0]) { cell.rowSpan = -rowSpan; }
-                        if (j !== args.range[1]) { colSpan++; cell.colSpan = -colSpan; }
-                        if (sheet.rows[i as number] && sheet.rows[i as number].cells && sheet.rows[i as number].cells[j as number]) {
-                            delete sheet.rows[i as number].cells[j as number].value;
-                            delete sheet.rows[i as number].cells[j as number].formula;
+                if (rowIdx === args.range[0] && colIdx === args.range[1]) {
+                    if (args.merge) {
+                        if (args.range[3] - args.range[1] > 0) {
+                            updateObj.cell.colSpan = (args.range[3] - args.range[1]) + 1;
                         }
-                        curCell = getCell(i, j, sheet) || {};
-                        setCell(i, j, sheet, Object.assign(cell, curCell));
+                        if (args.range[2] - args.range[0] > 0) {
+                            updateObj.cell.rowSpan = (args.range[2] - args.range[0]) + 1;
+                        }
+                        updateCell(this.parent, sheet, updateObj);
+                        updateObj.valChange = updateObj.mergedCells = true;
+                        continue;
+                    }
+                } else {
+                    updateObj.rowIdx = rowIdx; updateObj.colIdx = colIdx;
+                    updateObj.cell = {};
+                    if (args.merge) {
+                        if (rowIdx !== args.range[0]) {
+                            updateObj.cell.rowSpan = -rowSpan;
+                        }
+                        if (colIdx !== args.range[1]) {
+                            colSpan++;
+                            updateObj.cell.colSpan = -colSpan;
+                        }
                     }
                 }
-                if (!args.preventRefresh) {
-                    this.parent.notify(applyMerge, { rowIdx: i, colIdx: j });
-                    refreshAllCF = this.isFormulaDependent(sheet, i, j, refreshAllCF);
+                updateCell(this.parent, sheet, updateObj);
+                if (!refreshAllCF) {
+                    refreshAllCF = updateObj.isFormulaDependent;
                 }
             }
             rowSpan++;
         }
         if (args.merge) {
-            cell = this.getCellValue(args.range[0], args.range[1], value, sheet);
-            setCell(args.range[0], args.range[1], sheet, cell, true);
-            if (!args.preventRefresh) {
+            if (cellValue || <unknown>cellValue === 0) {
+                delete updateObj.mergedCells;
+                updateObj.cell = {};
+                const curCell: CellModel = getCell(args.range[0], args.range[1], sheet);
+                if (!curCell || (!curCell.value && !curCell.formula)) {
+                    if (checkIsFormula(cellValue)) {
+                        updateObj.cell.formula = cellValue;
+                    } else {
+                        updateObj.cell.value = cellValue;
+                    }
+                    if (format) {
+                        updateObj.cell.format = format;
+                    }
+                }
+                updateObj.rowIdx = args.range[0]; updateObj.colIdx = args.range[1];
+                updateCell(this.parent, sheet, updateObj);
+            } else if (!args.preventRefresh) {
                 this.parent.notify(applyMerge, { rowIdx: args.range[0], colIdx: args.range[1] });
-                this.refreshCF(sheet, args.range[0], args.range[1], refreshAllCF);
             }
         }
-    }
-    private isFormulaDependent(sheet: SheetModel, rowIdx: number, colIdx: number, refreshAll: boolean): boolean {
-        if (!refreshAll) {
-            const eventArgs: { [key: string]: string | number | boolean } = { action: 'dependentCellsAvailable', sheetId: sheet.id.toString(),
-                address: getCellAddress(rowIdx, colIdx) };
-            this.parent.notify(workbookFormulaOperation, eventArgs);
-            return <boolean>eventArgs.isAvailable;
+        if (!args.preventRefresh) {
+            this.refreshCF(sheet, args.range[0], args.range[1], refreshAllCF);
         }
-        return refreshAll;
     }
     private refreshCF(sheet: SheetModel, rowIdx: number, colIdx: number, refreshAll: boolean): void {
         if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
             this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [rowIdx, colIdx], refreshAll: refreshAll, isAction: true });
         }
-    }
-    private mergeHorizontally(args: MergeArgs): void {
-        let mergeCount: number; args.range = args.range as number[]; let cell: CellModel;
-        const sheet: SheetModel = getSheet(this.parent, args.sheetIndex);
-        let newValue: string; let rowIdx: number; let curCell: CellModel; let refreshAllCF: boolean;
-        for (let i: number = args.range[0]; i <= args.range[2]; i++) {
-            mergeCount = 0;
-            if (args.isAction) { args.model.push({ cells: [] }); }
-            for (let j: number = args.range[1]; j <= args.range[3]; j++) {
-                curCell = getCell(i, j, sheet);
-                cell = new Object();
-                if (args.isAction) {
-                    args.model[i - args.range[0]].cells[j - args.range[1]] = {};
-                    Object.assign(args.model[i - args.range[0]].cells[j - args.range[1]], curCell);
-                }
-                if (j === args.range[1]) {
-                    if (i === args.range[0]) { continue; }
-                    rowIdx = i - 1;
-                    if (sheet.rows[rowIdx as number] && sheet.rows[rowIdx as number].cells &&
-                        sheet.rows[rowIdx as number].cells[j as number]) {
-                        delete sheet.rows[rowIdx as number].cells[j as number].rowSpan;
-                    }
-                    cell = this.getCellValue(rowIdx, j, newValue, sheet);
-                    if (args.range[3] - args.range[1] > 0) { cell.colSpan = (args.range[3] - args.range[1]) + 1; }
-                    newValue = null;
-                    setCell(rowIdx, j, sheet, cell, true);
-                } else {
-                    if (curCell && (curCell.value || curCell.formula) && !newValue) { newValue = curCell.formula || curCell.value; }
-                    rowIdx = i;
-                    if (sheet.rows[rowIdx as number] && sheet.rows[rowIdx as number].cells &&
-                        sheet.rows[rowIdx as number].cells[j as number]) {
-                        delete sheet.rows[rowIdx as number].cells[j as number].rowSpan;
-                        delete sheet.rows[rowIdx as number].cells[j as number].value;
-                        delete sheet.rows[rowIdx as number].cells[j as number].formula;
-                    }
-                    mergeCount++; cell.colSpan = -mergeCount;
-                    setCell(rowIdx, j, sheet, cell, true);
-                }
-                this.parent.notify(applyMerge, { rowIdx: rowIdx, colIdx: j });
-                refreshAllCF = this.isFormulaDependent(sheet, rowIdx, j, refreshAllCF);
-            }
-        }
-        if (sheet.rows[args.range[2]] && sheet.rows[args.range[2]].cells && sheet.rows[args.range[2]].cells[args.range[1]]) {
-            delete sheet.rows[args.range[2]].cells[args.range[1]].rowSpan;
-        }
-        cell = this.getCellValue(args.range[2], args.range[1], newValue, sheet);
-        if (args.range[3] - args.range[1] > 0) { cell.colSpan = (args.range[3] - args.range[1]) + 1; }
-        setCell(args.range[2], args.range[1], sheet, cell, true);
-        this.parent.notify(applyMerge, { rowIdx: args.range[2], colIdx: args.range[1] });
-        this.refreshCF(sheet, args.range[2], args.range[1], refreshAllCF);
-    }
-    private getCellValue(rowIdx: number, colIdx: number, value: string, sheet: SheetModel): CellModel {
-        const cell: CellModel = new Object(); const curCell: CellModel = getCell(rowIdx, colIdx, sheet);
-        if (value && (!curCell || (!curCell.value && !curCell.formula))) {
-            if (checkIsFormula(value)) {
-                cell.formula = value;
-            } else {
-                cell.value = value;
-            }
-        }
-        return cell;
-    }
-    private mergeVertically(args: MergeArgs): void {
-        let rowSpan: number = 0; args.range = args.range as number[];
-        const sheet: SheetModel = getSheet(this.parent, args.sheetIndex);
-        let cell: CellModel; let newValue: string; let colIdx: number; let curCell: CellModel; let refreshAllCF: boolean;
-        for (let i: number = args.range[1]; i <= args.range[3]; i++) {
-            for (let j: number = args.range[0]; j <= args.range[2]; j++) {
-                curCell = getCell(j, i, sheet);
-                if (args.isAction) {
-                    if (args.model[j - args.range[0]] === undefined) { args.model[j - args.range[0]] = { cells: [] }; }
-                    args.model[j - args.range[0]].cells[i - args.range[1]] = {};
-                    Object.assign(args.model[j - args.range[0]].cells[i - args.range[1]], curCell);
-                }
-                if (j === args.range[0]) {
-                    rowSpan = 0;
-                    if (i === args.range[1]) { continue; } colIdx = i - 1;
-                    if (sheet.rows[j as number] && sheet.rows[j as number].cells && sheet.rows[j as number].cells[colIdx as number]) {
-                        delete sheet.rows[j as number].cells[colIdx as number].colSpan;
-                    }
-                    cell = this.getCellValue(j, colIdx, newValue, sheet);
-                    if (args.range[2] - args.range[0] > 0) { cell.rowSpan = (args.range[2] - args.range[0]) + 1; }
-                    newValue = null;
-                    setCell(j, colIdx, sheet, cell, true);
-                } else {
-                    cell = new Object();
-                    if (curCell && (curCell.value || curCell.formula) && !newValue) { newValue = curCell.formula || curCell.value; }
-                    rowSpan++; colIdx = i;
-                    if (sheet.rows[j as number] && sheet.rows[j as number].cells && sheet.rows[j as number].cells[colIdx as number]) {
-                        delete sheet.rows[j as number].cells[colIdx as number].colSpan;
-                        delete sheet.rows[j as number].cells[colIdx as number].value;
-                        delete sheet.rows[j as number].cells[colIdx as number].formula;
-                    }
-                    cell.rowSpan = -rowSpan;
-                    setCell(j, colIdx, sheet, cell, true);
-                }
-                this.parent.notify(applyMerge, { rowIdx: j, colIdx: colIdx });
-                refreshAllCF = this.isFormulaDependent(sheet, i, colIdx, refreshAllCF);
-            }
-        }
-        if (sheet.rows[args.range[0]] && sheet.rows[args.range[0]].cells && sheet.rows[args.range[0]].cells[args.range[3]]) {
-            delete sheet.rows[args.range[0]].cells[args.range[3]].colSpan;
-        }
-        cell = this.getCellValue(args.range[0], args.range[1], newValue, sheet);
-        if (args.range[2] - args.range[0] > 0) { cell.rowSpan = (args.range[2] - args.range[0]) + 1; }
-        setCell(args.range[0], args.range[3], sheet, cell, true);
-        this.parent.notify(applyMerge, { rowIdx: args.range[0], colIdx: args.range[3] });
-        this.refreshCF(sheet, args.range[0], args.range[3], refreshAllCF);
     }
     private activeCellRange(args: MergeArgs): void {
         args.range = args.range as number[];

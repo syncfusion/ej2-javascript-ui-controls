@@ -329,16 +329,17 @@ export class CellFormat {
                 this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clear' });
             }
         };
+        const isClearAll: boolean = options.type === 'Clear All';
         if (isOverlay) {
             if (overlayElements[0].classList.contains('e-datavisualization-chart')) {
-                if (options.type === 'Clear Contents' || options.type === 'Clear All') {
+                if (options.type === 'Clear Contents' || isClearAll) {
                     actionBegin();
                     this.parent.notify(deleteChart, {
                         id: overlayElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
                     });
                     actionComplete();
                 }
-            } else if (options.type === 'Clear All') {
+            } else if (isClearAll) {
                 actionBegin();
                 this.parent.notify(deleteImage, {
                     id: overlayElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
@@ -347,11 +348,11 @@ export class CellFormat {
             }
         } else {
             actionBegin();
-            if (options.type === 'Clear Formats' || options.type === 'Clear All') {
+            if (options.type === 'Clear Formats' || isClearAll) {
                 clearCFArgs = { range: range, sheetIdx: sheetIndex, isClear: true };
                 this.parent.notify(clearCFRule, clearCFArgs);
                 (args as { cfClearActionArgs?: object }).cfClearActionArgs = clearCFArgs.cfClearActionArgs;
-                if (options.type === 'Clear All') {
+                if (isClearAll) {
                     this.parent.notify(cellValidation, { range: range, isRemoveValidation: true, viewport: this.parent.viewport });
                     if (sRIdx === 0 && rangeIdx[1] === 0 && eRIdx >= sheet.usedRange.rowIndex  && rangeIdx[3] >= sheet.usedRange.colIndex) {
                         this.parent.setUsedRange(sRIdx, rangeIdx[1], sheet, false, true);
@@ -364,7 +365,7 @@ export class CellFormat {
                         const cell: CellModel = getCell(sRIdx, sCIdx, sheet);
                         const cellElem: HTMLElement = this.parent.getCell(sRIdx, sCIdx);
                         if (cell) {
-                            if (cell.formula) {
+                            if (isClearAll && cell.formula) {
                                 this.parent.notify(clearFormulaDependentCells, { cellRef: getRangeAddress([sRIdx, sCIdx, sRIdx, sCIdx]) });
                             }
                             if (cell.wrap) {
@@ -374,7 +375,7 @@ export class CellFormat {
                                 if (cellElem) {
                                     removeClass(cellElem.querySelectorAll('.e-hyperlink'), 'e-hyperlink-style');
                                 }
-                                if (options.type === 'Clear All') {
+                                if (isClearAll) {
                                     this.parent.removeHyperlink(sheet.name + '!' + getRangeAddress([sRIdx, sCIdx, sRIdx, sCIdx]));
                                 }
                             }
@@ -387,7 +388,7 @@ export class CellFormat {
             }
             this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
-                getSwapRange(getRangeIndexes(range)), false, false, false, false, isImported(this.parent));
+                getSwapRange(getRangeIndexes(range)), false, false, false, false, isImported(this.parent), !isClearAll);
             this.parent.notify(addHighlight, { range: range, isclearFormat: true });
             if (!args.isFromUpdateAction) {
                 this.parent.notify(selectRange, { address: range });

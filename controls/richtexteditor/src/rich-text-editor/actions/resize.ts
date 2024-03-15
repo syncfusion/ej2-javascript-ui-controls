@@ -79,7 +79,8 @@ export class Resize {
             this.parent.element.style.width = (!this.parent.enableRtl) ? eventType.clientX - boundRect.left + 'px' : boundRect.right - eventType.clientX + 'px';
         }
         if (!this.parent.toolbarSettings.enable) {
-            this.parent.setContentHeight('', false);
+            const isExpand: boolean = this.parent.element.querySelectorAll('.e-toolbar-extended.e-popup-open').length > 0 ? true : false;
+            this.parent.setContentHeight('Resize', isExpand);
         }
         this.parent.refreshUI();
     }

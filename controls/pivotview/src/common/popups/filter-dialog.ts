@@ -4,6 +4,7 @@ import {
 } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
+import { PivotEngine } from '../../base/engine';
 import {
     TreeView, NodeCheckEventArgs, Tab, TabItemModel, NodeClickEventArgs,
     NodeExpandEventArgs, NodeSelectEventArgs
@@ -498,16 +499,17 @@ export class FilterDialog {
         this.parent.searchTreeItems = [];
         const treeData: { [key: string]: Object; }[] = [];
         const modifiedFieldName: string = fieldName.replace(/[^a-zA-Z0-9 ]/g, '_');
+        const engineModule: PivotEngine = this.parent.engineModule as PivotEngine;
         for (let i: number = 0, lnt: number = members.length; i < lnt; i++) {
             if (order === 'None') {
-                const memberName: string = (this.parent.isDateField ?
-                    members[i as number].formattedText : members[i as number].actualText).toString();
-                const nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName, 'data-memberId': members[i as number].actualText.toString() };
+                const memberName: string = members[i as number].actualText.toString();
+                const nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName, 'data-memberId': memberName };
                 const obj: { [key: string]: Object } = {
                     id: modifiedFieldName + '_' + (i + 1),
                     htmlAttributes: nodeAttr,
                     actualText: members[i as number].actualText,
-                    name: memberName,
+                    name: this.parent.isDateField ? members[i as number].formattedText :
+                        engineModule.getFormattedValue(memberName as string, fieldName).formattedText,
                     isSelected: this.parent.currentTreeItemsPos[members[i as number].actualText as string].isSelected
                 };
                 this.parent.currentTreeItems.push(obj);
@@ -1172,6 +1174,9 @@ export class FilterDialog {
      * @hidden
      */
     public closeFilterDialog(): void {
+        if (this.editorSearch && !this.editorSearch.isDestroyed) {
+            this.editorSearch.destroy();
+        }
         if (this.allowExcelLikeFilter) {
             if (this.tabObj && !this.tabObj.isDestroyed) {
                 this.tabObj.destroy();
@@ -1185,9 +1190,6 @@ export class FilterDialog {
         }
         if (this.allMemberSelect && !this.allMemberSelect.isDestroyed) {
             this.allMemberSelect.destroy();
-        }
-        if (this.editorSearch && !this.editorSearch.isDestroyed) {
-            this.editorSearch.destroy();
         }
         if (document.getElementById(this.parent.parentID + '_LevelDiv-popup')) {
             remove(document.getElementById(this.parent.parentID + '_LevelDiv-popup'));

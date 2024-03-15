@@ -154,13 +154,13 @@ describe('CheckBox', () => {
         });
 
         it('Enable Html Sanitizer testing', () => {
-            checkbox = new CheckBox({ label: '<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: true, }, '#checkbox');
+            checkbox = new CheckBox({ label: '<style>body{background:rgb(0, 0, 255)}</style>' }, '#checkbox');
             const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
         });
 
         it('Enable Html Sanitizer disabled testing', () => {
-            checkbox = new CheckBox({ label: 'Banking<style>body{background:rgb(0, 0, 255)}</style>' }, '#checkbox');
+            checkbox = new CheckBox({ label: 'Banking<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: false }, '#checkbox');
             const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         });

@@ -350,7 +350,7 @@ export class TablePropertiesDialog {
         this.documentHelper.owner.editorModule.onTableFormat(this.tableFormat);
         this.documentHelper.owner.editorModule.onRowFormat(this.rowFormat);
         this.documentHelper.owner.editorModule.onCellFormat(this.cellFormat);
-        this.documentHelper.owner.editorHistory.updateComplexHistory();
+        this.documentHelper.owner.editorHistoryModule.updateComplexHistory();
         this.closeTablePropertiesDialog();
         this.documentHelper.updateFocus();
     };
@@ -367,7 +367,7 @@ export class TablePropertiesDialog {
         this.documentHelper.layout.reLayoutTable(table);
         this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
         this.documentHelper.owner.editorModule.updateSelectionTextPosition(true);
-        const history: EditorHistory = this.documentHelper.owner.editorHistory;
+        const history: EditorHistory = this.documentHelper.owner.editorHistoryModule;
         if (history && history.currentBaseHistoryInfo) {
             if (history.currentBaseHistoryInfo.modifiedProperties.length > 0) {
                 history.currentBaseHistoryInfo.updateSelection();

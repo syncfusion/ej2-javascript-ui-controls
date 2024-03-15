@@ -279,7 +279,8 @@ export class Scroll implements IAction {
                 }
             }
             const left: number = target.scrollLeft;
-            if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling && !this.parent.isEdit) {
+            if (!isNullOrUndefined(this.parent.infiniteScrollModule) && this.parent.enableInfiniteScrolling && (!this.parent.isEdit
+                || (this.parent.editSettings.showAddNewRow && !this.parent.element.querySelector('.e-editedrow')))) {
                 this.parent.notify(infiniteScrollHandler, { target: e.target, isLeft: this.previousValues.left !== left });
             }
             if (this.parent.groupSettings.columns.length && this.parent.groupSettings.enableLazyLoading) {
@@ -495,8 +496,17 @@ export class Scroll implements IAction {
         const table: Element = this.parent.getContentTable();
         if (table.querySelector('tr:nth-last-child(2)')) {
             removeClass(table.querySelector('tr:nth-last-child(2)').querySelectorAll('td'), 'e-lastrowcell');
+            if (this.parent.isSpan) {
+                removeClass(table.querySelectorAll('.e-row-span-lastrowcell'), 'e-lastrowcell');
+            }
+            if (this.parent.editSettings.showAddNewRow && this.parent.editSettings.newRowPosition === 'Bottom') {
+                addClass(table.querySelector('tr:nth-last-child(2)').querySelectorAll('td'), 'e-lastrowcell');
+            }
         }
         addClass(table.querySelectorAll('tr:last-child td'), 'e-lastrowcell');
+        if (this.parent.isSpan) {
+            addClass(table.querySelectorAll('.e-row-span-lastrowcell'), 'e-lastrowcell');
+        }
     }
 
     /**

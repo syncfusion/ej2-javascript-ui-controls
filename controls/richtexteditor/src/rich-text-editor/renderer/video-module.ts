@@ -185,7 +185,7 @@ export class Video {
             const dialogContent: HTMLElement = this.vidsizeInput(e);
             const selectObj: IImageNotifyArgs = { args: e.args, selfVideo: this, selection: e.selection, selectNode: e.selectNode };
             this.dialogObj.setProperties({
-                height: 'inherit', width: '290px', header: vidSizeHeader, content: dialogContent,
+                width: '290px', header: vidSizeHeader, content: dialogContent,
                 buttons: [{
                     // eslint-disable-next-line
                     click: (e: MouseEvent) => {
@@ -548,7 +548,6 @@ export class Video {
                 this.setAspectRatio(this.videoEle, parseInt(width, 10), parseInt(height, 10), args);
                 this.resizeVidDupPos(this.videoEle);
                 this.vidResizePos(this.videoEle, this.vidResizeDiv);
-                this.parent.setContentHeight('', false);
             }
         });
     }
@@ -1360,8 +1359,13 @@ export class Video {
                 this.parent.trigger(events.fileRemoving, e, (e: RemovingEventArgs) => {
                     proxy.isVideoUploaded = false;
                     (this.dialogObj.getButtons(0) as Button).element.disabled = true;
-                    //proxy.inputUrl.removeAttribute('disabled');
-                    proxy.embedInputUrl.removeAttribute('disabled'); if (proxy.uploadUrl) {
+                    if (proxy.inputUrl.getAttribute('disabled')) {
+                        proxy.inputUrl.removeAttribute('disabled');
+                    }
+                    if (proxy.embedInputUrl.getAttribute('disabled')) {
+                        proxy.embedInputUrl.removeAttribute('disabled');
+                    }
+                    if (proxy.uploadUrl) {
                         proxy.uploadUrl.url = '';
                     }
                 });

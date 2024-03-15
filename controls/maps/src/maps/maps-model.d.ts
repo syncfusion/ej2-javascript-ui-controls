@@ -385,4 +385,18 @@ export interface MapsModel extends ComponentModel{
      */
     pan?: EmitType<IMapPanEventArgs>;
 
+    /**
+    * This event is triggered after performing the panning action.
+    *
+    * @event panComplete
+    */
+    panComplete?: EmitType<IMapPanEventArgs>;
+
+    /**
+    * This event is triggered after the zooming operation is completed.
+    *
+    * @event zoomComplete
+    */
+    zoomComplete?: EmitType<IMapPanEventArgs>;
+
 }

@@ -391,7 +391,7 @@ describe('Spreadsheet cell navigation module ->', () => {
         it('Ctrl + F6 to navigate between each part in spreadsheet', (done: Function) => {
             focus(helper.getInstance().element);
             helper.triggerKeyNativeEvent(117, true, false);
-            expect(document.activeElement.classList.contains('e-sheets-list')).toBeTruthy();
+            expect(document.activeElement.classList.contains('e-add-sheet-tab')).toBeTruthy();
             helper.triggerKeyNativeEvent(117, true, false, null, 'keydown', false, <HTMLElement>document.activeElement);
             expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
             expect(closest(document.activeElement, '.e-ribbon')).not.toBeNull();
@@ -410,7 +410,7 @@ describe('Spreadsheet cell navigation module ->', () => {
             expect(document.activeElement.classList.contains('e-tab-wrap')).toBeTruthy();
             expect(closest(document.activeElement, '.e-ribbon')).not.toBeNull();
             helper.triggerKeyNativeEvent(117, true, true, null, 'keydown', false, <HTMLElement>document.activeElement);
-            expect(document.activeElement.classList.contains('e-sheets-list')).toBeTruthy();
+            expect(document.activeElement.classList.contains('e-add-sheet-tab')).toBeTruthy();
             helper.triggerKeyNativeEvent(117, true, true, null, 'keydown', false, <HTMLElement>document.activeElement);
             expect(document.activeElement.classList.contains('e-selectall')).toBeTruthy();
             done();

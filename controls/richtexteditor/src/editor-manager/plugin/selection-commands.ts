@@ -42,7 +42,7 @@ export class SelectionCommands {
             const isFormatted: IsFormatted = new IsFormatted();
             let range: Range = domSelection.getRange(docElement);
             let currentAnchorNode: HTMLElement = range.startContainer.parentElement;
-            if (range.collapsed && !isNOU(currentAnchorNode) &&
+            if (range.collapsed && !isNOU(currentAnchorNode) && 
             currentAnchorNode.tagName === 'A' &&
             (range.startOffset === currentAnchorNode.textContent.length || range.startOffset === 0)) {
                 const emptyTextNode: Node = document.createTextNode('');
@@ -55,6 +55,7 @@ export class SelectionCommands {
                         currentAnchorNode.parentNode.appendChild(emptyTextNode);
                     }
                 }
+                
                 // Set the range to the empty text node
                 const newRange: Range = docElement.createRange();
                 range.setStart(emptyTextNode, 0);
@@ -365,6 +366,26 @@ export class SelectionCommands {
             (formatNode as HTMLElement).style.textDecoration = 'none';
             child = [formatNode];
         }
+        else if(IsFormatted.inlineTags.indexOf(formatNodeTagName.toLowerCase()) !== -1 && isFontStyle && formatNodeTagName.toLocaleLowerCase() !== 'span') {
+            let fontNodeStyle = (formatNode as HTMLElement).style;
+            if (fontNodeStyle.color && format === 'fontcolor') {
+                if (formatNode.nodeName === 'A') {
+                    fontNodeStyle.color = value;
+                } else{
+                    fontNodeStyle.color = '';
+                }
+            } else if (fontNodeStyle.backgroundColor && format === 'backgroundcolor') {
+                fontNodeStyle.backgroundColor = '';
+            } else if (fontNodeStyle.fontSize && format === 'fontsize') {
+                fontNodeStyle.fontSize = '';
+            } else if (fontNodeStyle.fontFamily && format === 'fontname') {
+                fontNodeStyle.fontFamily = '';
+            }
+            if ((formatNode as HTMLElement).getAttribute("style") === ''){
+                (formatNode as HTMLElement).removeAttribute("style");
+            }
+            child = [formatNode];
+        }
         else {
             child = InsertMethods.unwrap(formatNode);
             let liElement: HTMLElement = nodes[index as number].parentElement;
@@ -469,7 +490,7 @@ export class SelectionCommands {
                 }
                 let num: number = index;
                 let liChildContent : string = '';
-                 /* eslint-disable security/detect-object-injection */
+                /* eslint-disable security/detect-object-injection */
                 while (num >= 0 && !isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' && (liElement as Node).contains(nodes[num]) &&
                     liElement.textContent.replace('/\u200B/g', '').trim().includes(nodes[num as number].textContent.trim())) {
                     /* eslint-enable security/detect-object-injection */
@@ -557,19 +578,43 @@ export class SelectionCommands {
                             parentElement = parentElement.parentElement;
                             liElement = parentElement;
                         }
-                        if (format === 'fontcolor') {
+                        if (format === 'fontcolor' || format === 'fontname') {
                             const parentElem: HTMLElement = nodes[index as number].parentElement;
                             if (!isNOU(parentElem) && parentElem.childNodes){
                                 for (let i: number = 0; i < parentElem.childNodes.length; i++) {
                                     if (this.concatenateTextExcludingList(nodes, index) === nodes[index as number].textContent){
-                                        if (parentElem.tagName === 'LI'){
-                                            parentElem.style.color = value;
+                                        let liElement;
+                                        if (parentElem.tagName === 'LI') {
+                                            liElement = parentElem;
+                                        } else if (parentElem.closest('li')) {
+                                            liElement = parentElem.closest('li');
+                                        }
+                                        if (!isNOU(liElement)){
+                                          switch (format){
+                                            case 'fontcolor':
+                                              liElement.style.color = value;
+                                              break;
+                                            case 'fontname':
+                                                liElement.style.fontFamily = value;
+                                                break;
+                                            default:
+                                                break; 
+                                           }
                                         }
                                     }
                                     // eslint-disable-next-line
                                     const childElement: HTMLElement = parentElem.childNodes[i] as HTMLElement;
                                     if (childElement.tagName === 'OL' || childElement.tagName === 'UL') {
-                                        childElement.style.color = 'initial';
+                                        switch (format) {
+                                            case 'fontcolor':
+                                                childElement.style.color = 'initial';
+                                                break;
+                                            case 'fontname':
+                                                childElement.style.fontFamily = 'initial';
+                                                break;
+                                            default:
+                                                break;
+                                        }
                                     }
                                 }
                             }

@@ -1156,10 +1156,14 @@ export class HelperMethods {
                         const revision: Revision = revisions[i];
                         splittedElement.revisions.push(revision);
                         const rangeIndex: number = revision.range.indexOf(textElementBox);
-                        if (rangeIndex < 0) {
+                        if (isInitialParsing) {
                             revision.range.push(splittedElement);
                         } else {
-                            revision.range.splice(rangeIndex + 1, 0, splittedElement);
+                            if (rangeIndex < 0) {
+                                revision.range.push(splittedElement);
+                            } else {
+                                revision.range.splice(rangeIndex + 1, 0, splittedElement);
+                            }
                         }
                     }
                 }

@@ -20,6 +20,19 @@
       }
     }
 
+    & .e-group-header .e-clone-grp-btn,
+    & .e-group-header .e-lock-grp-btn {
+      @if $skin-name == 'bootstrap5' {
+        background: $qrybldr-btngroup-bgcolor;
+        box-shadow: none;
+        color: $qrybldr-icon-color;
+      }
+      @else if $skin-name == 'FluentUI' {
+        background: $qrybldr-btngroup-bgcolor;
+        border: 0 solid $qrybldr-btngroup-bgcolor;
+      }
+    }
+
     &.e-rtl .e-btn-group.e-rtl {
 
       & .e-qb-toggle.e-btn.e-small {
@@ -126,7 +139,9 @@
       }
     }
 
-    & .e-removerule.e-btn.e-round {
+    & .e-removerule.e-btn.e-round,
+    & .e-lock-rule.e-btn.e-round,
+    & .e-clone-rule.e-btn.e-round {
       background: $groupfill-color;
       @if $skin-name == 'bootstrap4' {
         background: $qrybldr-btngroup-bgcolor;

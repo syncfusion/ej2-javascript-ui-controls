@@ -3,7 +3,7 @@
 /* eslint-disable jsdoc/require-param */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable @typescript-eslint/ban-types */
-import { Node, BpmnActivity, BpmnTask, BpmnSubProcess, BpmnShape, BpmnSubEvent, DiagramShape } from './../objects/node';
+import { Node, BpmnActivity, BpmnTask, BpmnSubProcess, BpmnShape, BpmnSubEvent, DiagramShape, Lane } from './../objects/node';
 import { DiagramElement } from './../core/elements/diagram-element';
 import { Canvas } from './../core/containers/canvas';
 import { Container } from './../core/containers/container';
@@ -17,7 +17,7 @@ import { PointPortModel } from './../objects/port-model';
 import { Connector } from './../objects/connector';
 import { BpmnAnnotation } from './../objects/node';
 import { BpmnFlowModel, ConnectorModel } from './../objects/connector-model';
-import { Transform, DiagramAction } from '../enum/enum';
+import { Transform, DiagramAction, TextAnnotationDirection } from '../enum/enum';
 import { PointModel } from '../primitives/point-model';
 import { findAngle, getIntersectionPoints, getPortDirection } from '../utility/connector';
 import { Point } from '../primitives/point';
@@ -27,7 +27,7 @@ import { BpmnSubProcessModel, BpmnGatewayModel, BpmnTransactionSubProcessModel }
 import { PathModel, BpmnShapeModel, BpmnDataObjectModel, BpmnTaskModel } from './../objects/node-model';
 import { NodeModel, BpmnAnnotationModel } from './../objects/node-model';
 import { Annotation } from './../objects/annotation';
-import { Port } from './../objects/port';
+import { PointPort, Port } from './../objects/port';
 import { HistoryEntry } from './../diagram/history';
 import { TextStyleModel } from '../core/appearance-model';
 import { ActiveLabel } from '../objects/interface/interfaces';
@@ -47,34 +47,8 @@ export class BpmnDiagrams {
     //Code conversion for Bpmn Shapes
     //Start Region
 
-    /**   @private  */
-    public annotationObjects: {} = {};
-
-    /**   @private  */
-    public get textAnnotationConnectors(): ConnectorModel[] {
-        const connectors: ConnectorModel[] = [];
-        for (const key of Object.keys(this.annotationObjects)) {
-            const entry: {} = this.annotationObjects[`${key}`];
-            for (const annotation of Object.keys(entry)) {
-                const key: string = 'connector';
-                connectors.push(entry[`${annotation}`][`${key}`]);
-            }
-        }
-        return connectors;
-    }
-
-    /** @private */
-    public getTextAnnotationConn(obj: NodeModel | ConnectorModel): ConnectorModel[] {
-        const connectors: ConnectorModel[] = [];
-        if (obj.shape.type === 'Bpmn' && (obj.shape as BpmnShape).annotations.length !== 0) {
-            const entry: {} = this.annotationObjects[obj.id];
-            for (const annotation of Object.keys(entry)) {
-                const key: string = 'connector';
-                connectors.push(entry[`${annotation}`][`${key}`]);
-            }
-        }
-        return connectors;
-    }
+       /**   @private  */
+       public bpmnTextAnnotationConnector:any  = [];
 
     /**   @private  */
     public getSize(node: NodeModel, content: DiagramElement): Size {
@@ -132,19 +106,72 @@ export class BpmnDiagrams {
         if (bpmnShape === 'Activity') {
             content = this.getBPMNActivityShape(node);
         }
+        //Task 866412: Should revamp BPMN text annotation node.
         if (bpmnShape === 'TextAnnotation') {
-            content = this.renderBPMNTextAnnotation(diagram, node, content);
-        }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const annotations: {} = {};
-        if (shape.annotations.length > 0) {
-            for (let i: number = 0; i < shape.annotations.length && shape.annotations[parseInt(i.toString(), 10)].text; i++) {
-                (content as Canvas).children.push(this.getBPMNTextAnnotation(
-                    node, diagram, shape.annotations[parseInt(i.toString(), 10)], content));
+            if((node as any).parentObj instanceof Diagram || (node as any).parentObj instanceof Lane){
+               content =  this.getBpmnTextAnnotationShape(node,(node.shape as BpmnShape),diagram)
+            }else{
+                content = this.getBpmnTextAnnotationSymbol(node,(node.shape as BpmnShape), diagram);
             }
-            content.style.strokeDashArray = '2 2 6 2';
         }
         return content;
+    }
+    private getBpmnTextAnnotationShape(textAnnotation:NodeModel,bpmnTextAnnotation:BpmnShape,diagram:Diagram){
+        textAnnotation.id = textAnnotation.id || randomId();
+        const annotationsContainer: Canvas = new Canvas();
+        annotationsContainer.measureChildren = false;
+
+        annotationsContainer.offsetX = textAnnotation.offsetX;
+        annotationsContainer.offsetY = textAnnotation.offsetY;
+        annotationsContainer.float = true;
+        annotationsContainer.id = `${textAnnotation.id}_textannotation`;
+        annotationsContainer.style.strokeColor = "transparent";
+        annotationsContainer.style.fill = "transparent";
+        annotationsContainer.relativeMode = 'Object';
+        annotationsContainer.rotateAngle = 0;
+
+        const width: number = textAnnotation.width;
+        const height: number = textAnnotation.height;
+        let bounds: Rect = new Rect(0, 0, 0, 0);
+
+        if (width !== 0 && height !== 0) {
+            bounds = new Rect(
+                textAnnotation.offsetX - width / 2,
+                textAnnotation.offsetY - height / 2,
+                width,
+                height
+            );
+        }
+
+        const oldIsProtectedOnChange: boolean = (diagram as any).isProtectedOnChange;
+        (diagram as any).isProtectedOnChange = false;
+
+        this.setAnnotationPath(bounds, annotationsContainer, textAnnotation, bpmnTextAnnotation, bpmnTextAnnotation.textAnnotation.textAnnotationDirection,diagram);
+
+        (diagram as any).isProtectedOnChange = oldIsProtectedOnChange;
+
+        return annotationsContainer;
+
+    }
+    //Task 866412: Should revamp BPMN text annotation node. To render text annotation in symbol palette.
+    private getBpmnTextAnnotationSymbol( annotation:NodeModel, bpmnTextAnnotation: BpmnShape, diagram: Diagram){
+        let data: string = "M33.33,15 L0,43 M39.33,0 L33.33,0 L33.33,30 L39.33,30 M60,0";
+        if (bpmnTextAnnotation.textAnnotation.textAnnotationDirection === 'Top')
+        {
+            data = "M15,33.33 L43,0 M0,39.33 L0,33.33 L30,33.33 L30,39.33 M0,60";
+        }
+        else if (bpmnTextAnnotation.textAnnotation.textAnnotationDirection === 'Right')
+        {
+            data = "M6,15 L39.33,43 M0,0 L6,0 L6,30 L0,30 M-20,0";
+        }
+        else if (bpmnTextAnnotation.textAnnotation.textAnnotationDirection === 'Bottom')
+        {
+            data = "M15,6 L43,39.33 M0,0 L0,6 L30,6 L30,0 M0,-20";
+        }
+        let  path : PathElement= new PathElement()
+         path.data = data;
+         path.style.fill = 'transparent';
+        return path;
     }
     /** @private */
     public getBPMNShapes(node: Node): PathElement {
@@ -713,7 +740,7 @@ export class BpmnDiagrams {
                 let edges: string[] = [];
                 edges = edges.concat((source as Node).outEdges, (source as Node).inEdges);
                 for (let i: number = edges.length - 1; i >= 0; i--) {
-                    if (diagram.bpmnModule.textAnnotationConnectors.indexOf(diagram.nameTable[edges[parseInt(i.toString(), 10)]]) === -1) {
+                    if (diagram.bpmnModule.bpmnTextAnnotationConnector.indexOf(diagram.nameTable[edges[parseInt(i.toString(), 10)]]) === -1) {
                         diagram.remove(diagram.nameTable[edges[parseInt(i.toString(), 10)]]);
                     }
                 }
@@ -840,7 +867,6 @@ export class BpmnDiagrams {
         }
         return getNode;
     };
-
     /** @private */
     public removeProcess(id: string, diagram: Diagram): void {
         const node: Node = diagram.nameTable[`${id}`];
@@ -1011,183 +1037,6 @@ export class BpmnDiagrams {
         return adhocNode;
     }
 
-    /** @private */
-    private getBPMNTextAnnotation(
-        node: Node, diagram: Diagram, annotation: BpmnAnnotationModel, content: DiagramElement): Canvas {
-        annotation.id = annotation.id || randomId();
-        (annotation as BpmnAnnotation).nodeId = node.id;
-        const annotationContainer: Canvas = new Canvas();
-        const annotationPath: PathElement = new PathElement();
-        const textElement: TextElement = new TextElement();
-
-        const margin: number = 10;
-        annotationPath.id = node.id + '_' + annotation.id + '_path';
-        annotationPath.width = annotation.width;
-        annotationPath.height = annotation.height;
-        annotationPath.relativeMode = 'Object';
-
-        textElement.id = node.id + '_' + annotation.id + '_text';
-        textElement.content = annotation.text;
-        const style: TextStyleModel = node.style;
-        textElement.style = {
-            fontSize: style.fontSize, italic: style.italic, gradient: null, opacity: style.opacity,
-            bold: style.bold, textWrapping: style.textWrapping, color: style.color, fill: 'white',
-            fontFamily: style.fontFamily, whiteSpace: style.whiteSpace, textOverflow: 'Wrap',
-            strokeColor: 'none', strokeWidth: 0,
-            strokeDashArray: style.strokeDashArray, textAlign: style.textAlign, textDecoration: style.textDecoration
-        };
-        textElement.horizontalAlignment = 'Center';
-        textElement.verticalAlignment = 'Center';
-        textElement.relativeMode = 'Object';
-        textElement.margin = { left: 5, right: 5, top: 5, bottom: 5 };
-        annotationContainer.offsetX = node.offsetX + annotation.length *
-            Math.cos(annotation.angle * (Math.PI / 180));
-        annotationContainer.offsetY = node.offsetY + annotation.length *
-            Math.sin(annotation.angle * (Math.PI / 180));
-        annotationContainer.float = true;
-        annotationContainer.transform = Transform.Self;
-        annotationContainer.id = node.id + '_textannotation_' + annotation.id;
-        annotationContainer.style.strokeColor = 'transparent';
-        annotationContainer.margin = { left: margin, right: margin, top: margin, bottom: margin };
-        annotationContainer.relativeMode = 'Object';
-        annotationContainer.rotateAngle = 0;
-        //Bug 860033: Bpmn text annotation path size not rendered properly while dragging.
-        //Added below boolean to identify and prevent the resize thumbs for bpmn text annotation.
-        (annotationContainer as any).isTextAnnotation = true;
-        annotationContainer.children = [annotationPath, textElement];
-
-        const annotationNode: Node = new Node(
-            node.shape, 'annotations',
-            { id: annotationContainer.id, shape: { type: 'Bpmn', shape: 'TextAnnotation' } }, true);
-        annotationNode.ports = [
-            {
-                id: annotationPath.id + '_port', shape: 'Square',
-                offset: { x: 0, y: 0.5 }
-            }];
-        annotationNode.offsetX = annotationContainer.offsetX;
-        annotationNode.offsetY = annotationContainer.offsetY;
-        (annotationNode as BpmnAnnotationModel).text = annotation.text;
-        (annotationNode as BpmnAnnotationModel).angle = annotation.angle;
-        (annotationNode as BpmnAnnotationModel).length = annotation.length;
-
-        annotationNode.width = annotation.width;
-        annotationNode.height = annotation.height;
-        annotationNode.wrapper = annotationContainer;
-
-        annotationContainer.children.push(annotationNode.initPortWrapper(annotationNode.ports[0] as Port));
-        let bounds: Rect = new Rect(0, 0, 0, 0);
-        const width: number = node.width || node.minWidth || 0;
-        const height: number = node.height || node.minHeight || 0;
-        if (width !== undefined && height !== undefined) {
-            bounds = new Rect(node.offsetX - width / 2, node.offsetY - height / 2, width, height);
-        }
-        this.setAnnotationPath(
-            bounds, annotationContainer, { x: annotationNode.offsetX, y: annotationNode.offsetY }, annotationNode,
-            annotation.length, annotation.angle);
-
-        const connector: ConnectorModel = {
-            id: node.id + '_' + annotation.id + '_connector',
-            constraints: ConnectorConstraints.Default & ~(ConnectorConstraints.DragTargetEnd | ConnectorConstraints.Drag),
-            sourceID: node.id, targetID: annotationContainer.id,
-            targetDecorator: { shape: 'None' }
-        };
-
-        const annotationConnector: Connector = new Connector(node.shape, 'annotations', connector, true);
-        annotationConnector.targetPortID = annotationNode.ports[0].id;
-        annotationConnector.init(diagram);
-        annotationConnector.wrapper.float = false;
-        annotationConnector.wrapper.transform = Transform.Self;
-        (content as Canvas).children.push(annotationConnector.wrapper);
-        annotationConnector.zIndex = 10000;
-        let entry: {} = this.annotationObjects[node.id];
-        if (!entry) {
-            entry = {};
-        }
-        if (!entry[annotation.id]) {
-            entry[annotation.id] = {};
-        }
-        const nodeKey: string = 'node';
-        const connKey: string = 'connector';
-        entry[annotation.id][`${nodeKey}`] = annotationNode;
-        entry[annotation.id][`${connKey}`] = annotationConnector;
-        this.annotationObjects[node.id] = entry;
-        diagram.initObject(annotationNode, undefined, false);
-        annotationNode.zIndex = 10000;
-        return annotationContainer;
-    }
-    /** @private */
-    private renderBPMNTextAnnotation(
-        diagram: Diagram, annotation: BpmnAnnotationModel, content: DiagramElement): Canvas {
-        annotation.id = annotation.id || randomId();
-        const annotationsContainer: Canvas = new Canvas();
-        const annotationPath: PathElement = new PathElement();
-        const textObject: TextElement = new TextElement();
-
-        const margin: number = 10;
-
-        annotationPath.id = '_' + annotation.id + '_path';
-        annotationPath.width = annotation.width;
-        annotationPath.height = annotation.height;
-        annotationPath.relativeMode = 'Object';
-        textObject.id = annotation.id + '_text';
-        textObject.content = ((annotation as Node).shape as BpmnShape).annotation.text;
-        const textStyle: TextStyleModel = (annotation as Node).style;
-        textObject.style = {
-            fontSize: textStyle.fontSize, italic: textStyle.italic, gradient: null, opacity: textStyle.opacity,
-            bold: textStyle.bold, textWrapping: textStyle.textWrapping, color: textStyle.color, fill: 'white',
-            fontFamily: textStyle.fontFamily, whiteSpace: textStyle.whiteSpace, textOverflow: 'Wrap',
-            strokeColor: 'none', strokeWidth: 0,
-            strokeDashArray: textStyle.strokeDashArray, textAlign: textStyle.textAlign, textDecoration: textStyle.textDecoration
-        };
-        textObject.horizontalAlignment = 'Left';
-        textObject.verticalAlignment = 'Center';
-        textObject.relativeMode = 'Object';
-        textObject.margin = { left: 5, right: 5, top: 5, bottom: 5 };
-
-        annotationsContainer.offsetX = (annotation as Node).offsetX + ((annotation as Node).shape as BpmnShape).annotation.length *
-            Math.cos(((annotation as Node).shape as BpmnShape).annotation.angle * (Math.PI / 180));
-        annotationsContainer.offsetY = (annotation as Node).offsetY + ((annotation as Node).shape as BpmnShape).annotation.length *
-            Math.sin(((annotation as Node).shape as BpmnShape).annotation.angle * (Math.PI / 180));
-        annotationsContainer.float = true;
-        //    annotationContainer.transform = Transform.Self;
-        annotationsContainer.id = (annotation as Node).id + '_textannotation_' + annotation.id;
-        annotationsContainer.style.strokeColor = 'transparent';
-        annotationsContainer.margin = { left: margin, right: margin, top: margin, bottom: margin };
-        annotationsContainer.relativeMode = 'Object';
-        annotationsContainer.rotateAngle = 0;
-        annotationsContainer.children = [annotationPath, textObject];
-
-        const annotationObject: Node = new Node(
-            (annotation as Node).shape, 'annotations',
-            { id: annotationsContainer.id, shape: { type: 'Bpmn', shape: 'TextAnnotation' } }, true);
-        annotationObject.ports = [
-            {
-                id: annotationPath.id + '_port', shape: 'Square',
-                offset: { x: 0, y: 0.5 }
-            }];
-        annotationObject.offsetX = annotationsContainer.offsetX;
-        annotationObject.offsetY = annotationsContainer.offsetY;
-        if ((annotationObject as Node).shape && ((annotationObject as Node).shape as BpmnShape).annotation) {
-            (annotationObject as BpmnAnnotationModel).text = ((annotation as Node).shape as BpmnShape).annotation.text;
-            (annotationObject as BpmnAnnotationModel).angle = ((annotation as Node).shape as BpmnShape).annotation.angle;
-            (annotationObject as BpmnAnnotationModel).length = ((annotation as Node).shape as BpmnShape).annotation.length;
-        }
-        annotationObject.width = annotation.width;
-        annotationObject.height = annotation.height;
-        annotationObject.wrapper = annotationsContainer;
-
-        annotationsContainer.children.push(annotationObject.initPortWrapper(annotationObject.ports[0] as Port));
-        let bounds: Rect = new Rect(0, 0, 0, 0);
-        const width: number = (annotation as Node).width || 0;
-        const height: number = (annotation as Node).height || 0;
-        if (width !== undefined && height !== undefined) {
-            bounds = new Rect((annotation as Node).offsetX - width / 2, (annotation as Node).offsetY - height / 2, width, height);
-        }
-        this.setAnnotationPath(
-            bounds, annotationsContainer, { x: annotationObject.offsetX, y: annotationObject.offsetY }, annotationObject,
-            annotation.length, annotation.angle);
-        return annotationsContainer;
-    }
 
     /** @private */
     public getTextAnnotationWrapper(node: NodeModel, id: string): TextElement {
@@ -1195,262 +1044,152 @@ export class BpmnDiagrams {
             const shape: BpmnShapes = (isBlazor() ? (node.shape as DiagramShape).bpmnShape : (node.shape as BpmnShape).shape);
             if (shape === 'TextAnnotation') {
                 return node.wrapper.children[1] as TextElement;
-            } else if (this.annotationObjects[node.id] && this.annotationObjects[node.id][`${id}`]) {
-                const annotationNode: NodeModel = this.annotationObjects[node.id][`${id}`].node;
-                return this.getTextAnnotationWrapper(annotationNode, id);
             }
         }
         return null;
     }
 
-    /** @private */
-    public addAnnotation(node: NodeModel, annotation: BpmnAnnotationModel, diagram: Diagram): ConnectorModel {
-        const bpmnShapeContent: Canvas = node.wrapper.children[0] as Canvas;
-        const shape: BpmnShape = node.shape as BpmnShape;
-        (annotation as BpmnAnnotation).nodeId = node.id;
-        const annotationObj: BpmnAnnotation = new BpmnAnnotation(shape, 'annotations', annotation, true);
-        shape.annotations.push(annotationObj);
-        bpmnShapeContent.children.push(
-            this.getBPMNTextAnnotation(node as Node, diagram, annotation, bpmnShapeContent));
-        node.wrapper.measure(new Size());
-        node.wrapper.arrange(node.wrapper.desiredSize);
-        return this.annotationObjects[node.id][annotation.id].connector;
-    }
-
-    private clearAnnotations(obj: NodeModel, diagram: Diagram): void {
-        const bpmnShape: BpmnShape = obj.shape as BpmnShape;
-        if (bpmnShape.annotations.length) {
-            for (let i: number = bpmnShape.annotations.length - 1; i >= 0; i--) {
-                const annotation: BpmnAnnotationModel = bpmnShape.annotations[parseInt(i.toString(), 10)];
-                this.removeAnnotationObjects(obj, annotation, diagram);
-            }
-        }
-        delete this.annotationObjects[obj.id];
-    }
-
-    /** @private */
-    public checkAndRemoveAnnotations(node: NodeModel, diagram: Diagram): boolean {
-        //remove connector path
-        //remove annotation node wrapper
-        //remove from a quad
-        if (node.shape.type === 'Bpmn') {
-            if ((!isBlazor() && (node.shape as BpmnShape).shape === 'TextAnnotation') ||
-                (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'TextAnnotation')) {
-                const id: string[] = node.id.split('_');
-                const annotationId: string = id[id.length - 1];
-                const nodeId: string = id[id.length - 3] || id[0];
-                const parentNode: NodeModel = diagram.nameTable[`${nodeId}`];
-                const bpmnShape: BpmnShape = parentNode.shape as BpmnShape;
-                for (const annotation of bpmnShape.annotations) {
-                    if (annotation.id === annotationId) {
-                        const index: number = bpmnShape.annotations.indexOf(annotation);
-                        if (index !== -1) {
-                            diagram.removeDependentConnector(node as Node);
-                            this.removeAnnotationObjects(parentNode, annotation, diagram);
-                            return true;
-                        }
-                    }
-                }
-            } else if ((node.shape as BpmnShape).annotations && (node.shape as BpmnShape).annotations.length) {
-                this.clearAnnotations(node, diagram);
-            }
-        }
-        return false;
-    }
-
-    private removeAnnotationObjects(parentNode: NodeModel, annotation: BpmnAnnotationModel, diagram: Diagram): void {
-        const bpmnShape: BpmnShape = parentNode.shape as BpmnShape;
-        let index: number = bpmnShape.annotations.indexOf(annotation);
-        if (index !== -1) {
-            if (!(diagram.diagramActions & DiagramAction.UndoRedo) && !(diagram.diagramActions & DiagramAction.Group)) {
-                const entry: HistoryEntry = {
-                    type: 'CollectionChanged', changeType: 'Remove', undoObject: cloneObject(annotation),
-                    redoObject: cloneObject(annotation), category: 'Internal'
+    /**
+     * 
+     *@private
+     * To modify the text annotation path while dragging the node and set port offset based on dragging.
+     */
+    public setAnnotationPath(sourceBounds: Rect, wrapper: Canvas, node: NodeModel,  bpmnShape: BpmnShape,  direction: TextAnnotationDirection,diagram:Diagram){
+           const pathElement:PathElement = new PathElement();
+            pathElement.id = wrapper.id + "_path";
+            pathElement.width = node.width;
+            pathElement.height = node.height;
+            pathElement.style.fill = "transparent";
+            pathElement.style.strokeColor = ((node.style.strokeColor == "transparent") ? "black" : node.style.strokeColor);
+            pathElement.style.opacity = node.style.opacity;
+            pathElement.relativeMode = "Object";
+            pathElement.horizontalAlignment = "Stretch";
+            pathElement.verticalAlignment = "Stretch";
+            const pointPort: PointPortModel = (node.ports.length > 0) ? node.ports[0] : new PointPort(node, 'ports', '', true);
+            diagram.protectPropertyChange(true);
+            node.ports = [pointPort];
+            diagram.protectPropertyChange(false);
+            switch (direction)
+            {
+            case 'Left':
+                pathElement.data = "M10,20 L0,20 L0,0 L10,0";
+                pathElement.width = 10;
+                pathElement.horizontalAlignment = 'Left';
+                pointPort.offset = {x : 0.0, y : 0.5};
+                break;
+            case 'Right':
+                pathElement.data = "M0,0 L10,0 L10,20 L0,20";
+                pathElement.width = 10;
+                pathElement.horizontalAlignment = "Right";
+                pointPort.offset =
+                {
+                    x : 1.0,
+                    y : 0.5
                 };
-                diagram.addHistoryEntry(entry);
-            }
-            bpmnShape.annotations.splice(index, 1);
-            const entry: {} = this.annotationObjects[parentNode.id];
-            if (entry && entry[annotation.id]) {
-                const annotationNode: NodeModel = entry[annotation.id].node;
-                const annotationConnector: NodeModel = entry[annotation.id].connector;
-                diagram.removeElements(annotationNode);
-                diagram.removeElements(annotationConnector);
-                const nodeContent: DiagramElement = parentNode.wrapper.children[0];
-                const nodeIndex = (nodeContent as Container).children.indexOf(annotationNode.wrapper);
-                (nodeContent as Container).children.splice(nodeIndex, 1);
-                const conIndex = (nodeContent as Container).children.indexOf(annotationConnector.wrapper);
-                (nodeContent as Container).children.splice(conIndex, 1);
-                diagram.removeFromAQuad(annotationNode as IElement);
-                diagram.removeFromAQuad(annotationConnector as IElement);
-                delete diagram.nameTable[annotationNode.id];
-                delete diagram.nameTable[annotationConnector.id];
-                //Bug 861852: Removing bpmn text annotation dynamically is not working properly.
-                //To get textAnnotation connector from parent outEdges and remove it.
-                const edgeIndex = (parentNode as Node).outEdges.indexOf(annotationConnector.id);
-                    if (edgeIndex !== -1) {
-                        (parentNode as Node).outEdges.splice(edgeIndex, 1);
-                    }
-                delete entry[annotation.id];
-            }
-        }
-    }
-
-    private setAnnotationPath(
-        parentBounds: Rect, wrapper: DiagramElement, position: PointModel, node: NodeModel, length?: number,
-        angle?: number): void {
-        const rotateAngle: number = this.getAnnotationPathAngle(position, parentBounds);
-        let data: string = '';
-        const pathElement: PathElement = (wrapper as Canvas).children[0] as PathElement;
-        const portElement: DiagramElement = (wrapper as Canvas).children[2];
-        const textElement: DiagramElement = (wrapper as Canvas).children[1];
-        pathElement.horizontalAlignment = 'Stretch';
-        pathElement.verticalAlignment = 'Stretch';
-        textElement.margin.left = textElement.margin.right = 5;
-        textElement.margin.top = textElement.margin.bottom = 5;
-        let point: PointModel;
-        let segment: Segment;
-        if (rotateAngle === 0) {
-            //Bug 860033: Bpmn text annotation path size not rendered properly while dragging.
-            //Modified path data to render the path properly.
-            data = 'M10,10 L0,10 L0,0 L10,0';
-            pathElement.width = 10;
-            pathElement.horizontalAlignment = 'Left';
-            portElement.setOffsetWithRespectToBounds(0, 0.5, 'Fraction');
-            textElement.margin.top = textElement.margin.bottom = 10;
-            point = parentBounds.middleRight;
-            segment = {
-                x1: parentBounds.right, y1: parentBounds.top,
-                x2: parentBounds.right, y2: parentBounds.bottom
-            };
-        } else if (rotateAngle === 180) {
-            data = 'M0,0 L10,0 L10,10 L0,10';
-            pathElement.width = 10;
-            pathElement.horizontalAlignment = 'Right';
-            portElement.setOffsetWithRespectToBounds(1, 0.5, 'Fraction');
-            textElement.margin.top = textElement.margin.bottom = 10;
-            point = parentBounds.middleLeft;
-            segment = {
-                x1: parentBounds.left, y1: parentBounds.top,
-                x2: parentBounds.left, y2: parentBounds.bottom
-            };
-        } else if (rotateAngle === 90) {
-            data = 'M10,10 L10,0 L0,0 L0,10';
-            pathElement.height = 10;
-            pathElement.verticalAlignment = 'Top';
-            portElement.setOffsetWithRespectToBounds(0.5, 0, 'Fraction');
-            textElement.margin.left = textElement.margin.right = 10;
-            point = parentBounds.bottomCenter;
-            segment = {
-                x1: parentBounds.right, y1: parentBounds.bottom,
-                x2: parentBounds.left, y2: parentBounds.bottom
-            };
-        } else {
-            data = 'M0,0 L0,10 L10,10 L10,0';
-            pathElement.height = 10;
-            pathElement.verticalAlignment = 'Bottom';
-            portElement.setOffsetWithRespectToBounds(0.5, 1, 'Fraction');
-            textElement.margin.left = textElement.margin.right = 10;
-            point = parentBounds.topCenter;
-            segment = {
-                x1: parentBounds.right, y1: parentBounds.top,
-                x2: parentBounds.left, y2: parentBounds.top
-            };
-        }
-        const center: PointModel = parentBounds.center;
-        const endPoint: PointModel = Point.transform(position, angle, Math.max(parentBounds.width, parentBounds.height));
-        point = getIntersectionPoints(segment, [center, endPoint], false, center);
-
-        pathElement.data = data;
-        if (length !== undefined && angle !== undefined) {
-            point = Point.transform(point, angle, length);
-            wrapper.offsetX = node.offsetX = point.x;
-            wrapper.offsetY = node.offsetY = point.y;
-        }
-    }
-
-    /**   @private  */
-    public isBpmnTextAnnotation(activeLabel: ActiveLabel, diagram: Diagram): NodeModel {
-        if (this.annotationObjects) {
-            const parentNodeId: string = activeLabel.parentId;
-            const annotationId: string = activeLabel.id;
-            const parentNode: NodeModel = diagram.nameTable[`${parentNodeId}`];
-            if (parentNode && parentNode.shape.type === 'Bpmn' && this.annotationObjects[`${parentNodeId}`] &&
-                this.annotationObjects[`${parentNodeId}`][`${annotationId}`]) {
-                return parentNode;
-            }
-            return null;
-        }
-        return null;
-    }
-
-    /** @private */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public updateTextAnnotationContent(parentNode: NodeModel, activeLabel: ActiveLabel, text: string, diagram: Diagram): void {
-        const parentNodeId: string = activeLabel.parentId;
-        const annotationId: string = activeLabel.id;
-        if (this.annotationObjects[`${parentNodeId}`] && this.annotationObjects[`${parentNodeId}`][`${annotationId}`]) {
-            for (const annotation of (parentNode.shape as BpmnShape).annotations) {
-                if (annotation.id === annotationId) {
-                    annotation.text = text;
-                    const wrapper: TextElement = this.annotationObjects[`${parentNodeId}`][`${annotationId}`].node.wrapper.children[1];
-                    wrapper.content = text;
-                    wrapper.visible = true;
-                    parentNode.wrapper.measure(new Size());
-                    parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
-                }
-            }
-        }
-    }
-
-    /**   @private  */
-    public updateQuad(actualObject: Node, diagram: Diagram): void {
-        const annotation: BpmnAnnotationModel = (actualObject.shape as BpmnShape).annotations;
-        let annotationNode: NodeModel;
-        if (annotation && annotation.length > 0) {
-            for (let i: number = 0; i < annotation.length; i++) {
-                annotationNode = this.annotationObjects[actualObject.id][annotation[parseInt(i.toString(), 10)].id].node;
-                diagram.updateQuad(annotationNode as IElement);
-            }
-        }
-    }
-
-
-    /** @private */
-    public updateTextAnnotationProp(actualObject: Node, oldObject: Node, diagram: Diagram,  isChild?: boolean): void {
-        if (actualObject.shape.type === 'Bpmn') {
-            const annotation: BpmnAnnotationModel = (actualObject.shape as BpmnShape).annotations;
-            if (annotation && annotation.length > 0) {
-                for (let i: number = 0; i < (actualObject.wrapper.children[0] as Canvas).children.length; i++) {
-                    for (let j: number = 0; j < annotation.length; j++) {
-                        const annotationId: string[] = (actualObject.wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].id.split('_');
-                        const id: string = annotationId[annotationId.length - 1];
-                        if (id === annotation[parseInt(j.toString(), 10)].id) {
-                            const annotationNode: NodeModel = this.annotationObjects[actualObject.id][annotation[parseInt(j.toString(), 10)].id].node;
-                            const connector: ConnectorModel = this.annotationObjects[actualObject.id][annotation[parseInt(j.toString(), 10)].id].connector;
-                            const direction: string = getPortDirection(
-                                connector.targetPoint, actualObject.wrapper.bounds, actualObject.wrapper.bounds, false);
-                            let position: PointModel = connector.sourcePoint;
-                            // EJ2-63939 - If it is swimlane children node means we take the offsetX from the wrapper.
-                            position = {
-                                x: connector.sourcePoint.x + (isChild ? actualObject.wrapper.offsetX : actualObject.offsetX) - (oldObject.offsetX),
-                                y: connector.sourcePoint.y + (isChild ? actualObject.wrapper.offsetY : actualObject.offsetY) - (oldObject.offsetY)
-                            };
-                            position = Point.transform(
-                                position,
-                                (annotation[parseInt(j.toString(), 10)] as BpmnAnnotationModel).angle,
-                                (annotation[parseInt(j.toString(), 10)] as BpmnAnnotationModel).length);
-                            (actualObject.wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].offsetX =
-                                annotationNode.offsetX = position.x;
-                            (actualObject.wrapper.children[0] as Canvas).children[parseInt(i.toString(), 10)].offsetY =
-                                annotationNode.offsetY = position.y;
-                            diagram.updateQuad(annotationNode as IElement);
+                break;
+            case 'Top':
+                pathElement.data = "M20,10 L20,0 L0,0 L0,10";
+                pathElement.height = 10.0;
+                pathElement.verticalAlignment = 'Top';
+                pointPort.offset =
+                {
+                    x : 0.5,
+                    y : 0.0
+                };
+                break;
+            case 'Bottom':
+                pathElement.data = "M0,0 L0,10 L20,10 L20,0";
+                pathElement.height = 10;
+                pathElement.verticalAlignment ='Bottom';
+                pointPort.offset =
+                {
+                    x : 0.5,
+                    y : 1.0
+                };
+                break;
+            default:
+                //To check the text annotation has parent and update the path element.
+                if (bpmnShape.textAnnotation.textAnnotationTarget !== '') {
+                    if (diagram.nameTable[bpmnShape.textAnnotation.textAnnotationTarget]) {
+                        let node2: Node = diagram.nameTable[bpmnShape.textAnnotation.textAnnotationTarget];
+                        (node2 as any).hasTextAnnotation = true;
+                        const wrapper2: DiagramElement = node2.wrapper;
+                    
+                        if (wrapper2 !== null) {
+                        const doubleValue: number = node2.width;
+                        const doubleValue2: number = node2.height;
+                        let targetBounds: Rect = new Rect(0.0, 0.0, 0.0, 0.0);
+                    
+                        if (doubleValue !== 0.0 && doubleValue2 !== 0.0) {
+                            targetBounds = new Rect(node2.offsetX - doubleValue / 2, node2.offsetY - doubleValue2 / 2, doubleValue, doubleValue2);
+                        }
+                    
+                        this.setAnnotationPosition(targetBounds, node, sourceBounds, pathElement);
                         }
                     }
-                }
+                  } else if (bpmnShape.textAnnotation.textAnnotationTarget === '') {
+                    pathElement.data = 'M10,20 L0,20 L0,0 L10,0';
+                    pathElement.width = 10.0;
+                    pathElement.horizontalAlignment = 'Left';
+                    pointPort.offset = {
+                      x: 0.0,
+                      y: 0.5
+                    };
+                  }
+                  
+                break;
             }
+            wrapper.children = [];
+            wrapper.children.push(pathElement);
+    }
+    //Task 866412: Should revamp BPMN text annotation node. To modifty the port offset and annotation path based on node bounds while dragging.
+    private setAnnotationPosition(targetBounds: Rect, annotation: NodeModel, annotationBounds: Rect, annotationPath: PathElement){
+        const pointPort: PointPortModel  = ((annotation.ports.length > 0) ? annotation.ports[0] : new PointPort(annotation, 'ports', '', true));
+        const position = {x:annotationBounds.x,y:annotationBounds.y};
+        const rotateAngle = this.getAnnotationPathAngle(position, targetBounds);
+        if (rotateAngle === 90) {
+            annotationPath.data = "M20,10 L20,0 L0,0 L0,10";
+            annotationPath.height = 10.0;
+            annotationPath.verticalAlignment = 'Top';
+            pointPort.offset =
+                {
+                    x: 0.5,
+                    y: 0.0
+                };
+        }
+        else if (rotateAngle === 180) {
+            annotationPath.data = "M0,0 L10,0 L10,20 L0,20";
+            annotationPath.width = 10.0;
+            annotationPath.horizontalAlignment = 'Right';
+            pointPort.offset =
+                {
+                    x: 1.0,
+                    y: 0.5
+                };
+        }
+        else if (rotateAngle === 0) {
+            annotationPath.data = "M10,20 L0,20 L0,0 L10,0";
+            annotationPath.width = 10.0;
+            annotationPath.horizontalAlignment = 'Left';
+            pointPort.offset =
+                {
+                    x: 0.0,
+                    y: 0.5
+                };
+        }
+        else  {
+            annotationPath.data = "M0,0 L0,10 L20,10 L20,0";
+            annotationPath.height = 10.0;
+            annotationPath.verticalAlignment = 'Bottom';
+            pointPort.offset =
+                {
+                    x: 0.5,
+                    y: 1.0
+                };
         }
     }
+
+
     // /** @private */
     // public findInteractableObject(obj: ConnectorModel, diagram: Diagram): NodeModel | ConnectorModel {
     //     if (obj.targetID) {
@@ -2458,31 +2197,6 @@ export class BpmnDiagrams {
     /** @private */
 
     public updateAnnotationDrag(node: NodeModel, diagram: Diagram, tx: number, ty: number): boolean {
-        const checkAnnotation: string[] = node.id.split('_');
-        if (checkAnnotation[1] === 'textannotation') {
-            let parentNode: NodeModel;
-            for (let j: number = 0; j < (node as Node).inEdges.length; j++) {
-                const connector: Connector = diagram.nameTable[(node as Node).inEdges[parseInt(j.toString(), 10)]];
-                if (connector) {
-                    parentNode = diagram.nameTable[connector.sourceID];
-                }
-                const start: PointModel = { x: node.offsetX + tx, y: node.offsetY + ty };
-                const end: PointModel = connector.sourcePoint;
-                const length: number = Point.findLength(start, end);
-                const angle: number = Point.findAngle(end, start);
-                if ((parentNode.shape as BpmnShape).annotations) {
-                    for (let x: number = 0; x < ((parentNode.shape as BpmnShape).annotations).length; x++) {
-                        if (((parentNode.shape as BpmnShape).annotations)[parseInt(x.toString(), 10)].id === checkAnnotation[checkAnnotation.length - 1]) {
-                            ((parentNode.shape as BpmnShape).annotations[parseInt(x.toString(), 10)]).length = length;
-                            ((parentNode.shape as BpmnShape).annotations[parseInt(x.toString(), 10)]).angle = angle;
-                            this.setAnnotationPath(
-                                parentNode.wrapper.bounds, node.wrapper, start, node);
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
         if ((node as Node).processId) {
             this.drag(node as Node, tx, ty, diagram);
             return true;

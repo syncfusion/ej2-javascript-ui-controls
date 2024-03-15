@@ -2021,3 +2021,208 @@ describe('Context-', () => {
         });
     });
 });
+describe('Grid side is not updated while indent when immutable mode is enabled', () => {
+    let ganttObj: Gantt;
+    Gantt.Inject(Edit, ContextMenu);
+    let newData: Object[] = [
+            {
+                TaskID: 1,
+                TaskName: 'Product Concept',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                    { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                        Indicators: [
+                            {
+                                'date': '04/10/2019',
+                                'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                'name': 'Indicator title',
+                                'tooltip': 'tooltip'
+                            }
+                        ]
+                    },
+                    { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 5, Predecessor: "2", Progress: 30 },
+                ]
+            }
+        ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: newData,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true,
+            },
+            enableContextMenu:true,
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'Indent','Outdent'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            labelSettings: {
+                taskLabel: 'Progress'
+            },
+            splitterSettings:{
+                columnIndex: 2,
+            },
+            height: '550px',
+            enableImmutableMode: true,
+            allowUnscheduledTasks: true,
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 500);
+    });
+    it('check duration of taskbar', () => {
+        ganttObj.selectionModule.selectRow(3);
+            let indent: ContextMenuClickEventArgs = {
+                item: { id: ganttObj.element.id + '_contextMenu_Indent' },
+                element: null,
+            };
+            (ganttObj.contextMenuModule as any).contextMenuItemClick(indent);
+        expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(5);
+    });
+});
+describe('Split taskbar date validation', () => {
+    let ganttObj: Gantt;
+    Gantt.Inject(Edit, ContextMenu);
+    let templateData: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Product concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), Duration: 0,
+                    Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction',
+                    BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/02/2019')
+                },
+                { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'),
+                  Duration: 10, resources: [3], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                  'From an engineer or company specializing in soil testing', BaselineStartDate: new Date('04/01/2019')
+                },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'),
+                  Duration: 2, Predecessor: '2', Progress: 30, resources: [4] ,
+                  BaselineStartDate: new Date('04/06/2019'), BaselineEndDate: new Date('04/06/2019')}]
+            },
+            {
+            TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4', resources: [1], info: 'Develop floor plans and obtain a materials list for estimations',
+            BaselineStartDate: new Date('04/05/2019'), BaselineEndDate: new Date('04/07/2019')
+        },
+        {
+            TaskID: 6,
+            TaskName: 'Market research',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 7,
+                    TaskName: 'Demand analysis',
+                    StartDate: new Date('04/04/2019'),
+                    EndDate: new Date('04/21/2019'),
+                    subtasks: [
+                        { TaskID: 8, TaskName: 'Customer strength', StartDate: new Date('04/04/2019'),
+                         Duration: 4, Predecessor: '5', Progress: 30, resources: [5] , info: 'Develop floor plans and obtain a materials list for estimations',
+                         BaselineStartDate: new Date('04/05/2019'), BaselineEndDate: new Date('04/07/2019')},
+                        { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'),
+                         Duration: 4, Predecessor: '5', resources: [6] , info: '',
+                         BaselineStartDate: new Date('04/09/2019'), BaselineEndDate: new Date('04/12/2019') }
+                    ]
+                },
+                { TaskID: 10, TaskName: 'Competitor analysis', StartDate: new Date('04/04/2019'),
+                  Duration: 4, Predecessor: '7, 8', Progress: 30, resources: [4] ,
+                  info: 'If required obtain approval from HOA (homeowners association) or ARC (architectural review committee)',
+                  BaselineStartDate: new Date('04/16/2019'), BaselineEndDate: new Date('04/17/2019')},
+                { TaskID: 11, TaskName: 'Product strength analsysis', StartDate: new Date('04/04/2019'),
+                  Duration: 4, Predecessor: '9', resources: [8] },
+            ]
+        }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: templateData,
+            height: '450px',
+            allowSelection: true,
+            highlightWeekends: true,
+            enableContextMenu: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'Indent', 'Outdent'],
+            taskFields: {
+                id: 'TaskID',
+                child: 'subtasks',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                dependency: 'Predecessor',
+                progress: 'Progress',
+                segments: 'splitTasks',
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'ID', textAlign: 'Left' },
+                { field: 'TaskName', headerText: 'Name' },
+                { field: 'StartDate', headerText: 'Start Date' },
+                { field: 'EndDate', headerText: 'End Date' },
+                { field: 'Duration', headerText: 'Duration' },
+                { field: 'Predecessor', headerText: 'Dependency' },
+                { field: 'Progress', headerText: 'Progress' },
+            ],
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: '${Progress}%'
+            },
+            splitterSettings: {
+                position: "53%"
+            },
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('07/06/2019'),
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('split task - date validation', () => {
+        ganttObj.actionBegin = function (args: any): void {
+            if (args.requestType === "splitTaskbar") {
+                args.splitDate = ganttObj.dateValidationModule.setTime(ganttObj.defaultEndTime, args.splitDate);
+            }
+        };
+        let segment : HTMLElement = document.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(3) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar > div') as HTMLElement;
+        triggerMouseEvent(segment, 'contextmenu', 0, 0, false, false, 2);
+        let e: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_SplitTask' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[7].ganttProperties.startDate, 'MM/dd/yyyy')).toBe(ganttObj.getFormatedDate(ganttObj.currentViewData[6].ganttProperties.startDate, 'MM/dd/yyyy'));
+    });
+});

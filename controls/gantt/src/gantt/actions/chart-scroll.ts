@@ -175,7 +175,7 @@ export class ChartScroll {
         const parent: any = this.parent;
         setTimeout(function () {
             parent.hideMaskRow();
-            if (parent.viewType === 'ResourceView' && !parent.allowTaskbarOverlap && parent.showOverAllocation) {
+            if (!parent.allowTaskbarOverlap && parent.showOverAllocation) {
                 for (let i: number = 0; i < parent.currentViewData.length; i++) {
                     const tr: Element = parent.chartRowsModule.ganttChartTableBody.childNodes[i as number];
                     if (tr['style'].display !== 'none' && parent.currentViewData[i as number].hasChildRecords && !parent.currentViewData[i as number].expanded) {

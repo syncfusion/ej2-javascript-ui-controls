@@ -6,7 +6,7 @@ import { isNullOrUndefined, Browser, ModuleDeclaration } from '@syncfusion/ej2-b
 import { createElement, remove, Event, EmitType, EventHandler } from '@syncfusion/ej2-base';
 import { createSvg, RectOption, measureText, TextOption, renderTextElement } from '../smithchart/utils/helper';
 import { removeElement, textTrim } from '../smithchart/utils/helper';
-import { SmithchartRect, SmithchartSize } from '../smithchart/utils/utils';
+import { ClosestPoint, Point, SmithchartRect, SmithchartSize } from '../smithchart/utils/utils';
 import { SmithchartMarginModel, SmithchartBorderModel, SmithchartFontModel } from '../smithchart/utils/utils-model';
 import { SmithchartMargin, SmithchartBorder, SmithchartFont } from '../smithchart/utils/utils';
 import { TitleModel, SubtitleModel } from '../smithchart/title/title-model';
@@ -37,6 +37,7 @@ import { SmithchartExportType } from '../smithchart/utils/enum';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { titleRender, subtitleRender, load, loaded } from '../smithchart/model/constant';
 import { SmithchartModel } from '../smithchart/smithchart-model';
+import { getElement } from '../common/utils/helper';
 
 /**
  * Represents the Smithchart control.
@@ -181,6 +182,15 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     public seriesColors: string[];
 
     public chartArea: SmithchartRect;
+
+    /** @private */
+    public isLegendClicked: boolean = false;
+    private previousTargetId: string = '';
+    private currentPointIndex: number = 0;
+    private currentSeriesIndex: number = 0;
+    private currentLegendIndex: number = 0;
+    /** @private */
+    public delayRedraw: boolean;
 
     /**
      * Resize the smithchart
@@ -439,29 +449,31 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onPropertyChanged(newProp: SmithchartModel, oldProp: SmithchartModel): void {
         let renderer: boolean = false;
-        for (const prop of Object.keys(newProp)) {
-            switch (prop) {
-            case 'background':
-            case 'border':
-            case 'series':
-            case 'legendSettings':
-            case 'radius':
-            case 'enableRtl':
-                renderer = true;
-                break;
-            case 'size':
-                this.createChartSvg();
-                renderer = true;
-                break;
-            case 'theme':
-            case 'renderType':
-                this.animateSeries = true;
-                renderer = true;
-                break;
+        if (!this.delayRedraw) {
+            for (const prop of Object.keys(newProp)) {
+                switch (prop) {
+                case 'background':
+                case 'border':
+                case 'series':
+                case 'legendSettings':
+                case 'radius':
+                case 'enableRtl':
+                    renderer = true;
+                    break;
+                case 'size':
+                    this.createChartSvg();
+                    renderer = true;
+                    break;
+                case 'theme':
+                case 'renderType':
+                    this.animateSeries = true;
+                    renderer = true;
+                    break;
+                }
             }
-        }
-        if (renderer) {
-            this.render();
+            if (renderer) {
+                this.render();
+            }
         }
     }
 
@@ -485,6 +497,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     }
     private initPrivateVariable(): void {
         this.animateSeries = true;
+        this.delayRedraw = false;
         this.element.setAttribute('role', 'region');
         this.element.setAttribute('aria-label', this.title.description || this.title.text + '. Syncfusion interactive chart.');
         this.element.setAttribute('tabindex', '0');
@@ -496,6 +509,14 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         /*! Set theme */
         this.themeStyle = getThemeColor(this.theme);
         this.seriesColors = getSeriesColor(this.theme);
+        if (!(document.getElementById(this.element.id + 'Keyboard_smith_chart_focus'))) {
+            const style: HTMLStyleElement = document.createElement('style');
+            style.setAttribute('id', (<HTMLElement>this.element).id + 'Keyboard_smith_chart_focus');
+            style.innerText = '.e-smith-chart-focused:focus,' +
+                    'div[id*=container]:focus, text[id*=_Smithchart_title]:focus, path[id*=_Points]:focus, g[id*=_svg_seriesCollection]:focus, g[id*=_svg_Legend]:focus {outline: none } .e-smith-chart-focused:focus-visible,' +
+                    'div[id*=container]:focus-visible, text[id*=_Smithchart_title]:focus-visible, path[id*=_Points]:focus-visible, g[id*=_svg_seriesCollection]:focus-visible, g[id*=_svg_Legend]:focus-visible {outline: 1.5px ' + this.themeStyle.tabColor + ' solid}';
+            document.body.appendChild(style);
+        }
         // let count: number = colors.length;
         // for (let i: number = 0; i < this.series.length; i++) {
 
@@ -510,9 +531,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         this.createSecondaryElement();
         this.renderBorder();
         if (this.smithchartLegendModule && this.legendSettings.visible) {
-            this.legendBounds = this.smithchartLegendModule.renderLegend(this);
+            this.legendBounds = this.smithchartLegendModule.calculateLegendBounds(this);
         }
-        this.legendBounds = this.legendBounds ? this.legendBounds : { x: 0, y: 0, width: 0, height: 0 };
         const areaBounds: AreaBounds = new AreaBounds();
         this.bounds = areaBounds.calculateAreaBounds(this, this.title, this.legendBounds);
         if (this.title.text !== '' && this.title.visible) {
@@ -522,6 +542,9 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         axisRender.renderArea(this, this.bounds);
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
+        if (this.smithchartLegendModule && this.legendSettings.visible) {
+            this.smithchartLegendModule.renderLegend(this);
+        }
         this.renderComplete();
         this.allowServerDataBinding = true;
         this.trigger(loaded, { smithchart: this });
@@ -558,6 +581,9 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
             this.element.classList.remove('e-smithchart');
             this.removeSvg();
             this.svgObject = null;
+            const element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_smith_chart_focus');
+            if (element) { element.remove(); }
+            removeElement('smithchartmeasuretext');
         }
     }
     /**
@@ -568,6 +594,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         EventHandler.add(this.element, 'click', this.smithchartOnClick, this);
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMove, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.mouseEnd, this);
+        EventHandler.add(this.element, 'keyup', this.chartKeyUp, this);
+        EventHandler.add(this.element, 'keydown', this.chartKeyDown, this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.smithchartOnResize.bind(this)
@@ -607,9 +635,9 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
     /**
      * To handle the click event for the smithchart.
      */
-    public smithchartOnClick(e: PointerEvent): void {
+    public smithchartOnClick(e: Event | PointerEvent): void {
         const targetEle: Element = <Element>e.target;
-        const targetId: string = targetEle.id;
+        const targetId: string = this.isLegendClicked ? targetEle.children[1].id : targetEle.id;
         const parentElement: Element = document.getElementById(targetId).parentElement;
         const grpElement: Element = document.getElementById(parentElement.id).parentElement;
         if (grpElement.id === 'containerlegendItem_Group' && this.legendSettings.toggleVisibility) {
@@ -645,6 +673,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         EventHandler.remove(this.element, 'click', this.smithchartOnClick);
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.mouseMove);
         EventHandler.remove(this.element, Browser.touchEndEvent, this.mouseEnd);
+        EventHandler.remove(this.element, 'keyup', this.chartKeyUp);
+        EventHandler.remove(this.element, 'keydown', this.chartKeyDown);
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.smithchartOnResize
@@ -661,6 +691,191 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         const exportMap: ExportUtils = new ExportUtils(this);
         exportMap.export(type, fileName, orientation);
     }
+    /**
+     * Handles the keyboard onkeydown on smith chart.
+     *
+     * @returns {boolean} false
+     * @private
+     */
+    public chartKeyDown(e: KeyboardEvent): boolean {
+        let actionKey: string = '';
+        if (this.series[this.currentSeriesIndex].tooltip.visible && ((e.code === 'Tab' && this.previousTargetId.indexOf('_Series') > -1) || e.code === 'Escape')) {
+            actionKey = 'ESC';
+        }
+        if (actionKey !== '') {
+            this.smithchartKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
+        }
+        return false;
+    }
+
+    /**
+     * Handles the keyboard onkeydown on  smith chart.
+     *
+     * @returns {boolean} false
+     * @private
+     */
+    public chartKeyUp(e: KeyboardEvent): boolean {
+        let actionKey: string = '';
+        let targetId: string = e.target['id'];
+        let groupElement: HTMLElement;
+        const targetElement: HTMLElement = e.target as HTMLElement;
+        const titleElement: HTMLElement = getElement(this.element.id + '_Smithchart_title') as HTMLElement;
+        const seriesElement: HTMLElement = getElement(this.element.id + '_svg' + '_seriesCollections') as HTMLElement;
+        const legendElement: HTMLElement = getElement(this.element.id + 'legendItem_Group') as HTMLElement;
+
+        if (titleElement) { titleElement.setAttribute('class', 'e-smith-chart-focused'); }
+        if (seriesElement && seriesElement.firstElementChild && seriesElement.firstElementChild.children[1].lastElementChild) {
+            const firstChild: HTMLElement = seriesElement.firstElementChild.children[1].lastElementChild as HTMLElement;
+            let className: string = firstChild.getAttribute('class');
+            if (className && className.indexOf('e-smith-chart-focused') === -1) {
+                className = className + ' e-smith-chart-focused';
+            } else if (!className) {
+                className = 'e-smith-chart-focused';
+            }
+            firstChild.setAttribute('class', className);
+        }
+        if (legendElement) {
+            const firstChild: HTMLElement = legendElement.firstElementChild as HTMLElement;
+            let className: string = firstChild.getAttribute('class');
+            if (className && className.indexOf('e-smith-chart-focused') === -1) {
+                className = className + ' e-smith-chart-focused';
+            }
+            else if (!className) {
+                className = 'e-smith-chart-focused';
+            }
+            firstChild.setAttribute('class', className);
+        }
+
+        if (e.code === 'Tab') {
+            if (this.previousTargetId !== '') {
+                if ((this.previousTargetId.indexOf('_Series') > -1 && targetId.indexOf('_Series') === -1)) {
+                    groupElement = getElement(this.element.id + '_svg_seriesCollections') as HTMLElement;
+                    const previousElement: Element = this.previousTargetId.indexOf('_Marker') > -1 ?
+                        getElement(this.element.id + '_svg_series' + this.currentSeriesIndex + '_Marker').children[this.currentPointIndex] :
+                        groupElement.children[this.currentSeriesIndex];
+                    this.setTabIndex(previousElement as HTMLElement, document.getElementById(this.element.id + '_Series0_Points0_Marker0') as HTMLElement);
+                    this.currentPointIndex = 0;
+                    this.currentSeriesIndex = 0;
+                }
+                else if (this.previousTargetId.indexOf('_svg_Legend') > -1 && targetId.indexOf('_svg_Legend') === -1) {
+                    groupElement = getElement(this.element.id + 'legendItem_Group') as HTMLElement;
+                    this.setTabIndex(groupElement.children[this.currentLegendIndex] as HTMLElement,
+                                     groupElement.firstElementChild as HTMLElement);
+                }
+            }
+            this.previousTargetId = targetId;
+            actionKey = this.series[0].tooltip.visible ? 'Tab' : '';
+        }
+        else if (e.code.indexOf('Arrow') > -1) {
+            e.preventDefault();
+            this.previousTargetId = targetId;
+            if ((targetId.indexOf('_svg_Legend') > -1)) {
+                const legendElement: HTMLCollection = targetElement.parentElement.children;
+                legendElement[this.currentLegendIndex].removeAttribute('tabindex');
+                this.currentLegendIndex += (e.code === 'ArrowUp' || e.code === 'ArrowRight') ? + 1 : - 1;
+                this.currentLegendIndex = this.getActualIndex(this.currentLegendIndex, legendElement.length);
+                const currentLegend: Element = legendElement[this.currentLegendIndex];
+                this.focusChild(currentLegend as HTMLElement);
+                targetId = currentLegend.children[1].id;
+            }
+            else if (targetId.indexOf('_Series') > -1) {
+                groupElement = targetElement.parentElement.parentElement.parentElement;
+                let currentPoint: Element = e.target as Element;
+                targetElement.removeAttribute('tabindex');
+                targetElement.blur();
+
+                if (e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
+                    const seriesIndexes: number[] = [];
+                    for (let i: number = 0; i < groupElement.children.length; i++) {
+                        if (groupElement.children[i as number].id.indexOf('_svg_seriesCollection') > -1) {
+                            seriesIndexes.push(+groupElement.children[i as number].id.split('_svg_seriesCollection')[1]);
+                        }
+                    }
+                    this.currentSeriesIndex = seriesIndexes.indexOf(this.currentSeriesIndex) + (e.code === 'ArrowRight' ? 1 : -1);
+                    this.currentSeriesIndex = seriesIndexes[this.getActualIndex(this.currentSeriesIndex, seriesIndexes.length)];
+                }
+                else {
+                    this.currentPointIndex += e.code === 'ArrowUp' ? 1 : -1;
+                }
+                if (targetId.indexOf('_Marker') > -1) {
+                    this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
+                                                                 getElement(this.element.id + '_svg_series' + this.currentSeriesIndex + '_Marker').childElementCount);
+                    currentPoint = getElement(this.element.id + '_Series' + this.currentSeriesIndex + '_Points' +
+                    this.currentPointIndex + '_Marker' + this.currentPointIndex);
+                }
+                targetId = this.focusChild(currentPoint as HTMLElement);
+                actionKey = this.series[this.currentSeriesIndex].tooltip.visible ? 'ArrowMove' : '';
+            }
+        }
+        else if ((e.code === 'Enter' || e.code === 'Space') && (targetId.indexOf('_svg_Legend') > -1)) {
+            targetId = (targetId.indexOf('_svg_Legend') > -1) ? targetElement.children[1].id : targetId;
+            actionKey = 'Enter';
+        }
+        if (actionKey !== '') {
+            this.smithchartKeyboardNavigations(e, targetId, actionKey);
+        }
+        return false;
+    }
+
+    private smithchartKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {
+        this.isLegendClicked = false;
+        switch (actionKey) {
+        case 'Tab':
+        case 'ArrowMove':
+            if (targetId.indexOf('_Points') > -1) {
+                const seriesIndex: number = +(targetId.split('_Series')[1].split('_Points')[0]);
+                const pointIndex: number = +(targetId.split('_Series')[1].split('_Marker')[0].split('_Points')[1]);
+                const pointRegion: Point = this.seriesrender.location[seriesIndex as number][pointIndex as number];
+                if (this.tooltipRenderModule && this.series[seriesIndex as number].tooltip.visible) {
+                    let closestPoint: ClosestPoint = new ClosestPoint();
+                    closestPoint = this.tooltipRenderModule.closestPointXY(this, pointRegion.x, pointRegion.y,
+                                                                           this.series[seriesIndex as number], seriesIndex);
+                    this.tooltipRenderModule.createTooltip(this, e, pointIndex, seriesIndex, this.series[seriesIndex as number]);
+                }
+            }
+            break;
+        case 'Enter':
+        case 'Space':
+            if (targetId.indexOf('_LegendItemText') > -1) {
+                this.isLegendClicked = true;
+                this.delayRedraw = true;
+                this.smithchartOnClick(e as Event);
+                this.focusChild(document.getElementById(targetId).parentElement);
+            }
+            break;
+        case 'ESC':
+            this.tooltipRenderModule.tooltipElement.fadeOut();
+            break;
+        }
+    }
+
+    private setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
+        if (previousElement) {
+            previousElement.removeAttribute('tabindex');
+        }
+        if (currentElement) {
+            currentElement.setAttribute('tabindex', '0');
+        }
+    }
+
+    private getActualIndex(index: number, totalLength: number): number {
+        return index > totalLength - 1 ? 0 : (index < 0 ? totalLength - 1 : index);
+    }
+
+    private focusChild(element: HTMLElement): string {
+        element.setAttribute('tabindex', '0');
+        let className: string = element.getAttribute('class');
+        element.setAttribute('tabindex', '0');
+        if (className && className.indexOf('e-smith-chart-focused') === -1) {
+            className = 'e-smith-chart-focused ' + className;
+        } else if (!className) {
+            className = 'e-smith-chart-focused';
+        }
+        element.setAttribute('class', className);
+        element.focus();
+        return element.id;
+    }
+
     /**
      * To handle the window resize event on smithchart.
      */

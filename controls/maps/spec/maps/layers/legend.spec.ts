@@ -93,10 +93,13 @@ describe('Map marker properties tesing', () => {
             };
         });
 
-        it('Legend position as top', () => {
+        it('Legend position as top', (done: Function) => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_Legend_Group');
-                expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                if (element) {
+                    expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                    done();
+                }
             };
             map.legendSettings.position = 'Top';
             map.refresh();
@@ -111,10 +114,11 @@ describe('Map marker properties tesing', () => {
             map.refresh();
         });
 
-        it('Legend position as right', () => {
+        it('Legend position as right', (done: Function) => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_Legend_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                done();
             };
             map.legendSettings.position = 'Right';
             map.refresh();
@@ -519,19 +523,21 @@ describe('Map marker properties tesing', () => {
             map.destroy();
         });
 
-        it('Legend position as left', () => {
+        it('Legend position as left', (done: Function) => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_Legend_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                done();
             };
             map.legendSettings.position = 'Left';
             map.refresh();
         });
 
-        it('Legend position as right', () => {
+        it('Legend position as right', (done: Function) => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = document.getElementById(map.element.id + '_Legend_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                done();
             };
             map.legendSettings.position = 'Right';
             map.refresh();

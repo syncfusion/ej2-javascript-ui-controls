@@ -224,6 +224,16 @@ describe('PivotFieldList spec', () => {
             let fieldListObj: PivotFieldList;
             let pivotCommon: PivotCommon;
             let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
+            let down: MouseEvent = new MouseEvent('mousedown', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true,
+            });
+            let up: MouseEvent = new MouseEvent('mouseup', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true,
+            });
             afterAll(() => {
                 if (fieldListObj) {
                     fieldListObj.destroy();
@@ -290,7 +300,8 @@ describe('PivotFieldList spec', () => {
                     let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                     expect(checkEle.length).toBeGreaterThan(0);
                     expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                    util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                    closest(checkEle[0], 'li').dispatchEvent(down);
+                    closest(checkEle[0], 'li').dispatchEvent(up);
                     done();
                 });
             });
@@ -310,7 +321,8 @@ describe('PivotFieldList spec', () => {
                     let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                     expect(checkEle.length).toBeGreaterThan(0);
                     expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                    util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                    closest(checkEle[0], 'li').dispatchEvent(down);
+                    closest(checkEle[0], 'li').dispatchEvent(up);
                     done();
                 });
             });
@@ -340,7 +352,8 @@ describe('PivotFieldList spec', () => {
                     let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                     expect(checkEle.length).toBeGreaterThan(0);
                     expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                    util.checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                    closest(checkEle[0], 'li').dispatchEvent(down);
+                    closest(checkEle[0], 'li').dispatchEvent(up);
                     expect(checkEle.length).toBe(2);
                     done();
                 });

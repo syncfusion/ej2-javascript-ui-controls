@@ -687,7 +687,7 @@ export class PdfForm {
         let index: number;
         const page1: PdfPage = field1.page;
         const page2: PdfPage = field2.page;
-        if (page1 && page1 instanceof PdfPage && page2 && page2 instanceof PdfPage) {
+        if (page1 && !page1._isNew && page1 instanceof PdfPage && page2 && !page2._isNew && page2 instanceof PdfPage) {
             const page1Index: number = this._sortItemByPageIndex(field1, false)._pageIndex;
             const page2Index: number = this._sortItemByPageIndex(field2, false)._pageIndex;
             let rectangle1: number[];

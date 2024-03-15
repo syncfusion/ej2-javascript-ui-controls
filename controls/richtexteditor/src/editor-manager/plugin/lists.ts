@@ -128,7 +128,8 @@ export class Lists {
                 startNode.textContent = '';
             }
             const startNodeParent: HTMLElement = startNode.parentElement;
-            if (isNOU(startNodeParent.parentElement.closest('UL')) && isNOU(startNodeParent.parentElement.closest('OL'))) {
+            const parentOfCurrentOLUL: HTMLElement = startNodeParent.parentElement;
+            if (isNOU(parentOfCurrentOLUL.closest('UL')) && isNOU(parentOfCurrentOLUL.closest('OL'))) {
                 if (!isNOU(startNode.nextElementSibling)) {
                     const nearBlockNode: Element = this.parent.domNode.blockParentNode(startNode);
                     this.parent.nodeCutter.GetSpliceNode(range, (nearBlockNode as HTMLElement));
@@ -151,6 +152,15 @@ export class Lists {
                 } else {
                     detach(startNode);
                 }
+            }
+            // To handle the nested enter key press in the list for the first LI element
+            if (!isNOU(parentOfCurrentOLUL) && (!isNOU(parentOfCurrentOLUL.closest('UL')) || !isNOU(parentOfCurrentOLUL.closest('OL'))) &&
+                parentOfCurrentOLUL.nodeName === 'LI' && parentOfCurrentOLUL.style.listStyleType === 'none' &&
+                parentOfCurrentOLUL.textContent === '' && startNode.textContent === '' && startNode === startNodeParent.firstElementChild &&
+                isNOU(startNode.nextSibling)) {
+                detach(startNodeParent);
+                parentOfCurrentOLUL.style.removeProperty('list-style-type');
+                e.event.preventDefault();
             }
         }
     }
@@ -516,7 +526,7 @@ export class Lists {
         this.currentAction = e.subCommand;
         this.currentAction = e.subCommand = this.currentAction === 'NumberFormatList' ? 'OL' : this.currentAction === 'BulletFormatList' ? 'UL' : this.currentAction;
         this.domNode.setMarker(this.saveSelection);
-        let listsNodes: Node[] = this.domNode.blockNodes();
+        let listsNodes: Node[] = this.domNode.blockNodes(true);
         if (e.enterAction === 'BR') {
             this.setSelectionBRConfig();
             const allSelectedNode: Node[] = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument);
@@ -630,6 +640,17 @@ export class Lists {
                     const listEle: Element = document.createElement(type);
                     listEle.innerHTML = '<li><br/></li>';
                     elements[i as number].appendChild(listEle);
+                } else if ('LI' !== elements[i as number].tagName && isNOU(item) &&
+                    elements[i as number].nodeName === 'BLOCKQUOTE') {
+                    isReverse = false;
+                    const elemAtt: string = this.domNode.attributes(elements[i as number]);
+                    const openTag: string = '<' + type + '>';
+                    const closeTag: string = '</' + type + '>';
+                    const newTag: string = 'li' + elemAtt;
+                    const replaceHTML: string = elements[i as number].innerHTML;
+                    const innerHTML: string = this.domNode.createTagString(newTag, null, replaceHTML);
+                    const collectionString: string = openTag + innerHTML + closeTag;
+                    elements[i as number].innerHTML = collectionString;
                 } else if ('LI' !== elements[i as number].tagName && isNOU(item)) {
                     isReverse = false;
                     const elemAtt: string = elements[i as number].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i as number]);

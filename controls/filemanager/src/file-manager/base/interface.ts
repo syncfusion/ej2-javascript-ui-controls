@@ -16,6 +16,17 @@ import { BreadCrumbBar, Virtualization } from '../actions';
 import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
 
 /**
+ * ValueType is a type that can be a number, string, Date, or boolean.
+ */
+export declare type ValueType = number | string | Date | boolean;
+
+/**
+ * SortComparer is a function type that takes two ValueType arguments and returns a number.
+ * The function is used for comparing two values for sorting purposes.
+ */
+export declare type SortComparer = (x: ValueType, y: ValueType) => number;
+
+/**
  * Defines the view type of the FileManager.
  * ```props
  * LargeIcons :- Displays the files and folders as large icons.
@@ -226,6 +237,15 @@ export interface BeforeDownloadEventArgs {
      * If you want to cancel this event then, set cancel to true. Otherwise, false.
      */
     cancel?: boolean;
+    /**
+    * Return the AJAX details, which are send to server.
+    */
+    // eslint-disable-next-line
+    ajaxSettings?: Object;
+    /**
+     * Specifies whether the download is performed through the form submit method or using an HTTP client instance.
+     */
+    useFormPost?: boolean;
 }
 /**
  * Interface for BeforeImageLoad event arguments.
@@ -609,6 +629,7 @@ export interface IFileManager extends Component<HTMLElement> {
     layoutSelectedItems: string[];
     sortOrder: SortOrder;
     sortBy: string;
+    sortComparer: SortComparer | string;
     // eslint-disable-next-line
     actionRecords: Object[];
     // eslint-disable-next-line

@@ -1,10 +1,11 @@
 import { CellModel, BeforeSortEventArgs, SheetModel, ImageModel, ChartType, ConditionalFormatModel, AutoFillDirection, AutoFillType, ChartModel, MarkerSettingsModel } from './../../workbook/index';
 import { ValidationType, ValidationOperator, MergeArgs, InsertDeleteEventArgs, HyperlinkModel } from './../../workbook/index';
-import { RefreshType } from './index';
+import { Spreadsheet, RefreshType } from '../index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { CellInfoEventArgs, CFColor, ChartTheme, RowModel, CellStyleModel } from './../../workbook/index';
 import { SortCollectionModel } from './../../workbook/index';
+import { PredicateModel } from '@syncfusion/ej2-grids';
 
 
 /**
@@ -65,7 +66,8 @@ export interface FilterInfoArgs {
     filterRange?: number[];
     col?: number[];
     criteria?: string[];
-    enableColumnHeaderFiltering?: boolean;
+    allowHeaderFilter?: boolean;
+    isFiltered?: boolean;
 }
 
 /**
@@ -140,7 +142,7 @@ export interface ICellRenderer {
     render(args: CellRenderArgs): Element;
     refreshRange(
         range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean,
-        skipFormatCheck?: boolean): void;
+        skipFormatCheck?: boolean, checkFormulaAdded?: boolean): void;
     refresh(
         rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean,
         skipFormatCheck?: boolean): void;
@@ -317,6 +319,8 @@ export interface CellEditEventArgs {
     value: string;
     /** Defines the old value. */
     oldValue: string;
+    /** Defines the display text of the cell */
+    displayText: string;
     /** Defines the element. */
     element: HTMLElement;
     /** Defines the address. */
@@ -624,4 +628,21 @@ export interface PasteModelArgs {
     colCount?: number;
     rowCount?: number;
     selection?: string;
+}
+
+/**
+ * @hidden
+ */
+export interface ExtendedPredicateModel extends PredicateModel {
+    isFilterByMenu?: boolean;
+}
+
+/**
+ * @hidden
+ */
+export interface ExtendedSpreadsheet extends Spreadsheet {
+    isReact?: boolean;
+    isAngular?: boolean;
+    isVue?: boolean;
+    renderTemplates?: (callback: Function) => void;
 }

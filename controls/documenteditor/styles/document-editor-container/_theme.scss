@@ -1643,6 +1643,20 @@
     .e-de-ruler-table-svg:active {
         fill: $de-ruler-indent-active;
     }
+    .e-de-custom-treeview  .e-list-text{
+        font-size: $de-custom-treeview-text-size;
+        white-space: nowrap;
+        width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .e-bigger .e-de-custom-treeview  .e-list-text{
+        font-size: $de-custom-treeview-text-size-bg;
+        white-space: nowrap;
+        width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
     .e-rtl {
         .e-listview .e-list-icon {
             height: 24px;

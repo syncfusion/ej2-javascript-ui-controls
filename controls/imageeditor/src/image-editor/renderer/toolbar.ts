@@ -1,4 +1,4 @@
-import { extend, Browser, detach, select, isBlazor } from '@syncfusion/ej2-base';
+import { extend, Browser, detach, select } from '@syncfusion/ej2-base';
 import { EventHandler, getComponent, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { ActivePoint, Dimension, ModeSwitchEventArgs, NumericTextBox, PaletteTileEventArgs, SliderChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -265,7 +265,9 @@ export class ToolbarModule {
             args.value['obj']['toolbarHeight'] = this.toolbarHeight;
             break;
         case 'setToolbarHeight':
-            this.toolbarHeight = args.value['height'];
+            if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.length > 0 && parent.toolbar.indexOf('Open') > -1)) {
+                this.toolbarHeight = args.value['height'];
+            }
             break;
         case 'setCurrentToolbar':
             this.currentToolbar = args.value['type'];
@@ -350,10 +352,13 @@ export class ToolbarModule {
             this.frameToolbarClick();
             break;
         case 'performCropTransformClick':
-            this.performCropTransformClick(args.value['shape']);
+            this.performCropTransformClick(args.value['shape'], args.value['isTransform']);
             break;
         case 'duplicateShape':
             this.duplicateShape(args.value['isPreventUndoRedo'], true);
+            break;
+        case 'editText':
+            this.editText();
             break;
         }
     }
@@ -457,6 +462,13 @@ export class ToolbarModule {
             const mToolbar: HTMLElement = document.getElementById(id + '_toolbar');
             if (toolbar) {
                 this.toolbarHeight = mToolbar.clientHeight;
+                if (parent.toolbar && parent.toolbar.length > 0 && parent.toolbar.indexOf('Open') === -1) {
+                    let toolabr: Toolbar = (getComponent(document.getElementById(parent.element.id + '_toolbar'), 'toolbar') as Toolbar)
+                    if (toolabr) {
+                        toolabr.destroy();
+                        document.getElementById(parent.element.id + '_toolbar').innerHTML = '';
+                    }
+                }
             }
         } else {
             this.toolbarHeight = 0;
@@ -534,30 +546,32 @@ export class ToolbarModule {
             const args: ToolbarEventArgs = {toolbarType: 'main', toolbarItems: this.defToolbarItems };
             parent.trigger('toolbarUpdating', args);
             this.defToolbarItems = args.toolbarItems as ItemModel[];
-            const toolbarObj: Toolbar = new Toolbar({
-                width: '100%',
-                items: this.defToolbarItems,
-                clicked: this.defToolbarClicked.bind(this),
-                created: () => {
-                    if (!isDevice) {
-                        this.renderAnnotationBtn();
+            if (this.defToolbarItems.length > 0) {
+                const toolbarObj: Toolbar = new Toolbar({
+                    width: '100%',
+                    items: this.defToolbarItems,
+                    clicked: this.defToolbarClicked.bind(this),
+                    created: () => {
+                        if (!isDevice) {
+                            this.renderAnnotationBtn();
+                        }
+                        this.wireZoomBtnEvents();
+                        this.renderSaveBtn();
+                        parent.trigger('toolbarCreated', {toolbarType: 'main'});
                     }
-                    this.wireZoomBtnEvents();
-                    this.renderSaveBtn();
-                    parent.trigger('toolbarCreated', {toolbarType: 'main'});
+                });
+                if (isDevice && isFrame) {
+                    toolbarObj.appendTo('#' + id + '_bottomToolbar');
+                } else {
+                    toolbarObj.appendTo('#' + id + '_toolbar');
                 }
-            });
-            if (isDevice && isFrame) {
-                toolbarObj.appendTo('#' + id + '_bottomToolbar');
-            } else {
-                toolbarObj.appendTo('#' + id + '_toolbar');
-            }
-            this.createLeftToolbarControls();
-            this.enableDisableTbrBtn();
-            if (this.isToolbar() && document.getElementById(id + '_toolbar')) {
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                const toolbar: any = getComponent(id + '_toolbar', 'toolbar') as Toolbar;
-                toolbar.refreshOverflow();
+                this.createLeftToolbarControls();
+                this.enableDisableTbrBtn();
+                if (this.isToolbar() && document.getElementById(id + '_toolbar')) {
+                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                    const toolbar: any = getComponent(id + '_toolbar', 'toolbar') as Toolbar;
+                    toolbar.refreshOverflow();
+                }
             }
         }
     }
@@ -591,8 +605,13 @@ export class ToolbarModule {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         const toolbarItems: ItemModel[] = [];
         if (!isOkBtn || isResize) {
-            toolbarItems.push({ id: id + '_upload', cssClass: 'e-image-upload', align: 'Left', type: 'Input', template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg', multiple: false}) });
-            toolbarItems.push({ visible: false, cssClass: 'e-image-position e-btn e-flat', tooltipText: this.l10n.getConstant('Browse'), align: 'Left' });
+            if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Open') > -1)) {
+                toolbarItems.push({ id: parent.element.id + '_upload', cssClass: 'e-image-upload', align: 'Left', type: 'Input', template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg', multiple: false}) });
+                toolbarItems.push({ visible: false, cssClass: 'e-image-position e-btn e-flat', tooltipText: this.l10n.getConstant('Browse'), align: 'Left' });
+            } else if (Browser.isDevice && (parent.toolbar && parent.toolbar.indexOf('Open') === -1)) {
+                toolbarItems.push({ visible: false, id: parent.element.id + '_upload', cssClass: 'e-image-upload', align: 'Left', type: 'Input', template: new Uploader({allowedExtensions: '.jpg, .jpeg, .png,.svg', multiple: false}) });
+                toolbarItems.push({ visible: false, cssClass: 'e-image-position e-btn e-flat', tooltipText: this.l10n.getConstant('Browse'), align: 'Left' });
+            }
         }
         if (parent.allowUndoRedo && !isResize) {
             if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Undo') > -1)) {
@@ -724,6 +743,7 @@ export class ToolbarModule {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         const toolbarArea: Element = parent.element.querySelector('#' + id + '_toolbarArea');
         const contextualToolbarArea: Element = parent.element.querySelector('#' + id + '_contextualToolbarArea');
+        if (!contextualToolbarArea) { return; }
         contextualToolbarArea.classList.remove('e-hide');
         (contextualToolbarArea as HTMLElement).style.left = (toolbarArea as HTMLElement).offsetLeft + 'px';
         if (type === 'filter') {
@@ -747,14 +767,12 @@ export class ToolbarModule {
             if (type === 'frame') {this.initFrameToolbarItem(); }
             else {this.renderSlider(cType, isSelect); }
         }
-        if (!isBlazor()) {
-            if (parent.toolbarTemplate) {
-                this.toolbarHeight = (parent.element.querySelector('#' + parent.element.id + '_toolbarArea') as HTMLElement).clientHeight;
-            } else if (parent.element.querySelector('#' + parent.element.id + '_toolbar')) {
-                this.toolbarHeight = (parent.element.querySelector('#' + parent.element.id + '_toolbar') as HTMLElement).clientHeight;
-            }
-            parent.toolbarHeight = this.toolbarHeight;
+        if (parent.toolbarTemplate) {
+            this.toolbarHeight = (parent.element.querySelector('#' + parent.element.id + '_toolbarArea') as HTMLElement).clientHeight;
+        } else if (parent.element.querySelector('#' + parent.element.id + '_toolbar')) {
+            this.toolbarHeight = (parent.element.querySelector('#' + parent.element.id + '_toolbar') as HTMLElement).clientHeight;
         }
+        parent.toolbarHeight = this.toolbarHeight;
         if (Browser.isDevice) {
             let cHt: number = (contextualToolbarArea as HTMLElement).offsetHeight + 1;
             const cusWrapper: HTMLElement = parent.element.querySelector('#' + id + '_customizeWrapper');
@@ -1492,7 +1510,7 @@ export class ToolbarModule {
         return toolbarItems;
     }
 
-    private initCropTransformToolbar(shape?: string): void {
+    private initCropTransformToolbar(shape?: string, isTransform?: boolean): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         const leftItem: ItemModel[] = this.getLeftToolbarItem();
         const rightItem: ItemModel[] = this.getRightToolbarItem();
@@ -1530,7 +1548,7 @@ export class ToolbarModule {
                         (toolbar as any).refreshOverflow();
                     }
                 }
-                if (document.getElementById(id + '_cropBtn')) {
+                if (document.getElementById(id + '_cropBtn') && isNullOrUndefined(isTransform)) {
                     if (!Browser.isDevice) {
                         parent.notify('draw', { prop: 'select', onPropertyChange: false,
                             value: {type: this.getCropTextContent(document.getElementById(id + '_cropBtn')).toLowerCase(),
@@ -1719,7 +1737,7 @@ export class ToolbarModule {
                 },
                 beforeClose: (): void => {
                     fillDDB.toggle();
-                }
+                },
             }, '#' + id + '_shape_fill');
             const fillDDB: DropDownButton = new DropDownButton({
                 open: (args: OpenCloseMenuEventArgs) => {
@@ -2184,7 +2202,7 @@ export class ToolbarModule {
     }
 
     private refreshToolbar(type: string, isApplyBtn?: boolean, isCropping?: boolean, isZooming?: boolean,
-        cType?: string, shape?: string): void {
+        cType?: string, shape?: string, isTransform?: boolean): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         if (!parent.isImageLoaded || parent.isCropToolbar) {
             return;
@@ -2199,9 +2217,17 @@ export class ToolbarModule {
                 (getComponent(cusWrapper, 'toolbar') as Toolbar).destroy();
                 cusWrapper.innerHTML = '';
             }
-            if (toolbarElement && this.defToolbarItems.length > 0) {
+            if (toolbarElement && toolbarElement.classList.contains('e-control') && this.defToolbarItems.length > 0) {
                 (getComponent(toolbarElement, 'toolbar') as Toolbar).destroy();
                 toolbarElement.innerHTML = '';
+            }
+            if (toolbarElement && (this.defToolbarItems.length > 0 || 
+                parent.toolbar && parent.toolbar.length > 0 && parent.toolbar.indexOf('Open') === -1)) {
+                let toolbar: Toolbar = (getComponent(toolbarElement, 'toolbar') as Toolbar);
+                if (!isNullOrUndefined(toolbar)) {
+                    toolbar.destroy();
+                    document.getElementById(parent.element.id + '_toolbar').innerHTML = '';
+                }
             }
             if (bottomToolbar && this.defToolbarItems.length > 0) {
                 if (bottomToolbar.className.indexOf('e-control') > -1) {
@@ -2290,14 +2316,13 @@ export class ToolbarModule {
             this.updateContextualToolbar(type, cType);
             break;
         case 'croptransform':
-            parent.allowDownScale = false;
-            parent.isCropTab = true;
-            if (Browser.isDevice) {
-                this.initMainToolbar(false, true, true);
+            if (isNullOrUndefined(isTransform)) {
+                parent.allowDownScale = false; parent.isCropTab = true;
             }
-            parent.updateCropTransformItems();
-            this.initCropTransformToolbar(shape);
-            if (Browser.isDevice) {this.updateContextualToolbar('color', 'straighten', true); }
+            if (Browser.isDevice) {this.initMainToolbar(false, true, true); }
+            if (isNullOrUndefined(isTransform)) {parent.updateCropTransformItems(); }
+            this.initCropTransformToolbar(shape, isTransform);
+            if (Browser.isDevice && this.isToolbar()) {this.updateContextualToolbar('color', 'straighten', true); }
             break;
         case 'frame':
             this.isFrameToolbar = true;
@@ -2322,15 +2347,19 @@ export class ToolbarModule {
         this.refreshDropDownBtn(isCropping);
     }
 
-    private performCropTransformClick(shape?: string): void {
+    private performCropTransformClick(shape?: string, isTransform?: boolean): void {
         const parent: ImageEditor = this.parent;
-        parent.notify('draw', {prop: 'setTempStraightenZoomDeg' });
-        parent.tempStraighten = parent.transform.straighten;
-        if (parent.currObjType.isFiltered) {parent.okBtn(); }
-        parent.isStraightening = true;
-        this.refreshToolbar('croptransform', null, null, null, null, shape);
-        parent.notify('draw', { prop: 'setDestForStraighten' });
-        parent.notify('draw', { prop: 'setTempDestForStraighten' });
+        if (isNullOrUndefined(isTransform)) {
+            parent.notify('draw', {prop: 'setTempStraightenZoomDeg' });
+            parent.tempStraighten = parent.transform.straighten;
+            if (parent.currObjType.isFiltered) {parent.okBtn(); }
+            parent.isStraightening = true;
+        }
+        this.refreshToolbar('croptransform', null, null, null, null, shape, isTransform);
+        if (isNullOrUndefined(isTransform)) {
+            parent.notify('draw', { prop: 'setDestForStraighten' });
+            parent.notify('draw', { prop: 'setTempDestForStraighten' });
+        }
     }
 
     private getAdjustmentToolbarItem(): ItemModel[] {
@@ -3616,31 +3645,7 @@ export class ToolbarModule {
                 break;
             case 'edittext':
                 if (!parent.element.querySelector('#' + id + '_editText').classList.contains('e-disabled')) {
-                    this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
-                    parent.notify('selection', { prop: 'setTempActObj', onPropertyChange: false,
-                        value: { obj: extend({}, parent.activeObj, {}, true) }});
-                    parent.notify('selection', { prop: 'setInitialTextEdit', onPropertyChange: false,
-                        value: { bool: true }});
-                    parent.notify('draw', { prop: 'setPrevActObj', onPropertyChange: false,
-                        value: { prevActObj: extend({}, parent.activeObj, {}, true) }});
-                    if (parent.activeObj.rotatedAngle !== 0) {
-                        const object: Object = {x: points.x, y: points.y };
-                        parent.notify('shape', { prop: 'getTextBoxPosition', onPropertyChange: false,
-                            value: {obj: parent.activeObj, object: object }});
-                        points.x = object['x']; points.y = object['y'];
-                        const object1: Object = {x: points.x, y: points.y };
-                        parent.notify('shape', { prop: 'setFlipState', onPropertyChange: false,
-                            value: {x: points.x, y: points.y, obj: parent.activeObj, object: object1 }});
-                        points.x = object1['x']; points.y = object1['y'];
-                    }
-                    parent.notify('shape', { prop: 'renderTextArea', onPropertyChange: false,
-                        value: {x: points.x, y: points.y, actObj: parent.activeObj}});
-                    if (isNullOrUndefined(parent.activeObj.currIndex)) {
-                        parent.notify('draw', { prop: 'setShapeTextInsert', onPropertyChange: false, value: {bool: true } });
-                    }
-                    if (document.getElementById(id + '_quickAccessToolbarArea')) {
-                        document.getElementById(id + '_quickAccessToolbarArea').style.display = 'none';
-                    }
+                    this.editText();
                 }
                 break;
             case 'rotleft':
@@ -3671,6 +3676,36 @@ export class ToolbarModule {
         }
         if (isNullOrUndefined(isContextualToolbar)) {
             parent.trigger('quickAccessToolbarItemClick', args);
+        }
+    }
+
+    private editText(): void {
+        const parent: ImageEditor = this.parent;
+        const points: Point = {x: parent.activeObj.activePoint.startX, y: parent.activeObj.activePoint.startY};
+        this.upperContext.clearRect(0, 0, parent.upperCanvas.width, parent.upperCanvas.height);
+        parent.notify('selection', { prop: 'setTempActObj', onPropertyChange: false,
+            value: { obj: extend({}, parent.activeObj, {}, true) }});
+        parent.notify('selection', { prop: 'setInitialTextEdit', onPropertyChange: false,
+            value: { bool: true }});
+        parent.notify('draw', { prop: 'setPrevActObj', onPropertyChange: false,
+            value: { prevActObj: extend({}, parent.activeObj, {}, true) }});
+        if (parent.activeObj.rotatedAngle !== 0) {
+            const object: Object = {x: points.x, y: points.y };
+            parent.notify('shape', { prop: 'getTextBoxPosition', onPropertyChange: false,
+                value: {obj: parent.activeObj, object: object }});
+            points.x = object['x']; points.y = object['y'];
+            const object1: Object = {x: points.x, y: points.y };
+            parent.notify('shape', { prop: 'setFlipState', onPropertyChange: false,
+                value: {x: points.x, y: points.y, obj: parent.activeObj, object: object1 }});
+            points.x = object1['x']; points.y = object1['y'];
+        }
+        parent.notify('shape', { prop: 'renderTextArea', onPropertyChange: false,
+            value: {x: points.x, y: points.y, actObj: parent.activeObj}});
+        if (isNullOrUndefined(parent.activeObj.currIndex)) {
+            parent.notify('draw', { prop: 'setShapeTextInsert', onPropertyChange: false, value: {bool: true } });
+        }
+        if (document.getElementById(parent.element.id + '_quickAccessToolbarArea')) {
+            document.getElementById(parent.element.id + '_quickAccessToolbarArea').style.display = 'none';
         }
     }
 
@@ -3904,7 +3939,6 @@ export class ToolbarModule {
                         parseFloat((getComponent(aspectRatioHeight, 'numerictextbox') as NumericTextBox).placeholder);
                     parent.notify('transform', {prop: 'resize', value: {width: parent.aspectWidth, height: parent.aspectHeight, isAspectRatio: false }});
                 }
-                parent.cancelCropSelection = null;
                 parent.resizeSrc = { startX: parent.img.srcLeft, startY: parent.img.srcTop, width: parent.img.srcWidth,
                     height: parent.img.srcHeight };
                 this.refreshToolbar('resize');
@@ -4539,87 +4573,89 @@ export class ToolbarModule {
     private updateToolbarItems(): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         if (!parent.isImageLoaded) {return; }
-        const selFillElem: HTMLElement = parent.element.querySelector('.e-fill.e-template .e-dropdownbtn-preview') as HTMLElement;
-        const selStrokeElem: HTMLElement = parent.element.querySelector('.e-stroke.e-template .e-dropdownbtn-preview') as HTMLElement;
-        const selTextStrokeElem: HTMLElement = parent.element.querySelector('.e-text-font-color.e-template .e-dropdownbtn-preview') as HTMLElement;
-        const selPenStrokeElem: HTMLElement = parent.element.querySelector('.e-pen-stroke-color.e-template .e-dropdownbtn-preview') as HTMLElement;
-        const strokeWidthElem: HTMLElement = parent.element.querySelector('.e-shape-stroke-width') as HTMLElement;
-        const fontFamilyElem: HTMLElement = parent.element.querySelector('.e-text-font-family') as HTMLElement;
-        const fontSizeElem: HTMLElement = parent.element.querySelector('.e-text-font-size') as HTMLElement;
-        const boldBtn: HTMLElement = parent.element.querySelector('#' + id + '_bold') as HTMLElement;
-        const italicBtn: HTMLElement = parent.element.querySelector('#' + id + '_italic') as HTMLElement;
-        if (parent.activeObj.strokeSettings && parent.activeObj.textSettings) {
-            if (isNullOrUndefined(parent.activeObj.strokeSettings.strokeWidth)) {
-                parent.activeObj.strokeSettings.strokeWidth = 2;
-            }
-            if (selFillElem) {
-                const value: string = parent.activeObj.strokeSettings.fillColor;
-                if (parent.activeObj.strokeSettings.fillColor === '') {
-                    selFillElem.classList.add('e-nocolor-item');
-                } else {
-                    selFillElem.classList.remove('e-nocolor-item');
-                    selFillElem.style.background = value;
+        if (this.isToolbar()) {
+            const selFillElem: HTMLElement = parent.element.querySelector('.e-fill.e-template .e-dropdownbtn-preview') as HTMLElement;
+            const selStrokeElem: HTMLElement = parent.element.querySelector('.e-stroke.e-template .e-dropdownbtn-preview') as HTMLElement;
+            const selTextStrokeElem: HTMLElement = parent.element.querySelector('.e-text-font-color.e-template .e-dropdownbtn-preview') as HTMLElement;
+            const selPenStrokeElem: HTMLElement = parent.element.querySelector('.e-pen-stroke-color.e-template .e-dropdownbtn-preview') as HTMLElement;
+            const strokeWidthElem: HTMLElement = parent.element.querySelector('.e-shape-stroke-width') as HTMLElement;
+            const fontFamilyElem: HTMLElement = parent.element.querySelector('.e-text-font-family') as HTMLElement;
+            const fontSizeElem: HTMLElement = parent.element.querySelector('.e-text-font-size') as HTMLElement;
+            const boldBtn: HTMLElement = parent.element.querySelector('#' + id + '_bold') as HTMLElement;
+            const italicBtn: HTMLElement = parent.element.querySelector('#' + id + '_italic') as HTMLElement;
+            if (parent.activeObj.strokeSettings && parent.activeObj.textSettings) {
+                if (isNullOrUndefined(parent.activeObj.strokeSettings.strokeWidth)) {
+                    parent.activeObj.strokeSettings.strokeWidth = 2;
                 }
-                if (document.querySelector('#' + id + '_shape_fill')) {
-                    (getComponent(id + '_shape_fill', 'colorpicker') as ColorPicker).value = value;
-                }
-            }
-            if (selStrokeElem) {
-                const value: string = parent.activeObj.strokeSettings.strokeColor;
-                selStrokeElem.style.background = value;
-                if (document.querySelector('#' + id + '_shape_stroke')) {
-                    (getComponent(id + '_shape_stroke', 'colorpicker') as ColorPicker).value = value;
-                }
-            }
-            if (selTextStrokeElem) {
-                const value: string = parent.activeObj.strokeSettings.strokeColor;
-                selTextStrokeElem.style.background = value;
-                if (document.querySelector('#' + id + '_text_font')) {
-                    (getComponent(id + '_text_font', 'colorpicker') as ColorPicker).value = value;
-                }
-            }
-            if (selPenStrokeElem) {
-                const value: string = parent.activeObj.strokeSettings.strokeColor;
-                selPenStrokeElem.style.background = value;
-                if (document.querySelector('#' + id + '_pen_stroke')) {
-                    (getComponent(id + '_pen_stroke', 'colorpicker') as ColorPicker).value = value;
-                }
-                const obj: Object = {penOpacity: 1 };
-                parent.notify('freehand-draw', { prop: 'getPenOpacity', onPropertyChange: false, value: { obj: obj } });
-            }
-            if (fontFamilyElem) {
-                if (Browser.isDevice) {
-                    fontFamilyElem.setAttribute('style', 'font-family:' + parent.activeObj.textSettings.fontFamily.toLowerCase());
-                } else {
-                    fontFamilyElem.textContent = parent.activeObj.textSettings.fontFamily;
-                }
-            }
-            if (fontSizeElem) {
-                for (let i: number = 0; i < parent.fontSizeColl.length; i++) {
-                    if (parseInt(parent.fontSizeColl[i as number].text, 10) >= Math.round(parent.activeObj.textSettings.fontSize)) {
-                        fontSizeElem.textContent = (i + 1).toString();
-                        break;
+                if (selFillElem) {
+                    const value: string = parent.activeObj.strokeSettings.fillColor;
+                    if (parent.activeObj.strokeSettings.fillColor === '') {
+                        selFillElem.classList.add('e-nocolor-item');
+                    } else {
+                        selFillElem.classList.remove('e-nocolor-item');
+                        selFillElem.style.background = value;
+                    }
+                    if (document.querySelector('#' + id + '_shape_fill')) {
+                        (getComponent(id + '_shape_fill', 'colorpicker') as ColorPicker).value = value;
                     }
                 }
-            }
-            if (boldBtn) {
-                if (parent.activeObj.textSettings.bold) {
-                    boldBtn.classList.add('e-selected-btn');
-                } else {
-                    boldBtn.classList.remove('e-selected-btn');
+                if (selStrokeElem) {
+                    const value: string = parent.activeObj.strokeSettings.strokeColor;
+                    selStrokeElem.style.background = value;
+                    if (document.querySelector('#' + id + '_shape_stroke')) {
+                        (getComponent(id + '_shape_stroke', 'colorpicker') as ColorPicker).value = value;
+                    }
                 }
-            }
-            if (italicBtn) {
-                if (parent.activeObj.textSettings.italic) {
-                    italicBtn.classList.add('e-selected-btn');
-                } else {
-                    italicBtn.classList.remove('e-selected-btn');
+                if (selTextStrokeElem) {
+                    const value: string = parent.activeObj.strokeSettings.strokeColor;
+                    selTextStrokeElem.style.background = value;
+                    if (document.querySelector('#' + id + '_text_font')) {
+                        (getComponent(id + '_text_font', 'colorpicker') as ColorPicker).value = value;
+                    }
                 }
-            }
-            if (strokeWidthElem) {
-                const strokeWidth: string = Math.round((parent.activeObj.strokeSettings.strokeWidth)).toString();
-                strokeWidthElem.textContent = this.getStrokeWidth(strokeWidth);
-            }
+                if (selPenStrokeElem) {
+                    const value: string = parent.activeObj.strokeSettings.strokeColor;
+                    selPenStrokeElem.style.background = value;
+                    if (document.querySelector('#' + id + '_pen_stroke')) {
+                        (getComponent(id + '_pen_stroke', 'colorpicker') as ColorPicker).value = value;
+                    }
+                    const obj: Object = {penOpacity: 1 };
+                    parent.notify('freehand-draw', { prop: 'getPenOpacity', onPropertyChange: false, value: { obj: obj } });
+                }
+                if (fontFamilyElem) {
+                    if (Browser.isDevice) {
+                        fontFamilyElem.setAttribute('style', 'font-family:' + parent.activeObj.textSettings.fontFamily.toLowerCase());
+                    } else {
+                        fontFamilyElem.textContent = parent.activeObj.textSettings.fontFamily;
+                    }
+                }
+                if (fontSizeElem) {
+                    for (let i: number = 0; i < parent.fontSizeColl.length; i++) {
+                        if (parseInt(parent.fontSizeColl[i as number].text, 10) >= Math.round(parent.activeObj.textSettings.fontSize)) {
+                            fontSizeElem.textContent = (i + 1).toString();
+                            break;
+                        }
+                    }
+                }
+                if (boldBtn) {
+                    if (parent.activeObj.textSettings.bold) {
+                        boldBtn.classList.add('e-selected-btn');
+                    } else {
+                        boldBtn.classList.remove('e-selected-btn');
+                    }
+                }
+                if (italicBtn) {
+                    if (parent.activeObj.textSettings.italic) {
+                        italicBtn.classList.add('e-selected-btn');
+                    } else {
+                        italicBtn.classList.remove('e-selected-btn');
+                    }
+                }
+                if (strokeWidthElem) {
+                    const strokeWidth: string = Math.round((parent.activeObj.strokeSettings.strokeWidth)).toString();
+                    strokeWidthElem.textContent = this.getStrokeWidth(strokeWidth);
+                }
+            }   
         }
     }
 
@@ -4720,7 +4756,7 @@ export class ToolbarModule {
         const negativeIndexArr: number[] = [];
         for (let i: number = 0; i < this.defToolbarItems.length; i++) {
             if (this.defToolbarItems[i as number].align === 'Center' && !this.isSameIndex(indexArr, i) &&
-            this.defToolbarItems[i as number].id !== this.parent.element.id + '_' + 'annotation') {
+                this.defToolbarItems[i as number].id !== this.parent.element.id + '_' + 'annotation') {
                 negativeIndexArr.push(i);
             }
         }

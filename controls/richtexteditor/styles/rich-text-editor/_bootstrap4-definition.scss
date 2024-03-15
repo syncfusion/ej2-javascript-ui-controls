@@ -151,7 +151,7 @@ $rte-table-popup-bdr-radius: 0 !default;
 
 $rte-inline-dropdown-line-height: 30px !default;
 $rte-big-inline-dropdown-line-height: 34px !default;
-$rte-table-popup-border:1px solid rgba(0, 0, 0, .2) !default;
+$rte-table-popup-border: 1px solid rgba(0, 0, 0, .2) !default;
 $rte-big-content-font-size: 16px !default;
 $rte-dropdown-caret-icon-size: 8px !default;
 $rte-big-dropdown-caret-icon-size: 10px !default;
@@ -225,6 +225,7 @@ $rte-toolbar-item-frist-last-child-margin: 0;
 $rte-big-toolbar-item-frist-last-child-margin: 0 6px;
 $rte-toolbar-expaned-padding: 0 3px;
 $rte-toolbar-expaned-padding-hover: 0 3px;
+$rte-big-toolbar-expaned-padding: 0;
 $dropdown-btn-font-size: 14px !default;
 $rte-extended-toolbar-items-padding: 0;
 $rte-expand-tbar-hover-bg: $gray-600 !default;
@@ -238,7 +239,7 @@ $rte-tb-expended-min-height: 38px !default;
 $rte-big-tb-expended-min-height: 54px !default;
 $rte-tb-expended-padding-left: 1px !default;
 $rte-tb-expended-hover-padding-left: 1px !default;
-$rte-toolbar-expaned-minwidth: 25px !default;
+$rte-toolbar-expaned-minwidth: 100% !default;
 
 $rte-emoji-pop-background: $content-popup-bg;
 $rte-emoji-pop-box-shadow: drop-shadow(0 0 6px rgba(0, 0, 0, .25));

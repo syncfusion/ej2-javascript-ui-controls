@@ -116,10 +116,16 @@ export class VirtualScroll {
                 (this.parent.grid.getContent() as HTMLElement).firstElementChild.scrollTop = 0;
                 this.parent.grid.notify(events.virtualActionArgs, { setTop: true });
             }
-            if ((requestType === 'save' && pageingDetails.actionArgs.index >= (counts.count - this.parent.grid.pageSettings.pageSize)) || (requestType === 'refresh' && this.parent['isGantt'] && this.parent['isAddedFromGantt']
-                && this.parent.grid.pageSettings.currentPage === this.parent.grid.contentModule['maxPage'])) {
-                startIndex = counts.startIndex + (counts.count - counts.endIndex);
-                endIndex = counts.count;
+            if ((requestType === 'save' && pageingDetails.actionArgs.index >= (counts.count - this.parent.grid.pageSettings.pageSize)) || (requestType === 'refresh' && this.parent['isGantt'] && this.parent['isAddedFromGantt'])) {
+                const modifiedStartIndex: number = counts.startIndex + (counts.count - counts.endIndex);
+                if (counts.startIndex <= modifiedStartIndex && counts.endIndex <= modifiedStartIndex) {
+                    startIndex = counts.startIndex;
+                    endIndex = counts.endIndex;
+                }
+                else {
+                    startIndex = modifiedStartIndex;
+                    endIndex = counts.count;
+                }
                 this.parent['isAddedFromGantt'] = false;
             }
             //if ((this.prevendIndex !== -1 && this.prevstartIndex !== -1) &&

@@ -128,11 +128,12 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
     public locale: string;
 
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * Specifies whether to enable the rendering of untrusted HTML values in the Button component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
 
     /**
@@ -200,7 +201,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
     private setIconCss(): void {
         if (this.iconCss) {
             const span: HTMLElement = this.createElement('span', { className: 'e-btn-icon ' + this.iconCss });
-            if (!this.element.textContent.trim()) {
+            if (!this.element.textContent!.trim()) {
                 this.element.classList.add(cssClassName.ICONBTN);
             } else {
                 span.classList.add('e-icon-' + this.iconPosition.toLowerCase());
@@ -261,7 +262,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
         if (this.content) {
             this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
         }
-        const span: Element = this.element.querySelector('span.e-btn-icon');
+        const span: Element = this.element.querySelector('span.e-btn-icon') as Element;
         if (span) {
             detach(span);
         }
@@ -310,7 +311,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      * @private
      */
     public onPropertyChanged(newProp: ButtonModel, oldProp: ButtonModel): void {
-        let span: Element = this.element.querySelector('span.e-btn-icon');
+        let span: Element = this.element.querySelector('span.e-btn-icon') as Element;
         for (const prop of Object.keys(newProp)) {
             switch (prop) {
             case 'isPrimary':
@@ -321,14 +322,14 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
                 }
                 break;
             case 'disabled':
-                this.controlStatus(newProp.disabled);
+                this.controlStatus(newProp.disabled as boolean);
                 break;
             case 'iconCss': {
-                span = this.element.querySelector('span.e-btn-icon');
+                span = this.element.querySelector('span.e-btn-icon') as Element;
                 if (span) {
                     if (newProp.iconCss) {
                         span.className = 'e-btn-icon ' + newProp.iconCss;
-                        if (this.element.textContent.trim()) {
+                        if (this.element.textContent!.trim()) {
                             if (this.iconPosition === 'Left') {
                                 span.classList.add('e-icon-left');
                             } else {
@@ -345,7 +346,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
             }
             case 'iconPosition':
                 removeClass([this.element], ['e-top-icon-btn', 'e-bottom-icon-btn']);
-                span = this.element.querySelector('span.e-btn-icon');
+                span = this.element.querySelector('span.e-btn-icon') as Element;
                 if (span) {
                     detach(span);
                 }
@@ -373,9 +374,9 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
                 }
                 if (!isBlazor() || (isBlazor() && !this.isServerRendered && this.getModuleName() !== 'progress-btn')) {
                     if (this.enableHtmlSanitizer) {
-                        newProp.content = SanitizeHtmlHelper.sanitize(newProp.content);
+                        newProp.content = SanitizeHtmlHelper.sanitize(newProp.content as string);
                     }
-                    this.element.innerHTML = newProp.content;
+                    this.element.innerHTML = newProp.content as string;
                     this.setIconCss();
                 }
                 break;

@@ -1178,7 +1178,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 } else {
                     height += obj.style.strokeWidth;
                 }
-                if (symbolInfo.description && symbolInfo.description.text !== '') {
+                //Bug 873843: Issue with node height and width in the symbol palette. Checked !== Bpmn to avoid the actual height decrement for bpmn nodes 
+                if (symbol.shape && symbol.shape.type !== 'Bpmn' && symbolInfo.description && symbolInfo.description.text !== '') {
                     actualHeight -= 20; // default height of the text have been reduced from the container.
                 }
                 sw = actualWidth / ((!isPhase && content.width) || width); sh = actualHeight / ((!isPhase && content.height) || height);
@@ -1208,7 +1209,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 stackPanel.offsetY = 0.5;
             }
             //symbol description-textElement
-            this.getSymbolDescription(symbolInfo, width, stackPanel);
+            this.getSymbolDescription(symbolInfo, width, stackPanel,symbol);
             //EJ2-867827 - In diagram palette symbols, part of the symbol is not visible in left and top side 
             stackPanel.padding={left:1,right:1,bottom:1,top:1};
             stackPanel.measure(new Size());
@@ -1260,7 +1261,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      * Feature [EJ2- 50705] - Support to add margin between the text and symbols
     */
 
-    private getSymbolDescription(symbolInfo: SymbolInfo, width: number, parent: StackPanel | Container): void {
+    private getSymbolDescription(symbolInfo: SymbolInfo, width: number, parent: StackPanel | Container, symbol:NodeModel|ConnectorModel): void {
         if (symbolInfo && symbolInfo.description && symbolInfo.description.text) {
             const textElement: TextElement = new TextElement();
             //symbol description-textElement
@@ -1281,7 +1282,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             textElement.style.strokeWidth = 0;
             textElement.style.textWrapping = symbolInfo.description.wrap;
             textElement.style.textOverflow = symbolInfo.description.overflow;
-            textElement.margin = {left : 0, right : 0, top : symbolInfo.description.margin ? symbolInfo.description.margin.top : 0, bottom : symbolInfo.description.margin ? symbolInfo.description.margin.bottom : 5};
+            //Bug 873843: Issue with node height and width in the symbol palette. Added below to set margin bottom value for bpmn symbol with description.
+            if(symbol.shape && symbol.shape.type === 'Bpmn'){
+                textElement.margin = {left : 0, right : 0, top : symbolInfo.description.margin ? symbolInfo.description.margin.top : 0, bottom : symbolInfo.description.margin ? symbolInfo.description.margin.bottom : this.symbolMargin.bottom};
+            }else{
+                textElement.margin = {left : 0, right : 0, top : symbolInfo.description.margin ? symbolInfo.description.margin.top : 0, bottom : symbolInfo.description.margin ? symbolInfo.description.margin.bottom : 5};
+            }
             parent.children.push(textElement);
         }
     }
@@ -2013,7 +2019,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             symbolContainer.children[0].width = width;
             symbolContainer.children[0].height = height;
             this.bpmnModule.updateBPMN(
-                { width: (symbol as Node).width * sw, height: (symbol as Node).height * sh } as Node,
+                { width: width, height: height } as Node,
                 symbol as Node, symbol as Node, null);
             symbol.wrapper = wrapper;
         } else {
@@ -2181,7 +2187,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             for (let i: number = element.children.length - 1; i >= 0; i--) {
                 element.removeChild(element.children[parseInt(i.toString(), 10)]);
             }
-            //Bug 857693: Collapsing the palettes after searching shapes throws wrong arguments in paletteExpanding event.
+            //Bug-857693: Collapsing the palettes after searching shapes throws wrong arguments in paletteExpanding event.
             //To remove search palette from palette collection. 
             this.palettes.splice(0, 1);
         }

@@ -1,4 +1,4 @@
-import { Browser, extend, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ActivePoint, Dimension } from '@syncfusion/ej2-inputs';
 import { CropEventArgs, CurrentObject, ImageEditor, Point, SelectionPoint, ImageDimension } from '../index';
 
@@ -792,21 +792,8 @@ export class Crop {
             }
             const transitionArgs: CropEventArgs = {cancel: false, startPoint: { x: startX, y: startY },
                 endPoint: {x: endX, y: endY }, preventScaling: false };
-            if (!object['isCropToolbar'] && isBlazor() && parent.events && parent.events.cropping.hasDelegate === true) {
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                if ((parent as any).currentToolbar === 'resize-toolbar') {
-                    parent.dotNetRef.invokeMethodAsync('CropEventAsync', 'OnCrop', transitionArgs, null);
-                    this.cropEvent(transitionArgs, obj, object);
-                } else {
-                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                    (parent.dotNetRef.invokeMethodAsync('CropEventAsync', 'OnCrop', transitionArgs, null) as any).then((args: CropEventArgs) => {
-                        this.cropEvent(args, obj, object);
-                    });
-                }
-            } else {
-                if (!object['isCropToolbar']) {parent.trigger('cropping', transitionArgs); }
-                this.cropEvent(transitionArgs, obj, object);
-            }
+            if (!object['isCropToolbar']) {parent.trigger('cropping', transitionArgs); }
+            this.cropEvent(transitionArgs, obj, object);
         }
     }
 
@@ -836,21 +823,12 @@ export class Crop {
                 const aspectIcon: HTMLInputElement = (parent.element.querySelector('#' + parent.element.id + '_aspectratio') as HTMLInputElement);
                 const nonAspectIcon: HTMLInputElement = (parent.element.querySelector('#' + parent.element.id + '_nonaspectratio') as HTMLInputElement);
                 parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: false } });
-                if (!isBlazor() && !object['isCropToolbar'] && (isNullOrUndefined(aspectIcon) && isNullOrUndefined(nonAspectIcon))) {
+                if (!object['isCropToolbar'] && (isNullOrUndefined(aspectIcon) && isNullOrUndefined(nonAspectIcon))) {
                     parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
                         isApplyBtn: false, isCropping: false, isZooming: null, cType: null}});
-                } else if (!object['isCropToolbar']) {
-                    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                    if ((parent as any).currentToolbar !== 'resize-toolbar') {
-                        parent.updateToolbar(parent.element, 'imageLoaded');
-                    }
                 }
                 this.resizeWrapper();
                 if (Browser.isDevice) {this.updateUndoRedoColl(prevObj, prevCropObj, object); }
-                transitionArgs = { startPoint: transitionArgs.startPoint, endPoint: transitionArgs.endPoint };
-                if (!object['isCropToolbar'] && isBlazor() && parent.events && parent.events.cropped.hasDelegate === true) {
-                    parent.dotNetRef.invokeMethodAsync('CropEventAsync', 'Cropped', null, transitionArgs);
-                } else {}
             }
         }
     }
@@ -871,23 +849,15 @@ export class Crop {
 
     private resizeWrapper(): void {
         const parent: ImageEditor = this.parent;
-        if (Browser.isDevice && !isBlazor()) {
+        if (Browser.isDevice) {
             const elem: HTMLElement = (parent as any).element;
             const ctxToolbar: HTMLElement = elem.querySelector('#' + elem.id + '_contextualToolbarArea') as HTMLElement;
-            if (ctxToolbar.style.position === '' && !this.isTransformCrop) {
+            if (ctxToolbar && ctxToolbar.style.position === '' && !this.isTransformCrop) {
                 ctxToolbar.style.position = 'absolute';
                 parent.isStraightening = false;
                 parent.update();
                 parent.notify('filter', { prop: 'setAdjustmentValue', value: { adjustmentValue: parent.canvasFilter } });
             }
-        } else if (Browser.isDevice && isBlazor() && !this.isTransformCrop) {
-            parent.isStraightening = false;
-            parent.update();
-            const canvasWrapper: HTMLElement = parent.element.querySelector('#' + parent.element.id + '_canvasWrapper');
-            if (canvasWrapper) {
-                canvasWrapper.style.height = (parseInt(canvasWrapper.style.height) + 2) + 'px';
-            }
-            parent.notify('filter', { prop: 'setAdjustmentValue', value: { adjustmentValue: parent.canvasFilter } });
         }
     }
 

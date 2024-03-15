@@ -207,6 +207,8 @@ export const cellSelectionBegin: string = 'cellselecting';
 /** @hidden */
 export const cellSelectionComplete: string = 'cellselected';
 /** @hidden */
+export const destroyAutoFillElements: string = 'destroy-autofill-elements';
+/** @hidden */
 export const beforeCellFocused: string = 'beforecellfocused';
 /** @hidden */
 export const cellFocused: string = 'cellfocused';
@@ -572,3 +574,5 @@ export const refreshSplitFrozenColumn: string = 'refresh-Split-Frozen-Column';
 export const renderResponsiveChangeAction: string = 'render-Responsive-Change-Action';
 /** @hidden */
 export const renderResponsiveColumnChooserDiv: string = 'render-Responsive-Column-Chooser-Div';
+/** @hidden */
+export const showAddNewRowFocus: string = 'show-Add-New-Row-Focus';

@@ -1984,6 +1984,30 @@ describe( 'EJ2-64636 Duplicate text is created when deleting different nodes and
     });
 });
 
+describe( '874048 Pressing enter key when the cursor is focused on the image caption', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeEach(() => {
+        rteObj = renderRTE( {
+            height: '200px',
+            enterKey: "P",
+            value: '<p>RTE content&nbsp;<span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="ASmall_Image" width="auto" height="auto" style="min-width: 0px; max-width: 1085px; min-height: 0px;"><span class="e-img-inner" contenteditable="true">Caption</span></span></span>  with image</p>',
+        } );
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+    it( 'Pressing enter key when the cursor is focused on the image caption', () => {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.querySelector('.e-img-inner');
+        const sel: void = new NodeSelection().setCursorPoint(document, startNode.childNodes[0], 2);
+        let cursorElem: HTMLElement;
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML === `<p>RTE content&nbsp;<span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="ASmall_Image" width="auto" height="auto" style="min-width: 0px; max-width: 1085px; min-height: 0px;"><span class="e-img-inner" contenteditable="true">Caption</span></span></span>  with image</p>`).toBe(true);
+    });
+});
+
 describe('EJ2-65987 - Image duplicated when pressing enter',() => {
     let rteObj: RichTextEditor;
     let innerHTML: string = `<p><br></p><p>&nbsp;<img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" alt="RTEImage-Feather.png" width="auto" height="auto" style="min-width: 0px; max-width: 1455px; min-height: 0px;"> </p>`;
@@ -2387,4 +2411,4 @@ describe('868816 - The enter key is not working properly in the Rich Text Editor
     afterAll(() => {
         destroy(rteObj);
     });
-})
+});

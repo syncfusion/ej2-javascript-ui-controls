@@ -6,6 +6,7 @@ import { PdfGraphics, PdfGraphicsState } from './graphics/pdf-graphics';
 import { _PdfBaseStream, _PdfContentStream } from './base-stream';
 import { PdfRotationAngle, PdfDestinationMode, PdfFormFieldsTabOrder, PdfPageOrientation } from './enumerator';
 import { PdfNamedDestination } from './pdf-outline';
+import { PdfPageSettings } from './pdf-document';
 /**
  * Represents a page loaded from the PDF document.
  * ```typescript
@@ -39,6 +40,8 @@ export class PdfPage {
     _hasResourceReference: boolean;
     _resourceObject: _PdfDictionary;
     _tabOrder: PdfFormFieldsTabOrder;
+    _pageSettings: PdfPageSettings;
+    _isNew: boolean = false;
     /**
      * Represents a loaded page of the PDF document.
      *
@@ -159,11 +162,40 @@ export class PdfPage {
         let angle: number = 0;
         if (typeof this._rotation === 'undefined') {
             angle = _getInheritableProperty(this._pageDictionary, 'Rotate', false, true, 'Parent');
+            if (angle < 0) {
+                angle += 360;
+            }
+            this._rotation = (typeof angle !== 'undefined') ? ((angle / 90) % 4) as PdfRotationAngle : PdfRotationAngle.angle0;
         }
-        if (angle < 0) {
-            angle += 360;
+        return this._rotation;
+    }
+    /**
+     * Sets the rotation angle of the PDF page
+     *
+     * @param {PdfRotationAngle} value rotation angle.
+     *
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data);
+     * // Access first page
+     * let page: PdfPage = document.getPage(0);
+     * // Sets the rotation angle of the PDF page
+     * page.rotate = PdfRotationAngle.angle90;
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    set rotation(value: PdfRotationAngle) {
+        if (!this._isNew) {
+            this._rotation = value;
+            let rotate: number = Math.floor(this._rotation as number) * 90;
+            if (rotate >= 360) {
+                rotate = rotate % 360;
+            }
+            this._pageDictionary.update('Rotate', rotate);
         }
-        return (typeof angle !== 'undefined') ? ((angle / 90) % 4) as PdfRotationAngle : PdfRotationAngle.angle0;
     }
     /**
      * Gets the tab order of a PDF form field.
@@ -461,29 +493,39 @@ export class PdfPage {
             this._g._initializeCoordinates(this);
         }
         //Need to code - set transparency group
-        const rotation: PdfRotationAngle = this.rotation;
-        if (!Number.isNaN(rotation) && (rotation !== PdfRotationAngle.angle0 || this._pageDictionary.has('Rotate'))) {
-            let rotate: number;
-            if (this._pageDictionary.has('Rotate')) {
-                rotate = this._pageDictionary.get('Rotate');
-            } else {
-                rotate = rotation * 90;
-            }
-            const clip: number[] = this._g._clipBounds;
-            if (rotate === 90) {
-                this._g.translateTransform(0, size[1]);
-                this._g.rotateTransform(-90);
-                this._g._clipBounds = [clip[0], clip[1], size[0], size[1]];
-            } else if (rotate === 180) {
-                this._g.translateTransform(size[0], size[1]);
-                this._g.rotateTransform(-180);
-            } else if (rotate === 270) {
-                this._g.translateTransform(size[0], 0);
-                this._g.rotateTransform(-270);
-                this._g._clipBounds = [clip[0], clip[1], size[1], size[0]];
+        if (!this._isNew) {
+            const rotation: PdfRotationAngle = this.rotation;
+            if (!Number.isNaN(rotation) && (rotation !== PdfRotationAngle.angle0 || this._pageDictionary.has('Rotate'))) {
+                let rotate: number;
+                if (this._pageDictionary.has('Rotate')) {
+                    rotate = this._pageDictionary.get('Rotate');
+                } else {
+                    rotate = rotation * 90;
+                }
+                const clip: number[] = this._g._clipBounds;
+                if (rotate === 90) {
+                    this._g.translateTransform(0, size[1]);
+                    this._g.rotateTransform(-90);
+                    this._g._clipBounds = [clip[0], clip[1], size[0], size[1]];
+                } else if (rotate === 180) {
+                    this._g.translateTransform(size[0], size[1]);
+                    this._g.rotateTransform(-180);
+                } else if (rotate === 270) {
+                    this._g.translateTransform(size[0], 0);
+                    this._g.rotateTransform(-270);
+                    this._g._clipBounds = [clip[0], clip[1], size[1], size[0]];
+                }
             }
         }
+        if (this._isNew && this._pageSettings) {
+            const clipBounds: number[] = this._getActualBounds(this._pageSettings);
+            this._g._clipTranslateMargins(clipBounds);
+        }
         this._needInitializeGraphics = false;
+    }
+    _getActualBounds(pageSettings: PdfPageSettings): number[] {
+        const actualSize: number[] = pageSettings._getActualSize();
+        return [pageSettings.margins.left, pageSettings.margins.top, actualSize[0], actualSize[1]];
     }
     _fetchResources(): _PdfDictionary {
         if (typeof this._resourceObject === 'undefined') {

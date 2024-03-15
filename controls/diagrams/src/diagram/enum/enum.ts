@@ -2286,6 +2286,8 @@ export enum KeyModifiers {
  * * The Minus
  * * The Plus
  * * The Star
+ * * The Open Square Bracket
+ * * The close Square Bracket
  *
  * @aspNumberEnum
  * @IgnoreSingular
@@ -2423,7 +2425,11 @@ export enum Keys {
     /** The Plus */
     Plus = 187,
     /** The Minus */
-    Minus = 189
+    Minus = 189,
+    /** The Open Square bracket */
+    BracketLeft = 219,
+    /** The close Square bracket */
+    BracketRight = 221
 }
 /**
  * Enables/Disables certain actions of diagram
@@ -2908,3 +2914,23 @@ export enum BezierSmoothness {
     Default = 1 << 1 | 1 << 2
 
 }
+
+/**
+ * Specifies the direction for text annotation.
+ * * Auto - Specifies the direction as auto to switch the direction based on the connector position.
+ * * Left - Specifies the direction as left when the absolute angle as 180 degree.
+ * * Right - Specifies the direction as right when the absolute angle as 0 degree.
+ * * Top - Specifies the direction as top when the absolute angle as 270 degree or -90 degree.
+ * * Bottom - Specifies the direction as bottom when the absolute angle as 90 degree.
+ */
+export type TextAnnotationDirection =
+    /** Auto - Specifies the direction as auto to switch the direction based on the connector position. */
+    'Auto' |
+    /** Left - Specifies the direction as left when the absolute angle as 180 degree. */
+    'Left' |
+    /** Right - Specifies the direction as right when the absolute angle as 0 degree. */
+    'Right' |
+    /** Top - Specifies the direction as top when the absolute angle as 270 degree or -90 degree. */
+    'Top' |
+    /** Bottom - Specifies the direction as bottom when the absolute angle as 90 degree. */
+    'Bottom';

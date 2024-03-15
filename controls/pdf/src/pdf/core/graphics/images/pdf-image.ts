@@ -29,7 +29,9 @@ export abstract class PdfImage {
     _verticalResolution: number;
     _imagePhysicalDimension: number[];
     _imageStream: _PdfStream;
+    _maskStream: _PdfStream;
     _reference: _PdfReference;
+    _maskReference: _PdfReference;
     /**
      * Gets the width of the PDF image.
      *

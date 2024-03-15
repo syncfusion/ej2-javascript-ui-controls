@@ -244,7 +244,7 @@ export class DataLabel {
                                         new RectOption(
                                             this.commonId + point.index + '_TextShape_' + i,
                                             argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx,
-                                            dataLabel.ry
+                                            dataLabel.ry, '', dataLabel.border.dashArray
                                         ),
                                         new Int32Array([clip.x, clip.y])) as HTMLElement;
                                     if (series.shapeElement) {

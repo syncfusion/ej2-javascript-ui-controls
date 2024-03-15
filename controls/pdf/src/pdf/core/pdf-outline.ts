@@ -3,7 +3,7 @@ import { _PdfCrossReference } from './pdf-cross-reference';
 import { PdfDocument } from './pdf-document';
 import { PdfDestination, PdfPage } from './pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
-import { _checkRotation, _getPageIndex, _parseColor } from './utils';
+import { _checkRotation, _getPageIndex, _obtainDestination, _parseColor } from './utils';
 /**
  * Represents a base class for all bookmark objects.
  * ```typescript
@@ -187,7 +187,7 @@ export class PdfBookmark extends PdfBookmarkBase {
         let value: PdfDestination;
         const namedDestination: PdfNamedDestination = this._obtainNamedDestination();
         if (namedDestination === null || typeof namedDestination === 'undefined') {
-            value = this._obtainDestination();
+            value = _obtainDestination(this._dictionary, 'Dest');
         }
         return value;
     }
@@ -383,147 +383,6 @@ export class PdfBookmark extends PdfBookmarkBase {
             }
         }
         return namedDestination;
-    }
-    _obtainDestination(): PdfDestination {
-        const bookMarkDictionary: _PdfDictionary = this._dictionary;
-        let page: PdfPage;
-        if (bookMarkDictionary && bookMarkDictionary.has('Dest')) {
-            const destinationArray: any[] = bookMarkDictionary.getArray('Dest'); // eslint-disable-line
-            const loadedDocument: PdfDocument = this._crossReference._document;
-            let mode: _PdfName;
-            if (destinationArray && Array.isArray(destinationArray) && destinationArray.length > 0) {
-                const value: any = destinationArray[0]; // eslint-disable-line
-                let left: number;
-                let height: number;
-                let bottom: number;
-                let right: number;
-                let zoom: number;
-                if (typeof value === 'number') {
-                    const pageNumber: number = destinationArray[0];
-                    if (pageNumber >= 0) {
-                        const document: PdfDocument = this._crossReference._document;
-                        if (document && document.pageCount > pageNumber) {
-                            page = document.getPage(pageNumber);
-                        }
-                        if (destinationArray.length > 1) {
-                            mode = destinationArray[1];
-                        }
-                        if (mode && mode.name === 'XYZ') {
-                            if (destinationArray.length > 2) {
-                                left = destinationArray[2];
-                            }
-                            if (destinationArray.length > 3) {
-                                height = destinationArray[3];
-                            }
-                            if (destinationArray.length > 4) {
-                                zoom = destinationArray[4];
-                            }
-                            if (page) {
-                                const topValue: number = (height === null || typeof height === 'undefined') ? 0 : page.size[1] - height;
-                                const leftValue: number = (left === null || typeof left === 'undefined') ? 0 : left;
-                                if (page.rotation !== PdfRotationAngle.angle0) {
-                                    _checkRotation(page, height, left);
-                                }
-                                this._destination = new PdfDestination(page, [leftValue, topValue]);
-                                this._destination._index = pageNumber;
-                                this._destination.zoom = (typeof zoom !== 'undefined' && zoom !== null) ? zoom : 0;
-                                if (left === null || height === null || zoom === null || typeof left === 'undefined'
-                                     || typeof height === 'undefined' || typeof zoom === 'undefined') {
-                                    this._destination._setValidation(false);
-                                }
-                            }
-                        }
-                    }
-                }
-                if (value instanceof _PdfDictionary) {
-                    const pageDictionary: _PdfDictionary = value;
-                    let index: number;
-                    if (loadedDocument && pageDictionary) {
-                        index = _getPageIndex(loadedDocument, pageDictionary);
-                    }
-                    if (typeof index !== 'undefined' && index !== null && index >= 0) {
-                        page = loadedDocument.getPage(index);
-                    }
-                    if (destinationArray.length > 1) {
-                        mode = destinationArray[1];
-                    }
-                    if (mode) {
-                        if (mode.name === 'XYZ') {
-                            if (destinationArray.length > 2) {
-                                left = destinationArray[2];
-                            }
-                            if (destinationArray.length > 3) {
-                                height = destinationArray[3] as number;
-                            }
-                            if (destinationArray.length > 4) {
-                                zoom = destinationArray[4];
-                            }
-                            if (page) {
-                                let topValue: number = (height === null || typeof height === 'undefined') ? 0 : page.size[1] - height;
-                                const leftValue: number = (left === null || typeof left === 'undefined') ? 0 : left;
-                                if (page.rotation !== PdfRotationAngle.angle0) {
-                                    topValue = _checkRotation(page, height, left);
-                                }
-                                this._destination = new PdfDestination(page, [leftValue, topValue]);
-                                this._destination._index = index;
-                                this._destination.zoom = (typeof zoom !== 'undefined' && zoom !== null) ? zoom : 0;
-                                if (left === null || height === null || zoom === null || typeof left === 'undefined' ||
-                                     typeof height === 'undefined' || typeof zoom === 'undefined') {
-                                    this._destination._setValidation(false);
-                                }
-                            }
-                        } else {
-                            if (mode.name === 'FitR') {
-                                if (destinationArray.length > 2) {
-                                    left = destinationArray[2];
-                                }
-                                if (destinationArray.length > 3) {
-                                    bottom = destinationArray[3];
-                                }
-                                if (destinationArray.length > 4) {
-                                    right = destinationArray[4];
-                                }
-                                if (destinationArray.length > 5) {
-                                    height = destinationArray[5];
-                                }
-                                if (page) {
-                                    left = (left === null || typeof left === 'undefined') ? 0 : left;
-                                    bottom = (bottom === null || typeof bottom === 'undefined') ? 0 : bottom;
-                                    height = (height === null || typeof height === 'undefined') ? 0 : height;
-                                    right = (right === null || typeof right === 'undefined') ? 0 : right;
-                                    this._destination = new PdfDestination(page, [left, bottom, right, height]);
-                                    this._destination._index = index;
-                                    this._destination.mode = PdfDestinationMode.fitR;
-                                }
-                            } else if (mode.name === 'FitBH' || mode.name === 'FitH') {
-                                if (destinationArray.length >= 3) {
-                                    height = destinationArray[2];
-                                }
-                                if (typeof index !== 'undefined' && index !== null && index >= 0) {
-                                    page = loadedDocument.getPage(index);
-                                }
-                                if (page && page.size) {
-                                    const topValue: number = (height === null || typeof height === 'undefined') ? 0 : page.size[1] - height;
-                                    this._destination = new PdfDestination(page, [0, topValue]);
-                                    this._destination._index = index;
-                                    this._destination.mode = PdfDestinationMode.fitH;
-                                    if (height === null || typeof height === 'undefined') {
-                                        this._destination._setValidation(false);
-                                    }
-                                }
-                            } else {
-                                if (page && mode.name === 'Fit') {
-                                    this._destination = new PdfDestination(page);
-                                    this._destination._index = index;
-                                    this._destination.mode = PdfDestinationMode.fitToPage;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return this._destination;
     }
 }
 /**

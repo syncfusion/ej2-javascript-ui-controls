@@ -3,7 +3,7 @@ import { Group } from '@syncfusion/ej2-data';
 import { IModelGenerator, IGrid, VirtualInfo, NotifyArgs } from '../base/interface';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
-import { isGroupAdaptive } from '../base/util';
+import { getRowIndexFromElement, isGroupAdaptive } from '../base/util';
 import { Column } from '../models/column';
 import { PageSettingsModel } from '../models/page-settings-model';
 import { RowModelGenerator } from '../services/row-model-generator';
@@ -34,7 +34,31 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         this.rowModelGenerator = this.parent.allowGrouping ? new GroupModelGenerator(this.parent) : new RowModelGenerator(this.parent);
     }
 
+    private columnInfiniteRows(data: Object[], e?: NotifyArgs): Row<Column>[] {
+        let result: Row<Column>[] = [];
+        if (e.requestType === 'virtualscroll') {
+            const rows: Row<Column>[] = this.parent.getRowsObject();
+            result.push.apply(result, this.rowModelGenerator.refreshRows(rows));
+            if (this.parent.infiniteScrollSettings.enableCache) {
+                const currentRowStartIndex: number = this.parent.frozenRows && this.parent.pageSettings.currentPage === 1 ? 0
+                    : getRowIndexFromElement(this.parent.getContentTable().querySelector('.e-row:not(.e-addedrow)'));
+                let newResult: Row<Column>[] = result
+                    .slice(currentRowStartIndex, currentRowStartIndex + (this.parent.pageSettings.pageSize * 3));
+                if (this.parent.frozenRows && this.parent.pageSettings.currentPage !== 1) {
+                    newResult = [...result.slice(0, this.parent.frozenRows), ...newResult];
+                }
+                result = newResult;
+            }
+        } else {
+            result.push.apply(result, this.rowModelGenerator.generateRows(data, e));
+        }
+        return result;
+    }
+
     public generateRows(data: Object[], e?: NotifyArgs): Row<Column>[] {
+        if (this.parent.enableColumnVirtualization && this.parent.enableInfiniteScrolling) {
+            return this.columnInfiniteRows(data, e);
+        }
         let isManualRefresh: boolean = false;
         const info: VirtualInfo = e.virtualInfo = e.virtualInfo || this.getData();
         const xAxis: boolean = info.sentinelInfo && info.sentinelInfo.axis === 'X';

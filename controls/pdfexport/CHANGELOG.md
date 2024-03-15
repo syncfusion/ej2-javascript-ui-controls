@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 24.1.47 (2024-01-23)
-
-### Pdf Export
-
-#### Features
-
-- Added rounded rectangle drawing support in PDF graphics.
-
-## 24.1.41 (2023-12-18)
+## 25.1.35 (2024-03-15)
 
 ### Pdf Export
 

@@ -572,9 +572,11 @@ export class AutoFill {
 
     public destroy(): void {
         this.removeEventListener();
+        if (this.autoFillElement) { this.autoFillElement.remove(); }
         this.autoFillElement = null;
         this.autoFillElementPosition = null;
         this.autoFillCell = null;
+        if (this.autoFillDropDown) { this.autoFillDropDown.destroy(); }
         this.autoFillDropDown = null;
         this.isVerticalFill = null;
         this.fillOptionIndex = null;

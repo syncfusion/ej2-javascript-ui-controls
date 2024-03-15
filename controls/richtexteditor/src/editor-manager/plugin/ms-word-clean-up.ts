@@ -107,7 +107,7 @@ export class MsWordPaste {
         if (!isNOU(newline) && Browser.userAgent.indexOf('Chrome') !== -1 && newline.parentElement.nodeName === 'P' && elm !== newline.parentElement) {
             for (let i = 0; i < elm.childNodes.length; i++) {
                 // eslint-disable-next-line
-                const node = elm.childNodes[i];
+                const node: Node = elm.childNodes[i];
                 if (node.nodeType === Node.COMMENT_NODE && node.nodeValue.includes('StartFragment')) {
                     const newElement: HTMLElement = document.createElement('p');
                     newElement.innerHTML = '<br>';
@@ -486,68 +486,75 @@ export class MsWordPaste {
 
     private styleCorrection(elm: HTMLElement, wordPasteStyleConfig: string[]): void {
         const styleElement: NodeListOf<HTMLStyleElement> = elm.querySelectorAll('style');
+        let styles: string[] = [];
         if (styleElement.length > 0) {
-            const styles: string[] = styleElement[0].innerHTML.match(/[\S ]+\s+{[\s\S]+?}/gi);
+            if (!isNOU(styleElement[0].innerHTML.match(/[\S ]+\s+{[\s\S]+?}/gi))) {
+                styles = styleElement[0].innerHTML.match(/[\S ]+\s+{[\s\S]+?}/gi);
+            } else if (styleElement.length > 1) {
+                styles = styleElement[1].innerHTML.match(/[\S ]+\s+{[\s\S]+?}/gi);
+            }
             const styleClassObject: { [key: string]: string } = !isNOU(styles) ? this.findStyleObject(styles) : null;
-            const keys: string[] = Object.keys(styleClassObject);
-            let values: string[] = keys.map((key: string) => {
-                return styleClassObject[`${key}`];
-            });
-            values = this.removeUnwantedStyle(values, wordPasteStyleConfig);
-            this.filterStyles(elm, wordPasteStyleConfig);
-            let resultElem: HTMLCollectionOf<Element> | NodeListOf<Element>;
-            let fromClass: boolean = false;
-            for (let i: number = 0; i < keys.length; i++) {
-                if (keys[i as number].split('.')[0] === '') {
-                    resultElem = elm.getElementsByClassName(keys[i as number].split('.')[1]);
-                    fromClass = true;
-                } else if (keys[i as number].split('.').length === 1 && keys[i as number].split('.')[0].indexOf('@') >= 0) {
-                    continue;
-                } else if (keys[i as number].split('.').length === 1 && keys[i as number].split('.')[0].indexOf('@') < 0) {
-                    resultElem = elm.getElementsByTagName(keys[i as number]);
-                } else {
-                    resultElem = elm.querySelectorAll(keys[i as number]);
-                }
-                for (let j: number = 0; j < resultElem.length; j++) {
-                    if (resultElem[j as number].closest('li') && keys[i as number] === 'p') {
+            if (!isNOU(styleClassObject)) {
+                const keys: string[] = Object.keys(styleClassObject);
+                let values: string[] = keys.map((key: string) => {
+                    return styleClassObject[`${key}`];
+                });
+                values = this.removeUnwantedStyle(values, wordPasteStyleConfig);
+                this.filterStyles(elm, wordPasteStyleConfig);
+                let resultElem: HTMLCollectionOf<Element> | NodeListOf<Element>;
+                let fromClass: boolean = false;
+                for (let i: number = 0; i < keys.length; i++) {
+                    if (keys[i as number].split('.')[0] === '') {
+                        resultElem = elm.getElementsByClassName(keys[i as number].split('.')[1]);
+                        fromClass = true;
+                    } else if (keys[i as number].split('.').length === 1 && keys[i as number].split('.')[0].indexOf('@') >= 0) {
                         continue;
+                    } else if (keys[i as number].split('.').length === 1 && keys[i as number].split('.')[0].indexOf('@') < 0) {
+                        resultElem = elm.getElementsByTagName(keys[i as number]);
+                    } else {
+                        resultElem = elm.querySelectorAll(keys[i as number]);
                     }
-                    const styleProperty: string = resultElem[j as number].getAttribute('style');
-                    if (!isNOU(styleProperty) && styleProperty.trim() !== '') {
-                        const valueSplit: string[] = values[i as number].split(';');
-                        if (!fromClass) {
-                            for (let k: number = 0; k < valueSplit.length; k++) {
-                                if (styleProperty.indexOf(valueSplit[k as number].split(':')[0]) >= 0) {
-                                    valueSplit.splice(k, 1);
-                                    k--;
+                    for (let j: number = 0; j < resultElem.length; j++) {
+                        if (resultElem[j as number].closest('li') && keys[i as number] === 'p') {
+                            continue;
+                        }
+                        const styleProperty: string = resultElem[j as number].getAttribute('style');
+                        if (!isNOU(styleProperty) && styleProperty.trim() !== '') {
+                            const valueSplit: string[] = values[i as number].split(';');
+                            if (!fromClass) {
+                                for (let k: number = 0; k < valueSplit.length; k++) {
+                                    if (styleProperty.indexOf(valueSplit[k as number].split(':')[0]) >= 0) {
+                                        valueSplit.splice(k, 1);
+                                        k--;
+                                    }
                                 }
                             }
+                            const changedValue: string = styleProperty + valueSplit.join(';') + ';';
+                            resultElem[j as number].setAttribute('style', changedValue);
+                        } else {
+                            values[i as number] = values[i as number].replace(/text-indent:-(.*?)(?=;|$)/gm, '');
+                            resultElem[j as number].setAttribute('style', values[i as number]);
                         }
-                        const changedValue: string = styleProperty + valueSplit.join(';') + ';';
-                        resultElem[j as number].setAttribute('style', changedValue);
-                    } else {
-                        values[i as number] = values[i as number].replace(/text-indent:-(.*?)(?=;|$)/gm, '');
-                        resultElem[j as number].setAttribute('style', values[i as number]);
                     }
+                    fromClass = false;
                 }
-                fromClass = false;
-            }
-            const listClass: string[] = ['MsoListParagraphCxSpFirst', 'MsoListParagraphCxSpMiddle', 'MsoListParagraphCxSpLast'];
-            for (let i: number = 0; i < listClass.length; i++) {
-                if (keys.indexOf('li.' + listClass[i as number]) > -1) {
-                    const olULElems: NodeListOf<Element> = elm.querySelectorAll('ol.' + listClass[i as number] + ', ul.' + listClass[i as number]);
-                    for (let j: number = 0; j < olULElems.length; j++) {
-                        const styleProperty: string = olULElems[j as number].getAttribute('style');
-                        if (!isNOU(styleProperty) && styleProperty.trim() !== '' && (olULElems[j as number] as HTMLElement).style.marginLeft !== '') {
-                            const valueSplit: string[] = values[keys.indexOf('li.' + listClass[i as number])].split(';');
-                            for (let k: number = 0; k < valueSplit.length; k++) {
-                                if ('margin-left'.indexOf(valueSplit[k as number].split(':')[0]) >= 0) {
-                                    if (!isNOU(valueSplit[k as number].split(':')[1]) &&
-                                        valueSplit[k as number].split(':')[1].indexOf('in') >= 0 &&
-                                        (olULElems[j as number] as HTMLElement).style.marginLeft.indexOf('in') >= 0) {
-                                        const classStyle: number = parseFloat(valueSplit[k as number].split(':')[1].split('in')[0]);
-                                        const inlineStyle: number = parseFloat((olULElems[j as number] as HTMLElement).style.marginLeft.split('in')[0]);
-                                        (olULElems[j as number] as HTMLElement).style.marginLeft = (inlineStyle - classStyle) + 'in';
+                const listClass: string[] = ['MsoListParagraphCxSpFirst', 'MsoListParagraphCxSpMiddle', 'MsoListParagraphCxSpLast'];
+                for (let i: number = 0; i < listClass.length; i++) {
+                    if (keys.indexOf('li.' + listClass[i as number]) > -1) {
+                        const olULElems: NodeListOf<Element> = elm.querySelectorAll('ol.' + listClass[i as number] + ', ul.' + listClass[i as number]);
+                        for (let j: number = 0; j < olULElems.length; j++) {
+                            const styleProperty: string = olULElems[j as number].getAttribute('style');
+                            if (!isNOU(styleProperty) && styleProperty.trim() !== '' && (olULElems[j as number] as HTMLElement).style.marginLeft !== '') {
+                                const valueSplit: string[] = values[keys.indexOf('li.' + listClass[i as number])].split(';');
+                                for (let k: number = 0; k < valueSplit.length; k++) {
+                                    if ('margin-left'.indexOf(valueSplit[k as number].split(':')[0]) >= 0) {
+                                        if (!isNOU(valueSplit[k as number].split(':')[1]) &&
+                                            valueSplit[k as number].split(':')[1].indexOf('in') >= 0 &&
+                                            (olULElems[j as number] as HTMLElement).style.marginLeft.indexOf('in') >= 0) {
+                                            const classStyle: number = parseFloat(valueSplit[k as number].split(':')[1].split('in')[0]);
+                                            const inlineStyle: number = parseFloat((olULElems[j as number] as HTMLElement).style.marginLeft.split('in')[0]);
+                                            (olULElems[j as number] as HTMLElement).style.marginLeft = (inlineStyle - classStyle) + 'in';
+                                        }
                                     }
                                 }
                             }

@@ -90,7 +90,9 @@ export class MarkdownEditor {
     private onToolbarClick(args: ClickEventArgs): void {
         const item: IToolbarItemModel = args.item as IToolbarItemModel;
         const textArea: HTMLTextAreaElement = (this.parent.contentModule.getEditPanel() as HTMLTextAreaElement);
-        textArea.focus();
+        if (item.command !== 'Formats') {
+            textArea.focus();
+        }
         const startOffset: number = textArea.selectionStart;
         const endOffset: number = textArea.selectionEnd;
         const text: string = textArea.value.substring(startOffset, endOffset);

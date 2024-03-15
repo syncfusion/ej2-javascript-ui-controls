@@ -3,7 +3,7 @@ import { PdfFontFamily, PdfTextWebLink, PdfImage } from '@syncfusion/ej2-pdf-exp
 import { PdfStringFormat, PdfPageCountField, PdfPageNumberField } from '@syncfusion/ej2-pdf-export';
 import { PdfPageTemplateElement, RectangleF, PdfCompositeField, PointF } from '@syncfusion/ej2-pdf-export';
 import { PdfVerticalAlignment, PdfTextAlignment, PdfFont, PdfStandardFont, PdfTrueTypeFont } from '@syncfusion/ej2-pdf-export';
-import { PdfFontStyle, PdfColor, PdfPen, PdfBrush, PdfSolidBrush, PdfDocument, SizeF, PdfBitmap,PdfGridCell  } from '@syncfusion/ej2-pdf-export';
+import { PdfFontStyle, PdfColor, PdfPen, PdfBrush, PdfSolidBrush, PdfDocument, SizeF, PdfBitmap  } from '@syncfusion/ej2-pdf-export';
 import { PdfTreeGridColumn, PdfTreeGridRow, PdfTreeGridCell, PdfBorders, PdfPaddings } from './pdf-base/index';
 import { ColumnModel } from './../models/column';
 import { PdfPageNumberType, PdfDashStyle } from '../base/enum';
@@ -12,7 +12,7 @@ import {
     IGanttData, PdfExportProperties, PdfQueryCellInfoEventArgs,
     ITaskData, IGanttStyle, IConnectorLineObject, PdfGanttCellStyle, ITaskbarStyle, PdfColumnHeaderQueryCellInfoEventArgs,
     PdfQueryTaskbarInfoEventArgs,
-    ZoomTimelineSettings, PdfHeader, PdfHeaderFooterContent
+    ZoomTimelineSettings, PdfHeader, PdfHeaderFooterContent, ILabel , Image , ITemplateDetails
 } from './../base/interface';
 import { Gantt } from './../base/gantt';
 import { isNullOrUndefined, DateFormatOptions, Internationalization, getValue, extend } from '@syncfusion/ej2-base';
@@ -198,17 +198,39 @@ export class ExportHelper {
         this.row.height = pixelToPoint(treeGridHeaderHeight);
         if (column.headerTextAlign) {
             cell.style.format.alignment = PdfTextAlignment[column.headerTextAlign];
-        }
+        };
+        const template: ITemplateDetails = {
+            image: null,
+            value: null,
+            fontStyle: { fontBrush: null }
+        };
+        cell.fontStyle = {
+            fontSize: 9
+        };
         const args: PdfColumnHeaderQueryCellInfoEventArgs = {
             cell: cell,
             style: cell.style,
             value: cell.value,
-            column: column
+            column: column,
+            image: null,
+            headerTemplate: template
         };
         if (this.parent.pdfColumnHeaderQueryCellInfo) {
             this.parent.trigger('pdfColumnHeaderQueryCellInfo', args);
         }
-        cell.value = args.value;
+        if (args.headerTemplate.image && args.headerTemplate.value) {
+            args.image = new PdfBitmap(args.headerTemplate.image[0].base64);
+            args.image.height = (<{ height?: number }>args.headerTemplate.image[0]).height || args.image.height;
+            args.image.width = (<{ width?: number }>args.headerTemplate.image[0]).width || args.image.width;
+            cell.image = args.image;
+            cell.value = args.headerTemplate.value;
+            cell.fontStyle.fontSize = args.headerTemplate.fontStyle.fontSize;
+            cell.fontStyle.fontFamily = args.headerTemplate.fontStyle.fontFamily;
+            cell.fontStyle.fontBrush = args.headerTemplate.fontStyle.fontColor;
+        }
+        else {
+            cell.value = args.value;
+        }
     }
 
     private isColumnVisible(column: ColumnModel): boolean {
@@ -442,7 +464,7 @@ export class ExportHelper {
             if (data[this.parent.labelSettings.rightLabel]) {
                 taskbar.rightTaskLabel.value = data[this.parent.labelSettings.rightLabel].toString();
             }
-            if (data[this.parent.labelSettings.taskLabel]) {
+            if (!isNullOrUndefined(data[this.parent.labelSettings.taskLabel])) {
                 taskbar.taskLabel = data[this.parent.labelSettings.taskLabel].toString();
             }
             const reduceLeft: number = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
@@ -480,6 +502,17 @@ export class ExportHelper {
             taskbar.baselineColor = new PdfColor(this.ganttStyle.taskbar.baselineColor);
             taskbar.baselineBorderColor = new PdfColor(this.ganttStyle.taskbar.baselineBorderColor);
             taskbar.gridLineColor = new PdfColor(this.ganttStyle.chartGridLineColor);
+            const labelTemplateStyle: ILabel = {};
+            labelTemplateStyle.leftLabel = { value: null, image: null, fontStyle: { fontBrush: null } };
+            labelTemplateStyle.rightLabel = { value: null, image: null, fontStyle: { fontBrush: null } };
+            labelTemplateStyle.taskLabel = { value: null, image: null, fontStyle: { fontBrush: null } }
+            taskbar.labelSettings = labelTemplateStyle;
+            const taskbarTemplate: ITemplateDetails = {
+                value: null,
+                image: null,
+                fontStyle: { fontBrush: null }
+            };
+            taskbar.taskbarTemplate = taskbarTemplate;
             this.gantt.taskbarCollection.push(taskbar);
             const taskStyle: ITaskbarStyle = {};
             taskStyle.progressFontColor = taskbar.progressFontColor;
@@ -492,7 +525,9 @@ export class ExportHelper {
             const args: PdfQueryTaskbarInfoEventArgs = {
                 taskbar: taskStyle,
                 data: data,
-                indicators:data.ganttProperties.indicators
+                indicators: data.ganttProperties.indicators,
+                labelSettings: labelTemplateStyle,
+                taskbarTemplate: taskbarTemplate
             };
             if (this.parent.pdfQueryTaskbarInfo) {
                 this.parent.trigger('pdfQueryTaskbarInfo', args);
@@ -503,7 +538,77 @@ export class ExportHelper {
                 taskbar.milestoneColor = args.taskbar.milestoneColor;
                 taskbar.baselineColor = args.taskbar.baselineColor;
                 taskbar.baselineBorderColor = args.taskbar.baselineBorderColor;
-                taskbar.indicators = args.indicators; 
+                taskbar.indicators = args.indicators;
+                taskbar.labelSettings.leftLabel.value = args.labelSettings.leftLabel.value;
+                const leftImages: Image[] = args.labelSettings.leftLabel.image;
+                taskbar.labelSettings.rightLabel.value = args.labelSettings.rightLabel.value;
+                const rightImage: Image[] = args.labelSettings.rightLabel.image;
+                if (!isNullOrUndefined(args.labelSettings.taskLabel.value)) {
+                    taskbar.taskLabel = args.labelSettings.taskLabel.value;
+                }
+                if (!isNullOrUndefined(args.labelSettings.leftLabel.image) && Array.isArray(args.labelSettings.leftLabel.image[0].base64)
+                    && args.labelSettings.leftLabel.image[0].base64.length > 0) {
+                    const baseCount: number = args.labelSettings.leftLabel.image[0].base64.length;
+                    taskbar.labelSettings.leftLabel.image = [];
+                    for (let i: number = 0; i < baseCount; i++) {
+                        // Create separate objects for each element of the base64 array
+                        taskbar.labelSettings.leftLabel.image.push({
+                            base64: leftImages[0].base64[i as number],
+                            width: leftImages[0].width,
+                            height: leftImages[0].height
+                        });
+                    }
+                } else if (!isNullOrUndefined(args.labelSettings.leftLabel.image)) {
+                    taskbar.labelSettings.leftLabel.image = args.labelSettings.leftLabel.image;
+                }
+                if (!isNullOrUndefined(args.labelSettings.rightLabel.image) && Array.isArray(args.labelSettings.rightLabel.image[0].base64)
+                    && args.labelSettings.rightLabel.image[0].base64.length > 0) {
+                    const baseCount: number = args.labelSettings.rightLabel.image[0].base64.length;
+                    taskbar.labelSettings.rightLabel.image = [];
+                    for (let i: number = 0; i < baseCount; i++) {
+                        // Create separate objects for each element of the base64 array
+                        taskbar.labelSettings.rightLabel.image.push({
+                            base64: rightImage[0].base64[i as number],
+                            width: rightImage[0].width,
+                            height: rightImage[0].height
+                        });
+                    }
+                } else if (!isNullOrUndefined(args.labelSettings.rightLabel.image)) {
+                    taskbar.labelSettings.rightLabel.image = args.labelSettings.rightLabel.image;
+                }
+                const applyTemplate = (target: PdfGanttTaskbarCollection, source: PdfQueryTaskbarInfoEventArgs) => {
+                    target.progressFontColor = source.taskbar.progressFontColor;
+                    target.taskColor = new PdfColor(source.taskbar.taskColor);
+                    target.taskBorderColor = source.taskbar.taskBorderColor;
+                    target.progressColor = source.taskbar.progressColor;
+                    target.milestoneColor = source.taskbar.milestoneColor;
+                    if (!isNullOrUndefined(source.taskbarTemplate.image) && !isNullOrUndefined(source.taskbarTemplate.image[0].base64)) {
+                        const width: number = source.taskbarTemplate.image[0].width;
+                        const milestoneHeight: number = taskbar.isMilestone ? ((source.taskbarTemplate.image[0].height < (this.parent.chartRowsModule.taskBarHeight * 0.7)) ? source.taskbarTemplate.image[0].height : (this.parent.chartRowsModule.taskBarHeight * 0.7) - 2) : (this.parent.chartRowsModule.taskBarHeight * 0.7) - 2;
+                        const taskbarHeight: number = !isNullOrUndefined(source.taskbarTemplate.image[0].height) ? ((source.taskbarTemplate.image[0].height < taskbar.height) ? source.taskbarTemplate.image[0].height : taskbar.height - 2) : taskbar.height - 2;
+                        const height = taskbar.isMilestone ? milestoneHeight : taskbarHeight;
+                        target.taskbarTemplate.image = source.taskbarTemplate.image;
+                        target.taskbarTemplate.image[0].width = width;
+                        target.taskbarTemplate.image[0].height = height;
+                    }
+                    if (!isNullOrUndefined(source.taskbarTemplate.value)) {
+                        target.taskbarTemplate.value = source.taskbarTemplate.value;
+                        target.taskbarTemplate.value = source.taskbarTemplate.value;
+                        target.taskbarTemplate.fontStyle.fontColor = source.taskbarTemplate.fontStyle.fontColor;
+                        target.taskbarTemplate.fontStyle.fontSize = source.taskbarTemplate.fontStyle.fontSize;
+                        target.taskbarTemplate.fontStyle.fontFamily = source.taskbarTemplate.fontStyle.fontFamily;
+                        target.taskbarTemplate.fontStyle.fontStyle = source.taskbarTemplate.fontStyle.fontStyle;
+                        target.taskbarTemplate.fontStyle.fontBrush = source.taskbarTemplate.fontStyle.fontBrush;
+                    }
+                };
+                if (!args.data.hasChildRecords) {
+                    applyTemplate(taskbar, args);
+                } else if (args.data.hasChildRecords) {
+                    applyTemplate(taskbar, args);
+                } else if (args.data.ganttProperties.duration === 0) {
+                    applyTemplate(taskbar, args);
+                }
+
             }
         });
     }
@@ -679,7 +784,8 @@ export class ExportHelper {
                 this.gantt.columns.getColumn(i as number).width = perColumnWidth;
             }
         }
-        if (this.totalColumnWidth > (this.pdfDoc.pageSettings.width - 82)) {
+        const PdfPage = this.parent.pdfExportModule.pdfPage;
+        if (this.totalColumnWidth > (this.pdfDoc.pageSettings.width - 82) && this.totalColumnWidth < PdfPage.getClientSize().width) {
             this.gantt.style.allowHorizontalOverflow = true;
         } else if ((tWidth / this.columns.length) < widths[treeColumnIndex as number]) {
             this.gantt.columns.getColumn(treeColumnIndex as number).width = widths[treeColumnIndex as number];
@@ -705,7 +811,6 @@ export class ExportHelper {
             compositeField.draw(footer.graphics, new PointF(0, 0));
             pdfDoc.template.bottom = footer;
         }
-        const PdfPage  = this.parent.pdfExportModule.pdfPage;
         const pageSize = PdfPage.size;
         const clientSize: SizeF = !isNullOrUndefined(pageSize)?  pageSize : this.pdfDoc.pageSettings.size;
         // code for draw header content

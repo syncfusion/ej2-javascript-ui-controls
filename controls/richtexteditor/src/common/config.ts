@@ -1,3 +1,5 @@
+import { IImageResizeFactor } from "./interface";
+
 /**
  * Default Markdown formats config for adapter
  */
@@ -130,3 +132,15 @@ export const selfClosingTags: string[] = [
     'BR',
     'IMG'
 ];
+
+/**
+ * Resize factor for image.
+ * @hidden
+ * 
+ */
+export const imageResizeFactor: IImageResizeFactor = {
+    topLeft     : [-1, -1 ],
+    topRight    : [ 1, -1 ],
+    botRight    : [ 1,  1 ],
+    botLeft     : [-1,  1 ]
+};

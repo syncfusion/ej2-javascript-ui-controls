@@ -32,7 +32,7 @@ export class CollaborativeEditing {
         return this.owner.documentHelper;
     }
     private get selection(): Selection {
-        return this.owner.selection;
+        return this.owner.selectionModule;
     }
     private get collaborativeEditingSettings(): CollaborativeEditingSettingsModel {
         return this.owner.documentEditorSettings.collaborativeEditingSettings;
@@ -110,18 +110,18 @@ export class CollaborativeEditing {
      */
     public lockContent(user: string): void {
         if (this.canLock()) {
-            let start: TextPosition = this.owner.selection.start;
-            let end: TextPosition = this.owner.selection.end;
-            if (!this.owner.selection.isForward) {
-                start = this.owner.selection.end;
-                end = this.owner.selection.start;
+            let start: TextPosition = this.owner.selectionModule.start;
+            let end: TextPosition = this.owner.selectionModule.end;
+            if (!this.owner.selectionModule.isForward) {
+                start = this.owner.selectionModule.end;
+                end = this.owner.selectionModule.start;
             }
             if (start.paragraph.isInsideTable) {
                 const table: TableWidget = this.owner.documentHelper.layout.getParentTable(start.paragraph);
                 const firstPara: ParagraphWidget = this.owner.documentHelper.getFirstParagraphBlock(table);
                 start.setPosition(firstPara.childWidgets[0] as LineWidget, true);
             } else {
-                start.paragraphStartInternal(this.owner.selection, false);
+                start.paragraphStartInternal(this.owner.selectionModule, false);
             }
             if (end.paragraph.isInsideTable) {
                 const table: TableWidget = this.owner.documentHelper.layout.getParentTable(end.paragraph);
@@ -129,10 +129,10 @@ export class CollaborativeEditing {
                 const offset: number = (lastPara.lastChild as LineWidget).getEndOffset();
                 end.setPositionParagraph((lastPara.lastChild as LineWidget), offset);
             } else {
-                end.moveToParagraphEndInternal(this.owner.selection, false);
+                end.moveToParagraphEndInternal(this.owner.selectionModule, false);
             }
-            const startOffset: string = this.owner.selection.getHierarchicalIndexByPosition(start);
-            const endOffset: string = this.owner.selection.getHierarchicalIndexByPosition(end);
+            const startOffset: string = this.owner.selectionModule.getHierarchicalIndexByPosition(start);
+            const endOffset: string = this.owner.selectionModule.getHierarchicalIndexByPosition(end);
             const selectionInfo: LockSelectionInfo = {
                 start: startOffset,
                 end: endOffset,
@@ -142,7 +142,7 @@ export class CollaborativeEditing {
             };
             const startInfo: ParagraphInfo = this.selection.getParagraphInfo(start);
             const endInfo: ParagraphInfo = this.selection.getParagraphInfo(end);
-            this.owner.selection.select(startOffset, endOffset);
+            this.owner.selectionModule.select(startOffset, endOffset);
             const ajax: XmlHttpRequestHandler = new XmlHttpRequestHandler();
             ajax.url = this.owner.serviceUrl + this.owner.serverActionSettings.canLock;
             ajax.contentType = 'application/json;charset=UTF-8';
@@ -222,7 +222,7 @@ export class CollaborativeEditing {
                 roomName: this.collaborativeEditingSettings.roomName
             };
             this.removeEditRange(user);
-            this.owner.editorHistory.clearHistory();
+            this.owner.editorHistoryModule.clearHistory();
             this.owner.fireContentChange();
             // Todo: selection tranformation
             this.owner.trigger(actionCompleteEvent, saveObject);
@@ -231,7 +231,7 @@ export class CollaborativeEditing {
     private removeEditRange(user: string): void {
         if (this.documentHelper.editRanges.containsKey(user)) {
             this.updateLockRegion(user, false);
-            this.owner.editor.removeUserRestrictionsInternal(this.documentHelper.editRanges.get(user)[0]);
+            this.owner.editorModule.removeUserRestrictionsInternal(this.documentHelper.editRanges.get(user)[0]);
             this.documentHelper.clearContent();
             this.selection.updateEditRangeCollection();
             this.documentHelper.owner.viewer.updateScrollBars();
@@ -351,7 +351,7 @@ export class CollaborativeEditing {
         this.lockRegionInternal(startPosition, endPosition, user);
     }
     private lockRegionInternal(start: TextPosition, end: TextPosition, user: string): void {
-        const editStart: EditRangeStartElementBox = this.owner.editor.addEditElement(user);
+        const editStart: EditRangeStartElementBox = this.owner.editorModule.addEditElement(user);
         const editEnd: EditRangeEndElementBox = editStart.editRangeEnd;
         this.insertElements(start, end, [editEnd], [editStart]);
         this.updateLockInfo(editStart.paragraph, editEnd.paragraph, user, true);
@@ -425,18 +425,18 @@ export class CollaborativeEditing {
             const editRanges: EditRangeStartElementBox[] = this.documentHelper.editRanges.get(this.owner.currentUser);
             const editRangeStart: EditRangeStartElementBox = editRanges[0];
             const firstBlock: BlockWidget = this.getParentBlock(editRangeStart.paragraph);
-            this.lockStart = this.owner.selection.getHierarchicalIndex(firstBlock, '0').split(';');
+            this.lockStart = this.owner.selectionModule.getHierarchicalIndex(firstBlock, '0').split(';');
         }
     }
 
     private isSelectionInEditableRange(editRange: EditRangeStartElementBox): boolean {
-        if (!isNullOrUndefined(this.owner.selection)) {
-            let start: TextPosition = this.owner.selection.start;
-            let end: TextPosition = this.owner.selection.end;
-            if (!this.owner.selection.isForward) {
+        if (!isNullOrUndefined(this.owner.selectionModule)) {
+            let start: TextPosition = this.owner.selectionModule.start;
+            let end: TextPosition = this.owner.selectionModule.end;
+            if (!this.owner.selectionModule.isForward) {
                 [start, end] = [end, start];
             }
-            const position: PositionInfo = this.owner.selection.getPosition(editRange);
+            const position: PositionInfo = this.owner.selectionModule.getPosition(editRange);
             if ((start.isExistAfter(position.startPosition) || start.isAtSamePosition(position.startPosition))
                 && (end.isExistBefore(position.endPosition) || end.isAtSamePosition(position.endPosition)) ||
                 ((position.startPosition.isExistAfter(start) || position.startPosition.isAtSamePosition(start))
@@ -475,10 +475,10 @@ export class CollaborativeEditing {
             let isInEditRange: boolean = this.isSelectionInEditableRange(startElement);
             let startParagrahInfo: ParagraphInfo;
             let endParagrahInfo: ParagraphInfo;
-            this.owner.editor.isRemoveRevision = true;
+            this.owner.editorModule.isRemoveRevision = true;
             if (!isInEditRange) {
-                startParagrahInfo = this.owner.selection.getParagraphInfo(this.owner.selection.start);
-                endParagrahInfo = this.owner.selection.getParagraphInfo(this.owner.selection.end);
+                startParagrahInfo = this.owner.selectionModule.getParagraphInfo(this.owner.selectionModule.start);
+                endParagrahInfo = this.owner.selectionModule.getParagraphInfo(this.owner.selectionModule.end);
             }
             let sections: BodyWidget[] = [];
             while (lastBlock !== firstBlock) {
@@ -502,12 +502,12 @@ export class CollaborativeEditing {
                 let comments: CommentElementBox[] = [];
                 let blocks: BodyWidget[] = [];
                 let revision: Revision[] = [];
-                this.owner.editor.isPasteListUpdated = false;
-                this.owner.editor.getBlocks(JSON.parse(content), false, blocks, comments, revision);
+                this.owner.editorModule.isPasteListUpdated = false;
+                this.owner.editorModule.getBlocks(JSON.parse(content), false, blocks, comments, revision);
                 if (sections.length !== blocks.length) {
                     if (sections.length === 1) {
                         let bodyWidget: BodyWidget = sections[0];
-                        sections.unshift(this.owner.editor.splitBodyWidget(bodyWidget, blocks[blocks.length - 2].sectionFormat, bodyWidget.childWidgets[lastInsertIndex - 1] as BlockWidget));
+                        sections.unshift(this.owner.editorModule.splitBodyWidget(bodyWidget, blocks[blocks.length - 2].sectionFormat, bodyWidget.childWidgets[lastInsertIndex - 1] as BlockWidget));
                     }
                     if (sections.length < blocks.length) {
                         for (let m: number = 1; m < blocks.length - 1; m++) {
@@ -522,7 +522,7 @@ export class CollaborativeEditing {
                             let pageIndex: number = sections[m - 1].page.index;
                             this.documentHelper.insertPage(pageIndex, page);
                             //Todo: update section index
-                            this.owner.editor.updateSectionIndex(sections[m - 1].sectionFormat, sections[m - 1], true);
+                            this.owner.editorModule.updateSectionIndex(sections[m - 1].sectionFormat, sections[m - 1], true);
                             if (sections.length === blocks.length) {
                                 break;
                             }
@@ -555,7 +555,7 @@ export class CollaborativeEditing {
 
                 for (let k: number = 0; k < comments.length; k++) {
                     let comment: CommentElementBox = comments[k];
-                    this.owner.editor.addCommentWidget(comment, false, this.owner.showComments, false);
+                    this.owner.editorModule.addCommentWidget(comment, false, this.owner.showComments, false);
                     if (comment.replyComments.length > 0) {
                         for (let z: number = 0; z < comment.replyComments.length; z++) {
                             this.owner.commentReviewPane.addReply(comment.replyComments[z], false, false);
@@ -584,7 +584,7 @@ export class CollaborativeEditing {
                 this.updateLockRegion(user);
                 this.documentHelper.removeEmptyPages();
                 this.owner.viewer.updateScrollBars();
-                this.owner.editor.isRemoveRevision = false;
+                this.owner.editorModule.isRemoveRevision = false;
             }
         }
     }
@@ -658,13 +658,13 @@ export class CollaborativeEditing {
 
     private transformHistory(sectionDiff: number, blockDiff: number): void {
         if (this.owner.enableEditorHistory) {
-            let undoStack: BaseHistoryInfo[] = this.owner.editorHistory.undoStack;
+            let undoStack: BaseHistoryInfo[] = this.owner.editorHistoryModule.undoStack;
             if (!isNullOrUndefined(undoStack)) {
                 for (let i: number = 0; i < undoStack.length; i++) {
                     this.transformBaseHistoryInfo(undoStack[i], sectionDiff, blockDiff);
                 }
             }
-            let redoStack: BaseHistoryInfo[] = this.owner.editorHistory.redoStack;
+            let redoStack: BaseHistoryInfo[] = this.owner.editorHistoryModule.redoStack;
             if (!isNullOrUndefined(redoStack)) {
                 for (let i: number = 0; i < redoStack.length; i++) {
                     this.transformBaseHistoryInfo(redoStack[i], sectionDiff, blockDiff);
@@ -721,11 +721,11 @@ export class CollaborativeEditing {
             for (let i: number = 0; i < removedBlock.childWidgets.length; i++) {
                 if (removedBlock.childWidgets[i] instanceof TableRowWidget) {
                     let tableDelete: TableRowWidget = removedBlock.childWidgets[i] as TableRowWidget;
-                    this.owner.editor.removeDeletedCellRevision(tableDelete);
+                    this.owner.editorModule.removeDeletedCellRevision(tableDelete);
                 }
             }
         } else {
-            this.owner.editor.removeRevisionForBlock(removedBlock as ParagraphWidget, undefined, false, false);
+            this.owner.editorModule.removeRevisionForBlock(removedBlock as ParagraphWidget, undefined, false, false);
         }
     }
 
@@ -733,7 +733,7 @@ export class CollaborativeEditing {
         if (block instanceof TableWidget) {
             this.removeFieldTable(block, isBookmark, contentControl);
         } else {
-            this.owner.editor.removeField(block as ParagraphWidget, isBookmark, contentControl);
+            this.owner.editorModule.removeField(block as ParagraphWidget, isBookmark, contentControl);
             this.removeComment(block as ParagraphWidget);
         }
     }

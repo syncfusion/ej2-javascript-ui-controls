@@ -48,6 +48,9 @@ export class DataValidation {
         this.removeEventListener();
         const dataValPopup: HTMLElement = select('#' + this.parent.element.id + '_datavalidation-popup');
         if (dataValPopup) { dataValPopup.remove(); }
+        this.data = [];
+        this.typeData = [];
+        this.operatorData = [];
         this.parent = null;
     }
 
@@ -230,15 +233,9 @@ export class DataValidation {
                         },
                         open: (args: PopupEventArgs) => {
                             args.popup.offsetX = - (tdEle.offsetWidth - 20) + 4;
-                            args.popup.offsetY = -13;
+                            args.popup.offsetY = -((tdEle.querySelector('.e-control-wrapper.e-ddl') as HTMLElement).offsetHeight - 18);
                             args.popup.element.style.width = tdEle.offsetWidth - 1 + 'px';
-                            if (isDevice) {
-                                const listButton: HTMLElement = tdEle.querySelector('.e-validation-list') as HTMLElement;
-                                const listElem: HTMLElement = tdEle.querySelector('.e-control-wrapper.e-ddl') as HTMLElement;
-                                args.popup.offsetX = - (tdEle.offsetWidth - (listButton ? listButton.offsetWidth : 20)) + 4;
-                                args.popup.offsetY = - ((listElem ? listElem.offsetHeight : 37) - (listButton ? listButton.offsetHeight : 18));
-                                (window as any).browserDetails.isDevice = true;
-                            }
+                            if (isDevice) { (window as any).browserDetails.isDevice = true; }
                         },
                         close: (args: PopupEventArgs): void => {
                             if (args.event && ((args.event as KeyboardEvent).keyCode === 13 ||

@@ -56,6 +56,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     private isAngular: boolean = false;
     private preventChange: boolean = false;
     private isClicked: boolean = false;
+    private clearButton: HTMLElement;
 
     /**
      * Gets or sets the CSS classes to root element of the MaskedTextBox which helps to customize the
@@ -634,6 +635,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      */
     public destroy(): void {
         unwireEvents.call(this);
+        if (this.showClearButton) {
+            this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
+        }
         const attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
             'aria-disabled','autocapitalize','spellcheck', 'aria-autocomplete', 'aria-live', 'aria-invalid'];
         for (let i: number = 0; i < attrArray.length; i++) {
@@ -646,7 +650,11 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         detach(this.inputObj.container);
         }
         this.blurEventArgs = null;
-        Input.destroy();
+        Input.destroy({
+            element: this.element,
+            floatLabelType: this.floatLabelType,
+            properties: this.properties
+        }, this.clearButton);
         this.changeEventArgs = null;
         this.inputObj = null;
         super.destroy();

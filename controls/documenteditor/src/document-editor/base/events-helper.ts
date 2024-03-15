@@ -2,6 +2,7 @@ import { CommentAction, HyperlinkType, ServerActionType, RevisionType, RevisionA
 import { DocumentEditor } from '../document-editor';
 import { DocumentEditorContainer } from '../../document-editor-container';
 import { Operation } from '../implementation';
+import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 
 /**
  * ServiceFailureArgs
@@ -261,6 +262,14 @@ export interface CommentActionEventArgs {
      * Specifies the comment action type.
      */
     type: CommentAction
+    /**
+     * Specifies the commented text.
+     */
+    text?: string
+    /**
+     * Specifies the mentions.
+     */
+    mentions?: FieldSettingsModel[]
 }
 export interface BeforeFileOpenArgs {
     /**

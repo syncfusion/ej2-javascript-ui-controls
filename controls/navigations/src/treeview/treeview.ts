@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, SanitizeHtmlHelper, animationMode } from '@syncfusion/ej2-base';
+﻿﻿﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, SanitizeHtmlHelper, animationMode } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions, remove  } from '@syncfusion/ej2-base';
@@ -79,7 +79,6 @@ interface TreeAriaAttr extends AriaAttributesMapping {
 }
 
 interface ResultData {
-    // eslint-disable-next-line
     result: { [key: string]: Object }[];
 }
 
@@ -111,7 +110,6 @@ export interface NodeExpandEventArgs {
      *
      *
      */
-    // eslint-disable-next-line
     nodeData: { [key: string]: Object };
 
     event: MouseEvent | KeyboardEventArgs | TapEventArgs;
@@ -141,7 +139,6 @@ export interface NodeSelectEventArgs {
      * Return the currently selected node as JSON object from data source.
      *
      */
-    // eslint-disable-next-line
     nodeData: { [key: string]: Object };
 }
 
@@ -169,7 +166,6 @@ export interface NodeCheckEventArgs {
      * Return the currently checked node as JSON object from data source.
      *
      */
-    // eslint-disable-next-line
     data: { [key: string]: Object }[];
 }
 
@@ -193,7 +189,6 @@ export interface NodeEditEventArgs {
      * Return the current node as JSON object from data source.
      *
      */
-    // eslint-disable-next-line
     nodeData: { [key: string]: Object };
     /**
      * Return the current TreeView node old text.
@@ -229,7 +224,6 @@ export interface DragAndDropEventArgs {
      * Return the currently dragged node as array of JSON object from data source.
      *
      */
-    // eslint-disable-next-line
     draggedNodeData: { [key: string]: Object };
     /**
      * Returns the dragged/dropped element's target index position
@@ -261,7 +255,6 @@ export interface DragAndDropEventArgs {
      * Return the dropped node as array of JSON object from data source.
      *
      */
-    // eslint-disable-next-line
     droppedNodeData: { [key: string]: Object };
     /**
      * Return the target element from which drag starts/end.
@@ -293,7 +286,6 @@ export interface DrawNodeEventArgs {
      *
      * @isGenericType true
      */
-    // eslint-disable-next-line
     nodeData: { [key: string]: Object };
     /**
      * Return the current rendering node text.
@@ -343,7 +335,6 @@ export interface DataBoundEventArgs {
      *
      * @isGenericType true
      */
-    // eslint-disable-next-line
     data: { [key: string]: Object }[];
 }
 
@@ -358,7 +349,6 @@ export interface DataSourceChangedEventArgs {
      *
      * @isGenericType true
      */
-    // eslint-disable-next-line
     data: { [key: string]: Object }[];
     /**
      * Return the action which triggers the event
@@ -367,13 +357,12 @@ export interface DataSourceChangedEventArgs {
     action: string;
     /**
      * Return the new node data of updated data source
-     * 
+     *
      */
     nodeData: { [key: string]: Object }[];
 }
 
 interface ItemCreatedArgs {
-    // eslint-disable-next-line
     curData: { [key: string]: Object };
     item: HTMLElement;
     options: ListBaseOptions;
@@ -441,7 +430,6 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
      * @aspDatasourceNullIgnore
      * @isGenericType true
      */
-    /* eslint-disable */
     @Property([])
     public dataSource: DataManager | { [key: string]: Object }[];
     /* eslint-enable */
@@ -626,18 +614,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /* Internal variables */
     private initialRender: boolean;
-    // eslint-disable-next-line
     private treeData: { [key: string]: Object }[];
-    // eslint-disable-next-line
     private rootData: { [key: string]: Object }[];
-    // eslint-disable-next-line
     private groupedData: { [key: string]: Object }[][];
     private ulElement: HTMLElement;
     private listBaseOption: ListBaseOptions;
     private dataType: number;
-    // eslint-disable-next-line
     private rippleFn: Function;
-    // eslint-disable-next-line
     private rippleIconFn: Function;
     private isNumberTypeId: boolean;
     private expandOnType: string;
@@ -652,14 +635,10 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private dropObj: Droppable;
     private dragTarget: Element;
     private dragLi: Element;
-    // eslint-disable-next-line
     private dragData: { [key: string]: Object };
     private startNode: Element;
-    // eslint-disable-next-line
     private nodeTemplateFn: Function;
-    // eslint-disable-next-line
     private currentLoadData: { [key: string]: Object }[];
-    // eslint-disable-next-line
     private checkActionNodes: { [key: string]: Object }[];
     private touchEditObj: Touch;
     private touchClickObj: Touch;
@@ -668,11 +647,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private inputObj: InputObject;
     private isAnimate: boolean;
     private touchClass: string;
-    // eslint-disable-next-line
     private editData: { [key: string]: Object };
-    // eslint-disable-next-line
     private editFields: FieldsSettingsModel;
-    // eslint-disable-next-line
     private refreshData: { [key: string]: Object };
     private isRefreshed: boolean = false;
     private keyConfigs: { [key: string]: string };
@@ -686,9 +662,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private disableNode: string[] = [];
     private onLoaded: boolean;
     private parentNodeCheck: string[];
-    // eslint-disable-next-line
     private parentCheckData :  { [key: string]: Object }[];
-    // eslint-disable-next-line
     private validArr :  { [key: string]: Object }[] = [];
     private validNodes : string[] = [];
     private expandChildren: string[] = [];
@@ -841,8 +815,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public dragArea: HTMLElement | string;
 
     /**
-     * Specifies whether to allow rendering of untrusted HTML values in the TreeView component.
-     * While enable this property, it sanitize suspected untrusted strings and script, and update in the TreeView component.
+     * Specifies whether to display or remove the untrusted HTML values in the TreeView component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      * ```html
      * <div id="tree"></div>
      * ```
@@ -853,9 +827,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * });
      * treeObj.appendTo('#tree');
      * ```
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
 
     /**
@@ -1039,7 +1013,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event
      */
-    /* eslint-disable */
     @Event()
     public created: EmitType<Object>;
     /* eslint-enable */
@@ -1074,7 +1047,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      *
      * @event
      */
-    /* eslint-disable */
     @Event()
     public destroyed: EmitType<Object>;
     /* eslint-enable */
@@ -1374,7 +1346,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    // eslint-disable-next-line
     private templateComplier(template: string | Function): Function {
         if (template) {
             this.hasTemplate = true;
@@ -1398,7 +1369,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private setDataBinding(changeDataSource: boolean): void {
         this.treeList.push('false');
         if (this.fields.dataSource instanceof DataManager) {
-            /* eslint-disable */
             this.isOffline =  (this.fields.dataSource as DataManager).dataSource.offline;
             if ((this.fields.dataSource as DataManager).ready) {
                 (this.fields.dataSource as DataManager).ready.then((e: Object) => {
@@ -3090,7 +3060,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private expandHandler(e: TapEventArgs): void {
-        let target: Element = <Element>e.originalEvent.target;
+        let target: Element = Browser.isDevice && !Browser.isIos ? document.elementFromPoint(e.originalEvent.changedTouches[0].clientX, e.originalEvent.changedTouches[0].clientY) : <Element>e.originalEvent.target;
         if (!target || target.classList.contains(INPUT) || target.classList.contains(ROOT) ||
             target.classList.contains(PARENTITEM) || target.classList.contains(LISTITEM) ||
             target.classList.contains(ICON) || this.showCheckBox && closest(target, '.' + CHECKBOXWRAP)) {
@@ -3666,6 +3636,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private onMouseOver(e: MouseEvent): void {
+        if (Browser.isDevice ){
+            return;
+        }
         let target: Element = <Element>e.target;
         let classList: DOMTokenList = target.classList;
         let currentLi: Element = closest(target, '.' + LISTITEM);

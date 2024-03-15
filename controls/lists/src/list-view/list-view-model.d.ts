@@ -218,12 +218,12 @@ export interface ListViewModel extends ComponentModel{
     showHeader?: boolean;
 
     /**
-     * Specifies whether HTML content should be sanitized or escaped.
-     * When set to `true`, any HTML content will be sanitized to remove potentially harmful elements.
+     * Specifies whether to display or remove the untrusted HTML values in the ListView component.
+     * If 'enableHtmlSanitizer' set to true, the component will sanitize any suspected untrusted strings and scripts before rendering them.
      *
      * {% codeBlock src='listview/enableHtmlSanitizer/index.md' %}{% endcodeBlock %}
      *
-     * @default false
+     * @default true
      */
     enableHtmlSanitizer?: boolean;
 
@@ -315,10 +315,10 @@ export interface ListViewModel extends ComponentModel{
     actionFailure?: EmitType<MouseEvent>;
 
     /**
-    * Triggers when scrollbar of the ListView component reaches to the top or bottom.
-    *
-    * @event 'object'
-    */
+     * Triggers when scrollbar of the ListView component reaches to the top or bottom.
+     *
+     * @event 'object'
+     */
     scroll?: EmitType<ScrolledEventArgs>;
 
 }

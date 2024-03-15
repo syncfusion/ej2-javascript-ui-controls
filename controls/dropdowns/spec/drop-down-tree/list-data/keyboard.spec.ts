@@ -72,7 +72,7 @@ describe('DropDown Tree control List datasource', () => {
             expect(ddtreeObj.element.getAttribute("aria-expanded")).toBe('true');
         });
         it('altup key pressed', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' } }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, destroyPopupOnHide: false }, '#ddtree');
             keyboardEventArgs.action = 'tab';
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
@@ -85,7 +85,7 @@ describe('DropDown Tree control List datasource', () => {
             ddtreeObj.onFocusOut();
         });
         it('escape key pressed', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' } }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, destroyPopupOnHide: false }, '#ddtree');
             keyboardEventArgs.action = 'tab';
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
@@ -98,7 +98,7 @@ describe('DropDown Tree control List datasource', () => {
             ddtreeObj.onFocusOut();
         });
         it('shiftTab key pressed', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' } }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, destroyPopupOnHide: false }, '#ddtree');
             keyboardEventArgs.action = 'tab';
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);

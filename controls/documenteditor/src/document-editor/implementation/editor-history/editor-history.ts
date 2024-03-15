@@ -289,7 +289,7 @@ export class EditorHistory {
                 } else {
                     cellHistoryFormat.displacement = HelperMethods.convertPixelToPoint(point.x - cellHistoryFormat.startingPoint.x);
                     cellHistoryFormat.endIndex = tableResize.getCellReSizerPosition(point);
-                    this.owner.editorHistory.recordChanges(this.currentBaseHistoryInfo);
+                    this.owner.editorHistoryModule.recordChanges(this.currentBaseHistoryInfo);
                     this.owner.fireContentChange();
                     this.currentBaseHistoryInfo = undefined;
                 }
@@ -396,7 +396,7 @@ export class EditorHistory {
             if (this.currentHistoryInfo.action === 'AutoFormatHyperlink' || this.currentHistoryInfo.action === 'SkipCommentInline'
             || this.currentHistoryInfo.action === 'DeleteCommentInline' || this.currentHistoryInfo.action === 'RemoveComment') {
                 // this.reLayoutParagraph(startPosition.paragraph, 0);
-                if (selection.owner.editorHistory.isUndoing) {
+                if (selection.owner.editorHistoryModule.isUndoing) {
                     this.owner.editorModule.setPositionForCurrentIndex(selection.start, this.currentHistoryInfo.selectionStart);
                     this.owner.editorModule.setPositionForCurrentIndex(selection.end, this.currentHistoryInfo.selectionEnd);
                 } else {
@@ -433,7 +433,7 @@ export class EditorHistory {
         // // selection.addMultipleSelectionRanges();
 
         if (!isNullOrUndefined(this.currentHistoryInfo) && this.currentHistoryInfo.action === 'ApplyStyle') {
-            this.owner.editor.getOffsetValue(selection);
+            this.owner.editorModule.getOffsetValue(selection);
         } else {
             selection.start.updatePhysicalPosition(true);
             if (selection.isEmpty) {
@@ -582,7 +582,7 @@ export class EditorHistory {
         this.isUndoing = true;
         historyInfo.revert();
         this.isUndoing = false;
-        this.owner.selection.checkForCursorVisibility();
+        this.owner.selectionModule.checkForCursorVisibility();
         this.owner.editorModule.isBordersAndShadingDialog = false;
     }
     /**
@@ -604,7 +604,7 @@ export class EditorHistory {
         this.isRedoing = true;
         historyInfo.revert();
         this.isRedoing = false;
-        this.owner.selection.checkForCursorVisibility();
+        this.owner.selectionModule.checkForCursorVisibility();
         this.owner.editorModule.isBordersAndShadingDialog = false;
     }
     /**

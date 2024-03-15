@@ -124,7 +124,7 @@ export class Marker extends MarkerExplode {
             const markerShape: ChartShape = argsData.point.marker.shape || argsData.shape;
             const imageURL : string = argsData.point.marker.imageUrl || marker.imageUrl;
             shapeOption = new PathOption(
-                symbolId, markerFill, markerBorder.width, markerBorder.color, markerOpacity, null
+                symbolId, markerFill, markerBorder.width, markerBorder.color, markerOpacity, series.marker.border.dashArray
             );
             if ((parentElement !== undefined && parentElement !== null) || this.chart.enableCanvas) {
                 if (redraw && getElement(shapeOption.id)) {
@@ -180,7 +180,7 @@ export class Marker extends MarkerExplode {
                     x: isZoomed ? 0 : -markerWidth, y: -markerHeight,
                     width: series.clipRect.width + (isZoomed ? 0 : markerWidth * 2),
                     height: series.clipRect.height + markerHeight * 2
-                });
+                }, 0, 0, '', series.marker.border.dashArray);
                 markerClipRect = appendClipElement(redraw, options, render as SvgRenderer);
             } else {
                 options = new CircleOption(

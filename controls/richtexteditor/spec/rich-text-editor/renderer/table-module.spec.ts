@@ -853,6 +853,81 @@ describe('Table Module', () => {
         });
     });
 
+    describe('874515 - Pasted table tabKey press', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            keyCode: 9,
+            shiftKey: false
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: `<table border="1" cellspacing="0" cellpadding="0" style="border:none;" class="e-rte-paste-table">
+                <tbody><tr>
+                 <td width="208" valign="top" style="width:155.8pt;border:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;">
+                 <p style="margin-bottom:0in;line-height:normal;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">&nbsp;</p>
+                 </td>
+                 <td width="208" valign="top" style="width:155.85pt;border:solid windowtext 1.0pt;
+                 border-left:none;padding:0in 5.4pt 0in 5.4pt;">
+                 <p style="margin-bottom:0in;line-height:normal;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">&nbsp;</p>
+                 </td>
+                 <td width="208" valign="top" style="width:155.85pt;border:solid windowtext 1.0pt;
+                 border-left:none;padding:0in 5.4pt 0in 5.4pt;">
+                 <p style="margin-bottom:0in;line-height:normal;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">&nbsp;</p>
+                 </td>
+                </tr>
+                <tr>
+                 <td width="208" valign="top" style="width:155.8pt;border:solid windowtext 1.0pt;
+                 border-top:none;
+                 padding:0in 5.4pt 0in 5.4pt;">
+                 <p style="margin-bottom:0in;line-height:normal;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">&nbsp;</p>
+                 </td>
+                 <td width="208" valign="top" style="width:155.85pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;">
+                 <p style="margin-bottom:0in;line-height:normal;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">&nbsp;</p>
+                 </td>
+                 <td width="208" valign="top" style="width:155.85pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;">
+                 <p style="margin-bottom:0in;line-height:normal;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">&nbsp;</p>
+                 </td>
+                </tr>
+                <tr>
+                 <td width="208" valign="top" style="width:155.8pt;border:solid windowtext 1.0pt;
+                 border-top:none;
+                 padding:0in 5.4pt 0in 5.4pt;">
+                 <p style="margin-bottom:0in;line-height:normal;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">&nbsp;</p>
+                 </td>
+                 <td width="208" valign="top" style="width:155.85pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;">
+                 <p style="margin-bottom:0in;line-height:normal;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">&nbsp;</p>
+                 </td>
+                 <td width="208" valign="top" style="width:155.85pt;border-top:none;border-left:
+                 none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;">
+                 <p style="margin-bottom:0in;line-height:normal;margin-top:0in;margin-right:0in;margin-left:0in;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">&nbsp;</p>
+                 </td>
+                </tr>
+               </tbody></table><p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;">&nbsp;</p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Pasted table tabKey press', () => {
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            let selObj: NodeSelection = new NodeSelection();
+            selObj.setSelectionText(rteObj.contentModule.getDocument(), table.querySelectorAll('td')[1], table.querySelectorAll('td')[1], 0, 0);
+            (<any>rteObj).tableModule.keyDown({ args: keyboardEventArgs });
+            expect(table.querySelector('td').nextSibling.nodeName === '#text').toBe(false);
+            expect(table.querySelector('tr').nextSibling.nodeName === '#text').toBe(false);
+        });
+    });
+
     describe('Table tabKey pressed with header being selected for new rows', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -3523,6 +3598,46 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe("874475 - Table cell merge with pixel units", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `"<p>Text</p><table class="e-rte-table" style="width: 150px; min-width: 0px;"><tbody><tr><td class="e-cell-select" style="width: 50px;"><p>1</p></td><td style="width: 50px;"><p>2</p></td><td style="width: 50px;"><br></td></tr><tr><td style="width: 50px;"><br></td><td style="width: 50px;"><br></td><td style="width: 50px;"><br></td></tr></tbody></table><p>Editor</p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Table cell merge with pixel units', (done: Function) => {
+            let target = rteEle.querySelector('.e-rte-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            let ev = new MouseEvent("mousemove", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            rteEle.querySelectorAll("td")[1].dispatchEvent(ev);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[0] as HTMLElement).click();
+                var table = rteEle.querySelector("table");
+                var rows = table.rows;
+                expect(table.rows.length).toBe(2);
+                expect(table.rows[0].children.length).toBe(2);
+                expect((rows[0].children[0] as HTMLElement).style.width).toEqual("100px");
+                expect((rows[0].children[1] as HTMLElement).style.width).toEqual("50px");
+                done();
+            }, 400);
+        });
+    });
+
     describe("Table cell merge -single row -all columns", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -5682,6 +5797,49 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             insertButton.click();
             setTimeout(() => {
                 expect(editor.inputElement.querySelectorAll('li').length).toBe(listCount);
+                done();
+            }, 200);
+        });
+    });
+
+    describe('873562 - When the cursor is at the end of the List item Inserted table has an additional list item.', () => {
+        let editor: RichTextEditor;
+        beforeEach(() => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable', 'OrderedList', 'UnorderedList']
+                },
+                value: `<p><b>Toolbar</b></p>
+                <ol>
+                    <li> 
+                        <p>List 1</p>
+                    </li>
+                    <li> 
+                        <p>List 2</p>
+                    </li>
+                </ol>
+                <ul><li>List 1</li><li>List 2</li><li>List 3</li></ul>
+                `
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it ('Should not add an additional list item when inserting a table at the end of the list item.', (done: DoneFn) => {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.querySelector('li').childNodes[1].firstChild, editor.inputElement.querySelector('li').childNodes[1].firstChild.textContent.length);
+            range.collapse(true);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            const tableBtn = editor.element.querySelectorAll('.e-toolbar-item button')[0];
+            (tableBtn as HTMLElement).click();
+            (document.querySelector('.e-insert-table-btn') as HTMLElement).click();
+            expect(editor.inputElement.querySelectorAll('li').length).toBe(5);
+            (document.querySelector('.e-insert-table') as HTMLElement).click();
+            setTimeout(() => {
+                expect(editor.inputElement.querySelector('li').childNodes[1].childNodes[1].nodeName.toLowerCase()).toBe('table');
+                expect(editor.inputElement.querySelectorAll('li').length).toBe(5);
                 done();
             }, 200);
         });

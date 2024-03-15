@@ -242,13 +242,15 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.enableExternalMessage) {
             modules.push({
                 member: 'externalMessage',
-                args: [this]
+                args: [this],
+                name: 'ExternalMessage'
             });
         }
         if (this.checkpagesizes()) {
             modules.push({
                 member: 'pagerdropdown',
-                args: [this]
+                args: [this],
+                name: 'PagerDropDown'
             });
         }
         return modules;
@@ -868,10 +870,12 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private addFocus(element: Element, addFocusClass: boolean): void {
-        if (addFocusClass) {
-            addClass([element], ['e-focused', 'e-focus']);
+        if (!isNullOrUndefined(element)) {
+            if (addFocusClass) {
+                addClass([element], ['e-focused', 'e-focus']);
+            }
+            (element as HTMLElement).tabIndex = 0;
         }
-        (element as HTMLElement).tabIndex = 0;
     }
 
     private removeFocus(element: Element, removeFocusClass: boolean): void {

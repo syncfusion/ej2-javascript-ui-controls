@@ -295,8 +295,9 @@ export class StyleDialog {
         this.underline.addEventListener('click', this.setUnderlineProperty);
         let fontColorElement: HTMLElement = createElement('input', { attrs: { type: 'color' }, className: 'e-de-style-icon-button-size' });
         parentDiv.appendChild(fontColorElement);
-
-        this.fontColor = new ColorPicker({ cssClass: 'e-de-style-font-color-picker', enableRtl: isRtl, change: this.fontColorUpdate, locale: this.documentHelper.owner.locale, enableOpacity: false });
+        const {columns , createPopupOnClick  , disabled , enablePersistence , enableRtl , inline , mode , modeSwitcher , noColor , presetColors , showButtons} = this.documentHelper.owner.documentEditorSettings.colorPickerSettings;
+        this.fontColor = new ColorPicker({ cssClass: 'e-de-style-font-color-picker', enableRtl: isRtl, change: this.fontColorUpdate, locale: this.documentHelper.owner.locale, enableOpacity: false , mode:mode , modeSwitcher:modeSwitcher , showButtons: showButtons , columns:columns , createPopupOnClick : createPopupOnClick , disabled : disabled , enablePersistence : enablePersistence , inline : inline , noColor : noColor , presetColors : presetColors });
+        this.documentHelper.fontColor = this.fontColor;
         this.fontColor.appendTo(fontColorElement);
     }
     /**
@@ -708,9 +709,9 @@ export class StyleDialog {
                 style = this.style;
 
                 this.documentHelper.owner.isShiftingEnabled = true;
-                this.documentHelper.owner.editor.isSkipOperationsBuild = true;
+                this.documentHelper.owner.editorModule.isSkipOperationsBuild = true;
                 this.documentHelper.owner.editorModule.layoutWholeDocument();
-                this.documentHelper.owner.editor.isSkipOperationsBuild = false;
+                this.documentHelper.owner.editorModule.isSkipOperationsBuild = false;
                 this.documentHelper.owner.isShiftingEnabled = false;
                 let listId: number = this.style instanceof WParagraphStyle ? (this.style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
                 this.documentHelper.owner.getStyleData(name, listId);
@@ -739,9 +740,9 @@ export class StyleDialog {
                 name = styleName;
                 let listId: number = this.style instanceof WParagraphStyle ? (this.style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
                 this.documentHelper.owner.getStyleData(name, listId);
-                this.documentHelper.owner.editor.isSkipOperationsBuild = this.styleType.value === 'Character';
+                this.documentHelper.owner.editorModule.isSkipOperationsBuild = this.styleType.value === 'Character';
                 this.documentHelper.owner.editorModule.applyStyle(name,true);
-                this.documentHelper.owner.editor.isSkipOperationsBuild = false;
+                this.documentHelper.owner.editorModule.isSkipOperationsBuild = false;
                 this.documentHelper.owner.notify(internalStyleCollectionChange, {});
             }
             this.documentHelper.dialog2.hide();
@@ -980,9 +981,9 @@ export class StyleDialog {
             if (this.documentHelper.owner.selectionModule) {
                 let styleName: string;
                 if (type === 'Character') {
-                    styleName = this.documentHelper.owner.selection.characterFormat.styleName;
+                    styleName = this.documentHelper.owner.selectionModule.characterFormat.styleName;
                 } else {
-                    styleName = this.documentHelper.owner.selection.paragraphFormat.styleName;
+                    styleName = this.documentHelper.owner.selectionModule.paragraphFormat.styleName;
                 }
                 basedOnIndex = styles.indexOf(styleName);
             }
@@ -1002,7 +1003,7 @@ export class StyleDialog {
 
         if (isNullOrUndefined(this.documentHelper.styles.findByName(styleName))) {
 
-            this.documentHelper.owner.editor.createStyle(this.documentHelper.preDefinedStyles.get(styleName));
+            this.documentHelper.owner.editorModule.createStyle(this.documentHelper.preDefinedStyles.get(styleName));
         }
         return this.documentHelper.styles.findByName(styleName) as WStyle;
     }

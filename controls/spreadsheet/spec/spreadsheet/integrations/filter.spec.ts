@@ -5,7 +5,7 @@ import { classList, getComponent } from '@syncfusion/ej2-base';
 
 describe('Filter ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
-    
+
     describe('Actions ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -40,8 +40,8 @@ describe('Filter ->', () => {
                         helper.getElementFromSpreadsheet('.e-add-current'));
                     (excelFilter.querySelector('.e-btn.e-primary') as HTMLElement).click();
                     expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(2);
-                    expect(spreadsheet.filterModule.filterCollection.get(0)[0].value).toBe(20);
-                    expect(spreadsheet.filterModule.filterCollection.get(0)[1].value).toBe('10');
+                    expect(spreadsheet.filterModule.filterCollection.get(0)[0].value).toBe('10');
+                    expect(spreadsheet.filterModule.filterCollection.get(0)[1].value).toBe('20');
                     done();
                 });
             });
@@ -378,7 +378,7 @@ describe('Filter ->', () => {
             const actionBegin: any = spreadsheet.actionBegin;
             spreadsheet.actionBegin = (args: any): void => {
                 if (args.requestType === 'filterchoicerequest') {
-                    expect(args.filterModel.options.format).toBe('EEEE, MMMM d, y');
+                    expect(args.filterModel.options.format).toBe('yMd');
                     spreadsheet.actionBegin = actionBegin;
                 }
             };
@@ -1551,7 +1551,7 @@ describe('Filter ->', () => {
                 expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(0);
                 spreadsheet.filterCollection = [{ sheetIndex: 0, filterRange: 'A1:H11', hasFilter: true, column: [3],
                     criteria: ['notequal'], value: [20], dataType: ['number'], predicates: ['and'] }];
-                helper.invoke('refresh');
+                spreadsheet.filterModule.updateFilter({ isOpen: true });
                 setTimeout((): void => {
                     const filterPredicate: any = spreadsheet.filterModule.filterCollection.get(0);
                     expect(filterPredicate.length).toBe(1);

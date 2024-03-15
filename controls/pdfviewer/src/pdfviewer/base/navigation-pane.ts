@@ -33,14 +33,24 @@ export class NavigationPane {
     private searchInput: HTMLElement;
     private toastObject: Toast;
     private isTooltipCreated: boolean = false;
-    private isThumbnail: boolean = false;
-    private isThumbnailAddedProgrammatically: boolean = false;
     private annotationInputElement: HTMLElement;
     private annotationXFdfInputElement: HTMLElement;
     private annotationContextMenu: MenuItemModel[] = [];
     private isCommentPanelShow: boolean = false;
     private commentPanelWidthMin: number = 300;
     private commentPanelResizeIcon: HTMLElement;
+    /**
+     * @private
+     */
+    public isBookmarkOpenProgrammatically : boolean = false;
+    /**
+     * @private
+     */
+    public isThumbnailAddedProgrammatically: boolean = false;
+    /**
+     * @private
+     */
+    public isThumbnail: boolean = false;
     /**
      * @private
      */
@@ -106,6 +116,10 @@ export class NavigationPane {
      * @private
      */
      public restrictUpdateZoomValue: boolean = true;
+    /**
+    * @private
+    */
+    public organizePageButton: HTMLElement;
 
     /**
      * Initialize the constructor of navigationPane.
@@ -230,6 +244,14 @@ export class NavigationPane {
         // eslint-disable-next-line max-len
         this.pdfViewerBase.viewerContainer.style.width = (this.pdfViewer.element.clientWidth - controlLeft - this.commentPanelContainer.clientWidth) + 'px';
         this.sideBarContentContainer.style.display = 'none';
+        if (!this.pdfViewer.enableNavigationToolbar) {
+            if(!this.pdfViewer.enableRtl) {
+                this.sideBarContentContainer.style.left = '0px';
+            }
+            else {
+                this.sideBarContentContainer.style.right = '0px';
+            }
+        }
         this.createSidebarToolBar();
         this.createSidebarTitleCloseButton();
         this.createResizeIcon();
@@ -802,6 +824,7 @@ export class NavigationPane {
 
     private createSidebarToolBar(): void {
         if (!isBlazor()) {
+            const isMac: boolean = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false;
             // eslint-disable-next-line max-len
             this.thumbnailButton = createElement('button', { id: this.pdfViewer.element.id + '_thumbnail-view', attrs: { 'disabled': 'disabled', 'aria-label': 'Page Thumbnails', 'tabindex': '-1' } });
             this.thumbnailButton.className = 'e-pv-tbar-btn e-pv-thumbnail-view-button e-btn';
@@ -811,7 +834,7 @@ export class NavigationPane {
             this.thumbnailButton.appendChild(thumbnailButtonSpan);
             // eslint-disable-next-line max-len
             const thumbnailTooltip: Tooltip = new Tooltip({ content:  initializeCSPTemplate(
-                function (): string { return this.pdfViewer.localeObj.getConstant('Page Thumbnails'); }, this
+                function (): string { return this.pdfViewer.localeObj.getConstant('Page Thumbnails')+ (isMac ? " (⌘+⌥+1)" : " (Ctrl+Alt+1)"); }, this
             ), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
             thumbnailTooltip.appendTo(this.thumbnailButton);
             // eslint-disable-next-line max-len
@@ -823,22 +846,61 @@ export class NavigationPane {
             this.bookmarkButton.appendChild(buttonSpan);
             // eslint-disable-next-line max-len
             const bookMarkTooltip: Tooltip = new Tooltip({ content:  initializeCSPTemplate(
-                function (): string { return this.pdfViewer.localeObj.getConstant('Bookmarks'); }, this
+                function (): string { return this.pdfViewer.localeObj.getConstant('Bookmarks') + (isMac ? " (⌘+⌥+2)" : " (Ctrl+Alt+2)"); }, this
             ), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this) });
             bookMarkTooltip.appendTo(this.bookmarkButton);
+            // eslint-disable-next-line max-len
+            this.organizePageButton = createElement('button', { id: this.pdfViewer.element.id + '_organize-view', attrs: { 'disabled': 'disabled', 'aria-label': 'Organize Pages', 'tabindex': '-1' } });
+            this.organizePageButton.className = 'e-pv-tbar-btn e-pv-organize-view-button e-btn';
+            this.organizePageButton.setAttribute('type', 'button');
+            // eslint-disable-next-line max-len
+            const organizeButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_organize-view' + '_icon', className: 'e-pv-organize-view-disable-icon e-pv-icon' });
+            this.organizePageButton.appendChild(organizeButtonSpan);
+            // eslint-disable-next-line max-len
+            const organizeButtonTooltip: Tooltip = new Tooltip({
+                content: initializeCSPTemplate(
+                    function (): string { return this.pdfViewer.localeObj.getConstant('Organize Pages') + (isMac ? " (⌘+⌥+3)" : " (Ctrl+Alt+3)"); }, this
+                ), opensOn: 'Hover', beforeOpen: this.onTooltipBeforeOpen.bind(this)
+            });
+            organizeButtonTooltip.appendTo(this.organizePageButton);
             this.sideBarToolbar.appendChild(this.thumbnailButton);
             this.sideBarToolbar.appendChild(this.bookmarkButton);
+            if(!isNullOrUndefined(this.pdfViewer.pageOrganizer)) {
+                this.sideBarToolbar.appendChild(this.organizePageButton);
+            }
         } else {
             this.thumbnailButton = this.pdfViewer.element.querySelector('.e-pv-thumbnail-view-button');
             this.bookmarkButton = this.pdfViewer.element.querySelector('.e-pv-bookmark-button');
         }
         this.thumbnailButton.addEventListener('click', this.sideToolbarOnClick);
         this.bookmarkButton.addEventListener('click', this.bookmarkButtonOnClick);
+        this.organizePageButton.addEventListener('click', this.organizeButtonOnClick);
     }
 
     private onTooltipBeforeOpen(args: TooltipEventArgs): void {
         if (!this.pdfViewer.toolbarSettings.showTooltip) {
             args.cancel = true;
+        }
+    }
+
+    /**
+    * @private
+    * @returns {void}
+    */
+    public enableOrganizeButton(isEnable: boolean): void {
+        if (this.organizePageButton) {
+            if (isEnable) {
+                this.organizePageButton.removeAttribute('disabled');
+                this.organizePageButton.children[0].classList.remove('e-pv-organize-view-disable-icon');
+                this.organizePageButton.children[0].classList.add('e-pv-organize-view-icon');
+                this.organizePageButton.setAttribute('tabindex', '0');
+            }
+            else {
+                this.organizePageButton.setAttribute('disabled', 'disabled');
+                this.organizePageButton.children[0].classList.remove('e-pv-organize-view-icon');
+                this.organizePageButton.children[0].classList.add('e-pv-organize-view-disable-icon');
+                this.organizePageButton.setAttribute('tabindex', '-1');
+            }
         }
     }
 
@@ -1095,7 +1157,9 @@ export class NavigationPane {
         proxy.removeBookmarkSelectionIconTheme();
         proxy.updateViewerContainerOnClose();
         proxy.isThumbnailAddedProgrammatically = false;
+        proxy.isBookmarkOpenProgrammatically = false;
         proxy.isThumbnail = false;
+        proxy.isBookmarkOpen = false;
     };
     /**
      * @private
@@ -1159,7 +1223,10 @@ export class NavigationPane {
     public getViewerContainerLeft(): number {
         if (this.sideToolbarWidth) {
             return (this.sideToolbarWidth + this.sideBarContentContainerWidth);
-        } else {
+        } else if (this.sideToolbarWidth == 0 && !this.pdfViewer.enableNavigationToolbar) {
+            return (this.sideBarContentContainerWidth);
+        }
+        else {
             return 0;
         }
     }
@@ -1170,7 +1237,10 @@ export class NavigationPane {
     public getViewerContainerRight(): number {
         if (this.commentPanelResizer) {
             return (this.commentPanelContainerWidth + this.commentPanelResizer.clientWidth);
-        } else {
+        } else if (this.sideToolbarWidth == 0 && !this.pdfViewer.enableNavigationToolbar) {
+            return (this.sideBarContentContainerWidth);
+        }
+         else {
             return 0;
         }
     }
@@ -1181,18 +1251,29 @@ export class NavigationPane {
     public getViewerMainContainerWidth(): number {
         return this.pdfViewer.element.clientWidth - this.sideToolbarWidth;
     }
+
+    /**
+    * Private method to handle the click event of the "organize" button.
+    * @param event - The MouseEvent object representing the click event.
+    */
+    private organizeButtonOnClick = (event: MouseEvent): void => {
+        if (!isNullOrUndefined(this.pdfViewer.pageOrganizer)) {
+            this.pdfViewer.pageOrganizer.createOrganizeWindow();
+        }
+    }
+
     /**
      * @param {MouseEvent} event - The event.
+     * @private
      * @returns {void}
      */
-    private sideToolbarOnClick = (event: MouseEvent): void => {
+    public sideToolbarOnClick = (event: MouseEvent | KeyboardEvent): void => {
         this.sideBarTitle.textContent = this.pdfViewer.localeObj.getConstant('Page Thumbnails');
         this.sideBarContent.setAttribute('aria-label', 'Thumbnail View Panel');
         let proxy: NavigationPane = null;
         proxy = this;
-        const isblazor: boolean = isBlazor();
         // eslint-disable-next-line max-len
-        const bookmarkPane: HTMLElement = isblazor ? this.pdfViewer.element.querySelector('.e-pv-bookmark-view') : document.getElementById(this.pdfViewer.element.id + '_bookmark_view');
+        const bookmarkPane: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_bookmark_view');
         if (bookmarkPane) {
             proxy.removeBookmarkSelectionIconTheme();
             bookmarkPane.style.display = 'none';
@@ -1202,9 +1283,11 @@ export class NavigationPane {
             if (proxy.sideBarContentContainer.style.display !== 'none') {
                 if (proxy.isBookmarkOpen) {
                     proxy.isThumbnailOpen = true;
+                    proxy.isThumbnail = true;
                     proxy.setThumbnailSelectionIconTheme();
                     proxy.updateViewerContainerOnExpand();
                     (document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_image_' + (proxy.pdfViewerBase.currentPageNumber -1)) as any).focus();
+                    proxy.isThumbnailAddedProgrammatically = true;
                 } else {
                     proxy.isThumbnailOpen = false;
                     proxy.removeThumbnailSelectionIconTheme();
@@ -1221,9 +1304,11 @@ export class NavigationPane {
                 if(!isNullOrUndefined((document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_image_' + (proxy.pdfViewerBase.currentPageNumber -1)) as any))) {
                     (document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_image_' + (proxy.pdfViewerBase.currentPageNumber -1)) as any).focus();
                 }
+                proxy.isThumbnailAddedProgrammatically = true;
             }
         }
         proxy.isBookmarkOpen = false;
+        proxy.isBookmarkOpenProgrammatically = false;
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
             // eslint-disable-next-line
             let currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
@@ -1245,7 +1330,13 @@ export class NavigationPane {
         document.getElementById(this.pdfViewer.element.id + '_thumbnail_view').style.display = 'block';
         document.getElementById(this.pdfViewer.element.id + '_sideBarResizer').style.display = 'none';
         proxy.sideBarTitle.textContent = this.pdfViewer.localeObj.getConstant('Page Thumbnails');
-        proxy.sideBarContent.setAttribute('aria-label', 'Thumbnail View Panel');
+        proxy.sideBarContent.setAttribute('aria-label', 'Thumbnail View Panel');        
+        // eslint-disable-next-line max-len
+        const bookmarkPane: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_bookmark_view');
+        if (bookmarkPane) {
+            proxy.removeBookmarkSelectionIconTheme();
+            bookmarkPane.style.display = 'none';
+        }
         if (sideBarContentContainer  && !this.isThumbnailAddedProgrammatically) {
             if (proxy.isThumbnail) {
                 sideBarContentContainer.style.display = 'none';
@@ -1266,6 +1357,9 @@ export class NavigationPane {
                     proxy.pdfViewer.thumbnailViewModule.gotoThumbnailImage(proxy.pdfViewerBase.currentPageNumber - 1);
                 }
                 proxy.isThumbnailAddedProgrammatically = true;
+                proxy.isThumbnailOpen = true;
+                proxy.isBookmarkOpen = false;
+                proxy.isBookmarkOpenProgrammatically = false;
             }
         }
         if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
@@ -1282,7 +1376,7 @@ export class NavigationPane {
     public closeThumbnailPane  = (): void => {
         let proxy : NavigationPane = null;
         proxy = this;
-        if(proxy.isThumbnail || !proxy.isThumbnailAddedProgrammatically) {
+        if(proxy.isThumbnail || proxy.isThumbnailAddedProgrammatically ||  proxy.pdfViewer.isThumbnailViewOpen) {
             proxy.removeThumbnailSelectionIconTheme();
             proxy.isThumbnailOpen = false;
             proxy.updateViewerContainerOnClose();
@@ -1342,10 +1436,11 @@ export class NavigationPane {
     }
     /**
      * @param {MouseEvent} event - The event.
+     * @private
      * @returns {void}
      */
-    private bookmarkButtonOnClick = (event: MouseEvent): void => {
-        this.openBookmarkcontentInitially();
+    public bookmarkButtonOnClick = (event: MouseEvent | KeyboardEvent): void => {
+        this.openBookmarkcontentInitially(true);
     };
 
     private setBookmarkSelectionIconTheme(): void {
@@ -1356,7 +1451,10 @@ export class NavigationPane {
         }
     }
 
-    private removeBookmarkSelectionIconTheme(): void {
+    /**
+     * @private
+     */
+    public removeBookmarkSelectionIconTheme(): void {
         if (this.bookmarkButton && this.bookmarkButton.children[0]) {
             this.bookmarkButton.children[0].classList.add('e-pv-bookmark-icon');
             this.bookmarkButton.children[0].classList.remove('e-pv-bookmark-selection-icon');
@@ -1378,39 +1476,61 @@ export class NavigationPane {
      * @private
      * @returns {void}
      */
-    public openBookmarkcontentInitially(): void {
-        let proxy: NavigationPane = null;
-        proxy = this;
-        if (document.getElementById(this.pdfViewer.element.id + '_thumbnail_view')) {
-            document.getElementById(this.pdfViewer.element.id + '_thumbnail_view').style.display = 'none';
+    public openBookmarkcontentInitially(isSideToolbarOnClick?: boolean): void {
+        let proxy: NavigationPane = this;
+        if (document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view')) {
+            document.getElementById(proxy.pdfViewer.element.id + '_thumbnail_view').style.display = 'none';
         }
-        this.removeThumbnailSelectionIconTheme();
-        this.sideBarTitle.textContent = this.pdfViewer.localeObj.getConstant('Bookmarks');
-        this.sideBarContent.setAttribute('aria-label', 'Bookmark View Panel');
-        this.pdfViewer.bookmarkViewModule.renderBookmarkcontent();
-        if (this.sideBarContentContainer) {
+        proxy.removeThumbnailSelectionIconTheme();
+        proxy.sideBarTitle.textContent = proxy.pdfViewer.localeObj.getConstant('Bookmarks');
+        proxy.sideBarContent.setAttribute('aria-label', 'Bookmark View Panel');
+        proxy.pdfViewer.bookmarkViewModule.renderBookmarkcontent();
+        if (proxy.sideBarContentContainer && (isSideToolbarOnClick || !proxy.isBookmarkOpenProgrammatically)) {
             if (proxy.sideBarContentContainer.style.display !== 'none') {
-                if (this.isThumbnailOpen) {
-                    this.setBookmarkSelectionIconTheme();
-                    this.isBookmarkOpen = true;
-                    this.updateViewerContainerOnExpand();
+                if (proxy.isThumbnailOpen) {
+                    proxy.setBookmarkSelectionIconTheme();
+                    proxy.isBookmarkOpen = true;
+                    proxy.updateViewerContainerOnExpand();
+                    proxy.isThumbnail = false;
+                    proxy.isThumbnailAddedProgrammatically = false;
+                    proxy.isBookmarkOpenProgrammatically = true;
+                    proxy.pdfViewer.isThumbnailViewOpen = false;
                 } else {
-                    this.removeBookmarkSelectionIconTheme();
-                    this.isBookmarkOpen = false;
-                    this.updateViewerContainerOnClose();
+                    proxy.removeBookmarkSelectionIconTheme();
+                    proxy.isBookmarkOpen = false;
+                    proxy.updateViewerContainerOnClose();
+                    proxy.isBookmarkOpenProgrammatically = false;
                 }
             } else {
-                this.sideBarContent.focus();
-                this.setBookmarkSelectionIconTheme();
-                this.isBookmarkOpen = true;
-                this.updateViewerContainerOnExpand();
+                proxy.sideBarContent.focus();
+                proxy.setBookmarkSelectionIconTheme();
+                proxy.isBookmarkOpen = true;
+                proxy.updateViewerContainerOnExpand();
+                proxy.isBookmarkOpenProgrammatically = true;
+                proxy.pdfViewer.isThumbnailViewOpen = false;
             }
         }
-        this.isThumbnailOpen = false;
-        if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.inkAnnotationModule) {
+        proxy.isThumbnailOpen = false;
+        if (proxy.pdfViewer.annotationModule && proxy.pdfViewer.annotationModule.inkAnnotationModule) {
             // eslint-disable-next-line
-            let currentPageNumber: number = parseInt(this.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
-            this.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
+            let currentPageNumber: number = parseInt(proxy.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber);
+            proxy.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
+        }
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
+
+    public closeBookmarkPane  = (): void => {
+        let proxy : NavigationPane = this;
+        if (proxy.isBookmarkOpen || proxy.isBookmarkOpenProgrammatically) {
+            proxy.removeBookmarkSelectionIconTheme();
+            proxy.isBookmarkOpen = false;
+            proxy.updateViewerContainerOnClose();
+            proxy.isBookmarkOpenProgrammatically = false;
+            proxy.isBookmarkListOpen = false;
         }
     }
 
@@ -1420,7 +1540,6 @@ export class NavigationPane {
      */
     public disableBookmarkButton(): void {
         if (this.sideBarContentContainer && this.bookmarkButton && this.bookmarkButton.children[0]) {
-            // this.sideBarContentContainer.style.display = 'none';
             let bookmarkContent: any = this.pdfViewer.element.querySelector('.e-pv-bookmark-view');
             if (bookmarkContent) {
                 bookmarkContent.style.display = 'none';
@@ -1548,12 +1667,16 @@ export class NavigationPane {
     public destroy(): void { 
         let bookmarkButtonInstance: any = this.bookmarkButton;
         let thumbnailButtonInstance: any = this.thumbnailButton;
+        let organizeButtonInstance: any = this.organizePageButton;
         if (bookmarkButtonInstance && bookmarkButtonInstance.ej2_instances && bookmarkButtonInstance.ej2_instances.length > 0) {
             bookmarkButtonInstance.ej2_instances[0].destroy();
         }
         if (thumbnailButtonInstance && thumbnailButtonInstance.ej2_instances && thumbnailButtonInstance.ej2_instances.length > 0) {
             thumbnailButtonInstance.ej2_instances[0].destroy();
-        } 
+        }
+        if (organizeButtonInstance && organizeButtonInstance.ej2_instances && organizeButtonInstance.ej2_instances.length > 0) {
+            organizeButtonInstance.ej2_instances[0].destroy();
+        }
         if (this.annotationMenuObj) {
             let annotationMenuElement : any = this.annotationMenuObj.element;
             annotationMenuElement && annotationMenuElement.ej2_instances && annotationMenuElement.ej2_instances.length > 0 ? this.annotationMenuObj.destroy() : null;

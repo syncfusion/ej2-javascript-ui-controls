@@ -1018,8 +1018,8 @@ export class AnnotationRenderer {
         let left: number = 0;
         let top: number = 0;
         const graphics: PdfGraphics = page.graphics;
-        const pageRotation: string = page.rotation.toString();
-        if (stampAnnotation.hasOwnProperty('wrapperBounds')) {
+        let isTemplate: boolean = (!isNullOrUndefined(stampAnnotation.template) && (stampAnnotation.template !== "")) ? true : false; 
+        if (stampAnnotation.hasOwnProperty('wrapperBounds') && !isTemplate) {
             const wrapperBounds: any = stampAnnotation.wrapperBounds;
             const boundsXY: Rect = this.calculateBoundsXY(wrapperBounds, bounds, pageNo, page);
             left = boundsXY.x;
@@ -1050,8 +1050,8 @@ export class AnnotationRenderer {
         let width: number = this.convertPixelToPoint(bounds.width);
         let height: number = this.convertPixelToPoint(bounds.height);
 
-        if (!isNullOrUndefined(stampAnnotation.stampAnnotationType) && (stampAnnotation.stampAnnotationType === 'image') && (stampAnnotation.stampAnnotationPath !== ' ')) {
-            if (pageRotation === 'RotateAngle90' || pageRotation === 'RotateAngle270') {
+        if (!isNullOrUndefined(stampAnnotation.stampAnnotationType) && (stampAnnotation.stampAnnotationType === 'image') && (stampAnnotation.stampAnnotationPath !== ' ') && !isTemplate) {
+            if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270) {
                 width = this.convertPixelToPoint((bounds.height));
                 height = this.convertPixelToPoint((bounds.width));
             }
@@ -1067,26 +1067,42 @@ export class AnnotationRenderer {
                 isLock = annotationSettings.isLock;
             }
         }
-        if (!isNullOrUndefined(stampAnnotation.stampAnnotationType) && (stampAnnotation.stampAnnotationType === 'image') && (stampAnnotation.stampAnnotationPath !== ' ')) {
+        if (!isNullOrUndefined(stampAnnotation.stampAnnotationType) && (stampAnnotation.stampAnnotationType === 'image') && (stampAnnotation.stampAnnotationPath !== ' ') || isTemplate) {
             let pageRender: PageRenderer = new PageRenderer(this.pdfViewer, this.pdfViewerBase);
             const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation(left, top, width, height);
             page.annotations.add(rubberStampAnnotation);
-            const imageUrl: string = (stampAnnotation['stampAnnotationPath'].toString()).split(',')[1];
-            const bytes: Uint8Array = _decode(imageUrl, false) as Uint8Array;
-            let bitmap: PdfImage;
-            if (bytes && bytes.length > 2 && bytes[0] === 255 && bytes[1] === 216) {
-                bitmap = new PdfBitmap(bytes);
+            if (isTemplate) {
                 let appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
+                const dictionary: _PdfDictionary = new _PdfDictionary(page._crossReference);
                 const state: PdfGraphicsState = graphics.save();
-                appearance.graphics.drawImage(bitmap, 0, 0, width, height);
+                let template: PdfTemplate = new PdfTemplate();
+                template._isExported = true;
+                template._appearance = stampAnnotation.template;
+                template._crossReference = dictionary._crossReference;
+                template._size = [stampAnnotation.templateSize[0], stampAnnotation.templateSize[1]];
+                let bounds = {x: 0, y: 0, width: width, height: height };
+                appearance.graphics.drawTemplate(template, bounds);
                 appearance.graphics.restore(state);
             }
             else {
-                const appearance: PdfAppearance = rubberStampAnnotation.appearance;
-                const filterAnnot: any = this.pdfViewerBase.pngData.filter((nameStamp) => nameStamp.name === stampAnnotation.annotName);
-                let dictionary: _PdfDictionary = filterAnnot[0]._dictionary.get('AP');
-                let pngDictionary: _PdfBaseStream = dictionary.get('N');
-                appearance.normal = new PdfTemplate(pngDictionary, page._crossReference);
+                const imageUrl: string = (stampAnnotation['stampAnnotationPath'].toString()).split(',')[1];
+                const bytes: Uint8Array = _decode(imageUrl, false) as Uint8Array;
+                let bitmap: PdfImage;
+                if (bytes && bytes.length > 2 && ((bytes[0] === 255 && bytes[1] === 216) || (bytes[0] === 137 && bytes[1] === 80 && bytes[2] === 78 && bytes[3] === 71 && bytes[4] === 13 && bytes[5] === 10  && bytes[6] === 26 && bytes[7] === 10 ) )) {
+                    bitmap = new PdfBitmap(bytes);
+                    let appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
+                    const state: PdfGraphicsState = graphics.save();
+                    appearance.graphics.drawImage(bitmap, 0, 0, width, height);
+                    appearance.graphics.restore(state);
+                }
+                else {
+                    const appearance: PdfAppearance = rubberStampAnnotation.appearance;
+                    const filterAnnot: any = this.pdfViewerBase.pngData.filter((nameStamp) => nameStamp.name === stampAnnotation.annotName);
+                    let dictionary: _PdfDictionary = filterAnnot[0]._dictionary.get('AP');
+                    let pngDictionary: _PdfBaseStream = dictionary.get('N');
+                    appearance.normal = new PdfTemplate(pngDictionary, page._crossReference);
+                }
+                rubberStampAnnotation.rotationAngle = this.getRubberStampRotateAngle(page.rotation, rotateAngle);
             }
             rubberStampAnnotation.opacity = opacity;
 
@@ -1112,7 +1128,7 @@ export class AnnotationRenderer {
                 stampAnnotation.author = 'Guest';
             }
             rubberStampAnnotation.author = !isNullOrUndefined(stampAnnotation.author) && stampAnnotation.author.toString() !=="" ? stampAnnotation.author.toString() : 'Guest';
-            if(!isNullOrUndefined(stampAnnotation.subject) && stampAnnotation.subject){
+            if (!isNullOrUndefined(stampAnnotation.subject) && stampAnnotation.subject) {
                 rubberStampAnnotation.subject = stampAnnotation.subject.toString();
             }
             if (!isNullOrUndefined(stampAnnotation.isLocked) && stampAnnotation.isLocked) {
@@ -1168,10 +1184,9 @@ export class AnnotationRenderer {
             stampBrush = new PdfBrush(stampcolors);
 
             const pens: PdfPen = new PdfPen(colors, 1);
-            const pageRotation: string = page.rotation.toString();
             let rectangle: Rect = new Rect(left, top, width, height);
 
-            if (pageRotation === 'RotateAngle90' || pageRotation === 'RotateAngle270') {
+            if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270) {
                 rectangle = new Rect(left, top, height, width);
             }
             const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation;
@@ -1202,13 +1217,12 @@ export class AnnotationRenderer {
             }
             if (icon.trim() === 'Accepted' || icon.trim() === 'Rejected') {
                 this.drawStampAsPath(stampAnnotation.stampAnnotationPath, rubberStampAnnotation, textBrush, stampBrush);
-                rubberStampAnnotation.rotationAngle = this.getRubberStampRotateAngle(pageRotation, rotateAngle);
             }
-                else {
-                if (page.rotation.toString() === 'RotateAngle90' || page.rotation.toString() === 'RotateAngle270') {
+            else if(isIconExists) {
+                if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270) {
                     rubberStampAnnotation.bounds = rectangle;
                 }
-                rubberStampAnnotation.rotationAngle = this.getRubberStampRotateAngle(pageRotation, rotateAngle);
+                rubberStampAnnotation.rotationAngle = this.getRubberStampRotateAngle(page.rotation, stampAnnotation.rotateAngle);
             }
             if (!isNullOrUndefined(stampAnnotation.modifiedDate) && !isNaN(Date.parse(stampAnnotation.modifiedDate))) {
                 let dateValue: Date;
@@ -1256,7 +1270,7 @@ export class AnnotationRenderer {
                     this.renderSignHereStamp(rubberStampAnnotation, rectangle, icon, textBrush, page, pens);
                     appearance.graphics.restore(state);
                 }
-                rubberStampAnnotation.rotationAngle = this.getRubberStampRotateAngle(pageRotation, rotateAngle);
+                rubberStampAnnotation.rotationAngle = this.getRubberStampRotateAngle(page.rotation, rotateAngle);
             }
         }
     }
@@ -1765,7 +1779,7 @@ export class AnnotationRenderer {
             const color: number[] = [strokeColor.r, strokeColor.g, strokeColor.b];
             annotation.borderColor = color;
             // Modified Implementation for setting border width for transparent border
-            if(this.isTransparentColor(strokeColor)) {
+            if(!this.isTransparentColor(strokeColor)) {
                 annotation.border.width = !isNullOrUndefined(freeTextAnnotation.thickness) ? freeTextAnnotation.thickness : 0;
                 
             }
@@ -1774,7 +1788,7 @@ export class AnnotationRenderer {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const fillColor: any = JSON.parse(freeTextAnnotation.fillColor);
             if (!this.isTransparentColor(fillColor)){
-                const color: number[] = [fillColor.r, fillColor.g, fillColor.b,fillColor.a];
+                const color: number[] = [fillColor.r, fillColor.g, fillColor.b];
                 annotation.color = color;
             }
             if (fillColor.a < 1 && fillColor.a > 0) {
@@ -1909,17 +1923,17 @@ export class AnnotationRenderer {
     private calculateBoundsXY(wrapperBounds: any, bounds: Rect, pageNo: number, pdfPageBase: any): Rect {
         const boundsXY: Rect = new Rect();
 
-        const pageSize: Size = this.getPageSize(pageNo);
+        const pageSize: Size = this.pdfViewer.pdfRendererModule.getPageSize(pageNo);
 
-        if (pdfPageBase.pageRotation === PdfRotationAngle.angle90) {
+        if (pdfPageBase.rotation  === PdfRotationAngle.angle90) {
             boundsXY.x = this.convertPixelToPoint(wrapperBounds.y);
             boundsXY.y = this.convertPixelToPoint(pageSize.width - wrapperBounds.x - wrapperBounds.width);
         }
-        else if (pdfPageBase.pageRotation === PdfRotationAngle.angle180) {
+        else if (pdfPageBase.rotation  === PdfRotationAngle.angle180) {
             boundsXY.x = this.convertPixelToPoint(pageSize.width - wrapperBounds.x - wrapperBounds.width);
             boundsXY.y = this.convertPixelToPoint(pageSize.height - wrapperBounds.y - wrapperBounds.height);
         }
-        else if (pdfPageBase.pageRotation === PdfRotationAngle.angle270) {
+        else if (pdfPageBase.rotation  === PdfRotationAngle.angle270) {
             boundsXY.x = this.convertPixelToPoint(pageSize.height - wrapperBounds.y - wrapperBounds.height);
             boundsXY.y = this.convertPixelToPoint(wrapperBounds.x);
         }
@@ -1930,11 +1944,6 @@ export class AnnotationRenderer {
         return boundsXY;
     }
 
-    private getPageSize(pageNumber: number): Size {
-        const page: PdfPage = this.pdfViewer.pdfRendererModule.loadedDocument.getPage(pageNumber);
-        const size: number[] = page.size;
-        return new Size(this.convertPointToPixel(size[0]), this.convertPointToPixel(size[1]));
-    }
     private setMeasurementUnit(unit: string): PdfMeasurementUnit {
         let measurementUnit: PdfMeasurementUnit;
         switch (unit) {
@@ -1956,25 +1965,25 @@ export class AnnotationRenderer {
         }
         return measurementUnit;
     }
-    private getRubberStampRotateAngle(angleString: string, rotationAngle: number): number {
-        let angle: number = 0;
-        switch (angleString) {
-        case 'RotateAngle0':
-            angle = 0;
-            break;
-        case 'RotateAngle180':
-            angle = 180;
-            break;
-        case 'RotateAngle270':
-            angle = 270;
-            break;
-        case 'RotateAngle90':
-            angle = 90;
-            break;
-        default:
-            break;
+    private getRubberStampRotateAngle(angleEnum: PdfRotationAngle, rotationAngle: number): PdfRotationAngle {
+        let angle: PdfRotationAngle = PdfRotationAngle.angle0;
+        switch (rotationAngle) {
+            case 0:
+                angle = PdfRotationAngle.angle0
+                break;
+            case 90:
+                angle = PdfRotationAngle.angle90
+                break;
+            case 180:
+                angle = PdfRotationAngle.angle180
+                break;
+            case 270:
+                angle = PdfRotationAngle.angle270
+                break;
+            default:
+                break;
         }
-        angle -= rotationAngle;
+        angle = ((angleEnum as number) - (angle as number)  + 4) % 4;
         return angle;
     }
 

@@ -1,8 +1,6 @@
-import { SpreadsheetModel, Spreadsheet, BasicModule, SheetModel, DialogBeforeOpenEventArgs } from '../../../src/index';
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetModel, Spreadsheet, SheetModel, DialogBeforeOpenEventArgs } from '../../../src/index';
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-
-Spreadsheet.Inject(BasicModule);
 
 /**
  *  Spreadsheet Sheet tab spec

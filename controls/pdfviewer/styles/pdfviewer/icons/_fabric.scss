@@ -25,6 +25,28 @@
       content: '\ebde';
     }
 
+    .e-pv-rotate-right-icon::before{
+      content: '\e956';
+    }
+
+    .e-pv-organize-view-icon::before{
+      content: '\e9a2';
+    }
+
+    .e-pv-organize-view-disable-icon::before{
+      color: $pv-thumbnail-icon-disable-color;
+      content: '\e9a2';
+    }
+
+    .e-pv-organize-view-selection-icon::before{
+      color: $pv-thumbnail-icon-selection-color;
+      content: '\e9a2';
+    }
+
+    .e-pv-rotate-left-icon::before{
+      content: '\e955';
+    }
+
     .e-pv-previous-page-navigation-icon::before,
     .e-pv-prev-search-icon::before {
       content: '\ebdf';

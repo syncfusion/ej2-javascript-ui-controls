@@ -2,16 +2,16 @@ import { Diagram } from "../diagram";
 import { HorizontalAlignment, PortConstraints, PortShapes, PortVisibility, VerticalAlignment } from "../enum/enum";
 import { PortModel } from "../objects/port-model";
 import { PointModel } from "../primitives/point-model";
-import { EJ1SerializationModule } from "./modelProperties";
+import { Ej1Serialization } from "./modelProperties";
 
 
 export class PortProperties {
     private diagram: Diagram;
 
-   
-    private modelProperties: EJ1SerializationModule;
+    
+    private modelProperties: Ej1Serialization;
 
-   constructor(modelProperties: EJ1SerializationModule) {
+   constructor(modelProperties: Ej1Serialization) {
        this.modelProperties = modelProperties;
    }
 

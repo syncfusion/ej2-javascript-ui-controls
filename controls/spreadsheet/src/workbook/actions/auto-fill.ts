@@ -3,7 +3,7 @@ import { Workbook, CellModel, getCell, SheetModel, isHiddenRow, isHiddenCol, get
 import { getSwapRange, getRangeIndexes, setAutoFill, AutoFillDirection, AutoFillType, getFillInfo, getSheetIndexFromAddress, workbookLocale } from './../common/index';
 import { checkIsFormula, getColumnHeaderText, isNumber, ConditionalFormatModel, updateCFModel, isCustomDateTime } from './../index';
 import { updateCell, intToDate, dateToInt, applyCF, ApplyCFArgs, CellUpdateArgs, ConditionalFormat } from './../common/index';
-import { DateFormatCheckArgs, checkDateFormat } from '../common/index';
+import { DateFormatCheckArgs, checkDateFormat, parseFormulaArgument } from '../common/index';
 
 /**
  * WorkbookAutoFill module allows to perform auto fill functionalities.
@@ -15,20 +15,6 @@ export class WorkbookAutoFill {
         fillType: AutoFillType;
         disableItems: string[];
     };
-    private uniqueOBracket: string = String.fromCharCode(129);
-    private uniqueCBracket: string = String.fromCharCode(130);
-    private uniqueDOperator: string = String.fromCharCode(136);
-    private uniqueModOperator: string = String.fromCharCode(137);
-    private uniqueCSeparator: string = String.fromCharCode(131);
-    private uniqueCOperator: string = String.fromCharCode(132);
-    private uniqueExpOperator: string = String.fromCharCode(140);
-    private uniqueGTOperator: string = String.fromCharCode(141);
-    private uniqueConcateOperator: string = String.fromCharCode(138);
-    private uniqueEqualOperator: string = String.fromCharCode(139);
-    private uniqueLTOperator: string = String.fromCharCode(142);
-    private uniqueMOperator: string = String.fromCharCode(135);
-    private uniquePOperator: string = String.fromCharCode(133);
-    private uniqueSOperator: string = String.fromCharCode(134);
     /**
      * Constructor for the workbook AutoFill module.
      *
@@ -79,16 +65,13 @@ export class WorkbookAutoFill {
             (this.parent.getActiveSheet().isProtected && options.isLockedCell)) {
             return;
         }
-        const autoFillOptions: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection, sheetIndex: number } = {
-            dataRange: null, fillRange: null, fillType: null, direction: null, sheetIndex: getSheetIndexFromAddress(this.parent, options.dataRange) };
         const dataRangeIndices: number[] = getSwapRange(getRangeIndexes(options.dataRange));
         const fillRangeIndices: number[] = getSwapRange(getRangeIndexes(options.fillRange));
+        const autoFillOptions: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection,
+            sheetIndex: number } = { dataRange: dataRangeIndices, fillRange: fillRangeIndices, direction: options.direction, fillType:
+                options.fillType || this.fillInfo.fillType, sheetIndex: getSheetIndexFromAddress(this.parent, options.dataRange) };
         this.fillInfo = this.getFillInfo({ dataRange: dataRangeIndices, fillRange: fillRangeIndices, fillType: options.fillType,
             direction: options.direction });
-        autoFillOptions.dataRange = dataRangeIndices;
-        autoFillOptions.fillRange = fillRangeIndices;
-        autoFillOptions.direction = options.direction;
-        autoFillOptions.fillType = options.fillType || this.fillInfo.fillType;
         this.fillInfo.fillType = options.isFillOptClick ? options.fillType : this.fillInfo.fillType;
         switch (options.fillType) {
         case 'FillSeries':
@@ -102,7 +85,9 @@ export class WorkbookAutoFill {
         }
     }
 
-    private fillSeries(options: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection, sheetIndex: number }): void {
+    private fillSeries(
+        options: { dataRange: number[], fillRange: number[], fillType: AutoFillType, direction: AutoFillDirection,
+            sheetIndex: number }): void {
         let val: string | string; let plen: number;
         let patterns: PatternInfo[] | number[]; let patrn: PatternInfo | number;
         let pRanges: { patternRange: number[], fillRange: number[] }; let patrnRange: number[];
@@ -644,8 +629,11 @@ export class WorkbookAutoFill {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let patrn: any; const patrns: any = [];
         let i: number = 0; const len: number = data.length; let cRfrType: string;
+        const eventArgs: { formula?: string, formulaArr?: string[] } = {};
         while (i < len) {
-            patrns.push(this.parseFormula(data[i as number]));
+            eventArgs.formula = data[i as number];
+            this.parent.notify(parseFormulaArgument, eventArgs);
+            patrns.push(eventArgs.formulaArr);
             i++;
         }
         const isInPatrn: boolean = this.isInPattern(patrns, options.isVFill);
@@ -769,93 +757,6 @@ export class WorkbookAutoFill {
             j++;
         }
         return true;
-    }
-    private parseFormula(formula: string | string[]): string[] {
-        // eslint-disable-next-line @typescript-eslint/tslint/config
-        let temp: string; let str; let i: number = 0; const arrValues = [];
-        formula = this.markSpecialChar((formula as string).replace('=', ''));
-        formula = formula.split(/\(|\)|=|\^|>|<|,|:|\+|-|\*|\/|%|&/g);
-        const len: number = formula.length;
-        while (i < len) {
-            temp = formula[i as number];
-            if (!temp) {
-                i++;
-                continue;
-            }
-            if (temp.length === 1)
-            {arrValues.push(this.isUniqueChar(temp) ? this.getUniqueCharVal(temp) : temp); }
-            else {
-                str = temp[0];
-                if (temp.indexOf('!') > 0) {
-                    if (this.isUniqueChar(str)) {
-                        arrValues.push(this.getUniqueCharVal(str));
-                        temp = temp.substr(1);
-                    }
-                    str = temp.indexOf('!') + 1;
-                    arrValues.push(temp.substr(0, str));
-                    arrValues.push(temp.substr(str));
-                }
-                else if (this.isUniqueChar(str)) {
-                    arrValues.push(this.getUniqueCharVal(str));
-                    arrValues.push(temp.substr(1));
-                }
-                else
-                {arrValues.push(temp); }
-            }
-            i++;
-        }
-        return arrValues;
-    }
-
-    private getUniqueCharVal(str: string): string {
-        switch (str) {
-        case this.uniqueSOperator:
-            return '-';
-        case this.uniqueOBracket:
-            return '(';
-        case this.uniqueCOperator:
-            return ':';
-        case this.uniqueCBracket:
-            return ')';
-        case this.uniqueCSeparator:
-            return ',';
-        case this.uniqueGTOperator:
-            return '>';
-        case this.uniqueLTOperator:
-            return '<';
-        case this.uniqueMOperator:
-            return '*';
-        case this.uniqueDOperator:
-            return '/';
-        case this.uniqueConcateOperator:
-            return '&';
-        case this.uniqueEqualOperator:
-            return '=';
-        case this.uniqueExpOperator:
-            return '^';
-        case this.uniqueModOperator:
-            return '%';
-        case this.uniquePOperator:
-            return '+';
-        }
-        return '';
-    }
-
-    private isUniqueChar(str: string): boolean {
-        const code: number = str.charCodeAt(parseInt(str, 10));
-        return code >= 129 && code <= 142;
-    }
-
-    private markSpecialChar(formulaValue: string): string {
-        formulaValue = formulaValue.replace(/\(/g, '(' + this.uniqueOBracket).replace(/\)/g, ')' + this.uniqueCBracket);
-        formulaValue = formulaValue.replace(/,/g, ',' + this.uniqueCSeparator).replace(/:/g, ':' + this.uniqueCOperator);
-        formulaValue = formulaValue.replace(/\+/g, '+' + this.uniquePOperator).replace(/-/g, '-' + this.uniqueSOperator);
-        formulaValue = formulaValue.replace(/\*/g, '*' + this.uniqueMOperator).replace(/\//g, '/' + this.uniqueDOperator);
-        formulaValue = formulaValue.replace(/&/g, '&' + this.uniqueConcateOperator);
-        formulaValue = formulaValue.replace(/=/g, '=' + this.uniqueEqualOperator);
-        formulaValue = formulaValue.replace(/\^/g, '^' + this.uniqueExpOperator);
-        formulaValue = formulaValue.replace(/>/g, '>' + this.uniqueGTOperator).replace(/</g, '<' + this.uniqueLTOperator);
-        return formulaValue.replace(/%/g, '%' + this.uniqueModOperator);
     }
 
     private ensurePattern(patterns: PatternInfo[] | number[]): PatternInfo[] | number[] {

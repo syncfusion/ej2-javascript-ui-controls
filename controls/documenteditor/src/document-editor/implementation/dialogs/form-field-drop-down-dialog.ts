@@ -218,7 +218,7 @@ export class DropDownFormFieldDialog {
      * @returns {void}
      */
     public loadDropDownDialog(): void {
-        let inline: ElementBox = this.owner.selection.getCurrentFormField();
+        let inline: ElementBox = this.owner.selectionModule.getCurrentFormField();
         if (inline instanceof FieldElementBox) {
             this.fieldBegin = inline;
             this.dropDownInstance = inline.formFieldData as DropDownFormField;
@@ -392,7 +392,7 @@ export class DropDownFormFieldDialog {
         dropDownField.name = SanitizeHtmlHelper.sanitize(this.bookmarkInput.value);
         dropDownField.helpText = SanitizeHtmlHelper.sanitize(this.tooltipInput.value);
         dropDownField.enabled = this.dropDownEnable.checked;
-        this.owner.editor.editFormField('DropDown', dropDownField);
+        this.owner.editorModule.editFormField('DropDown', dropDownField);
         this.closeDropDownField();
     }
 

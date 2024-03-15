@@ -705,7 +705,7 @@ export class ListBox extends DropDownBase {
             }
         }
         this.initWrapper();
-        this.setSelection();
+        this.setSelection(this.value, true, false, !this.isRendered);
         this.initDraggable();
         this.mainList = this.ulElement;
         if (this.initLoad) {
@@ -2313,7 +2313,7 @@ export class ListBox extends DropDownBase {
     }
 
     private setSelection(
-        values: (string | boolean | number | object)[] = this.value, isSelect: boolean = true, isText: boolean = false): void {
+        values: (string | boolean | number | object)[] = this.value, isSelect: boolean = true, isText: boolean = false, canFocus: boolean = true): void {
         let li: Element;
         let liselect: boolean;
         if (values) {
@@ -2339,12 +2339,12 @@ export class ListBox extends DropDownBase {
                     if (!isSelect && liselect || isSelect && !liselect && li) {
                         if (this.selectionSettings.showCheckbox) {
                             this.notify('updatelist', { li: li, module: 'listbox' });
-                            (li as HTMLElement).focus();
+                            if (canFocus) { (li as HTMLElement).focus(); }
                         } else {
                             if (isSelect) {
                                 li.classList.add(cssClass.selected);
                                 li.setAttribute('aria-selected', 'true');
-                                (li as HTMLElement).focus();
+                                if (canFocus) { (li as HTMLElement).focus(); }
                             } else {
                                 li.classList.remove(cssClass.selected);
                                 li.removeAttribute('aria-selected');

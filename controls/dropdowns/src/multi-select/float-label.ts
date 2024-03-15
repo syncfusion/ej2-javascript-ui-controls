@@ -27,7 +27,7 @@ const LABELBOTTOM: string = 'e-label-bottom';
 export function createFloatLabel(
     overAllWrapper: HTMLDivElement,
     searchWrapper: HTMLElement, element: HTMLElement,
-    inputElement: HTMLInputElement, value: number[] | string[] | boolean[], floatLabelType: FloatLabelType,
+    inputElement: HTMLInputElement, value: number[] | string[] | boolean[] | object[], floatLabelType: FloatLabelType,
     placeholder: string): void {
     const floatLinelement: HTMLElement = createElement('span', { className: FLOATLINE });
     const floatLabelElement: HTMLElement = createElement('label', { className: FLOATTEXT });
@@ -60,7 +60,7 @@ export function createFloatLabel(
  * @param {string[] | number[] | boolean[]} value - Value of the MultiSelect.
  * @param {HTMLElement} label - Float label element.
  */
-export function updateFloatLabelState(value: string[] | number[] | boolean[], label: HTMLElement): void {
+export function updateFloatLabelState(value: string[] | number[] | boolean[] | object[], label: HTMLElement): void {
     if (value && value.length > 0) {
         addClass([label], LABELTOP);
         removeClass([label], LABELBOTTOM);
@@ -86,7 +86,7 @@ export function removeFloating(
     componentWrapper: HTMLDivElement,
     searchWrapper: HTMLElement,
     inputElement: HTMLInputElement,
-    value: number[] | string[] | boolean[],
+    value: number[] | string[] | boolean[] | object[],
     floatLabelType: FloatLabelType,
     placeholder: string): void {
     const placeholderElement: HTMLElement = componentWrapper.querySelector('.' + FLOATTEXT) as HTMLElement;
@@ -113,7 +113,7 @@ export function removeFloating(
  * @param {HTMLInputElement} inputElement - Specify the input wrapper.
  * @param {string} placeholder - Specify the PlaceHolder text.
  */
-export function setPlaceHolder(value: number[] | string[] | boolean[], inputElement: HTMLInputElement, placeholder: string): void {
+export function setPlaceHolder(value: number[] | string[] | boolean[] | object[], inputElement: HTMLInputElement, placeholder: string): void {
     if (value && value.length) {
         inputElement.placeholder = '';
     } else {
@@ -150,7 +150,7 @@ export function floatLabelFocus(overAllWrapper: HTMLDivElement, componentWrapper
 export function floatLabelBlur(
     overAllWrapper: HTMLDivElement,
     componentWrapper: HTMLDivElement,
-    value: number[] | string[] | boolean[],
+    value: number[] | string[] | boolean[] |object[],
     floatLabelType: FloatLabelType,
     placeholder: string): void {
 /* eslint-enable @typescript-eslint/no-unused-vars */

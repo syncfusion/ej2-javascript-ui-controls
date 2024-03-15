@@ -1,4 +1,4 @@
-import { LayoutViewer, DocumentHelper } from '../index';
+import { LayoutViewer, DocumentHelper, TableOfContentsSettings, ParagraphWidget } from '../index';
 import { TextSearchResults } from './text-search-results';
 import { TextSearchResult } from './text-search-result';
 import { createElement, isNullOrUndefined, L10n, classList } from '@syncfusion/ej2-base';
@@ -6,7 +6,7 @@ import { FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import { HelperMethods } from '../editor/editor-helper';
 import { CheckBox } from '@syncfusion/ej2-buttons';
-import { Tab, SelectEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';
+import { Tab, SelectEventArgs, TabItemModel, TreeView, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
@@ -34,9 +34,12 @@ export class OptionsPane {
     private replaceButton: HTMLElement;
     private replaceAllButton: HTMLElement;
     private occurrenceDiv: HTMLElement;
+    private treeviewDiv: HTMLElement;
+    private checkboxDiv: HTMLElement;
     private findOption: FindOption = 'None';
     private matchCase: CheckBox = undefined;
     private wholeWord: CheckBox = undefined;
+    private treeviewObject: TreeView;
     // private regular: CheckBox = undefined;
     private searchText: string = 'Navigation';
     private resultsText: string = 'Results';
@@ -52,15 +55,21 @@ export class OptionsPane {
     private isOptionsPane: boolean = true;
     private findTab: HTMLElement;
     private findTabButton: HTMLElement;
+    private headingTabButton: HTMLElement;
     private replaceTabButton: HTMLElement;
     private searchIcon: HTMLSpanElement;
     private matchDiv: HTMLElement;
     private replacePaneText: string = 'Replace';
     private findPaneText: string = 'Find';
+    private headingPaneText: string = 'Heading';
     private matchDivReplaceText: string = 'No matches';
     private matchInput: HTMLInputElement;
     private wholeInput: HTMLInputElement;
     private regularInput: HTMLInputElement;
+    /**
+     * @private
+     */
+    public data: { [key: string]: Object; }[] ;
     /**
      * @private
      */
@@ -110,24 +119,26 @@ export class OptionsPane {
             className: 'e-de-op-close-button e-de-close-icon e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close',
             attrs: { type: 'button' }
         });
-        this.closeButton.setAttribute('aria-label',localeValue.getConstant('Close'));
+        this.closeButton.setAttribute('aria-label', localeValue.getConstant('Close'));
         this.findTab.appendChild(this.closeButton);
         let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-de-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
         this.focusedElement.push(this.closeButton);
         // tab
-        let tabDiv: HTMLDivElement =createElement('div') as HTMLDivElement;  
-        this.findTab.appendChild(tabDiv);      
+        let tabDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
+        this.findTab.appendChild(tabDiv);
         this.findTabButton = createElement('div', { innerHTML: localeValue.getConstant(this.findPaneText) });
         this.replaceTabButton = createElement('div', { innerHTML: localeValue.getConstant(this.replacePaneText) });
+        this.headingTabButton = createElement('div', { innerHTML: localeValue.getConstant(this.headingPaneText) });
         let items: TabItemModel[] = [
-            { header: { text: this.findTabButton }},
-            { header: { text: this.replaceTabButton }}] as TabItemModel[];
+            { header: { text: this.headingTabButton } },
+            { header: { text: this.findTabButton } },
+            { header: { text: this.replaceTabButton } }] as TabItemModel[];
         this.tabInstance = new Tab({ items: items, enableRtl: isRtl, selected: this.selectedTabItem.bind(this) });
         this.tabInstance.isStringTemplate = true;
         this.tabInstance.appendTo(tabDiv);
         //search
-        this.findTabContentDiv = createElement('div', { className: 'e-de-search-tab-content' });
+        this.findTabContentDiv = createElement('div', { className: 'e-de-search-tab-content', styles: 'display:none;' });
         this.findTab.appendChild(this.findTabContentDiv);
         this.searchTextBoxContainer = createElement('div', { className: 'e-input-group e-de-op-input-group' });
         this.findTabContentDiv.appendChild(this.searchTextBoxContainer);
@@ -149,12 +160,12 @@ export class OptionsPane {
         this.searchTextBoxContainer.appendChild(this.navigateToNextResult);
         this.focusedElement.push(this.navigateToNextResult);
         //match
-        let div: HTMLElement = createElement('div', { className: 'e-de-op-more-less' });
+        this.checkboxDiv = createElement('div', { className: 'e-de-op-more-less', styles: 'display:none' });
         this.matchInput = createElement('input', {
             attrs: { type: 'checkbox' },
             id: this.documentHelper.owner.containerId + '_matchCase'
         }) as HTMLInputElement;
-        div.appendChild(this.matchInput);
+        this.checkboxDiv.appendChild(this.matchInput);
         this.matchCase = new CheckBox({ label: localeValue.getConstant('Match case'), enableRtl: isRtl, checked: false, change: this.matchChange.bind(this) });
         this.matchCase.appendTo(this.matchInput);
         this.focusedElement.push(this.matchInput);
@@ -169,34 +180,216 @@ export class OptionsPane {
             attrs: { type: 'checkbox' },
             id: this.documentHelper.owner.containerId + '_wholeWord' + wholeWordLabel
         }) as HTMLInputElement;
-        div.appendChild(this.wholeInput);
+        this.checkboxDiv.appendChild(this.wholeInput);
         this.wholeWord = new CheckBox({ label: localeValue.getConstant('Whole words'), enableRtl: isRtl, checked: false, change: this.wholeWordsChange.bind(this) });
         this.wholeWord.appendTo(this.wholeInput);
         this.focusedElement.push(this.wholeInput);
         this.wholeInput.tabIndex = 0;
-        this.findTab.appendChild(div);
+        this.findTab.appendChild(this.checkboxDiv);
         //Replace tab
         this.replaceTabContentDiv = createElement('div', { className: 'e-de-op-replacetabcontentdiv', styles: 'display:none;' });
         this.findTab.appendChild(this.replaceTabContentDiv);
         this.createReplacePane(isRtl);
         //container
-        this.resultContainer = createElement('div', { styles: 'width:85%;display:block;', className: 'e-de-op-result-container' });
+        this.resultContainer = createElement('div', { styles: 'width:85%;display:none;', className: 'e-de-op-result-container' });
         this.findTab.appendChild(this.resultContainer);
         this.messageDiv = createElement('div', { className: this.documentHelper.owner.containerId + '_messageDiv e-de-op-msg', innerHTML: this.localeValue.getConstant(this.messageDivText), id: this.documentHelper.owner.containerId + '_search_status' });
         this.resultContainer.appendChild(this.messageDiv);
         //resultblock-finding
-        let resultDiv: HTMLDivElement =createElement('div', { id: this.documentHelper.owner.containerId + '_resultDiv' }) as HTMLDivElement;  
+        let resultDiv: HTMLDivElement = createElement('div', { id: this.documentHelper.owner.containerId + '_resultDiv' }) as HTMLDivElement;
         this.optionsPane.appendChild(resultDiv);
-        this.findDiv = createElement('div', { className: 'findDiv', styles: 'display:block;' });
+        this.findDiv = createElement('div', { className: 'findDiv', styles: 'display:none;' });
         resultDiv.appendChild(this.findDiv);
         this.resultsListBlock = createElement('div', { id: this.documentHelper.owner.containerId + '_list_box_container', styles: 'display:none;width:270px;list-style:none;padding-right:5px;overflow:auto;', className: 'e-de-result-list-block' });
         this.findDiv.appendChild(this.resultsListBlock);
+        //tree view
+        this.treeviewDiv = createElement('div', { className: 'e-de-scrollbar-hide', styles: 'height:375px;overflow:auto;padding-top:5px', id: this.documentHelper.owner.containerId + '_treeDiv' });
+        this.initHeadingTab();
         this.onWireEvents();
         if (isRtl) {
             this.optionsPane.classList.add('e-de-rtl');
             this.closeButton.classList.add('e-de-rtl');
             this.searchDiv.classList.add('e-de-rtl');
         }
+    }
+    /**
+     * Initialize the heading tab with the values.
+     *
+     * @private
+     * @returns {void}
+     */
+    public initHeadingTab(): void {
+        let tree = createElement('div', { id: 'tree' });
+        if (!isNullOrUndefined(this.data) && this.data.length>0) {
+            this.treeviewObject = new TreeView({
+                fields: { dataSource: this.data, id: 'id', text: 'name', parentID: 'pid', hasChildren: 'hasChild', tooltip: 'tooltipText' },
+                nodeClicked: this.nodeClick.bind(this),
+                cssClass: 'e-de-custom-treeview',
+            });
+            if (!isNullOrUndefined(this.treeviewDiv)) {
+                this.treeviewDiv.innerHTML = "";
+                this.treeviewObject.appendTo(tree);
+                this.treeviewDiv.appendChild(tree);
+                if (!isNullOrUndefined(this.findTab)) {
+                    this.findTab.appendChild(this.treeviewDiv);
+                }
+            }
+        } else {
+            if (!isNullOrUndefined(this.treeviewDiv)) {
+                this.treeviewDiv.innerHTML = this.localeValue.getConstant('No Headings');
+                this.findTab.appendChild(this.treeviewDiv);
+            }
+        }
+
+    }
+    private nodeClick(args: NodeClickEventArgs): void {
+        let targetNodeId: any = this.treeviewObject.selectedNodes[0];
+        this.documentHelper.selection.navigateBookmark(this.data[(targetNodeId - 1)].hyperlink.toString(), true);
+    }
+    /**
+     * Data source for tree view.
+     *
+     * @private
+     * @returns {{ [key: string]: Object; }[]}
+     */
+    public dataForTreeview(): { [key: string]: Object; }[] {
+        this.data = [];
+        let datas: ParagraphWidget[] = this.createDataSourceForTreeview();
+        const data: { [key: string]: Object }[] = [];
+        if (!isNullOrUndefined(this.treeviewDiv)) {
+            let index = 1;
+            if (!isNullOrUndefined(datas) && datas.length > 0) {
+                for (let i = 0; i < datas.length; i++) {
+                    let parentId: Number = null;
+                    if (datas[i].paragraphFormat.outlineLevel !== "Level1" && i > 0) {
+                        var currentIndex = i - 1;
+                        if (datas[i].paragraphFormat.outlineLevel === datas[i - 1].paragraphFormat.outlineLevel) {
+                            parentId = data[currentIndex].pid as Number;
+                        }
+                        else if (Number(datas[i].paragraphFormat.outlineLevel.substr(5, 1)) > Number(datas[currentIndex].paragraphFormat.outlineLevel.substr(5, 1))) {
+                            parentId = data[currentIndex].id as Number;
+                            data[currentIndex].hasChild = true;
+                            data[currentIndex].expanded = true;
+                        }
+                        else {
+                            currentIndex--;
+                            while (currentIndex > 0) {
+                                if (Number(datas[i].paragraphFormat.outlineLevel.substr(5, 1)) > Number(datas[currentIndex].paragraphFormat.outlineLevel.substr(5, 1))) {
+                                    parentId = data[currentIndex].id as Number;
+                                    data[currentIndex].hasChild = true;
+                                    data[currentIndex].expanded = true;
+                                    break;
+                                }
+                                else if (Number(datas[i].paragraphFormat.outlineLevel.substr(5, 1)) === Number(datas[currentIndex].paragraphFormat.outlineLevel.substr(5, 1))) {
+                                    parentId = data[currentIndex].pid as Number;
+                                    break;
+                                }
+                                currentIndex--;
+                            }
+                        }
+
+                    }
+                    const widget: any = datas[i].childWidgets[0];
+                    let name: string;
+                    let tooltipText: string;
+                    let text: string;
+                    if (isNullOrUndefined(widget.children[3])) {
+                        name = widget.children[0].text;
+                        tooltipText = widget.children[0].text;
+                        let value = index;
+                        text = 'Toc00000000' + value;
+                        index++;
+                    }
+                    else {
+                        tooltipText = widget.children[3].text;
+                        name = widget.children[3].text;
+                        text = widget.children[1].text;
+                    }
+
+                    const newItem: { [key: string]: Object } = {
+                        pid: parentId,
+                        id: i + 1,
+                        name: name,
+                        hyperlink: text.length > 15 ? text.substring(15, text.length - 2) : text,
+                        tooltipText: tooltipText,
+                    };
+                    data.push(newItem);
+                }
+            }
+        }
+        return data;
+    }
+    private createDataSourceForTreeview(): ParagraphWidget[] {
+        let headingPaneSettings: TableOfContentsSettings = {
+            startLevel: 1,
+            endLevel: 9,
+            includeOutlineLevels: true,
+            includeHyperlink: true,
+        };
+        let code: string = undefined;
+        // Build TOC field code based on parameter
+        code = this.constructHeadingFieldCode(headingPaneSettings);
+        let widgets: ParagraphWidget[] = this.documentHelper.owner.editorModule.buildToc(this.validateHeadingSettings(headingPaneSettings), code, false, true, true);
+        return widgets;
+    }
+    private validateHeadingSettings(navigationSettings: TableOfContentsSettings): TableOfContentsSettings {
+        if (isNullOrUndefined(navigationSettings.startLevel) || navigationSettings.startLevel < 1) {
+            navigationSettings.startLevel = 1;
+        }
+        if (isNullOrUndefined(navigationSettings.endLevel) || navigationSettings.endLevel < navigationSettings.endLevel) {
+            navigationSettings.endLevel = navigationSettings.startLevel > 3 ? navigationSettings.startLevel : 3;
+        }
+        if (isNullOrUndefined(navigationSettings.includeHyperlink)) {
+            navigationSettings.includeHyperlink = false;
+        }
+        if (isNullOrUndefined(navigationSettings.includePageNumber)) {
+            navigationSettings.includePageNumber = false;
+        }
+        if (isNullOrUndefined(navigationSettings.rightAlign)) {
+            navigationSettings.rightAlign = false;
+        }
+        if (isNullOrUndefined(navigationSettings.levelSettings)) {
+            navigationSettings.levelSettings = {};
+        }
+        return navigationSettings;
+    }
+    private constructHeadingFieldCode(navigationSettings: TableOfContentsSettings): string {
+        let headingFieldCode: string = 'TOC';
+        //appends styles level
+
+        if (!isNullOrUndefined(navigationSettings.startLevel) && navigationSettings.startLevel !== 0 && !isNullOrUndefined(navigationSettings.endLevel) && navigationSettings.endLevel !== 0) {
+            headingFieldCode = headingFieldCode + ' \\o "' + navigationSettings.startLevel + '-' + navigationSettings.endLevel + '"';
+        }
+        if (navigationSettings.includePageNumber && !navigationSettings.rightAlign) {
+            headingFieldCode = headingFieldCode + ' \\p " "';
+        }
+        if (!navigationSettings.includePageNumber) {
+            headingFieldCode = headingFieldCode + ' \\n';
+        }
+        if (navigationSettings.includeHyperlink) {
+            headingFieldCode = headingFieldCode + ' \\h \\z';
+        }
+        if (navigationSettings.includeOutlineLevels) {
+            headingFieldCode = headingFieldCode + ' \\u';
+        }
+        const tSwitch: string = this.constructTSwitch(navigationSettings);
+        if (tSwitch.length > 6) {
+            headingFieldCode = headingFieldCode + tSwitch;
+        }
+        return headingFieldCode;
+    }
+
+    private constructTSwitch(navigationSettings: TableOfContentsSettings): string {
+        let tSwitch: string = '';
+        const prefix: string = ' \\t ';
+        if (!isNullOrUndefined(navigationSettings.levelSettings)) {
+            for (const key of Object.keys(navigationSettings.levelSettings)) {
+                tSwitch = tSwitch + key + ',' + navigationSettings.levelSettings[key].toString() + ',';
+            }
+        }
+        tSwitch = tSwitch.slice(0, -1);
+        tSwitch = prefix + '"' + tSwitch + '"';
+        return tSwitch;
     }
     private createReplacePane(isRtl?: boolean): void {
         this.replaceDiv = createElement('div');
@@ -256,6 +449,10 @@ export class OptionsPane {
         let selectedElement: Element = contentParent.children[0];
         if (!isNullOrUndefined(selectedElement)) {
             if (args.selectedIndex === 0) {
+                this.isOptionsPane = false;
+                this.onHeadingPane();
+            }
+            else if (args.selectedIndex === 1) {
                 this.isOptionsPane = true;
                 this.onFindPane();
             } else {
@@ -435,7 +632,7 @@ export class OptionsPane {
             this.documentHelper.owner.searchModule.highlight(results);
             this.documentHelper.owner.searchModule.addFindResultView(results);
             // if (this.isOptionsPane) {
-            this.resultContainer.style.display = 'block';  
+            this.resultContainer.style.display = 'block';
             this.resultsListBlock.style.display = 'block';
             let resultsContainerHeight: number = this.optionsPane.offsetHeight - this.findTab.offsetHeight;
             this.resultsListBlock.style.height = resultsContainerHeight + 'px';
@@ -474,6 +671,24 @@ export class OptionsPane {
         }
     }
     /**
+     * Enable Heading pane only.
+     *
+     * @private
+     * @returns {void}
+     */
+    public onHeadingPane(): void {
+        this.treeviewDiv.style.display = 'block';
+        this.messageDiv.classList.remove('e-de-op-msg');
+        this.messageDiv.classList.remove('e-de-op-replace-messagediv');
+        this.replaceDiv.style.display = 'none';
+        this.occurrenceDiv.style.display = 'none';
+        this.findDiv.style.display = 'none';
+        this.findTabContentDiv.style.display = 'none';
+        this.checkboxDiv.style.display = 'none';
+        this.resultContainer.style.display = 'none';
+
+    }
+    /**
      * Enable find pane only.
      *
      * @private
@@ -482,13 +697,18 @@ export class OptionsPane {
     public onFindPane(): void {
         this.replaceDiv.style.display = 'none';
         this.occurrenceDiv.style.display = 'none';
+        this.treeviewDiv.style.display = 'none';
+        this.findDiv.style.display = 'block';
+        this.findTabContentDiv.style.display = 'block';
+        this.checkboxDiv.style.display = 'block';
+        this.resultContainer.style.display = 'block';
         if (!isNullOrUndefined(this.results) && this.results.length === 0) {
             this.resultsListBlock.innerHTML = '';
             this.resultsListBlock.style.display = 'none';
             this.messageDiv.innerHTML = this.localeValue.getConstant('No matches');
         }
         let height: number = this.isOptionsPane ? 215 : 292;
-        let resultsContainerHeight: number = this.optionsPane.offsetHeight - (this.findTab.offsetHeight-this.replaceTabContentDiv.offsetHeight);
+        let resultsContainerHeight: number = this.optionsPane.offsetHeight - (this.findTab.offsetHeight - this.replaceTabContentDiv.offsetHeight);
         this.resultsListBlock.style.height = resultsContainerHeight + 'px';
         this.replaceTabContentDiv.style.display = 'none';
         this.findDiv.style.display = 'block';
@@ -530,6 +750,11 @@ export class OptionsPane {
         this.findDiv.style.display = 'block';
         this.replaceDiv.style.display = 'block';
         this.replaceTabContentDiv.style.display = 'block';
+        this.findDiv.style.display = 'block';
+        this.treeviewDiv.style.display = 'none';
+        this.findTabContentDiv.style.display = 'block';
+        this.checkboxDiv.style.display = 'block';
+        this.resultContainer.style.display = 'block';
         let height: number = this.isOptionsPane ? 215 : 292;
         let resultsContainerHeight: number = this.optionsPane.offsetHeight - this.findTab.offsetHeight;
         this.resultsListBlock.style.height = resultsContainerHeight + 'px';
@@ -636,13 +861,13 @@ export class OptionsPane {
         let replaceText: string = this.replaceWith.value;
         let results: TextSearchResults = this.documentHelper.owner.searchModule.textSearchResults;
         if (findText !== '' && !isNullOrUndefined(findText)) {
-            if (this.documentHelper.owner.selection != null) {
-                let selectionText: string = this.documentHelper.owner.selection.text;
-                if (!this.documentHelper.owner.selection.isEmpty) {
-                    if (this.documentHelper.owner.selection.isForward) {
-                        this.documentHelper.owner.selection.selectContent(this.documentHelper.owner.selection.start, true);
+            if (this.documentHelper.owner.selectionModule != null) {
+                let selectionText: string = this.documentHelper.owner.selectionModule.text;
+                if (!this.documentHelper.owner.selectionModule.isEmpty) {
+                    if (this.documentHelper.owner.selectionModule.isForward) {
+                        this.documentHelper.owner.selectionModule.selectContent(this.documentHelper.owner.selectionModule.start, true);
                     } else {
-                        this.documentHelper.owner.selection.selectContent(this.documentHelper.owner.selection.end, true);
+                        this.documentHelper.owner.selectionModule.selectContent(this.documentHelper.owner.selectionModule.end, true);
                     }
                 }
                 if (!isNullOrUndefined(results) && !isNullOrUndefined(results.currentSearchResult)) {
@@ -668,10 +893,10 @@ export class OptionsPane {
                             this.resultsListBlock.innerHTML = '';
                         }
                     } else {
-                        this.documentHelper.owner.search.findAll(findText, this.findOption);
+                        this.documentHelper.owner.searchModule.findAll(findText, this.findOption);
                     }
                 } else {
-                    this.documentHelper.owner.search.findAll(findText, this.findOption);
+                    this.documentHelper.owner.searchModule.findAll(findText, this.findOption);
                     this.messageDiv.style.display = 'block';
                     this.messageDiv.innerHTML = this.localeValue.getConstant(this.matchDivReplaceText);
                 }
@@ -788,7 +1013,7 @@ export class OptionsPane {
     public navigateNextResultButtonClick = (): void => {
         if (document.getElementById(this.documentHelper.owner.containerId + '_list_box_container') != null &&
             document.getElementById(this.documentHelper.owner.containerId + '_list_box_container').style.display !== 'none') {
-            let selectionEnd: TextPosition = this.documentHelper.owner.selection.end;
+            let selectionEnd: TextPosition = this.documentHelper.owner.selectionModule.end;
             let nextResult: TextSearchResult;
             let currentIndex: number = 0;
             if (selectionEnd.isExistAfter(this.results.currentSearchResult.start)) {
@@ -835,14 +1060,14 @@ export class OptionsPane {
         if (document.getElementById(this.documentHelper.owner.containerId + '_list_box_container') != null &&
             document.getElementById(this.documentHelper.owner.containerId + '_list_box_container').style.display !== 'none') {
             let previousResult: TextSearchResult;
-            let selectionStart: TextPosition = this.documentHelper.owner.selection.start;
+            let selectionStart: TextPosition = this.documentHelper.owner.selectionModule.start;
             let currentIndex: number = this.results.currentIndex;
             if (selectionStart.isExistAfter(this.results.currentSearchResult.start)) {
                 currentIndex = this.results.length - 1;
             }
             for (let i: number = currentIndex; i >= 0; i--) {
                 let result: TextSearchResult = this.results.innerList[i];
-                if (selectionStart.isExistAfter(result.start) || this.documentHelper.owner.selection.end.isAtSamePosition(result.start)) {
+                if (selectionStart.isExistAfter(result.start) || this.documentHelper.owner.selectionModule.end.isAtSamePosition(result.start)) {
                     previousResult = result;
                     this.results.currentIndex = i;
                     break;
@@ -911,6 +1136,7 @@ export class OptionsPane {
             }
         } else if (code === 27 && event.keyCode === 27) {
             this.showHideOptionsPane(false);
+            this.documentHelper.owner.documentEditorSettings.showNavigationPane = false;
             this.documentHelper.updateFocus();
         }
     }
@@ -938,6 +1164,7 @@ export class OptionsPane {
     public close = (): void => {
         this.clearFocusElement();
         this.showHideOptionsPane(false);
+        this.documentHelper.owner.documentEditorSettings.showNavigationPane = false;
         this.resultsListBlock.innerHTML = '';
         this.focusedIndex = 1;
         this.isOptionsPane = true;
@@ -1011,21 +1238,27 @@ export class OptionsPane {
                 }
                 this.optionsPane.style.display = 'block';
                 if (this.documentHelper.owner.isReadOnlyMode) {
-                    this.tabInstance.hideTab(1);
+                    this.tabInstance.hideTab(2);
                 } else {
-                    this.tabInstance.hideTab(1, false);
+                    this.tabInstance.hideTab(2, false);
                 }
                 if (this.isReplace && !this.documentHelper.owner.isReadOnlyMode) {
-                    this.tabInstance.select(1);
+                    this.tabInstance.select(2);
                     this.isReplace = false;
                     this.isOptionsPane = false;
                 } else {
-                    this.tabInstance.select(0);
+                    this.tabInstance.select(1);
+                }
+                let treeViewResult: HTMLElement = document.getElementById(this.documentHelper.owner.containerId + '_treeDiv');
+                if (!isNullOrUndefined(treeViewResult)) {
+                    treeViewResult.innerHTML = '';
+                    this.data = this.dataForTreeview();
+                    this.initHeadingTab();
                 }
                 this.searchDiv.innerHTML = this.localeValue.getConstant(this.searchText);
                 this.isOptionsPaneShow = true;
                 let textBox: HTMLInputElement = document.getElementById(this.documentHelper.owner.getDocumentEditorElement().id + '_option_search_text_box') as HTMLInputElement;
-                let selectedText: string = this.documentHelper.owner.selection.text;
+                let selectedText: string = this.documentHelper.owner.selectionModule.text;
                 if (!isNullOrUndefined(selectedText)) {
                     let char: string[] = ['\v', '\r'];
                     let index: number = HelperMethods.indexOfAny(selectedText, char);
@@ -1062,6 +1295,10 @@ export class OptionsPane {
                         resultListBox.innerHTML = '';
                         message.innerHTML = this.localeValue.getConstant('No matches');
                     }
+                    let treeViewResult: HTMLElement = document.getElementById(this.documentHelper.owner.containerId + '_treeDiv');
+                    if (!isNullOrUndefined(treeViewResult)) {
+                        treeViewResult.innerHTML = '';
+                    }
                 }
                 this.documentHelper.updateViewerSize();
                 if (!isNullOrUndefined(this.optionsPane)) {
@@ -1070,15 +1307,14 @@ export class OptionsPane {
                         this.optionsPane.style.display = 'none';
                     }
                 }
-                if(this.documentHelper.owner.enableAutoFocus)
-                {
+                if (this.documentHelper.owner.enableAutoFocus) {
                     this.documentHelper.updateFocus();
                 }
-                if(this.documentHelper.owner.enableAutoFocus)
-                {
+                if (this.documentHelper.owner.enableAutoFocus) {
                     this.documentHelper.selection.caret.style.display = 'block';
                 }
             }
+            this.documentHelper.owner.triggerResize();
         }
     }
 
@@ -1135,6 +1371,10 @@ export class OptionsPane {
         if (this.findDiv) {
             this.findDiv.innerHTML = '';
             this.findDiv = undefined;
+        }
+        if (this.treeviewDiv) {
+            this.treeviewDiv.innerHTML = '';
+            this.treeviewDiv = undefined;
         }
         if (this.replaceButton) {
             this.replaceButton.innerHTML = '';

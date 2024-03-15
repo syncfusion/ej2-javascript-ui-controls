@@ -62,7 +62,7 @@ export class Renderer {
         }
     }
     public get spellChecker(): SpellChecker {
-        return this.documentHelper.owner.spellChecker;
+        return this.documentHelper.owner.spellCheckerModule;
     }
     private get selectionCanvas(): HTMLCanvasElement {
         return isNullOrUndefined(this.viewer) ? undefined : this.documentHelper.selectionCanvas;
@@ -652,7 +652,7 @@ export class Renderer {
             this.clipRect(paraWidget.x + paddingLeft, this.getScaledValue(page.boundingRectangle.y), this.getScaledValue(page.boundingRectangle.width), this.getScaledValue(page.boundingRectangle.height));
             isClipped = true;
         }
-        if (!(paraWidget.containerWidget instanceof HeaderFooterWidget && paraWidget.containerWidget.isEmpty && !isNullOrUndefined(this.documentHelper.selection) && !isNullOrUndefined(this.documentHelper.selection.start.paragraph) && !this.documentHelper.selection.start.paragraph.isInHeaderFooter)) {
+        if (!(paraWidget.containerWidget instanceof HeaderFooterWidget && paraWidget.containerWidget.isEmpty && !isNullOrUndefined(this.documentHelper.owner.selectionModule) && !isNullOrUndefined(this.documentHelper.selection.start.paragraph) && !this.documentHelper.selection.start.paragraph.isInHeaderFooter)) {
             this.renderParagraphBorder(page, paraWidget);
         }
         if (isClipped) {
@@ -822,10 +822,12 @@ export class Renderer {
                         this.renderSolidLine(ctx, this.getScaledValue(xPos, 1), this.getScaledValue(footnote.y + (footnote.margin.top / 2) + 1, 2), 210 * this.documentHelper.zoomFactor, '#000000');
                     }
                 }
-                if (j === 0 && !isNullOrUndefined(footNoteReference) && (widget.childWidgets[0] as LineWidget).children[0] instanceof TextElementBox && !this.documentHelper.owner.editor.isFootNoteInsert) {
+                if (j === 0 && !isNullOrUndefined(footNoteReference) && (widget.childWidgets[0] as LineWidget).children[0] instanceof TextElementBox && !this.documentHelper.owner.editorModule.isFootNoteInsert) {
                     //if (j < 1 || (j > 0 && widget.footNoteReference !== (bodyWidget.childWidgets[j - 1] as BlockWidget).footNoteReference)) {
                     let footNoteElement: TextElementBox = (widget.childWidgets[0] as LineWidget).children[0] as TextElementBox;
-                    footNoteElement.text = footNoteElement.text.replace(footNoteElement.text, footNoteReference.text);
+                    if (footNoteElement.text === '\u0002') {
+                        footNoteElement.text = footNoteElement.text.replace(footNoteElement.text, footNoteReference.text);
+                    }
                     footNoteElement.width = footNoteReference.width;
                     //}
                 }
@@ -993,32 +995,32 @@ export class Renderer {
         }
     }
     private renderSelectionHighlight(page: Page, lineWidget: LineWidget, top: number): void {
-        if (!this.isPrinting && page.documentHelper.owner.selection && !this.documentHelper.isScrollToSpellCheck && page.documentHelper.owner.selection.selectedWidgets.length > 0) {
-            let renderHighlight: boolean = page.documentHelper.owner.selection.selectedWidgets.containsKey(lineWidget);
+        if (!this.isPrinting && page.documentHelper.owner.selectionModule && !this.documentHelper.isScrollToSpellCheck && page.documentHelper.owner.selectionModule.selectedWidgets.length > 0) {
+            let renderHighlight: boolean = page.documentHelper.owner.selectionModule.selectedWidgets.containsKey(lineWidget);
             if (!renderHighlight && lineWidget.paragraph.isInHeaderFooter) {
-                let keys: IWidget[] = page.documentHelper.owner.selection.selectedWidgets.keys;
+                let keys: IWidget[] = page.documentHelper.owner.selectionModule.selectedWidgets.keys;
                 lineWidget = this.checkHeaderFooterLineWidget(lineWidget, keys) as LineWidget;
                 if (!isNullOrUndefined(lineWidget)) {
                     renderHighlight = true;
                 }
             }
             if (renderHighlight) {
-                page.documentHelper.owner.selection.addSelectionHighlight(this.selectionContext, lineWidget, top, page);
+                page.documentHelper.owner.selectionModule.addSelectionHighlight(this.selectionContext, lineWidget, top, page);
             }
         }
     }
     private renderSelectionHighlightOnTable(page: Page, cellWidget: TableCellWidget): void {
-        if (!this.isPrinting && page.documentHelper.owner.selection && page.documentHelper.owner.selection.selectedWidgets.length > 0) {
-            let renderHighlight: boolean = page.documentHelper.owner.selection.selectedWidgets.containsKey(cellWidget);
+        if (!this.isPrinting && page.documentHelper.owner.selectionModule && page.documentHelper.owner.selectionModule.selectedWidgets.length > 0) {
+            let renderHighlight: boolean = page.documentHelper.owner.selectionModule.selectedWidgets.containsKey(cellWidget);
             if (!renderHighlight && cellWidget.ownerTable.isInHeaderFooter) {
-                let keys: IWidget[] = page.documentHelper.owner.selection.selectedWidgets.keys;
+                let keys: IWidget[] = page.documentHelper.owner.selectionModule.selectedWidgets.keys;
                 cellWidget = this.checkHeaderFooterLineWidget(cellWidget, keys) as TableCellWidget;
                 if (!isNullOrUndefined(cellWidget)) {
                     renderHighlight = true;
                 }
             }
             if (renderHighlight) {
-                page.documentHelper.owner.selection.addSelectionHighlightTable(this.selectionContext, cellWidget, page);
+                page.documentHelper.owner.selectionModule.addSelectionHighlightTable(this.selectionContext, cellWidget, page);
             }
         }
     }
@@ -1910,7 +1912,7 @@ export class Renderer {
                                 let hasSpellingError: boolean = this.spellChecker.isErrorWord(retrievedText) ? true : false;
                                 let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
                                 this.spellChecker.handleWordByWordSpellCheck(jsonObject, elementBox, left, top, underlineY, baselineAlignment, true);
-                            } else if (!this.documentHelper.owner.editor.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) {
+                            } else if (!this.documentHelper.owner.editorModule.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) {
                                 /* eslint-disable @typescript-eslint/no-explicit-any */
                                 this.spellChecker.callSpellChecker(this.spellChecker.languageID, checkText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                                     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -1941,7 +1943,7 @@ export class Renderer {
                     let hasSpellingError: boolean = this.spellChecker.isErrorWord(currentText) ? true : false;
                     let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
                     this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
-                } else if (!this.documentHelper.owner.editor.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) {
+                } else if (!this.documentHelper.owner.editorModule.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) {
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                         /* eslint-disable @typescript-eslint/no-explicit-any */

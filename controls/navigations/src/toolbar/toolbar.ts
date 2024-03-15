@@ -1339,7 +1339,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             popup.appendTo(ele);
             EventHandler.add(document, 'scroll', this.docEvent.bind(this));
             EventHandler.add(document, 'click ', this.docEvent.bind(this));
-            popup.element.style.maxHeight = popup.element.offsetHeight + 'px';
+            if (this.overflowMode !== 'Extended') {
+                popup.element.style.maxHeight = popup.element.offsetHeight + 'px';
+            }
             if (this.isVertical) {
                 popup.element.style.visibility = 'hidden';
             }
@@ -1352,7 +1354,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 popup.hide();
             }
             this.popObj = popup;
-        } else {
+        } else if (this.overflowMode !== 'Extended') {
             const popupEle: HTEle = this.popObj.element;
             setStyle(popupEle, { maxHeight: '', display: 'block' });
             setStyle(popupEle, { maxHeight: popupEle.offsetHeight + 'px', display: '' });
@@ -1378,10 +1380,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         const toolEle: HTEle = this.popObj.element.parentElement;
         const popupNav: HTEle = <HTEle>toolEle.querySelector('.' + CLS_TBARNAV);
         popupNav.setAttribute('aria-expanded', 'true');
-        setStyle(popObj.element, { height: 'auto', maxHeight: '' });
-        popObj.element.style.maxHeight = popObj.element.offsetHeight + 'px';
         if (this.overflowMode === 'Extended') {
             popObj.element.style.minHeight = '';
+        } else {
+            setStyle(popObj.element, { height: 'auto', maxHeight: '' });
+            popObj.element.style.maxHeight = popObj.element.offsetHeight + 'px';
         }
         const popupElePos: number = popupEle.offsetTop + popupEle.offsetHeight + calculatePosition(toolEle).top;
         const popIcon: Element = (popupNav.firstElementChild as Element);
@@ -1399,8 +1402,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     break;
                 }
             }
-            setStyle(popObj.element, { maxHeight: overflowHeight + 'px' });
-        } else if (this.isVertical) {
+            if (this.overflowMode !== 'Extended') {
+                setStyle(popObj.element, { maxHeight: overflowHeight + 'px' });
+            }
+        } else if (this.isVertical && this.overflowMode !== 'Extended') {
             const tbEleData: ClientRect = this.element.getBoundingClientRect();
             setStyle(popObj.element, { maxHeight: (tbEleData.top + this.element.offsetHeight) + 'px', bottom: 0, visibility: '' });
         }
@@ -2223,13 +2228,25 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.activeEle.focus();
     }
     private activeEleRemove(curEle: HTEle): void {
+        let previousEle: HTEle = <HTEle>this.element.querySelector('.' + CLS_ITEM + ':not(.' + CLS_DISABLE + ' ):not(.' + CLS_SEPARATOR + ' ):not(.' + CLS_HIDDEN + ' )')
         if (!isNOU(this.activeEle)) {
             this.activeEle.setAttribute('tabindex', this.getDataTabindex(this.activeEle));
+            if (previousEle) {
+                previousEle.removeAttribute('tabindex');
+            }
+            previousEle = this.activeEle;
         }
         this.activeEle = curEle;
         if (this.getDataTabindex(this.activeEle) === '-1') {
             if (isNOU(this.trgtEle) && !(<HTEle>curEle.parentElement).classList.contains(CLS_TEMPLATE)) {
-                this.updateTabIndex('-1');
+                if (!isNOU(this.element.querySelector('.e-hor-nav')) && this.element.querySelector('.e-hor-nav').classList.contains('e-nav-active')) {
+                    this.updateTabIndex('0');
+                    this.getDataTabindex(previousEle) === '-1' ? previousEle.setAttribute('tabindex', '0') :
+                        previousEle.setAttribute('tabindex', this.getDataTabindex(previousEle));
+                }
+                else {
+                    this.updateTabIndex('-1');  
+                }
                 curEle.removeAttribute('tabindex');
             } else {
                 let tabIndex = parseInt(this.getDataTabindex(this.activeEle)) + 1;

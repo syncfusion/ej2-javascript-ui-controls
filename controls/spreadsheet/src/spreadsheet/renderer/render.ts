@@ -458,8 +458,8 @@ export class Render {
         this.removeEventListener();
         this.parent.serviceLocator.getService<RowRenderer>('row').destroy();
         this.parent.serviceLocator.getService<CellRenderer>('cell').destroy();
+        if (this.colMinWidth) { this.colMinWidth = null; }
         this.parent = null;
-        this.colMinWidth = null;
     }
 
     private addEventListener(): void {

@@ -47,14 +47,14 @@ export class TextPosition {
      * @private
      */
     public get isAtParagraphStart(): boolean {
-        return this.offset === this.owner.selection.getStartOffset(this.paragraph);
+        return this.offset === this.owner.selectionModule.getStartOffset(this.paragraph);
     }
     /**
      * @private
      */
     public get isAtParagraphEnd(): boolean {
-        return this.owner.selection.isParagraphLastLine(this.currentWidget)
-            && this.offset === this.owner.selection.getLineLength(this.currentWidget);
+        return this.owner.selectionModule.isParagraphLastLine(this.currentWidget)
+            && this.offset === this.owner.selectionModule.getLineLength(this.currentWidget);
     }
 
     /**
@@ -70,7 +70,7 @@ export class TextPosition {
      * @private
      */
     public get selection(): Selection {
-        return this.owner.selection;
+        return this.owner.selectionModule;
     }
     /**
      * Gets the hierarchical position of logical text position in the document
@@ -355,7 +355,7 @@ export class TextPosition {
                     (paragraph.containerWidget.childWidgets.indexOf(paragraph));
             }
         }
-        return this.owner.selection.isExistBefore(currentParagraph, paragraph);
+        return this.owner.selectionModule.isExistBefore(currentParagraph, paragraph);
     }
     /**
      * Return true is current text position exist after given text position
@@ -390,7 +390,7 @@ export class TextPosition {
                         (endParagraph.containerWidget.childWidgets.indexOf(endParagraph)));
                 }
             }
-            return this.owner.selection.isExistAfter(startParagraph, endParagraph);
+            return this.owner.selectionModule.isExistAfter(startParagraph, endParagraph);
         }
         return false;
     }
@@ -712,10 +712,10 @@ export class TextPosition {
         const inlineObj: ElementInfo = this.currentWidget.getInline(this.offset, indexInInline) as ElementInfo;
         const inline: ElementBox = inlineObj.element;
         indexInInline = inlineObj.index;
-        if (!this.owner.selection.isEmpty && !isNullOrUndefined(inline)) {
+        if (!this.owner.selectionModule.isEmpty && !isNullOrUndefined(inline)) {
             const nextInline: ElementBox = this.selection.getNextRenderedElementBox(inline, indexInInline);
             if (nextInline instanceof FieldElementBox && (nextInline as FieldElementBox).fieldType === 0) {
-                const hierarchicalIndex: string = this.owner.selection.start.getHierarchicalIndexInternal();
+                const hierarchicalIndex: string = this.owner.selectionModule.start.getHierarchicalIndexInternal();
 
                 const fieldEndOffset: number = (nextInline as FieldElementBox).fieldEnd.line.getOffset((nextInline as FieldElementBox).fieldEnd, 1);
 
@@ -723,13 +723,13 @@ export class TextPosition {
                 if (!TextPosition.isForwardSelection(fieldEndIndex, hierarchicalIndex)) {
                     //If field end is after selection start, move selection start to field end.
 
-                    this.owner.selection.start.setPositionParagraph((nextInline as FieldElementBox).fieldEnd.line, fieldEndOffset);
+                    this.owner.selectionModule.start.setPositionParagraph((nextInline as FieldElementBox).fieldEnd.line, fieldEndOffset);
                     return;
                 }
             }
         }
         if (inline instanceof FieldElementBox && inline.fieldType === 1 && !isNullOrUndefined((inline as FieldElementBox).fieldBegin)) {
-            const hierarchicalIndex: string = this.owner.selection.start.getHierarchicalIndexInternal();
+            const hierarchicalIndex: string = this.owner.selectionModule.start.getHierarchicalIndexInternal();
             const fieldEndOffset: number = inline.line.getOffset(inline, 1);
             const fieldEndIndex: string = this.getHierarchicalIndex(inline.line, fieldEndOffset.toString());
             if (!TextPosition.isForwardSelection(hierarchicalIndex, fieldEndIndex)) {
@@ -757,9 +757,9 @@ export class TextPosition {
         let inline: ElementBox = inlineObj.element;
         indexInInline = inlineObj.index;
         if (!isNullOrUndefined(inline)) {
-            if (!this.owner.selection.isEmpty && indexInInline === inline.length && inline instanceof FieldElementBox
+            if (!this.owner.selectionModule.isEmpty && indexInInline === inline.length && inline instanceof FieldElementBox
                 && (inline as FieldElementBox).fieldType === 1) {
-                const hierarchicalIndex: string = this.owner.selection.start.getHierarchicalIndexInternal();
+                const hierarchicalIndex: string = this.owner.selectionModule.start.getHierarchicalIndexInternal();
 
                 const fieldBeginOffset: number = (inline as FieldElementBox).fieldBegin.line.getOffset((inline as FieldElementBox).fieldBegin, 0);
 
@@ -767,17 +767,17 @@ export class TextPosition {
                 if (!TextPosition.isForwardSelection(hierarchicalIndex, fieldBeginIndex)) {
                     //If field begin is before selection start, move selection start to field begin.
 
-                    this.owner.selection.start.setPositionParagraph((inline as FieldElementBox).fieldBegin.line, fieldBeginOffset);
+                    this.owner.selectionModule.start.setPositionParagraph((inline as FieldElementBox).fieldBegin.line, fieldBeginOffset);
                     return;
                 }
             }
             inline = this.selection.getNextRenderedElementBox(inline, indexInInline);
         }
         if (inline instanceof FieldElementBox && !isNullOrUndefined((inline as FieldElementBox).fieldEnd)) {
-            const selectionStartParagraph: ParagraphWidget = this.owner.selection.start.paragraph as ParagraphWidget;
+            const selectionStartParagraph: ParagraphWidget = this.owner.selectionModule.start.paragraph as ParagraphWidget;
             let selectionStartIndex: number = 0;
 
-            const selectionStartInlineObj: ElementInfo = selectionStartParagraph.getInline(this.owner.selection.start.offset, selectionStartIndex);
+            const selectionStartInlineObj: ElementInfo = selectionStartParagraph.getInline(this.owner.selectionModule.start.offset, selectionStartIndex);
             const selectionStartInline: ElementBox = selectionStartInlineObj.element;
             selectionStartIndex = selectionStartInlineObj.index;
             const nextRenderInline: ElementBox = this.selection.getNextRenderedElementBox(selectionStartInline, selectionStartIndex);
@@ -1510,7 +1510,7 @@ export class TextPosition {
      * @private
      */
     public calculateOffset(): void {
-        const selectionStartIndex: string = this.owner.selection.start.getHierarchicalIndexInternal();
+        const selectionStartIndex: string = this.owner.selectionModule.start.getHierarchicalIndexInternal();
         const selectionEndIndex: string = this.getHierarchicalIndexInternal();
         if (selectionStartIndex !== selectionEndIndex) {
             this.validateBackwardFieldSelection(selectionStartIndex, selectionEndIndex);
@@ -1540,7 +1540,7 @@ export class TextPosition {
             this.currentWidget = splittedParagraph.firstChild as LineWidget;
             this.offset = selection.getStartLineOffset(this.currentWidget);
         }
-        const selectionStartIndex: string = this.owner.selection.start.getHierarchicalIndexInternal();
+        const selectionStartIndex: string = this.owner.selectionModule.start.getHierarchicalIndexInternal();
         const selectionEndIndex: string = this.getHierarchicalIndexInternal();
         if (selectionStartIndex !== selectionEndIndex) {
             this.validateBackwardFieldSelection(selectionStartIndex, selectionEndIndex);
@@ -1609,14 +1609,14 @@ export class TextPosition {
         } else {
             if (!paragraph.isInsideTable && this.currentWidget.paragraph.isInsideTable) {
 
-                const cell: TableCellWidget = selection.getFirstCellInRegion(this.currentWidget.paragraph.associatedCell.ownerRow, this.currentWidget.paragraph.associatedCell, this.owner.selection.upDownSelectionLength, true);
+                const cell: TableCellWidget = selection.getFirstCellInRegion(this.currentWidget.paragraph.associatedCell.ownerRow, this.currentWidget.paragraph.associatedCell, this.owner.selectionModule.upDownSelectionLength, true);
                 const lastParagraph: ParagraphWidget = selection.getLastParagraph(cell);
                 this.setPosition(lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1] as LineWidget, false);
 
             } else if (paragraph.isInsideTable && (!isNullOrUndefined(this.currentWidget.paragraph.associatedCell) && paragraph.associatedCell.ownerRow.previousRenderedWidget !== paragraph.associatedCell.ownerRow.previousSplitWidget &&
                 paragraph.associatedCell.ownerRow.previousRenderedWidget === this.currentWidget.paragraph.associatedCell.ownerRow)) {
 
-                const cell: TableCellWidget = selection.getLastCellInRegion(this.currentWidget.paragraph.associatedCell.ownerRow, this.currentWidget.paragraph.associatedCell, this.owner.selection.upDownSelectionLength, true);
+                const cell: TableCellWidget = selection.getLastCellInRegion(this.currentWidget.paragraph.associatedCell.ownerRow, this.currentWidget.paragraph.associatedCell, this.owner.selectionModule.upDownSelectionLength, true);
                 const lastParagraph: ParagraphWidget = selection.getLastParagraph(cell);
                 this.setPosition(lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1] as LineWidget, false);
             }
@@ -1674,13 +1674,13 @@ export class TextPosition {
         } else {
             if (!prevParagraph.isInsideTable && this.currentWidget.paragraph.isInsideTable) {
 
-                const cell: TableCellWidget = this.selection.getLastCellInRegion(this.currentWidget.paragraph.associatedCell.ownerRow, this.currentWidget.paragraph.associatedCell, this.owner.selection.upDownSelectionLength, false);
+                const cell: TableCellWidget = this.selection.getLastCellInRegion(this.currentWidget.paragraph.associatedCell.ownerRow, this.currentWidget.paragraph.associatedCell, this.owner.selectionModule.upDownSelectionLength, false);
                 this.setPosition(this.selection.getFirstParagraph(cell).childWidgets[0] as LineWidget, true);
 
             } else if (prevParagraph.isInsideTable && (!isNullOrUndefined(this.currentWidget.paragraph.associatedCell) && prevParagraph.associatedCell.ownerRow.nextRenderedWidget !== prevParagraph.associatedCell.ownerRow.nextSplitWidget
                 && prevParagraph.associatedCell.ownerRow.nextRenderedWidget === this.currentWidget.paragraph.associatedCell.ownerRow)) {
 
-                const cell: TableCellWidget = selection.getLastCellInRegion(this.currentWidget.paragraph.associatedCell.ownerRow, this.currentWidget.paragraph.associatedCell, this.owner.selection.upDownSelectionLength, true);
+                const cell: TableCellWidget = selection.getLastCellInRegion(this.currentWidget.paragraph.associatedCell.ownerRow, this.currentWidget.paragraph.associatedCell, this.owner.selectionModule.upDownSelectionLength, true);
                 this.setPosition(selection.getFirstParagraph(cell).childWidgets[0] as LineWidget, false);
             }
             nextLine = selection.getLineWidgetParagraph(this.offset, this.currentWidget);
@@ -1797,7 +1797,7 @@ export class TextPosition {
             this.getNextWordOffset(inline, indexInInline, type, false, endSelection, this, excludeSpace);
         }
         if (type !== 0) {
-            const selectionStartIndex: string = this.owner.selection.start.getHierarchicalIndexInternal();
+            const selectionStartIndex: string = this.owner.selectionModule.start.getHierarchicalIndexInternal();
             const selectionEndIndex: string = this.getHierarchicalIndexInternal();
             if (selectionStartIndex !== selectionEndIndex) {
                 this.validateForwardFieldSelection(selectionStartIndex, selectionEndIndex);
@@ -1981,7 +1981,7 @@ export class TextPosition {
                 this.moveToLineEndInternal(selection, true);
             }
         } else if (isMoveToLineEnd && this.currentWidget.paragraph.isInsideTable
-            && this.currentWidget === this.owner.selection.start.currentWidget) {
+            && this.currentWidget === this.owner.selectionModule.start.currentWidget) {
             this.setPositionInternal(textPosition);
         } else if (!isMoveToLineEnd) {
             this.moveToLineEndInternal(selection, true);
@@ -1993,8 +1993,8 @@ export class TextPosition {
 
     private moveUpInTable(selection: Selection): void {
         let isPositionUpdated: boolean = false;
-        const end: TextPosition = this.owner.selection.end;
-        const isBackwardSelection: boolean = !this.owner.selection.isEmpty;
+        const end: TextPosition = this.owner.selectionModule.end;
+        const isBackwardSelection: boolean = !this.owner.selectionModule.isEmpty;
         isPositionUpdated = end.paragraph.isInsideTable;
         if (isPositionUpdated) {
             let startCell: TableCellWidget = this.currentWidget.paragraph.associatedCell;
@@ -2016,7 +2016,7 @@ export class TextPosition {
                     //Moves to cell in previous row.
                     const row: TableRowWidget = startCell.ownerRow.previousRenderedWidget as TableRowWidget;
 
-                    const cell: TableCellWidget = selection.getFirstCellInRegion(row, containerCell, this.owner.selection.upDownSelectionLength, true);
+                    const cell: TableCellWidget = selection.getFirstCellInRegion(row, containerCell, this.owner.selectionModule.upDownSelectionLength, true);
                     const previousParagraph: ParagraphWidget = selection.getLastParagraph(cell);
                     this.setPosition(previousParagraph.childWidgets[0] as LineWidget, true);
                     return;
@@ -2057,10 +2057,10 @@ export class TextPosition {
 
     private moveDownInTable(selection: Selection): void {
         let isPositionUpdated: boolean = false;
-        const isForwardSelection: boolean = this.owner.selection.isEmpty || this.owner.selection.isForward;
-        isPositionUpdated = this.owner.selection.start.paragraph.isInsideTable;
+        const isForwardSelection: boolean = this.owner.selectionModule.isEmpty || this.owner.selectionModule.isForward;
+        isPositionUpdated = this.owner.selectionModule.start.paragraph.isInsideTable;
         if (isPositionUpdated) {
-            let startCell: TableCellWidget = this.owner.selection.start.paragraph.associatedCell;
+            let startCell: TableCellWidget = this.owner.selectionModule.start.paragraph.associatedCell;
             let endCell: TableCellWidget = this.currentWidget.paragraph.associatedCell;
             const containerCell: TableCellWidget = selection.getContainerCellOf(startCell, endCell);
             isPositionUpdated = containerCell.ownerTable.contains(endCell);
@@ -2069,13 +2069,13 @@ export class TextPosition {
                 endCell = selection.getSelectedCell(endCell, containerCell);
 
                 const isInContainerCell: boolean = selection.containsCell(containerCell, this.currentWidget.paragraph.associatedCell);
-                const isContainerCellSelected: boolean = selection.isCellSelected(containerCell, this.owner.selection.start, this);
+                const isContainerCellSelected: boolean = selection.isCellSelected(containerCell, this.owner.selectionModule.start, this);
                 if ((isInContainerCell && isContainerCellSelected
                     || !isInContainerCell) && !isNullOrUndefined(endCell.ownerRow.nextRenderedWidget)) {
                     //Moves to cell in next row.
                     const row: TableRowWidget = endCell.ownerRow.nextRenderedWidget as TableRowWidget;
 
-                    const cell: TableCellWidget = selection.getLastCellInRegion(row, containerCell, this.owner.selection.upDownSelectionLength, false);
+                    const cell: TableCellWidget = selection.getLastCellInRegion(row, containerCell, this.owner.selectionModule.upDownSelectionLength, false);
                     const lastParagraph: ParagraphWidget = selection.getLastParagraph(cell);
                     this.setPosition(lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1] as LineWidget, false);
                     return;

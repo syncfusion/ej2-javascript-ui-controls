@@ -71,7 +71,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             ddtreeObj.keyActionHandler(keyboardEventArgs);
         });
         it('altup key pressed', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" } }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, destroyPopupOnHide: false }, '#ddtree');
             keyboardEventArgs.action = 'tab';
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
@@ -84,7 +84,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             ddtreeObj.onFocusOut();
         });
         it('escape key pressed', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" } }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, destroyPopupOnHide: false }, '#ddtree');
             keyboardEventArgs.action = 'tab';
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);
@@ -97,7 +97,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             ddtreeObj.onFocusOut();
         });
         it('shiftTab key pressed', () => {
-            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" } }, '#ddtree');
+            ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, destroyPopupOnHide: false }, '#ddtree');
             keyboardEventArgs.action = 'tab';
             keyboardEventArgs.action = 'altDown';
             ddtreeObj.keyActionHandler(keyboardEventArgs);

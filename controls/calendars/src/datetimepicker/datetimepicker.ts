@@ -616,6 +616,9 @@ export class DateTimePicker extends DatePicker {
      * @returns {void}
      */
     public destroy(): void {
+        if (this.showClearButton) {
+            this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
+        }
         if (this.popupObject && this.popupObject.element.classList.contains(POPUP)) {
             this.popupObject.destroy();
             detach(this.dateTimeWrapper);
@@ -649,6 +652,11 @@ export class DateTimePicker extends DatePicker {
         this.popupObject = null;
         this.preventArgs = null;
         this.keyboardModule = null;
+        Input.destroy({
+            element: this.inputElement,
+            floatLabelType: this.floatLabelType,
+            properties: this.properties
+        }, this.clearButton);
         super.destroy();
     }
     /**
@@ -1645,8 +1653,8 @@ export class DateTimePicker extends DatePicker {
 
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
-        if (this) {
-            modules.push({ args: [this], member: 'islamic' });
+        if (this.calendarMode === 'Islamic') {
+            modules.push({ args: [this], member: 'islamic', name: 'Islamic' });
         }
         if (this.enableMask)
         {

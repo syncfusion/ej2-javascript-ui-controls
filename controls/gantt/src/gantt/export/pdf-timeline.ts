@@ -118,6 +118,9 @@ export class PdfTimeline {
                 if (isCompleted) {
                     this.bottomTierIndex++;
                 }
+                if (remainWidth > 0 && remainWidth < width) {
+                    remainWidth = secondHeader.width - 1;
+                }
             } else {
                 remainWidth = 0;
             }

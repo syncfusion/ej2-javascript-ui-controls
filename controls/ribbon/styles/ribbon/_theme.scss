@@ -6,6 +6,15 @@
         border-color: $ribbon-border-color;
 
         .e-toolbar-item {
+          &.e-ribbon-contextual-tab {
+            background: $ribbon-contextual-tab-background;
+            .e-tab-wrap {
+              .e-tab-text {
+                color: $ribbon-contextual-tab-color;
+              }
+            }
+          }
+          
           .e-tab-wrap {
             .e-tab-text {
               color: $ribbon-text-color;
@@ -263,6 +272,10 @@
       }
     }
 
+    .e-ribbon-item:has(.e-ribbon-gallery-container) {
+      border-color: $ribbon-gallery-item-border-color;
+    }
+
     .e-ribbon-item,
     .e-ribbon-group-overflow,
     &.e-ribbon-overflow {
@@ -421,6 +434,59 @@
     }
   }
 
+  .e-ribbon-gallery-item {
+    background: $ribbon-gallery-item-background-color;
+    border-color: transparent;
+    &:hover {
+      background: $ribbon-gallery-hover-background-color;
+    }
+    &.e-ribbon-gallery-selected {
+      background: $ribbon-gallery-item-selected-color;
+      .e-ribbon-gallery-text {
+        color: $ribbon-gallery-item-selected-text-color;
+      }
+      .e-ribbon-gallery-icons {
+        color: $ribbon-gallery-item-selected-icons-color;
+      }
+    }
+    &.e-disabled {
+      background: $ribbon-gallery-item-disabled-color;
+      .e-ribbon-gallery-text {
+        color: $ribbon-gallery-item-disabled-text-color;
+      }
+      .e-ribbon-gallery-icons {
+        color: $ribbon-gallery-item-disabled-icons-color;
+      }
+    }
+    &:focus,
+    &:focus-visible {
+      border-color: $ribbon-gallery-item-focus-border-color;
+    }
+    .e-ribbon-gallery-text {
+      color: $ribbon-gallery-item-text-color;
+    }
+    .e-ribbon-gallery-icons {
+      color: $ribbon-gallery-icons-color;
+    }
+  }
+
+  .e-ribbon-gallery-button {
+    border-color: $ribbon-gallery-item-border-color;
+    &.e-gallery-button-active {
+      background: $ribbon-gallery-button-selected-color;
+    }
+  }
+
+  .e-ribbon-gallery-popup.e-popup,
+  .e-dropdown-popup.e-ribbon-gallery-dropdown {
+    background: $ribbon-gallery-popup-background-color;
+    box-shadow: $ribbon-gallery-popup-box-shadow;
+
+    .e-ribbon-gallery-header {
+      color: $ribbon-gallery-header-color;
+    }
+  }
+
   .e-dropdown-popup.e-ribbon-dropdown-group-button {
     .e-btn-icon {
       color: $ribbon-items-icon-color;
@@ -471,6 +537,11 @@
     .e-arrow-tip .e-arrow-tip-inner.e-tip-top {
       color: $ribbon-tooltip-background-color;
     }
+  }
+
+  .e-ribbon-keytip {
+    background-color: $ribbon-keytip-background-color;
+    color: $ribbon-keytip-color;
   }
 
   .e-ribbon-menu {

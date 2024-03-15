@@ -28,6 +28,16 @@ const CLASSNAMES: ClassNames = {
 export type FloatLabelType = 'Never' | 'Always' | 'Auto';
 
 /**
+ * Defines the constant attributes for the input element container.
+ */
+export const containerAttributes: string[] = ['title', 'style', 'class'];
+
+/**
+ * Defines the constant focus class for the input element.
+ */
+export const TEXTBOX_FOCUS: string = 'e-input-focus';
+
+/**
  * Base for Input creation through util methods.
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -39,7 +49,6 @@ export namespace Input {
     };
     let floatType: string;
     let isBindClearAction: boolean = true;
-
     /**
      * Create a wrapper to input element with multiple span elements and set the basic properties to input based components.
      * ```
@@ -48,6 +57,7 @@ export namespace Input {
      *
      */
     export function createInput(args: InputArgs, internalCreateElement ?: createElementParams): InputObject {
+        (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers = {};
         const makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
         let inputObject: InputObject = { container: null, buttons: [], clearButton: null };
         floatType = args.floatLabelType;
@@ -85,35 +95,70 @@ export namespace Input {
         return inputObject;
     }
 
-    export function bindInitialEvent(args: InputArgs): void {
+    function bindFocusEventHandler(args: InputArgs): any {
+        const parent: HTMLElement = getParentNode(args.element);
+        if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline') || parent.classList.contains('e-filled')) {
+            parent.classList.add('e-input-focus');
+        }
+        if (args.floatLabelType === 'Auto') {
+            setTimeout(() => {
+                Input.calculateWidth(args.element, parent);
+            }, 80);
+        }
+    }
+    
+    function bindBlurEventHandler (args: InputArgs): any {
+        const parent: HTMLElement = getParentNode(args.element);
+        if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline') || parent.classList.contains('e-filled')) {
+            parent.classList.remove('e-input-focus');
+        }
+        if (args.floatLabelType === 'Auto' && args.element.value === '') {
+            setTimeout(() => {
+                Input.calculateWidth(args.element, parent);
+            }, 80);
+        }
+    }
+    
+    function bindInputEventHandler (args: InputArgs): any {
         checkInputValue(args.floatLabelType, args.element as HTMLInputElement);
-        args.element.addEventListener('focus', function() : void {
-            const parent: HTMLElement = getParentNode(this);
-            if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
-             || parent.classList.contains('e-filled')) {
-                parent.classList.add('e-input-focus');
+    }
+    
+     export function bindInitialEvent(args: InputArgs): void {
+        checkInputValue(args.floatLabelType, args.element as HTMLInputElement);
+        const focusHandler = () => bindFocusEventHandler(args);
+        const blurHandler = () => bindBlurEventHandler(args);
+        const inputHandler = () => bindInputEventHandler(args);
+
+        args.element.addEventListener('focus', focusHandler);
+        args.element.addEventListener('blur', blurHandler);
+        args.element.addEventListener('input', inputHandler);
+
+        (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputFocusHandler"] = { focusHandler};
+        (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputBlurHandler"] = { blurHandler};
+        (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputHandler"] = { inputHandler};
+    }
+
+    function unbindInitialEvent(args: InputArgs): void {
+        if (!isNullOrUndefined(args.element)) {
+            if (!isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers)) {
+                if (!isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputFocusHandler"])
+                && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputBlurHandler"])
+                && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputHandler"])) {
+                    const focusHandler = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputFocusHandler"].focusHandler;
+                    const blurHandler = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputBlurHandler"].blurHandler;
+                    const inputHandler = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputHandler"].inputHandler;
+
+                    args.element.removeEventListener('focus', focusHandler);
+                    args.element.removeEventListener('blur', blurHandler);
+                    args.element.removeEventListener('input', inputHandler);
+
+                    // Clean up stored bound functions
+                    delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputFocusHandler"];
+                    delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputBlurHandler"];
+                    delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["inputHandler"];
+                }
             }
-            if (args.floatLabelType === 'Auto') {
-            setTimeout(() => {
-                Input.calculateWidth(args.element, parent);
-            }, 80);
-            }
-        });
-        args.element.addEventListener('blur', function() : void {
-            const parent: HTMLElement = getParentNode(this);
-            if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
-             || parent.classList.contains('e-filled')) {
-                parent.classList.remove('e-input-focus');
-            }
-            if (args.floatLabelType === 'Auto' && args.element.value === '') {
-            setTimeout(() => {
-                Input.calculateWidth(args.element, parent);
-            }, 80);
-            }
-        });
-        args.element.addEventListener('input', () : void => {
-            checkInputValue(floatType, args.element as HTMLInputElement);
-        });
+        }
     }
     function checkInputValue(floatLabelType: string, inputElement: HTMLInputElement): void {
         const inputValue: string = inputElement.value;
@@ -165,8 +210,16 @@ export namespace Input {
         element.addEventListener('blur', _blurFn);
     }
     function unwireFloatingEvents(element: HTMLElement): void {
-        element.removeEventListener('focus', _focusFn);
-        element.removeEventListener('blur', _blurFn);
+        if (!isNullOrUndefined(element)) {
+            element.removeEventListener('focus', _focusFn);
+            element.removeEventListener('blur', _blurFn);
+        }
+    }
+    function inputEventHandler (args: InputArgs): any { 
+        validateLabel(args.element, args.floatLabelType);
+    }
+    function blurEventHandler (args: InputArgs): any {
+        validateLabel(args.element, args.floatLabelType);
     }
     function createFloatingInput(args: InputArgs, inputObject: InputObject, internalCreateElement ?: createElementParams): void {
         const makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
@@ -220,17 +273,38 @@ export namespace Input {
             addClass([floatLabelElement], CLASSNAMES.LABELTOP);
         }
         if (args.floatLabelType === 'Auto') {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            args.element.addEventListener('input', (event: KeyboardEvent) => {
-                validateLabel(args.element, args.floatLabelType);
-            });
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            args.element.addEventListener('blur', (event: FocusEvent) => {
-                validateLabel(args.element, args.floatLabelType);
-            });
+            const inputFloatHandler = () => inputEventHandler(args);
+            const blurFloatHandler = () => blurEventHandler(args);
+
+            // Add event listeners using the defined functions
+            args.element.addEventListener('input', inputFloatHandler);
+            args.element.addEventListener('blur', blurFloatHandler);
+
+            // Store the event handler functions to remove them later
+            (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatInputHandler"] = { inputFloatHandler };
+            (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatBlurHandler"] = { blurFloatHandler };
+        } else {
+            unWireFloatLabelEvents(args);
         }
         if (!isNullOrUndefined(args.element.getAttribute('id'))) {
             floatLabelElement.setAttribute('for', args.element.getAttribute('id'));
+        }
+    }
+    function unWireFloatLabelEvents(args: InputArgs){
+        if (!isNullOrUndefined(args.element) && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers)
+            && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatInputHandler"])
+            && !isNullOrUndefined((args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatBlurHandler"])) {
+                const inputFloatHandler = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatInputHandler"].inputFloatHandler;
+                const blurFloatHandler = (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatBlurHandler"].blurFloatHandler;
+            
+                // Remove the event listeners using the defined functions
+                args.element.removeEventListener('input', inputFloatHandler);
+                args.element.removeEventListener('blur', blurFloatHandler);
+            
+                // Clean up stored event handler functions
+                delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatInputHandler"];
+                delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["floatBlurHandler"];
+            
         }
     }
 
@@ -324,40 +398,97 @@ export namespace Input {
         button.setAttribute('aria-label', 'close');
         return button;
     }
+    function clickHandler (event: MouseEvent, element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement): any {
+        if (!(element.classList.contains(CLASSNAMES.DISABLE) || element.readOnly)) {
+            event.preventDefault();
+            if (element !== document.activeElement) {
+                element.focus();
+            }
+            element.value = '';
+            addClass([button], CLASSNAMES.CLEARICONHIDE);
+        }
+    }
 
+    function inputHandler (element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement): any {
+        updateIconState(element.value, button);
+    }
+
+    function focusHandler (element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement): any {
+        updateIconState(element.value, button, element.readOnly);
+    }
+
+    function blurHandler (element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement): any {
+        setTimeout (() => {
+            if(!isNullOrUndefined(button)){
+                addClass([button], CLASSNAMES.CLEARICONHIDE);
+                button = !isNullOrUndefined(element) && element.classList.contains('e-combobox') ? null : button ;
+            }
+        }, 200);
+    }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     export function wireClearBtnEvents(element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement, container: HTMLElement): void {
-        if (isBindClearAction === undefined || isBindClearAction){
-            button.addEventListener('click', (event: MouseEvent) => {
-                if (!(element.classList.contains(CLASSNAMES.DISABLE) || element.readOnly)) {
-                    event.preventDefault();
-                    if (element !== document.activeElement) {
-                        element.focus();
-                    }
-                    element.value = '';
-                    addClass([button], CLASSNAMES.CLEARICONHIDE);
-                }
-            });
+        if (isBindClearAction === undefined || isBindClearAction) {
+            const clickHandlerEvent = (e: MouseEvent): void => clickHandler(e, element, button);
+            button.addEventListener('click', clickHandlerEvent);
+            (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearClickHandler"] = { clickHandlerEvent };
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        element.addEventListener('input', (event: KeyboardEvent ) => {
-            updateIconState(element.value, button);
-        });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        element.addEventListener('focus', (event: FocusEvent) => {
-            updateIconState(element.value, button, element.readOnly);
-        });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        element.addEventListener('blur', (event: FocusEvent) => {
-            setTimeout (() => {
-                if(!isNullOrUndefined(button)){
-                    addClass([button], CLASSNAMES.CLEARICONHIDE);
-                    button = !isNullOrUndefined(element) && element.classList.contains('e-combobox') ? null : button ;
-                }
-            }, 200);
-        });
+        
+        const inputHandlerEvent = (): void => inputHandler(element, button);
+        const focusHandlerEvent = (): void => focusHandler(element, button);
+        const blurHandlerEvent = (): void => blurHandler(element, button);
+
+        element.addEventListener('input', inputHandlerEvent);
+        element.addEventListener('focus', focusHandlerEvent);
+        element.addEventListener('blur', blurHandlerEvent);
+    
+        // Store the bound functions to remove them later
+        (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearInputHandler"] = { inputHandlerEvent };
+        (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearFocusHandler"] = { focusHandlerEvent };
+        (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearBlurHandler"] = { blurHandlerEvent };
     }
-    export function destroy(): void {
+    function unWireClearBtnEvents(element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement): void {
+            if (!isNullOrUndefined(element) && !isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers)) {
+                if (!isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearClickHandler"])) {
+                    const clickHandlerEvent = (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearClickHandler"].clickHandlerEvent;
+                    if (isBindClearAction === undefined || isBindClearAction) {
+                        if (!isNullOrUndefined(button)) {
+                            button.removeEventListener('click', clickHandlerEvent);
+                        }
+                    }
+                    delete (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearClickHandler"];
+                }
+                if (!isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearInputHandler"])
+                    && !isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearFocusHandler"])
+                    && !isNullOrUndefined((element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearBlurHandler"])) {
+                    const inputHandlerEvent = (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearInputHandler"].inputHandlerEvent;
+                    const focusHandlerEvent = (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearFocusHandler"].focusHandlerEvent;
+                    const blurHandlerEvent = (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearBlurHandler"].blurHandlerEvent;
+
+                    
+                    element.removeEventListener('input', inputHandlerEvent);
+                    element.removeEventListener('focus', focusHandlerEvent);
+                    element.removeEventListener('blur', blurHandlerEvent);
+
+                    // Clean up stored Event functions
+                    
+                    delete (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearInputHandler"];
+                    delete (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearFocusHandler"];
+                    delete (element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers["clearBlurHandler"];
+                }
+            }
+    }
+    export function destroy(args: InputArgs, button: HTMLElement = null): void {
+        unbindInitialEvent(args);
+        if (args.floatLabelType === 'Auto'){
+            unWireFloatLabelEvents(args);
+        }
+        if (args.properties.showClearButton) {
+            unWireClearBtnEvents(args.element, button)
+        }
+        unwireFloatingEvents(args.element);
+        if (!isNullOrUndefined(args.element)) {
+            delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers
+        }
         privateInputObj = null;
     }
     function validateLabel(element: HTMLInputElement | HTMLTextAreaElement, floatLabelType: string) : void {
@@ -571,7 +702,7 @@ export namespace Input {
      */
     export function setEnabled(isEnable: boolean, element: HTMLInputElement | HTMLTextAreaElement, floatLabelType ?: string ,
                                inputContainer?: HTMLElement ): void {
-        const disabledAttrs: { [key: string]: string } = { 'disabled': 'disabled', 'aria-disabled': 'true' };
+        const disabledAttrs: { [key: string]: string } = { 'disabled': '', 'aria-disabled': 'true' };
         const considerWrapper: boolean = isNullOrUndefined(inputContainer) ? false : true;
         if (isEnable) {
             element.classList.remove(CLASSNAMES.DISABLE);
@@ -678,11 +809,11 @@ export namespace Input {
         const makeElement: createElementParams = !isNullOrUndefined(internalCreateElement) ? internalCreateElement : createElement;
         const container: HTMLElement = <HTMLElement>closest(input, '.' + CLASSNAMES.INPUTGROUP);
         floatType = type;
+        let customTag: string = container.tagName;
+        customTag = customTag !== 'DIV' && customTag !== 'SPAN' ? customTag : null;
+        const args: InputArgs = {element: input, floatLabelType: type ,
+            customTag: customTag, properties : {placeholder : placeholder } };
         if (type !== 'Never') {
-            let customTag: string = container.tagName;
-            customTag = customTag !== 'DIV' && customTag !== 'SPAN' ? customTag : null;
-            const args: InputArgs = {element: input, floatLabelType: type ,
-                customTag: customTag, properties : {placeholder : placeholder } };
             let iconEle: HTMLElement = <HTMLElement>container.querySelector('.e-clear-icon');
             const inputObj: InputObject = { container: container};
             input.classList.remove(CLASSNAMES.INPUT);
@@ -710,6 +841,8 @@ export namespace Input {
                 wrapper.insertBefore(floatLine, iconEle);
                 wrapper.insertBefore(floatText, iconEle);
             }
+        } else {
+            unWireFloatLabelEvents(args);
         }
         checkFloatLabelType(type, input.parentElement);
     }
@@ -894,6 +1027,55 @@ export namespace Input {
         } else if (containerElement.classList.contains('e-hidden')) {
             containerElement.classList.remove('e-hidden');
         }
+    }
+
+    export function updateHTMLAttributesToElement (htmlAttributes : {[key: string]: string}, element: HTMLInputElement | HTMLTextAreaElement): void {
+        if ( !isNullOrUndefined(htmlAttributes)) {
+            for (const key of Object.keys(htmlAttributes)) {
+                if (containerAttributes.indexOf(key) < 0 ) {
+                    element.setAttribute(key, htmlAttributes[`${key}`]);
+                }
+            }
+        }
+    }
+
+    export function updateCssClass (newClass : string, oldClass : string, container: HTMLElement)
+    {
+        setCssClass(getInputValidClassList(newClass), [container], getInputValidClassList(oldClass));
+    }
+
+    export function getInputValidClassList(inputClassName: string): string {
+        let result: string = inputClassName;
+        if (!isNullOrUndefined(inputClassName) && inputClassName !== '') {
+            result = (inputClassName.replace(/\s+/g, ' ')).trim();
+        }
+        return result;
+    }
+
+    export function updateHTMLAttributesToWrapper(htmlAttributes : {[key: string]: string}, container: HTMLElement): void {
+        if (!isNullOrUndefined(htmlAttributes)) {
+            for (const key of Object.keys(htmlAttributes)) {
+                if (containerAttributes.indexOf(key) > -1) {
+                    if (key === 'class') {
+                        const updatedClassValues: string = this.getInputValidClassList(htmlAttributes[`${key}`]);
+                        if (updatedClassValues !== '') {
+                            addClass([container], updatedClassValues.split(' '));
+                        }
+                    } else if (key === 'style') {
+                        let setStyle: string = container.getAttribute(key);
+                        setStyle = !isNullOrUndefined(setStyle) ? (setStyle + htmlAttributes[`${key}`]) :
+                            htmlAttributes[`${key}`];
+                        container.setAttribute(key, setStyle);
+                    } else {
+                        container.setAttribute(key, htmlAttributes[`${key}`]);
+                    }
+                }
+            }
+        }
+    }
+
+    export function isBlank(inputString: string): boolean {
+        return (!inputString || /^\s*$/.test(inputString));
     }
 }
 /* eslint-enable no-inner-declarations */

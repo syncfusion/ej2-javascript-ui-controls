@@ -50,7 +50,7 @@ import { Splitter } from './splitter';
 import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
 import { TooltipSettingsModel } from '../models/tooltip-settings-model';
 import { Tooltip } from '../renderer/tooltip';
-import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection } from './enum';
+import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GanttAction } from './enum';
 import { GridLine, ContextMenuItem, ScheduleMode, ViewType } from './enum';
 import { Selection } from '../actions/selection';
 import { ExcelExport } from '../actions/excel-export';
@@ -66,6 +66,7 @@ import { FocusModule } from '../actions/keyboard';
 import { VirtualScroll } from '../actions/virtual-scroll';
 import { isCountRequired } from './utils';
 import { TaskbarEdit } from '../actions/taskbar-edit';
+import { UndoRedo } from '../actions/undo-redo';
 /**
  *
  * Represents the Gantt chart component.
@@ -103,6 +104,9 @@ export class Gantt extends Component<HTMLElement>
     public isLocaleChanged: boolean = false;
     public initialLoadData: Object;
     public previousGanttColumns: ColumnModel[];
+    public previousZoomingLevel: Object;
+    private totalUndoAction: number = 0;
+    public previousFlatData: IGanttData[] = [];
     /** @hidden */
     public topBottomHeader: any;
     /** @hidden */
@@ -163,6 +167,8 @@ export class Gantt extends Component<HTMLElement>
     public isOnEdit: boolean = false;
     /** @hidden */
     public isOnDelete: boolean = false;
+    /** @hidden */
+    public isOnAdded: boolean = false;
     /** @hidden */
     public secondsPerDay: number;
     /** @hidden */
@@ -274,6 +280,10 @@ export class Gantt extends Component<HTMLElement>
      * The `criticalPathModule` is used to determine the critical path  in Gantt.
      */
     public criticalPathModule: CriticalPath;
+     /**
+     * The `undoRedoModule` is used to undo or redo the actions performed in Gantt.
+     */
+     public undoRedoModule: UndoRedo;
     /** @hidden */
     public isConnectorLineUpdate: boolean = false;
     /** @hidden */
@@ -337,9 +347,9 @@ export class Gantt extends Component<HTMLElement>
      * Specifies whether to display or remove the untrusted HTML values in the TreeGrid component.
      * If `enableHtmlSanitizer` set to true, then it will sanitize any suspected untrusted strings and scripts before rendering them.
      *
-     * @default false
+     * @default true
      */
-    @Property(false)
+    @Property(true)
     public enableHtmlSanitizer: boolean;
 
     /**
@@ -439,6 +449,14 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property()
     public columnMenuItems: ColumnMenuItem[] | ColumnMenuItemModel[];
+
+    /** 
+     * `undoRedoActions` Defines action items that retain for undo and redo operation.
+     * 
+     * @default null 
+     */ 
+    @Property() 
+    public undoRedoActions: GanttAction[]; 
 
     /**
      * By default, task schedule dates are calculated with system time zone.If Gantt chart assigned with specific time zone,
@@ -958,6 +976,23 @@ export class Gantt extends Component<HTMLElement>
      */
      @Property(false)
      public enableCriticalPath: boolean;
+
+     /**
+     * Enables or disables undo or redo feature.
+     *
+     * @default false
+     */
+     @Property(false)
+     public enableUndoRedo: boolean;
+
+     /**
+     * Defines number of undo/redo actions that should be stored.
+     *
+     * @default 10
+     */
+     @Property(10)
+     public undoRedoStepsCount: number;
+
     /**
      * `contextMenuItems` defines both built-in and custom context menu items.
      * {% codeBlock src='gantt/contextMenuItems/index.md' %}{% endcodeBlock %}
@@ -1668,7 +1703,9 @@ export class Gantt extends Component<HTMLElement>
             indentLevel: 'shift+leftarrow',
             outdentLevel: 'shift+rightarrow',
             focusSearch: 'ctrl+shift+70', //F Key
-            contextMenu: 'shift+F10' //F Key
+            contextMenu: 'shift+F10', //F Key
+            undo: 'ctrl+z', //F Key
+            redo: 'ctrl+y' //F Key
         };
         this.focusModule = new FocusModule(this);
         if (this.zoomingLevels.length === 0) {
@@ -1679,6 +1716,15 @@ export class Gantt extends Component<HTMLElement>
           this.setProperties({ resourceFields: { unit: 'unit' } }, true)
         }
         this.taskIds = [];
+    }
+
+    private isUndoRedoItemPresent(action: string): boolean {
+        if(this.undoRedoModule && this.undoRedoActions && this.undoRedoActions.indexOf(action as GanttAction) != -1) {
+            return true
+        }
+        else {
+            return false;
+        }
     }
     /**
      * @returns {string} .
@@ -2176,6 +2222,14 @@ export class Gantt extends Component<HTMLElement>
         if (isChange) {
             this.isFromOnPropertyChange = isChange;
         }
+        if (this.enableValidation) {
+            this.dataOperation.calculateProjectDates();
+            this.timelineModule.validateTimelineProp();
+            this.dataOperation.updateGanttData();
+        }
+        if (this.allowParentDependency) {
+            this.predecessorModule.updateParentPredecessor();
+        }
         // predecessor calculation
         if (this.predecessorModule && this.taskFields.dependency) {
             this.predecessorModule['parentIds'] = [];
@@ -2185,17 +2239,7 @@ export class Gantt extends Component<HTMLElement>
                 this.predecessorModule.updatedRecordsDateByPredecessor();
             }
         }
-        if (this.enableValidation) {
-            this.dataOperation.calculateProjectDates();
-            this.timelineModule.validateTimelineProp();
-        }
         if (isChange) {
-            if (this.enableValidation) {
-                this.dataOperation.updateGanttData();
-            }
-            if (this.allowParentDependency) {
-               this.predecessorModule.updateParentPredecessor();
-            }
             if (this.dataSource instanceof Object && isCountRequired(this)) {
                 const count: number = getValue('count', this.dataSource);
                 this.treeGrid.dataSource = {result: this.flatData, count: count};
@@ -2203,12 +2247,6 @@ export class Gantt extends Component<HTMLElement>
                 this.treeGrid.setProperties({ dataSource: this.flatData }, false);
             }
         } else {
-            if (this.enableValidation) {
-                this.dataOperation.updateGanttData();
-            }
-            if (this.allowParentDependency) {
-               this.predecessorModule.updateParentPredecessor();
-            }
             this.treeGridPane.classList.remove('e-temp-content');
             remove(this.treeGridPane.querySelector('.e-gantt-temp-header'));
             this.notify('dataReady', {});
@@ -2249,6 +2287,14 @@ export class Gantt extends Component<HTMLElement>
         EventHandler.add(document.body, 'keydown', this.keyDownHandler, this);
     }
     
+    private unwireEvents(): void {
+        if (this.keyboardModule) {
+            this.keyboardModule.destroy();
+            this.keyboardModule = null;
+        }
+        EventHandler.remove(window as any, 'resize', this.windowResize);
+        EventHandler.remove(document.body, 'keydown', this.keyDownHandler);
+    }
     private keyDownHandler(e: KeyboardEventArgs): void {
         if (e.altKey) {
             if (e.keyCode === 74) {//alt j
@@ -2391,7 +2437,7 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public updateContentHeight(args?: object): void {
-        if ((!this.allowTaskbarOverlap && !this.ganttChartModule.isCollapseAll && !this.ganttChartModule.isExpandAll) && this.viewType === 'ResourceView' && !this.isLoad) {
+        if ((!this.allowTaskbarOverlap && !this.ganttChartModule.isCollapseAll && !this.ganttChartModule.isExpandAll) && !this.isLoad) {
             return
         }
         else {
@@ -2528,7 +2574,7 @@ export class Gantt extends Component<HTMLElement>
             },
             {
                 topTier: { unit: 'Week', format: 'MMM dd, yyyy', count: 1 },
-                bottomTier: { unit: 'Day', format: 'd', count: 1 }, timelineUnitSize: 33, level: 11,
+                bottomTier: { unit: 'Day', format: null, count: 1 }, timelineUnitSize: 33, level: 11,
                 timelineViewMode: 'Week', weekStartDay: _WeekStartDay, updateTimescaleView: true, weekendBackground: null, showTooltip: true
             },
             {
@@ -2697,6 +2743,14 @@ export class Gantt extends Component<HTMLElement>
      * @private
      */
     public treeDataBound(args: object): void {
+        if (this.isLoad && this.undoRedoModule) {
+            if (this.sortSettings.columns.length > 0) {
+                this.undoRedoModule['previousSortedColumns'] = this.sortSettings.columns;
+            }
+            else if (this.searchSettings.key != "") {
+                this.undoRedoModule['searchString'] = this.searchSettings.key;
+            }
+        }
         this.element.getElementsByClassName('e-chart-root-container')[0]['style'].height = '100%';
         let gridHeight: string = this.element.getElementsByClassName('e-gridcontent')[0]['style'].height;
         var gridContent = this.element.getElementsByClassName('e-gridcontent')[0].childNodes[0] as HTMLElement;
@@ -2771,6 +2825,7 @@ export class Gantt extends Component<HTMLElement>
         if (!this.loadChildOnDemand && this.taskFields.hasChildMapping) {
            this.autoCalculateDateScheduling = true;
         }
+        this.previousFlatData = extend([], this.flatData,[],true) as IGanttData[];
         this.trigger('dataBound', args);
     }
     /**
@@ -3031,6 +3086,7 @@ export class Gantt extends Component<HTMLElement>
             case 'allowTaskbarDragAndDrop':
             case 'allowTaskbarOverlap':
             case 'allowParentDependency':
+            case 'enableMultiTaskbar':
                 if (prop === 'locale') {
                    this.isLocaleChanged = true;
                 }
@@ -3060,7 +3116,7 @@ export class Gantt extends Component<HTMLElement>
     }
 
     private updateOverAllocationCotainer(): void {
-        if (this.showOverAllocation && this.viewType === 'ResourceView') {
+        if (this.showOverAllocation) {
             this.ganttChartModule.renderOverAllocationContainer();
         } else {
             const rangeContainer: HTMLElement = this.element.querySelector('.' + cls.rangeContainer);
@@ -3114,6 +3170,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public destroy(): void {
         this.notify('destroy', {});
+        this.unwireEvents()
         if (!isNullOrUndefined(this.validationDialogElement) && !this.validationDialogElement.isDestroyed) {
             this.validationDialogElement.destroy();
         }
@@ -3131,6 +3188,21 @@ export class Gantt extends Component<HTMLElement>
 
             this.editModule.dialogModule.destroy();
         }
+        if (this.splitterModule) {    
+            this.splitterModule['destroy'];  
+            }
+
+            if (!isNullOrUndefined(this.dayMarkersModule) && !isNullOrUndefined(this.dayMarkersModule["eventMarkerRender"]) && !isNullOrUndefined(this.dayMarkersModule["eventMarkerRender"].eventMarkersContainer)) {
+                this.dayMarkersModule["eventMarkerRender"].eventMarkersContainer = null;
+            }
+            if (this.connectorLineModule) {
+                this.connectorLineModule.dependencyViewContainer = null;
+                this.connectorLineModule.svgObject = null;
+                this.connectorLineModule.renderer = null;
+                this.connectorLineModule.tooltipTable = null;
+            }
+            this.treeGridPane = null;
+            this.initialChartRowElements = null;
         super.destroy();
         this.chartVerticalLineContainer = null;
         this.element.innerHTML = '';
@@ -3138,8 +3210,6 @@ export class Gantt extends Component<HTMLElement>
         this.element.innerHTML = '';
         this.isTreeGridRendered = false;
         this.resetTemplates();
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        EventHandler.remove(window as any, 'resize', this.windowResize);
     }
     /**
      * Method to get taskbarHeight.
@@ -3193,6 +3263,12 @@ export class Gantt extends Component<HTMLElement>
         if (this.enableCriticalPath) {
             modules.push({
                 member: 'criticalPath',
+                args: [this]
+            });
+        }
+        if (this.enableUndoRedo) {
+            modules.push({
+                member: 'undoRedo',
                 args: [this]
             });
         }
@@ -3471,6 +3547,8 @@ export class Gantt extends Component<HTMLElement>
             dependency: 'Dependency',
             notes: 'Notes',
             criticalPath: 'Critical Path',
+            undo: 'Undo',
+            redo: 'Redo',
             baselineStartDate: 'Baseline Start Date',
             baselineEndDate: 'Baseline End Date',
             taskMode: 'Task Mode',
@@ -3796,6 +3874,17 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public previousTimeSpan(mode?: string): void {
+        if (this.undoRedoModule && this['isUndoRedoItemPresent']('PreviousTimeSpan')) {
+            if (this.undoRedoModule['redoEnabled']) {
+                this.undoRedoModule['disableRedo']();
+            }
+            this.undoRedoModule['createUndoCollection']();
+            let timeSpan: Object = {};
+            timeSpan['action'] = 'PreviousTimeSpan';
+            timeSpan['previousTimelineStartDate'] = extend([], [], [this.timelineModule.timelineStartDate], true)[0];
+            timeSpan['previousTimelineEndDate'] = extend([], [], [this.timelineModule.timelineEndDate], true)[0];
+            (this.undoRedoModule['getUndoCollection'][this.undoRedoModule['getUndoCollection'].length - 1] as any) = timeSpan;
+        }
         this.timelineModule.performTimeSpanAction(
             'prevTimeSpan', 'publicMethod',
             new Date(this.timelineModule.timelineStartDate.getTime()), new Date(this.timelineModule.timelineEndDate.getTime()), mode);
@@ -3808,6 +3897,17 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public nextTimeSpan(mode?: string): void {
+        if (this.undoRedoModule && this['isUndoRedoItemPresent']('NextTimeSpan')) {
+            if (this.undoRedoModule['redoEnabled']) {
+                this.undoRedoModule['disableRedo']();
+            }
+            this.undoRedoModule['createUndoCollection']();
+            let timeSpan: Object = {};
+            timeSpan['action'] = 'NextTimeSpan';
+            timeSpan['previousTimelineStartDate'] = extend([], [], [this.timelineModule.timelineStartDate], true)[0];
+            timeSpan['previousTimelineEndDate'] = extend([], [], [this.timelineModule.timelineEndDate], true)[0];
+            (this.undoRedoModule['getUndoCollection'][this.undoRedoModule['getUndoCollection'].length - 1] as any) = timeSpan;
+        }
         this.timelineModule.performTimeSpanAction(
             'nextTimeSpan', 'publicMethod',
             new Date(this.timelineModule.timelineStartDate.getTime()), new Date(this.timelineModule.timelineEndDate.getTime()), mode);
@@ -3921,6 +4021,21 @@ export class Gantt extends Component<HTMLElement>
                 }
                 else {
                     this.editedRecords.push(task);
+                }
+                if (this.undoRedoModule) {
+                    if (this.undoRedoModule['changedRecords'].indexOf(task) == -1) {
+                        this.undoRedoModule['changedRecords'].push(extend({}, {}, task, true));
+                    }
+                    const currentAction: string = this.undoRedoModule['getUndoCollection'].length > 0 ? this.undoRedoModule['getUndoCollection'][this.undoRedoModule['getUndoCollection'].length - 1]['action'] : null;
+                    if (this.editModule && this.editSettings.allowEditing && !this.undoRedoModule['isUndoRedoPerformed'] && !this.isOnDelete && !this.isOnAdded && currentAction !== 'outdent' && currentAction !== 'indent' &&
+                        currentAction !== 'RowDragAndDrop' && currentAction !== 'TaskbarDragAndDrop') {
+                        const oldRecord: IGanttData = this.previousFlatData.filter((data: IGanttData) => {
+                            return data.ganttProperties.taskId === task.ganttProperties.taskId;
+                        })[0];
+                        if (oldRecord && this.undoRedoModule['getUndoCollection'][this.undoRedoModule['getUndoCollection'].length - 1] && this.undoRedoModule['getUndoCollection'][this.undoRedoModule['getUndoCollection'].length - 1]['modifiedRecords']) {
+                            (this.undoRedoModule['getUndoCollection'][this.undoRedoModule['getUndoCollection'].length - 1]['modifiedRecords'] as any).push(oldRecord);
+                        }
+                    }
                 }
                 if (this.enableImmutableMode) {
                     this.modifiedRecords.push(task);
@@ -4119,7 +4234,12 @@ export class Gantt extends Component<HTMLElement>
                 this.editModule.addRowIndex = rowIndex;
                 let resources: Object[];
                 if (!isNullOrUndefined(data)) {
-                     resources = data[this.taskFields.resourceInfo];
+                    if (this.undoRedoModule && this.undoRedoModule['isUndoRedoPerformed']) {
+                        resources = (data as IGanttData).ganttProperties.resourceInfo;
+                    }
+                    else {
+                        resources = data[this.taskFields.resourceInfo];
+                    }
                 }
                 let id: string;
                 let parentTask: IGanttData;
@@ -4134,7 +4254,10 @@ export class Gantt extends Component<HTMLElement>
                     }
                     if (parentTask && parentTask.childRecords.length || parentTask.level === 0) {
                         const dropChildRecord: IGanttData = parentTask.childRecords[rowIndex as number];
-                        if (dropChildRecord) {
+                        if(this.viewType === 'ResourceView' &&  this.undoRedoModule && this.undoRedoModule['isUndoRedoPerformed']) {
+                            this.editModule.addRecord(data, rowPosition, rowIndex);
+                        }
+                        else if (dropChildRecord) {
                             const position: RowPosition = rowPosition === 'Above' || rowPosition === 'Below' ? rowPosition :
                                 'Child';
                             if (position === 'Child') {
@@ -4149,7 +4272,12 @@ export class Gantt extends Component<HTMLElement>
                         this.editModule.addRecord(data, 'Bottom');
                     }
                 } else {
-                    this.editModule.addRecord(data, 'Bottom');
+                    if (this.undoRedoModule && this.undoRedoModule['isUndoRedoPerformed']) {
+                        this.editModule.addRecord(data, rowPosition, rowIndex);
+                    }
+                    else {
+                        this.editModule.addRecord(data, 'Bottom');
+                    }
                 }
                 this.editModule.addRowPosition = null;
                 this.editModule.addRowIndex = null;
@@ -4223,6 +4351,89 @@ export class Gantt extends Component<HTMLElement>
     public outdent(): void {
         if (this.editModule && this.editSettings.allowEditing) {
             this.editModule.outdent();
+        }
+    }
+
+    /** 
+     * To retrieve the collection of previously recorded actions. This method returns an object as a collection that holds the following details.
+     * `modifiedRecords` - retrieves the modified records.
+     * `action` - shows the current performed action such as 'sorting','columnReorder','columnResize','progressResizing','rightResizing','leftResizing','add','delete','search','filtering','zoomIn','zoomOut','zoomToFit','columnState','previousTimeSpan','nextTimeSpan','indent','outdent','rowDragAndDrop','taskbarDragAndDrop','dialogEdit'
+    * @returns {Object[]}
+     * @public
+    */
+    public getUndoActions(): Object[] {
+        if(this.undoRedoModule) {
+            return this.undoRedoModule['getUndoCollection'];
+        }
+        else {
+            return [];
+        }
+    }
+
+    /** 
+     * To retrieve the collection of actions to reapply.
+     * `modifiedRecords` - retrieves the modified records.
+     * `action` - shows the current performed action such as 'sorting','columnReorder','columnResize','progressResizing','rightResizing','leftResizing','add','delete','search','filtering','zoomIn','zoomOut','zoomToFit','columnState','previousTimeSpan','nextTimeSpan','indent','outdent','rowDragAndDrop','taskbarDragAndDrop','dialogEdit'
+    * @returns {Object[]}
+     * @public
+    */
+    public getRedoActions(): Object[] {
+        if(this.undoRedoModule) {
+            return this.undoRedoModule['getRedoCollection'];
+        }
+        else {
+            return [];
+        }
+    }
+
+    /** 
+     * Clears the stack collection for undo action.
+     * @public
+    */
+    public clearUndoCollection(): void {
+        if (this.undoRedoModule) {
+            this.undoRedoModule['getUndoCollection'] = [];
+            if (this.toolbarModule) {
+                this.toolbarModule.enableItems([this.controlId + '_undo'], false);
+            }
+        }
+    }
+
+    /** 
+     * Clears the stack collection for redo action.
+     * @public
+    */
+    public clearRedoCollection(): void {
+        if(this.undoRedoModule) {
+            this.undoRedoModule['getRedoCollection'] = [];
+            if(this.toolbarModule) {
+                this.toolbarModule.enableItems([this.controlId + '_redo'], false);
+            }
+        }
+    }
+
+
+    /**
+     * Initiates an undo action to revert the most recent change performed.
+     *
+     * @returns {void} .
+     * @public
+     */
+    public undo(): void {
+        if(this.undoRedoModule) {
+            this.undoRedoModule['undoAction']();
+        }
+    }
+
+    /**
+     * Initiates a redo action to reapply the most recent undone change performed.
+     *
+     * @returns {void} .
+     * @public
+     */
+    public redo(): void {
+        if(this.undoRedoModule) {
+            this.undoRedoModule['redoAction']();
         }
     }
     /**
@@ -4827,6 +5038,16 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      */
     public changeTaskMode(data: Object): void {
+         if (this.undoRedoModule && !this.undoRedoModule['isUndoRedoPerformed']) {
+             if (this.undoRedoModule['redoEnabled']) {
+                this.undoRedoModule['disableRedo']();
+            }
+            this.undoRedoModule['createUndoCollection']();
+            let details: Object = {};
+            details['action'] = 'TaskMode';
+            details['modifiedRecords'] = extend([], [data], [], true);
+            (this.undoRedoModule['getUndoCollection'][this.undoRedoModule['getUndoCollection'].length - 1] as any) = details;
+        }
         const tasks: TaskFieldsModel = this.taskFields;
         const ganttData: IGanttData = this.getRecordByID(data[tasks.id]);
         const ganttProp: ITaskData = ganttData.ganttProperties;

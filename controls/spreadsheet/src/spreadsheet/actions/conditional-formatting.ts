@@ -33,6 +33,7 @@ export class ConditionalFormatting {
      */
     protected destroy(): void {
         this.removeEventListener();
+        this.parent = null;
     }
 
     private addEventListener(): void {

@@ -2071,7 +2071,7 @@ describe('Render top Tier alone in Zoom to fit', () => {
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/02/2019');
         }); 
     });
-    describe('870027: Zooming action', () => {
+     describe('870027: Zooming action', () => {
         let ganttObj: Gantt;
         var editingData = [
             {
@@ -2151,13 +2151,13 @@ describe('Render top Tier alone in Zoom to fit', () => {
                 allowExcelExport: true,
                 allowPdfExport: true,
                 dateFormat:"MMM dd, y",
-        
+
                 allowSelection: true,
                 selectedRowIndex: 1,
                 splitterSettings: {
                     position: "35%",
                 },
-                
+
                 gridLines: "Both",
                 showColumnMenu: true,
                 highlightWeekends: true,
@@ -2210,7 +2210,7 @@ describe('Render top Tier alone in Zoom to fit', () => {
     });
     describe('CR-871590: top and bottom tier shows null when using custom zooming levels ', () => {
         let ganttObj: Gantt;
-        let projectNewData: Object[] = [
+        let projectNewData  : Object[]= [
             {
                 TaskID: 1,
                 TaskName: 'Project initiation',
@@ -2271,94 +2271,70 @@ describe('Render top Tier alone in Zoom to fit', () => {
             }
         });
         it('top and bottom tier shows null when using custom zooming levels ', () => {
-            ganttObj.zoomingLevels = [
+            ganttObj.zoomingLevels =[
                 {
-                    topTier: {
-                        unit: 'Year',
-                        format: 'yyyy',
-                        count: 1,
-                    },
-                    bottomTier: {
-                        unit: 'Month',
-                        count: 3,
-                    },
+                    topTier: { unit: 'Year',
+                    format: 'yyyy',
+                    count: 1, },
+                    bottomTier: { unit: 'Month',
+                    count: 3, }, 
                     timelineUnitSize: 99,
                     level: 0,
                     timelineViewMode: 'Year',
                 },
                 {
-                    topTier: {
-                        unit: 'Year',
-                        format: 'yyyy',
-                        count: 1,
-                    },
-                    bottomTier: {
-                        unit: 'Month',
-                        format: 'MMM yyyy',
-                        count: 1
-                    }, timelineUnitSize: 99,
+                    topTier: { unit: 'Year',
+                    format: 'yyyy',
+                    count: 1, },
+                    bottomTier: { unit: 'Month',
+                    format: 'MMM yyyy',
+                    count: 1 }, timelineUnitSize: 99,
                     level: 1,
                     timelineViewMode: 'Year',
                 },
                 {
-                    topTier: {
-                        unit: 'Month',
-                        format: 'MMM, yy',
-                        count: 1,
-                    },
-                    bottomTier: {
-                        unit: 'Week',
-                        format: 'dd',
-                        count: 1,
-                    }, timelineUnitSize: 33,
+                    topTier: { unit: 'Month',
+                    format: 'MMM, yy',
+                    count: 1, },
+                    bottomTier: { unit: 'Week',
+                    format: 'dd',
+                    count: 1, }, timelineUnitSize: 33,
                     level: 2,
                     timelineViewMode: 'Month',
                 },
                 {
-                    topTier: {
-                        unit: 'Month',
-                        format: 'MMM, yyyy',
-                        count: 1,
-                    },
-                    bottomTier: {
-                        unit: 'Week',
-                        format: 'dd MMM',
-                        count: 1,
-                    }, timelineUnitSize: 66,
+                    topTier: { unit: 'Month',
+                    format: 'MMM, yyyy',
+                    count: 1, },
+                    bottomTier: { unit: 'Week',
+                    format: 'dd MMM',
+                    count: 1, }, timelineUnitSize: 66,
                     level: 3,
                     timelineViewMode: 'Month',
                 },
                 {
-                    topTier: {
-                        unit: 'Month',
-                        format: 'MMM, yyyy',
-                        count: 1,
-                    },
-                    bottomTier: {
-                        unit: 'Week',
-                        format: 'dd MMM',
-                        count: 1,
-                    }, timelineUnitSize: 99,
+                    topTier: { unit: 'Month',
+                    format: 'MMM, yyyy',
+                    count: 1, },
+                    bottomTier: { unit: 'Week',
+                    format: 'dd MMM',
+                    count: 1, }, timelineUnitSize: 99,
                     level: 4,
                     timelineViewMode: 'Month',
                 },
                 {
-                    topTier: {
-                        unit: 'Week',
-                        format: 'MMM dd, yyyy',
-                        count: 1,
-                    },
-                    bottomTier: {
-                        unit: 'Day',
-                        format: 'd',
-                        count: 1,
-                    }, timelineUnitSize: 33,
+                    topTier: { unit: 'Week',
+                    format: 'MMM dd, yyyy',
+                    count: 1, },
+                    bottomTier: { unit: 'Day',
+                    format: 'd',
+                    count: 1, }, timelineUnitSize: 33,
                     level: 5,
                     timelineViewMode: 'Week',
                 },
             ];
             ganttObj.zoomIn();
             expect(ganttObj.currentZoomingLevel.level).toBe(5);
-        });
+        }); 
     });
 });

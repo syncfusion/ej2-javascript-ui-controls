@@ -17,6 +17,7 @@ import { SparklineTooltip } from './rendering/sparkline-tooltip';
 import { SparklineModel } from './sparkline-model';
 import { getThemeColor } from './utils/helper';
 import { DataManager, Query } from '@syncfusion/ej2-data';
+import { getElement } from '../common/utils/helper';
 
 /* eslint-disable */
 /**
@@ -366,6 +367,9 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      */
     public intl: Internationalization;
 
+    private previousTargetId: string = '';
+    private currentPointIndex: number = 0;
+
     // Sparkline rendering starts from here.
 
     /**
@@ -388,6 +392,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.sparkTheme = getThemeColor(this.theme);
 
         this.sparklineRenderer = new SparklineRenderer(this);
+
+        this.setTheme();
 
         this.createSVG();
 
@@ -436,6 +442,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         tooltipDiv.id = this.element.id + '_Secondary_Element';
         (tooltipDiv as HTMLElement).style.position = 'relative';
         this.element.appendChild(tooltipDiv);
+        this.element.setAttribute('tabindex', '0');
         this.element.style.display = 'block';
         this.element.style.position = 'relative';
     }
@@ -517,6 +524,23 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * Keyboard navigation is used to set the tab theme color for the sparkline
+     */
+
+    private setTheme(): void {
+        /*! Set theme */
+        this.sparkTheme = getThemeColor(this.theme);
+        if (!(document.getElementById(this.element.id + 'Keyboard_sparkline_focus'))) {
+            const style: HTMLStyleElement = document.createElement('style');
+            style.setAttribute('id', (<HTMLElement>this.element).id + 'Keyboard_sparkline_focus');
+            style.innerText = '.e-sparkline-focused:focus,' +
+                'div[id*=container]:focus, path[id*=_sparkline_]:focus, circle[id*=_sparkline_]:focus {outline: none } .e-sparkline-focused:focus-visible,' +
+                'div[id*=container]:focus-visible, path[id*=_sparkline_]:focus-visible, circle[id*=_sparkline_]:focus-visible {outline: 1.5px ' + this.sparkTheme.tabColor + ' solid}';
+            document.body.appendChild(style);
+        }
+    }
+
+    /**
      * To provide the array of modules needed for sparkline rendering
      * @return {ModuleDeclaration[]}
      * @private 
@@ -543,6 +567,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.sparklineMove);
         EventHandler.remove(this.element, cancel, this.sparklineMouseLeave);
         EventHandler.remove(this.element, Browser.touchEndEvent, this.sparklineMouseEnd);
+        EventHandler.remove(this.element, 'keyup', this.chartKeyUp);
+        EventHandler.remove(this.element, 'keydown', this.chartKeyDown);
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.sparklineResize
@@ -560,6 +586,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         EventHandler.add(this.element, 'click', this.sparklineClick, this);
         EventHandler.add(this.element, cancel, this.sparklineMouseLeave, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.sparklineMouseEnd, this);
+        EventHandler.add(this.element, 'keyup', this.chartKeyUp, this);
+        EventHandler.add(this.element, 'keydown', this.chartKeyDown, this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.sparklineResize.bind(this)
@@ -687,6 +715,153 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * Handles the keyboard onkeydown on sparkline.
+     *
+     * @returns {boolean} false
+     * @private
+     */
+    public chartKeyDown(e: KeyboardEvent): boolean {
+        let actionKey: string = '';
+        if (this.tooltipSettings.visible && ((e.code === 'Tab' && this.previousTargetId.indexOf('_sparkline_') > -1) || e.code === 'Escape')) {
+            actionKey = 'ESC';
+        }
+        if (actionKey !== '') {
+            this.sparklineKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
+        }
+        return false;
+    }
+
+    /**
+     * Handles the keyboard onkeydown on sparkline.
+     *
+     * @returns {boolean} false
+     * @private
+     */
+    public chartKeyUp(e: KeyboardEvent): boolean {
+        let actionKey: string = '';
+        let targetId: string = e.target['id'];
+        let groupElement: HTMLElement;
+        const targetElement: HTMLElement = e.target as HTMLElement;
+        const seriesElement: HTMLElement = getElement(this.element.id + '_sparkline_g') as HTMLElement;
+        if (seriesElement && seriesElement.firstElementChild) {
+            const firstChild: HTMLElement = seriesElement.firstElementChild as HTMLElement;
+            let className: string = firstChild.getAttribute('class');
+            if (className && className.indexOf('e-sparkline-focused') === -1) {
+                className = className + ' e-sparkline-focused';
+            } else if (!className) {
+                className = 'e-sparkline-focused';
+            }
+            firstChild.setAttribute('class', className);
+        }
+        if (e.code === 'Tab') {
+            if (this.previousTargetId !== '') {
+                if (this.previousTargetId.indexOf('_sparkline_') > -1 && targetId.indexOf('_sparkline_') === -1) {
+                    groupElement = getElement(this.element.id + '_sparkline_g') as HTMLElement;
+                    this.setTabIndex(groupElement.children[this.currentPointIndex] as HTMLElement, groupElement.firstElementChild as HTMLElement);
+                }
+            }
+            this.previousTargetId = targetId;
+            actionKey = this.tooltipSettings.visible ? 'Tab' : '';
+        }
+        else if (e.code.indexOf('Arrow') > -1) {
+            e.preventDefault();
+            this.previousTargetId = targetId;
+            if (targetId.indexOf('_sparkline_') > -1) {
+                groupElement = targetElement.parentElement;
+                let currentPoint: Element = e.target as Element;
+                targetElement.removeAttribute('tabindex');
+                targetElement.blur();
+                if ((e.code === 'ArrowUp' || e.code === 'ArrowDown')) {
+                    this.currentPointIndex += e.code === 'ArrowUp' ? 1 : -1;
+                }
+                if (targetId.indexOf('_marker') > -1) {
+                    this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
+                        getElement(this.element.id + '_sparkline_marker_g').childElementCount);
+                    currentPoint = getElement(this.element.id + '_sparkline_marker_' +
+                        this.currentPointIndex);
+                }
+                else if (targetId.indexOf('_column') > -1) {
+                    this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
+                        getElement(this.element.id + '_sparkline_g').childElementCount);
+                    currentPoint = getElement(this.element.id + '_sparkline_column_' + this.currentPointIndex);
+                }
+                else if (targetId.indexOf('_winloss') > -1) {
+                    this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
+                        getElement(this.element.id + '_sparkline_g').childElementCount);
+                    currentPoint = getElement(this.element.id + '_sparkline_winloss_' + this.currentPointIndex);
+                }
+                else if (targetId.indexOf('_pie') > -1) {
+                    this.currentPointIndex = this.getActualIndex(this.currentPointIndex,
+                        getElement(this.element.id + '_sparkline_g').childElementCount);
+                    currentPoint = getElement(this.element.id + '_sparkline_pie_' + this.currentPointIndex);
+                }
+                targetId = this.focusChild(currentPoint as HTMLElement);
+                actionKey = this.tooltipSettings.visible ? 'ArrowMove' : '';
+            }
+        }
+        if (actionKey !== '') {
+            this.sparklineKeyboardNavigations(e, targetId, actionKey);
+        }
+        return false;
+    }
+
+    private sparklineKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {
+        switch (actionKey) {
+        case 'Tab':
+        case 'ArrowMove':
+            if (targetId.indexOf('_sparkline_') > -1) {
+                let pointIndex: number;
+                if ((this.type.indexOf('Line') > -1) || (this.type.indexOf('Area') > -1)) {
+                    pointIndex = +(targetId.split('_sparkline_')[1].split('marker_')[1]);
+                }
+                else if (this.type.indexOf('WinLoss') > -1) {
+                    pointIndex = +(targetId.split('_sparkline_')[1].split('winloss_')[1]);
+                }
+                else if (this.type.indexOf('Pie') > -1) {
+                    pointIndex = +(targetId.split('_sparkline_')[1].split('pie_')[1]);
+                }
+                else {
+                    pointIndex = +(targetId.split('_sparkline_')[1].split('column_')[1]);
+                }
+                if (this.sparklineTooltipModule) {
+                    this.sparklineTooltipModule.renderTooltip(this.sparklineRenderer.visiblePoints[pointIndex]);
+                }
+            }
+            break;
+        case 'ESC':
+            this.sparklineTooltipModule.removeTooltipElements();
+            break;
+        }
+    }
+
+    private setTabIndex(previousElement: HTMLElement, currentElement: HTMLElement): void {
+        if (previousElement) {
+            previousElement.removeAttribute('tabindex');
+        }
+        if (currentElement) {
+            currentElement.setAttribute('tabindex', '0');
+        }
+    }
+
+    private getActualIndex(index: number, totalLength: number): number {
+        return index > totalLength - 1 ? 0 : (index < 0 ? totalLength - 1 : index);
+    }
+
+    private focusChild(element: HTMLElement): string {
+        element.setAttribute('tabindex', '0');
+        let className: string = element.getAttribute('class');
+        element.setAttribute('tabindex', '0');
+        if (className && className.indexOf('e-sparkline-focused') === -1) {
+            className = 'e-sparkline-focused ' + className;
+        } else if (!className) {
+            className = 'e-sparkline-focused';
+        }
+        element.setAttribute('class', className);
+        element.focus();
+        return element.id;
+    }
+
+    /**
      * Method to set mouse x, y from events
      */
     private setSparklineMouseXY(e: PointerEvent): void {
@@ -774,6 +949,9 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.sparklineData = [];
         // let element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_chart_focus');
         // if (element) { element.remove(); }
+        const element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_sparkline_focus');
+        if (element) { element.remove(); }
+        removeElement('sparklinesmeasuretext');
         if (this.element) {
             this.unWireEvents();
             super.destroy();

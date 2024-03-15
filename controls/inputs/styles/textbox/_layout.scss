@@ -24,14 +24,3 @@
 .e-bigger .e-input-group.e-input-focus.e-rtl.e-multi-line-input textarea.e-textbox {
   padding-left: 32px;
 }
-
-.e-input-group.e-multi-line-input .e-clear-icon:not(.e-clear-icon-hide) {
-  position: absolute;
-  right: $multiline-clear-icon-right-position;
-  top: $multiline-clear-icon-top-position;
-}
-
-.e-input-group.e-rtl.e-multi-line-input .e-clear-icon:not(.e-clear-icon-hide) {
-  right: initial;
-  left: $multiline-clear-icon-left-position;
-}

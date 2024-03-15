@@ -186,6 +186,18 @@ export const annotationRendering: string = 'annotationRendering';
  */
 export const itemSelection: string = 'itemSelection';
 /**
+ * Specifies the maps pan complete event name.
+ *
+ * @private
+ */
+export const panComplete: string = 'panComplete';
+/**
+ * Specifies the maps zoom complete event name.
+ *
+ * @private
+ */
+export const zoomComplete: string = 'zoomComplete';
+/**
  * Specifies the maps item highlight event name.
  *
  */

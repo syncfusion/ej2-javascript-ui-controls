@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser, compile, append } from '@syncfusion/ej2-base';import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection, cldrData } from '@syncfusion/ej2-base';import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';import { Internationalization, DateFormatOptions, KeyboardEventArgs, getUniqueID, select } from '@syncfusion/ej2-base';import { Button, CheckBox, RadioButton, ChangeEventArgs as ButtonChangeEventArgs, RadioButtonModel } from '@syncfusion/ej2-buttons';import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection, DropDownTreeModel, DropDownTree } from '@syncfusion/ej2-dropdowns';import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs, MultiSelectModel, DropDownListModel } from '@syncfusion/ej2-dropdowns';import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';import { TextBoxModel, NumericTextBoxModel } from '@syncfusion/ej2-inputs';import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs, DatePickerModel } from '@syncfusion/ej2-calendars';import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Tooltip, createSpinner, showSpinner, hideSpinner, TooltipEventArgs } from '@syncfusion/ej2-popups';import { compile as templateCompiler } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser, compile, append, ModuleDeclaration, getDefaultDateObject } from '@syncfusion/ej2-base';import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection, cldrData } from '@syncfusion/ej2-base';import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';import { Internationalization, DateFormatOptions, KeyboardEventArgs, getUniqueID, select } from '@syncfusion/ej2-base';import { Button, CheckBox, RadioButton, ChangeEventArgs as ButtonChangeEventArgs, RadioButtonModel } from '@syncfusion/ej2-buttons';import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection, DropDownTreeModel, DropDownTree } from '@syncfusion/ej2-dropdowns';import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs, MultiSelectModel, DropDownListModel } from '@syncfusion/ej2-dropdowns';import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';import { TextBoxModel, NumericTextBoxModel } from '@syncfusion/ej2-inputs';import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs, DatePickerModel } from '@syncfusion/ej2-calendars';import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Tooltip, createSpinner, showSpinner, hideSpinner, TooltipEventArgs } from '@syncfusion/ej2-popups';import { compile as templateCompiler } from '@syncfusion/ej2-base';
 import {TemplateColumn,Validation,FormatObject,ActionEventArgs,ChangeEventArgs,RuleChangeEventArgs,FieldMode,DisplayMode,SortDirection} from "./query-builder";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -165,6 +165,13 @@ export interface RuleModel {
      */
     not?: boolean;
 
+    /**
+     * Specifies whether rule is locked or not.
+     *
+     * @default false
+     */
+    isLocked?: boolean;
+
 }
 
 /**
@@ -213,6 +220,34 @@ export interface ValueModel {
  * Interface for a class ShowButtons
  */
 export interface ShowButtonsModel {
+
+    /**
+     * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     *
+     * @default false
+     */
+    cloneRule?: boolean;
+
+    /**
+     * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     *
+     * @default false
+     */
+    cloneGroup?: boolean;
+
+    /**
+     * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     *
+     * @default false
+     */
+    lockRule?: boolean;
+
+    /**
+     * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     *
+     * @default false
+     */
+    lockGroup?: boolean;
 
     /**
      * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
@@ -442,6 +477,39 @@ export interface QueryBuilderModel extends ComponentModel{
      * @default false
      */
     readonly?: boolean;
+
+    /**
+     * Specifies a boolean value whether enable / disable the new rule adding while adding new groups.
+     *
+     * @remarks
+     * If this property is true, the empty rule is inserted while inserting new group.
+     * If set to false, the group is inserted without any rule.
+     *
+     * @default true
+     */
+    addRuleToNewGroups?: boolean;
+
+    /**
+     * Specifies a boolean value whether enable / disable the auto selection with the first value for the field.
+     *
+     * @remarks
+     * If this property is true, the field dropdown list will render with the first value of the dropdown list.
+     * If set to false, the dropdown list render with placeholder.
+     *
+     * @default false
+     */
+    autoSelectField?: boolean;
+
+    /**
+     * Specifies a boolean value whether enable / disable the auto selection with the first value for the operator.
+     *
+     * @remarks
+     * If this property is true, the operator dropdown list will render with the first value of the dropdown list.
+     * If set to false, the dropdown list render with placeholder.
+     *
+     * @default true
+     */
+    autoSelectOperator?: boolean;
 
     /**
      * Specifies the separator string for column.

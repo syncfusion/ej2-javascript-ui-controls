@@ -2,7 +2,7 @@
  * Base RTE spec
  */
 import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach } from '@syncfusion/ej2-base';
-import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent, ITableCommandsArgs,DialogType, ToolbarType, PasteCleanup, HtmlEditor, Toolbar } from '../../../src/rich-text-editor/index';
+import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent, ITableCommandsArgs, DialogType, ToolbarType, PasteCleanup, HtmlEditor, Toolbar } from '../../../src/rich-text-editor/index';
 import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
 import { renderRTE, destroy, dispatchKeyEvent } from './../render.spec';
@@ -113,7 +113,7 @@ L10n.load({
 
 describe('EJ2-60422: Removed nested bullet list when press ctrl+B on two times', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'b', stopPropagation: () => { }, shiftKey: false, which: 66};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'b', stopPropagation: () => { }, shiftKey: false, which: 66 };
     it('pressing the ctrl+b on the parent list with nested list', (done: Function) => {
         rteObj = renderRTE({
             value: `<ul><li><strong class="focusNode">List parent</strong><ul><li>Nested List</li><li>Nested List﻿﻿<br></li></ul></li></ul>`,
@@ -135,7 +135,7 @@ describe('EJ2-60422: Removed nested bullet list when press ctrl+B on two times',
 
 describe('831600: When using the mention with the Rich Text Editor, the backspace is not working properly.', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('contenteditable div false element before the backspace key press', (done: Function) => {
         rteObj = renderRTE({
             value: `<p>sdvdsvsdv</p><p>sdvsdv <span contenteditable="false" class="e-mention-chip"><a title="maria@gmail.com">@Maria</a></span>&nbsp;sdvsdvdsv</p>`,
@@ -156,7 +156,7 @@ describe('831600: When using the mention with the Rich Text Editor, the backspac
 
 describe('832431: Entire line gets removed while pressing enter key after pressing backspace issue', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Checking after pressing backspace key', (done: Function) => {
         rteObj = renderRTE({
             value: `<p>
@@ -202,7 +202,7 @@ describe('870158: Pressing backspace inside the list', () => {
 
 describe('840133: Backspace key not working properly when placed cursor in the element with br inside the 2 text nodes', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('The backspace not working properly on the line break text', (done: Function) => {
         rteObj = renderRTE({
             value: `<p>This is the first line</p><p>This is the secod line</p><p class='focusNode'>This is the thirdline<br>This is also the third line</p>`,
@@ -223,7 +223,7 @@ describe('840133: Backspace key not working properly when placed cursor in the e
 
 describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Checking the backspacekey between two nodes', (done: Function) => {
         rteObj = renderRTE({
             value: `<p>Testing 1<br></p><p>Testing 2</p>`,
@@ -244,7 +244,7 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
 });
 describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Checking the li element skipping for nested LI', (done: Function) => {
         rteObj = renderRTE({
             value: `<p>TextContent</p><ul><li>Testing 1</li><li>Testing 2﻿﻿<br></li></ul>`,
@@ -264,7 +264,7 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
 });
 describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Checking the keyboard enter inside the table', (done: Function) => {
         rteObj = renderRTE({
             value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 50%;" class="">Testing1</td>
@@ -285,7 +285,7 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
 });
 describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Checking the keyboard enter inside the nodes', (done: Function) => {
         rteObj = renderRTE({
             value: `<p>Testing 1<br></p><p>Testing 2</p>`,
@@ -306,7 +306,7 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
 
 describe('827539: Random spaces got removed while pressing backspace key in RichTextEditor', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Checking the randowm node being removed in the editor', (done: Function) => {
         rteObj = renderRTE({
             value: `<p>
@@ -349,7 +349,7 @@ describe('827539: Random spaces got removed while pressing backspace key in Rich
 
 describe('EJ2-69674 - Deleting bullet list using backspace key doesnt delete the list issue testing', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Checking the keyboard enter inside the nodes', (done: Function) => {
         rteObj = renderRTE({
             value: `<p style="text-align:center; margin-bottom: 15px; ">
@@ -373,7 +373,7 @@ describe('EJ2-69674 - Deleting bullet list using backspace key doesnt delete the
 
 describe('EJ2-69674 - Pressing enter key after deleting the list using backspace key', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Pressing enter key after ', (done: Function) => {
         rteObj = renderRTE({
             value: `<p style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br></p><p style="text-align:center; margin-bottom: 5px; "><font face="Calibri"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></font><br></p><p style="text-align: center; margin-bottom: 2px; "><font face="Calibri"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br></font></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;">​</span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></p>`,
@@ -396,7 +396,7 @@ describe('EJ2-69674 - Pressing enter key after deleting the list using backspace
 
 describe('BLAZ-21232: Rich Text Editor content is removed when pressing the backspace key -', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it(' if the placeHolder is configured', (done: Function) => {
         rteObj = renderRTE({
             value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr></tbody></table><p>RTE content</p>`,
@@ -440,7 +440,7 @@ describe('EJ2-57147: Change width property', () => {
 
 describe('EJ2-65467: Backspace key press inbetween 2 inline nodes seperated by BR', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Backspace key press inbetween 2 inline nodes seperated by BR', (done: Function) => {
         rteObj = renderRTE({
             value: `<p style="margin-bottom:7.5pt;line-height:normal;background:
@@ -462,7 +462,7 @@ describe('EJ2-65467: Backspace key press inbetween 2 inline nodes seperated by B
 
 describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Checking the LI element with blocknodes', (done: Function) => {
         rteObj = renderRTE({
             value: `<p><b>Functional\n            Specifications/Requirements:</b></p><ol><li><p>Provide\n            the tool bar support, it\u2019s also customizable.</p></li><li><p>Options\n            to get the HTML elements with styles.</p></li><li><p>Support\n            to insert image from a defined path.</p></li></ol></p>`,
@@ -481,7 +481,7 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
 });
 describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Checking the LI element with text nodes', (done: Function) => {
         rteObj = renderRTE({
             value: `<p><b>Functional
@@ -507,7 +507,7 @@ describe('EJ2-44314: Improvement with backSpaceKey action in the Rich Text Edito
 
 describe('EJ2-56125: backSpaceKey action at start of list with previous list empty issue', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Checking the LI element with text nodes', (done: Function) => {
         rteObj = renderRTE({
             value: `<ul><li>List Content 1</li><li><br></li><li class="focusNode">List Content 3</li></ul>`,
@@ -527,7 +527,7 @@ describe('EJ2-56125: backSpaceKey action at start of list with previous list emp
 
 describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
     it('Checking the deletekey between two nodes', (done: Function) => {
         rteObj = renderRTE({
             value: `<p>Testing 1<br></p><p>Testing 2</p>`,
@@ -549,7 +549,7 @@ describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor',
 
 describe('EJ2-61099: Link in the list reverted when press ctrl+C', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'c', stopPropagation: () => { }, shiftKey: false, which: 67};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'c', stopPropagation: () => { }, shiftKey: false, which: 67 };
     it('clearing all list maintains the list element', (done: Function) => {
         rteObj = renderRTE({
             value: `<p>Rich Text Editor is a WYSIWYG editing control that will reduce the effort for users while trying to express their formatting word content as HTML or Markdown format.</p><p><b>Paste Cleanup properties:</b></p><ul>
@@ -586,7 +586,7 @@ describe('EJ2-61099: Link in the list reverted when press ctrl+C', () => {
 
 describe('EJ2-57616: clearing all list maintains the list element', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('clearing all list maintains the list element', (done: Function) => {
         rteObj = renderRTE({
             value: `<p class="focusNodefirst">Rich Text Editor is a WYSIWYG editing control that will reduce the effort for users while trying to express their formatting word content as HTML or Markdown format.</p>
@@ -629,7 +629,7 @@ describe('EJ2-57616: clearing all list maintains the list element', () => {
 
 describe('EJ2-56125: backSpaceKey action at start of list with previous list empty issue', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
     it('Checking the LI element with text nodes and last element have BR element', (done: Function) => {
         rteObj = renderRTE({
             value: `<ul><li>List Content 3</li><li><br></li><li class="focusNode">List Content 4<br></li></ul>`,
@@ -649,7 +649,7 @@ describe('EJ2-56125: backSpaceKey action at start of list with previous list emp
 
 describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
     it('Checking the delete key between two LI nodes with no childNodes', (done: Function) => {
         rteObj = renderRTE({
             value: `<p>TextContent</p><ul><li>Testing 1</li><li>Testing 2\uFEFF\uFEFF<br></li></ul>`,
@@ -670,7 +670,7 @@ describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor',
 
 describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
     it('Checking the deletekey between two nodes with child elements', (done: Function) => {
         rteObj = renderRTE({
             value: `<p><b>Functional\nSpecifications/Requirements:</b></p><ol><li><p>Provide\nthe tool bar support, it\u2019s also customizable.</p></li><li><p>Options\nto get the HTML elements with styles.</p></li><li><p>Support\nto insert image from a defined path.</p></li></ol></p>`,
@@ -691,7 +691,7 @@ describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor',
 
 describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
     it('Checking the deletekey between two nodes one with child elements and other with no child', (done: Function) => {
         rteObj = renderRTE({
             value: `<p><b>Functional\nSpecifications/Requirements:</b></p><ol><li><p>Provide\nthe tool bar support, it\u2019s also customizable.</p></li><li><p>Options\nto get the HTML elements with styles.</p></li><li>Support\nto insert image from a defined path.</li><li><p>Footer\nelements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol><p></p>`,
@@ -712,7 +712,7 @@ describe('EJ2-50975: Improvement with deleteKey action in the Rich Text Editor',
 
 describe('EJ2-57112: Delete Key not working when image is focused and deleted', () => {
     let rteObj: RichTextEditor;
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
     it('Delete Key not working when image is focused and deleted', (done: Function) => {
         rteObj = renderRTE({
             value: `<ol><li><p>image</p></li></ol><p class="focusNode"><img alt="Logo" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" style="width: 300px;"></p><p>Content</p>`,
@@ -723,7 +723,7 @@ describe('EJ2-57112: Delete Key not working when image is focused and deleted', 
         keyBoardEvent.keyCode = 46;
         keyBoardEvent.code = 'Delete';
         (rteObj as any).keyDown(keyBoardEvent);
-        expect((rteObj as any).htmlEditorModule.isImageDelete).toBe(true);
+        expect((rteObj as any).inputElement.innerHTML === `<ol><li><p>image</p></li></ol><p class="focusNode"><img alt="Logo" src="https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline" style="width: 300px;"></p><p>Content</p>`).toBe(true);
         done();
     });
     afterAll(() => {
@@ -1008,7 +1008,7 @@ describe('RTE base module', () => {
             rteObj = renderRTE({
                 value: '<p>Testing</p>',
                 toolbarSettings: {
-                    items: [ 'FontName', 'FontSize', 'FontColor', 'BackgroundColor']
+                    items: ['FontName', 'FontSize', 'FontColor', 'BackgroundColor']
                 },
                 fontFamily: {
                     default: 'Verdana',
@@ -1136,7 +1136,7 @@ describe('RTE base module', () => {
             focusOut = false;
         });
     });
-    
+
 
     describe("EJ2-62642 - Blur called when @amp; is on the RTE content", () => {
         let rteObj: RichTextEditor;
@@ -1395,7 +1395,7 @@ describe('RTE base module', () => {
             keyboardEventArgs.keyCode = 13;
             (<any>rteObj).keyDown(keyboardEventArgs);
             let popupElement: HTMLCollectionOf<Element> = document.getElementsByClassName('e-rte-quick-popup');
-            expect(popupElement.length === 0).toBe(true);            
+            expect(popupElement.length === 0).toBe(true);
         });
         it('space key', function () {
             rteObj.contentModule.getEditPanel().innerHTML = 'datamanager https://www.google.com';
@@ -1468,7 +1468,7 @@ describe('RTE base module', () => {
                     enableFloating: true,
                 }
             });
-            rteObj.setContentHeight('', true);
+            rteObj.setContentHeight('Init', true);
             expect(rteObj.toolbarModule.getToolbarElement()).not.toBe(null);
         });
 
@@ -1491,7 +1491,7 @@ describe('RTE base module', () => {
 
         it('focus method testing', () => {
             rteObj.focusIn();
-            expect(document.activeElement === rteObj.contentModule.getPanel()).toBe(true);            
+            expect(document.activeElement === rteObj.contentModule.getPanel()).toBe(true);
         });
 
         afterAll(() => {
@@ -1506,12 +1506,12 @@ describe('RTE base module', () => {
         beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
-                    items: [ 'Bold', 'Italic', 'Underline', {
-                            tooltipText: 'Custom tool',
-                            command: 'Custom',
-                            template:
-                              '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
-                          }, 'FontColor', 'BackgroundColor', '|',
+                    items: ['Bold', 'Italic', 'Underline', {
+                        tooltipText: 'Custom tool',
+                        command: 'Custom',
+                        template:
+                            '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
+                    }, 'FontColor', 'BackgroundColor', '|',
                         'SubScript', 'SuperScript', '|',
                         'LowerCase', 'UpperCase'
                     ]
@@ -1526,7 +1526,7 @@ describe('RTE base module', () => {
             QTBarModule.imageQTBar.showPopup(0, 0, trg);
         });
 
-        it('When the custom command is configured', () => {            
+        it('When the custom command is configured', () => {
             expect((rteObj as any).element.querySelectorAll('.e-template')[0].classList.contains('e-overlay')).toBe(true);
         });
 
@@ -1542,11 +1542,11 @@ describe('RTE base module', () => {
         beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
-                    items: [ 'Bold', 'Italic', 'Underline', {
-                            tooltipText: 'Custom tool',
-                            template:
-                              '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
-                          }, 'FontColor', 'BackgroundColor', '|',
+                    items: ['Bold', 'Italic', 'Underline', {
+                        tooltipText: 'Custom tool',
+                        template:
+                            '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
+                    }, 'FontColor', 'BackgroundColor', '|',
                         'SubScript', 'SuperScript', '|',
                         'LowerCase', 'UpperCase'
                     ]
@@ -1561,7 +1561,7 @@ describe('RTE base module', () => {
             QTBarModule.imageQTBar.showPopup(0, 0, trg);
         });
 
-        it('When the custom command is not configured', () => {            
+        it('When the custom command is not configured', () => {
             expect((rteObj as any).element.querySelectorAll('.e-template')[0].classList.contains('e-overlay')).toBe(false);
         });
 
@@ -1577,25 +1577,25 @@ describe('RTE base module', () => {
         beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
-                    items: [ 'Bold', 'Italic', 'Underline', {
+                    items: ['Bold', 'Italic', 'Underline', {
                         tooltipText: 'Custom tool 1',
                         command: 'Custom',
                         template:
-                          '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
-                      }, 'FontColor', 'BackgroundColor', '|',
-                    'SubScript', {
-                        tooltipText: 'Custom tool 2',
-                        command: 'Custom',
-                        template:
-                          '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
-                      }, 'SuperScript', '|',
-                    'LowerCase', {
-                        tooltipText: 'Custom tool 3',
-                        command: 'Custom',
-                        template:
-                          '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
-                      }, 'UpperCase'
-                ]
+                            '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
+                    }, 'FontColor', 'BackgroundColor', '|',
+                        'SubScript', {
+                            tooltipText: 'Custom tool 2',
+                            command: 'Custom',
+                            template:
+                                '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
+                        }, 'SuperScript', '|',
+                        'LowerCase', {
+                            tooltipText: 'Custom tool 3',
+                            command: 'Custom',
+                            template:
+                                '<button class="e-tbar-btn e-btn" id="custom_tbar" style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div>custom tool</button>'
+                        }, 'UpperCase'
+                    ]
                 },
                 value: '<p><img src="https://media.sproutsocial.com/uploads/2017/02/10x-featured-social-media-image-size.png" class="e-resize e-rte-image e-imginline"></p>'
             });
@@ -1607,7 +1607,7 @@ describe('RTE base module', () => {
             QTBarModule.imageQTBar.showPopup(0, 0, trg);
         });
 
-        it('When the custom command is configured for multiple toolbars', () => {            
+        it('When the custom command is configured for multiple toolbars', () => {
             expect((rteObj as any).element.querySelectorAll('.e-template')[0].classList.contains('e-overlay')).toBe(true);
             expect((rteObj as any).element.querySelectorAll('.e-template')[3].classList.contains('e-overlay')).toBe(true);
             expect((rteObj as any).element.querySelectorAll('.e-template')[4].classList.contains('e-overlay')).toBe(true);
@@ -1632,10 +1632,10 @@ describe('RTE base module', () => {
                 afterImageDelete: afterImageDeletefun
             });
             function onActionBeginfun(): void {
-                actionBeginTiggered = true; 
+                actionBeginTiggered = true;
             }
             function onActionCompletefun(): void {
-                actionCompleteTiggered = true; 
+                actionCompleteTiggered = true;
             }
             function afterImageDeletefun(args: any): void {
                 afterImageDeleteTiggered = true;
@@ -1662,7 +1662,7 @@ describe('RTE base module', () => {
 
         it('backspace key press inside the pre tag', () => {
             rteObj.contentModule.getEditPanel().innerHTML = '<pre id="p1"><br>Paragraph 4<br>Paragraph 5<br>Para&#8203;<br><br></pre>';
-            let start: HTMLElement =  rteObj.contentModule.getEditPanel().querySelector('#p1');
+            let start: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('#p1');
             expect(start.childNodes[5].textContent.length === 5).toBe(true);
             setCursorPoint(document, start.childNodes[5] as Element, 5);
             keyBoardEvent.which = 8;
@@ -1831,10 +1831,10 @@ describe('RTE base module', () => {
             destroy(rteObj);
         });
     });
-    
+
     describe('EJ2-60047 - typing by selecting 3 empty p tag elements which is prefix of other element with content in firefox', () => {
         let rteObj: RichTextEditor;
-        let defaultUserAgent= navigator.userAgent;
+        let defaultUserAgent = navigator.userAgent;
         let fireFox: string = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
         let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
         beforeAll(() => {
@@ -1868,7 +1868,7 @@ describe('RTE base module', () => {
 
         afterAll(() => {
             destroy(rteObj);
-            Browser.userAgent =defaultUserAgent;
+            Browser.userAgent = defaultUserAgent;
         });
     });
 
@@ -1940,10 +1940,10 @@ describe('RTE base module', () => {
                 value: '',
                 afterImageDelete: (() => {
                     afterImageDeleteTiggered++;
-                 })
+                })
             });
         });
-        
+
         it('delete image with Delete key', () => {
             let keyBoardEvent: any = { preventDefault: () => { }, action: 'delete', key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
             rteObj.contentModule.getEditPanel().innerHTML = `<div class='actiondiv'><p>test<img id='img1' src="https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" width="250" height="250">test</p><p>test2</p></div>`;
@@ -1986,7 +1986,7 @@ describe('RTE base module', () => {
             destroy(rteObj);
         });
     });
-    
+
     describe('Toolbar - Print Module', () => {
         describe('Print rendering testing', () => {
             let beforeCount: number = 0;
@@ -2175,11 +2175,11 @@ describe('RTE base module', () => {
         it(' trigger the actionBegin and actionComplete while pressing the action key in paste', (done) => {
             keyBoardEvent.clipboardData = {
                 getData: (e: any) => {
-                  if (e === "text/plain") {
-                    return 'Hi syncfusion website https://ej2.syncfusion.com is here with another URL https://ej2.syncfusion.com text after second URL';
-                  } else {
-                    return '';
-                  }
+                    if (e === "text/plain") {
+                        return 'Hi syncfusion website https://ej2.syncfusion.com is here with another URL https://ej2.syncfusion.com text after second URL';
+                    } else {
+                        return '';
+                    }
                 },
                 items: []
             };
@@ -2191,20 +2191,20 @@ describe('RTE base module', () => {
             setCursorPoint(curDocument, (rteObj as any).inputElement, 0);
             rteObj.onPaste(keyBoardEvent);
             setTimeout(() => {
-            let allElem: any = (rteObj as any).inputElement.firstElementChild;
-            expect(allElem.children[0].childNodes[0].childNodes[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
-            expect(allElem.children[0].childNodes[0].childNodes[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
-            let expected: boolean = false;
-            let expectedElem: string = `<ol><li class="first-p"><span>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target="_blank" aria-label="Open in new window">https://ej2.syncfusion.com </a>is here with another URL <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target="_blank" aria-label="Open in new window">https://ej2.syncfusion.com </a>text after second URL</span>First p node-0</li></ol><p class="second-p">First p node-1</p>`;
-            if (allElem.innerHTML === expectedElem) {
-                expected = true;
-            }
-            expect(expected).toBe(true);
-            expect(beforeCount).toBe(true);
-            expect(afterCount).toBe(true);
-            afterCount = false;
-            beforeCount = false;
-            done();
+                let allElem: any = (rteObj as any).inputElement.firstElementChild;
+                expect(allElem.children[0].childNodes[0].childNodes[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
+                expect(allElem.children[0].childNodes[0].childNodes[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
+                let expected: boolean = false;
+                let expectedElem: string = `<ol><li class="first-p"><span>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target="_blank" aria-label="Open in new window">https://ej2.syncfusion.com </a>is here with another URL <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target="_blank" aria-label="Open in new window">https://ej2.syncfusion.com </a>text after second URL</span>First p node-0</li></ol><p class="second-p">First p node-1</p>`;
+                if (allElem.innerHTML === expectedElem) {
+                    expected = true;
+                }
+                expect(expected).toBe(true);
+                expect(beforeCount).toBe(true);
+                expect(afterCount).toBe(true);
+                afterCount = false;
+                beforeCount = false;
+                done();
             }, 100);
         });
 
@@ -2914,7 +2914,7 @@ describe('RTE base module', () => {
             destroy(rteObj);
         });
     });
-    
+
     describe('RTE - xhtml enabled and attribute - ', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
@@ -2932,7 +2932,7 @@ describe('RTE base module', () => {
             destroy(rteObj);
         });
     });
-    
+
     describe('RTE - getHtml Public Methods', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
@@ -3072,7 +3072,7 @@ describe('RTE base module', () => {
                         'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
                         'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
                         'SubScript', 'SuperScript', '|',
-                        'LowerCase', 'UpperCase', '|', 
+                        'LowerCase', 'UpperCase', '|',
                         'Formats', '|', 'OrderedList', 'UnorderedList', '|',
                         'Indent', 'Outdent', '|',
                         'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
@@ -3084,7 +3084,7 @@ describe('RTE base module', () => {
         it('Ensure cssClass property for dropdownpopup', () => {
             expect(rteObj.element.classList.contains('myClass')).toBe(true);
             let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
-            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+            for (let i: number = 0; i < allDropDownPopups.length; i++) {
                 //expect(allDropDownPopups[i].classList.contains('myClass')).toBe(true);
             }
         });
@@ -3092,7 +3092,7 @@ describe('RTE base module', () => {
             rteObj.cssClass = 'textClass';
             rteObj.dataBind();
             let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
-            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+            for (let i: number = 0; i < allDropDownPopups.length; i++) {
                 // expect(allDropDownPopups[i].classList.contains('textClass')).toBe(true);
                 // expect(allDropDownPopups[i].classList.contains('myClass')).toBe(false);
             }
@@ -3112,7 +3112,7 @@ describe('RTE base module', () => {
                         'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
                         'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
                         'SubScript', 'SuperScript', '|',
-                        'LowerCase', 'UpperCase', '|', 
+                        'LowerCase', 'UpperCase', '|',
                         'Formats', '|', 'OrderedList', 'UnorderedList', '|',
                         'Indent', 'Outdent', '|',
                         'CreateLink', '|', 'Image', '|', 'CreateTable', '|',
@@ -3135,7 +3135,7 @@ describe('RTE base module', () => {
             expect(rteObj.element.classList.contains('myClass')).toBe(true);
             expect(document.querySelector('.e-rte-quick-toolbar').classList.contains('myClass')).toBe(true);
             let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
-            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+            for (let i: number = 0; i < allDropDownPopups.length; i++) {
                 setTimeout(() => {
                     expect(allDropDownPopups[i].classList.contains('myClass')).toBe(true);
                     done();
@@ -3154,7 +3154,7 @@ describe('RTE base module', () => {
             rteObj.showInlineToolbar();
             expect(document.querySelector('.e-rte-quick-toolbar').classList.contains('textClass')).toBe(true);
             let allDropDownPopups: NodeListOf<Element> = document.querySelectorAll('.e-dropdown-popup');
-            for(let i: number = 0; i < allDropDownPopups.length; i++) {
+            for (let i: number = 0; i < allDropDownPopups.length; i++) {
                 setTimeout(() => {
                     expect(allDropDownPopups[i].classList.contains('textClass')).toBe(true);
                     expect(allDropDownPopups[i].classList.contains('myClass')).toBe(false);
@@ -3262,7 +3262,7 @@ describe('RTE base module', () => {
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
             expect((rteObj as any).placeHolderWrapper.innerText).toBe('type something');
         });
-        it('ensure placeholder when backspace key is pressed(with exact enter key content added)', () => {            
+        it('ensure placeholder when backspace key is pressed(with exact enter key content added)', () => {
             rteObj.placeholder = 'write content';
             rteObj.dataBind();
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
@@ -3271,11 +3271,11 @@ describe('RTE base module', () => {
             rteObj.dataBind();
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
         });
-        it('ensure placeholder when enter key is pressed', () => {            
+        it('ensure placeholder when enter key is pressed', () => {
             rteObj.placeholder = 'write content';
             rteObj.dataBind();
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
-            expect((rteObj as any).placeHolderWrapper.innerText).toBe('write content');            
+            expect((rteObj as any).placeHolderWrapper.innerText).toBe('write content');
             keyboardEventArgs.action = 'enter';
             keyboardEventArgs.keyCode = 13;
             (rteObj as any).keyUp(keyboardEventArgs);
@@ -3370,8 +3370,8 @@ describe('RTE base module', () => {
             let curDocument: Document;
             curDocument = rteObj.contentModule.getDocument();
             setCursorPoint(curDocument, (rteObj as any).inputElement, 0);
-            let el = document.createElement("img"); 
-            el.src = "https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png"; 
+            let el = document.createElement("img");
+            el.src = "https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png";
             (rteObj as any).inputElement.focus();
             rteObj.executeCommand("insertImage", el);
             expect((rteObj as any).inputElement.querySelector('img').src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');
@@ -3387,8 +3387,8 @@ describe('RTE base module', () => {
             let curDocument: Document;
             curDocument = rteObj.contentModule.getDocument();
             setCursorPoint(curDocument, (rteObj as any).inputElement, 0);
-            let el = document.createElement("video"); 
-            el.innerHTML = `<source src = "https://www.w3schools.com/html/movie.mp4"> <source src="https://www.w3schools.com/html/movie.ogg" type="video/ogg">Your browser does not support the video tag.`; 
+            let el = document.createElement("video");
+            el.innerHTML = `<source src = "https://www.w3schools.com/html/movie.mp4"> <source src="https://www.w3schools.com/html/movie.ogg" type="video/ogg">Your browser does not support the video tag.`;
             (rteObj as any).inputElement.focus();
             rteObj.executeCommand("insertVideo", el);
             expect((rteObj as any).inputElement.querySelectorAll('video').length).toBe(1);
@@ -3404,8 +3404,8 @@ describe('RTE base module', () => {
             let curDocument: Document;
             curDocument = rteObj.contentModule.getDocument();
             setCursorPoint(curDocument, (rteObj as any).inputElement, 0);
-            let el = document.createElement("video"); 
-            el.innerHTML = `<source src="horse.ogg" type="audio/ogg"><source src="horse.mp3" type="audio/mpeg">Your browser does not support the audio tag.`; 
+            let el = document.createElement("video");
+            el.innerHTML = `<source src="horse.ogg" type="audio/ogg"><source src="horse.mp3" type="audio/mpeg">Your browser does not support the audio tag.`;
             (rteObj as any).inputElement.focus();
             rteObj.executeCommand("insertAudio", el);
             expect((rteObj as any).inputElement.querySelectorAll('audio').length).toBe(1);
@@ -3420,14 +3420,14 @@ describe('RTE base module', () => {
                 maxLength: 20,
                 showCharCount: true
             });
-            
+
             (rteObj as any).inputElement.focus();
             let curDocument: Document;
             curDocument = rteObj.contentModule.getDocument();
             let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(curDocument, focusNode, focusNode, 0, 0);
-            let el = document.createElement("img"); 
-            el.src = "https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png"; 
+            let el = document.createElement("img");
+            el.src = "https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png";
             (rteObj as any).inputElement.focus();
             rteObj.executeCommand("insertImage", el);
             expect(rteObj.inputElement.querySelectorAll('img').length === 0).toBe(true);
@@ -3493,7 +3493,7 @@ describe('RTE base module', () => {
             expect(imgElem.getAttribute('alt') === 'editing alt image').toBe(true);
             expect(imgElem.getAttribute('width') === '250px').toBe(true);
             expect(imgElem.getAttribute('height') === '400px').toBe(true);
-            expect(imgElem.getAttribute('style')).toBe('min-width: 100px; max-width: 300px; min-height: 100px; max-height: 700px;');            
+            expect(imgElem.getAttribute('style')).toBe('min-width: 100px; max-width: 300px; min-height: 100px; max-height: 700px;');
         });
 
         it('ensure insert table on execute command with all the arguments', () => {
@@ -3739,7 +3739,7 @@ describe('RTE base module', () => {
         let element: HTMLElement;
         beforeAll((done: Function) => {
             element = createElement('div', {
-                id: "Wrapper", innerHTML: `<textarea id="defaultRTE_28695"></textarea>` 
+                id: "Wrapper", innerHTML: `<textarea id="defaultRTE_28695"></textarea>`
             });
             document.body.appendChild(element);
             done();
@@ -3756,7 +3756,7 @@ describe('RTE base module', () => {
             window.localStorage.removeItem("value");
             rteObj.value = "<p>Richtexteditor value updated</p>";
             rteObj.dataBind();
-            window.localStorage.setItem("value", "<p>Richtexteditor value updated</p>");           
+            window.localStorage.setItem("value", "<p>Richtexteditor value updated</p>");
             expect(rteObj.value).toBe(window.localStorage.getItem("value"));
             window.localStorage.removeItem("value");
             rteObj.enablePersistence = false;
@@ -4107,20 +4107,21 @@ describe('RTE base module', () => {
             A double enter will end them
             Tabs and shift-tabs work too`;
         beforeAll(() => {
-            rteObj = renderRTE({ editorMode: 'Markdown',
-            formatter: new MarkdownFormatter({
-                listTags: { 'OL': '1. ', 'UL': '- ' }, formatTags: {
-                    'h1': '# ',
-                    'h2': '## ',
-                    'h3': '### ',
-                    'h4': '#### ',
-                    'h5': '##### ',
-                    'h6': '###### ',
-                    'blockquote': '> ',
-                    'pre': '```\n',
-                    'p': ''
-                }
-            })
+            rteObj = renderRTE({
+                editorMode: 'Markdown',
+                formatter: new MarkdownFormatter({
+                    listTags: { 'OL': '1. ', 'UL': '- ' }, formatTags: {
+                        'h1': '# ',
+                        'h2': '## ',
+                        'h3': '### ',
+                        'h4': '#### ',
+                        'h5': '##### ',
+                        'h6': '###### ',
+                        'blockquote': '> ',
+                        'pre': '```\n',
+                        'p': ''
+                    }
+                })
             });
             editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
             editNode.value = innerHTML;
@@ -4607,14 +4608,14 @@ describe("RTE ExecuteCommand public method testing", () => {
         rteObj.executeCommand('insertText', 'RichTextEditor');
         expect(nodes[1].textContent === 'SampleRichTextEditor').toBe(true);
     });
-    
+
     it(' EJ2-27469: createLink using executeCommand not working propery issue', () => {
         let nodeSelection: NodeSelection = new NodeSelection();
         let node: HTMLElement = document.getElementById("createLink");
         nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 0, 10);
         let range = nodeSelection.getRange(rteObj.contentModule.getDocument());
         let save: NodeSelection = nodeSelection.save(range, rteObj.contentModule.getDocument());
-        rteObj.executeCommand('createLink',{url: 'www.google.com', text: '', selection: nodeSelection});
+        rteObj.executeCommand('createLink', { url: 'www.google.com', text: '', selection: nodeSelection });
         expect(node.firstElementChild.tagName.toLocaleLowerCase() === 'a').toBe(true);
         expect(node.firstElementChild.textContent === 'www.google.com').toBe(true);
     });
@@ -4624,7 +4625,7 @@ describe("RTE ExecuteCommand public method testing", () => {
         rteObj.dataBind();
         let videosrc = '<video><source src = "https://www.w3schools.com/html/movie.mp4"> <source src="https://www.w3schools.com/html/movie.ogg" type="video/ogg">Your browser does not support the video tag.</video><br />';
         let cuspoint = document.getElementById('lastNode');
-        setCursorPoint(document, cuspoint.childNodes[0] as Element ,7);
+        setCursorPoint(document, cuspoint.childNodes[0] as Element, 7);
         expect(rteObj.inputElement.querySelectorAll('video').length).toBe(1);
         rteObj.executeCommand("insertHTML", videosrc);
         expect(rteObj.inputElement.querySelectorAll('video').length).toBe(2);
@@ -4634,7 +4635,7 @@ describe("RTE ExecuteCommand public method testing", () => {
         rteObj.value = `<div><p id="lastPNode">Last node</p></div>`;
         rteObj.dataBind();
         let cuspoint = document.getElementById('lastPNode');
-        setCursorPoint(document, cuspoint.childNodes[0] as Element ,7);
+        setCursorPoint(document, cuspoint.childNodes[0] as Element, 7);
         rteObj.executeCommand("insertHTML", '<div><hr></div>');
         expect(rteObj.inputElement.querySelectorAll('hr').length === 1).toBe(true);
     });
@@ -4643,7 +4644,7 @@ describe("RTE ExecuteCommand public method testing", () => {
         rteObj.value = `<div><p id="lastNode">Last node</p></div>`;
         rteObj.dataBind();
         let cuspoint = document.getElementById('lastNode');
-        setCursorPoint(document, cuspoint.childNodes[0] as Element ,7);
+        setCursorPoint(document, cuspoint.childNodes[0] as Element, 7);
         rteObj.executeCommand("insertHorizontalRule");
         expect(rteObj.inputElement.querySelectorAll('hr').length === 1).toBe(true);
     });
@@ -4704,8 +4705,8 @@ describe("EJ2-59978 - Insert HTML and Text after Max char count - Execute Comman
     it('Insert HTML after Max char count - Execute Command', () => {
         let nodeSelection: NodeSelection = new NodeSelection();
         (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
-            rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
+        let focusNode: any = rteObj.inputElement.childNodes[0].childNodes[0];
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), focusNode, focusNode, 0, 0);
         rteObj.executeCommand('insertHTML', `<div>inserted</div>`);
         expect(rteObj.inputElement.innerHTML === `<p class="focusNode">RTE Content with RTE</p>`).toBe(true);
     });
@@ -5237,11 +5238,11 @@ describe(' Paste url', () => {
         setCursorPoint(curDocument, selectNode, 0);
         keyBoardEvent.clipboardData = {
             getData: (e: any) => {
-              if (e === "text/plain") {
-                return 'https://ej2.syncfusion.com';
-              } else {
-                return '';
-              }
+                if (e === "text/plain") {
+                    return 'https://ej2.syncfusion.com';
+                } else {
+                    return '';
+                }
             },
             items: []
         };
@@ -5387,11 +5388,11 @@ describe('EJ2-52870-Pasting the text content for the second time after clearing 
         rteObj.dataBind();
         keyBoardEvent.clipboardData = {
             getData: (e: any) => {
-              if (e === "text/plain") {
-                return 'Pasted Testing content';
-              } else {
-                return '';
-              }
+                if (e === "text/plain") {
+                    return 'Pasted Testing content';
+                } else {
+                    return '';
+                }
             },
             items: []
         };
@@ -5516,7 +5517,7 @@ describe('EJ2-23205 Revert the headings and blockquotes format while applying th
 });
 
 describe('EJ2-24017 - Enable the submit button while pressing the tab key - RTE reactive form ', () => {
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', action: 'tab'};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', action: 'tab' };
     let rteObj: RichTextEditor;
     let curDocument: Document;
     let editNode: Element;
@@ -5746,11 +5747,11 @@ describe('EJ2-26545 Empty P tag create while give the value with empty space in 
     });
 
     it("don't create the p tag to empty text node ", (done) => {
-       let emptyNode:NodeListOf<Element> = <NodeListOf<Element>>rteObj.inputElement.querySelectorAll("p:empty");
-       setTimeout(() => {
-        expect(emptyNode.length === 0).toBe(true);
-        done();
-       }, 100);
+        let emptyNode: NodeListOf<Element> = <NodeListOf<Element>>rteObj.inputElement.querySelectorAll("p:empty");
+        setTimeout(() => {
+            expect(emptyNode.length === 0).toBe(true);
+            done();
+        }, 100);
     });
     afterAll(() => {
         destroy(rteObj);
@@ -5771,7 +5772,7 @@ describe('To change the keyconfig API property', () => {
     });
     it(' To trigger onproperty change method in HTMLEditor', () => {
         expect(rteObj.formatter.keyConfig.bold === 'ctrl+b').toBe(true);
-        rteObj.formatter = new HTMLFormatter ({ keyConfig: { 'bold': 'ctrl+q' } });
+        rteObj.formatter = new HTMLFormatter({ keyConfig: { 'bold': 'ctrl+q' } });
         expect(rteObj.formatter.keyConfig.bold === 'ctrl+q').toBe(true);
     });
 });
@@ -5807,7 +5808,7 @@ describe('EJ2-29801 Tab and shift+tab key combination should have same behavior'
 describe('EJ2-29801 Tab and shift+tab key combination should have same behavior', () => {
     let rteObj: RichTextEditor;
     beforeAll((done: Function) => {
-        let element: HTMLElement = createElement('div', { id: getUniqueID('rte-test'), attrs: {tabindex: "1"} });
+        let element: HTMLElement = createElement('div', { id: getUniqueID('rte-test'), attrs: { tabindex: "1" } });
         document.body.appendChild(element);
         rteObj = new RichTextEditor();
         rteObj.appendTo(element);
@@ -5823,7 +5824,8 @@ describe('EJ2-29801 Tab and shift+tab key combination should have same behavior'
 describe('Value property when xhtml is enabled', function () {
     let rteObj: any;
     beforeAll(function (done) {
-        rteObj = renderRTE({ enableXhtml: true, 
+        rteObj = renderRTE({
+            enableXhtml: true,
             value: `<!-- sit amet --><div><!-- sit amet --><p>ad<br/><hr/>asd</p></div>`
         });
         done();
@@ -5995,7 +5997,7 @@ describe('XHTML validation -iframe', function () {
         rteObj.dataBind();
         expect(rteObj.inputElement.innerHTML).toBe('<p>syncsync</p>');
     });
-    
+
     it("EJ2-43894 - Empty value throws console error issue test case", function () {
         rteObj.value = '';
         rteObj.dataBind();
@@ -6023,9 +6025,9 @@ describe('Check undo in execCommand', () => {
     let rteObj: RichTextEditor;
     beforeAll((done: Function) => {
         rteObj = renderRTE({
-            value: "<p>RTE</p>" , 
+            value: "<p>RTE</p>",
             toolbarSettings: {
-              items: [ 'Undo', 'Redo']
+                items: ['Undo', 'Redo']
             }
         });
         done();
@@ -6237,7 +6239,7 @@ describe('EJ2-47075: Applying heading to the content in the Rich Text Editor app
     });
     describe('EJ2-61402 - script error occurs when press ctrl button in list', () => {
         let rteObj: RichTextEditor;
-        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'c', stopPropagation: () => { }, shiftKey: false, which: 67};
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'c', stopPropagation: () => { }, shiftKey: false, which: 67 };
         it('check the list element', (done: Function) => {
             rteObj = renderRTE({
                 value: `<ul><li>vhbj</li><li>bnm<ul><li>bjnkl</li><li class="focusNode">njkml<br></li></ul></li></ul>`,
@@ -6264,7 +6266,7 @@ describe('Initial audio and video loading', () => {
             value: `<p><audio controls><source src="https://assets.mixkit.co/sfx/preview/mixkit-rain-and-thunder-storm-2390.mp3" type="audio/mp3"/></audio></p>
             <p><video controls><source src="https://www.w3schools.com/tags/movie.mp4" type="video/mp4" /></video></p>`,
         });
-     });
+    });
     it('audio and video with BR tags and wrapper loaded', (done: Function) => {
         expect(rteObj.inputElement.querySelector('.e-audio-wrap') !== null).toBe(true);
         expect(rteObj.inputElement.querySelector('.e-audio-wrap').nextElementSibling.outerHTML === '<br>').toBe(true);
@@ -6286,7 +6288,7 @@ describe('Dialog textbox aria-lable checking', () => {
                 items: ['Image', 'CreateLink', 'Audio', 'Video']
             }
         });
-     });
+    });
     it('Dialog textbox aria-lable checking for image, link, audio, video', (done: Function) => {
         (<HTMLElement>rteObj.element.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
         expect(rteObj.element.querySelector('.e-dialog').querySelector('.e-img-url').getAttribute('aria-label')).toBe('You can also provide a link from the web');
@@ -6329,125 +6331,125 @@ describe("fontfamily testing after default value set -", () => {
     beforeAll(() => {
         rteObj = renderRTE({
             toolbarSettings: {
-                items: [ 'FontName']
+                items: ['FontName']
             },
             fontFamily: {
                 default: 'Arial',
                 items: [
-                  {
-                    text: 'Arial',
-                    value: 'Arial,Helvetica,sans-serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Book Antiqua',
-                    value:
-                      '"Book Antiqua", Palatino, "Palatino Linotype", "Palatino LT STD", Georgia, serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Calibri',
-                    value: 'Calibri, "Open Sans", Arial,Helvetica,sans-serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Comic Sans MS',
-                    value:
-                      '"Comic Sans", "Comic Sans MS", "Chalkboard", "ChalkboardSE-Regular", sans-serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Courier New',
-                    value: 'Courier New,Courier,monospace,sans-serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Georgia',
-                    value: 'Georgia, "Times New Roman", Times, serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Gill Sans MT',
-                    value:
-                      '"Gill Sans MT", "Myriad Pro", Myriad, Helvetica, Arial, sans-serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Great vibes',
-                    value: 'Great Vibes,cursive',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Helvetica',
-                    value: 'Helvetica,Arial,sans-serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Roboto',
-                    value: 'Roboto, "Segoe UI",Arial,Helvetica,sans-serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Segoe UI',
-                    value: '"Segoe UI", "Open Sans",Arial,Helvetica,sans-serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Shizuru',
-                    value: 'Shizuru, cursive',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Symbol',
-                    value: 'Symbol',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Tahoma',
-                    value: 'Tahoma,Geneva,sans-serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Terminal',
-                    value: 'Terminal',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Times New Roman',
-                    value: 'Times New Roman,Times,serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Trebuchet MS',
-                    value:
-                      'trebuchet ms, "Myriad Pro", Myriad, Helvetica, Arial, sans-serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
-                  {
-                    text: 'Verdana',
-                    value: 'verdana, "Myriad Pro", Myriad, Helvetica,Arial, sans-serif',
-                    command: 'Font',
-                    subCommand: 'FontName',
-                  },
+                    {
+                        text: 'Arial',
+                        value: 'Arial,Helvetica,sans-serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Book Antiqua',
+                        value:
+                            '"Book Antiqua", Palatino, "Palatino Linotype", "Palatino LT STD", Georgia, serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Calibri',
+                        value: 'Calibri, "Open Sans", Arial,Helvetica,sans-serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Comic Sans MS',
+                        value:
+                            '"Comic Sans", "Comic Sans MS", "Chalkboard", "ChalkboardSE-Regular", sans-serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Courier New',
+                        value: 'Courier New,Courier,monospace,sans-serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Georgia',
+                        value: 'Georgia, "Times New Roman", Times, serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Gill Sans MT',
+                        value:
+                            '"Gill Sans MT", "Myriad Pro", Myriad, Helvetica, Arial, sans-serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Great vibes',
+                        value: 'Great Vibes,cursive',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Helvetica',
+                        value: 'Helvetica,Arial,sans-serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Roboto',
+                        value: 'Roboto, "Segoe UI",Arial,Helvetica,sans-serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Segoe UI',
+                        value: '"Segoe UI", "Open Sans",Arial,Helvetica,sans-serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Shizuru',
+                        value: 'Shizuru, cursive',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Symbol',
+                        value: 'Symbol',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Tahoma',
+                        value: 'Tahoma,Geneva,sans-serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Terminal',
+                        value: 'Terminal',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Times New Roman',
+                        value: 'Times New Roman,Times,serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Trebuchet MS',
+                        value:
+                            'trebuchet ms, "Myriad Pro", Myriad, Helvetica, Arial, sans-serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
+                    {
+                        text: 'Verdana',
+                        value: 'verdana, "Myriad Pro", Myriad, Helvetica,Arial, sans-serif',
+                        command: 'Font',
+                        subCommand: 'FontName',
+                    },
                 ],
-              }
+            }
         });
         elem = rteObj.element;
     });
@@ -6474,37 +6476,6 @@ describe("fontfamily testing after default value set -", () => {
     });
 });
 
-describe('EJ2-69673 - Expand popup open testing height', () => {
-    let rteObj: RichTextEditor;
-    beforeAll(() => {
-        rteObj = renderRTE({
-        value: '<p>testing</p>',
-        toolbarSettings: {
-            items: [
-                'Bold', 'Italic', 'Underline', 'StrikeThrough', 'FontName', 'FontSize', 'FontColor', 'BackgroundColor', 'LowerCase',
-                'UpperCase', '|', 'Formats', 'Alignments', 'OrderedList', 'UnorderedList', 'Outdent', 'Indent', '|',
-                'CreateLink', '|', 'ClearFormat', 'Print', 'SourceCode', 'FullScreen', '|', 'Undo', 'Redo'
-              ],
-            type: ToolbarType.Expand,
-            },
-            width: '300',
-            height: '400px'
-        });
-    });
-    it('EJ2-69673 - Expand popup open testing height', (done: Function) => {
-        let previousHeight: number = parseInt((document.querySelectorAll(".e-toolbar-extended")[0] as HTMLElement).style.maxHeight.split('px')[0]);
-        (document.body.querySelector(".e-expended-nav")as HTMLElement).classList.add('e-nav-active');
-        (document.body.querySelector(".e-expended-nav")as HTMLElement).click();
-        (document.body.querySelector(".e-toolbar-popup")as HTMLElement).click();
-        (document.body.querySelector(".e-toolbar-popup")as HTMLElement).click();
-        let currentHeight: number = parseInt((document.querySelectorAll(".e-toolbar-extended")[0]as HTMLElement).style.maxHeight.split('px')[0]);
-        expect(currentHeight > previousHeight).toBe(true);
-        done();
-    });
-    afterAll(() => {
-        destroy(rteObj);
-    });
-});
 
 describe("Toobar item focus testing -", () => {
     let rteObj: RichTextEditor;
@@ -6539,7 +6510,8 @@ describe('EJ2-69171 - RichTextEditor text area value has missing close tag when 
     let rteObj: any;
     let keyBoardEvent = { type: 'keydown', preventDefault: function () { }, ctrlKey: true, key: 'Enter', keyCode: 13, stopPropagation: function () { }, shiftKey: false, which: 8 };
     beforeAll(function (done) {
-        rteObj = renderRTE({ enableXhtml: true, 
+        rteObj = renderRTE({
+            enableXhtml: true,
             value: `<div><p></p></div>`
         });
         done();
@@ -6551,7 +6523,7 @@ describe('EJ2-69171 - RichTextEditor text area value has missing close tag when 
         setTimeout(() => {
             expect(rteObj.value === `<div><p><br/></p></div>`).toBe(true);
             done();
-        }, 100); 
+        }, 100);
     });
     afterAll(() => {
         destroy(rteObj);
@@ -6572,14 +6544,14 @@ describe('EJ2-71449 - The placeholder and enter text values have merged', functi
         expect((rteObj as any).value).toBe(null);
         expect((rteObj as any).placeholder).toBe("Type something");
         let rteEle = rteObj.element;
-        let SourceCodePicker : HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+        let SourceCodePicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
         SourceCodePicker.click();
         rteObj.focusOut();
         rteObj.focusIn();
         setTimeout(() => {
             expect((rteObj as any).element.querySelector("rte-placeholder")).toBe(null);
             done();
-        }, 100);     
+        }, 100);
     });
     afterAll(() => {
         destroy(rteObj);
@@ -6601,7 +6573,7 @@ describe('EJ2-71306 - PlaceHolder is not working with Iframe mode in RichTextEdi
         setTimeout(() => {
             expect((rteObj as any).placeholder).toBe('Type something');
             done();
-        }, 100);          
+        }, 100);
     });
     afterAll(() => {
         destroy(rteObj);
@@ -6610,8 +6582,9 @@ describe('EJ2-71306 - PlaceHolder is not working with Iframe mode in RichTextEdi
 describe('836937 - Rich Text Editor Table Module', function () {
     let rteObj: any;
     beforeAll(function (done) {
-        rteObj = renderRTE({ enableXhtml: true, 
-            value:`<table>
+        rteObj = renderRTE({
+            enableXhtml: true,
+            value: `<table>
             <tr>
               <th>Company</th>
               <th>Contact</th>
@@ -6633,7 +6606,7 @@ describe('836937 - Rich Text Editor Table Module', function () {
     });
     it("Table selection", function (done) {
         rteObj.focusIn();
-        let element: Element= rteObj.contentModule.getDocument().getElementById("elementCursorPosition");
+        let element: Element = rteObj.contentModule.getDocument().getElementById("elementCursorPosition");
         let selectioncursor: NodeSelection = new NodeSelection();
         let range: Range = document.createRange();
         range.setStart(element, 1);
@@ -6643,7 +6616,7 @@ describe('836937 - Rich Text Editor Table Module', function () {
         setTimeout(() => {
             expect((window.getSelection().anchorNode as any).closest("td") == null).toBe(true);
             done();
-        }, 100);     
+        }, 100);
     });
     it("Remove the selection from the previous table", function (done) {
         rteObj.focusIn();
@@ -6653,13 +6626,13 @@ describe('836937 - Rich Text Editor Table Module', function () {
         range.setStart(tdElement[0], 1);
         selectioncursor.setRange(document, range);
         var keyBoardEvent = { type: 'keyup', preventDefault: function () { }, key: 'ArrowRight', keyCode: 39, stopPropagation: function () { }, shiftKey: false, which: 39 };
-        rteObj.mouseDownHandler({ target:  rteObj.element.querySelectorAll('.tdElement')[0], isTrusted: true });
+        rteObj.mouseDownHandler({ target: rteObj.element.querySelectorAll('.tdElement')[0], isTrusted: true });
         rteObj.keyDown(keyBoardEvent);
         rteObj.keyUp(keyBoardEvent);
         setTimeout(() => {
             expect(rteObj.element.querySelectorAll('.tdElement')[0].classList.contains("e-cell-select") == false).toBe(true);
             done();
-        }, 100); 
+        }, 100);
     });
     afterAll(() => {
         destroy(rteObj);
@@ -6675,7 +6648,7 @@ describe('845077 - The Enter key action is not working properly while setting en
         });
         done();
     });
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8};
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'Enter', keyCode: 13, stopPropagation: () => { }, shiftKey: false, which: 8 };
     it("Enter key action should not add zerowidthspace with null value", function () {
         expect((rteObj as any).value).toBe('<p><br/></p>');
         let node: any = (rteObj as any).inputElement;
@@ -6710,7 +6683,7 @@ describe('842745 - Space Keypress causes the console error and the cursor positi
         let focusNode: any = editNode.querySelector('.focusNode')
         let sel1 = new NodeSelection().setSelectionText(document, focusNode.firstChild, focusNode.firstChild, 5, 5);
         rteObj.executeCommand('insertHTML', 'object2');
-        setCursorPoint(document,focusNode.childNodes[1],focusNode.childNodes[1].textContent.length);
+        setCursorPoint(document, focusNode.childNodes[1], focusNode.childNodes[1].textContent.length);
         keyBoardEvent.type = 'keyup';
         (rteObj as any).keyUp(keyBoardEvent);
         expect(rteObj.inputElement === document.activeElement).toBe(true);
@@ -6755,12 +6728,12 @@ describe('820213 - Text get deleted while applying bold', () => {
         editNode.focus();
         let focusNode: any = editNode.querySelector('.focusNode')
         let sel1 = new NodeSelection().setSelectionText(document, focusNode.firstChild, focusNode.firstChild, 8, 8);
-        let boldEle : HTMLElement = document.querySelector('[title="Bold (Ctrl+B)"]');
+        let boldEle: HTMLElement = document.querySelector('[title="Bold (Ctrl+B)"]');
         boldEle.click();
         boldEle = document.querySelector('[title="Bold (Ctrl+B)"]');
         boldEle.click();
         expect(rteObj.inputElement.innerHTML === '<p class="focusNode">Rich Text Editor</p>').toBe(true);
-       });
+    });
     afterAll(() => {
         destroy(rteObj);
     });
@@ -6773,7 +6746,7 @@ describe("852045 - Not able to resize the table when having saveInterval as 1.",
             toolbarSettings: {
                 items: ['CreateTable']
             },
-            saveInterval:1,
+            saveInterval: 1,
             value: `<table class=\"e-rte-table\" style=\"width: 100%; min-width: 0px;\"><tbody><tr><td class=\"\" style=\"width: 14.687%;\"><br></td><td style=\"width: 51.9262%;\"><br></td><td style=\"width: 33.3333%;\"><br></td></tr><tr><td style=\"width: 14.687%;\"><br></td><td style=\"width: 51.9262%;\"><br></td><td style=\"width: 33.3333%;\"><br></td></tr></tbody></table><p>RTE</p><div class=\"e-table-rhelper null e-column-helper\" style=\"height: 50px; top: 16px; left: 198px;\"></div>`
         });
         rteObj.saveInterval = 10;
@@ -6783,7 +6756,7 @@ describe("852045 - Not able to resize the table when having saveInterval as 1.",
         destroy(rteObj);
     });
     it("Table resize gripper element", function (done) {
-        let table :any =  (rteObj.tableModule as any).contentModule.getEditPanel().querySelector('table');
+        let table: any = (rteObj.tableModule as any).contentModule.getEditPanel().querySelector('table');
         (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
         expect(rteObj.contentModule.getEditPanel().querySelectorAll('.e-table-box') !== null).toBe(true);
         rteObj.focusIn();
@@ -6795,7 +6768,7 @@ describe("852045 - Not able to resize the table when having saveInterval as 1.",
         }, 400);
     });
     it("Table resize gripper element in getHtml method", function (done) {
-        let table :any =  (rteObj.tableModule as any).contentModule.getEditPanel().querySelector('table');
+        let table: any = (rteObj.tableModule as any).contentModule.getEditPanel().querySelector('table');
         (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
         var resizeElement = document.createElement("div");
         resizeElement.innerHTML = rteObj.getHtml();
@@ -6829,7 +6802,7 @@ describe('849092 - Triple click a word doesnt select the whole paragraph (block 
     afterAll(() => {
         destroy(rteObj);
     });
-    it ('Should render the paragraph with br tag', () => {
+    it('Should render the paragraph with br tag', () => {
         expect(rteObj.element.querySelectorAll('p')[1].innerHTML).toBe('<br>');
     });
 });
@@ -6848,7 +6821,7 @@ describe('69081 - When user paste the table in insert media option, It doesn’t
         editor.destroy();
         detach(editorElem);
     });
-    it ('Paste the table copied to the editor should remove resize elements when paste cleanup injected', (done: DoneFn) => {
+    it('Paste the table copied to the editor should remove resize elements when paste cleanup injected', (done: DoneFn) => {
         editor.focusIn();
         const clipBoardData: string = `<!--StartFragment--><table class="e-rte-table" style="box-sizing: border-box; border-spacing: 0px; border-collapse: collapse; background-color: rgb(255, 255, 255); empty-cells: show; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; width: 1503px; min-width: 0px;"><tbody style="box-sizing: border-box;"><tr style="box-sizing: border-box;"><td class="" style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.688px;"><br style="box-sizing: border-box;"></td></tr><tr style="box-sizing: border-box; height: 25px;"><td class="e-cell-select" style="box-sizing: border-box; padding: 2px 5px; border: 1px double rgb(4, 120, 215); height: 24.67px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td class="" style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.688px;"><br style="box-sizing: border-box;"></td></tr><tr style="box-sizing: border-box;"><td class="" style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.656px;"><br style="box-sizing: border-box;"></td><td class="" style="box-sizing: border-box; padding: 2px 5px; border: 1px solid rgb(189, 189, 189); height: 20px; min-width: 20px; vertical-align: middle; width: 500.688px;"><br style="box-sizing: border-box;"></td></tr></tbody></table><p style="box-sizing: border-box; margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><br style="box-sizing: border-box;"></p><span data-col="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: col-resize; height: 76px; overflow: visible; position: absolute; width: 4px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 16px; left: 16px;"></span><span data-col="1" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: col-resize; height: 76px; overflow: visible; position: absolute; width: 4px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 16px; left: 517px;"></span><span data-col="2" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: col-resize; height: 76px; overflow: visible; position: absolute; width: 4px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 16px; left: 1017px;"></span><span data-col="3" unselectable="on" contenteditable="false" class="e-rte-table-resize e-column-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: col-resize; height: 76px; overflow: visible; position: absolute; width: 4px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 16px; left: 1518px;"></span><span data-row="0" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: row-resize; height: 4px; overflow: visible; position: absolute; width: 1503px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 39px; left: 16px;"></span><span data-row="1" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: row-resize; height: 4px; overflow: visible; position: absolute; width: 1503px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 64px; left: 16px;"></span><span data-row="2" unselectable="on" contenteditable="false" class="e-rte-table-resize e-row-resize" style="box-sizing: border-box; background-color: rgb(255, 255, 255); background-repeat: repeat; bottom: 0px; cursor: row-resize; height: 4px; overflow: visible; position: absolute; width: 1503px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; top: 89px; left: 16px;"></span><br class="Apple-interchange-newline"><!--EndFragment-->`;
         const dataTransfer: DataTransfer = new DataTransfer();
@@ -6862,7 +6835,35 @@ describe('69081 - When user paste the table in insert media option, It doesn’t
     });
 });
 
-describe('865660 -  Table cell select class is not removed after pasting the table',  () => {
+describe('872399 - Close the table popup using esc key, the focus does not move table icon ', () => {
+    let editor: RichTextEditor;
+    let listCount: number;
+    beforeAll((done: DoneFn) => {
+        editor = renderRTE({
+            toolbarSettings: {
+                items: ['CreateTable', 'OrderedList', 'UnorderedList']
+            }
+        });
+        done();
+    });
+    afterAll((done: DoneFn) => {
+        destroy(editor);
+        done();
+    });
+    it('Should focus on the toolbar element instead of the Editor content.', (done: DoneFn) => {
+        editor.focusIn();
+        const tableButton: HTMLElement = editor.element.querySelector('.e-rte-toolbar .e-toolbar-item button');
+        tableButton.click();
+        const escapekeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', { key: 'Escape', code: 'Escape', bubbles: true, cancelable: true, view: window  });
+        editor.inputElement.dispatchEvent(escapekeyUpEvent);
+        setTimeout(() => {
+            expect(document.activeElement === tableButton).toBe(true);
+            done();
+        }, 200);
+    });
+});
+
+describe('865660 -  Table cell select class is not removed after pasting the table', () => {
     let editor: RichTextEditor;
     function dispatchEnterAction() {
         const keyDownEvent = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, view: window, key: 'a', ctrlKey: true });
@@ -6944,7 +6945,7 @@ describe('865660 -  Table cell select class is not removed after pasting the tab
     afterEach(() => {
         destroy(editor);
     });
-    it ('Should remove the cell select class after the CTRL + A selection', () => {
+    it('Should remove the cell select class after the CTRL + A selection', () => {
         editor.focusIn();
         const tdELem = editor.inputElement.querySelector('td');
         const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true, cancelable: true, view: window });
@@ -6956,7 +6957,7 @@ describe('865660 -  Table cell select class is not removed after pasting the tab
         dispatchEnterAction();
         expect(editor.inputElement.querySelector('.e-cell-select')).toBe(null);
     });
-    it ('Should remove the e-img-focus class after the CTRL + A selection', () => {
+    it('Should remove the e-img-focus class after the CTRL + A selection', () => {
         editor.focusIn();
         const imgELem = editor.inputElement.querySelector('img');
         const mouseoverEvent = new MouseEvent('mouseover', { bubbles: true, cancelable: true, view: window });
@@ -7071,7 +7072,7 @@ describe('849074 - List not cleared properly after selection of the whole list a
         keyBoardEvent.type = 'keyup';
         (rteObj as any).keyUp(keyBoardEvent);
         expect(!isNullOrUndefined(startNode)).toBe(true);
-        expect (startNode.childNodes.length === 1).toBe(true);
+        expect(startNode.childNodes.length === 1).toBe(true);
     });
     afterAll(() => {
         destroy(rteObj);
@@ -7128,7 +7129,7 @@ describe('865021 - in smart suggestions Tab key press on the list is not working
         destroy(rteObj);
     });
 });
-describe('865731 - Mention list not inserts in the cursor position into the RichTextEditor', () => {
+describe('86573 - Mention list not inserts in the cursor position into the RichTextEditor', () => {
     let rteObj: RichTextEditor;
     let blurSpy: jasmine.Spy = jasmine.createSpy('onBlur');
     beforeEach((done: Function) => {
@@ -7146,7 +7147,7 @@ describe('865731 - Mention list not inserts in the cursor position into the Rich
         rteObj.value = "<p>&</p>";
         rteObj.dataBind();
         expect(rteObj.element.classList.contains('e-focused')).toBe(true);
-        let node= (rteObj as any).inputElement.querySelector('p');
+        let node = (rteObj as any).inputElement.querySelector('p');
         rteObj.focusIn();
         const range = document.createRange();
         range.selectNodeContents(node);

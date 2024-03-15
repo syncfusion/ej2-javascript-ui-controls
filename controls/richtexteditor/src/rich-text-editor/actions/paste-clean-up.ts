@@ -696,6 +696,9 @@ export class PasteCleanup {
             this.setImageProperties(allImg[i as number]);
         }
         this.addTempClass(clipBoardElem);
+        if (clipBoardElem.querySelectorAll('picture').length > 0) {
+            this.processPictureElement(clipBoardElem);
+        }
         if (clipBoardElem.textContent !== '' || !isNOU(clipBoardElem.querySelector('img')) ||
         !isNOU(clipBoardElem.querySelector('table'))) {
             const tempWrapperElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
@@ -1177,6 +1180,27 @@ export class PasteCleanup {
             return lastChild;
         }
         return null;
+    }
+
+    private processPictureElement(clipBoardElem: HTMLElement): void {
+        const pictureElems: NodeListOf<HTMLElement> = clipBoardElem.querySelectorAll('picture');
+        for (let i: number = 0; i < pictureElems.length; i++) {
+            const imgElem: HTMLImageElement | null = pictureElems[i as number].querySelector('img');
+            const sourceElems: NodeListOf<HTMLSourceElement> = pictureElems[i as number].querySelectorAll('source');
+            if (imgElem && imgElem.getAttribute('src')) {
+                const srcValue: string = imgElem.getAttribute('src')!;
+                const url: URL = new URL(srcValue);
+                for (let j: number = 0; j < sourceElems.length; j++) {
+                    let srcset: string | null = sourceElems[j as number].getAttribute('srcset');
+                    if (srcset) {
+                        if (srcset.indexOf('http') === -1) {
+                            const fullPath: string = url.origin + srcset;
+                            sourceElems[j as number].setAttribute('srcset', fullPath);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**

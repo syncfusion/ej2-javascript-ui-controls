@@ -139,20 +139,20 @@ describe('RadioButton', () => {
         });
 
         it('Enable Html Sanitizer testing', () => {
-            radio = new RadioButton({ label: '<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: true }, '#radio');
+            radio = new RadioButton({ label: '<style>body{background:rgb(0, 0, 255)}</style>' }, '#radio');
             const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
         });
 
         it('Enable Html Sanitizer disabled testing', () => {
-            radio = new RadioButton({ label: '<style>body{background:rgb(0, 0, 255)}</style>' }, '#radio');
+            radio = new RadioButton({ label: '<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: false }, '#radio');
             const htmlele: Element = document.body;
             expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         });
         it('Enable Html Attributes testing', () => {
             radio = new RadioButton({ htmlAttributes: {'title':'Choose Option'}, label: '<style>body{background:rgb(0, 0, 255)}</style>' }, '#radio');
             const htmlele: Element = document.body;
-            expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
+            expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
         });
     });
 

@@ -1,5 +1,5 @@
-import { isNullOrUndefined, extend, isBlazor } from '@syncfusion/ej2-base';
-import { Adjustment, CurrentObject, FrameValue, ImageDimension, ImageEditor, Point, SelectionPoint, TransformValue, Transition, ZoomSettings } from '../index';
+import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { Adjustment, CurrentObject, FrameValue, ImageEditor, Point, SelectionPoint, Transition, ZoomSettings } from '../index';
 import { Dimension } from '@syncfusion/ej2-inputs';
 
 export class UndoRedo {
@@ -108,30 +108,21 @@ export class UndoRedo {
         const parent: ImageEditor = this.parent;
         refreshToolbar = refreshToolbar ? refreshToolbar : false;
         if (refreshToolbar) {
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'setEnableDisableUndoRedo', value: {isPrevent: true} });
-            }
+            parent.notify('toolbar', { prop: 'setEnableDisableUndoRedo', value: {isPrevent: true} });
             this.tempUndoRedoColl = extend([], this.appliedUndoRedoColl, [], true) as Transition[];
             this.tempUndoRedoStep = this.undoRedoStep;
-        } else if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'setEnableDisableUndoRedo', value: {isPrevent: false} });
         }
+        parent.notify('toolbar', { prop: 'setEnableDisableUndoRedo', value: {isPrevent: false} });
         this.undoRedoColl = this.undoRedoColl.slice(0, this.undoRedoStep);
         this.appliedUndoRedoColl = this.appliedUndoRedoColl.slice(0, this.undoRedoStep);
         parent.isUndoRedo = parent.currObjType.isUndoAction = false;
-        if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'enable-disable-btns' });
-        } else {
-            parent.updateToolbar(parent.element, 'enableDisableToolbarBtn');
-        }
+        parent.notify('toolbar', { prop: 'enable-disable-btns' });
     }
 
     private updateCurrUrc(type: string): void {
         const parent: ImageEditor = this.parent;
         if (parent.isResize || this.isPreventing) {return; }
-        if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'setEnableDisableUndoRedo', value: {isPrevent: false} });
-        }
+        parent.notify('toolbar', { prop: 'setEnableDisableUndoRedo', value: {isPrevent: false} });
         if (type === 'ok') {
             parent.notify('draw', { prop: 'setShapeTextInsert', onPropertyChange: false, value: {bool: false } });
             const collection: Transition[] = this.tempUndoRedoColl.length > 0 ?
@@ -187,11 +178,7 @@ export class UndoRedo {
         this.undoRedoColl = extend([], this.appliedUndoRedoColl, [], true) as Transition[];
         if (type === 'ok') {
             this.undoRedoStep = this.undoRedoColl.length;
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'enable-disable-btns' });
-            } else {
-                parent.updateToolbar(parent.element, 'enableDisableToolbarBtn');
-            }
+            parent.notify('toolbar', { prop: 'enable-disable-btns' });
         }
         if (parent.transform.zoomFactor > 0) {
             parent.togglePan = true;
@@ -215,24 +202,18 @@ export class UndoRedo {
             this.undoRedoColl = extend([], this.tempUndoRedoColl, [], true) as Transition[];
             this.undoRedoStep = this.tempUndoRedoStep;
             this.tempUndoRedoColl = []; this.tempUndoRedoStep = 0;
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'setEnableDisableUndoRedo', value: {isPrevent: false} });
-            }
+            parent.notify('toolbar', { prop: 'setEnableDisableUndoRedo', value: {isPrevent: false} });
         }
     }
 
     private refreshToolbarActions(): void {
         const parent: ImageEditor = this.parent;
-        if (!isBlazor()) {
-            if (parent.activeObj.shape) {
-                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
-                    isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
-                parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
-            } else {
-                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-            }
-        } else if (isNullOrUndefined(parent.activeObj.shape)) {
-            parent.updateToolbar(parent.element, 'imageLoaded');
+        if (parent.activeObj.shape) {
+            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
+                isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+            parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
+        } else {
+            parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
         }
     }
 
@@ -243,7 +224,7 @@ export class UndoRedo {
             parent.togglePan = false;
             parent.notify('selection', {prop: 'setDragCanvas', value: {bool: false }});
         }
-        if (parent.element.querySelector('.e-contextual-toolbar-wrapper') && !isBlazor()) {
+        if (parent.element.querySelector('.e-contextual-toolbar-wrapper')) {
             parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
         }
         if (parent.togglePen) {
@@ -278,13 +259,9 @@ export class UndoRedo {
                 }
                 parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
                 this.undoRedoStep--;
-                if (!isBlazor()) {
-                    parent.notify('toolbar', {prop: 'enable-disable-btns'});
-                    if (parent.element.querySelector('.e-contextual-toolbar-wrapper')) {
-                        parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
-                    }
-                } else {
-                    parent.updateToolbar(parent.element, 'enableDisableToolbarBtn');
+                parent.notify('toolbar', {prop: 'enable-disable-btns'});
+                if (parent.element.querySelector('.e-contextual-toolbar-wrapper')) {
+                    parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
                 }
                 parent.isUndoRedo = true;
                 const obj: Transition = this.undoRedoColl[this.undoRedoStep];
@@ -408,11 +385,7 @@ export class UndoRedo {
             if (this.undoRedoStep < this.appliedUndoRedoColl.length) {
                 this.refreshToolbarActions();
                 this.undoRedoStep++;
-                if (!isBlazor()) {
-                    parent.notify('toolbar', {prop: 'enable-disable-btns'});
-                } else {
-                    parent.updateToolbar(parent.element, 'enableDisableToolbarBtn');
-                }
+                parent.notify('toolbar', {prop: 'enable-disable-btns'});
                 parent.isUndoRedo = true;
                 const obj: Transition = this.undoRedoColl[this.undoRedoStep - 1];
                 if (this.undoRedoColl.length === this.undoRedoStep) { parent.currObjType.isUndoAction = false; }
@@ -425,7 +398,7 @@ export class UndoRedo {
                 parent.cropObj = extend({}, obj.currentCropObj, {}, true) as CurrentObject;
                 parent.afterCropActions = obj.currentObj.afterCropActions;
                 this.lowerContext.filter = obj.currentObj.filter;
-                if (!isBlazor() && parent.element.querySelector('.e-contextual-toolbar-wrapper')) {
+                if (parent.element.querySelector('.e-contextual-toolbar-wrapper')) {
                     parent.element.querySelector('.e-contextual-toolbar-wrapper').classList.add('e-hide');
                 }
                 parent.notify('filter', { prop: 'setAdjustmentLevel', onPropertyChange: false, value: { adjustmentLevel: obj.currentObj.adjustmentLevel }});
@@ -682,11 +655,7 @@ export class UndoRedo {
         this.upperContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
         this.lowerContext.clearRect(0, 0, parent.lowerCanvas.width, parent.lowerCanvas.height);
         parent.notify('draw', { prop: 'redrawImgWithObj', onPropertyChange: false});
-        if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
-        } else {
-            parent.updateToolbar(parent.element, 'destroyQuickAccessToolbar');
-        }
+        parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
         const textArea = parent.textArea;
         textArea.style.display = 'block';
         textArea.style.fontFamily = obj.textSettings.fontFamily;
@@ -748,37 +717,23 @@ export class UndoRedo {
             parent.notify('selection', {prop: 'setDragCanvas', value: {bool: true }});
         }
         parent.notify('draw', { prop: 'setCancelAction', onPropertyChange: false, value: {bool: false }});
-        if (!isBlazor()) {
-            if (parent.activeObj.shape && parent.activeObj.shape.split('-')[0] === 'crop') {
-                parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
-                    isApplyBtn: true, isCropping: true, isZooming: null, cType: null}});
-            } else {
-                parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
-            }
-            parent.notify('toolbar', {prop: 'enable-disable-btns'});
-        } else if (isNullOrUndefined(parent.activeObj.shape) || parent.activeObj.shape.split('-')[0] !== 'crop') {
-            parent.updateToolbar(parent.element, 'imageLoaded');
-            parent.updateToolbar(parent.element, 'enableDisableToolbarBtn');
+        if (parent.activeObj.shape && parent.activeObj.shape.split('-')[0] === 'crop') {
+            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'main',
+                isApplyBtn: true, isCropping: true, isZooming: null, cType: null}});
+        } else {
+            parent.notify('toolbar', { prop: 'refresh-main-toolbar', onPropertyChange: false});
         }
+        parent.notify('toolbar', {prop: 'enable-disable-btns'});
         if (document.getElementById(parent.element.id + '_quickAccessToolbarArea')) {
             document.getElementById(parent.element.id + '_quickAccessToolbarArea').style.display = 'none';
         }
-        if (!isBlazor()) {
-            parent.notify('toolbar', {prop: 'enable-disable-btns'});
-        } else {
-            parent.updateToolbar(parent.element, 'enableDisableToolbarBtn');
-        }
+        parent.notify('toolbar', {prop: 'enable-disable-btns'});
         if (parent.transform.degree !== 0) {
             parent.notify('transform', { prop: 'drawPannedImage', onPropertyChange: false,
                 value: {xDiff: 0, yDiff: 0 }});
         }
         parent.notify('filter', { prop: 'setAdjustmentValue', onPropertyChange: false, value: {adjustmentValue: this.lowerContext.filter }});
         parent.currObjType.isCustomCrop = false;
-        if (isBlazor() && parent.events && parent.events.historyChanged.hasDelegate === true) {
-            let imageAction: string = this.getImageAction(operation);
-            const args: object = { length: this.undoRedoColl.length, index: this.undoRedoStep, actionTrigger: isUndo ? 'Undo' : 'Redo', imageAction: imageAction };
-            parent.dotNetRef.invokeMethodAsync('OnHistoryChangedAsync', args);
-        }
     }
 
     private getImageAction(operation: string): string {
@@ -851,16 +806,7 @@ export class UndoRedo {
                 previousSelPointColl: previousSelPointColl, currentSelPointColl: currentObj.selPointColl,
                 previousCropObj: previousCropObj, currentCropObj: extend({}, parent.cropObj, {}, true) as CurrentObject,
                 previousText: previousText, currentText: currentText, filter: previousFilter, isCircleCrop: isCircleCrop });
-            if (!isBlazor()) {
-                parent.notify('toolbar', { prop: 'enable-disable-btns', onPropertyChange: false});
-            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-            } else if ((parent as any).currentToolbar !== 'pen-toolbar') {
-                let toolbarValue: string = null;
-                if ((parent as any).currentToolbar === 'text-toolbar' && operation === 'textAreaCustomization') {
-                    toolbarValue = 'textAreaClicked';
-                }
-                parent.updateToolbar(parent.element, 'enableDisableToolbarBtn', toolbarValue);
-            }
+            parent.notify('toolbar', { prop: 'enable-disable-btns', onPropertyChange: false});
         }
     }
 
@@ -916,14 +862,10 @@ export class UndoRedo {
         parent.objColl.pop();
         parent.notify('shape', { prop: 'applyActObj', onPropertyChange: false, value: {isMouseDown: null}});
         parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false});
-        if (!isBlazor()) {
-            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: { type: 'shapes',
-                isApplyBtn: null, isCropping: null, isZooming: null, cType: null } });
-            parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: { type: 'main',
-                isApplyBtn: null, isCropping: null, isZooming: null, cType: null } });
-        } else {
-            parent.updateToolbar(parent.element, 'imageLoaded');
-        }
+        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: { type: 'shapes',
+            isApplyBtn: null, isCropping: null, isZooming: null, cType: null } });
+        parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: { type: 'main',
+            isApplyBtn: null, isCropping: null, isZooming: null, cType: null } });
     }
 
     private getZeroZoomObjPointValue(obj: SelectionPoint[], point: Point[]): Object {

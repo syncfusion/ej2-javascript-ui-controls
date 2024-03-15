@@ -289,9 +289,9 @@ export class TocProperties {
             return;
         }
         this.element.style.display = isShow ? 'block' : 'none';
-        this.updateBtn.content = this.documentEditor.selection.contextType === 'TableOfContents' ? this.localObj.getConstant('Update') : this.localObj.getConstant('Insert');
+        this.updateBtn.content = this.documentEditor.selectionModule.contextType === 'TableOfContents' ? this.localObj.getConstant('Update') : this.localObj.getConstant('Insert');
         this.updateBtn.element.setAttribute('aria-label', this.updateBtn.content);
-        this.prevContext = this.documentEditor.selection.contextType;
+        this.prevContext = this.documentEditor.selectionModule.contextType;
         this.documentEditor.resize();
         if (isShow) {
             this.updateBtn.element.focus();
@@ -310,7 +310,7 @@ export class TocProperties {
         if (tocSettings.rightAlign) {
             tocSettings.tabLeader = 'Dot';
         }
-        this.documentEditor.editor.insertTableOfContents(tocSettings);
+        this.documentEditor.editorModule.insertTableOfContents(tocSettings);
         this.documentEditor.focusIn();
     }
 

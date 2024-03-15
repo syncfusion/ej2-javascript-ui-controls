@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { PdfViewer, PdfViewerBase, AjaxHandler } from '../index';
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 
 /**
  * The `ThumbnailView` module is used to handle thumbnail view navigation of PDF viewer.
@@ -80,7 +80,7 @@ export class ThumbnailView {
     public openThumbnailPane(): void {
         if (this.pdfViewerBase.navigationPane) {
             this.pdfViewerBase.navigationPane.openThumbnailPane();
-        }
+        } 
     }
 
     /**
@@ -283,7 +283,7 @@ export class ThumbnailView {
         } else {
             for (let count: number = proxy.startIndex; count < proxy.thumbnailLimit; count++) {
                 let currentPageImage: HTMLImageElement = this.getThumbnailImageElement(count);
-                if (currentPageImage && currentPageImage.src === '') {
+                if ((currentPageImage && currentPageImage.src === '') || (isNullOrUndefined(currentPageImage) && !isNullOrUndefined(this.pdfViewer.pageOrganizer))) {
                     this.pdfViewerBase.pdfViewerRunner.postMessage({
                         pageIndex: count,
                         message: 'renderThumbnail'
@@ -309,8 +309,25 @@ export class ThumbnailView {
             canvasContext.putImageData(imageData, 0, 0);
             let imageUrl: string = canvas.toDataURL();
             let currentPageImage: HTMLImageElement = this.getThumbnailImageElement(pageIndex);
-            if(currentPageImage)
+            if(currentPageImage){
                 currentPageImage.src = imageUrl;
+            }
+            let data = ({
+                thumbnailImage: imageUrl,
+                startPage: this.startIndex,
+                endPage: this.thumbnailLimit,
+                uniqueId: this.pdfViewerBase.documentId,
+                pageIndex: pageIndex
+            });
+            if(!Browser.isDevice || this.pdfViewer.enableDesktopMode){
+                this.updateThumbnailCollection(data);
+            }
+            else{
+                if (!isNullOrUndefined(this.pdfViewer.pageOrganizer)) {
+                    this.pdfViewer.pageOrganizer.updatePreviewCollection(data);
+                }
+            }
+            
         }
     }
 
@@ -447,7 +464,7 @@ export class ThumbnailView {
                         if (parseInt(thumbPageNumber) !== pageNumber) {
                             return false;
                         }
-                        shouldScroll = view.percent < 100 && (view.view.offsetWidth > view.view.offsetHeight && view.percent < 97);
+                        shouldScroll = view.percent < 100 && (view.view.offsetWidth > view.view.offsetHeight && view.percent < 97); 
                         return true;
                     });
                 }
@@ -472,8 +489,11 @@ export class ThumbnailView {
         if (this.thumbnailView && data) {
             this.pdfViewerBase.clientSideRendering ? this.renderClientThumbnailImage(data) : this.renderServerThumbnailImage(data);
         }
+        if(!isNullOrUndefined(data) && !isNullOrUndefined(this.pdfViewer.pageOrganizer)){
+            this.pdfViewer.pageOrganizer.getData(data, this.pdfViewerBase.clientSideRendering);
+        }
         this.thumbnailLimit = this.determineThumbnailsRequest(!isNullOrUndefined(pageNumber) ? pageNumber : this.thumbnailLimit);
-        if (this.thumbnailLimit !== this.pdfViewerBase.pageCount && this.thumbnailView) {
+        if (this.thumbnailLimit !== this.pdfViewerBase.pageCount && (this.thumbnailView || !isNullOrUndefined(this.pdfViewer.pageOrganizer))) {
             // eslint-disable-next-line
             let isIE: boolean = !!(document as any).documentMode;
             if (!isIE) {
@@ -536,7 +556,7 @@ export class ThumbnailView {
             currentPageImage.style.width = '126px';
             thumbnail.style.height = '100px';
             thumbnail.style.width = '140px';
-            // pageLink.style.left = '-25px';           
+            // pageLink.style.left = '-25px';
             thumbnailPageNumber.style.left = '18px';
             pageLink.style.marginRight = '41px';
             thumbnail.style.marginLeft = '-5px';
@@ -862,6 +882,9 @@ export class ThumbnailView {
      * @private
      */
     private getThumbnailImageElement(index: number): HTMLImageElement {
+        if(isNullOrUndefined(this.thumbnailView)){
+            return null;
+        }
         const thumbnailChild: HTMLAnchorElement = this.thumbnailView.children[index] as HTMLAnchorElement;
         if(thumbnailChild)
             return thumbnailChild.children[0].children[0].children[0] as HTMLImageElement;

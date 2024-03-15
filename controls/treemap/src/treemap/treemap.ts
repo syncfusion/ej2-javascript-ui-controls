@@ -736,7 +736,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 groupEle
             );
             element.setAttribute('aria-label', title.description || title.text);
-            element.setAttribute('role', '');
+            element.setAttribute('role', 'region');
             element.setAttribute('tabindex', this.tabIndex.toString());
             if ((type === 'title' && !title.subtitleSettings.text) || (type === 'subtitle')) {
                 height = (this.availableSize.height - titleBounds.y - titlePadding - this.margin.bottom);
@@ -1540,43 +1540,50 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.tooltipSettings.visible) {
             modules.push({
                 member: 'treeMapTooltip',
-                args: [this]
+                args: [this],
+                name: 'TreeMapTooltip'
             });
         }
         if (this.highlightSettings.enable) {
             modules.push({
                 member: 'treeMapHighlight',
-                args: [this]
+                args: [this],
+                name: 'TreeMapHighlight'
             });
         }
         if (this.selectionSettings.enable) {
             modules.push({
                 member: 'treeMapSelection',
-                args: [this]
+                args: [this],
+                name: 'TreeMapSelection'
             });
         }
         if (this.legendSettings.visible) {
             modules.push({
                 member: 'treeMapLegend',
-                args: [this]
+                args: [this],
+                name: 'TreeMapLegend'
             });
         }
         if (this.allowPrint) {
             modules.push({
                 member: 'Print',
-                args: [this, Print]
+                args: [this, Print],
+                name: 'Print'
             });
         }
         if (this.allowImageExport) {
             modules.push({
                 member: 'ImageExport',
-                args: [this, ImageExport]
+                args: [this, ImageExport],
+                name: 'ImageExport'
             });
         }
         if (this.allowPdfExport) {
             modules.push({
                 member: 'PdfExport',
-                args: [this, PdfExport]
+                args: [this, PdfExport],
+                name: 'PdfExport'
             });
         }
         return modules;

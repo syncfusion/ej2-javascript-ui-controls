@@ -9,6 +9,22 @@ import { RibbonCollection } from './ribbon-collection';
 export class RibbonGroup extends ChildProperty<RibbonGroup>  {
 
     /**
+     * Specifies the keytip content.
+     *
+     * @default ''
+     */
+    @Property('')
+    public keyTip: string;
+
+    /**
+     * Specifies the keytip content for launcher icon.
+     *
+     * @default ''
+     */
+    @Property('')
+    public launcherIconKeyTip: string;
+
+    /**
      * Defines the list of ribbon collections.
      *
      * @default []

@@ -606,7 +606,13 @@ export interface IGrid extends Component<HTMLElement> {
 
     lazyLoadRender?: IRenderer;
 
+    isSpan?: boolean;
+
     islazyloadRequest?: boolean;
+
+    isAddNewRow?: boolean;
+
+    addNewRowFocus?: boolean;
 
     prevPageMoving?: boolean;
 

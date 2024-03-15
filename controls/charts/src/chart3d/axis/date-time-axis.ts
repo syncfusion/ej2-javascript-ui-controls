@@ -9,7 +9,7 @@ import { DataUtil } from '@syncfusion/ej2-data';
 import { NiceIntervals } from '../axis/axis-helper';
 import { extend, getValue } from '@syncfusion/ej2-base';
 import { ChartRangePadding, IntervalType } from '../../common/utils/enum';
-import { Chart3DFont} from '../model/chart3d-Interface';
+import { Chart3DTextFont} from '../model/chart3d-Interface';
 
 
 /**
@@ -327,13 +327,13 @@ export class DateTime3D extends NiceIntervals {
     public calculateVisibleLabels(axis: Chart3DAxis, chart: Chart3D): void {
         axis.visibleLabels = [];
         let tempInterval: number = axis.visibleRange.min;
-        let labelStyle: Chart3DFont;
+        let labelStyle: Chart3DTextFont;
         const axisLabels: Visible3DLabels[] = axis.visibleLabels;
         if (!setRange(axis)) {
             tempInterval = this.alignRangeStart(axis, tempInterval, axis.visibleRange.interval).getTime();
         }
         while (tempInterval <= axis.visibleRange.max) {
-            labelStyle = <Chart3DFont>(extend({}, getValue('properties', axis.labelStyle), null, true));
+            labelStyle = <Chart3DTextFont>(extend({}, getValue('properties', axis.labelStyle), null, true));
             axis.format = chart.intl.getDateFormat({
                 format: this.findCustomFormats(axis) || '',
                 type: firstToLowerCase(axis.skeletonType),

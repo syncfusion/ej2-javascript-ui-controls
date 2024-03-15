@@ -1,7 +1,7 @@
 /**
  * Query Builder Source
  */
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser, compile, append } from '@syncfusion/ej2-base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser, compile, append, ModuleDeclaration, getDefaultDateObject } from '@syncfusion/ej2-base';
 import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection, cldrData } from '@syncfusion/ej2-base';
 import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';
 import { Internationalization, DateFormatOptions, KeyboardEventArgs, getUniqueID, select } from '@syncfusion/ej2-base';
@@ -19,7 +19,7 @@ import { Tooltip, createSpinner, showSpinner, hideSpinner, TooltipEventArgs } fr
 import { compile as templateCompiler } from '@syncfusion/ej2-base';
 
  type ReturnType = { result: Object[], count: number, aggregates?: Object };
- type ruleObj = { condition: string, not: boolean };
+ type ruleObj = { condition: string, not: boolean, isLocked: boolean };
 
 /**
  * Defines the Columns of Query Builder
@@ -182,6 +182,13 @@ export class Rule extends ChildProperty<Rule> {
      */
     @Property(false)
     public not: boolean;
+    /**
+     * Specifies whether rule is locked or not.
+     *
+     * @default false
+     */
+    @Property(false)
+    public isLocked: boolean;
 }
 /**
  * Defines the property for value.
@@ -227,6 +234,34 @@ export class Value extends ChildProperty <Value> {
  * Defines the ruleDelete, groupInsert, and groupDelete options of Query Builder.
  */
 export class ShowButtons extends ChildProperty<ShowButtons> {
+    /**
+     * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     *
+     * @default false
+     */
+    @Property(false)
+    public cloneRule: boolean;
+    /**
+     * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     *
+     * @default false
+     */
+    @Property(false)
+    public cloneGroup: boolean;
+    /**
+     * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     *
+     * @default false
+     */
+    @Property(false)
+    public lockRule: boolean;
+    /**
+     * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
+     *
+     * @default false
+     */
+    @Property(false)
+    public lockGroup: boolean;
     /**
      * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
      *
@@ -326,7 +361,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private fields: Object = { text: 'label', value: 'field' };
     private columnTemplateFn: Function;
     private target: Element;
-    private updatedRule: ruleObj = { not: false, condition: 'and' };
+    private updatedRule: ruleObj = { not: false, condition: 'and', isLocked: false };
     private ruleTemplateFn: Function;
     private isLocale: boolean = false;
     private isRefreshed: boolean = false;
@@ -344,6 +379,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private isGetNestedData: boolean = false;
     private isCustomOprCols: string[] = [];
     private dummyDropdownTreeDs: Object;
+    private groupCounter: number = 0;
+    private lockItems: string[] = [];
+    private groupIndex: number = -1;
+    private ruleIndex: number = -1;
+    private isLastGroup: boolean = false;
+    private cloneGrpBtnClick: boolean = false;
+    private isMiddleGroup: boolean = false;
+    private cloneRuleBtnClick: boolean = false;
     /**
      * Triggers when the component is created.
      *
@@ -398,7 +441,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      *
      * @default { ruleDelete: true , groupInsert: true, groupDelete: true }
      */
-    @Property({ ruleDelete: true, groupInsert: true, groupDelete: true })
+    @Complex<ShowButtonsModel>({}, ShowButtons)
     public showButtons: ShowButtonsModel;
     /**
      * Shows or hides the filtered query.
@@ -546,6 +589,39 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     @Property(false)
     public readonly: boolean;
     /**
+     * Specifies a boolean value whether enable / disable the new rule adding while adding new groups.
+     *
+     * @remarks
+     * If this property is true, the empty rule is inserted while inserting new group.
+     * If set to false, the group is inserted without any rule.
+     *
+     * @default true
+     */
+    @Property(true)
+    public addRuleToNewGroups: boolean;
+    /**
+     * Specifies a boolean value whether enable / disable the auto selection with the first value for the field.
+     *
+     * @remarks
+     * If this property is true, the field dropdown list will render with the first value of the dropdown list.
+     * If set to false, the dropdown list render with placeholder.
+     *
+     * @default false
+     */
+    @Property(false)
+    public autoSelectField: boolean;
+    /**
+     * Specifies a boolean value whether enable / disable the auto selection with the first value for the operator.
+     *
+     * @remarks
+     * If this property is true, the operator dropdown list will render with the first value of the dropdown list.
+     * If set to false, the dropdown list render with placeholder.
+     *
+     * @default true
+     */
+    @Property(true)
+    public autoSelectOperator: boolean;
+    /**
      * Specifies the separator string for column.
      *
      * @default ''
@@ -612,6 +688,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     protected getModuleName(): string {
         return 'query-builder';
+    }
+    public requiredModules(): ModuleDeclaration[] {
+        const modules: ModuleDeclaration[] = [];
+        modules.push({
+            member: 'query-library',
+            args: [this]
+        });
+        return modules;
     }
     private GetRootColumnName(field: string): string {
         return this.separator ? field.split(this.separator)[0] : field;
@@ -786,15 +870,36 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             txtareaElem.style.height = txtareaElem.scrollHeight + 'px';
         }
         if (target.tagName === 'BUTTON' && target.className.indexOf('e-qb-toggle') < 0) {
-            if (target.className.indexOf('e-removerule') > -1) {
+            switch (true) {
+            case target.className.indexOf('e-removerule') > -1:
                 this.actionButton = target;
                 this.deleteRule(target);
-            } else if (target.className.indexOf('e-deletegroup') > -1) {
+                break;
+            case target.className.indexOf('e-clone-rule-btn') > -1:
+                this.actionButton = target;
+                this.cloneRuleBtnClick = true;
+                this.ruleClone(target);
+                break;
+            case target.className.indexOf('e-lock-rule-btn') > -1:
+                this.actionButton = target;
+                this.ruleLock(target);
+                break;
+            case target.className.indexOf('e-lock-grp-btn') > -1:
+                this.actionButton = target;
+                this.groupLock(target);
+                break;
+            case target.className.indexOf('e-clone-grp-btn') > -1:
+                this.actionButton = target;
+                this.cloneGrpBtnClick = true;
+                this.groupClone(closest(target, '.e-group-container'));
+                break;
+            case target.className.indexOf('e-deletegroup') > -1:
                 this.actionButton = target;
                 this.deleteGroup(closest(target, '.e-group-container'));
-            } else if (target.className.indexOf('e-edit-rule') > -1) {
+                break;
+            case target.className.indexOf('e-edit-rule') > -1:
                 const animation: Animation = new Animation({ duration: 1000, delay: 0 });
-                animation.animate('.e-query-builder' , { name: 'SlideLeftIn' });
+                animation.animate('.e-query-builder', { name: 'SlideLeftIn' });
                 document.getElementById(this.element.id + '_summary_content').style.display = 'none';
                 if (this.element.querySelectorAll('.e-group-container').length < 1) {
                     this.addGroupElement(false, this.element, this.rule.condition, false, this.rule.not);
@@ -808,6 +913,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                     groupElem.style.display = 'block';
                 }
+                break;
             }
         } else if ((target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) ||
         target.className.indexOf('e-qb-toggle') > -1) {
@@ -898,7 +1004,17 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             ruleElem = this.createElement('div', { attrs: { class: 'e-rule-container' } });
             ruleElem.setAttribute('id', target.id + '_rule' + this.ruleIdCounter);
-            ruleListElem.appendChild(ruleElem); this.ruleIdCounter++;
+            if (this.showButtons.cloneRule && this.cloneRuleBtnClick) {
+                if (this.ruleIndex < 0) {
+                    ruleListElem.appendChild(ruleElem);
+                } else {
+                    ruleListElem.insertBefore(ruleElem, ruleListElem.children[this.ruleIndex + 1]); // added clone rule to next position
+                }
+                this.cloneRuleBtnClick = false;
+            } else {
+                ruleListElem.appendChild(ruleElem);
+            }
+            this.ruleIdCounter++;
         }
         if (column && column.ruleTemplate && rule) {
             args = { requestType: 'template-initialize', ruleID: ruleElem.id, action: action, fields: this.fields, rule: rule };
@@ -938,6 +1054,21 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             elem = this.ruleElem.querySelector('.e-rule-field').cloneNode(true) as Element;
             ruleElem.appendChild(elem);
         }
+        if (this.showButtons.lockGroup) {
+            removeClass(ruleElem.querySelectorAll('.e-lock-grp-btn'), 'e-button-hide');
+        }
+        if (this.showButtons.lockRule) {
+            removeClass(ruleElem.querySelectorAll('.e-lock-rule-btn'), 'e-button-hide');
+        }
+        if (this.showButtons.cloneGroup) {
+            removeClass(ruleElem.querySelectorAll('.e-clone-grp-btn'), 'e-button-hide');
+        }
+        if (this.showButtons.cloneRule) {
+            removeClass(ruleElem.querySelectorAll('.e-clone-rule-btn'), 'e-button-hide');
+        }
+        if (this.showButtons.ruleDelete) {
+            removeClass(ruleElem.querySelectorAll('.e-lock-grp-btn'), 'e-button-hide');
+        }
         if (column && column.ruleTemplate && rule) { this.renderReactTemplates(); }
         return ruleElem;
     }
@@ -975,15 +1106,18 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             } else {
                 ruleElem = this.appendRuleElem(trgt, column, act, pId, 'field');
                 ruleElem.querySelector('.e-filter-input').setAttribute('id', ruleElem.id + '_filterkey');
-                let element: Element = ruleElem.querySelector('button');
+                const element: Element = ruleElem.querySelector('.e-rule-delete');
                 if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
                     element.textContent = this.l10n.getConstant('Remove');
                     addClass([element], 'e-flat'); addClass([element], 'e-primary');
                 } else {
                     addClass([element], 'e-round'); addClass([element], 'e-icon-btn');
                     element.setAttribute('title', this.l10n.getConstant('DeleteRule'));
-                    element = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-delete-icon' } });
-                    ruleElem.querySelector('button').appendChild(element);
+                    const spanElement = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-delete-icon' } });
+                    ruleElem.querySelector('.e-rule-delete').appendChild(spanElement);
+                }
+                if (!this.showButtons.ruleDelete) {
+                    element.classList.add('e-button-hide');
                 }
             }
             if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
@@ -1012,6 +1146,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     let ddlValue: string;
                     if (this.separator && rule.field) {
                         ddlValue = this.GetRootColumnName(rule.field as string);
+                    } else if (this.autoSelectField) {
+                        ddlValue = this.GetRootColumnName(rule.field as string);
                     } else {
                         ddlValue = this.isImportRules ? this.GetRootColumnName(rule.field as string) : rule.field;
                     }
@@ -1019,8 +1155,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         dataSource: this.columns as { [key: string]: Object }[], // tslint:disable-line
                         fields: this.fields, placeholder: this.l10n.getConstant('SelectField'),
                         popupHeight: ((this.columns.length > 5) ? height : 'auto'), close: this.fieldClose.bind(this, ruleElem.id + '_filterkey'),
-                        change: this.changeField.bind(this), value: rule ? ddlValue : null, open: this.popupOpen.bind(this, true),
-                        cssClass: 'qb-dropdownlist'
+                        change: this.changeField.bind(this), value: rule ? ddlValue : null, open: this.popupOpen.bind(this, true), cssClass: 'qb-dropdownlist'
                     };
                     if (this.fieldModel) {
                         ddlField = {...ddlField, ...this.fieldModel as DropDownListModel};
@@ -1030,7 +1165,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     if (this.separator && rule.field) {
                         ddlVal = this.GetRootColumnName(rule.field as string);
                     } else {
-                        ddlVal = this.isImportRules ? this.GetRootColumnName(rule.field as string) : dropDownList.value;
+                        ddlVal = this.isImportRules ? this.GetRootColumnName(rule.field as string) : dropDownList.value as string | number | boolean;
                     }
                     this.selectedColumn = dropDownList.getDataByValue(ddlVal) as ColumnsModel;
                     if (Object.keys(rule).length) {
@@ -1105,17 +1240,30 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const custom: any = (rule as any).custom;
             if (Object.keys(rule).length) {
-                rules.rules.push({
-                    'field': rule.field, 'type': rule.type, 'label': rule.label, 'operator': rule.operator, value: rule.value
-                });
-                if (custom) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    (rules.rules[rules.rules.length - 1] as any).custom = custom;
+                if (this.ruleIndex < 0) {
+                    rules.rules.push({
+                        'field': rule.field, 'type': rule.type, 'label': rule.label, 'operator': rule.operator, value: rule.value
+                    });
+                    if (custom) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (rules.rules[rules.rules.length - 1] as any).custom = custom;
+                    }
+                } else {
+                    rules.rules.splice(this.ruleIndex + 1, 0, {
+                        'field': rule.field, 'type': rule.type, 'label': rule.label, 'operator': rule.operator, value: rule.value
+                    });
+                    if (custom) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        (rules.rules[this.ruleIndex + 1] as any).custom = custom;
+                    }
                 }
             } else {
                 if (custom) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (newRule as any).custom = custom;
+                }
+                if (this.autoSelectField) {
+                    rule.field = newRule.field = this.rule.rules[0].field;
                 }
                 rules.rules.push(newRule);
             }
@@ -1150,7 +1298,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 if (tooltipCloseElement) {
                     tooltipCloseElement.style.display = 'none';
                 }
-            }});
+        }});
         tooltip.appendTo(element);
         tooltip.open(element);
     }
@@ -1179,7 +1327,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 } else {
                     dropDownObj = getComponent(ruleElemCln[i as number].querySelector('.e-rule-filter input.e-dropdownlist') as HTMLElement, 'dropdownlist');
                     if (dropDownObj && dropDownObj.value) {
-                        this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
+                        this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value as string) as ColumnsModel;
                         validateRule = !isNullOrUndefined(dropDownObj.index) && (this.selectedColumn as ColumnsModel).validation;
                     }
                 }
@@ -1191,7 +1339,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                     fieldElem = tempElem.querySelector('.e-rule-operator .e-control');
                     if (!rule.rules[index as number].operator) {
-                        if (fieldElem.parentElement.className.indexOf('e-tooltip') < 0 && fieldElem.className.indexOf('e-tooltip') < 0) {
+                        if (fieldElem.parentElement.className.indexOf('e-tooltip') < 0  && fieldElem.className.indexOf('e-tooltip') < 0) {
                             this.renderToolTip(fieldElem.parentElement);
                         }
                         isValid = false;
@@ -1297,8 +1445,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
 
     private ruleTemplate(): Element {
-        let tempElem: Element;
-        let clsName: string;
+        let tempElem: Element; let clsName: string; let cloneClsName: string; let lockClsName: string;
         const ruleElem: Element = this.createElement('div');
         const fieldElem: Element = this.createElement('div', { attrs: { class: 'e-rule-field' } });
         tempElem = this.createElement('div', { attrs: { class: 'e-rule-filter' } });
@@ -1310,12 +1457,30 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         tempElem = this.createElement('div', { attrs: { class: 'e-rule-value' } });
         fieldElem.appendChild(tempElem);
         tempElem = this.createElement('div', { attrs: { class: 'e-rule-value-delete' } });
+        if (this.showButtons.cloneRule) {
+            cloneClsName = 'e-clone-rule-btn e-clone-rule e-css e-btn e-small e-round e-icon-btn';
+        } else {
+            cloneClsName = 'e-clone-rule-btn e-clone-rule e-css e-btn e-small e-round e-icon-btn e-button-hide';
+        }
+        if (this.showButtons.lockRule){
+            lockClsName = 'e-lock-rule-btn e-lock-rule e-css e-btn e-small e-round e-icons e-icon-btn';
+        } else {
+            lockClsName = 'e-lock-rule-btn e-lock-rule e-css e-btn e-small e-round e-icons e-icon-btn e-button-hide';
+        }
+        const cloneRuleBtnElem: HTMLElement = this.createElement('button', { attrs: { title: this.l10n.getConstant('CloneRule'), type: 'button', class: cloneClsName } });
+        let spanElement: HTMLElement = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-copy' } });
+        cloneRuleBtnElem.appendChild(spanElement);
+        const cloneLockBtnElem: HTMLElement = this.createElement('button', { attrs: { title: this.l10n.getConstant('LockRule'), type: 'button', class: lockClsName } });
+        spanElement = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-unlock' } });
+        cloneLockBtnElem.appendChild(spanElement);
         if (this.showButtons.ruleDelete || isNullOrUndefined(this.showButtons.ruleDelete)) {
             clsName = 'e-removerule e-rule-delete e-css e-btn e-small';
         } else {
             clsName = 'e-removerule e-rule-delete e-css e-btn e-small e-button-hide';
         }
         const delBtnElem: HTMLElement = this.createElement('button', { attrs: { type: 'button', class: clsName } });
+        tempElem.appendChild(cloneRuleBtnElem);
+        tempElem.appendChild(cloneLockBtnElem);
         tempElem.appendChild(delBtnElem);
         fieldElem.appendChild(tempElem);
         ruleElem.appendChild(fieldElem);
@@ -1382,9 +1547,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 button.appendTo(dltGroupBtn);
                 dltGroupBtn.setAttribute('title', this.l10n.getConstant('DeleteGroup'));
                 rippleEffect(dltGroupBtn, { selector: '.deletegroup' });
-                if (!this.headerTemplate) {
-                    groupElem.querySelector('.e-group-action').appendChild(dltGroupBtn);
-                }
                 const ruleList: Element = target.querySelector('.e-rule-list');
                 const childElems: HTMLCollection = ruleList.children;
                 let grpLen: number = 0;
@@ -1393,17 +1555,64 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         grpLen += 1;
                     }
                 }
-                ruleList.appendChild(groupElem);
+                if (this.showButtons.cloneGroup && this.cloneGrpBtnClick) {
+                    if (this.groupIndex === (childElems.length - 1)) {
+                        ruleList.appendChild(groupElem);
+                        this.isLastGroup = true;
+                    } else {
+                        childElems[this.groupIndex + 1].parentNode.insertBefore(groupElem, childElems[this.groupIndex + 1]); // clone the element to nxt element
+                        this.isMiddleGroup = true;
+                    }
+                } else {
+                    ruleList.appendChild(groupElem);
+                }
                 const level: number[] = this.levelColl[target.id].slice(0);
                 level.push(grpLen); this.levelColl[groupElem.id] = level;
+                if (this.groupIndex > -1) {
+                    this.refreshLevelColl();
+                }
                 if (!this.isImportRules) {
                     this.isAddSuccess = true; this.addGroups([], target.id.replace(this.element.id + '_', ''));
                     this.isAddSuccess = false;
-                    if (isBtnClick) {
+                    if (isBtnClick && this.addRuleToNewGroups) {
                         this.addRuleElement(groupElem, {});
                     }
                 }
+                if (!this.headerTemplate) {
+                    let lockClsName: string = '';
+                    if (this.showButtons.cloneGroup) {
+                        lockClsName = 'e-clone-grp-btn e-css e-btn e-small e-round e-icons e-icon-btn';
+                    } else {
+                        lockClsName = 'e-clone-grp-btn e-css e-btn e-small e-round e-icons e-icon-btn e-button-hide';
+                    }
+                    const cloneBtnElem: HTMLElement = this.createElement('button', { attrs: { title: this.l10n.getConstant('CloneGroup'), type: 'button', class: lockClsName } });
+                    const spanElement = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-copy' } });
+                    cloneBtnElem.appendChild(spanElement);
+                    groupElem.querySelector('.e-group-action').appendChild(cloneBtnElem);
+                    if (this.showButtons.lockGroup) {
+                        lockClsName = 'e-lock-grp-btn e-css e-btn e-small e-round e-icons e-icon-btn';
+                    } else {
+                        lockClsName = 'e-lock-grp-btn e-css e-btn e-small e-round e-icons e-icon-btn e-button-hide';
+                    }
+                    const lockBtnElem: HTMLElement = this.createElement('button', { attrs: { title: this.l10n.getConstant('LockGroup'), type: 'button', class: lockClsName } });
+                    const lockSpanElement = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-unlock' } });
+                    lockBtnElem.appendChild(lockSpanElement);
+                    groupElem.querySelector('.e-group-action').appendChild(lockBtnElem);
+                    groupElem.querySelector('.e-group-action').appendChild(dltGroupBtn);
+                }
             } else {
+                if (!this.headerTemplate) {
+                    let lockClsName: string = '';
+                    if (this.showButtons.lockGroup) {
+                        lockClsName = 'e-lock-grp-btn e-css e-btn e-small e-round e-icons e-icon-btn';
+                    } else {
+                        lockClsName = 'e-lock-grp-btn e-css e-btn e-small e-round e-icons e-icon-btn e-button-hide';
+                    }
+                    const lockBtnElem: HTMLElement = this.createElement('button', { attrs: { title: this.l10n.getConstant('LockGroup'), type: 'button', class: lockClsName } });
+                    const spanElement = this.createElement('span', { attrs: { class: 'e-btn-icon e-icons e-unlock' } });
+                    lockBtnElem.appendChild(spanElement);
+                    groupElem.querySelector('.e-group-action').appendChild(lockBtnElem);
+                }
                 target.appendChild(groupElem); this.levelColl[groupElem.id] = [0];
             }
             if (this.enableNotCondition) {
@@ -1714,7 +1923,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.prevItemData = args.itemData;
             const fieldElem: Element = closest(args.element, '.e-rule-filter') || closest(args.element, '.e-rule-sub-filter');
             const column: ColumnsModel = this.fieldMode === 'DropdownTree' ? this.getColumn(args.value[0]) : this.getColumn(args.value as string);
-            if (this.fieldMode === 'DropdownTree' && fieldElem != null) {
+            if (this.fieldMode === 'DropdownTree' && fieldElem !== null) {
                 const ddtElem: HTMLInputElement = fieldElem.querySelector('.e-dropdowntree.e-control') as HTMLInputElement;
                 const ddt: DropDownTree = getComponent(ddtElem, 'dropdowntree') as DropDownTree;
                 if (column) {
@@ -1777,7 +1986,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const tempRule: RuleModel = {}; let filterElem: Element = closest(ddlArgs.element, '.e-rule-filter');
         filterElem = filterElem ? filterElem : closest(ddlArgs.element, '.e-rule-sub-filter');
         let ddlObj: DropDownList | DropDownTree = getComponent(ddlArgs.element, 'dropdownlist') as DropDownList;
-        if (this.fieldMode === 'DropdownTree' && filterElem != null) {
+        if (this.fieldMode === 'DropdownTree' && filterElem !== null) {
             ddlObj = getComponent(ddlArgs.element, 'dropdowntree') as DropDownTree;
         }
         const element: Element = closest(ddlArgs.element, '.e-group-container');
@@ -1899,7 +2108,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.GetRootColumnName(rule.field) === this.GetRootColumnName(this.previousColumn.field))) {
             const subField: ColumnsModel[] = this.selectedColumn.columns;
             for (let i: number = 0; i < subField.length; i++) {
-                if (rule.field === subField[i as number].field || rule.field.indexOf(subField[i as number].field) > -1) {
+                if (rule.field === subField[i as number].field) {
                     dropDownList.value = subField[i as number].field;
                     this.selectedColumn = subField[i as number];
                     subFieldValue = true;
@@ -1939,7 +2148,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 if (tempRule.operator.toLowerCase().indexOf('in') < 0 || prevOper.indexOf('in') < 0) {
                     rule.value = [];
                 }
-            } else if (typeof rule.value === 'object' && rule.value != null) {
+            } else if (typeof rule.value === 'object' && rule.value !== null) {
                 rule.value = rule.value.length > 0 ? rule.value[0] : rule.type === 'number' ? 0 : '';
             }
             if (ddlArgs.previousItemData) {
@@ -1964,6 +2173,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (valElem && this.getColumn(rule.field).template) {
                 filterElem = operatorElem.previousElementSibling;
             }
+            if (valElem.children.length == 0) { filterElem = operatorElem.previousElementSibling; }
             this.changeRuleValues(filterElem, rule, tempRule, ddlArgs);
         }
     }
@@ -1990,8 +2200,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 tempRule.type = this.fieldMode === 'DropdownTree' ? this.getColumn(fieldObj.value[0]).type :
                     this.getColumn(fieldObj.value as string).type;
                 const itemData: ColumnsModel = ddlArgs.itemData as ColumnsModel;
-                this.renderValues(
-                    operatorElem, itemData, ddlArgs.previousItemData as ColumnsModel, true, rule, tempRule, ddlArgs.element);
+                if (ddlObj.value !== '')  {
+                    this.renderValues(
+                        operatorElem, itemData, ddlArgs.previousItemData as ColumnsModel, true, rule, tempRule, ddlArgs.element);
+                }
+
             } else {
                 const ruleId: string = closest(operatorElem, '.e-rule-container').id;
                 oprElem = this.createElement('input', { attrs: { type: 'text', id: ruleId + '_operatorkey' } });
@@ -2003,7 +2216,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
                 const height: string = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
                 let value: string = operatorList[0].value as string;
-                value = rule ? (rule.operator !== '' ? rule.operator : value) : value;
+                let ddlIdx: number = 0;
+                if (!this.autoSelectOperator) { value = ''; ddlIdx = -1; }
+                if (this.isImportRules || (this.ruleIndex > -1 || this.groupIndex > -1)) {
+                    value = rule ? (rule.operator ? rule.operator : value) : value;
+                }
                 let ddlOperator: DropDownListModel;
                 ddlOperator = {
                     dataSource: operatorList,
@@ -2011,7 +2228,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     placeholder: this.l10n.getConstant('SelectOperator'),
                     popupHeight: ((operatorList.length > 5) ? height : 'auto'),
                     change: this.changeField.bind(this),
-                    index: 0,
+                    index: ddlIdx,
                     value: value,
                     open: this.popupOpen.bind(this, false)
                 };
@@ -2025,9 +2242,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     tempRule.type = this.selectedColumn.type;
                     tempRule.operator = rule.operator;
                 }
-                this.renderValues(
-                    operatorElem, this.selectedColumn, ddlArgs.previousItemData as ColumnsModel,
-                    false, rule, tempRule, ddlArgs.element);
+                if (!isNullOrUndefined(value) && value !== '') {
+                    this.renderValues(
+                        operatorElem, this.selectedColumn, ddlArgs.previousItemData as ColumnsModel,
+                        false, rule, tempRule, ddlArgs.element);
+                } else if (this.autoSelectField && this.autoSelectOperator) {
+                    this.renderValues(
+                        operatorElem, this.selectedColumn, ddlArgs.previousItemData as ColumnsModel,
+                        false, rule, tempRule, ddlArgs.element);
+                }
             }
         }
         if (!this.isImportRules) {
@@ -2258,7 +2481,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             const element: Element = document.getElementById(parentId);
             const dropDownObj: DropDownList =
             getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input') as HTMLElement, 'dropdownlist');
-            this.selectedColumn =  dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
+            this.selectedColumn =  dropDownObj.getDataByValue(dropDownObj.value as string) as ColumnsModel;
             const value: string = this.selectedColumn.field; let isFetched: boolean = false;
             if (this.dataColl[1]) {
                 if (Object.keys(this.dataColl[1]).indexOf(value) > -1) {
@@ -2360,13 +2583,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private renderStringValue(parentId: string, rule: RuleModel, operator: string, idx: number, ruleValElem: HTMLElement): void {
         let selectedVal: string[]; const columnData: ColumnsModel = this.getItemData(parentId); let selectedValue: string;
         const isTemplate: boolean = (typeof columnData.template === 'string');
-        if (this.isImportRules || this.isPublic || isTemplate) {
+        if (this.isImportRules || this.ruleIndex > -1 || this.groupIndex > -1 || this.isPublic || isTemplate) {
             selectedValue = rule.value as string;
         } else {
             selectedValue = this.setDefaultValue(parentId, false, false) as string;
         }
         if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values )) {
-            selectedVal = this.isImportRules ? rule.value as string[] : this.setDefaultValue(parentId, true, false) as string[];
+            selectedVal = (this.isImportRules || this.ruleIndex > -1 || this.groupIndex > -1) ? rule.value as string[] : this.setDefaultValue(parentId, true, false) as string[];
             this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
             if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
                 ruleValElem.style.width = '100%';
@@ -2376,7 +2599,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         } else {
             if (operator === 'in' || operator === 'notin') {
-                selectedVal = this.isImportRules ? rule.value as string[] : this.setDefaultValue(parentId, true, false) as string[];
+                selectedVal = (this.isImportRules || this.ruleIndex > -1 || this.groupIndex > -1) ? rule.value as string[] : this.setDefaultValue(parentId, true, false) as string[];
                 selectedValue = selectedVal.join(',');
             }
             let txtBox: TextBoxModel;
@@ -2399,9 +2622,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const columnData: ColumnsModel = this.getItemData(parentId);
         const isTemplate: boolean = (typeof columnData.template === 'string');
         let selectedVal: number | number[] =
-        (this.isImportRules || this.isPublic || isTemplate) ? rule.value as number : this.setDefaultValue(parentId, false, true) as number;
+        (this.isImportRules || this.ruleIndex > -1 || this.groupIndex > -1 || this.isPublic || isTemplate) ? rule.value as number : this.setDefaultValue(parentId, false, true) as number;
         if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values)) {
-            selectedVal = this.isImportRules ? rule.value as number[] : this.setDefaultValue(parentId, true, false) as number[];
+            selectedVal = (this.isImportRules || this.ruleIndex > -1 || this.groupIndex > -1) ? rule.value as number[] : this.setDefaultValue(parentId, true, false) as number[];
             this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
             if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
                 ruleValElem.style.width = '100%';
@@ -2409,7 +2632,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 ruleValElem.style.minWidth = '200px'; ruleValElem.style.width = null;
             }
         } else if (operator === 'in' || operator === 'notin') {
-            selectedVal = this.isImportRules ? rule.value as number[] : this.setDefaultValue(parentId, true, false) as number[];
+            selectedVal = (this.isImportRules || this.ruleIndex > -1 || this.groupIndex > -1) ? rule.value as number[] : this.setDefaultValue(parentId, true, false) as number[];
             const selVal: string = selectedVal.join(',');
             let txtInp: TextBoxModel;
             txtInp = {
@@ -2651,14 +2874,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             : this.getColumn(filtObj.value as any);
         this.selectedRule = column as RuleModel;
+        const ddlObj: DropDownList = getComponent(target.querySelector('input'), 'dropdownlist') as DropDownList;
         if (isRender) {
-            const ddlObj: DropDownList = getComponent(target.querySelector('input'), 'dropdownlist') as DropDownList;
             itemData = element.id.indexOf('operator') > -1 ? itemData : this.selectedRule;
             if (itemData.operators) {
                 ddlObj.value = null; ddlObj.dataBind(); ddlObj.dataSource = itemData.operators;
                 ddlObj.index = this.getOperatorIndex(ddlObj, rule);
                 ddlObj.value = tempRule.operator = ddlObj.dataSource[ddlObj.index].value as string;
-                ddlObj.dataBind();
+                if (!this.autoSelectOperator) { ddlObj.index = -1; tempRule.operator = ddlObj.value = ''; } else { ddlObj.dataBind(); }
             }
         }
         const operator: string = tempRule.operator.toString(); let isTempRendered: boolean = false;
@@ -2689,34 +2912,36 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.validateValue(rule, closest(target, '.e-rule-container'));
                 this.destroyControls(target);
             }
-            if (column) {
-                itemData.template = column.template;
-            }
-            if (itemData.template) {
-                addClass([target.nextElementSibling], 'e-template-value'); itemData.template = column.template;
-                isTempRendered = this.setColumnTemplate(itemData, parentId, column.field, itemData.value as string ||
-                    operator, target, rule);
-            }
-            if (isTempRendered) {
-                const parentElem: HTMLElement = target.parentElement.querySelector('.e-rule-value') as HTMLElement;
-                if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
-                    parentElem.style.width = '100%';
+            if (this.isImportRules || (ddlObj && ddlObj.value !== '')) {
+                if (column) {
+                    itemData.template = column.template;
+                }
+                if (itemData.template) {
+                    addClass([target.nextElementSibling], 'e-template-value'); itemData.template = column.template;
+                    isTempRendered = this.setColumnTemplate(itemData, parentId, column.field, itemData.value as string ||
+                        operator, target, rule);
+                }
+                if (isTempRendered) {
+                    const parentElem: HTMLElement = target.parentElement.querySelector('.e-rule-value') as HTMLElement;
+                    if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
+                        parentElem.style.width = '100%';
+                    } else {
+                        parentElem.style.width = '200px';
+                    }
                 } else {
-                    parentElem.style.width = '200px';
+                    removeClass([target.nextElementSibling], 'e-template-value'); let inputLen: number = 1;
+                    if (tempRule.type === 'boolean') {
+                        inputLen = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
+                    } else {
+                        inputLen = (operator && operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
+                    }
+                    for (let i: number = 0; i < inputLen; i++) {
+                        const valElem: HTMLElement = this.createElement('input', { attrs: { type: 'text', id: parentId + '_valuekey' + i } });
+                        target.nextElementSibling.appendChild(valElem);
+                    }
                 }
-            } else {
-                removeClass([target.nextElementSibling], 'e-template-value'); let inputLen: number = 1;
-                if (tempRule.type === 'boolean') {
-                    inputLen = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
-                } else {
-                    inputLen = (operator && operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
-                }
-                for (let i: number = 0; i < inputLen; i++) {
-                    const valElem: HTMLElement = this.createElement('input', { attrs: { type: 'text', id: parentId + '_valuekey' + i } });
-                    target.nextElementSibling.appendChild(valElem);
-                }
+                this.renderControls(target, itemData, rule, tempRule, isTempRendered);
             }
-            this.renderControls(target, itemData, rule, tempRule, isTempRendered);
         } else {
             const parentElem: HTMLElement = target.parentElement.querySelector('.e-rule-value') as HTMLElement;
             if (parentElem) { removeClass([parentElem], 'e-show'); addClass([parentElem], 'e-hide'); }
@@ -2931,7 +3156,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             dropDownObj = getComponent(target as HTMLElement, 'dropdownlist') as DropDownList;
             rule.rules[index as number].operator = dropDownObj.value.toString();
             const inputElem: NodeListOf<HTMLElement> = ruleElem.querySelectorAll('.e-rule-value input.e-control') as NodeListOf<HTMLElement>;
-            eventsArgs = { groupID: groupID, ruleID: ruleID, value: dropDownObj.value, type: 'operator'};
+            eventsArgs = { groupID: groupID, ruleID: ruleID, value: dropDownObj.value as string | number | boolean, type: 'operator'};
             if (this.allowValidation && rule.rules[index as number].operator && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 (getComponent(target.parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
             }
@@ -3107,8 +3332,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const queryElement: Element = this.element;
         if (!queryElement) { return; }
         let element: NodeListOf<HTMLElement>; let i: number; let len: number; let tooltip: NodeListOf<HTMLElement>;
-        let popupElement: NodeListOf<HTMLElement>;
         super.destroy();
+        let popupElement: NodeListOf<HTMLElement>;
         element = this.element.querySelectorAll('.e-addrulegroup') as NodeListOf<HTMLElement>;
         len = element.length;
         for (i = 0; i < len; i++) {
@@ -3190,20 +3415,30 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (grouplen) {
                 this.isPublic = true;
                 for (let i: number = 0, len: number = groups.length; i < len; i++) {
-                    this.updatedRule = {condition: groups[i as number].condition, not: groups[i as number].not};
+                    this.updatedRule = {isLocked: groups[i as number].isLocked, condition: groups[i as number].condition,
+                        not: groups[i as number].not};
                     this.importRules(groups[i as number], groupElem, false, groups[i as number].not);
                 }
                 this.isPublic = false;
             } else {
-                let condition: string = 'and'; let not: boolean = false;
+                let condition: string = 'and'; let not: boolean = false; let isLocked: boolean = false;
                 if (this.updatedRule) {
                     condition = this.updatedRule.condition;
                     not = this.updatedRule.not;
+                    isLocked = this.updatedRule.isLocked;
                 }
-                if (this.enableNotCondition) {
-                    rule.rules.push({ 'condition': condition, 'not': not, rules: [] });
+                if (this.groupIndex < 0) {
+                    if (this.enableNotCondition) {
+                        rule.rules.push({ 'condition': condition, 'not': not, rules: [] });
+                    } else {
+                        rule.rules.push({ 'condition': condition, rules: [] });
+                    }
                 } else {
-                    rule.rules.push({ 'condition': condition, rules: [] });
+                    if (this.enableNotCondition) {
+                        rule.rules.splice(this.groupIndex + 1, 0, { condition: condition, not: not, rules: [], isLocked: isLocked });
+                    } else {
+                        rule.rules.splice(this.groupIndex + 1, 0, { condition: condition, rules: [], isLocked: isLocked });
+                    }
                 }
             }
             if (!this.headerTemplate) {
@@ -3374,15 +3609,47 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.refresh();
                 break;
             case 'showButtons':
-                if (newProp.showButtons.ruleDelete) {
-                    removeClass(this.element.querySelectorAll('.e-rule-delete'), 'e-button-hide');
-                } else {
-                    addClass(this.element.querySelectorAll('.e-rule-delete'), 'e-button-hide');
+                if (!isNullOrUndefined(newProp.showButtons.lockGroup)) {
+                    if (newProp.showButtons.lockGroup) {
+                        removeClass(this.element.querySelectorAll('.e-lock-grp-btn'), 'e-button-hide');
+                    } else {
+                        addClass(this.element.querySelectorAll('.e-lock-grp-btn'), 'e-button-hide');
+                    }
                 }
-                if (newProp.showButtons.groupDelete) {
-                    removeClass(this.element.querySelectorAll('.e-deletegroup'), 'e-button-hide');
-                } else {
-                    addClass(this.element.querySelectorAll('.e-deletegroup'), 'e-button-hide');
+                if (!isNullOrUndefined(newProp.showButtons.lockRule)) {
+                    if (newProp.showButtons.lockRule) {
+                        removeClass(this.element.querySelectorAll('.e-lock-rule-btn'), 'e-button-hide');
+                    } else {
+                        addClass(this.element.querySelectorAll('.e-lock-rule-btn'), 'e-button-hide');
+                    }
+                }
+                if (!isNullOrUndefined(newProp.showButtons.cloneGroup)) {
+                    if (newProp.showButtons.cloneGroup) {
+                        removeClass(this.element.querySelectorAll('.e-clone-grp-btn'), 'e-button-hide');
+                    } else {
+                        addClass(this.element.querySelectorAll('.e-clone-grp-btn'), 'e-button-hide');
+                    }
+                }
+                if (!isNullOrUndefined(newProp.showButtons.cloneRule)) {
+                    if (newProp.showButtons.cloneRule) {
+                        removeClass(this.element.querySelectorAll('.e-clone-rule-btn'), 'e-button-hide');
+                    } else {
+                        addClass(this.element.querySelectorAll('.e-clone-rule-btn'), 'e-button-hide');
+                    }
+                }
+                if (!isNullOrUndefined(newProp.showButtons.ruleDelete)) {
+                    if (newProp.showButtons.ruleDelete) {
+                        removeClass(this.element.querySelectorAll('.e-rule-delete'), 'e-button-hide');
+                    } else {
+                        addClass(this.element.querySelectorAll('.e-rule-delete'), 'e-button-hide');
+                    }
+                }
+                if (!isNullOrUndefined(newProp.showButtons.groupDelete)) {
+                    if (newProp.showButtons.groupDelete) {
+                        removeClass(this.element.querySelectorAll('.e-deletegroup'), 'e-button-hide');
+                    } else {
+                        addClass(this.element.querySelectorAll('.e-deletegroup'), 'e-button-hide');
+                    }
                 }
                 break;
             case 'cssClass':
@@ -3451,8 +3718,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.element.id = this.element.id || getUniqueID('ej2-querybuilder');
         this.defaultLocale = {
             StartsWith: 'Starts With',
+            DoesNotStartWith: 'Does Not Start With',
             EndsWith: 'Ends With',
+            DoesNotEndWith: 'Does Not End With',
             Contains: 'Contains',
+            DoesNotContain: 'Does Not Contain',
             NotLike: 'Not Like',
             Like : 'Like',
             Equal: 'Equal',
@@ -3486,7 +3756,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             IsNotNull: 'Is Not Null',
             True: 'true',
             False: 'false',
-            AddButton: 'Add Group/Condition'
+            AddButton: 'Add Group/Condition',
+            CloneGroup: 'Clone Group',
+            LockGroup: 'Lock Group',
+            CloneRule: 'Clone Rule',
+            LockRule: 'Lock Rule',
+            UnlockRule: 'Unlock Rule',
+            UnlockGroup: 'Unlock Group'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization(this.locale);
@@ -3499,8 +3775,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.customOperators = {
             stringOperator: [
                 { value: 'startswith', key: this.l10n.getConstant('StartsWith') },
+                { value: 'notstartswith', key: this.l10n.getConstant('DoesNotStartWith') },
                 { value: 'endswith', key: this.l10n.getConstant('EndsWith') },
+                { value: 'notendswith', key: this.l10n.getConstant('DoesNotEndWith') },
                 { value: 'contains', key: this.l10n.getConstant('Contains') },
+                { value: 'notcontains', key: this.l10n.getConstant('DoesNotContain') },
                 { value: 'equal', key: this.l10n.getConstant('Equal') },
                 { value: 'notequal', key: this.l10n.getConstant('NotEqual') },
                 { value: 'in', key: this.l10n.getConstant('In') },
@@ -3513,7 +3792,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 { value: 'greaterthanorequal', key: this.l10n.getConstant('GreaterThanOrEqual') },
                 { value: 'lessthan', key: this.l10n.getConstant('LessThan') },
                 { value: 'lessthanorequal', key: this.l10n.getConstant('LessThanOrEqual') },
-                { value: 'notequal', key: this.l10n.getConstant('NotEqual') }],
+                { value: 'notequal', key: this.l10n.getConstant('NotEqual') },
+                { value: 'between', key: this.l10n.getConstant('Between') },
+                { value: 'notbetween', key: this.l10n.getConstant('NotBetween') }],
             booleanOperator: [
                 { value: 'equal', key: this.l10n.getConstant('Equal') },
                 { value: 'notequal', key: this.l10n.getConstant('NotEqual') }],
@@ -3818,6 +4099,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.setProperties({ rule:  rule  }, true);
         rule = this.getRuleCollection(this.rule, false);
         this.importRules(this.rule, this.element.querySelector('.e-group-container'), true, this.rule.not, isRoot);
+        if (rule.isLocked) {
+            const lockGrpTarget: Element = this.element.querySelector('.e-group-container').querySelector('.e-lock-grp-btn');
+            this.groupLock(lockGrpTarget);
+        }
         this.isImportRules = false;
     }
 
@@ -3911,7 +4196,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             rule.value !== undefined)) || (customObj && customObj.isQuestion)) {
                 const condition: string = rule.condition;
                 rule = {
-                    'label': rule.label, 'field': rule.field, 'operator': rule.operator, 'type': rule.type, 'value': rule.value
+                    'label': rule.label, 'field': rule.field, 'operator': rule.operator, 'type': rule.type, 'value': rule.value,
+                    'isLocked': rule.isLocked
                 };
                 if (condition) {
                     rule.condition = condition;
@@ -3920,6 +4206,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (rule as any).custom = customObj;
                 }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((rule.operator === 'in' || rule.operator === 'notin') && rule.value && (rule.value as any).length === 0) {
                     rule = {};
                 }
@@ -3941,9 +4228,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 rule = {};
             } else {
                 if (this.enableNotCondition) {
-                    rule = { 'condition': rule.condition, 'rules': rule.rules, 'not': rule.not };
+                    rule = { 'condition': rule.condition, 'rules': rule.rules, 'not': rule.not, 'isLocked': rule.isLocked };
                 } else {
-                    rule = { 'condition': rule.condition, 'rules': rule.rules };
+                    rule = { 'condition': rule.condition, 'rules': rule.rules, 'isLocked': rule.isLocked };
                 }
                 if (customObj) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4095,11 +4382,18 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     public getPredicate(rule: RuleModel): Predicate {
         const ruleColl: RuleModel[] = rule.rules; let pred: Predicate; let pred2: Predicate;
         let ruleValue: string | number | Date; let ignoreCase: boolean = false; let column: ColumnsModel;
-        const ignoreOper: string[] = ['notcontains', 'notstartswith', 'notendswith'];
         if (!ruleColl) {
             return pred;
         }
         for (let i: number = 0, len: number = ruleColl.length; i < len; i++) {
+            let operator: string = ruleColl[i as number].operator;
+            if (operator === 'notstartswith') {
+                operator = 'doesnotstartwith';
+            } else if (operator === 'notendswith') {
+                operator = 'doesnotendwith';
+            } else if (operator === 'notcontains') {
+                operator = 'doesnotcontain';
+            }
             const keys: string[] = Object.keys(ruleColl[i as number]);
             ignoreCase = false;
             if (keys.indexOf('rules') > -1 && ruleColl[i as number].rules) {
@@ -4115,7 +4409,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         pred = pred2;
                     }
                 }
-            } else if (!isNullOrUndefined(ruleColl[i as number].operator) && !isNullOrUndefined(ruleColl[i as number].operator.length)) {
+            } else if (!isNullOrUndefined(operator) && !isNullOrUndefined(operator.length)) {
                 const oper: string = ruleColl[i as number].operator.toLowerCase(); let isDateFilter: boolean = false;
                 const dateOperColl: string[] = ['equal', 'notequal', 'greaterthan', 'greaterthanorequal', 'lessthan', 'lessthanorequal'];
                 if (ruleColl[i as number].type === 'string') {
@@ -4142,22 +4436,19 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
                 if (i === 0) {
                     if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1 || oper.indexOf('null') > -1 ||
-                    oper.indexOf('empty') > -1 ) && oper.indexOf('contains') < 0) {
+                    oper.indexOf('empty') > -1 ) && (oper.indexOf('contain') < 0)) {
                         pred = isDateFilter ? this.datePredicate(ruleColl[i as number], ruleValue as Date) :
                             this.arrayPredicate(ruleColl[i as number]);
                     } else {
                         const value: string | number | Date = ruleValue as string | number | Date;
-                        if (value !== '' && ignoreOper.indexOf(oper) < 0) {
-                            pred = new Predicate(ruleColl[i as number].field, ruleColl[i as number].operator,
+                        if (value !== '') {
+                            pred = new Predicate(ruleColl[i as number].field, operator,
                                                  ruleValue as string | number | Date, ignoreCase);
                         }
                     }
                 } else {
-                    if (ignoreOper.indexOf(oper) > -1) {
-                        continue;
-                    }
                     if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1 ||
-                    oper.indexOf('null') > -1 || oper.indexOf('empty') > -1 ) && oper.indexOf('contains') < 0) {
+                    oper.indexOf('null') > -1 || oper.indexOf('empty') > -1 ) && oper.indexOf('contain') < 0) {
                         pred = isDateFilter ? this.datePredicate(ruleColl[i as number], ruleValue as Date, pred, rule.condition) :
                             this.arrayPredicate(ruleColl[i as number], pred, rule.condition);
                     } else {
@@ -4165,21 +4456,21 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             const value: string | number | Date = ruleValue as string | number | Date;
                             if (pred && value !== '') {
                                 pred
-                                = pred.and(ruleColl[i as number].field, ruleColl[i as number].operator,
+                                = pred.and(ruleColl[i as number].field, operator,
                                            ruleValue as string | number | Date, ignoreCase);
                             } else if (value !== '') {
                                 pred = new Predicate(
-                                    ruleColl[i as number].field, ruleColl[i as number].operator, ruleValue as string |
+                                    ruleColl[i as number].field, operator, ruleValue as string |
                                     number | Date, ignoreCase);
                             }
                         } else {
                             const value: string | number = ruleValue as string | number;
                             if (pred && value !== '') {
-                                pred = pred.or(ruleColl[i as number].field, ruleColl[i as number].operator,
+                                pred = pred.or(ruleColl[i as number].field, operator,
                                                ruleValue as string | number, ignoreCase);
                             } else if (value !== '') {
                                 pred = new Predicate(
-                                    ruleColl[i as number].field, ruleColl[i as number].operator, ruleValue as string | number |
+                                    ruleColl[i as number].field, operator, ruleValue as string | number |
                                     Date, ignoreCase);
                             }
                         }
@@ -4443,24 +4734,42 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             for (let i: number = 0, len: number = ruleColl.length; i < len; i++) {
                 const keys: string[] = Object.keys(ruleColl[i as number]);
                 if (!isNullOrUndefined(ruleColl[i as number].rules) && keys.indexOf('rules') > -1 && (ruleColl[i as number].rules.length !== 0)) {
+                    if (this.element.querySelectorAll('.e-group-container').length > this.maxGroupCount) { return null; }
                     parentElem = this.renderGroup(ruleColl[i as number], ruleColl[i as number].condition, parentElem,
                                                   ruleColl[i as number].not);
                     parentElem = this.importRules(ruleColl[i as number], parentElem, true);
                 } else {
                     this.renderRule(ruleColl[i as number], parentElem);
                 }
+                if (!isNullOrUndefined(ruleColl[i as number].rules) && ruleColl[i as number].isLocked) {
+                    const lockGrpTarget: Element = parentElem.querySelector('.e-rule-list').children[i as number].querySelector('.e-lock-grp-btn');
+                    this.groupLock(lockGrpTarget);
+                }
+                if (isNullOrUndefined(ruleColl[i as number].rules) && ruleColl[i as number].isLocked) {
+                    const lockRuleTarget: Element = parentElem.querySelector('.e-rule-list').children[i as number].querySelector('.e-lock-rule-btn');
+                    this.ruleLock(lockRuleTarget);
+                }
             }
         }
-        parentElem = closest(parentElem, '.e-rule-list');
-        if (parentElem) {
-            parentElem = closest(parentElem, '.e-group-container');
-        }
+        if (parentElem) { parentElem = closest(parentElem, '.e-rule-list'); }
+        if (parentElem) { parentElem = closest(parentElem, '.e-group-container'); }
         return parentElem;
     }
     private renderGroup(rule: RuleModel, condition: string, parentElem?: Element, not?: boolean, isRoot?: boolean): Element {
         this.addGroupElement(true, parentElem, condition, false, not, isRoot, rule); //Child group
         const element: NodeListOf<Element> = parentElem.querySelectorAll('.e-group-container');
-        return element[element.length - 1];
+        const cloneElem: HTMLCollection = parentElem.querySelector('.e-rule-list').children;
+        if (this.showButtons.cloneGroup && this.cloneGrpBtnClick && this.isMiddleGroup) {
+            this.isMiddleGroup = false;
+            this.cloneGrpBtnClick = false;
+            return cloneElem[this.groupIndex + 1]; // group added in the middle
+        } else if (this.showButtons.cloneGroup && this.cloneGrpBtnClick && this.isLastGroup) {
+            this.isLastGroup = false;
+            this.cloneGrpBtnClick = false;
+            return cloneElem[cloneElem.length - 1]; // group added in the end
+        } else {
+            return element[element.length - 1];
+        }
     }
     private renderRule(rule: RuleModel, parentElem?: Element): void {
         if (parentElem.className.indexOf('e-group-container') > -1) {
@@ -4628,14 +4937,17 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         } else if (rule.operator.toString().indexOf('contains') > -1) {
                             valueStr += rule.value ? '("%' + rule.value + '%")' : '(' + rule.value + ')';
                         } else {
-                            if (rule.type === 'number' || typeof rule.value === 'boolean' || rule.value === null) {
+                            if (rule.type === 'number' || typeof rule.value === 'boolean' ||
+                                (rule.value === null && (rule.operator.toString().indexOf('empty') < -1))) {
                                 valueStr += rule.value;
+                            } else if (rule.operator.toString().indexOf('empty') > -1) {
+                                valueStr += '""';
                             } else {
                                 valueStr += '"' + rule.value + '"';
                             }
                         }
                     }
-                    if (rule.operator.toString().indexOf('null') > -1 || (rule.operator.toString().indexOf('empty') > -1)) {
+                    if (rule.operator.toString().indexOf('null') > -1) {
                         if (enableEscape) {
                             rule.field = '`' + rule.field + '`';
                         } else {
@@ -4645,6 +4957,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         }
                         queryStr += rule.field + ' ' + ruleOpertor;
                     } else {
+                        let custOper: string = ruleOpertor;
+                        if (rule.operator === 'isempty') {
+                            custOper = '=';
+                        } else if (rule.operator === 'isnotempty') {
+                            custOper = '!=';
+                        }
                         if (enableEscape) {
                             rule.field = '`' + rule.field + '`';
                         } else {
@@ -4652,7 +4970,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                 rule.field = '"' + rule.field + '"';
                             }
                         }
-                        queryStr += rule.field + ' ' + ruleOpertor + ' ' + valueStr;
+                        queryStr += rule.field + ' ' + custOper + ' ' + valueStr;
                     }
                     if (rule.condition && rule.condition !== '') {
                         condition = rule.condition;
@@ -4682,7 +5000,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * Sets the rules from the sql query.
      *
      * @param {string} sqlString - 'sql String' to be passed to set the rule.
-     * @param {boolean} sqlLocale -  Set `true` if Localization for Sql query.
+     * @param {boolean} sqlLocale - Optional. Set `true` if Localization for Sql query.
      * @returns {void}
      */
     public setRulesFromSql(sqlString: string, sqlLocale?: boolean): void {
@@ -4708,21 +5026,175 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             return {condition: rule.condition, rules: rule.rules};
         }
     }
+
     /**
      * Gets the sql query from rules.
      *
      * @param {RuleModel} rule - 'rule' to be passed to get the sql.
      * @param {boolean} allowEscape - Set `true` if it exclude the escape character.
-     *  @param {boolean} sqlLocale - Set `true` if Localization for Sql query.
-     * @returns {object} - Sql query from rules.
+     * @param {boolean} sqlLocale - Set `true` if Localization for Sql query.
+     * @returns {string} - Sql query from rules.
      */
     public getSqlFromRules(rule?: RuleModel, allowEscape?: boolean, sqlLocale?: boolean): string {
         if (!rule) {
             rule = this.getValidRules();
         }
         rule = this.getRuleCollection(rule, false);
-        return this.getSqlString(this.getValidRules(rule), allowEscape, null, sqlLocale).replace(/"/g, '\'');
+        const sqlString: string = this.getSqlString(this.getValidRules(rule), allowEscape, null, sqlLocale).replace(/"/g, '\'');
+        return sqlString;
     }
+
+    /**
+     * Gets the parameter SQL query from rules.
+     *
+     * @param {RuleModel} rule – Specify the rule to be passed to get the parameter sql string.
+     * @returns {ParameterizedSql} – Parameterized SQL query from rules.
+     */
+    public getParameterizedSql(rule?: RuleModel): ParameterizedSql {
+        if (!rule) {rule = this.getValidRules(); }
+        const obj: Object = {sql: null };
+        this.notify('query-library', { prop: 'getParameterSql', onPropertyChange: false, value: {rule: rule, obj: obj }});
+        return obj['sql'];
+    }
+
+    /**
+     * Sets the rules from the parameter sql query.
+     *
+     * @param { ParameterizedSql} sqlQuery – Specifies the parameter SQL to be passed to set the rule and load it to the query builder.
+     * @returns {void}
+     */
+    public setParameterizedSql(sqlQuery: ParameterizedSql): void {
+        const obj: Object = {sql: null };
+        this.notify('query-library', { prop: 'convertParamSqlToSql', onPropertyChange: false, value: {sql: sqlQuery, obj: obj }});
+        let sql: string = obj['sql'];
+        if (sql) {
+            sql = sql.replace(/`/g, '');
+            const ruleModel: RuleModel = this.getRulesFromSql(sql);
+            this.setRules({ condition: ruleModel.condition, not: ruleModel.not, rules: ruleModel.rules });
+        }
+    }
+
+    /**
+     * Gets the named parameter SQL query from rules.
+     *
+     * @param {RuleModel} rule – Specify the rule to be passed to get the named parameter SQL string.
+     * @returns {ParameterizedNamedSql} – Parameterized Named SQL query from rules.
+     */
+    public getParameterizedNamedSql(rule?: RuleModel): ParameterizedNamedSql {
+        if (!rule) {rule = this.getValidRules(); }
+        const obj: Object = {sql: null };
+        this.notify('query-library', { prop: 'getNamedParameterSql', onPropertyChange: false, value: {rule: rule, obj: obj }});
+        return obj['sql'];
+    }
+
+    /**
+     * Sets the rules from the named parameter SQL query.
+     *
+     * @param { ParameterizedNamedSql } sqlQuery – Specifies the named parameter SQL to be passed to set the rule and load it to the query builder.
+     * @returns {void}
+     */
+    public setParameterizedNamedSql(sqlQuery: ParameterizedNamedSql): void {
+        const obj: Object = {sql: null };
+        this.notify('query-library', { prop: 'convertNamedParamSqlToSql', onPropertyChange: false, value: {sql: sqlQuery, obj: obj }});
+        let sql: string = obj['sql'];
+        if (sql) {
+            sql = sql.replace(/`/g, '');
+            const ruleModel: RuleModel = this.getRulesFromSql(sql);
+            this.setRules({ condition: ruleModel.condition, not: ruleModel.not, rules: ruleModel.rules });
+        }
+    }
+
+    /**
+     * Set the rules from Mongo query.
+     *
+     * @param {string} mongoQuery - 'sql String' to be passed to get the rule.
+     * @param {boolean} mongoLocale - Set `true` if Localization for Mongo query.
+     * @returns {void}
+     */
+    public setMongoQuery(mongoQuery: string, mongoLocale?: boolean): void {
+        this.rule = { condition: 'and', not: false, rules: [] };
+        this.notify('query-library', { prop: 'mongoParser', onPropertyChange: false, value: {mongoQuery: JSON.parse(mongoQuery), rule: this.rule, mongoLocale: mongoLocale }});
+    }
+
+    /**
+     * Gets the Mongo query from rules.
+     *
+     * @param {RuleModel} rule - 'rule' to be passed to get the sql.
+     * @returns {object} - Sql query from rules.
+     */
+    public getMongoQuery(rule?: RuleModel): string {
+        if (!rule) {rule = this.getValidRules(); }
+        const obj: Object = {mongoQuery: null };
+        this.notify('query-library', { prop: 'getMongoFromRules', onPropertyChange: false, value: {rule: rule, mongoQuery: '', obj: obj }});
+        return obj['mongoQuery'];
+    }
+
+    /**
+     * Clones the rule based on the rule ID to the specific group.
+     *
+     * @param {string} ruleID - Specifies the ruleID that needs to be cloned.
+     * @param {string} groupID - Specifies the groupID in which the rule to be cloned.
+     * @param {number} index - Specifies the index to insert the cloned rule inside the group.
+     * @returns {void}
+     */
+    public cloneRule(ruleID: string, groupID: string, index: number): void {
+        const getRule: RuleModel = this.getRule(ruleID.replace(this.element.id + '_', ''));
+        groupID = groupID.replace(this.element.id + '_', '');
+        this.ruleIndex = index;
+        this.cloneRuleBtnClick = true;
+        this.showButtons.cloneRule = true;
+        this.addRules([{
+            'label': getRule.label, 'field': getRule.field, 'type': getRule.type, 'operator': getRule.operator,
+            'value': getRule.value
+        }], groupID);
+        this.ruleIndex = -1;
+        this.cloneRuleBtnClick = false;
+        this.showButtons.cloneRule = false;
+    }
+
+    /**
+     * Clones the group based on the group ID to the specific group.
+     *
+     * @param {string} groupID - Specifies the groupID that needs to be cloned.
+     * @param {string} parentGroupID - Specifies the parentGroupID in which the group to be cloned.
+     * @param {number} index - Specifies the index to insert the cloned group inside the parent group.
+     * @returns {void}
+     */
+    public cloneGroup(groupID: string, parentGroupID: string, index: number): void {
+        parentGroupID = parentGroupID.replace(this.element.id + '_', '');
+        const group: RuleModel = this.getGroup(parentGroupID);
+        groupID = groupID.replace(this.element.id + '_', '');
+        this.groupIndex = index;
+        this.cloneGrpBtnClick = true;
+        this.showButtons.cloneGroup = true;
+        this.addGroups([{ 'condition': group.condition, 'not': group.not, 'rules': group.rules }], groupID);
+        this.groupIndex = -1;
+        this.cloneGrpBtnClick = false;
+        this.showButtons.cloneGroup = false;
+    }
+
+    /**
+     * Locks the rule based on the rule ID.
+     *
+     * @param {string} ruleID - Specifies the ruleID that needs to be locked.
+     * @returns {void}
+     */
+    public lockRule(ruleID: string): void {
+        const target: Element =  document.getElementById(ruleID).querySelectorAll('.e-lock-rule-btn')[0];
+        this.ruleLock(target);
+    }
+
+    /**
+     * Locks the group based on the group ID
+     *
+     * @param {string} groupID - Specifies the groupID that needs to be locked.
+     * @returns {void}
+     */
+    public lockGroup(groupID: string): void {
+        const target: Element =  document.getElementById(groupID).querySelectorAll('.e-lock-grp-btn')[0];
+        this.groupLock(target);
+    }
+
     private sqlParser(sqlString: string, sqlLocale?: boolean): string[][] {
         let st: number = 0;
         let str: string;
@@ -4917,11 +5389,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             for (let i: number = 0; i < localeOperator.length; i++) {
                 if (this.sqlOperators[localeOperator[i as number]] === operator.toUpperCase()) {
                     if (value && value.indexOf('%') === 0 && value[value.length - 1] === '%') {
-                        return (localeOperator[i as number] === 'notcontains') ? 'notcontains' : 'contains';
+                        return (operator.toUpperCase() === 'NOT LIKE') ? 'notcontains' : 'contains';
                     } else if (value && value.indexOf('%') !== 0 && value.indexOf('%') === value.length - 1) {
-                        return (localeOperator[i as number] === 'notstartswith') ? 'notstartswith' : 'startswith';
+                        return (operator.toUpperCase() === 'NOT LIKE') ? 'notstartswith' : 'startswith';
                     } else if (value && value.indexOf('%') === 0 && value.indexOf('%') !== value.length - 1) {
-                        return (localeOperator[i as number] === 'notendswith') ? 'notendswith' : 'endswith';
+                        return (operator.toUpperCase() === 'NOT LIKE') ? 'notendswith' : 'endswith';
                     }
                     return localeOperator[i as number];
                 }
@@ -5069,6 +5541,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                 } else if (parser[i + 1][0] === 'Operators') {
                     rule.operator = this.getOperator(parser[i + 2][1], parser[i + 1][1], sqlLocale);
+                    let isEmptyOper: boolean = false;
+                    if (rule.operator == "equal" && parser[i + 2][0] === "String" && parser[i + 2][1] === "''") {
+                        rule.operator = "isempty";
+                        isEmptyOper = true;
+                    }
+                    else if (rule.operator == "notequal" && parser[i + 2][0] === "String" && parser[i + 2][1] === "''") {
+                        rule.operator = "isnotempty";
+                        isEmptyOper = true;
+                    }
                     if (parser[i + 2][0] === 'Number') {
                         rule.type = 'number'; rule.value = Number(parser[i + 2][1]);
                     } else {
@@ -5111,6 +5592,268 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
         return rules;
+    }
+
+    /**
+     * Clone the Group
+     *
+     * @param {Element | string} target - 'target' to be passed to clone the group.
+     * @returns {void}
+     */
+    private groupClone(target: Element | string): void {
+        const groupElem: Element = (target as Element).closest('.e-rule-list').closest('.e-group-container');
+        let targetGrpId: string;
+        let groupId: string;
+        if (typeof target === 'string') {
+            groupId = this.element.id + '_' + target as string;
+            target = document.getElementById(groupId);
+        } else {
+            targetGrpId = target.id.replace(this.element.id + '_', '');
+            groupId = (groupElem as Element).id.replace(this.element.id + '_', '');
+        }
+        const group: RuleModel = this.getGroup(targetGrpId);
+        this.groupIndex = Array.prototype.indexOf.call(target.closest('.e-rule-list').children, target.closest('.e-group-container'));
+        this.addGroups([{ 'condition': group.condition, 'not': group.not, 'rules': group.rules }], groupId);
+        this.groupIndex = -1;
+    }
+
+    private ruleClone(target: Element): void {
+        const ruleElem: Element = closest(target, '.e-rule-container');
+        const groupElem: Element = target.closest('.e-rule-list').closest('.e-group-container');
+        const getRule: RuleModel = this.getRule(target as HTMLElement);
+        const groupId: string = groupElem.id.replace(this.element.id + '_', '');
+        const ruleElemColl: NodeListOf<HTMLElement> = groupElem.querySelectorAll('.e-rule-container');
+        for (let i: number = 0, iLen: number = ruleElemColl.length; i < iLen; i++) {
+            if (ruleElem.id === ruleElemColl[i as number].id) {
+                this.ruleIndex = i;
+            }
+        }
+        this.addRules([{ 'label': getRule.label, 'field': getRule.field, 'type': getRule.type, 'operator': getRule.operator,
+            'value': getRule.value}], groupId);
+        this.ruleIndex = -1;
+    }
+
+    private ruleLock(target: Element): void {
+        const ruleElem: Element = closest(target, '.e-rule-container');
+        const rule: RuleModel = this.getRule(ruleElem.id.replace(this.element.id + '_', ''));
+        if (ruleElem.classList.contains('e-disable')) {
+            rule.isLocked = false;
+            this.lockItems = this.lockItems.filter(lockItem => lockItem !== ruleElem.id);
+            ruleElem.classList.remove('e-disable');
+            this.disableRuleControls(target, ruleElem, false);
+            target.children[0].classList.add('e-unlock');
+            target.children[0].classList.remove('e-lock');
+            (target as HTMLElement).setAttribute('title', this.l10n.getConstant('LockRule'));
+        } else {
+            rule.isLocked = true;
+            if (this.lockItems.indexOf(ruleElem.id) < 0) {
+                this.lockItems.splice(this.lockItems.length - 1, 0, ruleElem.id);
+            }
+            ruleElem.classList.add('e-disable');
+            this.disableRuleControls(target, ruleElem, true);
+            target.children[0].classList.add('e-lock');
+            target.children[0].classList.remove('e-unlock');
+            (target as HTMLElement).setAttribute('title', this.l10n.getConstant('UnlockRule'));
+        }
+    }
+
+    private groupLock(target: Element): void {
+        const groupElem: Element = closest(target, '.e-group-container');
+        let group: RuleModel = this.getGroup(groupElem.id.replace(this.element.id + '_', ''));
+        const isRoot: boolean = groupElem.id.indexOf('group0') > -1;
+        if (groupElem.classList.contains('e-disable')) {
+            if (isRoot) {
+                const newGroup: RuleModel = {};
+                newGroup.condition = group.condition;
+                newGroup.not = group.not;
+                newGroup.isLocked = false;
+                this.setProperties({rule: newGroup}, true);
+            } else {
+                group.isLocked = false;
+            }
+            this.lockItems = this.lockItems.filter(lockItem => lockItem !== groupElem.id);
+            groupElem.classList.remove('e-disable');
+            this.disableHeaderControls(target, groupElem, false);
+            target.children[0].classList.add('e-unlock');
+            target.children[0].classList.remove('e-lock');
+            (target as HTMLElement).setAttribute('title', this.l10n.getConstant('LockGroup'));
+            this.updateLockItems();
+        } else {
+            if (isRoot) {
+                const newGroup: RuleModel = {};
+                newGroup.condition = group.condition;
+                newGroup.not = group.not;
+                newGroup.isLocked = true;
+                this.setProperties({rule: newGroup}, true);
+            } else {
+                group.isLocked = true;
+            }
+            if (this.lockItems.indexOf(groupElem.id) < 0) {
+                this.lockItems.splice(this.lockItems.length - 1, 0, groupElem.id);
+            }
+            groupElem.classList.add('e-disable');
+            this.disableHeaderControls(target, groupElem, true);
+            target.children[0].classList.add('e-lock');
+            target.children[0].classList.remove('e-unlock');
+            (target as HTMLElement).setAttribute('title', this.l10n.getConstant('UnlockGroup'));
+        }
+    }
+
+    private updateLockItems(): void {
+        for (let i: number = 0; i < this.lockItems.length; i++) {
+            const idColl: string[] = this.lockItems[i as number].split('_');
+            if (idColl.length > 2) {
+                let ruleElem: Element = this.element.querySelector('#' + this.lockItems[i as number]) as Element;
+                const target: Element = ruleElem.querySelector('.e-lock-rule-btn');
+                ruleElem = closest(target, '.e-rule-container');
+                if (!ruleElem.classList.contains('e-disable')) {
+                    this.ruleLock(target);
+                }
+            } else {
+                let groupElem: Element = this.element.querySelector('#' + this.lockItems[i as number]) as Element;
+                const target: Element = groupElem.querySelector('.e-lock-grp-btn')
+                groupElem = closest(target, '.e-group-container');
+                if (!groupElem.classList.contains('e-disable')) {
+                    this.groupLock(target);
+                }
+            }
+        }
+    }
+
+    private disableHeaderControls(target: Element, groupElem: Element, isDisabled: boolean): void {
+        const andElem: NodeListOf<HTMLInputElement> = groupElem.querySelectorAll('.e-btngroup-and') as NodeListOf<HTMLInputElement>;
+        const orElem: NodeListOf<HTMLInputElement> = groupElem.querySelectorAll('.e-btngroup-or') as NodeListOf<HTMLInputElement>;
+        const notElem: NodeListOf<HTMLButtonElement> = groupElem.querySelectorAll('.e-qb-toggle') as NodeListOf<HTMLButtonElement>;
+        const addElem: NodeListOf<HTMLButtonElement> = groupElem.querySelectorAll('.e-add-btn') as NodeListOf<HTMLButtonElement>;
+        const deleteGrpElem: NodeListOf<HTMLButtonElement> = groupElem.querySelectorAll('.e-deletegroup') as NodeListOf<HTMLButtonElement>;
+        const lockElem: NodeListOf<HTMLButtonElement> = groupElem.querySelectorAll('.e-lock-grp-btn') as NodeListOf<HTMLButtonElement>;
+        const cloneElem: NodeListOf<HTMLButtonElement> = groupElem.querySelectorAll('.e-clone-grp-btn') as NodeListOf<HTMLButtonElement>;
+        const groupContElem: NodeListOf<HTMLInputElement> = groupElem.querySelectorAll('.e-group-container') as NodeListOf<HTMLInputElement>;
+        for (let i: number = 0; i < andElem.length; i++) {
+            if (isDisabled) {
+                if (groupContElem[i as number] && groupContElem[i as number].classList.contains('e-disable')) {
+                    groupContElem[i as number].classList.add('e-disable');
+                }
+                andElem[i as number].disabled = true; orElem[i as number].disabled = true;
+                addElem[i as number].disabled = true;
+                if (notElem[i as number]) { notElem[i as number].disabled = true; }
+                if (deleteGrpElem[i as number]) { deleteGrpElem[i as number].disabled = true; }
+                if (cloneElem[i as number]) { cloneElem[i as number].disabled = true; }
+                andElem[i as number].parentElement.classList.add('e-disabled');
+                if (lockElem[i as number] !== target) {
+                    lockElem[i as number].disabled = true;
+                    lockElem[i as number].children[0].classList.remove('e-unlock');
+                    lockElem[i as number].children[0].classList.add('e-lock');
+                }
+            } else {
+                if (groupContElem[i as number]) {
+                    groupContElem[i as number].classList.remove('e-disable');
+                }
+                andElem[i as number].disabled = false; orElem[i as number].disabled = false;
+                addElem[i as number].disabled = false; lockElem[i as number].disabled = false;
+                if (notElem[i as number]) { notElem[i as number].disabled = false; }
+                if (deleteGrpElem[i as number]) { deleteGrpElem[i as number].disabled = false; }
+                if (cloneElem[i as number]) { cloneElem[i as number].disabled = false;  }
+                andElem[i as number].parentElement.classList.remove('e-disabled');
+                lockElem[i as number].children[0].classList.remove('e-lock');
+                lockElem[i as number].children[0].classList.add('e-unlock');
+            }
+        }
+        this.disableRuleControls(target, groupElem, isDisabled);
+    }
+
+    private disableRuleControls(target: Element, groupElem: Element, isDisabled: boolean): void {
+        const ddlElement: NodeListOf<HTMLElement> = groupElem.querySelectorAll('.e-control.e-dropdownlist') as NodeListOf<HTMLElement>;
+        const numericElement: NodeListOf<HTMLElement> = groupElem.querySelectorAll('.e-control.e-numerictextbox') as NodeListOf<HTMLElement>;
+        const textElement: NodeListOf<HTMLElement> = groupElem.querySelectorAll('.e-control.e-textbox') as NodeListOf<HTMLElement>;
+        const dateElement: NodeListOf<HTMLElement> = groupElem.querySelectorAll('.e-control.e-datepicker') as NodeListOf<HTMLElement>;
+        const checkboxElement: NodeListOf<HTMLElement> = groupElem.querySelectorAll('.e-control.e-checkbox') as NodeListOf<HTMLElement>;
+        const radioBtnElement: NodeListOf<HTMLElement> = groupElem.querySelectorAll('.e-control.e-radio') as NodeListOf<HTMLElement>;
+        const multiSelectElement: NodeListOf<HTMLElement> = groupElem.querySelectorAll('.e-control.e-multiselect') as NodeListOf<HTMLElement>;
+        const deleteElem: NodeListOf<HTMLButtonElement> = groupElem.querySelectorAll('.e-rule-delete') as NodeListOf<HTMLButtonElement>;
+        const lockElem: NodeListOf<HTMLButtonElement> = groupElem.querySelectorAll('.e-lock-rule') as NodeListOf<HTMLButtonElement>;
+        const cloneElem: NodeListOf<HTMLButtonElement> = groupElem.querySelectorAll('.e-clone-rule') as NodeListOf<HTMLButtonElement>;
+        const ruleElem: NodeListOf<HTMLButtonElement> = groupElem.querySelectorAll('.e-rule-container') as NodeListOf<HTMLButtonElement>;
+        for (let i: number = 0; i < deleteElem.length; i++) {
+            if (isDisabled) {
+                if (ruleElem[i as number] && ruleElem[i as number].classList.contains('e-disable')) {
+                    ruleElem[i as number].classList.add('e-disable');
+                }
+                deleteElem[i as number].disabled = true;
+                if (cloneElem[i as number]) { cloneElem[i as number].disabled = true; }
+                if (lockElem[i as number] !== target) {
+                    lockElem[i as number].disabled = true;
+                    lockElem[i as number].children[0].classList.remove('e-unlock');
+                    lockElem[i as number].children[0].classList.add('e-lock');
+                }
+            } else {
+                if (ruleElem[i as number]) {
+                    ruleElem[i as number].classList.remove('e-disable');
+                }
+                if (cloneElem[i as number]) { cloneElem[i as number].disabled = false; }
+                deleteElem[i as number].disabled = false; lockElem[i as number].disabled = false;
+                lockElem[i as number].children[0].classList.remove('e-lock');
+                lockElem[i as number].children[0].classList.add('e-unlock');
+            }
+        }
+        let dropDownObj: DropDownList; let numericObj: NumericTextBox; let textObj: TextBox; let dateObj: DatePicker;
+        let checkBoxObj: CheckBox; let radioBtnObj: RadioButton; let multiSelectObj: MultiSelect;
+        for (let i: number = 0; i < ddlElement.length; i++) {
+            dropDownObj = getComponent(ddlElement[i as number], 'dropdownlist') as DropDownList;
+            if (isDisabled) {
+                dropDownObj.enabled = false;
+            } else {
+                dropDownObj.enabled = true;
+            }
+        }
+        for (let i: number = 0; i < numericElement.length; i++) {
+            numericObj = getComponent(numericElement[i as number], 'numerictextbox') as NumericTextBox;
+            if (isDisabled) {
+                numericObj.enabled = false;
+            } else {
+                numericObj.enabled = true;
+            }
+        }
+        for (let i: number = 0; i < textElement.length; i++) {
+            textObj = getComponent(textElement[i as number], 'textbox') as TextBox;
+            if (isDisabled) {
+                textObj.enabled = false;
+            } else {
+                textObj.enabled = true;
+            }
+        }
+        for (let i: number = 0; i < dateElement.length; i++) {
+            dateObj = getComponent(dateElement[i as number], 'datepicker') as DatePicker;
+            if (isDisabled) {
+                dateObj.enabled = false;
+            } else {
+                dateObj.enabled = true;
+            }
+        }
+        for (let i: number = 0; i < checkboxElement.length; i++) {
+            checkBoxObj = getComponent(checkboxElement[i as number], 'checkbox') as CheckBox;
+            if (isDisabled) {
+                checkBoxObj.disabled = true;
+            } else {
+                checkBoxObj.disabled = false;
+            }
+        }
+        for (let i: number = 0; i < radioBtnElement.length; i++) {
+            radioBtnObj = getComponent(radioBtnElement[i as number], 'radio') as RadioButton;
+            if (isDisabled) {
+                radioBtnObj.disabled = true;
+            } else {
+                radioBtnObj.disabled = false;
+            }
+        }
+        for (let i: number = 0; i < multiSelectElement.length; i++) {
+            multiSelectObj = getComponent(multiSelectElement[i as number], 'multiselect') as MultiSelect;
+            if (isDisabled) {
+                multiSelectObj.enabled = false;
+            } else {
+                multiSelectObj.enabled = true;
+            }
+        }
     }
 }
 
@@ -5209,4 +5952,32 @@ export interface ActionEventArgs extends BaseEventArgs {
     notCondition?: boolean;
     renderTemplate?: boolean;
     groupID?: string;
+}
+/**
+ * Interface to define the parameter SQL query.
+ *
+ */
+export interface ParameterizedSql {
+    /**
+     * Specifies the SQL `WHERE` clause with `?` placeholders for each value.
+     */
+    sql: string;
+    /**
+     * Specifies the parameter values in the same order their respective placeholders appear in the `sql` string.
+     */
+    params: object[];
+}
+/**
+ * Interface to define the parameterized named SQL query.
+ *
+ */
+export interface ParameterizedNamedSql {
+    /**
+     * Specifies the SQL `WHERE` clause with bind variable placeholders for each value.
+     */
+    sql: string;
+    /**
+     * Specifies the bind variable names from the `sql` string to the associated values.
+     */
+    params: Record<string, object>;
 }

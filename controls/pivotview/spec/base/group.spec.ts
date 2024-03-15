@@ -671,6 +671,7 @@ describe('Group By Date feature', () => {
                         args.IsOrderChanged = true;
                     }
                 },
+                virtualScrollSettings: { allowSinglePage: false }
             });
             pivotGridObj.appendTo('#PivotGrid');
         });

@@ -8,7 +8,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseToolbar } from '../actions/base-toolbar';
 import { BaseQuickToolbar } from '../actions/base-quick-toolbar';
 import { NodeSelection } from '../../selection/selection';
-import { EditorMode, EnterKey, ShiftEnterKey } from './../../common/types';
+import { ContentHeightSource, EditorMode, EnterKey, ShiftEnterKey } from './../../common/types';
 import { MarkdownSelection } from './../../markdown-parser/plugin/markdown-selection';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, AudioSettingsModel, VideoSettingsModel, TableSettingsModel, FormatPainterSettingsModel, EmojiSettingsModel } from '../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel, FileManagerSettingsModel } from '../models/models';
@@ -184,7 +184,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     getText(): string
     updateValueData?(): void
     getBaseToolbarObject(): BaseToolbar
-    setContentHeight(target?: string, isExpand?: boolean): void
+    setContentHeight(target: ContentHeightSource, isExpand?: boolean): void
     keyConfig?: { [key: string]: string }
     undoRedoTimer?: number
     sourceCode?(): void
@@ -692,6 +692,10 @@ export interface IToolsItemConfigs {
     value?: string
 }
 
+/**
+ * @hidden
+ * @deprecated
+ */
 export interface IListDropDownModel extends DropDownItemModel {
     cssClass?: string
     command?: string
@@ -702,6 +706,10 @@ export interface IListDropDownModel extends DropDownItemModel {
     listImage?: string
 }
 
+/**
+ * @hidden
+ * @deprecated
+ */
 export interface IDropDownItemModel extends DropDownItemModel {
     cssClass?: string
     command?: string
@@ -1617,4 +1625,32 @@ export interface CleanupResizeElemArgs {
     name?: string,
     value: string,
     callBack (value: string): void
+}
+
+
+/**
+ * @hidden
+ * @private
+ */
+export interface IBaseQuickToolbar {
+    /**
+     * Instance of the Quick Toolabr Popup.
+     */
+    popupObj: Popup;
+    /**
+     * Parent Element of the Quick Toolbar.
+     */
+    element: HTMLElement;
+    /**
+     * Boolean to check whether the quick toolbar is rendered in the DOM.
+     */
+    isRendered: boolean;
+    /**
+     * Instance of the Toolbar rendered inside the Popup.
+     */
+    quickTBarObj: BaseToolbar;
+    /**
+     * Element of the Toolbar rendered inside the Popup.
+     */
+    toolbarElement: HTMLElement;
 }

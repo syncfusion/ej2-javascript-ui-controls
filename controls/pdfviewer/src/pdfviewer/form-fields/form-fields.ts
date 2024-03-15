@@ -1596,7 +1596,7 @@ export class FormFields {
                     if(target.disabled) {
                         currentData.IsReadonly = true;
                     }
-                    currentData.IsRequired = target.Required ? target.Required : (target.required ? target.required : false); 
+                    currentData.IsRequired = target.Required ? target.Required : (target.required ? target.required : false);
                     currentData.ToolTip = target.tooltip ? target.tooltip : "";
                     this.updateFormFieldsCollection(currentData);
                     filterArrayLength--;

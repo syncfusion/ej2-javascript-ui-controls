@@ -708,7 +708,9 @@ export class TreeMapLegend {
                     'text-anchor': 'middle',
                     'transform': '',
                     'opacity': 1,
-                    'dominant-baseline': ''
+                    'dominant-baseline': '',
+                    'role': 'region',
+                    'aria-label': pagingText
                 };
                 pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
                 this.legendGroup.appendChild(pagingGroup);
@@ -754,7 +756,9 @@ export class TreeMapLegend {
                 (this.legendItemRect.x) + (this.legendItemRect.width / 2),
                 this.legendItemRect.y - (textSize.height / 2) - (spacing / 2),
                 'middle', trimTitle, '');
-            renderTextElement(textOptions, textStyle, textStyle.color || this.treemap.themeStyle.legendTitleColor, this.legendGroup);
+            let textElement: Element = renderTextElement(textOptions, textStyle, textStyle.color || this.treemap.themeStyle.legendTitleColor, this.legendGroup);
+            textElement.setAttribute('role', 'region');
+            textElement.setAttribute('aria-label', legendTitle);
         }
     }
     /**

@@ -3974,6 +3974,36 @@ describe('Keyboard interaction', () => {
         });
     });
 
+    describe('Keyboard action in agenda view', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = { width: '100%', height: '500px', currentView: 'Agenda', selectedDate: new Date(2017, 10, 2) };
+            schObj = util.createSchedule(schOptions, defaultData, done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Down key press', () => {
+            schObj.element.focus();
+            const firstWorkCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            const calendarEle: HTMLElement = schObj.element.querySelector(".e-toolbar-items .e-toolbar-item.e-date-range") as HTMLElement;
+            calendarEle != null ? calendarEle.click(): '';
+            keyModule.keyActionHandler({ action: 'downArrow', target: schObj.element });
+            expect(firstWorkCell[0].classList).not.toContain('e-appointment-border');
+            keyModule.keyActionHandler({ action: 'downArrow', target: schObj.element });
+            expect(firstWorkCell[0].classList).not.toContain('e-appointment-border');
+            calendarEle != null ? calendarEle.click(): '';
+            keyModule.keyActionHandler({ action: 'downArrow', target: schObj.element });
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
+            keyModule.keyActionHandler({ action: 'downArrow', target: schObj.element });
+            expect(schObj.element.querySelectorAll('.e-appointment-border').length).toEqual(1);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

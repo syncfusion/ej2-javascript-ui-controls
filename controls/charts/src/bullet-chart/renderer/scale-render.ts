@@ -209,7 +209,7 @@ export class ScaleGroup {
             this.bulletChart.dataSource[i as number][this.bulletChart.valueFill] || this.bulletChart.valueFill,
             this.bulletChart.valueBorder,
             1,
-            new Rect(pointX, pointY, width, this.bulletChart.valueHeight)
+            new Rect(pointX, pointY, width, this.bulletChart.valueHeight), 0, 0, '', this.bulletChart.valueBorder.dashArray
         );
         const svgRect: Element = this.bulletChart.renderer.drawRectangle(featureBarOptions);
         svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');

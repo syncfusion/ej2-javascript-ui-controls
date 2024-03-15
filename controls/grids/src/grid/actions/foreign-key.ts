@@ -106,7 +106,11 @@ export class ForeignKey extends Data {
             }
             args.promise.resolve(args.result);
         }).catch((e: Object) => {
-            this.parent.log(['actionfailure', 'foreign_key_failure']);
+            let errorMsg: object = e;
+            if (!(<{ error: string}>errorMsg).error) {
+                errorMsg = { error: errorMsg};
+            }
+            this.parent.log(['actionfailure', 'foreign_key_failure'], errorMsg);
             if (args.promise && args.promise.reject) {
                 args.promise.reject(e);
             }

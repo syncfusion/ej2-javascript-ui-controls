@@ -4,7 +4,7 @@ import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
 import { rowDataBound, queryCellInfo } from '../base/constant';
-import { setStyleAndAttributes, getObject, extendObjWithFn, applyStickyLeftRightPosition, groupCaptionRowLeftRightPos, resetColspanGroupCaption } from '../base/util';
+import { setStyleAndAttributes, getObject, extendObjWithFn, applyStickyLeftRightPosition, groupCaptionRowLeftRightPos, resetColspanGroupCaption, resetColandRowSpanStickyPosition } from '../base/util';
 import { ICellRenderer, IRowRenderer, IRow, QueryCellInfoEventArgs, RowDataBoundEventArgs, IGrid } from '../base/interface';
 import { CellType } from '../base/enum';
 import { CellRendererFactory } from '../services/cell-render-factory';
@@ -106,6 +106,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         const cellArgs: QueryCellInfoEventArgs = { data: row.data };
         const chekBoxEnable: Column = this.parent.getColumns().filter((col: Column) => col.type === 'checkbox' && col.field)[0];
         let value: boolean = false;
+        const isFrozen: boolean = this.parent.isFrozenGrid();
         if (chekBoxEnable) {
             value = getObject(chekBoxEnable.field, rowArgs.data);
         }
@@ -168,7 +169,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                             }));
                     }
                     let isRowSpanned: boolean = false;
-                    if (row.index > 0 && this.isSpan) {
+                    if (row.index > 0 && (this.isSpan || (this.parent.isSpan && isEdit))) {
                         const rowsObject: Row<Column>[] = this.parent.getRowsObject();
                         const prevRowCells: Cell<Column>[] = this.parent.groupSettings.columns.length > 0 &&
                             !rowsObject[row.index - 1].isDataRow ? rowsObject[row.index].cells : rowsObject[row.index - 1].cells;
@@ -177,12 +178,76 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                             cell.column.uid === row.cells[parseInt(i.toString(), 10)].column[`${uid}`])[0];
                         isRowSpanned = prevRowCell.isRowSpanned ? prevRowCell.isRowSpanned : prevRowCell.rowSpanRange > 1;
                     }
+                    if ((cellArgs.rowSpan > 1 || cellArgs.colSpan > 1)) {
+                        this.resetrowSpanvalue(this.parent.frozenRows > row.index ? this.parent.frozenRows :
+                            this.parent.currentViewData.length, cellArgs, row.index);
+                        if (cellArgs.column.visible === false) {
+                            cellArgs.colSpan = 1;
+                        } else {
+                            if (isFrozen) {
+                                let columns: Column[] = this.parent.getColumns();
+                                const right: number = this.parent.getFrozenRightColumnsCount();
+                                const left: number = this.parent.getFrozenLeftCount();
+                                let movableCount: number = columns.length - right;
+                                const cellIdx: number = cellArgs.column.index;
+                                if (left > cellIdx && left < (cellIdx + cellArgs.colSpan)) {
+                                    let colSpan: number = (cellIdx + cellArgs.colSpan) - left;
+                                    cellArgs.colSpan = cellArgs.colSpan - colSpan;
+                                } else if (movableCount <= cellIdx && columns.length < (cellIdx + cellArgs.colSpan)) {
+                                    let colSpan: number = (cellIdx + cellArgs.colSpan) - columns.length;
+                                    cellArgs.colSpan = cellArgs.colSpan - colSpan;
+                                } else if (cellArgs.column.freeze === 'Fixed') {
+                                    let colSpan: number = 1;
+                                    let index: number = cellIdx;
+                                    for (let j: number = index + 1; j < index + cellArgs.colSpan; j++) {
+                                        if (columns[parseInt(j.toString(), 10)].freeze === 'Fixed') {
+                                            colSpan++;
+                                        } else {
+                                            break;
+                                        }
+                                    }
+                                    cellArgs.colSpan = colSpan;
+                                } else if (movableCount > cellIdx && movableCount < (cellIdx + cellArgs.colSpan)) {
+                                    let colSpan: number = (cellIdx + cellArgs.colSpan) - movableCount;
+                                    cellArgs.colSpan = cellArgs.colSpan - colSpan;
+                                }
+                            }
+                        }
+                    }
                     if (cellArgs.colSpan > 1 || row.cells[parseInt(i.toString(), 10)].cellSpan > 1 || cellArgs.rowSpan > 1
                         || isRowSpanned) {
+                        this.parent.isSpan = true;
                         this.isSpan = true;
                         const cellMerge: CellMergeRender<T> = new CellMergeRender(this.serviceLocator, this.parent);
                         td = cellMerge.render(cellArgs, row, i, td);
+                        if (isFrozen) {
+                            resetColandRowSpanStickyPosition(this.parent, cellArgs.column, td, cellArgs.colSpan);
+                        }
                     }
+                }
+                if (isFrozen && this.isSpan) {
+                    const rowsObject: Row<Column>[] = this.parent.getRowsObject();
+                    const isRtl: boolean = this.parent.enableRtl;
+                    if (rowsObject[row.index - 1]) {
+                        const prevRowCells: Cell<Column>[] = rowsObject[row.index - 1].cells;
+                        const prevRowCell: Cell<Column> = prevRowCells[i - 1];
+                        const nextRowCell: Cell<Column> = prevRowCells[i + 1];
+                        const direction: string = prevRowCells[parseInt(i.toString(), 10)].column.freeze;
+                        if (prevRowCell && (prevRowCell.isRowSpanned || prevRowCell.rowSpanRange > 1) && prevRowCell.visible) {
+                            if (prevRowCell.column.freeze === 'Fixed' && direction === 'Fixed') {
+                                td.classList.add(isRtl ? 'e-removefreezerightborder' : 'e-removefreezeleftborder');
+                            } else if (!isRtl && i === 1 && direction === 'Left') {
+                                td.classList.add('e-addfreezefirstchildborder');
+                            }
+                        } 
+                        if (nextRowCell && (nextRowCell.isRowSpanned || nextRowCell.rowSpanRange > 1) && nextRowCell.visible && 
+                            nextRowCell.column.freeze === 'Fixed' && direction === 'Fixed' && cellArgs.colSpan < 2) {
+                            td.classList.add(isRtl ? 'e-removefreezeleftborder' : 'e-removefreezerightborder');
+                        }
+                    }
+                }
+                if (cellArgs.rowSpan > 1 && this.parent.currentViewData.length - row.index === cellArgs.rowSpan) {
+                    td.classList.add('e-row-span-lastrowcell');
                 }
                 if (!row.cells[parseInt(i.toString(), 10)].isSpanned) {
                     tr.appendChild(td);
@@ -306,6 +371,12 @@ export class RowRenderer<T> implements IRowRenderer<T> {
             }
         }
         return tr;
+    }
+    private resetrowSpanvalue(rowCount: number, cellArgs: QueryCellInfoEventArgs, rowIndex: number): void {
+        if (rowCount > rowIndex && rowCount < rowIndex + cellArgs.rowSpan) {
+            let rowSpan: number = (rowIndex + cellArgs.rowSpan) - rowCount;
+            cellArgs.rowSpan = cellArgs.rowSpan - rowSpan;
+        }
     }
     private disableRowSelection (thisRef: RowRenderer<T>, row: Row<T>, args: RowDataBoundEventArgs, eventArg: RowDataBoundEventArgs): void {
         const selIndex: number[] = this.parent.getSelectedRowIndexes();

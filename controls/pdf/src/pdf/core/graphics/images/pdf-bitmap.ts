@@ -1,6 +1,10 @@
 import { _ImageDecoder } from './../../graphics/images/image-decoder';
 import { PdfImage } from './pdf-image';
-import { _decode } from './../../utils';
+import { _PdfStream } from './../../base-stream';
+import { _PdfDictionary, _PdfName } from './../../pdf-primitives';
+import { _decode, _getDecoder } from './../../utils';
+import { _PdfColorSpace } from './../../enumerator';
+import { _PngDecoder } from './png-decoder';
 /**
  * The 'PdfBitmap' contains methods and properties to handle the Bitmap images.
  * ```typescript
@@ -85,7 +89,7 @@ export class PdfBitmap extends PdfImage {
         } else if (encodedString instanceof Uint8Array) {
             byteArray = encodedString;
         }
-        this._decoder = new _ImageDecoder(byteArray);
+        this._decoder = _getDecoder(byteArray);
         this.height = this._decoder._height;
         this.width = this._decoder._width;
         this._bitsPerComponent = this._decoder._bitsPerComponent;
@@ -93,5 +97,54 @@ export class PdfBitmap extends PdfImage {
     _save(): void {
         this._imageStatus = true;
         this._imageStream = this._decoder._getImageDictionary();
+        if (this._decoder && this._decoder instanceof _PngDecoder) {
+            const decoder: _PngDecoder = this._decoder as _PngDecoder;
+            this._maskStream = decoder._maskStream;
+            if (decoder._isDecode) {
+                if (decoder._colorSpace) {
+                    this._setColorSpace();
+                }
+            } else {
+                this._setColorSpace();
+            }
+        } else {
+            this._setColorSpace();
+        }
+    }
+    _setColorSpace(): void {
+        const stream: _PdfStream = this._imageStream;
+        const dictionary: _PdfDictionary = stream.dictionary;
+        const color: _PdfName = dictionary.get('ColorSpace');
+        let colorSpace: _PdfColorSpace;
+        if (color.name === 'DeviceCMYK') {
+            colorSpace = _PdfColorSpace.cmyk;
+        } else if (color.name === 'DeviceGray') {
+            colorSpace = _PdfColorSpace.grayScale;
+        }
+        if (this._decoder instanceof _PngDecoder) {
+            const cs: any[] = (this._decoder as _PngDecoder)._colorSpace;// eslint-disable-line
+            if (typeof cs !== 'undefined' && cs !== null) {
+                colorSpace = _PdfColorSpace.indexed;
+            }
+        }
+        switch (colorSpace) {
+        case _PdfColorSpace.cmyk:
+            dictionary.update('Decode', [1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0]);
+            dictionary.update('ColorSpace', _PdfName.get('DeviceCMYK'));
+            break;
+        case _PdfColorSpace.grayScale:
+            dictionary.update('Decode', [0.0, 1.0]);
+            dictionary.update('ColorSpace', _PdfName.get('DeviceGray'));
+            break;
+        case _PdfColorSpace.rgb:
+            dictionary.update('Decode', [0.0, 1.0, 0.0, 1.0, 0.0, 1.0]);
+            dictionary.update('ColorSpace', _PdfName.get('DeviceRGB'));
+            break;
+        case _PdfColorSpace.indexed:
+            dictionary.update('ColorSpace', (this._decoder as _PngDecoder)._colorSpace);
+            break;
+        default:
+            break;
+        }
     }
 }

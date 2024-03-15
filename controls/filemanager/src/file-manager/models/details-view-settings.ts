@@ -6,9 +6,7 @@ import { ColumnModel } from './index';
 export const columnArray: ColumnModel[] = [
     {
         field: 'name', headerText: 'Name', minWidth: 120, isPrimaryKey : true,
-        template: initializeCSPTemplate(function(data: any) {
-            return `<span class="e-fe-text">${data.name}</span>`;
-        }) as any,
+        template: '<span class=\"e-fe-text\">${name}</span>',
         customAttributes: { class: 'e-fe-grid-name'}
     },
     {

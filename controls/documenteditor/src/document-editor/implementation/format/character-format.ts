@@ -158,6 +158,36 @@ export class WCharacterFormat {
     public set allCaps(value: boolean) {
         this.setPropertyValue('allCaps', value);
     }
+    public get Lowercase(): boolean {
+        return this.getPropertyValue('Lowercase') as boolean;
+    }
+    public set Lowercase(value: boolean) {
+        this.setPropertyValue('Lowercase', value);
+    }
+    public get Uppercase(): boolean {
+        return this.getPropertyValue('Uppercase') as boolean;
+    }
+    public set Uppercase(value: boolean) {
+        this.setPropertyValue('Uppercase', value);
+    }
+    public get SentenceCase(): boolean {
+        return this.getPropertyValue('SentenceCase') as boolean;
+    }
+    public set SentenceCase(value: boolean) {
+        this.setPropertyValue('SentenceCase', value);
+    }
+    public get ToggleCase(): boolean {
+        return this.getPropertyValue('ToggleCase') as boolean;
+    }
+    public set ToggleCase(value: boolean) {
+        this.setPropertyValue('ToggleCase', value);
+    }
+    public get CapitalizeEachWord(): boolean {
+        return this.getPropertyValue('CapitalizeEachWord') as boolean;
+    }
+    public set CapitalizeEachWord(value: boolean) {
+        this.setPropertyValue('CapitalizeEachWord', value);
+    }
     public get complexScript(): boolean {
         return this.getPropertyValue('complexScript') as boolean;
     }
@@ -328,6 +358,11 @@ export class WCharacterFormat {
         this.addUniqueCharacterFormat('boldBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('italicBidi', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('allCaps', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('Uppercase', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('Lowercase', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('SentenceCase', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('ToggleCase', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('CapitalizeEachWord', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('localeIdAscii', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('localeIdFarEast', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('localeIdBidi', property, propValue, uniqueCharFormatTemp);
@@ -398,6 +433,11 @@ export class WCharacterFormat {
             value = 'Calibri';
             break;
         case 'allCaps':
+        case 'Uppercase':
+        case 'Lowercase':  
+        case 'CapitalizeEachWord':
+        case 'SentenceCase':
+        case 'ToggleCase': 
             value = false;
             break;
         case 'localeIdAscii':
@@ -434,6 +474,11 @@ export class WCharacterFormat {
             && this.highlightColor === format.highlightColor && this.bidi === format.bidi
             && this.bdo === format.bdo
             && this.allCaps === format.allCaps
+            && this.Uppercase === format.Uppercase
+            && this.Lowercase === format.Lowercase
+            && this.ToggleCase === format.ToggleCase
+            && this.SentenceCase === format.SentenceCase
+            && this.CapitalizeEachWord === format.CapitalizeEachWord
             && this.localeIdBidi === format.localeIdBidi
             && this.localeIdAscii === format.localeIdAscii
             && this.localeIdFarEast === format.localeIdFarEast
@@ -605,6 +650,21 @@ export class WCharacterFormat {
         }
         if (isNullOrUndefined(this.getValue('allCaps'))) {
             this.allCaps = format.getValue('allCaps') as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('Lowercase'))) {
+            this.Lowercase = format.getValue('Lowercase') as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('SentenceCase'))) {
+            this.SentenceCase = format.getValue('SentenceCase')as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('ToggleCase'))) {
+            this.ToggleCase = format.getValue('ToggleCase')as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('CapitalizeEachWord'))) {
+            this.CapitalizeEachWord = format.getValue('CapitalizeEachWord')as boolean;
+        }
+        if (isNullOrUndefined(this.getValue('Uppercase'))) {
+            this.Uppercase = format.getValue('Uppercase')as boolean;
         }
         if (isNullOrUndefined(this.getValue('localeIdBidi'))) {
             this.localeIdBidi = format.getValue('localeIdBidi') as number;

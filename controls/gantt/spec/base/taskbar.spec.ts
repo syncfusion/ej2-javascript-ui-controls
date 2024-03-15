@@ -23,7 +23,7 @@ describe('Gantt taskbar rendering', () => {
         document.body.appendChild(lefttasklabel);
 
         let righttasklabel: Element = createElement('div', { id: 'righttasklabelTS', styles: 'visibility:hidden' });
-        righttasklabel.innerHTML = '<div>Task Name - ${TaskName}</div>';
+        righttasklabel.innerHTML = '<div>Task Name  - ${TaskName}</div>';
         document.body.appendChild(righttasklabel);
 
         let parentTaskTemplate: Element = createElement('div', { id: 'demoParentTaskTemplate', className: cls.traceParentTaskBar + ' ' + cls.parentTaskBarInnerDiv, styles: 'visibility:hidden' });
@@ -195,7 +195,7 @@ describe('Gantt taskbar rendering', () => {
             ganttObj.labelSettings.rightLabel = '#righttasklabelTS';
             ganttObj.dataBound = () => {
                 expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.leftLabelContainer).textContent).toBe('Progress - 80%');
-                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('Task Name - Child task 1');
+                expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.rightLabelContainer).textContent).toBe('Task Name- Child task 1');
                 expect(ganttObj.element.querySelector('.gridrowtaskId1level1').querySelector('.' + cls.taskLabel).textContent).toBe('Custom');
                 done();
             }
@@ -679,8 +679,6 @@ describe('Bug-834012-Incorrect taskbar render when unit is given in hour', () =>
                 name: 'TaskName',
                 startDate: 'StartDate',
                 duration: 'Duration',
-                progress: 'Progress',
-                dependency: 'Predecessor',
                 child: 'subtasks',
                 durationUnit: 'DurationUnit'
               },
@@ -710,13 +708,11 @@ describe('Bug-834012-Incorrect taskbar render when unit is given in hour', () =>
               },
               highlightWeekends: true,
               columns: [
-                { field: 'taskID', width: 60 },
-                { field: 'taskName', width: 250 },
-                { field: 'startDate' },
-                { field: 'endDate' },
-                { field: 'duration' },
-                { field: 'predecessor' },
-                { field: 'progress' },
+                { field: 'TaskID', width: 60 },
+                { field: 'TaskName', width: 250 },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' },
               ],
                 splitterSettings: {
                 columnIndex: 2,

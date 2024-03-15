@@ -809,6 +809,120 @@ describe('Map layer testing', () => {
             tooltips.refresh();
         });
     });
+    describe('tooltip testing', () => {
+        let id: string = 'mapst';
+        let tooltips: Maps;
+        let trigger: MouseEvents = new MouseEvents();
+        let ele: HTMLDivElement;
+        let spec: Element;
+        let tooltipElement: HTMLElement;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            tooltips = new Maps({
+                //  format: 'n0',
+                enableRtl: false,
+                layers: [{
+                    shapeData: usMap,
+                    dataSource: populationData,
+                    shapeDataPath: 'name',
+                    shapePropertyPath: ['name', 'admin'],
+                    shapeSettings: {
+                        autofill: true,
+                    },
+                    polygonSettings: {
+                        tooltipSettings: { visible: true, border: { width: 2, color: 'red' }, },
+                        polygons: [
+                            {
+                                tooltipText: 'Polygon Tooltip',
+                                points: [
+                                    { longitude: -108.89467537083493, latitude: 28.342730588493424 },
+                                    { longitude: -88.32653370290177, latitude: 22.7353113804552 },
+                                    { longitude: -86.7694311254039, latitude: 35.72316407162579 },
+                                    { longitude: -106.3528170621995, latitude: 39.67768144405838 },
+                                    { longitude: -108.89467537083493, latitude: 28.342730588493424 },
+                                ]
+                            }
+                        ]
+                    }
+                }]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            tooltips.destroy();
+            tooltips.mapsTooltipModule = new MapsTooltip(tooltips);
+            tooltips.mapsTooltipModule.destroy();
+            remove(ele);
+        });
+        it('tooltip checking for polygon', (done: Function) => {
+            tooltips.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement("mapst_LayerIndex_0_PolygonIndex_0");
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltip_text');
+                expect(tooltipElement.textContent).toBe('Polygon Tooltip');
+                done();
+            };
+            tooltips.refresh();
+        });
+    });
+    describe('tooltip testing', () => {
+        let id: string = 'mapst';
+        let tooltips: Maps;
+        let trigger: MouseEvents = new MouseEvents();
+        let ele: HTMLDivElement;
+        let spec: Element;
+        let tooltipElements: HTMLCollection;
+        let tooltipElement: HTMLElement;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            tooltips = new Maps({
+                //  format: 'n0',
+                enableRtl: false,
+                layers: [{
+                    shapeData: usMap,
+                    dataSource: populationData,
+                    shapeDataPath: 'name',
+                    shapePropertyPath: ['name', 'admin'],
+                    shapeSettings: {
+                        autofill: true,
+                    },
+                    polygonSettings: {
+                        tooltipSettings: { visible: true, border: { width: 2, color: 'red' }, },
+                        polygons: [
+                            {
+                                tooltipTemplate: '<div>Tooltip Template</div>',
+                                points: [
+                                    { longitude: -108.89467537083493, latitude: 28.342730588493424 },
+                                    { longitude: -88.32653370290177, latitude: 22.7353113804552 },
+                                    { longitude: -86.7694311254039, latitude: 35.72316407162579 },
+                                    { longitude: -106.3528170621995, latitude: 39.67768144405838 },
+                                    { longitude: -108.89467537083493, latitude: 28.342730588493424 },
+                                ]
+                            }
+                        ]
+                    }
+                }]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            tooltips.destroy();
+            tooltips.mapsTooltipModule = new MapsTooltip(tooltips);
+            tooltips.mapsTooltipModule.destroy();
+            remove(ele);
+        });
+        it('tooltip template checking for polygon', (done: Function) => {
+            tooltips.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement("mapst_LayerIndex_0_PolygonIndex_0");
+                trigger.mousemoveEvent(spec, 0, 0, 345, 310);
+                tooltipElement = document.getElementById('mapst_mapsTooltipparent_template');
+                expect(tooltipElement.textContent).toBe('Tooltip Template');
+                done();
+            };
+            tooltips.refresh();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

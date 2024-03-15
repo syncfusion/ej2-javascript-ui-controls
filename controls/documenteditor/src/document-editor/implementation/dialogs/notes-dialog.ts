@@ -146,7 +146,7 @@ export class NotesDialog {
         if (this.sectionFormat) {
             section = this.sectionFormat;
         } else {
-            section = this.documentHelper.owner.selection.sectionFormat;
+            section = this.documentHelper.owner.selectionModule.sectionFormat;
         }
         if (this.documentHelper.selection.isinFootnote) {
             const footnotesFormat: string = section.footNoteNumberFormat;

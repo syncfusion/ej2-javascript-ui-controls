@@ -374,7 +374,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Defines the settings of the DocumentEditorContainer service.
      */
-    @Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
+    @Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', spellCheckByPage: 'SpellCheckByPage', restrictEditing: 'RestrictEditing', canLock: 'CanLock', getPendingActions: 'GetPendingActions' })
     public serverActionSettings: ContainerServerActionSettingsModel;
 
     /**
@@ -586,6 +586,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'AllCaps': 'AllCaps',
         'Change case Tooltip': 'Change case',
         'UPPERCASE': 'UPPERCASE',
+        'SentenceCase' : 'Sentence case',
+        'Lowercase' : 'Lowercase',
+        'CapitalizeEachWord' : 'Capitalize each word',
+        'ToggleCase': 'tOGGLE cASE',
         'No color': 'No color',
         'Top margin': 'Top margin',
         'Bottom margin': 'Bottom margin',
@@ -599,6 +603,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Heading 4': 'Heading 4',
         'Heading 5': 'Heading 5',
         'Heading 6': 'Heading 6',
+        'Heading 7': 'Heading 7',
+        'Heading 8': 'Heading 8',
+        'Heading 9': 'Heading 9',
         'ZoomLevelTooltip': 'Zoom level. Click or tap to open the Zoom options.',
         'None': 'None',
         'Borders': 'Borders',
@@ -844,6 +851,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.serverActionSettings.spellCheck) {
             this.documentEditor.serverActionSettings.spellCheck = HelperMethods.sanitizeString(this.serverActionSettings.spellCheck);
         }
+        if (this.serverActionSettings.spellCheckByPage) {
+            this.documentEditor.serverActionSettings.spellCheckByPage = HelperMethods.sanitizeString(this.serverActionSettings.spellCheckByPage);
+        }
         if (this.serverActionSettings.restrictEditing) {
             this.documentEditor.serverActionSettings.restrictEditing = HelperMethods.sanitizeString(this.serverActionSettings.restrictEditing);
         }
@@ -918,8 +928,17 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (!isNullOrUndefined(this.documentEditorSettings.showRuler)) {
             this.documentEditor.documentEditorSettings.showRuler = this.documentEditorSettings.showRuler;
         }
+        if (!isNullOrUndefined(this.documentEditorSettings.colorPickerSettings)) {
+            this.documentEditor.documentEditorSettings.colorPickerSettings = this.documentEditorSettings.colorPickerSettings;
+        }
         if (!isNullOrUndefined(this.documentEditorSettings.popupTarget)) {
             this.documentEditor.documentEditorSettings.popupTarget = this.documentEditorSettings.popupTarget;
+        }
+        if (!isNullOrUndefined(this.documentEditorSettings.showNavigationPane)) {
+            this.documentEditor.documentEditorSettings.showNavigationPane = this.documentEditorSettings.showNavigationPane;
+        }
+        if (!isNullOrUndefined(this.documentEditorSettings.mentionSettings)) {
+            this.documentEditor.documentEditorSettings.mentionSettings = this.documentEditorSettings.mentionSettings;
         }
     }
     /**
@@ -1290,7 +1309,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         let isProtectedDocument: boolean = this.documentEditor.documentHelper.protectionType !== 'NoProtection';
         let allowFormatting: boolean = isProtectedDocument && this.documentEditor.documentHelper.restrictFormatting;
-        let isSelectionInProtectecRegion: boolean = this.documentEditor.editor.restrictEditing;
+        let isSelectionInProtectecRegion: boolean = this.documentEditor.editorModule.restrictEditing;
         
         if (isProtectedDocument) {
             if (this.toolbarModule) {
@@ -1311,7 +1330,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.imageProperties.enableDisableElements(true);
         }
 
-        let currentContext: string = this.documentEditor.selection.contextType;
+        let currentContext: string = this.documentEditor.selectionModule.contextType;
         let isInHeaderFooter: boolean = currentContext.indexOf('Header') >= 0
             || currentContext.indexOf('Footer') >= 0;
         if (!isInHeaderFooter) {
@@ -1335,9 +1354,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                 this.showProperties('table');
             }
         }
-        this.previousContext = this.documentEditor.selection.contextType;
+        this.previousContext = this.documentEditor.selectionModule.contextType;
         if (this.toolbarModule && this.toolbarModule.toolbar) {
-            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && !this.documentEditor.isReadOnlyMode && !this.documentEditor.selection.isinFootnote && !this.documentEditor.selection.isinEndnote);
+            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && !this.documentEditor.isReadOnlyMode && !this.documentEditor.selectionModule.isinFootnote && !this.documentEditor.selectionModule.isinEndnote);
         }
     }
     /**

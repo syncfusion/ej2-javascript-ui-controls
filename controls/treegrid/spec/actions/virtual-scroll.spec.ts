@@ -34,10 +34,8 @@ if (!editVirtualData.length) {
 describe("TreeGrid Virtual Scroll", () => {
   describe("Rendering and basic actions", () => {
     let treegrid: TreeGrid;
-    let rows: Element[];
     let expanded: () => void;
     let collapsed: () => void;
-    let rowSelected: () => void;
     beforeAll((done: Function) => {
       treegrid = createGrid(
         {
@@ -417,10 +415,7 @@ describe("TreeGrid Virtual Scroll", () => {
 
 describe("Scroll Down with CollapseAll", () => {
   let treegrid: TreeGrid;
-  let rows: Element[];
-  let expanded: () => void;
   let collapsed: () => void;
-  let rowSelected: () => void;
   beforeAll((done: Function) => {
     treegrid = createGrid(
       {
@@ -648,10 +643,6 @@ describe("Scroll Down with CollapseAll", () => {
 
 describe("Height 100%", () => {
   let treegrid: TreeGrid;
-  let rows: Element[];
-  let expanded: () => void;
-  let collapsed: () => void;
-  let rowSelected: () => void;
   let dataBound: () => void;
   document.body.style.height = "600px";
   beforeAll((done: Function) => {
@@ -1092,7 +1083,6 @@ describe("Row Editing with Virtual Scrolling", () => {
 
 describe("Add New Row with Virtual Scrolling", () => {
   let gridObj: TreeGrid;
-  let rows: Element[];
   let actionBegin: () => void;
   let actionComplete: () => void;
   beforeAll((done: Function) => {
@@ -1228,8 +1218,6 @@ describe("Add New Row with Virtual Scrolling", () => {
 
 describe("Delete Row with Virtual Scrolling", () => {
   let gridObj: TreeGrid;
-  let rows: Element[];
-  let actionBegin: () => void;
   let actionComplete: () => void;
   beforeAll((done: Function) => {
     gridObj = createGrid(
@@ -1335,7 +1323,6 @@ describe("Delete Row with Virtual Scrolling", () => {
 
 describe("Edit Cancel Checking", () => {
   let gridObj: TreeGrid;
-  let rows: Element[];
   let actionBegin: () => void;
   let actionComplete: () => void;
   beforeAll((done: Function) => {
@@ -1454,7 +1441,6 @@ describe("EJ2-60955- The checkbox selection is not working properly while the ch
     dataSource1();
   }
   let TreeGridObj: TreeGrid;
-  let actionComplete: () => void;
   beforeAll((done: Function) => {
     TreeGridObj = createGrid(
       {
@@ -1530,8 +1516,6 @@ describe("EJ2-60955- The checkbox selection is not working properly while the ch
 
 describe("EJ2-58929 - Searching after scroll shows no records to display in case of Virtualization enabled", () => {
   let gridObj: TreeGrid;
-  let rows: Element[];
-  let actionBegin: () => void;
   let actionComplete: () => void;
   beforeAll((done: Function) => {
     gridObj = createGrid(
@@ -1608,7 +1592,6 @@ describe("EJ2-58929 - Searching after scroll shows no records to display in case
 
 describe("EJ2-59214- Row Drag And Drop support with Virtual Scrolling", () => {
   let TreeGridObj: TreeGrid;
-  let actionComplete: () => void;
   beforeAll((done: Function) => {
     TreeGridObj = createGrid(
       {
@@ -2206,8 +2189,6 @@ describe("EJ2-62928 - Script error throws when we filter the record using filter
   afterAll(() => {
     destroy(gridObj);
   });
-
-  
 });
 
 describe("scrolling and adding records", () => {
@@ -2369,17 +2350,17 @@ it("Edit and update", (done: Function) => {
     item: { id: TreeGridObj2.grid.element.id + "_update" },
   });
 });
-  // it("Indent/Outdent icon updated check after edited the row", (done: Function) => {
-  //   actionComplete = (args?: any): void => {
-  //     if (args.requestType == "outdented") {
-  //       expect(args.data[0].parentItem == undefined).toBe(true);
-  //       done();
-  //     }
-  //   };
+  it("Indent/Outdent icon updated check after edited the row", (done: Function) => {
+    actionComplete = (args?: any): void => {
+      if (args.requestType == "outdented") {
+        expect(args.data[0].parentItem == undefined).toBe(true);
+        done();
+      }
+    };
    
-  //   TreeGridObj2.actionComplete = actionComplete;
-  //  // TreeGridObj2.outdent(TreeGridObj2.getCurrentViewRecords()[1]);
-  // });
+    TreeGridObj2.actionComplete = actionComplete;
+    TreeGridObj2.outdent(TreeGridObj2.getCurrentViewRecords()[1]);
+  });
   afterAll(() => {
     destroy(TreeGridObj2);
   });
@@ -2431,7 +2412,6 @@ describe("EJ2-64501 - virutalization shimmer effect check", () => {
   });
 
   it("Show Mask Row", () => {
-    debugger;
     gridObj3.grid.showMaskRow();
     expect(gridObj3.getContent().querySelector(".e-masked-table")).toBeTruthy();
   });

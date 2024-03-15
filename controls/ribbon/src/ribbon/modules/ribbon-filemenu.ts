@@ -65,11 +65,18 @@ export class RibbonFileMenu {
         }
         this.parent.tabObj.refreshActiveTabBorder();
         this.addFileMenuTooltip(fileMenuOptions);
+        this.addFileMenuKeytip();
     }
     private addFileMenuTooltip(fileMenuOptions: FileMenuSettingsModel): void {
         if (isTooltipPresent(fileMenuOptions.ribbonTooltipSettings)) {
             this.ddbElement.classList.add(constants.RIBBON_TOOLTIP_TARGET);
             this.parent.tooltipData.push({ id: this.ddbElement.id, data: fileMenuOptions.ribbonTooltipSettings });
+        }
+    }
+    private addFileMenuKeytip(): void {
+        if (this.parent.fileMenu.keyTip) {
+            ((this.parent.keyTipElements as {[key: string]: object})['filemenu'] as object[]) = [];
+            ((this.parent.keyTipElements as {[key: string]: object})['filemenu'] as object[]).push({ id: this.ddbElement.id, type: 'filemenu', keyTip: this.parent.fileMenu.keyTip});
         }
     }
     private ddbBeforeEvent(isOpen: boolean, args: BeforeDDBArgs): void {
@@ -223,7 +230,9 @@ export class RibbonFileMenu {
                     }
                 }
                 this.removeFileMenuTooltip();
+                this.removeFileMenuKeytip();
                 this.addFileMenuTooltip(fileMenuOptions);
+                this.addFileMenuKeytip();
             }
             else {
                 this.createFileMenu(fileMenuOptions);
@@ -243,6 +252,7 @@ export class RibbonFileMenu {
     }
     private destroyDDB(): void {
         this.removeFileMenuTooltip();
+        this.removeFileMenuKeytip();
         const tabEle: HTMLElement = this.parent.tabObj.element;
         tabEle.style.removeProperty(constants.RIBBON_FILE_MENU_WIDTH);
         this.destroyMenu();
@@ -256,6 +266,14 @@ export class RibbonFileMenu {
         if (index !== -1) {
             this.ddbElement.classList.remove(constants.RIBBON_TOOLTIP_TARGET);
             this.parent.tooltipData.splice(index, 1);
+        }
+    }
+    private removeFileMenuKeytip(): void {
+        if ((this.parent.keyTipElements as {[key: string]: object})['filemenu']) {
+            const index: number = getIndex(((this.parent.keyTipElements as {[key: string]: object})['filemenu'] as object[]), (e: { [key: string]: string }) => { return e.id === this.ddbElement.id; });
+            if (index !== -1) {
+                ((this.parent.keyTipElements as {[key: string]: object})['filemenu'] as object[]).splice(index, 1);
+            }
         }
     }
 

@@ -8,6 +8,14 @@ import { RibbonGroupModel } from './ribbon-group-model';
 export class RibbonTab extends ChildProperty<RibbonTab>  {
 
     /**
+     * Specifies the keytip content.
+     *
+     * @default ''
+     */
+    @Property('')
+    public keyTip: string;
+
+    /**
      * Defines a unique identifier for the tab.
      *
      * @default ''

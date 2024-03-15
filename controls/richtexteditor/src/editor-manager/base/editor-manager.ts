@@ -243,7 +243,6 @@ export class EditorManager {
         }
     }
 
-    
     private editorMouseDown(e: IHTMLMouseEventArgs): void {
         if (e.args.detail === 3) {
             this.tripleClickSelection(e.args as MouseEvent);
@@ -271,34 +270,35 @@ export class EditorManager {
     }
 
     private getParentBlockNode(node: Node): Node  {
-        let treeWalker = this.currentDocument.createTreeWalker(this.editableElement, // root
+        const treeWalker: TreeWalker = this.currentDocument.createTreeWalker(
+            this.editableElement, // root
             NodeFilter.SHOW_ELEMENT, // whatToShow
             {   // filter
                 acceptNode: function(currentNode: Node): number {
                     // Check if the node is a block element
-                    let displayStyle = window.getComputedStyle(currentNode as Element).display;
+                    const displayStyle: string = window.getComputedStyle(currentNode as Element).display;
                     if (displayStyle.indexOf('inline') < 0) {
                         return NodeFilter.FILTER_ACCEPT;
                     } else {
                         return NodeFilter.FILTER_SKIP;
                     }
                 }
-            },
+            }
         );
         treeWalker.currentNode = node;
-        let blockParent = treeWalker.parentNode();
+        const blockParent: Node = treeWalker.parentNode();
         return blockParent;
     }
 
     private getLastTextNode(node: Node): Node | null {
-        let treeWalker: TreeWalker = this.currentDocument.createTreeWalker(
+        const treeWalker: TreeWalker = this.currentDocument.createTreeWalker(
             node,
             NodeFilter.SHOW_TEXT,
-            null,
+            null
         );
         let lastTextNode: Node | null = null;
         let currentNode: Node | null = treeWalker.nextNode();
-        while(currentNode) {
+        while (currentNode) {
             lastTextNode = currentNode;
             currentNode = treeWalker.nextNode();
         }
@@ -306,12 +306,12 @@ export class EditorManager {
     }
 
     private getFirstTextNode(node: Node): Node | null {
-        let treeWalker: TreeWalker = this.currentDocument.createTreeWalker(
+        const treeWalker: TreeWalker = this.currentDocument.createTreeWalker(
             node,
             NodeFilter.SHOW_TEXT,
-            null,
+            null
         );
-        let firstTextNode: Node | null = treeWalker.nextNode();
+        const firstTextNode: Node | null = treeWalker.nextNode();
         return firstTextNode;
     }
 }

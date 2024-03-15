@@ -137,7 +137,7 @@ export class FormFieldPopUp {
      * @returns {void}
      */
     private applyTextFormFieldValue = (): void => {
-        this.owner.editor.updateFormField(this.formField, this.textBoxInstance.value);
+        this.owner.editorModule.updateFormField(this.formField, this.textBoxInstance.value);
         this.owner.trigger(afterFormFieldFillEvent, { 'fieldName': this.formField.formFieldData.name, value: this.formField.resultText, isCanceled: false });
         this.hidePopup();
     };
@@ -145,7 +145,7 @@ export class FormFieldPopUp {
      * @returns {void}
      */
     private applyNumberFormFieldValue = (): void => {
-        this.owner.editor.updateFormField(this.formField, this.numberInput.value.toString());
+        this.owner.editorModule.updateFormField(this.formField, this.numberInput.value.toString());
         this.owner.trigger(afterFormFieldFillEvent, { 'fieldName': this.formField.formFieldData.name, value: this.formField.resultText, isCanceled: false });
         this.hidePopup();
     };
@@ -154,7 +154,7 @@ export class FormFieldPopUp {
      */
     private applyDateFormFieldValue = (): void => {
         if (!isNullOrUndefined(this.datePickerInstance.value)) {
-            this.owner.editor.updateFormField(this.formField, this.dateInput.value);
+            this.owner.editorModule.updateFormField(this.formField, this.dateInput.value);
             this.owner.trigger(afterFormFieldFillEvent, { 'fieldName': this.formField.formFieldData.name, value: this.formField.resultText, isCanceled: false });
             this.hidePopup();
         }
@@ -163,7 +163,7 @@ export class FormFieldPopUp {
      * @returns {void}
      */
     private applyDropDownFormFieldValue = (): void => {
-        this.owner.editor.updateFormField(this.formField, this.ddlInstance.index);
+        this.owner.editorModule.updateFormField(this.formField, this.ddlInstance.index);
         this.owner.trigger(afterFormFieldFillEvent, { 'fieldName': this.formField.formFieldData.name, value: (this.formField.formFieldData as DropDownFormField).selectedIndex, isCanceled: false });
         this.hidePopup();
     };
@@ -184,7 +184,7 @@ export class FormFieldPopUp {
     public showPopUp(formField: FieldElementBox): void {
         if (formField) {
             this.formField = formField;
-            this.owner.selection.selectField();
+            this.owner.selectionModule.selectField();
             if (isNullOrUndefined(this.target)) {
                 this.initPopup();
             }
@@ -241,9 +241,9 @@ export class FormFieldPopUp {
                         this.ddlInstance.showPopup();
                     }, 50);
                 }
-                const left: number = this.owner.selection.getLeftInternal(formField.line, formField, 0);
+                const left: number = this.owner.selectionModule.getLeftInternal(formField.line, formField, 0);
                 const lineHeight: number = formField.line.height * this.owner.documentHelper.zoomFactor;
-                const position: Point = this.owner.selection.getTooltipPosition(formField.line, left, this.target, true);
+                const position: Point = this.owner.selectionModule.getTooltipPosition(formField.line, left, this.target, true);
                 if (!this.popupObject) {
                     this.popupObject = new Popup(this.target, {
                         height: 'auto',

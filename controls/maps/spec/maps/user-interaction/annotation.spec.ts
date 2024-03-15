@@ -55,10 +55,11 @@ describe('Zoom feature tesing for Map control', () => {
             map.refresh();
         });
 
-        it('Checking annotation without specifying div element', (): void => {
+        it('Checking annotation without specifying div element', (done: Function): void => {
             map.loaded = (args: ILoadedEventArgs): void => {
                 let element: Element = document.getElementById(map.element.id + '_Annotations_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                done();
             };
             map.annotations = [{
                 content: '#annotation'
@@ -79,10 +80,11 @@ describe('Zoom feature tesing for Map control', () => {
             map.refresh();
         });
 
-        it('Checking annotation with near alignment in both orientation', (): void => {
+        it('Checking annotation with near alignment in both orientation', (done: Function): void => {
             map.loaded = (args: ILoadedEventArgs): void => {
                 let element: Element = document.getElementById(map.element.id + '_Annotations_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                done();
             };
             map.annotations = [{
                 content: '<div><img src="http://js.syncfusion.com/demos/web/Images/map/pin.png" style="height:30px;width:30px;"></img></div>',
@@ -92,10 +94,11 @@ describe('Zoom feature tesing for Map control', () => {
             map.refresh();
         });
 
-        it('Checking annotation with Center alignment in both orientation', (): void => {
+        it('Checking annotation with Center alignment in both orientation', (done: Function): void => {
             map.loaded = (args: ILoadedEventArgs): void => {
                 let element: Element = document.getElementById(map.element.id + '_Annotations_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
+                done();
             };
             map.annotations = [{
                 content: '<div><img src="http://js.syncfusion.com/demos/web/Images/map/pin.png" style="height:30px;width:30px;"></img></div>',

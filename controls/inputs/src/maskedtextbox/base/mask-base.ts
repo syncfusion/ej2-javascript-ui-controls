@@ -177,6 +177,7 @@ export function unwireEvents(): void {
     EventHandler.remove(this.element, 'focus', maskInputFocusHandler);
     EventHandler.remove(this.element, 'blur', maskInputBlurHandler);
     EventHandler.remove(this.element, 'paste', maskInputPasteHandler);
+    EventHandler.remove(this.element, 'drop', maskInputDropHandler);
     EventHandler.remove(this.element, 'cut', maskInputCutHandler);
     EventHandler.remove(this.element, 'mousedown', maskInputMouseDownHandler);
     EventHandler.remove(this.element, 'mouseup', maskInputMouseUpHandler);

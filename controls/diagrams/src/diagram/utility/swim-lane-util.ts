@@ -541,10 +541,6 @@ export function arrangeChildNodesInSwimLane(diagram: Diagram, obj: NodeModel): v
                 node.offsetY = lanes[parseInt(i.toString(), 10)].height;
                 diagram.initObject(node as Node);
                 diagram.nodes.push(node);
-                // EJ2-63939 - Check whether the lane child is BPMN text node or not
-                if (node.shape.type === 'Bpmn' && (node.shape as BpmnShapeModel).annotations && (node.shape as BpmnShapeModel).annotations.length > 0) {
-                    (obj as Node).isTextNode = true;
-                }
                 canvas = node.wrapper;
                 if (orientation) {
                     for (k = columnValue; k < col; k++) {
@@ -1550,7 +1546,7 @@ export function pasteSwimLane(
             node = lane.children[parseInt(j.toString(), 10)] as Node;
             childX = node.wrapper.offsetX - node.width / 2;
             childY = node.wrapper.offsetY - node.height / 2;
-            node.zIndex = -1;
+            node.zIndex = Number.MIN_VALUE;
             node.inEdges = node.outEdges = [];
             if (isUndo || (clipboardData && (clipboardData.pasteIndex === 1 || clipboardData.pasteIndex === 0))) {
                 if (shape.orientation === 'Vertical') {
@@ -1589,7 +1585,7 @@ export function pasteSwimLane(
         if (clipboardData.pasteIndex !== 0) {
             swimLane.offsetX += 10; swimLane.offsetY += 10;
         }
-        swimLane.zIndex = -1;
+        swimLane.zIndex = Number.MIN_VALUE;
         swimLane = diagram.add(swimLane) as NodeModel;
         if (!isLane) {
             for (const i of Object.keys(clipboardData.childTable)) {
@@ -1597,7 +1593,7 @@ export function pasteSwimLane(
                 connector.id += ranId;
                 connector.sourceID += ranId;
                 connector.targetID += ranId;
-                connector.zIndex = -1;
+                connector.zIndex = Number.MIN_VALUE;
                 diagram.add(connector);
             }
         }
@@ -2138,9 +2134,9 @@ export function considerSwimLanePadding(diagram: Diagram, node: NodeModel, paddi
         node.offsetX = node.wrapper.offsetX; node.offsetY = node.wrapper.offsetY;
         diagram.nodePropertyChange(node as Node, {} as Node, { margin: { left: node.margin.left, top: node.margin.top } } as Node);
         //EJ2-68372- Text-Annotation in event node is not positioned properly while drag the swimlane
-        if (diagram.bpmnModule && node.shape.type === 'Bpmn' && (node.shape as BpmnShapeModel).annotations &&  (node.shape as BpmnShapeModel).annotations.length > 0) {
-            diagram.nodePropertyChange(node as Node, {} as Node, { margin: { left: node.margin.left, top: node.margin.top } } as Node);
-        }
+        // if (diagram.bpmnModule && node.shape.type === 'Bpmn' && (node.shape as BpmnShapeModel).annotations &&  (node.shape as BpmnShapeModel).annotations.length > 0) {
+        //     diagram.nodePropertyChange(node as Node, {} as Node, { margin: { left: node.margin.left, top: node.margin.top } } as Node);
+        // }
         grid.measure(new Size(grid.width, grid.height));
         grid.arrange(grid.desiredSize);
         swimLane.width = swimLane.wrapper.width = swimLane.wrapper.children[0].actualSize.width;

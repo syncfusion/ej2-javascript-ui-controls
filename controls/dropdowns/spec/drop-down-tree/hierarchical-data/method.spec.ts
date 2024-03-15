@@ -39,7 +39,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             ddtreeObj = new DropDownTree({
                 fields: {
                     dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child"
-                }, treeSettings: { loadOnDemand: true }
+                }, treeSettings: { loadOnDemand: true }, destroyPopupOnHide: false
             }, '#ddtree');
             ddtreeObj.showPopup();
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
@@ -66,7 +66,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
             ddtreeObj = new DropDownTree({
                 fields: {
                     dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child"
-                }, treeSettings: { loadOnDemand: true }
+                }, treeSettings: { loadOnDemand: true }, destroyPopupOnHide: false
             }, '#ddtree');
             ddtreeObj.showPopup();
             expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);

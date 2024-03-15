@@ -108,7 +108,6 @@ export class Layout {
     private isFieldCode: boolean = false;
     private isRtlFieldCode: boolean = false;
     private isRTLLayout: boolean = false;
-    private isSkipFirstLineIndent: boolean = false;
     public currentCell: TableCellWidget = undefined;
     public isFootnoteContentChanged: boolean = false;
     public isEndnoteContentChanged: boolean = false;
@@ -310,7 +309,6 @@ export class Layout {
         this.isFieldCode = undefined;
         this.footnoteHeight = undefined;
         this.isMultiColumnDoc = undefined;
-        this.isSkipFirstLineIndent = undefined;
         this.isIFfield = undefined;
     }
 
@@ -1994,8 +1992,8 @@ export class Layout {
         let line: LineWidget = element.line;
         let text: string = '';
         let index: number = element.indexInOwner;
-        if (this.viewer.owner.editor && this.viewer.owner.editorHistory && this.viewer.owner.editorHistory.isRedoing && !isNullOrUndefined((element.paragraph.containerWidget as BodyWidget).footNoteReference) && this.viewer.owner.enableTrackChanges && element.removedIds.length > 0) {
-            this.viewer.owner.editor.constructRevisionFromID(element, true);
+        if (this.viewer.owner.editorModule && this.viewer.owner.editorHistoryModule && this.viewer.owner.editorHistoryModule.isRedoing && !isNullOrUndefined((element.paragraph.containerWidget as BodyWidget).footNoteReference) && this.viewer.owner.enableTrackChanges && element.removedIds.length > 0) {
+            this.viewer.owner.editorModule.constructRevisionFromID(element, true);
         }
         if (element instanceof FieldElementBox) {
             if (element.fieldType === 0) {
@@ -2211,7 +2209,7 @@ export class Layout {
                 && element.line.isFirstLine() 
                 && element.paragraph.index === 0 
                 && element.indexInOwner === 0
-                && !this.documentHelper.owner.editor.handleEnterKey) {
+                && !this.documentHelper.owner.editorModule.handleEnterKey) {
                 element.text = (element.paragraph.containerWidget as BodyWidget).footNoteReference.text;
             }
             this.checkAndSplitTabOrLineBreakCharacter(element.text, element);
@@ -2425,10 +2423,9 @@ export class Layout {
         // if (element.indexInOwner === 0 && element.line.isFirstLine()) {
         //     wrapDiff -= HelperMethods.convertPointToPixel(element.line.paragraph.paragraphFormat.firstLineIndent);
         // }
-        if (element.line.isFirstLine() && this.getFirstElement(element.line) === element && wrapDiff > 0 && !this.isSkipFirstLineIndent) {
+        if (element.line.isFirstLine() && this.getFirstElement(element.line) === element && wrapDiff > 0) {
             wrapDiff += HelperMethods.convertPointToPixel(element.line.paragraph.paragraphFormat.firstLineIndent);
         }
-        this.isSkipFirstLineIndent = false;
         element.padding.left = wrapDiff > 0 ? wrapDiff : 0;
         if (previousWidth !== this.viewer.clientActiveArea.width) {
             let wrapPos: WrapPosition = new WrapPosition(this.viewer.clientActiveArea.x, this.viewer.clientActiveArea.width);
@@ -2494,6 +2491,35 @@ export class Layout {
         return false;
     }
 
+    private isNeedToWrapForTopAndBottom(currWidgetOwnerPara: ParagraphWidget, elementBox: ElementBox, wrapOwnerIndex: number, wrapItemIndex: number, textWrappingStyle: TextWrappingStyle, textWrappingBounds: Rect, allowOverlap: boolean, wrapCollectionIndex: number, floatingEntity: TableWidget | ShapeBase, isTextRangeInTextBox: boolean, rect: Rect, width: number, height: number) {
+        if (currWidgetOwnerPara.isInsideTable && textWrappingStyle === "TopAndBottom" && !(floatingEntity instanceof TableWidget)) {
+            let floatingItemOwnerPara: ParagraphWidget = floatingEntity.paragraph;
+        
+            if (!isNullOrUndefined(floatingItemOwnerPara) && !isNullOrUndefined(floatingItemOwnerPara.associatedCell)) {
+                let isLayoutInCell = floatingItemOwnerPara.isInsideTable;
+                let floatingItemOwnerCell: TableCellWidget = floatingItemOwnerPara.associatedCell
+                let currParaOwnerCell: TableCellWidget = currWidgetOwnerPara.associatedCell;
+        
+                if ((!isNullOrUndefined(floatingItemOwnerCell) && !isNullOrUndefined(currParaOwnerCell) && floatingItemOwnerCell !== currParaOwnerCell)
+                    || (!isLayoutInCell && this.documentHelper.compatibilityMode !== "Word2013"))
+                    return false;
+            }
+        }
+        
+        return ( wrapOwnerIndex !== wrapCollectionIndex
+            && wrapItemIndex !== wrapCollectionIndex
+            && textWrappingStyle === "TopAndBottom"
+            && ((rect.y >= textWrappingBounds.y
+                && rect.y < (textWrappingBounds.bottom))
+                || ((rect.y + height > textWrappingBounds.y
+                || this.isTextFitBelow(textWrappingBounds, rect.y + height, floatingEntity))
+                && (rect.y + height < (textWrappingBounds.bottom)))
+                || (rect.y < textWrappingBounds.y && rect.y + height > textWrappingBounds.bottom && textWrappingBounds.height > 0))
+            && !(allowOverlap && (isTextRangeInTextBox || ((elementBox instanceof ImageElementBox)
+            && elementBox.textWrappingStyle !== 'Inline' && elementBox.allowOverlap))));
+    }
+
+
     private isNeedToWrapForSquareTightAndThrough(bodyWidget: BlockContainer, elementBox: ElementBox, wrapOwnerIndex: number, wrapItemIndex: number, textWrappingStyle: TextWrappingStyle, textWrappingBounds: Rect, allowOverlap: boolean, wrapCollectionIndex: number, floatingEntity: ShapeBase | TableWidget, isTextRangeInTextBox: boolean, rect: Rect, width: number, height: number): boolean {
         return (bodyWidget.floatingElements.length > 0
             && wrapOwnerIndex !== wrapCollectionIndex
@@ -2507,33 +2533,6 @@ export class Layout {
             && Math.round(rect.y) < Math.round((textWrappingBounds.y + textWrappingBounds.height))
             && !(allowOverlap && (isTextRangeInTextBox || ((elementBox instanceof ImageElementBox)
                 && elementBox.textWrappingStyle !== 'Inline' && elementBox.allowOverlap))));
-    }
-    private isNeedToWrapForTopAndBottom(currWidgetOwnerPara: ParagraphWidget, elementBox: ElementBox, wrapOwnerIndex: number, wrapItemIndex: number, textWrappingStyle: TextWrappingStyle, textWrappingBounds: Rect, allowOverlap: boolean, wrapCollectionIndex: number, floatingEntity: TableWidget | ShapeBase, isTextRangeInTextBox: boolean, rect: Rect, width: number, height: number) {
-        if (currWidgetOwnerPara.isInsideTable && textWrappingStyle === "TopAndBottom" && !(floatingEntity instanceof TableWidget)) {
-            let floatingItemOwnerPara: ParagraphWidget = floatingEntity.paragraph;
-
-            if (!isNullOrUndefined(floatingItemOwnerPara) && !isNullOrUndefined(floatingItemOwnerPara.associatedCell)) {
-                let isLayoutInCell = floatingItemOwnerPara.isInsideTable;
-                let floatingItemOwnerCell: TableCellWidget = floatingItemOwnerPara.associatedCell
-                let currParaOwnerCell: TableCellWidget = currWidgetOwnerPara.associatedCell;
-
-                if ((!isNullOrUndefined(floatingItemOwnerCell) && !isNullOrUndefined(currParaOwnerCell) && floatingItemOwnerCell !== currParaOwnerCell)
-                    || (!isLayoutInCell && this.documentHelper.compatibilityMode !== "Word2013"))
-                    return false;
-            }
-        }
-
-        return ( wrapOwnerIndex !== wrapCollectionIndex
-            && wrapItemIndex !== wrapCollectionIndex
-            && textWrappingStyle === "TopAndBottom"
-            && ((rect.y >= textWrappingBounds.y
-                && rect.y < (textWrappingBounds.bottom))
-                || ((rect.y + height > textWrappingBounds.y
-                || this.isTextFitBelow(textWrappingBounds, rect.y + height, floatingEntity))
-                && (rect.y + height < (textWrappingBounds.bottom)))
-                || (rect.y < textWrappingBounds.y && rect.y + height > textWrappingBounds.bottom && textWrappingBounds.height > 0))
-            && !(allowOverlap && (isTextRangeInTextBox || ((elementBox instanceof ImageElementBox)
-            && elementBox.textWrappingStyle !== 'Inline' && elementBox.allowOverlap))));
     }
     private isNeedToWrapForSquareTightAndThroughForTable(container: BlockContainer, table: TableWidget, wrapIndex: number, wrapItemIndex: number, wrappingStyle: TextWrappingStyle, textWrappingBounds: Rect, allowOverlap: boolean, wrapCollectionIndex: number, floatingElemnt: ShapeBase | TableWidget, isInTextBox: boolean, rect: Rect, width: number, height: number): boolean {
         return (container.floatingElements.length > 0 && wrapIndex !== wrapCollectionIndex
@@ -2907,7 +2906,6 @@ export class Layout {
                                 let xposition: number = rect.x;
                                 rect.x = textWrappingBounds.right + (isnewline ? listLeftIndent : 0) + firstLineIndent;
                                 rect.width = this.viewer.clientArea.right - textWrappingBounds.right - (isnewline ? listLeftIndent : 0) - firstLineIndent;
-                                this.isSkipFirstLineIndent = true;
 
                                 //When there is no space to fit the content in right, then update the y position.
                                 if (textWrappingStyle === 'Square' && rect.width < 0 && elementBox.width > 0) {
@@ -3898,9 +3896,6 @@ export class Layout {
         if (paragraph.paragraphFormat.textAlignment === 'Justify' && element instanceof TextElementBox) {
             this.splitTextElementWordByWord(element as TextElementBox);
         }
-        if (element instanceof ImageElementBox) {
-            element.line.skipClipImage = !element.isInlineImage;
-        }
     }
 
     private splitElementForClientArea(paragraph: ParagraphWidget, element: ElementBox): void {
@@ -4269,7 +4264,6 @@ export class Layout {
         }
         // Gets line spacing.
         lineSpacing = this.getLineSpacing(paragraph, height);
-
         if (paraFormat.lineSpacingType === 'Exactly'
             && lineSpacing < maxDescent + this.maxBaseline) {
             lineSpacing = maxDescent + this.maxBaseline;
@@ -6594,7 +6588,7 @@ export class Layout {
                 this.layoutFootnoteInSplittedRow(row, footnoteWidgets);
             } else if (!isNullOrUndefined(footnoteWidgets) && footnoteWidgets.length > 0 && row.bodyWidget.previousRenderedWidget !== undefined && startRowIndex !== row.bodyWidget.page.index && (footnoteWidgets[0].containerWidget as FootNoteWidget).page.index !== row.bodyWidget.page.index) {
                 this.moveFootNotesToPage(footnoteWidgets, (footnoteWidgets[0].containerWidget as FootNoteWidget).page.bodyWidgets[0], row.bodyWidget);
-            } else if (!this.isInitialLoad && !isNullOrUndefined(row.bodyWidget.page.footnoteWidget)) {
+            } else if (footnoteWidgets.length > 0 && !this.isInitialLoad && !isNullOrUndefined(row.bodyWidget.page.footnoteWidget)) {
                 this.layoutfootNote(row.bodyWidget.page.footnoteWidget);
             }
             footnotes.length = 0;
@@ -7039,7 +7033,7 @@ export class Layout {
                     }
                 }
                 //Create New table for splitted widget
-                if (!isNullOrUndefined(splittedWidget) && (isNullOrUndefined(this.documentHelper.owner.editor) || this.documentHelper.owner.editor && !this.documentHelper.owner.editor.isTableInsert) && !(splittedWidget.bodyWidget.containerWidget instanceof FootNoteWidget)) {
+                if (!isNullOrUndefined(splittedWidget) && (isNullOrUndefined(this.documentHelper.owner.editorModule) || this.documentHelper.owner.editorModule && !this.documentHelper.owner.editorModule.isTableInsert) && !(splittedWidget.bodyWidget.containerWidget instanceof FootNoteWidget)) {
                     if (splittedWidget !== tableRowWidget) {
                         this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements, tableRowWidget.nextRow, undefined, undefined, isRepeatRowHeader);
                         //Updates the fitted table rows to current page.
@@ -8322,7 +8316,7 @@ export class Layout {
             /* eslint-disable-next-line max-len */
             if (this.documentHelper.fieldStacks.length === 0 && !isNullOrUndefined(nextWidget) && currentWidget.containerWidget === nextWidget.containerWidget
                 && (HelperMethods.round(nextWidget.y, 2) === HelperMethods.round(currentWidget.y + currentWidget.height, 2))) {
-                if (!isNullOrUndefined(this.documentHelper.blockToShift) || this.documentHelper.owner.editor.isFootnoteElementRemoved) {
+                if (!isNullOrUndefined(this.documentHelper.blockToShift) || this.documentHelper.owner.editorModule.isFootnoteElementRemoved) {
                     this.documentHelper.blockToShift = block;
                 } else if ((nextWidget as BlockWidget).bodyWidget) {
                     const floatingElementLength = (nextWidget as BlockWidget).bodyWidget.floatingElements.length;
@@ -9336,7 +9330,7 @@ export class Layout {
         viewer.updateClientAreaForCell(cell, false);
     }
     private isInsertTable(): boolean {
-        if (this.documentHelper.owner.editorHistory && this.documentHelper.owner.editorHistory.currentBaseHistoryInfo && this.documentHelper.owner.editorHistory.currentBaseHistoryInfo.action === 'InsertTable')
+        if (this.documentHelper.owner.editorHistoryModule && this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo && this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'InsertTable')
             return true;
         else
             return false;
@@ -9486,7 +9480,7 @@ export class Layout {
                     nextWidget = blocks[0] as TableWidget;
                 }
             }
-            if (!this.documentHelper.owner.editor.isFootnoteElementRemoved && currentWidget.containerWidget === nextWidget.containerWidget
+            if (!this.documentHelper.owner.editorModule.isFootnoteElementRemoved && currentWidget.containerWidget === nextWidget.containerWidget
                 && (HelperMethods.round(nextWidget.y, 2) === HelperMethods.round(this.viewer.clientActiveArea.y, 2)) &&
                 isNullOrUndefined(nextWidget.nextWidget)) {
                 break;
@@ -9522,7 +9516,7 @@ export class Layout {
         }
         this.documentHelper.blockToShift = undefined;
         const viewer: LayoutViewer = this.viewer;
-        if(viewer.owner.editor.isFootnoteElementRemoved) {
+        if(viewer.owner.editorModule.isFootnoteElementRemoved) {
             const lastPage = this.documentHelper.pages[this.documentHelper.pages.length - 1];
             const lastChild = lastPage.bodyWidgets[lastPage.bodyWidgets.length - 1];
             const endNote = lastPage.endnoteWidget;
@@ -9551,7 +9545,7 @@ export class Layout {
                 page = page.nextPage
             } while(page)
             while(firstPage.bodyWidgets[0].sectionIndex > 0) {
-                this.documentHelper.owner.editor.updateSectionIndex(undefined, firstPage.bodyWidgets[0], false);
+                this.documentHelper.owner.editorModule.updateSectionIndex(undefined, firstPage.bodyWidgets[0], false);
             }
         }
         if ((!this.documentHelper.owner.enableLockAndEdit || !reLayout) && !this.isMultiColumnSplit) {
@@ -9570,8 +9564,8 @@ export class Layout {
         return false;
     }
     private checkAndShiftEndnote(): void {
-        if (this.documentHelper.owner.selection) {
-            let endBlock: BlockWidget = this.documentHelper.owner.selection.end.paragraph;
+        if (this.documentHelper.owner.selectionModule) {
+            let endBlock: BlockWidget = this.documentHelper.owner.selectionModule.end.paragraph;
             if (endBlock.isInsideTable) {
                 endBlock = this.getParentTable(endBlock);
             }
@@ -9596,7 +9590,7 @@ export class Layout {
                             const prevPageNum: string = textElement.text;
                             textElement.text = this.documentHelper.pages.length.toString();
                             const paragraph: ParagraphWidget = fieldBegin.line.paragraph;
-                            if (!isNullOrUndefined(paragraph.bodyWidget) && !isNullOrUndefined(paragraph.bodyWidget.page)
+                            if (!isNullOrUndefined(paragraph.bodyWidget) && !isNullOrUndefined(paragraph.bodyWidget.page) && paragraph.bodyWidget.page.index !== -1
                                 && prevPageNum !== textElement.text) {
                                 const lineIndex: number = paragraph.childWidgets.indexOf(fieldBegin.line);
                                 const elementIndex: number = fieldBegin.line.children.indexOf(textElement);
@@ -10716,7 +10710,7 @@ export class Layout {
                         this.viewer.updateClientArea(nextBody, nextBody.page);
                         nextBody.y = this.viewer.clientActiveArea.y;
                     }
-                } else if (nextPage.bodyWidgets.length === 0 || !body.equals(nextPage.bodyWidgets[0])) {
+                } else if (nextPage.bodyWidgets.length === 0 || !body.equals(nextPage.bodyWidgets[0]) || (body.sectionIndex !== nextPage.bodyWidgets[0].sectionIndex && body.sectionFormat.breakCode === 'NewPage')) {
                     nextPage = undefined;
                     insertPage = true;
                 } else {
@@ -10726,9 +10720,9 @@ export class Layout {
             }
             if (isNullOrUndefined(nextPage)) {
                 nextBody = this.createSplitBody(body);
-                if ((((this.documentHelper.owner.editorHistory &&
-                    this.documentHelper.owner.editorHistory.isRedoing && this.documentHelper.owner.editorHistory.currentBaseHistoryInfo &&
-                    this.documentHelper.owner.editorHistory.currentBaseHistoryInfo.action === 'SectionBreakContinuous')) && block.bodyWidget.sectionFormat.breakCode === 'NoBreak')
+                if ((((this.documentHelper.owner.editorHistoryModule &&
+                    this.documentHelper.owner.editorHistoryModule.isRedoing && this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo &&
+                    this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'SectionBreakContinuous')) && block.bodyWidget.sectionFormat.breakCode === 'NoBreak')
                     || sectionBreakContinuous) {
                     //  this.viewer.clientActiveArea.y = block.y + block.height;
                 } else {
@@ -10836,7 +10830,7 @@ export class Layout {
 
     /* eslint-disable  */
     public reLayoutLine(paragraph: ParagraphWidget, lineIndex: number, isBidi: boolean, isSkip?: boolean, isSkipList?: boolean): void {
-        if (!this.documentHelper.owner.editor.isFootnoteElementRemoved) {
+        if (!this.documentHelper.owner.editorModule.isFootnoteElementRemoved) {
             this.isFootnoteContentChanged = false;
         }
         if (this.viewer.owner.isDocumentLoaded && this.viewer.owner.editorModule && !isSkipList) {
@@ -10881,9 +10875,9 @@ export class Layout {
         if (!isNullOrUndefined(paragraph.containerWidget) && !isNullOrUndefined(paragraph.containerWidget.containerWidget) && paragraph.containerWidget.containerWidget instanceof FootNoteWidget) {
             let y: number = paragraph.bodyWidget.containerWidget.y;
             this.viewer.cutFromTop(y);
-            this.documentHelper.owner.editor.isFootNoteInsert = true;
+            this.documentHelper.owner.editorModule.isFootNoteInsert = true;
             this.layoutfootNote(paragraph.containerWidget.containerWidget);
-            this.documentHelper.owner.editor.isFootNoteInsert = false;
+            this.documentHelper.owner.editorModule.isFootNoteInsert = false;
             return;
         } else if (lineToLayout.paragraph.isEmpty()) {
             this.viewer.cutFromTop(paragraph.y);
@@ -10923,15 +10917,15 @@ export class Layout {
         let lastPage: Page = this.documentHelper.pages[page - 1];
         let foot: FootNoteWidget;
         let newBodyWidget: BlockContainer = lastPage.bodyWidgets[lastPage.bodyWidgets.length - 1];
-        if ((this.documentHelper.owner.editor.isFootnoteElementRemoved || this.isFootnoteContentChanged)
+        if ((this.documentHelper.owner.editorModule.isFootnoteElementRemoved || this.isFootnoteContentChanged)
                 && !isNullOrUndefined(paragraph.bodyWidget.page.footnoteWidget)) {
             foot = paragraph.bodyWidget.page.footnoteWidget;
             this.layoutfootNote(foot);
         }
-        if (!isNullOrUndefined(this.viewer.owner.editorHistory) && this.viewer.owner.editorHistory.isRedoing && !isNullOrUndefined(newBodyWidget.page.endnoteWidget)) {
+        if (!isNullOrUndefined(this.viewer.owner.editorHistoryModule) && this.viewer.owner.editorHistoryModule.isRedoing && !isNullOrUndefined(newBodyWidget.page.endnoteWidget)) {
             this.isEndnoteContentChanged = true;
         }
-        if ((this.documentHelper.owner.editor.isEndnoteElementRemoved || this.isEndnoteContentChanged)
+        if ((this.documentHelper.owner.editorModule.isEndnoteElementRemoved || this.isEndnoteContentChanged)
                 && !isNullOrUndefined(newBodyWidget.page.endnoteWidget)) {
             foot = newBodyWidget.page.endnoteWidget;
             const clientArea: Rect = this.viewer.clientArea.clone();
@@ -10947,7 +10941,7 @@ export class Layout {
             this.viewer.clientActiveArea = clientActiveArea;
             //this.viewer.updateClientAreaForBlock(foot.block, false);
         }
-        if (!isNullOrUndefined(this.viewer.owner.editorHistory) && this.viewer.owner.editorHistory.isRedoing) {
+        if (!isNullOrUndefined(this.viewer.owner.editorHistoryModule) && this.viewer.owner.editorHistoryModule.isRedoing) {
             this.isEndnoteContentChanged = false;
         }
     }

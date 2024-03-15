@@ -55,8 +55,10 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
                 notifyArgs.requestType = 'refresh';
             }
             const rows: Row<Column>[] = super.generateRows(data, notifyArgs);
-            for (let r: number = 0; r < rows.length; r++) {
-                rows[parseInt(r.toString(), 10)].index = (<ITreeData[]>(this.visualData)).indexOf(rows[parseInt(r.toString(), 10)].data);
+            if (!isNullOrUndefined(<ITreeData[]>(this.visualData))) {
+                for (let r: number = 0; r < rows.length; r++) {
+                    rows[parseInt(r.toString(), 10)].index = (<ITreeData[]>(this.visualData)).indexOf(rows[parseInt(r.toString(), 10)].data);
+                }
             }
             return rows;
         }

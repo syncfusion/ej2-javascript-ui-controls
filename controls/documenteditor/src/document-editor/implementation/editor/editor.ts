@@ -7,7 +7,7 @@ import {
     BlockWidget, BlockContainer, BodyWidget, TableWidget, TableCellWidget, TableRowWidget, Widget, ListTextElementBox,
     BookmarkElementBox, HeaderFooterWidget, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     CommentElementBox, CommentCharacterElementBox, CheckBoxFormField, DropDownFormField, TextFormField, FormField, ShapeElementBox,
-    TextFrame, ContentControl, FootnoteElementBox, FootNoteWidget, ShapeBase, HeaderFooters, TabStopListInfo
+    TextFrame, ContentControl, FootnoteElementBox, FootNoteWidget, ShapeBase, HeaderFooters, TabStopListInfo, FootnoteEndnoteMarkerElementBox
 } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import {
@@ -57,6 +57,7 @@ import { SectionBreakType } from '../../base/types';
 import { sectionsProperty, commentsProperty, bidiProperty, revisionsProperty, lastParagraphMarkCopiedProperty, sectionFormatProperty, revisionIdProperty, contextualSpacingProperty, keepWithNextProperty, keepLinesTogetherProperty, widowControlProperty, outlineLevelProperty, numberFormatProperty, startAtProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, cellsProperty, rowsProperty, blocksProperty, listLevelPatternProperty, levelsProperty, stylesProperty, nameProperty } from '../../index';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ChangesSingleView } from '../track-changes/track-changes-pane';
+import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 
 /**
  * Editor module
@@ -83,6 +84,14 @@ export class Editor {
     private previousBlockToLayout: BlockWidget;
     private isInsertText: boolean = false;
     private keywordIndex: number = 0;
+    private casingIndex: number = -1;
+    private checkLastLetterSpace: string = '';
+    private checkLastLetterSpaceDot: string = '';
+    private pasteFootNoteType: string = '';
+    /**
+    * @private
+    */
+    public isCopying: boolean = false;
     /**
     * @private
     */
@@ -107,10 +116,6 @@ export class Editor {
      * @private
      */
     public isFootNoteInsert: boolean = false;
-    /**
-    * @private
-    */
-    public isCopying: boolean = false;
     /**
      * @private
      */
@@ -154,10 +159,6 @@ export class Editor {
     /**
      * @private
      */
-    public isCellFormatApplied: boolean = false;
-    /**
-     * @private
-     */
     public removedEditRangeEndElements: EditRangeEndElementBox[] = [];
     /**
      * @private
@@ -194,6 +195,10 @@ export class Editor {
      * @private
      */
     public isSkipOperationsBuild: boolean = false;
+    /**
+     * @private
+     */
+    public isCellFormatApplied: boolean = false;
     /**
      * @private
      */
@@ -323,7 +328,7 @@ export class Editor {
         return undefined;
     }
     private get editorHistory(): EditorHistory {
-        return this.documentHelper.owner.editorHistory;
+        return this.documentHelper.owner.editorHistoryModule;
     }
     /**
      * @private
@@ -419,11 +424,11 @@ export class Editor {
                 line.children.push(fieldEnd);
                 fieldBegin.line = line;
                 paragraph.childWidgets.push(line);
+                paragraph.isCreatedUsingHtmlSpanTag = true;
                 this.documentHelper.fields.push(fieldBegin);
                 const section: BodyWidget = new BodyWidget();
                 section.sectionFormat = new WSectionFormat(section);
                 section.childWidgets.push(paragraph);
-                paragraph.isCreatedUsingHtmlSpanTag = true;
                 this.pasteContentsInternal([section], false);
             }
         this.isInsertField = false;
@@ -707,10 +712,10 @@ export class Editor {
         endPosition.setPositionInternal(position);
         this.initInsertInline(commentRangeEnd);
         const commentAdv: CommentElementBox = new CommentElementBox(HelperMethods.getUtcDate());
-        if (this.owner.editorHistory) {
+        if (this.owner.editorHistoryModule) {
             this.initHistory('InsertCommentWidget');
-            this.owner.editorHistory.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Marker_Start + CONTROL_CHARACTERS.Marker_End;
-            this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(commentAdv);
+            this.owner.editorHistoryModule.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Marker_Start + CONTROL_CHARACTERS.Marker_End;
+            this.owner.editorHistoryModule.currentBaseHistoryInfo.removedNodes.push(commentAdv);
         }
 
         let markerData: MarkerInfo = {
@@ -840,10 +845,10 @@ export class Editor {
     }
 
     private deleteCommentWidgetInternal(comment: CommentElementBox): void {
-        if (this.owner.editorHistory) {
+        if (this.owner.editorHistoryModule) {
             this.initHistory('DeleteCommentWidget');
-            this.owner.editorHistory.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(comment);
-            this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(comment);
+            this.owner.editorHistoryModule.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(comment);
+            this.owner.editorHistoryModule.currentBaseHistoryInfo.removedNodes.push(comment);
         }
         this.deleteCommentWidget(comment);
         if (this.editorHistory) {
@@ -940,7 +945,7 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public replyComment(parentComment: CommentElementBox, text?: string): void {
+    public replyComment(parentComment: CommentElementBox, text?: string, mentions?: FieldSettingsModel[]): void {
         if (this.owner.isReadOnlyMode && !this.documentHelper.isCommentOnlyMode) {
             return;
         }
@@ -992,15 +997,15 @@ export class Editor {
             const replyComment: CommentElementBox = new CommentElementBox(HelperMethods.getUtcDate());
             replyComment.author = this.owner.currentUser ? this.owner.currentUser : 'Guest user';
             replyComment.text = text ? text : '';
-
+            replyComment.mentions = mentions ? mentions: [];
             replyComment.commentId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
             replyComment.isReply = true;
             commentWidget.replyComments.push(replyComment);
             replyComment.ownerComment = commentWidget;
-            if (this.owner.editorHistory) {
+            if (this.owner.editorHistoryModule) {
                 this.initHistory('InsertCommentWidget');
-                this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(replyComment);
-                this.owner.editorHistory.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Marker_Start + CONTROL_CHARACTERS.Marker_End;
+                this.owner.editorHistoryModule.currentBaseHistoryInfo.removedNodes.push(replyComment);
+                this.owner.editorHistoryModule.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Marker_Start + CONTROL_CHARACTERS.Marker_End;
             }
             commentRangeStart.comment = replyComment;
             commentRangeStart.commentId = replyComment.commentId;
@@ -1072,7 +1077,7 @@ export class Editor {
                 this.owner.commentReviewPane.selectedTab = 0;
                 this.owner.commentReviewPane.addComment(commentWidget, isNewComment, selectComment);
                 if (selectComment) {
-                    this.owner.selection.selectComment(commentWidget);
+                    this.owner.selectionModule.selectComment(commentWidget);
                 }
             }
         }
@@ -1093,7 +1098,7 @@ export class Editor {
         if (this.owner.commentReviewPane) {
             this.owner.showComments = true;
             this.owner.commentReviewPane.addReply(comment, false, true);
-            this.owner.selection.selectComment(comment);
+            this.owner.selectionModule.selectComment(comment);
         }
     }
 
@@ -1165,6 +1170,7 @@ export class Editor {
     private enforceProtectionInternal(result: any): void {
         const data: string[] = JSON.parse(result.data);
         this.enforceProtectionAssign(data[0], data[1], this.currentProtectionType);
+        this.owner.showHideRulers();
     }
     /**
      * @private
@@ -1294,6 +1300,7 @@ export class Editor {
     private onUnProtectionSuccess(result: any): void {
         const encodeString: string[] = JSON.parse(result.data);
         this.validateHashValue(encodeString[1]);
+        this.owner.showHideRulers();
     }
     /**
      * @private
@@ -1345,10 +1352,11 @@ export class Editor {
         }
         this.owner.trackChangesPane.enableDisableButton(true);
         if (!isNullOrUndefined(this.editorHistory)) {
-            this.owner.editorHistory.clearHistory();
+            this.owner.editorHistoryModule.clearHistory();
         }
         this.owner.notify(protectionTypeChangeEvent, {});
         this.documentHelper.dialog.hide();
+        this.owner.showHideRulers();
     }
     /**
      * Notify content change event
@@ -1378,7 +1386,7 @@ export class Editor {
             }
             this.selection.showHidePasteOptions(undefined, undefined);
         }
-        if (this.documentHelper.owner.isLayoutEnabled && !this.documentHelper.owner.editor.isUserInsert && !this.documentHelper.owner.isShiftingEnabled && !this.isSkipOperationsBuild && !this.isRemoteAction) {
+        if (this.documentHelper.owner.isLayoutEnabled && !this.documentHelper.owner.editorModule.isUserInsert && !this.documentHelper.owner.isShiftingEnabled && !this.isSkipOperationsBuild && !this.isRemoteAction) {
             this.documentHelper.owner.fireContentChange();
         }
 
@@ -1730,6 +1738,7 @@ export class Editor {
                     event.preventDefault();
                     if (!this.owner.isReadOnly && this.owner.optionsPaneModule) {
                         this.owner.optionsPaneModule.isReplace = true;
+                        this.owner.documentEditorSettings.showNavigationPane = true;
                         this.owner.optionsPaneModule.showHideOptionsPane(true);
                     }
                     break;
@@ -1759,7 +1768,7 @@ export class Editor {
                     break;
                 case 77:
                     if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
-                        this.owner.selection.increaseIndent();
+                        this.owner.selectionModule.increaseIndent();
                     }
                     event.preventDefault();
                     break;
@@ -1778,13 +1787,13 @@ export class Editor {
                 case 85:
                     event.preventDefault();
                     if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
-                        this.owner.selection.toggleUnderline('Single');
+                        this.owner.selectionModule.toggleUnderline('Single');
                     }
                     break;
                 case 88:
                     event.preventDefault();
                     if (!this.owner.isReadOnlyMode) {
-                        this.owner.editor.cut();
+                        this.owner.editorModule.cut();
                     }
                     break;
                 case 89:
@@ -1833,6 +1842,10 @@ export class Editor {
                     this.handleShiftEnter();
                     event.preventDefault();
                     break;
+                case 114:
+                    event.preventDefault();
+                    this.changeCase(this.toggleChangeCase());
+                    break;
             }
         } else if (shift && ctrl && !alt) {
             switch (key) {
@@ -1844,12 +1857,12 @@ export class Editor {
                     break;
                 case 68:
                     if (!this.owner.isReadOnlyMode) {
-                        this.owner.selection.toggleUnderline('Double');
+                        this.owner.selectionModule.toggleUnderline('Double');
                     }
                     break;
                 case 77:
                     if (!this.owner.isReadOnlyMode) {
-                        this.owner.selection.decreaseIndent();
+                        this.owner.selectionModule.decreaseIndent();
                     }
                     event.preventDefault();
                     break;
@@ -2280,8 +2293,8 @@ export class Editor {
             
             isRemoved = this.removeSelectedContents(selection);
             this.skipReplace = false;
-            if (!isNullOrUndefined(endPosition) && this.owner.search && this.owner.search.isRepalceTracking) {
-                this.owner.search.isRepalceTracking = false;
+            if (!isNullOrUndefined(endPosition) && this.owner.searchModule && this.owner.searchModule.isRepalceTracking) {
+                this.owner.searchModule.isRepalceTracking = false;
                 this.selection.start.setPositionInternal(this.selection.start);
                 this.selection.end.setPositionInternal(endPosition);
             } else if (endOffset > 0 && endOffset <= paragraphLength) {
@@ -2351,7 +2364,7 @@ export class Editor {
                 indexInInline = inlineObj.index;
                 inline.ischangeDetected = true;
                 if (inline instanceof TextElementBox && text !== ' ' && this.documentHelper.owner.isSpellCheck) {
-                    this.owner.spellChecker.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
+                    this.owner.spellCheckerModule.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
                     if (!isReplace) {
                         (inline as TextElementBox).ignoreOnceItems = [];
                     }
@@ -2433,7 +2446,8 @@ export class Editor {
                             let splittedSpan: TextElementBox = new TextElementBox();
                             splittedSpan.line = inline.line;
                             splittedSpan.characterFormat.copyFormat(inline.characterFormat);
-                            this.setCharFormatForCollaborativeEditing(splittedSpan.characterFormat);
+                            // Commented because character format is not syncing correctly.
+                            // this.setCharFormatForCollaborativeEditing(splittedSpan.characterFormat);
                             splittedSpan.text = (inline as TextElementBox).text.substring(indexInInline);
                             if (!this.owner.enableTrackChanges && !this.selection.isInField) {
                                 this.updateRevisionForSpittedTextElement(inline, splittedSpan);
@@ -2453,7 +2467,7 @@ export class Editor {
                                 this.updateElementInFieldRevision(inline, tempSpan, inline.revisions, true);
                             }
                             if (this.owner.isSpellCheck) {
-                                this.owner.spellChecker.updateSplittedElementError(inline, splittedSpan);
+                                this.owner.spellCheckerModule.updateSplittedElementError(inline, splittedSpan);
                             }
                             inline.line.children.splice(insertIndex + 1, 0, splittedSpan);
                         }
@@ -2687,7 +2701,7 @@ export class Editor {
             if (!this.isRevisionAlreadyIn(elementToInclude, currentRevision) || elementToInclude instanceof WCharacterFormat) {
                 elementToInclude.revisions.splice(0, 0, currentRevision);
                 if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
-                    this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(undefined, undefined, currentRevision));
+                    // this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(undefined, undefined, currentRevision));
                 }
                 if (elementToInclude instanceof FootnoteElementBox) {
                     this.insertRevisionForFootnoteWidget(elementToInclude, currentRevision);
@@ -3015,8 +3029,14 @@ export class Editor {
      * @returns {void}
      */
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    public insertRevision(item: any, type: RevisionType, author?: string, date?: string, spittedRange?: object[], skip?: boolean): Revision {
+    public insertRevision(item: any, type: RevisionType, author?: string, date?: string, spittedRange?: object[], skip?: boolean, parseRevisionId?: string): Revision {
+        if(this.isRemoteAction && this.revisionData.length == 0 && !this.documentHelper.owner.parser.isPaste) {
+            return undefined;
+        }
         let revisionId: string;
+        if (!isNullOrUndefined(parseRevisionId)) {
+            revisionId = parseRevisionId;
+        }
         if (this.revisionData.length > 0) {
             let newRevisionData: MarkerInfo = this.revisionData.pop();
             author = newRevisionData.author;
@@ -3324,9 +3344,19 @@ export class Editor {
             const isLastChild = (widget == this.getLastParaForBodywidgetCollection(widget));
             let nextParagraph: ParagraphWidget = this.selection.getNextParagraphBlock(widget);
             if (!isLastChild && !widget.isInsideTable && !(isNullOrUndefined(nextParagraph) && widget.isEmpty())) {
+                // Added the condition to remove section if current and next para have different section indexes if selection is covered till the end of section.
+                if (!isNullOrUndefined(nextParagraph) && !nextParagraph.isInsideTable && widget.bodyWidget.sectionIndex !== nextParagraph.bodyWidget.sectionIndex) {
+                    this.addRemovedNodes(widget.bodyWidget);
+                }
+                if (!isNullOrUndefined(this.owner.editorHistoryModule) && !isNullOrUndefined(this.owner.editorHistoryModule.currentBaseHistoryInfo)) {
+                    this.owner.editorHistoryModule.currentBaseHistoryInfo.recordInsertRevisionDeletetion(widget);
+                }
                 this.addRemovedNodes(widget.clone());
                 this.insertRevision(widget.characterFormat, revisionType);
             } else if (!isLastChild && widget.isInsideTable && start.paragraph.isInsideTable && end.paragraph.isInsideTable && end.offset <= end.paragraph.getLength() && end.paragraph.associatedCell.index === start.paragraph.associatedCell.index) {
+                if (!isNullOrUndefined(this.owner.editorHistoryModule) && !isNullOrUndefined(this.owner.editorHistoryModule.currentBaseHistoryInfo)) {
+                    this.owner.editorHistoryModule.currentBaseHistoryInfo.recordInsertRevisionDeletetion(widget);
+                }
                 this.addRemovedNodes(widget.clone());
                 this.insertRevision(widget.characterFormat, revisionType);
             }
@@ -3426,7 +3456,7 @@ export class Editor {
                 this.documentHelper.revisionsInternal.add(revision.revisionID, revision);
             }
             if (this.owner.revisions.changes.length > 0) {
-                let currentStart: TextPosition = this.owner.selection.start;
+                let currentStart: TextPosition = this.owner.selectionModule.start;
                 for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
                     let currentRange: any = this.owner.revisions.changes[i].range[0];
 
@@ -3437,12 +3467,19 @@ export class Editor {
                         let rowWidget: TableRowWidget = (currentRange as WRowFormat).ownerBase;
                         let firstCell: TableCellWidget = rowWidget.childWidgets[0] as TableCellWidget;
                         let firstPara: ParagraphWidget = this.selection.getFirstParagraph(firstCell);
-                        if (firstPara.bodyWidget && this.selection.start.paragraph.isInsideTable) {
+                        // Get the currentRange position to check (before or after) to insert table revision in order.
+                        let editPosition: string;
+                        if (firstPara.bodyWidget) {
                             let selection: Selection = this.documentHelper.selection;
+                            if (!isNullOrUndefined(selection.editPosition)) {
+                                editPosition = selection.editPosition;
+                            }
                             this.updateEditPosition(firstCell, selection);
                             paraIndex = this.selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
+                            if (!isNullOrUndefined(editPosition) && !this.selection.start.paragraph.isInsideTable) {
+                                selection.editPosition = editPosition;
+                            }
                         }
-
                     } else if (currentRange instanceof WCharacterFormat) {
                         let paraWidget: ParagraphWidget = (currentRange as WCharacterFormat).ownerBase as ParagraphWidget;
                         if (paraWidget.lastChild && (paraWidget.lastChild as LineWidget).paragraph.bodyWidget) {
@@ -3451,7 +3488,6 @@ export class Editor {
                             startPosition.setPositionParagraph(paraWidget.lastChild as LineWidget, offset);
                             paraIndex = startPosition;
                         }
-
                     }
                     if (!isNullOrUndefined(paraIndex) && !isNullOrUndefined(currentStart)) {
                         if (currentStart.isExistBefore(paraIndex) && !(revision.range[0] instanceof WRowFormat)) {
@@ -3463,6 +3499,21 @@ export class Editor {
                             this.owner.trackChangesPane.changes.add(revision, currentChangeView);
                             this.owner.trackChangesPane.renderedChanges.add(revision, currentChangeView);
                             break;
+                        } else if (revision.range[0] instanceof WRowFormat && currentRange instanceof WRowFormat && (revision.range[0] as WRowFormat).ownerBase.containerWidget === currentRange.ownerBase.containerWidget && (revision.range[0] as WRowFormat).ownerBase.index === currentRange.ownerBase.index) {
+                            isInserted = true;
+                            this.owner.revisions.changes.splice(i - (revision.range[0] as WRowFormat).ownerBase.indexInOwner, 0, revision);
+                            break;
+                        } else if (!isNullOrUndefined(paraIndex) && !isNullOrUndefined(currentStart) && ((currentStart.isExistBefore(paraIndex)) || (currentStart.paragraph.isInsideTable && paraIndex.paragraph.isInsideTable && currentStart.paragraph.associatedCell === paraIndex.paragraph.associatedCell))) {
+                            // Insert the table revision if getting row is first row of table we insert directly in ith index or insert next index of currentRange.
+                            if (currentRange instanceof WRowFormat && revision.range[0] instanceof WRowFormat && currentRange.ownerBase.containerWidget === (revision.range[0] as WRowFormat).ownerBase.containerWidget) {
+                                this.owner.revisions.changes.splice(i + (revision.range[0] as WRowFormat).ownerBase.indexInOwner, 0, revision);
+                                isInserted = true;
+                                break;
+                            } else if (revision.range[0] instanceof WRowFormat) {
+                                this.owner.revisions.changes.splice(i, 0, revision);
+                                isInserted = true;
+                                break;
+                            }
                         }
                     }
                 }
@@ -3470,6 +3521,17 @@ export class Editor {
             if (!isInserted) {
                 this.owner.revisions.changes.push(revision);
                 if (!(revision.range[0] instanceof WRowFormat)) {
+                    let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this.owner.trackChangesPane);
+                    this.owner.trackChangesPane.changesInfoDiv.appendChild(currentChangeView.createSingleChangesDiv(revision));
+                    this.owner.trackChangesPane.revisions.push(revision);
+                    this.owner.trackChangesPane.changes.add(revision, currentChangeView);
+                    this.owner.trackChangesPane.renderedChanges.add(revision, currentChangeView);
+                }
+            }
+            this.documentHelper.updateAuthorIdentity();
+        } else {
+            if (this.isRemoteAction) {
+                if (this.owner.trackChangesPane.revisions.indexOf(revision) < 0) {
                     let currentChangeView: ChangesSingleView = new ChangesSingleView(this.owner, this.owner.trackChangesPane);
                     this.owner.trackChangesPane.changesInfoDiv.appendChild(currentChangeView.createSingleChangesDiv(revision));
                     this.owner.trackChangesPane.revisions.push(revision);
@@ -3548,9 +3610,9 @@ export class Editor {
         }
         //Split body widget
         firstBlock = this.splitBodyWidget(lastBlock.bodyWidget, newSectionFormat, lastBlock, sectionBreakContinuous, sectionBreakNewPage).firstChild as BlockWidget;
-        if (isUndoing) {
-            this.layoutWholeDocument(true);
-        }
+        // if (isUndoing) {
+        //     this.layoutWholeDocument(true);
+        // }
         if (firstBlock instanceof TableWidget) {
             firstBlock.updateRowIndex(0);
         }
@@ -3563,6 +3625,8 @@ export class Editor {
         }
         return firstBlock;
     }
+
+    
     /**
      * @private
      */
@@ -4402,7 +4466,7 @@ export class Editor {
         if (!isNullOrUndefined(screenTip)) {
             address = address + '\" \\o \"' + screenTip;
         }
-        this.insertHyperlinkInternal(address, displayText, this.owner.selection.text !== displayText, false);
+        this.insertHyperlinkInternal(address, displayText, this.owner.selectionModule.text !== displayText, false);
     }
     /**
      * @private
@@ -5528,8 +5592,10 @@ export class Editor {
         this.isPaste = true;
         let copiedContent: object = this.copiedContent !== '' ? this.copiedContent : this.copiedTextContent;
         if (this.editorHistory && this.editorHistory.canUndo()) {
+            // this.isSkipOperationsBuild = true;
             this.editorHistory.undo();
             this.editorHistory.redoStack.pop();
+            // this.isSkipOperationsBuild = false;
         }
         let widgets: BodyWidget[] = this.getBlocks(copiedContent, true);
         let currentFormat: WParagraphFormat = this.selection.start.paragraph.paragraphFormat;
@@ -5676,8 +5742,10 @@ export class Editor {
                 if (this.editorHistory.currentBaseHistoryInfo.action === 'Paste') {
                     let start: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(this.editorHistory.currentBaseHistoryInfo.insertPosition);
                     let end: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(this.editorHistory.currentBaseHistoryInfo.endPosition);
-                    let documentContent: any = !isNullOrUndefined(this.owner.sfdtExportModule) ? this.owner.sfdtExportModule.write((this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0), start.currentWidget, start.offset, end.currentWidget, end.offset, false, true) : {};
-                    this.editorHistory.currentBaseHistoryInfo.pasteContent = documentContent;
+                    if (!this.isRemoteAction) {
+                        let documentContent: any = !isNullOrUndefined(this.owner.sfdtExportModule) ? this.owner.sfdtExportModule.write((this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0), start.currentWidget, start.offset, end.currentWidget, end.offset, false, true) : {};
+                        this.editorHistory.currentBaseHistoryInfo.pasteContent = documentContent;
+                    }
                 }
             }
             this.editorHistory.updateHistory();
@@ -5761,7 +5829,7 @@ export class Editor {
                     }
                 }
             }
-            this.tableReLayout(table, startParagraph, newCell);
+            this.tableReLayout(table, startParagraph, newCell, true);
         }
     }
 
@@ -5928,7 +5996,7 @@ export class Editor {
                     }
                     row = row.nextRow;
                 }
-                this.tableReLayout(table, startParagraph, pasteCell);
+                this.tableReLayout(table, startParagraph, pasteCell, true);
             }
         }
     }
@@ -5974,6 +6042,7 @@ export class Editor {
             }
             paragraphWidget = this.documentHelper.getFirstParagraphInFirstCell(widget);
         }
+        this.copyContent(table);
         this.documentHelper.layout.reLayoutTable(table);
         this.selection.selectParagraphInternal(paragraphWidget, true);
         this.reLayout(this.selection, true);
@@ -6109,6 +6178,7 @@ export class Editor {
 
     private pasteCopiedData(bodyWidget: BodyWidget[], currentFormat?: WParagraphFormat): boolean {
         let layoutWholeDocument: boolean = false;
+        let hasFootNoteElement: boolean = false;
         if (this.documentHelper.layout.isBidiReLayout) {
             this.documentHelper.layout.isBidiReLayout = false;
         }
@@ -6130,8 +6200,12 @@ export class Editor {
                 this.insertSectionBreak(bodyWidget[k].sectionFormat.breakCode as SectionBreakType);
             }
             let widgets: BlockWidget[] = bodyWidget[k].childWidgets as BlockWidget[];
+            let isConsiderLastBlock: boolean = false;
             for (let j: number = 0; j < widgets.length; j++) {
                 let widget: BlockWidget = widgets[j];
+                if (widget instanceof TableWidget) {
+                    isConsiderLastBlock = true;
+                }
                 if (widget instanceof ParagraphWidget && widget.childWidgets.length === 0) {
                     widget.childWidgets[0] = new LineWidget(widget as ParagraphWidget);
                 }
@@ -6144,7 +6218,7 @@ export class Editor {
                     this.owner.enableLocalPaste? 
                         isNullOrUndefined((widget as ParagraphWidget).isCreatedUsingHtmlSpanTag)? false: !(widget as ParagraphWidget).isCreatedUsingHtmlSpanTag
                         : (widget as ParagraphWidget).isCreatedUsingHtmlSpanTag);
-                if (widget instanceof ParagraphWidget && isPara
+                if (widget instanceof ParagraphWidget && (isPara || (j === widgets.length - 1 && (this.isInsertingTOC || isConsiderLastBlock || this.owner.documentHelper.isDragging)))
                     && (!isNullOrUndefined(widget.paragraphFormat.listFormat)
                         && isNullOrUndefined(widget.paragraphFormat.listFormat.list)
                         && widget.paragraphFormat.listFormat.listId === -1)) {
@@ -6164,7 +6238,7 @@ export class Editor {
                         if (!isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo) {
                             this.editorHistory.currentBaseHistoryInfo.insertedNodes.push(newParagraph.clone());
                         }
-                        this.insertElement((newParagraph.childWidgets[0] as LineWidget).children, newParagraph.paragraphFormat);
+                        hasFootNoteElement = this.insertElement((newParagraph.childWidgets[0] as LineWidget).children, newParagraph.paragraphFormat);
                     }
                 } else if (widget instanceof BlockWidget) {
                     let block: BlockWidget = widget;
@@ -6186,7 +6260,42 @@ export class Editor {
                     this.insertBlockInternal(block);
                 }
             }
-        } return layoutWholeDocument;
+        }
+        if (hasFootNoteElement) {
+            layoutWholeDocument = true;
+            if (this.pasteFootNoteType === 'Footnote') {
+                this.arrangeFootnoteCollection();
+            } else if (this.pasteFootNoteType === 'Endnote') {
+                this.arrangeEndnoteCollection();
+            }
+        }
+        return layoutWholeDocument;
+    }
+    private arrangeEndnoteCollection(): void {
+        for (let i = 0; i < this.documentHelper.endnoteCollection.length; i++) {
+            for (let j = 0; j < this.documentHelper.endnoteCollection.length - 1 - i; j++) {
+                const currentStart = this.selection.getElementPosition(this.documentHelper.endnoteCollection[j]).startPosition;
+                const nextStart = this.selection.getElementPosition(this.documentHelper.endnoteCollection[j + 1]).startPosition;
+                if (!currentStart.isExistBefore(nextStart)) {
+                    const tempElementBox = this.documentHelper.endnoteCollection[j];
+                    this.documentHelper.endnoteCollection[j] = this.documentHelper.endnoteCollection[j + 1];
+                    this.documentHelper.endnoteCollection[j + 1] = tempElementBox;
+                }
+            }
+        }
+    }
+    private arrangeFootnoteCollection(): void {
+        for (let i = 0; i < this.documentHelper.footnoteCollection.length; i++) {
+            for (let j = 0; j < this.documentHelper.footnoteCollection.length - 1 - i; j++) {
+                const currentStart = this.selection.getElementPosition(this.documentHelper.footnoteCollection[j]).startPosition;
+                const nextStart = this.selection.getElementPosition(this.documentHelper.footnoteCollection[j + 1]).startPosition;
+                if (!currentStart.isExistBefore(nextStart)) {
+                    const tempElementBox = this.documentHelper.footnoteCollection[j];
+                    this.documentHelper.footnoteCollection[j] = this.documentHelper.footnoteCollection[j + 1];
+                    this.documentHelper.footnoteCollection[j + 1] = tempElementBox;
+                }
+            }
+        }
     }
     private generateTableRevision(table: TableWidget): void {
         if (this.owner.enableTrackChanges && !isNullOrUndefined(table)) {
@@ -6259,12 +6368,8 @@ export class Editor {
      */
     public insertTableInternal(table: TableWidget, newTable: TableWidget, moveRows: boolean, skipRemoving?: boolean): void {
         //Gets the index of current table.
-        let insertIndex: number = 0;
-        if (this.owner.editorHistory && (this.owner.editorHistory.isUndoing || this.owner.editorHistory.isRedoing)) {
-            insertIndex = table.index;
-        } else {
-            insertIndex = table.getIndex();
-        }
+        let insertIndex: number = table.index;
+
         if (moveRows) {
             //Moves the rows to table.
             for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++, index++) {
@@ -6276,10 +6381,14 @@ export class Editor {
             }
         }
         let currentParagraph: ParagraphWidget = this.selection.start.paragraph;
-        if (isNullOrUndefined(table.containerWidget)) {
+        let owner: Widget;
+        if (!currentParagraph.isInsideTable) {
             table.containerWidget = currentParagraph.containerWidget;
+            owner = currentParagraph.containerWidget;
+        } else {
+            owner = table.containerWidget;
         }
-        let owner: Widget = table.containerWidget;
+        
         //remove old table revisions if it is present.
         this.constructRevisionsForTable(table, false);
         if (!skipRemoving) {
@@ -6342,7 +6451,7 @@ export class Editor {
                     }
                 }
             } else {
-                if (!isNullOrUndefined(this.owner.editorHistory) && (this.owner.editorHistory.isUndoing || this.owner.editorHistory.isRedoing)) {
+                if (!isNullOrUndefined(this.owner.editorHistoryModule) && (this.owner.editorHistoryModule.isUndoing || this.owner.editorHistoryModule.isRedoing)) {
                     this.deleteRevision(rowWidget);
                 } else {
                     this.removeDeletedCellRevision(rowWidget);
@@ -6409,11 +6518,15 @@ export class Editor {
         }
         // Get the total length of previous splitted widgets of current para to include paramark because endoffset point out to the end of current. 
         let lastIndex: number = 0;
-        while (paraWidget) {
-            if (!isNullOrUndefined(paraWidget)) {
-                lastIndex += paraWidget.getLength();
+        let tempPara: ParagraphWidget = paraWidget;
+        while (tempPara) {
+            if (!isNullOrUndefined(tempPara)) {
+                lastIndex += tempPara.getLength();
             }
-            paraWidget = paraWidget.previousSplitWidget as ParagraphWidget;
+            tempPara = tempPara.previousSplitWidget as ParagraphWidget;
+        }
+        if (!isNullOrUndefined(paraWidget.previousSplitWidget) && lastIndex !== 0 && startoffset !== lastIndex) {
+            skipElement = false;
         }
         if (endoffset > lastIndex) {
             isParaMarkIncluded = true;
@@ -6591,7 +6704,8 @@ export class Editor {
         }
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
     }
-    private insertElement(element: ElementBox[], paragraphFormat?: WParagraphFormat): void {
+    private insertElement(element: ElementBox[], paragraphFormat?: WParagraphFormat): boolean {
+        let isElementHasEndNote: boolean = false;
         let selection: Selection = this.selection;
         let length: number = 0;
         let paragraph: ParagraphWidget = undefined;
@@ -6659,6 +6773,10 @@ export class Editor {
             }
             curInline = element[i];
             insertIndex++;
+            if (element[i] instanceof FootnoteElementBox) {
+                this.pasteFootNoteType = (element[i] as FootnoteElementBox).footnoteType;
+                isElementHasEndNote = true;
+            }
         }
         if ((!this.isPaste) && paragraphFormat && (isNullOrUndefined(paragraph.paragraphFormat.listFormat.list) ||
             (!isNullOrUndefined(paragraph.paragraphFormat.listFormat) && paragraph.paragraphFormat.listFormat.listId === -1))) {
@@ -6671,6 +6789,7 @@ export class Editor {
         }
         this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, 0, this.isInsertField ? undefined : paragraph.paragraphFormat.bidi);
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
+        return isElementHasEndNote;
     }
 
     private updateRevisionForElement(currentElement: ElementBox, newElement: ElementBox, indexInInline: number, isFirstItem: boolean, prevElement: TextElementBox, isBeginning?: boolean): boolean {
@@ -6719,7 +6838,7 @@ export class Editor {
         let isTrackingEnabled: boolean = this.owner.enableTrackChanges;
         let isRevisionCombined: boolean = false;
         let prevRevisionCount: number = newElement.revisions.length;
-        if (this.owner.editorHistory && (this.owner.editorHistory.isUndoing || this.owner.editorHistory.isRedoing)
+        if (this.owner.editorHistoryModule && (this.owner.editorHistoryModule.isUndoing || this.owner.editorHistoryModule.isRedoing)
             && newElement instanceof TextElementBox) {
             isEqualFormat = element.characterFormat.isEqualFormat(newElement.characterFormat)
                 && this.documentHelper.textHelper.isRTLText(newElement.text);
@@ -6832,11 +6951,11 @@ export class Editor {
         }
     }
     private incrementCommentIndex(isBidi: boolean, element: ElementBox, insertIndex: number): number {
-        if (!this.owner.editorHistory || !(this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo) || (this.owner.editorHistory && this.owner.editorHistory.currentHistoryInfo
-            && (this.owner.editorHistory.currentHistoryInfo.action !== "SkipCommentInline" ||
-                this.owner.editorHistory.currentHistoryInfo.action === "SkipCommentInline" &&
-                (this.owner.editorHistory.currentHistoryInfo.modifiedActions[0] === this.editorHistory.currentBaseHistoryInfo
-                    || (this.owner.editorHistory.currentHistoryInfo.modifiedActions[0] !== this.editorHistory.currentBaseHistoryInfo
+        if (!this.owner.editorHistoryModule || !(this.owner.editorHistoryModule && this.owner.editorHistoryModule.currentHistoryInfo) || (this.owner.editorHistoryModule && this.owner.editorHistoryModule.currentHistoryInfo
+            && (this.owner.editorHistoryModule.currentHistoryInfo.action !== "SkipCommentInline" ||
+                this.owner.editorHistoryModule.currentHistoryInfo.action === "SkipCommentInline" &&
+                (this.owner.editorHistoryModule.currentHistoryInfo.modifiedActions[0] === this.editorHistory.currentBaseHistoryInfo
+                    || (this.owner.editorHistoryModule.currentHistoryInfo.modifiedActions[0] !== this.editorHistory.currentBaseHistoryInfo
                         && !(element instanceof CommentCharacterElementBox)))))) {
             insertIndex++;
         }
@@ -6854,10 +6973,13 @@ export class Editor {
                 if (this.documentHelper.revisionsInternal.containsKey(insertElement.removedIds[i])) {
                     revisionToInclude = this.documentHelper.revisionsInternal.get(insertElement.removedIds[i]);
                     insertElement.revisions.push(revisionToInclude);
+                    if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
+                        // Handle collab editing for track changes.
+                        this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(insertElement, undefined, revisionToInclude));
+                    } 
                     isEnd = isEnd ? true : this.skipTracking();
                     if (isEnd) {
-
-                        if (this.editorHistory.isRedoing && this.owner.editorHistory.currentBaseHistoryInfo && this.owner.editorHistory.currentBaseHistoryInfo.action === 'BackSpace' && this.selection.isTOC()) {
+                        if (this.editorHistory.isRedoing && this.owner.editorHistoryModule.currentBaseHistoryInfo && this.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'BackSpace' && this.selection.isTOC()) {
                             isEnd = false;
                         }
                     }
@@ -6988,10 +7110,9 @@ export class Editor {
             } else if (block instanceof TableWidget) {
                 this.constructRevisionsForTable(block, true);
             }
-            if (this.documentHelper.owner.editor.isRemoteAction) {
-                if (!paraStart && block instanceof TableWidget) {
-                    bodyWidget.childWidgets.splice(block.indexInOwner + 1, 1);
-                }
+            if (this.documentHelper.owner.editorModule.isRemoteAction && !paraStart && block instanceof TableWidget) {
+                this.updateNextBlocksIndex(block.nextWidget as BlockWidget, false);
+                bodyWidget.childWidgets.splice(block.indexInOwner + 1, 1);
             }
             this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, bodyWidget, block, false);
         }
@@ -7523,7 +7644,25 @@ export class Editor {
         }
     }
 
-    private tableReLayout(table: TableWidget, startParagraph: ParagraphWidget, newCell: TableCellWidget): void {
+    private copyContent(table: TableWidget): void {
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.owner.enableCollaborativeEditing) {
+            let lastPara: ParagraphWidget = this.documentHelper.getLastParagraphBlock(table);
+            let firstPara: ParagraphWidget = this.documentHelper.getFirstParagraphBlock(table);
+            if (firstPara.childWidgets.length === 0) {
+                firstPara.childWidgets[0] = new LineWidget(firstPara);
+            }
+            if (lastPara.childWidgets.length === 0) {
+                lastPara.childWidgets[0] = new LineWidget(lastPara);
+            }
+            let startLine: LineWidget = firstPara.firstChild as LineWidget;
+            let lastLine: LineWidget = lastPara.lastChild as LineWidget;
+            let endoffset: number = (lastPara.lastChild as LineWidget).getEndOffset();
+            let documentContent: any = !isNullOrUndefined(this.owner.sfdtExportModule) ? this.owner.sfdtExportModule.write((this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0), startLine, 0, lastLine, endoffset, false, true) : {};
+            this.editorHistory.currentBaseHistoryInfo.pasteContent = documentContent;
+        }
+    } 
+
+    private tableReLayout(table: TableWidget, startParagraph: ParagraphWidget, newCell: TableCellWidget, isCollaborativePaste?: Boolean): void {
         table.updateRowIndex(0);
         let parentTable: TableWidget = this.documentHelper.layout.getParentTable(table);
         if (parentTable) {
@@ -7536,6 +7675,9 @@ export class Editor {
         table.buildTableColumns();
         table.isGridUpdated = true;
         this.documentHelper.skipScrollToPosition = true;
+        if (isCollaborativePaste) {
+            this.copyContent(table);
+        }
         this.documentHelper.layout.reLayoutTable(table);
         this.selection.start.setPosition(startParagraph.firstChild as LineWidget, true);
         this.selection.end.setPosition(this.selection.getLastParagraph(newCell).firstChild as LineWidget, false);
@@ -8110,7 +8252,7 @@ export class Editor {
     private insertParagraph(newParagraph: ParagraphWidget, insertAfter: boolean): void {
         let lineWidget: LineWidget = this.selection.start.currentWidget;
         let offset: number = this.selection.start.offset;
-        if (this.editorHistory && this.editorHistory.isUndoing &&
+        if (this.editorHistory && this.editorHistory.isUndoing && this.editorHistory.currentBaseHistoryInfo &&
             this.editorHistory.currentBaseHistoryInfo.action === 'InsertTextParaReplace') {
             offset = 0;
         }
@@ -9129,7 +9271,7 @@ export class Editor {
      */
     public intializeDefaultStyles(): void {
         let existingStyles: string[] = this.owner.getStyleNames('Paragraph');
-        let defaultStyleNames: string[] = ['Normal', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Heading 5', 'Heading 6', 'Header', 'Footer'];
+        let defaultStyleNames: string[] = ['Normal', 'Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Heading 5', 'Heading 6', 'Heading 7' , 'Heading 8' , 'Heading 9' , 'Header', 'Footer'];
         let styleNames: string[] = defaultStyleNames.filter((val: string) => {
             return existingStyles.indexOf(val) === -1;
         });
@@ -9548,11 +9690,11 @@ export class Editor {
      * @private
      */
     public changeCase(property: string): void {
-        this.selection.characterFormat.allCaps = (property === "Uppercase") ? true : false;        
         if (this.selection.isEmpty || ((this.owner.isReadOnlyMode || this.restrictFormatting) && !this.selection.isInlineFormFillMode())) {
             return;
         }
-        this.initHistory('Uppercase');
+        this.selection.characterFormat.allCaps = (property === "Uppercase") ? true : false;
+        this.initHistory(property as Action);
         this.documentHelper.owner.isShiftingEnabled = true;
         let selection: Selection = this.selection;
         let startPosition: TextPosition = selection.start;
@@ -9631,6 +9773,8 @@ export class Editor {
         }
         // let count: number = 0;
         for (let i: number = startLine; i <= endLine; i++) {
+            this.checkLastLetterSpaceDot = '';
+            this.checkLastLetterSpace = '';
             let line: LineWidget = para.childWidgets[i] as LineWidget;
             if (i !== startLine) {
                 startOffsetVal = selection.getStartLineOffset(line);
@@ -9648,6 +9792,16 @@ export class Editor {
             /* eslint-disable-next-line max-len */
             for (let j: number = 0; j < line.children.length; isIncreaseIteration ? j++ : j--) {
                 let child: ElementBox = line.children[j] as ElementBox;
+                let isPreviousTextElementBox : boolean = false;
+                if(j === 0 || j>0 && line.children[j-1] instanceof TextElementBox)
+                {
+                    isPreviousTextElementBox = true;
+                    if(j>0){
+                        let textElement: TextElementBox = line.children[j-1] as TextElementBox;
+                        this.checkLastLetterSpace = textElement.text.substr(-1);
+                        this.checkLastLetterSpaceDot = textElement.text.substr(-2);
+                    }
+                }
                 isIterationStarted = false;
                 if (child instanceof ListTextElementBox) {
                     continue;
@@ -9671,7 +9825,7 @@ export class Editor {
                 if (endIndex > inlineLength) {
                     endIndex = inlineLength;
                 }
-                let index: number = this.changeCaseInline(child, selection, startIndex, endIndex, property, isRevert);
+                let index: number = this.changeCaseInline(child, selection, startIndex, endIndex, property, isRevert,isPreviousTextElementBox);
                 j += index;
                 if (endOffsetVal <= textCount + inlineLength) {
                     break;
@@ -9687,12 +9841,12 @@ export class Editor {
         this.changeCaseNextBlock(para, startPos, endPos, property, isRevert);
     }
     /* eslint-disable-next-line max-len */
-    private changeCaseInline(inline: ElementBox, selection: Selection, startIndex: number, endIndex: number, property: string, isRevert: boolean): number {
+    private changeCaseInline(inline: ElementBox, selection: Selection, startIndex: number, endIndex: number, property: string, isRevert: boolean, isPreviousTextElementBox: boolean): number {
         if (inline instanceof TextElementBox) {
             if (startIndex === 0 && endIndex === inline.length) {
-                this.changeCaseInlineInternal(inline, selection, startIndex, endIndex, property, isRevert);
+                this.changeCaseInlineInternal(inline, selection, startIndex, endIndex, property, isRevert,isPreviousTextElementBox);
             } else {
-                return this.changeCaseInlineInternal(inline, selection, startIndex, endIndex, property, isRevert);
+                return this.changeCaseInlineInternal(inline, selection, startIndex, endIndex, property, isRevert,isPreviousTextElementBox);
             }
         }
         return 0;
@@ -9711,8 +9865,9 @@ export class Editor {
         }
     }
     /* eslint-disable-next-line max-len */
-    private changeCaseInlineInternal(inlineObj: ElementBox, selection: Selection, startIndex: number, endIndex: number, property: string, isRevert: boolean): number {
+    private changeCaseInlineInternal(inlineObj: ElementBox, selection: Selection, startIndex: number, endIndex: number, property: string, isRevert: boolean,isPreviousTextElementBox:boolean): number {
         let x: number = 0;
+        let makeFirstLetterCapital: boolean = false;
         let index: number = inlineObj.line.children.indexOf(inlineObj);
         let paragraph: ParagraphWidget = inlineObj.paragraph;
         let lineIndex: number = paragraph.childWidgets.indexOf(inlineObj.line);
@@ -9724,8 +9879,15 @@ export class Editor {
             textElement.characterFormat.copyFormat(inlineObj.characterFormat);
             textElement.line = inlineObj.line;
             //Change the text case
-            textElement.text = this.getChangeCaseText(textToChange,
-                property, isRevert);
+            if (property === 'CapitalizeEachWord') {
+                let firstLetter: string = (inlineObj as TextElementBox).text.substr(startIndex - 1, 1);
+                makeFirstLetterCapital = firstLetter === ' ';
+            }
+            if (property === 'SentenceCase') {
+                let firstLetter: string = (inlineObj as TextElementBox).text.substr(startIndex - 2, 2);
+                makeFirstLetterCapital = firstLetter === '. ';
+            }
+            textElement.text = this.getChangeCaseText(textToChange, property, isRevert, makeFirstLetterCapital);
             textElement.isRightToLeft = inlineObj.isRightToLeft;
             index++;
             inlineObj.line.children.splice(index, 0, textElement);
@@ -9746,7 +9908,32 @@ export class Editor {
             let newText: string = textElementBox.text.substr(0, endIndex);
             this.addRemovedTextNodes(inlineObj, newText);
             //Change the text case
-            textElementBox.text = this.getChangeCaseText(newText, property, isRevert);
+            if (property === 'SentenceCase') {
+                if (this.checkLastLetterSpaceDot === '. ') {
+                    makeFirstLetterCapital = true;
+                }
+                else if (lineIndex === 0 && this.checkLastLetterSpaceDot === '') {
+                    if(isPreviousTextElementBox){
+                    let line : LineWidget = paragraph.childWidgets[0] as LineWidget;
+                    let element : TextElementBox = line.children[0] as TextElementBox;
+                    makeFirstLetterCapital = element === textElementBox;
+                    }
+                    else{
+                        makeFirstLetterCapital = true;
+                    }
+                }
+                this.checkLastLetterSpaceDot = textElementBox.text.substr(-2);
+            }
+            else if (property == 'CapitalizeEachWord') {
+                    if(isPreviousTextElementBox){
+                    makeFirstLetterCapital = selection.getIndexInInline(inlineObj) === 0 || this.checkLastLetterSpace === ' ';
+                    }
+                    else {
+                        makeFirstLetterCapital = true;
+                    }
+                this.checkLastLetterSpace = textElementBox.text.charAt(textElementBox.length - 1);
+            }
+            textElementBox.text = this.getChangeCaseText(newText, property, isRevert, makeFirstLetterCapital);
         } else {
             let preText: string = textElementBox.text.substr(0, startIndex);
             textElementBox.text = preText;
@@ -9771,7 +9958,7 @@ export class Editor {
         block = this.documentHelper.selection.getNextRenderedBlock(block);
         return block;
     }
-    private getChangeCaseText(input: string, property: string, isRevert: boolean): string {
+    private getChangeCaseText(input: string, property: string, isRevert: boolean, makeFirstLetterCapital?: boolean): string {
         if (isRevert) {
             if (!isNullOrUndefined(this.removedTextNodes) && this.removedTextNodes.length > 0) {
                 let textElement: TextElementBox = this.removedTextNodes[0] as TextElementBox;
@@ -9784,14 +9971,73 @@ export class Editor {
             }
         } else {
             switch (property) {
+                case 'SentenceCase':
+                    input = this.sentencecase(input, makeFirstLetterCapital);
+                    break;
                 case 'Uppercase':
                     input = input.toUpperCase();
+                    break;
+                case 'Lowercase':
+                    input = input.toLowerCase();
+                    break;
+                case 'CapitalizeEachWord':
+                    input = this.capitalizeFirst(input, makeFirstLetterCapital);
+                    break;
+                case 'ToggleCase':
+                    input = this.togglecase(input);
                     break;
                 default:
                     break;
             }
         }
         return input;
+    }
+    //Change text into capitalize each word
+    private capitalizeFirst(inputString: string, makeFirstLetterCapital: boolean): string {
+        const words: string[] = inputString.split(/[^\w]+/g);
+        const capitalizedWords: string[] = words.map((word, index) => {
+            if (index === 0) {
+                return makeFirstLetterCapital ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word.toLowerCase();
+            }
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        });
+        const specialChars: string[] = inputString.split(/\w+/).filter(Boolean);
+        const resultArray: string[] = [];
+        for (let i = 0; i < Math.max(capitalizedWords.length, specialChars.length); i++) {
+            if (capitalizedWords[i]) {
+                resultArray.push(capitalizedWords[i]);
+            }
+            if (specialChars[i]) {
+                resultArray.push(specialChars[i]);
+            }
+        }
+        const resultString: string = resultArray.join('');
+        return resultString;
+    }
+    //change text to sentence case
+    private sentencecase(value: string, makeFirstLetterCapital: boolean): string {
+        var sentences = value.split('. ');
+        var capitalizedSentences = sentences.map((sentence, index) => {
+            if (index === 0) {
+                return makeFirstLetterCapital ? sentence.charAt(0).toUpperCase() + sentence.slice(1).toLowerCase() : sentence.toLowerCase();
+            }
+            return sentence.charAt(0).toUpperCase() + sentence.slice(1).toLowerCase();
+        });
+        var resultString = capitalizedSentences.join('. ');
+        return resultString;
+    }
+    //Change text to toggle case
+    private togglecase(value: string) {
+        var text: string = '';
+        var toggle: string[] = value.split('').map(char => {
+            if (char === char.toLowerCase()) {
+                return char.toUpperCase();
+            } else {
+                return char.toLowerCase();
+            }
+        });
+        text = toggle.join('');
+        return text;
     }
     // Table
     /* eslint-disable-next-line max-len */
@@ -9825,11 +10071,19 @@ export class Editor {
     private changeCaseForSelectedPara(paragraph: ParagraphWidget, selection: Selection, property: string, isRevert: boolean): void {
         for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
             let line: LineWidget = paragraph.childWidgets[i] as LineWidget;
+            let firstLetter: string = '';
             for (let j: number = 0; j < line.children.length; j++) {
                 let element: TextElementBox = line.children[j] as TextElementBox;
+                let makeFirstLetterCapital: boolean = false;
                 if (!isNullOrUndefined(element) && element instanceof TextElementBox) {
                     this.addRemovedTextNodes(element, element.text);
-                    element.text = this.getChangeCaseText(element.text, property, isRevert);
+                    if (property === 'CapitalizeEachWord') {
+                        makeFirstLetterCapital = j === 0 || firstLetter === ' ';
+                        firstLetter = element.text.substr(element.length - 1, 1);
+                    } else if (property === 'SentenceCase') {
+                        makeFirstLetterCapital = (element.text.substr(element.length - 2, 2) === '. ') || j === 0;
+                    }
+                    element.text = this.getChangeCaseText(element.text, property, isRevert, makeFirstLetterCapital);
                 }
             }
         }
@@ -9942,6 +10196,14 @@ export class Editor {
         }
         let value: boolean = this.getCurrentSelectionValue('allCaps');
         this.selection.characterFormat.allCaps = value;
+    }
+    public toggleChangeCase(): string {
+        var casings = ['Uppercase', 'Lowercase', 'CapitalizeEachWord'];
+        this.casingIndex++;
+        if (this.casingIndex >= casings.length) {
+            this.casingIndex = 0;
+        }
+        return casings[this.casingIndex];
     }
     private getCurrentSelectionValue(property: string): boolean {
         let value: boolean = false;
@@ -10267,6 +10529,9 @@ export class Editor {
         if (value instanceof WCharacterFormat) {
             if (this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
                 this.copyInlineCharacterFormat(value, format);
+                if (this.owner.enableCollaborativeEditing && format.ownerBase instanceof ElementBox) {
+                    this.editorHistory.currentBaseHistoryInfo.buildCharacterFormatOperation(format.ownerBase as ElementBox, format);
+                }
             } else {
                 format.copyFormat(value);
             }
@@ -10342,7 +10607,7 @@ export class Editor {
             this.editorHistory.initializeHistory('ImageResizing');
             this.editorHistory.currentBaseHistoryInfo.modifiedProperties.push(modifiedFormat);
             this.editorHistory.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Image;
-            this.editorHistory.currentBaseHistoryInfo.insertedData = {width: HelperMethods.convertPixelToPoint(width), height: HelperMethods.convertPixelToPoint(height)};
+            this.editorHistory.currentBaseHistoryInfo.insertedData = {width: HelperMethods.convertPixelToPoint(width), height: HelperMethods.convertPixelToPoint(height), alternativeText: alternateText};
         }
         this.setOffsetValue(this.selection);
         elementBox.width = width;
@@ -10351,7 +10616,7 @@ export class Editor {
 
         this.documentHelper.layout.reLayoutParagraph(elementBox.line.paragraph, elementBox.line.indexInOwner, 0);
         this.reLayout(this.selection, false);
-        if (this.documentHelper.owner.imageResizerModule) {
+        if (this.documentHelper.owner.imageResizerModule && !this.isRemoteAction) {
             this.documentHelper.owner.imageResizerModule.positionImageResizer(elementBox);
         }
     }
@@ -10428,19 +10693,19 @@ export class Editor {
     public applyRulerMarkerValues(type: string, initialValue: number, finalValue: number): void {
         let differenceValue: number = HelperMethods.convertPixelToPoint(finalValue - initialValue) / this.owner.zoomFactor;
         if (type === 'firstLineIndent') {
-            let currentValue: number =  this.owner.selection.start.paragraph.paragraphFormat.firstLineIndent;
+            let currentValue: number =  this.owner.selectionModule.start.paragraph.paragraphFormat.firstLineIndent;
             this.onApplyParagraphFormat(type, currentValue + differenceValue, false, false);
         } else if (type === 'hangingIndent') {
-            let currentValue: number = this.owner.selection.start.paragraph.paragraphFormat.firstLineIndent;
+            let currentValue: number = this.owner.selectionModule.start.paragraph.paragraphFormat.firstLineIndent;
             this.onApplyParagraphFormat('firstLineIndent', currentValue - differenceValue, false, false);
-            let leftIndentCurrentValue: number = this.owner.selection.start.paragraph.paragraphFormat.leftIndent + currentValue;
+            let leftIndentCurrentValue: number = this.owner.selectionModule.start.paragraph.paragraphFormat.leftIndent + currentValue;
             currentValue = currentValue - differenceValue;
             this.onApplyParagraphFormat('leftIndent', leftIndentCurrentValue - currentValue, false, false, true);
         } else if (type === 'leftIndent') {
-            let currentValue: number =  this.owner.selection.start.paragraph.paragraphFormat.leftIndent;
+            let currentValue: number =  this.owner.selectionModule.start.paragraph.paragraphFormat.leftIndent;
             this.onApplyParagraphFormat(type, currentValue + differenceValue, false, false);
         } else if (type === 'rightIndent') {
-            let currentValue: number = this.owner.selection.start.paragraph.paragraphFormat.rightIndent;
+            let currentValue: number = this.owner.selectionModule.start.paragraph.paragraphFormat.rightIndent;
             this.onApplyParagraphFormat(type, currentValue + differenceValue, false, false);
         }
     }
@@ -10837,6 +11102,8 @@ export class Editor {
             if (isNullOrUndefined(property)) {
                 if (this.editorHistory && (this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
                     this.copyParagraphFormat(value as WParagraphFormat, format);
+                } else if (this.isRemoteAction) {
+                    this.copyParagraphFormat(value as WParagraphFormat, format);
                 } else {
                     format.copyFormat(value as WParagraphFormat);
                 }
@@ -10844,6 +11111,11 @@ export class Editor {
                 format.listFormat = value.listFormat;
                 format.listFormat.ownerBase = format;
                 // this.handleListFormat(format, value as WParagraphFormat);
+            }
+            if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
+                if(this.owner.enableCollaborativeEditing && this.editorHistory.isUndoing) {
+                    this.editorHistory.currentBaseHistoryInfo.getParagraohFormatOperation(paragraph, format);
+                }
             }
         }
         if (isNullOrUndefined(value)) {
@@ -11144,7 +11416,7 @@ export class Editor {
     }
     private applyCharacterStyle(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition, property: string, value: WStyle, update: boolean): boolean {
         let paragraphWidget: BlockWidget[] = paragraph.getSplitWidgets() as BlockWidget[];
-        let selection: Selection = end.owner.selection;
+        let selection: Selection = end.owner.selectionModule;
         let lastLine: LineWidget = end.currentWidget;
         let isParaSelected: boolean = start.offset === 0 && (selection.isParagraphLastLine(lastLine) && end.currentWidget === lastLine
             && end.offset === selection.getLineLength(lastLine) + 1 || end.isAtParagraphEnd);
@@ -12226,7 +12498,7 @@ export class Editor {
         return true;
     }
 
-    private deleteSelectedContent(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number, skipDeletecell?: boolean): void {
+    private deleteSelectedContent(paragraph: ParagraphWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number, isDeletecell?: boolean): void {
         let indexInInline: number = 0;
         let inlineObj: ElementInfo = start.currentWidget.getInline(start.offset, indexInInline);
         let inline: ElementBox = inlineObj.element;
@@ -12280,9 +12552,9 @@ export class Editor {
         //  Selection start in cell.
         if (end.paragraph.isInsideTable && (!start.paragraph.isInsideTable
             || start.paragraph.associatedCell !== end.paragraph.associatedCell
-            || (selection.isCellSelected(end.paragraph.associatedCell, start, end) && !skipDeletecell))) {
+            || (selection.isCellSelected(end.paragraph.associatedCell, start, end) && isDeletecell))) {
             end.paragraph.associatedCell.ownerTable.combineWidget(this.owner.viewer);
-            this.deleteTableCell(end.paragraph.associatedCell, selection, start, end, editAction);
+            this.deleteTableCell(end.paragraph.associatedCell, selection, start, end, editAction, isDeletecell);
         } else {
             let shiftPara: BlockWidget = undefined;
             if (this.owner.viewer instanceof PageLayoutViewer && paragraph.bodyWidget.sectionFormat.numberOfColumns > 1 && paragraph === paragraph.bodyWidget.lastChild && !isNullOrUndefined(paragraph.bodyWidget.nextRenderedWidget) && paragraph.bodyWidget.index !== paragraph.bodyWidget.nextRenderedWidget.index && paragraph.bodyWidget.page === (paragraph.bodyWidget.nextRenderedWidget as BodyWidget).page) {
@@ -12782,7 +13054,7 @@ export class Editor {
             (this.editorHistory && this.editorHistory.isUndoing && this.editorHistory.currentHistoryInfo &&
                 this.editorHistory.currentHistoryInfo.action === 'PageBreak' && block && block.isPageBreak()
                 && (startOffset === 0 && !start.currentWidget.isFirstLine || startOffset > 0)) ||
-            start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph || !isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && ((this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change' && start.paragraph === paragraph && end.paragraph != paragraph && startOffset >= paragraphStart) || (this.editorHistory.currentBaseHistoryInfo.action === 'Accept Change' && start.currentWidget.isLastLine() && start.currentWidget == end.currentWidget && start.offset + 1 == end.offset))) {
+            start.paragraph !== end.paragraph && editAction === 2 && start.paragraph === paragraph && start.paragraph.nextWidget === end.paragraph || !isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && ((this.editorHistory.currentBaseHistoryInfo.action === 'Reject Change' && start.paragraph === paragraph && end.paragraph != paragraph && startOffset >= paragraphStart) || (this.editorHistory.currentBaseHistoryInfo.action === 'Accept Change' && start.currentWidget.isLastLine() && start.currentWidget == end.currentWidget && start.offset + 1 === end.paragraph.getLength()))) {
             isCombineNextParagraph = true;
         }
         if ((tempStartOffset + 1 === this.documentHelper.selection.getLineLength(paragraph.lastChild as LineWidget))) {
@@ -12938,6 +13210,12 @@ export class Editor {
                             this.removeContent(line, 0, this.documentHelper.selection.getLineLength(line), undefined);
                         }
                     } else {
+                        // Added the condition to remove section if current and next para have different section indexes if selection is covered till the end of section.
+                        let nextParagraph: ParagraphWidget = this.selection.getNextParagraphBlock(paragraph);
+                        if (!isLastChild && !paragraph.isInsideTable && !isNullOrUndefined(nextParagraph) && !nextParagraph.isInsideTable && paragraph.bodyWidget.sectionIndex !== nextParagraph.bodyWidget.sectionIndex) {
+                            this.deleteSection(selection, paragraph.bodyWidget, nextParagraph.bodyWidget, editAction);
+                            isStartParagraph = true;
+                        }
                         this.addRemovedNodes(paragraph);
                     }
                     if (!isNullOrUndefined(block) && !isStartParagraph && !paraReplace) {
@@ -13009,7 +13287,7 @@ export class Editor {
                 let headerFooterWidget: HeaderFooterWidget = this.owner.documentHelper.headersFooters[section.sectionIndex]['0'];
                 if (!isNullOrUndefined(headerFooterWidget)) {
                     paragraphInfo = { 'paragraph': headerFooterWidget.firstChild as ParagraphWidget, 'offset': 0 };
-                    positionInfo = this.owner.selection.getPositionInfoForHeaderFooter(paragraphInfo, { position: 0, done: false });
+                    positionInfo = this.owner.selectionModule.getPositionInfoForHeaderFooter(paragraphInfo, { position: 0, done: false });
                     this.editorHistory.currentBaseHistoryInfo.headerFooterStart = positionInfo.position;
                 }
                 // Find the end linear index of deleted HeadersFooters
@@ -13017,9 +13295,9 @@ export class Editor {
                 if (keyCount > 0) {    
                     headerFooterWidget = this.owner.documentHelper.headersFooters[section.sectionIndex][(keyCount-1).toString()];
                     if (!isNullOrUndefined(headerFooterWidget)) {                
-                        let paraLength: number = this.owner.selection.getParagraphLength(headerFooterWidget.lastChild as ParagraphWidget);
+                        let paraLength: number = this.owner.selectionModule.getParagraphLength(headerFooterWidget.lastChild as ParagraphWidget);
                         paragraphInfo = { 'paragraph': headerFooterWidget.lastChild as ParagraphWidget, 'offset': paraLength + 1 };
-                        positionInfo = this.owner.selection.getPositionInfoForHeaderFooter(paragraphInfo, { position: 0, done: false });
+                        positionInfo = this.owner.selectionModule.getPositionInfoForHeaderFooter(paragraphInfo, { position: 0, done: false });
                         this.editorHistory.currentBaseHistoryInfo.headerFooterEnd = positionInfo.position;
                     }
                 }
@@ -13468,7 +13746,7 @@ export class Editor {
      */
     public getTabsInSelection(): WTabStop[] {
         let oldTabstops: WTabStop[] = [];
-        let selection = this.owner.selection;
+        let selection = this.owner.selectionModule;
         let selectedWidgets = selection.selectedWidgets.keys;
         let paragraphsInSelection: ParagraphWidget[] = [];
         if (selectedWidgets.length === 0) {
@@ -13476,7 +13754,7 @@ export class Editor {
         } else if (selection.start.paragraph === selection.end.paragraph) {
             return selection.start.paragraph.paragraphFormat.getUpdatedTabs();
         } else if (selection.start.paragraph !== selection.end.paragraph) {
-            paragraphsInSelection = this.owner.selection.getParagraphsInSelection();
+            paragraphsInSelection = this.owner.selectionModule.getParagraphsInSelection();
         }
         let para: ParagraphWidget = paragraphsInSelection.length>0 ? paragraphsInSelection[0]:undefined;
         let tabs: WTabStop[] = !isNullOrUndefined(para)?para.paragraphFormat.getUpdatedTabs(): [];
@@ -13631,7 +13909,7 @@ export class Editor {
         }
     }
 
-    private deleteTableCell(cellAdv: TableCellWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number): void {
+    private deleteTableCell(cellAdv: TableCellWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number, isDeletecell?: boolean): void {
         let deletePreviousBlock: boolean = !(start.paragraph.isInsideTable && cellAdv.ownerTable.contains(start.paragraph.associatedCell));
         let previousBlock: BlockWidget = cellAdv.ownerTable.previousRenderedWidget as BlockWidget;
         if (start.paragraph.isInsideTable) {
@@ -13644,7 +13922,7 @@ export class Editor {
                     if (selection.isCellSelected(containerCell, start, end)) {
                         //Container cell is completely selected.
                         this.updateEditPosition(containerCell, selection);
-                        if (editAction === 1) {
+                        if (editAction === 1 || isDeletecell) {
                             //Specifically handled for backspace. Delete selected cell in current table.
                             this.deleteCellsInTable(cellAdv.ownerRow.ownerTable, selection, start, end, editAction);
                         } else {
@@ -14421,7 +14699,7 @@ export class Editor {
                     if (!this.skipTableElements && !this.skipFootNoteDeleteTracking && !skipHistoryCollection) {
                         this.addRemovedNodes(inline.clone());
                     }
-                    this.handleDeleteTracking(inline, startOffset, endOffset, i);
+                    this.handleDeleteTracking(inline, startOffset, endOffset, i, skipHistoryCollection);
                 } else {
                     // if (editAction < 4) {
                     if (inline instanceof FootnoteElementBox) {
@@ -15029,7 +15307,7 @@ export class Editor {
             selection.selectParagraphInternal(nextNode as ParagraphWidget, true);
             this.updateEndPosition();
             if (!isNullOrUndefined(breakType) && this.editorHistory) {
-                this.owner.editorHistory.updateHistory();
+                this.owner.editorHistoryModule.updateHistory();
             }
             // if (!isNullOrUndefined(selection.currentHistoryInfo)) {
             //     this.updateComplexHistory();
@@ -15703,8 +15981,8 @@ export class Editor {
      * @param {boolean} isBackSpace - Specifies is backspace.
      * @returns {boolean}
      */
-    public deleteSelectedContents(selection: Selection, isBackSpace: boolean, skipDeletecell?: boolean): boolean {
-        let skipBackSpace: boolean = this.deleteSelectedContentInternal(selection, isBackSpace, selection.start, selection.end, skipDeletecell);
+    public deleteSelectedContents(selection: Selection, isBackSpace: boolean, isDeletecell?: boolean): boolean {
+        let skipBackSpace: boolean = this.deleteSelectedContentInternal(selection, isBackSpace, selection.start, selection.end, isDeletecell);
         let textPosition: TextPosition = selection.getTextPosBasedOnLogicalIndex(selection.editPosition);
         selection.selectContent(textPosition, true);
         return skipBackSpace;
@@ -15953,7 +16231,7 @@ export class Editor {
                     return;
                 }
             }
-            if (inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
+            if (inline instanceof BookmarkElementBox) {
                 if (inline.previousNode) {
                     inline = inline.previousNode;
                     if (inline instanceof FieldElementBox && !this.selection.isInlineFormFillMode()) {
@@ -15973,14 +16251,24 @@ export class Editor {
                     selection.start.setPositionFromLine(inline.line, offset);
                     selection.end.setPositionInternal(selection.start);
                 } else {
-                    // remove paragraph mark and move bookmark to previous paragraph
-                    if (paragraph.previousRenderedWidget instanceof ParagraphWidget) {
-                        let prevParagraph: ParagraphWidget = paragraph.previousRenderedWidget;
-                        let line: LineWidget = prevParagraph.lastChild as LineWidget;
-                        selection.start.setPositionParagraph(inline.line, inline.line.getOffset(inline, 0));
-                        selection.end.setPositionParagraph(line, line.getEndOffset());
-                        this.removeWholeElement(selection);
-                        return;
+                    if (inline.bookmarkType === 1) {
+                        // remove paragraph mark and move bookmark to previous paragraph
+                        if (paragraph.previousRenderedWidget instanceof ParagraphWidget) {
+                            let prevParagraph: ParagraphWidget = paragraph.previousRenderedWidget;
+                            let line: LineWidget = prevParagraph.lastChild as LineWidget;
+                            selection.start.setPositionParagraph(inline.line, inline.line.getOffset(inline, 0));
+                            selection.end.setPositionParagraph(line, line.getEndOffset());
+                            this.removeWholeElement(selection);
+                            return;
+                        }
+                    } else {
+                        if (inline.paragraph.previousWidget instanceof ParagraphWidget) {
+                            selection.start.setPositionFromLine(inline.line, 0);
+                            selection.end.setPositionInternal(selection.start);
+                            offset = 0;
+                        } else {
+                            return;
+                        }
                     }
                 }
                 // Remove bookmark if selection is in between bookmark start and end element.
@@ -16005,7 +16293,8 @@ export class Editor {
         if (offset === selection.getStartOffset(paragraph) && selection.start.currentWidget.isFirstLine()) {
             if (paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listId !== -1) {
                 // BUG_859140 - handled backspace for list as per word desktop behaviour
-                if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.undoStack) && this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1].action === 'ListFormat') {
+                if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.undoStack) && this.editorHistory.undoStack.length > 0 &&
+                    this.editorHistory.undoStack[this.editorHistory.undoStack.length - 1].action === 'ListFormat') {
                     this.onApplyListInternal(this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId), paragraph.paragraphFormat.listFormat.listLevelNumber - 1);
                 } else {
                     this.onApplyList(undefined);
@@ -16135,8 +16424,8 @@ export class Editor {
             if (!isRedoing) {
                 this.reLayout(selection);
                 if (isCommentDelete) {
-                    (this.owner.editorHistory.undoStack[this.owner.editorHistory.undoStack.length - 2] as HistoryInfo).modifiedActions.push(this.owner.editorHistory.undoStack[this.owner.editorHistory.undoStack.length - 1]);
-                    this.owner.editorHistory.undoStack.splice(this.owner.editorHistory.undoStack.length - 1, 1);
+                    (this.owner.editorHistoryModule.undoStack[this.owner.editorHistoryModule.undoStack.length - 2] as HistoryInfo).modifiedActions.push(this.owner.editorHistoryModule.undoStack[this.owner.editorHistoryModule.undoStack.length - 1]);
+                    this.owner.editorHistoryModule.undoStack.splice(this.owner.editorHistoryModule.undoStack.length - 1, 1);
                     isCommentDelete = false;
                 }
             } else {
@@ -16211,14 +16500,14 @@ export class Editor {
                 // here we are removing errorCollection for next & previous elements for recalculating spellcheck error
                 const nextElement: ElementBox = inline.nextElement;
                 const previousElement: ElementBox = inline.previousElement;
-                this.owner.spellChecker.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
+                this.owner.spellCheckerModule.removeErrorsFromCollection({ 'element': inline, 'text': (inline as TextElementBox).text });
                 if (!isNullOrUndefined(nextElement) && nextElement instanceof TextElementBox) {
                     nextElement.ischangeDetected = true;
-                    this.owner.spellChecker.removeErrorsFromCollection({ 'element': nextElement, 'text': nextElement.text });
+                    this.owner.spellCheckerModule.removeErrorsFromCollection({ 'element': nextElement, 'text': nextElement.text });
                 }
                 if (!isNullOrUndefined(previousElement) && previousElement instanceof TextElementBox) {
                     previousElement.ischangeDetected = true;
-                    this.owner.spellChecker.removeErrorsFromCollection({ 'element': previousElement, 'text': previousElement.text });
+                    this.owner.spellCheckerModule.removeErrorsFromCollection({ 'element': previousElement, 'text': previousElement.text });
                 }
                 if (!inline.canTrigger) {
                     this.documentHelper.triggerSpellCheck = false;
@@ -16259,7 +16548,11 @@ export class Editor {
                 }
             }
             if (inline instanceof EditRangeStartElementBox) {
+                this.selection.skipEditRangeRetrieval = true;
                 this.removeUserRestrictionsInternal(inline, undefined, true);
+                this.selection.updateEditRangeCollection();
+                this.fireContentChange();
+                this.selection.skipEditRangeRetrieval = false;
             }
             if (inline instanceof BookmarkElementBox) {
                 if (inline.bookmarkType === 0 && this.documentHelper.bookmarks.containsKey(inline.name)) {
@@ -16294,7 +16587,7 @@ export class Editor {
         }
     }
 
-    private handleDeleteTracking(elementBox: ElementBox, indexInInline: number, endOffset: number, elementIndex?: number, startIndex?: number, endIndex?: number): ElementBox {
+    private handleDeleteTracking(elementBox: ElementBox, indexInInline: number, endOffset: number, elementIndex?: number, isSkipRecordRevision?: Boolean, startIndex?: number, endIndex?: number): ElementBox {
         let isTrackingEnabled: boolean = this.owner.enableTrackChanges;
 
         let isUndoing: boolean = isNullOrUndefined(this.editorHistory) ? false : (this.editorHistory.isUndoing || this.editorHistory.isRedoing);
@@ -16319,9 +16612,9 @@ export class Editor {
                 return undefined;
             }
             let isDelete: boolean = false;
-            if (this.owner.editorHistory) {
+            if (this.owner.editorHistoryModule) {
 
-                isDelete = (!isNullOrUndefined(this.owner.editorHistory.currentBaseHistoryInfo) && this.owner.editorHistory.currentBaseHistoryInfo.action === 'Delete');
+                isDelete = (!isNullOrUndefined(this.owner.editorHistoryModule.currentBaseHistoryInfo) && this.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'Delete');
             }
             if (!this.skipTableElements) {
                 this.updateEndRevisionIndex();
@@ -16329,6 +16622,9 @@ export class Editor {
             if (elementBox.revisions.length > 0) {
                 let revision: Revision = this.retrieveRevisionInOder(elementBox);
                 let index: number = this.owner.revisions.changes.indexOf(revision);
+                if (!isNullOrUndefined(this.owner.editorHistoryModule) && !isNullOrUndefined(this.owner.editorHistoryModule.currentBaseHistoryInfo) && !isSkipRecordRevision) {
+                    this.owner.editorHistoryModule.currentBaseHistoryInfo.recordInsertRevisionDeletetion(elementBox);
+                }
                 if (revision.revisionType === 'Insertion') {
                     if (this.isRevisionMatched(elementBox, undefined)) {
                         // inserted revision same author as delete revision so we can delete
@@ -16506,7 +16802,7 @@ export class Editor {
 
     private updateLastElementRevision(elementBox: ElementBox): void {
         if (!this.skipTableElements) {
-            if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && !this.skipReplace && (!isNullOrUndefined(this.owner.search) ? !this.owner.search.isRepalceTracking : true)) {
+            if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && !this.skipReplace && (!isNullOrUndefined(this.owner.searchModule) ? !this.owner.searchModule.isRepalceTracking : true)) {
                 if (isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo.lastElementRevision)) {
                     this.editorHistory.currentBaseHistoryInfo.lastElementRevision = elementBox;
                 }
@@ -16523,7 +16819,10 @@ export class Editor {
             }
         }
     }
-    private retrieveRevisionInOder(elementBox: any): Revision {
+    /**
+     * @private
+     */
+    public retrieveRevisionInOder(elementBox: any): Revision {
         if (elementBox.revisions.length === 1) {
             return elementBox.revisions[0];
         }
@@ -16548,9 +16847,9 @@ export class Editor {
             this.owner.trackChangesPane.updateCurrentTrackChanges(revision);
             spittedSpan.revisions.splice(0, 0, revision);
             let isDelete: boolean = false;
-            if (this.owner.editorHistory) {
+            if (this.owner.editorHistoryModule) {
 
-                isDelete = (!isNullOrUndefined(this.owner.editorHistory.currentBaseHistoryInfo) && this.owner.editorHistory.currentBaseHistoryInfo.action === 'Delete');
+                isDelete = (!isNullOrUndefined(this.owner.editorHistoryModule.currentBaseHistoryInfo) && this.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'Delete');
             }
             if (endOffset === 1 && !isDelete) {
                 this.selection.start.movePreviousPosition();
@@ -16564,9 +16863,9 @@ export class Editor {
     }
     private handleDeleteBySplitting(elementBox: ElementBox, indexInInline: number, endOffset: number): void {
         let isDelete: boolean = false;
-        if (this.owner.editorHistory) {
+        if (this.owner.editorHistoryModule) {
 
-            isDelete = (!isNullOrUndefined(this.owner.editorHistory.currentBaseHistoryInfo) && this.owner.editorHistory.currentBaseHistoryInfo.action === 'Delete');
+            isDelete = (!isNullOrUndefined(this.owner.editorHistoryModule.currentBaseHistoryInfo) && this.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'Delete');
         }
         //Update cursor position to insert removed content
         if (endOffset === 1) {
@@ -16674,7 +16973,8 @@ export class Editor {
             selection.selectContent(textPosition, true);
             this.reLayout(selection);
             this.insertSpaceInFormField();
-            if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)) {
+            if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)
+                && this.editorHistory.currentHistoryInfo.action === 'RemoveComment') {
                 for (let k: number = 0; k < commentStarts.length; k++) {
                     this.initInsertInline(commentStarts[k], false);
                 }
@@ -17118,7 +17418,7 @@ export class Editor {
                     this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
                     this.removeBlock(nextParagraph);
                     //this.combineRevisionOnDeleteParaMark(paragraph, prevLastLineIndex, elementIndex);
-                    if (this.editorHistory.currentBaseHistoryInfo.action !== "Insert") {
+                    if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo.action !== "Insert") {
                         if (!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentHistoryInfo) && this.editorHistory.currentHistoryInfo.action == 'Accept All') {
                             this.removeRevisionForBlock(nextParagraph, undefined, false, true);
                         }
@@ -17235,7 +17535,7 @@ export class Editor {
      * deleteSelectedContentInternal
      * @private
      */
-    public deleteSelectedContentInternal(selection: Selection, isBackSpace: boolean, startPosition: TextPosition, endPosition: TextPosition, skipDeletecell?: boolean): boolean {
+    public deleteSelectedContentInternal(selection: Selection, isBackSpace: boolean, startPosition: TextPosition, endPosition: TextPosition, isDeletecell?: boolean): boolean {
         let startPos: TextPosition = startPosition;
         let endPos: TextPosition = endPosition;
         if (!startPosition.isExistBefore(endPosition)) {
@@ -17263,7 +17563,7 @@ export class Editor {
                 this.editorHistory.currentBaseHistoryInfo.insertPosition = selection.editPosition;
             }
             const editAction: number = (isBackSpace ? 1 : 0);
-            this.deleteSelectedContent(endPos.paragraph, selection, startPos, endPos, editAction, skipDeletecell);
+            this.deleteSelectedContent(endPos.paragraph, selection, startPos, endPos, editAction, isDeletecell);
         }
         return skipBackSpace;
     }
@@ -17356,14 +17656,18 @@ export class Editor {
             if (this.owner.enableCollaborativeEditing) {
                 this.documentHelper.addBase64StringInCollection(imageElementBox);
                 imageElementBox.element.src = this.documentHelper.getImageString(imageElementBox);
-                this.insertPictureInternal(imageElementBox, isUiInteracted);
+                this.insertPictureInternal(imageElementBox, isUiInteracted, this.isRemoteAction);
                 this.isImageInsert = false;
                 this.isRemoteAction = false;
             }
         };
         drawImage.src = base64String;
+        if (this.isRemoteAction) {
+            this.insertInlineInSelection(this.selection, imageElementBox);
+        }
     }
-    private insertPictureInternal(imageElementBox: ImageElementBox, isUiInteracted: boolean): void {
+
+    private insertPictureInternal(imageElementBox: ImageElementBox, isUiInteracted: boolean, isElementInserted?: boolean): void {
         const selection: Selection = this.documentHelper.selection;
         let removedCommentStart: CommentCharacterElementBox[] = this.checkAndRemoveComments();
         this.initHistory('InsertInline');
@@ -17384,12 +17688,15 @@ export class Editor {
                 imageString: imageString,
                 height: HelperMethods.convertPixelToPoint(imageElementBox.height),
                 width: HelperMethods.convertPixelToPoint(imageElementBox.width),
-                metaString: metaImageString
+                metaString: metaImageString,
+                alternativeText: imageElementBox.alternateText
             }
             this.editorHistory.currentBaseHistoryInfo.insertedData = imageData;
             this.editorHistory.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Image;
         }
-        this.insertInlineInSelection(selection, imageElementBox);
+        if (!isElementInserted) {
+            this.insertInlineInSelection(selection, imageElementBox);
+        }
         this.reLayout(selection);
         this.updateHistoryForComments(removedCommentStart);
     }
@@ -17431,6 +17738,7 @@ export class Editor {
         if (!selection.isEmpty) {
             this.removeSelectedContents(selection);
         }
+        // Need to check below case when undo/redo in trackchanges enabled.  
         if (!isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo && this.owner.enableCollaborativeEditing) {
             this.editorHistory.currentBaseHistoryInfo.insertedElement = elementBox;
             if (elementBox instanceof CommentCharacterElementBox) {
@@ -17439,10 +17747,9 @@ export class Editor {
                 this.editorHistory.currentBaseHistoryInfo.insertedText = CONTROL_CHARACTERS.Marker_Start;
                 this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(elementBox));
             } else if (elementBox instanceof BookmarkElementBox || elementBox instanceof EditRangeStartElementBox || elementBox instanceof EditRangeEndElementBox || elementBox instanceof FieldElementBox || elementBox instanceof TextElementBox) {
-                if (this.editorHistory.isRedoing) {
-                    this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(elementBox));
-                } else {
-                    this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(elementBox, true));
+                this.editorHistory.currentBaseHistoryInfo.markerData.push(this.getMarkerData(elementBox, this.editorHistory.isUndoing));
+                if (elementBox instanceof FieldElementBox && elementBox.fieldType === 0) {
+                    this.editorHistory.currentBaseHistoryInfo.fieldBegin = elementBox;
                 }
             }
         }
@@ -17994,9 +18301,9 @@ export class Editor {
             // this.documentHelper.bookmarks.remove(name);
             isHistoryInitiated = true;
             this.initComplexHistory('InsertBookmark');
-            this.documentHelper.owner.editor.isRemoteAction = true;
+            this.documentHelper.owner.editorModule.isRemoteAction = true;
             this.deleteBookmark(name);
-            this.documentHelper.owner.editor.isRemoteAction = false;
+            this.documentHelper.owner.editorModule.isRemoteAction = false;
             if (!isNullOrUndefined(existingBookmark.reference) && !isNullOrUndefined(existingBookmark.reference.paragraph.associatedCell)) {
                 let row: TableRowWidget = existingBookmark.reference.paragraph.associatedCell.ownerRow;
                 if (row.isRenderBookmarkEnd) {
@@ -18966,8 +19273,8 @@ export class Editor {
     private applyTablePropertyValue(property: string, value: Object, table: TableWidget): void {
         const sourceFormat: WTableFormat = table.tableFormat;
         if (!isNullOrUndefined(this.editorHistory) && this.editorHistory.currentBaseHistoryInfo) {
-            this.editorHistory.currentBaseHistoryInfo.insertedFormat = value;
             value = this.editorHistory.currentBaseHistoryInfo.addModifiedTableProperties(sourceFormat, property, value);
+            this.editorHistory.currentBaseHistoryInfo.insertedFormat = value;
         }
         if (value instanceof WTableFormat) {
             if (isNullOrUndefined(property)) {
@@ -19083,8 +19390,8 @@ export class Editor {
     private applyRowPropertyValue(selection: Selection, property: string, value: Object, row: TableRowWidget): void {
         const applyFormat: WRowFormat = row.rowFormat;
         if (!isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
-            this.editorHistory.currentBaseHistoryInfo.insertedFormat = value;
             value = this.editorHistory.currentBaseHistoryInfo.addModifiedRowProperties(applyFormat, property, value);
+            this.editorHistory.currentBaseHistoryInfo.insertedFormat = value;
         }
         if (value instanceof WRowFormat) {
             if (isNullOrUndefined(property)) {
@@ -19235,9 +19542,13 @@ export class Editor {
         }
         return HelperMethods.convertPixelToPoint(this.documentHelper.layout.getTableWidth(table));
     }
-    private applyCellPropertyValue(selection: Selection, property: string, value: Object, applyFormat: WCellFormat): WCellFormat {
+    /**
+     *
+     * @private
+     * @returns {void}
+     */
+    public applyCellPropertyValue(selection: Selection, property: string, value: Object, applyFormat: WCellFormat): WCellFormat {
         if (!isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
-            this.editorHistory.currentBaseHistoryInfo.insertedFormat = value;
             value = this.editorHistory.currentBaseHistoryInfo.addModifiedCellProperties(applyFormat, property, value);
             this.editorHistory.currentBaseHistoryInfo.insertedFormat = value;
         }
@@ -19514,8 +19825,8 @@ export class Editor {
             this.updateHistoryForComments(removedCommentStart);
         }
         if (widgets.length === 0) {
-            this.owner.editorHistory.undo();
-            this.owner.editorHistory.redoStack.pop();
+            this.owner.editorHistoryModule.undo();
+            this.owner.editorHistoryModule.redoStack.pop();
         }
     }
 
@@ -19611,7 +19922,7 @@ export class Editor {
      *
      */
 
-    public buildToc(tocSettings: TableOfContentsSettings, fieldCode: string, isFirstPara: boolean, isStartParagraph?: boolean): ParagraphWidget[] {
+    public buildToc(tocSettings: TableOfContentsSettings, fieldCode: string, isFirstPara: boolean, isStartParagraph?: boolean,isNavigationPane?: boolean): ParagraphWidget[] {
         const tocDomBody: BodyWidget = this.documentHelper.pages[0].bodyWidgets[0];
         const widgets: ParagraphWidget[] = [];
         this.createHeadingLevels(tocSettings);
@@ -19625,7 +19936,7 @@ export class Editor {
             if (widget instanceof ParagraphWidget && (this.isHeadingStyle(widget) || (tocSettings.includeOutlineLevels && this.isOutlineLevelStyle(widget)))) {
                 const bookmarkName: string = this.insertTocBookmark(widget);
 
-                this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat);
+                this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat,isNavigationPane);
                 isFirstPara = false;
             }
             widget = this.selection.getNextParagraphBlock((widget as ParagraphWidget).getSplitWidgets().pop() as ParagraphWidget);
@@ -19695,7 +20006,7 @@ export class Editor {
 
 
 
-    private createTOCWidgets(widget: ParagraphWidget, widgets: ParagraphWidget[], fieldCode: string, bookmarkName: string, tocSettings: TableOfContentsSettings, isFirstPara?: boolean, isStartParagraph?: boolean, sectionFormat?: WSectionFormat): void {
+    private createTOCWidgets(widget: ParagraphWidget, widgets: ParagraphWidget[], fieldCode: string, bookmarkName: string, tocSettings: TableOfContentsSettings, isFirstPara?: boolean, isStartParagraph?: boolean, sectionFormat?: WSectionFormat,isNavigationPane?: boolean): void {
         let fieldBegin: FieldElementBox = undefined;
         let tocPara: ParagraphWidget = undefined;
         let tocLine: LineWidget = undefined;
@@ -19714,11 +20025,24 @@ export class Editor {
                 styleName = headingStyleName;
             }
             const tocStyleName: string = 'TOC ' + this.tocStyles[styleName];
-            let paraStyle: Object = this.documentHelper.styles.findByName(tocStyleName, 'Paragraph');
-            if (isNullOrUndefined(paraStyle)) {
+            const headingPaneStyleName = 'Heading '+this.tocStyles[styleName];
+            let paraStyle : Object = undefined;
+            if(isNavigationPane)
+            {
+                 paraStyle = this.documentHelper.styles.findByName(headingPaneStyleName, 'Paragraph');
+                if (isNullOrUndefined(paraStyle)) {
 
-                this.documentHelper.owner.parser.parseStyle(JSON.parse(this.getCompleteStyles()), JSON.parse(this.documentHelper.preDefinedStyles.get(tocStyleName)), this.documentHelper.styles, true);
+                    this.documentHelper.owner.parser.parseStyle(JSON.parse(this.getCompleteStyles()), JSON.parse(this.documentHelper.preDefinedStyles.get(headingPaneStyleName)), this.documentHelper.styles, true);
+                    paraStyle = this.documentHelper.styles.findByName(headingPaneStyleName, 'Paragraph');
+                }
+            }
+            else{
                 paraStyle = this.documentHelper.styles.findByName(tocStyleName, 'Paragraph');
+                if (isNullOrUndefined(paraStyle)) {
+
+                    this.documentHelper.owner.parser.parseStyle(JSON.parse(this.getCompleteStyles()), JSON.parse(this.documentHelper.preDefinedStyles.get(tocStyleName)), this.documentHelper.styles, true);
+                    paraStyle = this.documentHelper.styles.findByName(tocStyleName, 'Paragraph');
+                }
             }
             tocPara.paragraphFormat.applyStyle(paraStyle as WParagraphStyle);
             //Creates right tab for page number.
@@ -19942,10 +20266,10 @@ export class Editor {
      */
     public onCellContentAlignment(verticalAlignment: CellVerticalAlignment, textAlignment: TextAlignment): void {
         this.owner.isShiftingEnabled = true;
-        const selection: Selection = this.owner.selection;
+        const selection: Selection = this.owner.selectionModule;
         if (selection.isEmpty && selection.start.paragraph.isInsideTable) {
-            if (this.owner.editorHistory) {
-                this.owner.editorHistory.initComplexHistory(selection, 'MultiSelection');
+            if (this.owner.editorHistoryModule) {
+                this.owner.editorHistoryModule.initComplexHistory(selection, 'MultiSelection');
             }
             //Selecting the table cell to update the all the paragraph format.
             selection.selectTableCell();
@@ -19955,26 +20279,26 @@ export class Editor {
             this.reLayout(selection, false);
             this.initHistory('TextAlignment');
             this.updateParagraphFormat('textAlignment', textAlignment, false);
-            this.reLayout(this.owner.selection, false);
-            if (this.owner.editorHistory) {
-                this.owner.editorHistory.updateComplexHistory();
+            this.reLayout(this.owner.selectionModule, false);
+            if (this.owner.editorHistoryModule) {
+                this.owner.editorHistoryModule.updateComplexHistory();
             }
         } else {
-            if (this.owner.editorHistory) {
-                this.owner.editorHistory.initComplexHistory(selection, 'MultiSelection');
+            if (this.owner.editorHistoryModule) {
+                this.owner.editorHistoryModule.initComplexHistory(selection, 'MultiSelection');
             }
 
             if (!isNullOrUndefined(selection.getTable(selection.start, selection.end))) {
                 //Table cell vertical alignment.
                 this.updateSelectionTableFormat(selection, 'CellContentVerticalAlignment', verticalAlignment);
-                this.reLayout(this.owner.selection, false);
+                this.reLayout(this.owner.selectionModule, false);
                 this.initHistory('TextAlignment');
                 //Paragraph text alignment.
                 this.updateSelectionParagraphFormatting('textAlignment', textAlignment, false);
                 this.reLayout(selection, false);
             }
-            if (this.owner.editorHistory) {
-                this.owner.editorHistory.updateComplexHistory();
+            if (this.owner.editorHistoryModule) {
+                this.owner.editorHistoryModule.updateComplexHistory();
             }
         }
     }
@@ -20935,7 +21259,7 @@ export class Editor {
         footnote.text = 's';
         const paragraph: ParagraphWidget = new ParagraphWidget();
         const lineWidget: LineWidget = new LineWidget(paragraph);
-        const text: TextElementBox = new TextElementBox();
+        const text: FootnoteEndnoteMarkerElementBox = new FootnoteEndnoteMarkerElementBox();
         paragraph.paragraphFormat.afterSpacing = 0;
         text.characterFormat.baselineAlignment = 'Superscript';
         text.line = lineWidget;
@@ -21013,7 +21337,7 @@ export class Editor {
         endnote.text = 's';
         const paragraph: ParagraphWidget = new ParagraphWidget();
         const lineWidget: LineWidget = new LineWidget(paragraph);
-        const footText: TextElementBox = new TextElementBox();
+        const footText: FootnoteEndnoteMarkerElementBox = new FootnoteEndnoteMarkerElementBox();
         paragraph.paragraphFormat.afterSpacing = 0;
         footText.characterFormat.baselineAlignment = 'Superscript';
         footText.line = lineWidget;
@@ -21154,9 +21478,16 @@ export class Editor {
     private updateEndNoteIndex(): void {
         let endNoteCollec: FootnoteElementBox[] = this.documentHelper.endnoteCollection;
         for (let i: number = 0; i < endNoteCollec.length; i++) {
-            endNoteCollec[i].text = this.documentHelper.layout.getFootEndNote(endNoteCollec[i].paragraph.bodyWidget.sectionFormat.endnoteNumberFormat, i + 1);
-            if (!isNullOrUndefined(((endNoteCollec[i].bodyWidget.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[0])) {
-                (((endNoteCollec[i].bodyWidget.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text = endNoteCollec[i].text;
+            let text: string = this.documentHelper.layout.getFootEndNote(endNoteCollec[i].paragraph.bodyWidget.sectionFormat.endnoteNumberFormat, i + 1);
+            if (text != '') {
+                endNoteCollec[i].text = text;
+                let marker: TextElementBox = ((endNoteCollec[i].bodyWidget.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox;
+                if (!isNullOrUndefined(marker)) {
+                    if (marker instanceof FootnoteEndnoteMarkerElementBox || HelperMethods.checkTextFormat(marker.text)) {
+                        (marker as TextElementBox).text = text;
+                        marker.width = endNoteCollec[i].bodyWidget.footNoteReference.width;
+                    }
+                }
             }
         }
     }
@@ -21196,9 +21527,14 @@ export class Editor {
     private updateFootNoteIndex(): void {
         let footNoteCollec: FootnoteElementBox[] = this.documentHelper.footnoteCollection;
         for (let i: number = 0; i < footNoteCollec.length; i++) {
-            footNoteCollec[i].text = (i + 1).toString();
-            if (!isNullOrUndefined(((footNoteCollec[i].bodyWidget.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[0])) {
-                (((footNoteCollec[i].bodyWidget.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox).text = (i + 1).toString();
+            let text: string = this.documentHelper.layout.getFootEndNote(footNoteCollec[i].paragraph.bodyWidget.sectionFormat.footNoteNumberFormat, i + 1);
+            if (text != '') {
+                footNoteCollec[i].text = text;
+                let marker: TextElementBox = ((footNoteCollec[i].bodyWidget.childWidgets[0] as BlockWidget).childWidgets[0] as LineWidget).children[0] as TextElementBox;
+                if (!isNullOrUndefined(marker) && marker instanceof FootnoteEndnoteMarkerElementBox) {
+                    (marker as TextElementBox).text = text;
+                    marker.width = footNoteCollec[i].bodyWidget.footNoteReference.width;
+                }
             }
         }
     }

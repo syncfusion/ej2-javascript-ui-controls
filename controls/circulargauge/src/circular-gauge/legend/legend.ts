@@ -1,6 +1,6 @@
 import { CircularGauge } from '../circular-gauge';
 import { removeElement, getElement, stringToNumber, measureText, textElement, appendPath, calculateShapes, PathOption, RectOption, Size, GaugeLocation, Rect, TextOption } from '../utils/helper-common';
-import { textTrim, showTooltip } from '../utils/helper-legend';
+import { textTrim } from '../utils/helper-legend';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Border } from '../model/base';
 import { LegendPosition, Alignment, GaugeShape } from '../utils/enum';
@@ -355,7 +355,9 @@ export class Legend {
         textOptions.x = this.gauge.enableRtl ? (legendOption.location.x - (measureText(legendOption.text, legend.textStyle).width +
             legend.shapeWidth / 2 + legend.shapePadding)) : (legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding);
         textOptions.y = legendOption.location.y + this.maxItemHeight / 4;
-        textElement(textOptions, legend.textStyle, fontcolor, group, '');
+        const legendTextElement: Element = textElement(textOptions, legend.textStyle, fontcolor, group, '');
+        legendTextElement.setAttribute('aria-label', textOptions.text);
+        legendTextElement.setAttribute('role', 'region');
     }
     /**
      * To render legend symbols for chart and accumulation chart
@@ -789,31 +791,6 @@ export class Legend {
         this.maxColumns = Math.max(1, this.maxColumns);
         this.maxWidth = maxPageColumn;
         return maxPageColumn;
-    }
-    /**
-     * To show or hide trimmed text tooltip for legend.
-     *
-     * @param {Event} event - Specifies the event.
-     * @returns {void}
-     * @private
-     */
-    public move(event: Event): void {
-        const x: number = this.gauge.mouseX;
-        const y: number = this.gauge.mouseY;
-        const targetId: string = (<HTMLElement>event.target).id;
-        if ((<HTMLElement>event.target).textContent.indexOf('...') > -1 && targetId.indexOf('_gauge_legend_') > -1) {
-            const axisIndex: number = parseInt(targetId.split(this.gauge.element.id + '_gauge_legend_Axis_')[1].split('_text_')[0], 10);
-            const rangeIndex: number = parseInt(targetId.split(this.gauge.element.id + '_gauge_legend_Axis_')[1].split('_text_')[1], 10);
-            let text: string = '';
-            for (const legends of this.legendCollection) {
-                if (legends.rangeIndex === rangeIndex && legends.axisIndex === axisIndex) {
-                    text = legends.originalText;
-                }
-            }
-            showTooltip(text, x, y, this.gauge, 'LegendText');
-        } else {
-            removeElement(this.gauge.element.id + '_EJ2_Legend_Tooltip');
-        }
     }
     /**
      * Get module name.

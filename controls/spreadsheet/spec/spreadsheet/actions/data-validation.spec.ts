@@ -636,14 +636,14 @@ describe('Data validation ->', () => {
 
         it('Double click to open pop up', (done: Function) => {
             helper.invoke('selectRange', ['A3']);
-            let td: HTMLElement = helper.invoke('getCell', [2,0]);
+            let td: HTMLElement = helper.invoke('getCell', [2, 0]);
             let coords: ClientRect = td.getBoundingClientRect();
             helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, td);
             setTimeout(() => {
                 helper.getElements('#spreadsheetlistValid_options .e-list-item')[0].click();
                 setTimeout(() => {
                     helper.invoke('selectRange', ['C3']);
-                    expect(helper.invoke('getCell', [2,0]).textContent).toBe('11');
+                    expect(helper.invoke('getCell', [2, 0]).textContent).toBe('11');
                     done();
                 });
             });
@@ -792,7 +792,7 @@ describe('Data validation ->', () => {
                 helper.getElements('.e-datavalidation-dlg .e-input')[3].value = '15';
                 helper.getElements('.e-datavalidation-dlg .e-input')[4].value = '25';
                 helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
-                helper.click('.e-datavalidation-dlg .e-primary'); 
+                helper.click('.e-datavalidation-dlg .e-primary');
                 helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
                 helper.click('.e-datavalidation-ddb li:nth-child(2)');
                 expect(helper.invoke('getCell', [1, 3]).style.backgroundColor).toBe('rgb(255, 255, 255)');
@@ -1096,7 +1096,6 @@ describe('Data validation ->', () => {
                 });
             });
         });
-
         describe('I301019, I300657 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet(

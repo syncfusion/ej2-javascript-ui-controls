@@ -20,6 +20,14 @@ export class BackStageMenu extends ChildProperty<BackStageMenu>  {
     public text: string;
 
     /**
+     * Specifies the keytip content.
+     *
+     * @default ''
+     */
+    @Property('')
+    public keyTip: string;
+
+    /**
      * Defines whether to show the backstage menu button.
      *
      * @default false
